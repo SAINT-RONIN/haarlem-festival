@@ -11,14 +11,14 @@ $categoryLabel = htmlspecialchars($session['categoryLabel']);
 $borderClass = htmlspecialchars($session['borderClass']);
 ?>
 
-<div class="self-stretch p-3 sm:p-4 md:p-5 bg-white rounded-[12px] sm:rounded-[16px] md:rounded-[20px] inline-flex justify-start items-start gap-2 sm:gap-2.5 overflow-hidden">
-    <div class="w-0.5 sm:w-1 self-stretch relative <?php echo $borderClass; ?> rounded-sm"></div>
-    <div class="inline-flex flex-col justify-start items-start gap-1.5 sm:gap-2 md:gap-2.5">
+<li class="self-stretch p-3 sm:p-4 md:p-5 bg-white rounded-[12px] sm:rounded-[16px] md:rounded-[20px] flex justify-start items-start gap-2 sm:gap-2.5 overflow-hidden">
+    <span class="w-0.5 sm:w-1 self-stretch <?php echo $borderClass; ?> rounded-sm" aria-hidden="true"></span>
+    <div class="flex flex-col justify-start items-start gap-1.5 sm:gap-2 md:gap-2.5">
         <div class="flex flex-col justify-start items-start">
-            <div class="justify-start text-slate-800 text-xs sm:text-sm font-semibold leading-tight"><?php echo $timeLabel; ?></div>
-            <div class="justify-start text-slate-800 text-sm sm:text-base font-normal leading-tight"><?php echo $title; ?></div>
+            <time class="justify-start text-slate-800 text-xs sm:text-sm font-semibold leading-tight"><?php echo $timeLabel; ?></time>
+            <h4 class="justify-start text-slate-800 text-sm sm:text-base font-normal leading-tight"><?php echo $title; ?></h4>
         </div>
-        <div class="justify-start text-slate-500 text-[10px] sm:text-xs font-medium leading-tight"><?php echo $categoryLabel; ?></div>
+        <span class="justify-start text-slate-500 text-[10px] sm:text-xs font-medium leading-tight"><?php echo $categoryLabel; ?></span>
     </div>
-</div>
+</li>
 
