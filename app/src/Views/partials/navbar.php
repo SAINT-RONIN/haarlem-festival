@@ -21,7 +21,7 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
             <div class="justify-end text-stone-100 text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-medium font-serif-display whitespace-nowrap">Haarlem Festival</div>
             <img
                 class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 xl:w-7 xl:h-7 2xl:w-9 2xl:h-9"
-                src="/Icons/Logo.svg"
+                src="/assets/Icons/Logo.svg"
                 alt="Haarlem Festival logo">
         </a>
 

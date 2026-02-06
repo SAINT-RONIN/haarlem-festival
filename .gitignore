@@ -4,7 +4,11 @@
 .DS_Store
 Thumbs.db
 ehthumbs.db
-Icon?
+# macOS custom folder icon file (Icon with carriage return)
+Icon
+
+# Exclude our Icons folder from being ignored
+!app/public/assets/Icons/
 
 # ==============================
 # Editor / IDE

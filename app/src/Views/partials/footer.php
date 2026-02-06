@@ -42,7 +42,7 @@
                 <div class="flex justify-start items-center gap-2 sm:gap-3 md:gap-3.5">
                     <img
                         class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
-                        src="/Icons/Logo.svg"
+                        src="/assets/Icons/Logo.svg"
                         alt="Haarlem Festival logo">
                     <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="group py-1.5 sm:py-2 md:py-2.5 inline-flex justify-start items-center gap-2 sm:gap-3 md:gap-5">
                         <span class="text-center text-white text-sm sm:text-base md:text-lg lg:text-xl font-normal">BACK TO THE TOP</span>
