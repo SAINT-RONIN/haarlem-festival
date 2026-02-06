@@ -20,10 +20,14 @@ $includeNav = $includeNav ?? false;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Montserrat', sans-serif; }
+        html { font-size: 16px; }
+        body { 
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.5;
+        }
         .font-serif-display { font-family: 'Georgia', serif; }
         .hf-container {
-            max-width: 1440px;
+            max-width: 90rem;
             margin-left: auto;
             margin-right: auto;
             padding-left: 1rem;

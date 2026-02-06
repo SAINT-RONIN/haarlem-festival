@@ -15,13 +15,13 @@ $hero = $cms['hero_section'] ?? [];
         <div class="w-full py-5 flex flex-col justify-center items-end gap-2.5 overflow-visible sticky top-0 z-50">
             <div class="hf-container">
                 <div class="bg-slate-800 rounded-2xl flex flex-wrap lg:flex-nowrap justify-between items-center">
-                    <!-- Logo -->
-                    <a href="/" class="self-stretch px-4 md:px-5 py-2.5 rounded-2xl flex justify-start items-center gap-2.5">
-                        <div class="justify-end text-stone-100 text-2xl md:text-4xl font-medium font-serif-display whitespace-nowrap">Haarlem Festival</div>
-                        <img
-                            class="w-8 h-8 md:w-10 md:h-10"
-                            src="/Icons/Logo.svg"
-                            alt="Haarlem Festival logo">
+                <!-- Logo -->
+                <a href="/" class="self-stretch px-4 md:px-5 py-2.5 rounded-2xl flex justify-start items-center gap-2.5">
+                    <div class="justify-end text-stone-100 text-xl md:text-3xl font-medium font-serif-display whitespace-nowrap">Haarlem Festival</div>
+                    <img
+                        class="w-8 h-8 md:w-10 md:h-10"
+                        src="/Icons/Logo.svg"
+                        alt="Haarlem Festival logo">
                     </a>
 
                     <!-- Mobile Menu Button -->
@@ -155,9 +155,9 @@ $hero = $cms['hero_section'] ?? [];
 
         <!-- Hero Content -->
         <div class="w-full">
-            <div class="hf-container flex flex-col justify-center items-start">
-                <h1 class="text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-normal leading-tight lg:leading-[110px]"><?= htmlspecialchars($hero['hero_main_title'] ?? 'Haarlem Festivals') ?></h1>
-                <p class="text-white text-xl sm:text-2xl md:text-4xl lg:text-5xl font-light leading-tight lg:leading-[54px]"><?= htmlspecialchars($hero['hero_subtitle'] ?? 'Four July Days Bringing People Together') ?></p>
+            <div class="hf-container flex flex-col justify-center items-start gap-4">
+                <h1 class="text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal leading-tight"><?= htmlspecialchars($hero['hero_main_title']) ?></h1>
+                <p class="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light leading-snug"><?= htmlspecialchars($hero['hero_subtitle']) ?></p>
             </div>
         </div>
 
@@ -168,15 +168,15 @@ $hero = $cms['hero_section'] ?? [];
                 <div class="hf-container py-4 md:py-5 flex justify-end">
                     <div class="flex flex-col sm:flex-row justify-start items-center gap-3 md:gap-5">
                         <a href="#events" class="p-2.5 md:p-3.5 bg-pink-700 hover:bg-[#1A2A40] rounded-xl md:rounded-2xl outline outline-1 outline-offset-[-1px] outline-pink-700 hover:outline-[#1A2A40] flex justify-center items-center transition-colors duration-200">
-                            <span class="text-center text-stone-100 text-base md:text-xl font-normal"><?= htmlspecialchars($hero['hero_button_primary'] ?? 'Discover all types of events') ?></span>
+                            <span class="text-center text-stone-100 text-base md:text-lg font-normal"><?= htmlspecialchars($hero['hero_button_primary']) ?></span>
                             <div class="px-2 py-1.5 flex justify-center items-center gap-2.5 overflow-hidden">
-                                <svg class="w-2 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-3 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </div>
                         </a>
                         <a href="#schedule" class="p-2.5 md:p-3.5 bg-stone-100 hover:bg-pink-700 rounded-xl md:rounded-2xl outline outline-2 outline-offset-[-2px] outline-pink-700 flex justify-center items-center transition-colors duration-200 group">
-                            <span class="text-center text-pink-700 group-hover:text-stone-100 text-base md:text-xl font-normal transition-colors duration-200"><?= htmlspecialchars($hero['hero_button_secondary'] ?? 'Events schedule') ?></span>
+                            <span class="text-center text-pink-700 group-hover:text-stone-100 text-base md:text-lg font-normal transition-colors duration-200"><?= htmlspecialchars($hero['hero_button_secondary']) ?></span>
                         </a>
                     </div>
                 </div>
