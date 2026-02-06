@@ -13,7 +13,8 @@ $includeNav = $includeNav ?? false;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Haarlem Festival</title>
+    <title>Haarlem Festival | Four Days, Countless Experiences</title>
+    <meta name="description" content="Four Days, Countless Experiences">
     <link rel="icon" href="/assets/Icons/Logo.svg" type="image/svg+xml" sizes="any">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,7 +23,6 @@ $includeNav = $includeNav ?? false;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- tokens.css must be loaded BEFORE components.css. It defines the global color variables and utility classes that components.css relies on. Loading it first ensures consistent colors and avoids override or compatibility issues. -->
-
     <link rel="stylesheet" href="/assets/css/tokens.css">
     <link rel="stylesheet" href="/assets/css/components.css">
 </head>
