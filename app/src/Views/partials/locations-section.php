@@ -5,7 +5,7 @@
  * @var array $locations Array of location data
  * @var array $cms
  */
-$venue = $cms['venue_map_section'] ?? [];
+$venue = $cms['venue_map_section'];
 ?>
 
 <!-- Locations Section -->

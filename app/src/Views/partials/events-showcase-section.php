@@ -5,7 +5,7 @@
  * @var array $eventTypes Array of event type data
  * @var array $cms
  */
-$eventsHeader = $cms['events_overview_header'] ?? [];
+$eventsHeader = $cms['events_overview_header'];
 ?>
 
 <!-- Events Showcase Section -->

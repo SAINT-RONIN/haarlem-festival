@@ -6,14 +6,14 @@
  * @var bool $imageFirst Whether image appears before text (alternating layout)
  */
 
-$darkBg = $eventType['darkBg'] ?? false;
+$darkBg = $eventType['darkBg'];
 
 $bgClass = $darkBg ? 'bg-slate-800' : 'bg-stone-100';
 $textClass = $darkBg ? 'text-stone-100' : 'text-slate-800';
 $titleClass = $darkBg ? 'text-stone-100' : 'text-slate-800 underline';
 
 $buttonBg = 'bg-stone-100';
-$buttonText = 'text-slate-800';
+$buttonTextClass = 'text-slate-800';
 
 /**
  * Button border:
@@ -34,10 +34,10 @@ $imageMap = [
         'restaurant' => 'Image (Yummy).png',
         'storytelling' => 'Image (Story).png',
 ];
-$imageSrc = '/assets/Image/' . ($imageMap[$slug] ?? 'Image (Jazz).png');
+$imageSrc = '/assets/Image/' . $imageMap[$slug];
 
-// TODO: "Explore" button text template should be retrieved from database (CMS)
-$exploreButtonText = 'Explore ' . $title . ' Events';
+// Button text from CMS database (e.g., "Explore Jazz Events")
+$buttonLabel = htmlspecialchars($eventType['button']);
 ?>
 
 <div class="self-stretch p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 2xl:p-10 <?php echo $bgClass; ?> rounded-[12px] sm:rounded-[15px] md:rounded-[25px] lg:rounded-[40px] flex flex-col lg:flex-row justify-center items-center gap-2 sm:gap-3 lg:gap-4 xl:gap-8 2xl:gap-12 overflow-hidden">
@@ -53,8 +53,8 @@ $exploreButtonText = 'Explore ' . $title . ' Events';
                       rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl
                       <?php echo $buttonBorder; ?>
                       inline-flex justify-center items-center transition-colors duration-200 group">
-                <span class="text-center <?php echo $buttonText; ?> group-hover:text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
-                    <?php echo $exploreButtonText; ?>
+                <span class="text-center <?php echo $buttonTextClass; ?> group-hover:text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
+                    <?php echo $buttonLabel; ?>
                 </span>
             </a>
         </div>
@@ -69,8 +69,8 @@ $exploreButtonText = 'Explore ' . $title . ' Events';
                       rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl
                       <?php echo $buttonBorder; ?>
                       inline-flex justify-center items-center transition-colors duration-200 group">
-                <span class="text-center <?php echo $buttonText; ?> group-hover:text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
-                    <?php echo $exploreButtonText; ?>
+                <span class="text-center <?php echo $buttonTextClass; ?> group-hover:text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
+                    <?php echo $buttonLabel; ?>
                 </span>
             </a>
         </div>

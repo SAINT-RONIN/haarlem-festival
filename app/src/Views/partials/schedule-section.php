@@ -5,7 +5,7 @@
  * @var array $scheduleDays Array of day data
  * @var array $cms
  */
-$schedule = $cms['schedule_section'] ?? [];
+$schedule = $cms['schedule_section'];
 ?>
 
 <!-- Schedule Section -->

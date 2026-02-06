@@ -3,7 +3,7 @@
  * Intro section partial - "What is Haarlem Festival?" section.
  * @var array $cms
  */
-$about = $cms['about_section'] ?? [];
+$about = $cms['about_section'];
 ?>
 
 <!-- Intro Section -->

@@ -2,7 +2,7 @@
 /**
  * @var array $cms
  */
-$banner = $cms['banner_section'] ?? [];
+$banner = $cms['banner_section'];
 ?>
 
 <!-- Explore Banner -->
