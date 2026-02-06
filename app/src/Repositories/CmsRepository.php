@@ -27,15 +27,17 @@ class CmsRepository implements ICmsRepository
 
     public function getSectionsByPageId(int $cmsPageId): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM CmsSection WHERE CmsPageId = ? ORDER BY CmsSectionId ASC');
-        $stmt->execute([$cmsPageId]);
+        $stmt = $this->pdo->prepare('SELECT * FROM CmsSection WHERE CmsPageId = :cmsPageId ORDER BY CmsSectionId ASC');
+        $stmt->bindValue(':cmsPageId', $cmsPageId, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getItemsBySectionId(int $cmsSectionId): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM CmsItem WHERE CmsSectionId = ? ORDER BY CmsItemId ASC');
-        $stmt->execute([$cmsSectionId]);
+        $stmt = $this->pdo->prepare('SELECT * FROM CmsItem WHERE CmsSectionId = :cmsSectionId ORDER BY CmsItemId ASC');
+        $stmt->bindValue(':cmsSectionId', $cmsSectionId, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -45,12 +47,13 @@ class CmsRepository implements ICmsRepository
             SELECT ci.* 
             FROM CmsItem ci
             INNER JOIN CmsSection cs ON ci.CmsSectionId = cs.CmsSectionId
-            WHERE cs.CmsPageId = ? AND cs.SectionKey = ?
+            WHERE cs.CmsPageId = :cmsPageId AND cs.SectionKey = :sectionKey
             ORDER BY ci.CmsItemId ASC
         ';
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$cmsPageId, $sectionKey]);
+        $stmt->bindValue(':cmsPageId', $cmsPageId, PDO::PARAM_INT);
+        $stmt->bindValue(':sectionKey', $sectionKey, PDO::PARAM_STR);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
-

@@ -21,6 +21,7 @@ $sessions = $day['sessions'];
         </div>
         <div class="flex-1 inline-flex flex-col justify-start items-start">
             <div class="self-stretch justify-start text-stone-100 text-base sm:text-lg md:text-xl font-semibold leading-snug"><?php echo $dayName; ?></div>
+            <!-- TODO: "events" label should be retrieved from database (CMS translations) -->
             <div class="self-stretch justify-start text-stone-100 text-xs sm:text-sm font-normal leading-tight"><?php echo $eventCount; ?> events</div>
         </div>
     </div>
@@ -28,6 +29,7 @@ $sessions = $day['sessions'];
     <!-- Events List -->
     <div class="self-stretch p-3 sm:p-4 md:p-5 bg-slate-800 flex flex-col justify-start items-start gap-1.5 sm:gap-2 md:gap-2.5 overflow-hidden">
         <?php if (empty($sessions)): ?>
+            <!-- TODO: "No events scheduled" message should be retrieved from database (CMS) -->
             <div class="self-stretch p-3 sm:p-4 md:p-5 bg-white rounded-[12px] sm:rounded-[16px] md:rounded-[20px] inline-flex justify-center items-center">
                 <span class="text-slate-500 text-xs sm:text-sm">No events scheduled</span>
             </div>

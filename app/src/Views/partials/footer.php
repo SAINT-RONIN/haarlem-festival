@@ -58,10 +58,6 @@
         </div>
     </div>
 
-    <script>
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    </script>
+    <script src="/assets/js/lucide-init.js"></script>
 </body>
 </html>

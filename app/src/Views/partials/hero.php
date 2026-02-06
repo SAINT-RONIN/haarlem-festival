@@ -9,13 +9,14 @@ $hero = $cms['hero_section'] ?? [];
 
 <!-- Hero Section with Floating Navigation -->
 <div class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5 overflow-hidden">
-    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] bg-black/30 rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end overflow-hidden relative" style="background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('/assets/Image/HeroImageHome.png') center/cover;">
+    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end overflow-hidden relative hero-background">
 
         <!-- Sticky Navigation - Floating on top of hero image -->
         <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 xl:px-16 2xl:px-24 py-2 sm:py-3 md:py-4 flex flex-col justify-center items-end gap-2.5 overflow-visible sticky top-0 z-50">
             <div class="self-stretch bg-slate-800 rounded-xl sm:rounded-2xl flex flex-wrap xl:flex-nowrap justify-between items-center relative">
                 <!-- Logo -->
                 <a href="/" class="self-stretch px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-2.5 rounded-xl sm:rounded-2xl flex justify-start items-center gap-1.5 sm:gap-2">
+                    <!-- TODO: Site name should be retrieved from database (e.g., SiteSettings.SiteName) -->
                     <div class="justify-end text-stone-100 text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-medium font-serif-display whitespace-nowrap">Haarlem Festival</div>
                     <img
                         class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 xl:w-7 xl:h-7 2xl:w-9 2xl:h-9"
@@ -40,6 +41,7 @@ $hero = $cms['hero_section'] ?? [];
                         p-2 bg-slate-800 rounded-xl sm:rounded-2xl shadow-lg
                         flex-col xl:flex-row justify-end items-center gap-1.5 xl:gap-2 2xl:gap-3 z-50
                         opacity-0 -translate-y-2 transition-all duration-300 ease-in-out">
+                        <!-- TODO: Navigation labels should be retrieved from database (e.g., EventType.Name or NavigationMenu table) -->
                         <a href="/" class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 <?php echo $currentPage === 'home' ? 'bg-pink-700' : 'hover:bg-pink-700'; ?> rounded-lg flex justify-center items-center transition-colors duration-200">
                             <span class="text-center text-stone-100 text-sm 2xl:text-base font-normal">Home</span>
                         </a>
@@ -154,6 +156,7 @@ $hero = $cms['hero_section'] ?? [];
                         </div>
 
                         <!-- My Program Button -->
+                        <!-- TODO: Button label should be retrieved from database (CMS) -->
                         <a href="/program" class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-stone-100 hover:bg-pink-700 rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group">
                             <i data-lucide="shopping-cart" class="w-4 h-4 2xl:w-5 2xl:h-5 text-slate-800 group-hover:text-white transition-colors duration-200"></i>
                             <span class="text-center text-slate-800 group-hover:text-white text-sm 2xl:text-base font-normal transition-colors duration-200">My Program</span>
@@ -190,49 +193,5 @@ $hero = $cms['hero_section'] ?? [];
     </div>
 </div>
 
-<script>
-function toggleHeroMenu() {
-    const menu = document.getElementById('hero-nav-menu');
-    const bar1 = document.getElementById('hero-bar-1');
-    const bar2 = document.getElementById('hero-bar-2');
-    const bar3 = document.getElementById('hero-bar-3');
-    
-    const isOpen = !menu.classList.contains('hidden');
-    
-    if (isOpen) {
-        // Close menu
-        menu.classList.add('opacity-0', '-translate-y-2');
-        menu.classList.remove('opacity-100', 'translate-y-0');
-        
-        // Animate bars back to hamburger
-        bar1.classList.remove('rotate-45', 'top-1/2', '-translate-y-1/2');
-        bar1.classList.add('top-0');
-        bar2.classList.remove('opacity-0');
-        bar3.classList.remove('-rotate-45', 'top-1/2', '-translate-y-1/2');
-        bar3.classList.add('bottom-0');
-        
-        setTimeout(() => {
-            menu.classList.add('hidden');
-            menu.classList.remove('flex');
-        }, 300);
-    } else {
-        // Open menu
-        menu.classList.remove('hidden');
-        menu.classList.add('flex');
-        
-        // Trigger reflow for animation
-        menu.offsetHeight;
-        
-        menu.classList.remove('opacity-0', '-translate-y-2');
-        menu.classList.add('opacity-100', 'translate-y-0');
-        
-        // Animate bars to X
-        bar1.classList.add('rotate-45', 'top-1/2', '-translate-y-1/2');
-        bar1.classList.remove('top-0');
-        bar2.classList.add('opacity-0');
-        bar3.classList.add('-rotate-45', 'top-1/2', '-translate-y-1/2');
-        bar3.classList.remove('bottom-0');
-    }
-}
-</script>
+<script src="/assets/js/menu-toggle.js"></script>
 

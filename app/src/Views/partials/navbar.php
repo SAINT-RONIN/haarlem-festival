@@ -160,49 +160,5 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
     </div>
 </div>
 
-<script>
-function toggleNavMenu() {
-    const menu = document.getElementById('nav-menu');
-    const bar1 = document.getElementById('nav-bar-1');
-    const bar2 = document.getElementById('nav-bar-2');
-    const bar3 = document.getElementById('nav-bar-3');
-    
-    const isOpen = !menu.classList.contains('hidden');
-    
-    if (isOpen) {
-        // Close menu
-        menu.classList.add('opacity-0', '-translate-y-2');
-        menu.classList.remove('opacity-100', 'translate-y-0');
-        
-        // Animate bars back to hamburger
-        bar1.classList.remove('rotate-45', 'top-1/2', '-translate-y-1/2');
-        bar1.classList.add('top-0');
-        bar2.classList.remove('opacity-0');
-        bar3.classList.remove('-rotate-45', 'top-1/2', '-translate-y-1/2');
-        bar3.classList.add('bottom-0');
-        
-        setTimeout(() => {
-            menu.classList.add('hidden');
-            menu.classList.remove('flex');
-        }, 300);
-    } else {
-        // Open menu
-        menu.classList.remove('hidden');
-        menu.classList.add('flex');
-        
-        // Trigger reflow for animation
-        menu.offsetHeight;
-        
-        menu.classList.remove('opacity-0', '-translate-y-2');
-        menu.classList.add('opacity-100', 'translate-y-0');
-        
-        // Animate bars to X
-        bar1.classList.add('rotate-45', 'top-1/2', '-translate-y-1/2');
-        bar1.classList.remove('top-0');
-        bar2.classList.add('opacity-0');
-        bar3.classList.add('-rotate-45', 'top-1/2', '-translate-y-1/2');
-        bar3.classList.remove('bottom-0');
-    }
-}
-</script>
+<script src="/assets/js/menu-toggle.js"></script>
 

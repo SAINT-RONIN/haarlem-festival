@@ -26,7 +26,7 @@ $title = htmlspecialchars($eventType['title']);
 $description = htmlspecialchars($eventType['description']);
 $slug = htmlspecialchars($eventType['slug']);
 
-// Map slugs to image filenames
+// TODO: Image paths should be retrieved from database (e.g., EventType.ImagePath or MediaAsset)
 $imageMap = [
         'jazz' => 'Image (Jazz).png',
         'dance' => 'Image (Dance).png',
@@ -35,6 +35,9 @@ $imageMap = [
         'storytelling' => 'Image (Story).png',
 ];
 $imageSrc = '/assets/Image/' . ($imageMap[$slug] ?? 'Image (Jazz).png');
+
+// TODO: "Explore" button text template should be retrieved from database (CMS)
+$exploreButtonText = 'Explore ' . $title . ' Events';
 ?>
 
 <div class="self-stretch p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 2xl:p-10 <?php echo $bgClass; ?> rounded-[12px] sm:rounded-[15px] md:rounded-[25px] lg:rounded-[40px] flex flex-col lg:flex-row justify-center items-center gap-2 sm:gap-3 lg:gap-4 xl:gap-8 2xl:gap-12 overflow-hidden">
@@ -51,7 +54,7 @@ $imageSrc = '/assets/Image/' . ($imageMap[$slug] ?? 'Image (Jazz).png');
                       <?php echo $buttonBorder; ?>
                       inline-flex justify-center items-center transition-colors duration-200 group">
                 <span class="text-center <?php echo $buttonText; ?> group-hover:text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
-                    Explore <?php echo $title; ?> Events
+                    <?php echo $exploreButtonText; ?>
                 </span>
             </a>
         </div>
@@ -67,7 +70,7 @@ $imageSrc = '/assets/Image/' . ($imageMap[$slug] ?? 'Image (Jazz).png');
                       <?php echo $buttonBorder; ?>
                       inline-flex justify-center items-center transition-colors duration-200 group">
                 <span class="text-center <?php echo $buttonText; ?> group-hover:text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
-                    Explore <?php echo $title; ?> Events
+                    <?php echo $exploreButtonText; ?>
                 </span>
             </a>
         </div>
