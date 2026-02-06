@@ -21,9 +21,12 @@ $includeNav = $includeNav ?? false;
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- tokens.css must be loaded BEFORE components.css. It defines the global color variables and utility classes that components.css relies on. Loading it first ensures consistent colors and avoids override or compatibility issues. -->
+
+    <link rel="stylesheet" href="/assets/css/tokens.css">
     <link rel="stylesheet" href="/assets/css/components.css">
 </head>
-<body class="bg-stone-100">
+<body class="bg-sand">
 
 <?php if ($includeNav): ?>
     <?php require __DIR__ . '/navbar.php'; ?>

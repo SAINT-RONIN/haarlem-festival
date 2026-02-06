@@ -15,8 +15,8 @@ $borderClass = htmlspecialchars($session['borderClass']);
     <span class="w-0.5 sm:w-1 self-stretch <?php echo $borderClass; ?> rounded-sm" aria-hidden="true"></span>
     <div class="flex flex-col justify-start items-start gap-1.5 sm:gap-2 md:gap-2.5">
         <div class="flex flex-col justify-start items-start">
-            <time class="justify-start text-slate-800 text-xs sm:text-sm font-semibold leading-tight"><?php echo $timeLabel; ?></time>
-            <h4 class="justify-start text-slate-800 text-sm sm:text-base font-normal leading-tight"><?php echo $title; ?></h4>
+            <time class="justify-start text-royal-blue text-xs sm:text-sm font-semibold leading-tight"><?php echo $timeLabel; ?></time>
+            <h4 class="justify-start text-royal-blue text-sm sm:text-base font-normal leading-tight"><?php echo $title; ?></h4>
         </div>
         <span class="justify-start text-slate-500 text-[10px] sm:text-xs font-medium leading-tight"><?php echo $categoryLabel; ?></span>
     </div>

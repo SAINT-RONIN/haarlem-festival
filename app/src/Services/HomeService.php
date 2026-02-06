@@ -27,19 +27,19 @@ class HomeService implements IHomeService
     private CmsService $cmsService;
 
     private const BADGE_COLORS = [
-        'jazz' => 'bg-sky-600/80',
-        'dance' => 'bg-orange-800/80',
-        'history' => 'bg-amber-400/80',
-        'restaurant' => 'bg-lime-700/80',
-        'storytelling' => 'bg-violet-800/80',
+        'jazz' => 'bg-azure-blue-80',
+        'dance' => 'bg-deep-crimson-80',
+        'history' => 'bg-amber-gold-80',
+        'restaurant' => 'bg-olive-green-80',
+        'storytelling' => 'bg-deep-purple-80',
     ];
 
     private const SCHEDULE_COLORS = [
-        'jazz' => 'bg-sky-600',
-        'dance' => 'bg-sky-800',
-        'history' => 'bg-orange-800',
-        'restaurant' => 'bg-lime-700',
-        'storytelling' => 'bg-violet-800',
+        'jazz' => 'bg-azure-blue',
+        'dance' => 'bg-deep-crimson',
+        'history' => 'bg-amber-gold',
+        'restaurant' => 'bg-olive-green',
+        'storytelling' => 'bg-deep-purple',
     ];
 
     private const EVENT_TYPE_ORDER = ['jazz', 'dance', 'history', 'restaurant', 'storytelling'];

@@ -8,19 +8,19 @@
 
 $darkBg = $eventType['darkBg'];
 
-$bgClass = $darkBg ? 'bg-slate-800' : 'bg-stone-100';
-$textClass = $darkBg ? 'text-stone-100' : 'text-slate-800';
-$titleClass = $darkBg ? 'text-stone-100' : 'text-slate-800 underline';
+$bgClass = $darkBg ? 'bg-royal-blue' : 'bg-sand';
+$textClass = $darkBg ? 'text-sand' : 'text-royal-blue';
+$titleClass = $darkBg ? 'text-sand' : 'text-royal-blue underline';
 
-$buttonBg = 'bg-stone-100';
-$buttonTextClass = 'text-slate-800';
+$buttonBg = 'bg-sand';
+$buttonTextClass = 'text-royal-blue';
 
 /**
  * Button border:
- * - default border: slate
- * - hover border: sand (using a hex color so it always works)
+ * - default border: royal-blue
+ * - hover border: sand (using token class)
  */
-$buttonBorder = 'border border-slate-800 hover:border-[#F5F1EB]';
+$buttonBorder = 'border border-royal-blue hover:border-sand';
 
 $title = htmlspecialchars($eventType['title']);
 $description = htmlspecialchars($eventType['description']);
@@ -64,12 +64,12 @@ $buttonLabel = htmlspecialchars($eventType['button']);
             <p class="self-stretch <?php echo $textClass; ?> text-[11px] sm:text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-normal leading-4 sm:leading-5 md:leading-6 lg:leading-7"><?php echo $description; ?></p>
 
             <a href="/<?php echo $slug; ?>"
-               class="p-1 sm:p-1.5 md:p-2 lg:p-2.5 xl:p-3 2xl:p-3.5 <?php echo $buttonBg; ?> hover:bg-slate-800
+               class="p-1 sm:p-1.5 md:p-2 lg:p-2.5 xl:p-3 2xl:p-3.5 <?php echo $buttonBg; ?> hover:bg-royal-blue
                       rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl
                       <?php echo $buttonBorder; ?>
                       inline-flex justify-center items-center transition-colors duration-200 group
-                      focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2">
-                <span class="text-center <?php echo $buttonTextClass; ?> group-hover:text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                <span class="text-center <?php echo $buttonTextClass; ?> group-hover:text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
                     <?php echo $buttonLabel; ?>
                 </span>
             </a>
@@ -81,12 +81,12 @@ $buttonLabel = htmlspecialchars($eventType['button']);
             <p class="self-stretch <?php echo $textClass; ?> text-[11px] sm:text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-normal leading-4 sm:leading-5 md:leading-6 lg:leading-7"><?php echo $description; ?></p>
 
             <a href="/<?php echo $slug; ?>"
-               class="p-1 sm:p-1.5 md:p-2 lg:p-2.5 xl:p-3 2xl:p-3.5 <?php echo $buttonBg; ?> hover:bg-slate-800
+               class="p-1 sm:p-1.5 md:p-2 lg:p-2.5 xl:p-3 2xl:p-3.5 <?php echo $buttonBg; ?> hover:bg-royal-blue
                       rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl
                       <?php echo $buttonBorder; ?>
                       inline-flex justify-center items-center transition-colors duration-200 group
-                      focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2">
-                <span class="text-center <?php echo $buttonTextClass; ?> group-hover:text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                <span class="text-center <?php echo $buttonTextClass; ?> group-hover:text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal transition-colors duration-200">
                     <?php echo $buttonLabel; ?>
                 </span>
             </a>
