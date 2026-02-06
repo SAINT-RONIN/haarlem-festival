@@ -7,7 +7,7 @@ $about = $cms['about_section'];
 ?>
 
 <!-- Intro Section -->
-<section id="intro" class="w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-4 sm:py-6 md:py-10 lg:py-12 flex flex-col lg:flex-row justify-center items-stretch gap-4 sm:gap-6 md:gap-8 lg:gap-12 overflow-hidden" aria-labelledby="intro-heading">
+<section id="intro" class="w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-4 sm:py-6 md:py-10 lg:py-12 flex flex-col lg:flex-row justify-center items-stretch gap-4 sm:gap-6 md:gap-8 lg:gap-12" aria-labelledby="intro-heading">
     <div class="flex-1 flex flex-col justify-start items-start gap-2 sm:gap-3 md:gap-4 lg:gap-5">
         <h2 id="intro-heading" class="self-stretch text-slate-800 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight"><?= htmlspecialchars($about['about_main_title']) ?></h2>
         <p class="self-stretch text-slate-800 text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-semibold leading-snug"><?= htmlspecialchars($about['about_tagline']) ?></p>

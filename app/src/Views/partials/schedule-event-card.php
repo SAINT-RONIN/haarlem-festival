@@ -11,7 +11,7 @@ $categoryLabel = htmlspecialchars($session['categoryLabel']);
 $borderClass = htmlspecialchars($session['borderClass']);
 ?>
 
-<li class="self-stretch p-3 sm:p-4 md:p-5 bg-white rounded-[12px] sm:rounded-[16px] md:rounded-[20px] flex justify-start items-start gap-2 sm:gap-2.5 overflow-hidden">
+<li class="self-stretch p-3 sm:p-4 md:p-5 bg-white rounded-[12px] sm:rounded-[16px] md:rounded-[20px] flex justify-start items-start gap-2 sm:gap-2.5">
     <span class="w-0.5 sm:w-1 self-stretch <?php echo $borderClass; ?> rounded-sm" aria-hidden="true"></span>
     <div class="flex flex-col justify-start items-start gap-1.5 sm:gap-2 md:gap-2.5">
         <div class="flex flex-col justify-start items-start">

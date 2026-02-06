@@ -9,7 +9,7 @@ $venue = $cms['venue_map_section'];
 ?>
 
 <!-- Locations Section -->
-<section id="locations" class="w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-4 sm:py-6 md:py-10 lg:py-12 flex flex-col justify-start items-start gap-2 sm:gap-2.5 overflow-hidden" aria-labelledby="locations-heading">
+<section id="locations" class="w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-4 sm:py-6 md:py-10 lg:py-12 flex flex-col justify-start items-start gap-2 sm:gap-2.5" aria-labelledby="locations-heading">
     <h2 id="locations-heading" class="self-stretch justify-start text-slate-800 text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold"><?= htmlspecialchars($venue['venue_main_title']) ?></h2>
 
     <!-- Legend -->
@@ -88,7 +88,7 @@ $venue = $cms['venue_map_section'];
 
                 <!-- Map -->
                 <figure class="flex-1 min-h-[200px] sm:min-h-[250px] md:min-h-[300px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] flex">
-                    <div class="flex-1 relative rounded-xl sm:rounded-2xl overflow-hidden">
+                    <div class="flex-1 relative rounded-xl sm:rounded-2xl">
                         <iframe
                             class="w-full h-full min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-0"
                             src="https://www.openstreetmap.org/export/embed.html?bbox=4.6200%2C52.3700%2C4.6600%2C52.3900&layer=mapnik&marker=52.3808%2C4.6368"

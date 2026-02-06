@@ -12,7 +12,7 @@ $includeNav = false;
 ?>
 <?php require __DIR__ . '/../partials/header.php'; ?>
 
-<main class="w-full bg-stone-100 inline-flex flex-col justify-start items-center overflow-hidden">
+<main class="w-full bg-stone-100 inline-flex flex-col justify-start items-center">
 
     <?php require __DIR__ . '/../partials/hero.php'; ?>
 

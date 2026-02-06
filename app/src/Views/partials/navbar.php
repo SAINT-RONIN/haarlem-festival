@@ -64,7 +64,7 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
             <div class="hidden xl:flex justify-start items-center" role="group" aria-label="Language selection">
                 <div class="inline-flex justify-start items-center gap-1.5 2xl:gap-2">
                     <button type="button" class="inline-flex justify-start items-center gap-1.5 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2 rounded" aria-pressed="true" aria-label="English language selected">
-                        <span class="inline-flex w-5 h-4 2xl:w-6 2xl:h-4 rounded-[1px] overflow-hidden shadow-[0px_1px_2px_0px_rgba(16,24,40,0.06)] shadow-[0px_1px_3px_0px_rgba(16,24,40,0.10)]" aria-hidden="true">
+                        <span class="inline-flex w-5 h-4 2xl:w-6 2xl:h-4 rounded-[1px] shadow-[0px_1px_2px_0px_rgba(16,24,40,0.06)] shadow-[0px_1px_3px_0px_rgba(16,24,40,0.10)]" aria-hidden="true">
                             <svg viewBox="0 0 190 100" class="w-full h-full" aria-hidden="true" focusable="false" preserveAspectRatio="none">
                                 <rect width="190" height="100" fill="#FFFFFF"/>
                                 <g fill="#B22234">
@@ -139,7 +139,7 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
                     <span class="text-white text-sm 2xl:text-base font-normal mx-0.5" aria-hidden="true">/</span>
 
                     <button type="button" class="inline-flex justify-start items-center gap-1.5 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2 rounded" aria-pressed="false" aria-label="Switch to Dutch language">
-                        <span class="inline-flex w-5 h-4 2xl:w-6 2xl:h-4 rounded-[1px] overflow-hidden shadow-[0px_1px_2px_0px_rgba(16,24,40,0.06)] shadow-[0px_1px_3px_0px_rgba(16,24,40,0.10)]" aria-hidden="true">
+                        <span class="inline-flex w-5 h-4 2xl:w-6 2xl:h-4 rounded-[1px] shadow-[0px_1px_2px_0px_rgba(16,24,40,0.06)] shadow-[0px_1px_3px_0px_rgba(16,24,40,0.10)]" aria-hidden="true">
                             <svg viewBox="0 0 60 40" class="w-full h-full" aria-hidden="true" focusable="false">
                                 <rect width="60" height="40" fill="#FFFFFF"/>
                                 <rect width="60" height="13.333" y="0" fill="#AE1C28"/>

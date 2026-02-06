@@ -9,8 +9,8 @@ $global = $cms['global_ui'];
 ?>
 
 <!-- Hero Section with Floating Navigation -->
-<section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5 overflow-hidden" aria-labelledby="hero-heading">
-    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end overflow-hidden relative hero-background" role="img" aria-label="Haarlem Festival hero background">
+<section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5" aria-labelledby="hero-heading">
+    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative hero-background" role="img" aria-label="Haarlem Festival hero background">
 
         <!-- Sticky Navigation - Floating on top of hero image -->
         <header class="w-full px-2 sm:px-4 md:px-6 lg:px-8 xl:px-16 2xl:px-24 py-2 sm:py-3 md:py-4 flex flex-col justify-center items-end gap-2.5 overflow-visible sticky top-0 z-50">
@@ -67,7 +67,7 @@ $global = $cms['global_ui'];
                         <div class="hidden xl:flex justify-start items-center" role="group" aria-label="Language selection">
                             <div class="inline-flex justify-start items-center gap-1.5 2xl:gap-2">
                                 <button type="button" class="inline-flex justify-start items-center gap-1.5 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2 rounded" aria-pressed="true" aria-label="English language selected">
-                                    <span class="inline-flex w-5 h-4 2xl:w-6 2xl:h-4 rounded-[1px] overflow-hidden shadow-[0px_1px_2px_0px_rgba(16,24,40,0.06)] shadow-[0px_1px_3px_0px_rgba(16,24,40,0.10)]" aria-hidden="true">
+                                    <span class="inline-flex w-5 h-4 2xl:w-6 2xl:h-4 rounded-[1px] shadow-[0px_1px_2px_0px_rgba(16,24,40,0.06)] shadow-[0px_1px_3px_0px_rgba(16,24,40,0.10)]" aria-hidden="true">
                                         <svg viewBox="0 0 190 100" class="w-full h-full" aria-hidden="true" focusable="false" preserveAspectRatio="none">
                                             <rect width="190" height="100" fill="#FFFFFF"/>
                                             <g fill="#B22234">
@@ -142,7 +142,7 @@ $global = $cms['global_ui'];
                                 <span class="text-white text-sm 2xl:text-base font-normal mx-0.5" aria-hidden="true">/</span>
 
                                 <button type="button" class="inline-flex justify-start items-center gap-1.5 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2 rounded" aria-pressed="false" aria-label="Switch to Dutch language">
-                                    <span class="inline-flex w-5 h-4 2xl:w-6 2xl:h-4 rounded-[1px] overflow-hidden shadow-[0px_1px_2px_0px_rgba(16,24,40,0.06)] shadow-[0px_1px_3px_0px_rgba(16,24,40,0.10)]" aria-hidden="true">
+                                    <span class="inline-flex w-5 h-4 2xl:w-6 2xl:h-4 rounded-[1px] shadow-[0px_1px_2px_0px_rgba(16,24,40,0.06)] shadow-[0px_1px_3px_0px_rgba(16,24,40,0.10)]" aria-hidden="true">
                                         <svg viewBox="0 0 60 40" class="w-full h-full" aria-hidden="true" focusable="false">
                                             <rect width="60" height="40" fill="#FFFFFF"/>
                                             <rect width="60" height="13.333" y="0" fill="#AE1C28"/>
@@ -164,15 +164,16 @@ $global = $cms['global_ui'];
         </header>
 
         <!-- Hero Content - Title and Subtitle -->
-        <div class="self-stretch px-3 sm:px-4 md:px-8 lg:px-16 xl:px-24 flex flex-col justify-center items-start overflow-hidden">
+        <div class="self-stretch px-3 sm:px-4 md:px-8 lg:px-16 xl:px-24 flex flex-col justify-center items-start">
             <h1 id="hero-heading" class="self-stretch text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-normal leading-tight"><?= htmlspecialchars($hero['hero_main_title']) ?></h1>
             <p class="self-stretch text-white text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-light leading-snug"><?= htmlspecialchars($hero['hero_subtitle']) ?></p>
         </div>
 
         <!-- CTA Buttons - Bottom RIGHT -->
-        <div class="self-stretch flex flex-col justify-start items-end overflow-hidden">
+        <!-- TODO: If I remove overflow-hidden the navbar becomes sticky but withing the section only. I need to find a way of making it sticky for the entire page. -->
+        <div class="self-stretch flex flex-col justify-start items-end">
             <div class="self-stretch h-4 sm:h-6 md:h-10 lg:h-16 xl:h-20" aria-hidden="true"></div>
-            <div class="pr-2 sm:pr-3 md:pr-4 lg:pr-12 xl:pr-24 pl-2 sm:pl-3 md:pl-4 py-2 sm:py-3 md:py-4 lg:py-5 bg-stone-100 rounded-tl-[12px] sm:rounded-tl-[15px] md:rounded-tl-[25px] lg:rounded-tl-[35px] flex justify-end items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-5 overflow-hidden">
+            <div class="pr-2 sm:pr-3 md:pr-4 lg:pr-12 xl:pr-24 pl-2 sm:pl-3 md:pl-4 py-2 sm:py-3 md:py-4 lg:py-5 bg-stone-100 rounded-tl-[12px] sm:rounded-tl-[15px] md:rounded-tl-[25px] lg:rounded-tl-[35px] flex justify-end items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-5">
                 <div class="flex flex-row justify-start items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-5" role="group" aria-label="Hero call to action">
                     <a href="#events" class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-pink-700 hover:bg-[#1A2A40] rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 outline-offset-[-1px] outline-pink-700 hover:outline-[#1A2A40] flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 focus-visible:ring-offset-2">
                         <span class="text-center text-stone-100 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap"><?= htmlspecialchars($hero['hero_button_primary']) ?></span>

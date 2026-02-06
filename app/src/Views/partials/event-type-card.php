@@ -53,7 +53,7 @@ $imageAlt = $altTextMap[$slug] ?? $title . ' event';
 $buttonLabel = htmlspecialchars($eventType['button']);
 ?>
 
-<article class="self-stretch p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 2xl:p-10 <?php echo $bgClass; ?> rounded-[12px] sm:rounded-[15px] md:rounded-[25px] lg:rounded-[40px] flex flex-col lg:flex-row justify-center items-center gap-2 sm:gap-3 lg:gap-4 xl:gap-8 2xl:gap-12 overflow-hidden" aria-labelledby="<?php echo $cardId; ?>-heading">
+<article class="self-stretch p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 2xl:p-10 <?php echo $bgClass; ?> rounded-[12px] sm:rounded-[15px] md:rounded-[25px] lg:rounded-[40px] flex flex-col lg:flex-row justify-center items-center gap-2 sm:gap-3 lg:gap-4 xl:gap-8 2xl:gap-12" aria-labelledby="<?php echo $cardId; ?>-heading">
     <?php if ($imageFirst): ?>
         <figure class="w-full lg:flex-1">
             <img class="w-full h-[140px] sm:h-[180px] md:h-[240px] lg:h-[220px] xl:h-[300px] 2xl:h-[400px] object-cover rounded-[10px] sm:rounded-[15px] md:rounded-[25px] lg:rounded-[40px]" src="<?php echo $imageSrc; ?>" alt="<?php echo $imageAlt; ?>">
