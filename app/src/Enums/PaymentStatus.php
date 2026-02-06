@@ -21,4 +21,3 @@ enum PaymentStatus: string
         return self::tryFrom($value);
     }
 }
-

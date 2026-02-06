@@ -51,4 +51,3 @@ class EventSessionRepository implements IEventSessionRepository
         return $stmt->fetchAll();
     }
 }
-

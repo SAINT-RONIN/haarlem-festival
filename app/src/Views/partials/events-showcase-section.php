@@ -18,12 +18,12 @@ $eventsHeader = $cms['events_overview_header'];
 
         <?php
         $imageFirst = true;
-        foreach ($eventTypes as $eventType):
-        ?>
+foreach ($eventTypes as $eventType):
+    ?>
             <?php require __DIR__ . '/event-type-card.php'; ?>
         <?php
-            $imageFirst = !$imageFirst;
-        endforeach;
-        ?>
+        $imageFirst = !$imageFirst;
+endforeach;
+?>
     </div>
 </section>

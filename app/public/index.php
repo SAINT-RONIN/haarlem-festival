@@ -72,4 +72,3 @@ switch ($routeInfo[0]) {
         $controller->$method(...array_values($vars));
         break;
 }
-

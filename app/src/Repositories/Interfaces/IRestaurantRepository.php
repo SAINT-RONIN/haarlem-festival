@@ -16,4 +16,3 @@ interface IRestaurantRepository
      */
     public function findAllActive(): array;
 }
-

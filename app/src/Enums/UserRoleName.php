@@ -19,4 +19,3 @@ enum UserRoleName: string
         return self::tryFrom($value);
     }
 }
-

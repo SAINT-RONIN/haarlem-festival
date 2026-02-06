@@ -18,4 +18,3 @@ enum PassScope: string
         return self::tryFrom($value);
     }
 }
-

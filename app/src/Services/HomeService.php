@@ -59,7 +59,7 @@ class HomeService implements IHomeService
     public function getHomePageData(): HomePageViewModel
     {
         $cmsContent = $this->cmsService->getHomePageContent();
-        
+
         return new HomePageViewModel(
             eventTypes: $this->buildEventTypes($cmsContent),
             locations: $this->buildLocations(),
@@ -329,8 +329,8 @@ class HomeService implements IHomeService
      */
     private function calculateTimeRange(array $sessions): string
     {
-        $starts = array_map(fn($s) => strtotime($s['StartDateTime']), $sessions);
-        $ends = array_map(fn($s) => strtotime($s['EndDateTime']), $sessions);
+        $starts = array_map(fn ($s) => strtotime($s['StartDateTime']), $sessions);
+        $ends = array_map(fn ($s) => strtotime($s['EndDateTime']), $sessions);
 
         $minStart = min($starts);
         $maxEnd = max($ends);
@@ -395,4 +395,3 @@ class HomeService implements IHomeService
         ];
     }
 }
-

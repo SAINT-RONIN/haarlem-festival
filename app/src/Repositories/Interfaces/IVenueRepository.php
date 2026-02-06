@@ -16,4 +16,3 @@ interface IVenueRepository
      */
     public function findAllActive(): array;
 }
-

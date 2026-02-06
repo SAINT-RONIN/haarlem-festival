@@ -19,4 +19,3 @@ enum CmsItemType: string
         return self::tryFrom($value);
     }
 }
-

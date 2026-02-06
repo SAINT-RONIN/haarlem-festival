@@ -11,4 +11,3 @@ interface ICmsRepository
     public function getItemsBySectionId(int $cmsSectionId): array;
     public function getItemsBySectionKey(int $cmsPageId, string $sectionKey): array;
 }
-

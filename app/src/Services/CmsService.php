@@ -28,12 +28,12 @@ class CmsService
         foreach ($sections as $section) {
             $items = $this->cmsRepository->getItemsBySectionId((int)$section['CmsSectionId']);
             $sectionData = [];
-            
+
             foreach ($items as $item) {
                 $value = $item['TextValue'] ?? $item['HtmlValue'] ?? null;
                 $sectionData[$item['ItemKey']] = $value;
             }
-            
+
             $content[$section['SectionKey']] = $sectionData;
         }
 
@@ -58,4 +58,3 @@ class CmsService
         return $content;
     }
 }
-

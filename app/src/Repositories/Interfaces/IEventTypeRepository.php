@@ -16,4 +16,3 @@ interface IEventTypeRepository
      */
     public function findAll(): array;
 }
-

@@ -27,4 +27,3 @@ class HomeController
         require __DIR__ . '/../Views/pages/home.php';
     }
 }
-

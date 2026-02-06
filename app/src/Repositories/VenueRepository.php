@@ -38,4 +38,3 @@ class VenueRepository implements IVenueRepository
         return $stmt->fetchAll();
     }
 }
-

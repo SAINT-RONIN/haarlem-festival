@@ -38,4 +38,3 @@ class RestaurantRepository implements IRestaurantRepository
         return $stmt->fetchAll();
     }
 }
-

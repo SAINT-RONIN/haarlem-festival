@@ -37,4 +37,3 @@ class EventTypeRepository implements IEventTypeRepository
         return $stmt->fetchAll();
     }
 }
-

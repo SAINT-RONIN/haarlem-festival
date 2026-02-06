@@ -21,4 +21,3 @@ enum OrderStatus: string
         return self::tryFrom($value);
     }
 }
-

@@ -16,4 +16,3 @@ interface IEventSessionRepository
      */
     public function findUpcomingWithDetails(): array;
 }
-

@@ -18,4 +18,3 @@ interface IHomeService
      */
     public function getHomePageData(): HomePageViewModel;
 }
-
