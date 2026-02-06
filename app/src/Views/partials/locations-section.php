@@ -90,9 +90,8 @@ $venue = $cms['venue_map_section'];
                 <figure class="flex-1 min-h-[200px] sm:min-h-[250px] md:min-h-[300px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] flex">
                     <div class="flex-1 relative rounded-xl sm:rounded-2xl">
                         <iframe
-                            class="w-full h-full min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-0"
+                            class="w-full h-full min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-0 map-embed-borderless"
                             src="https://www.openstreetmap.org/export/embed.html?bbox=4.6200%2C52.3700%2C4.6600%2C52.3900&layer=mapnik&marker=52.3808%2C4.6368"
-                            style="border: 0;"
                             loading="lazy"
                             title="Interactive map showing Haarlem Festival event locations">
                         </iframe>

@@ -19,3 +19,44 @@
     background-size: cover;
 }
 
+/* Global font and container styles */
+@font-face {
+    font-family: 'Zorus Serif';
+    src: url('/assets/fonts/zorus-serif/ZorusSerif-Regular.woff2') format('woff2'),
+         url('/assets/fonts/zorus-serif/ZorusSerif-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+html { font-size: 16px; }
+body {
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.5;
+}
+
+.font-serif-display { font-family: 'Georgia', serif; }
+
+.hf-container {
+    max-width: 90rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+    .hf-container { padding-left: 3rem; padding-right: 3rem; }
+}
+
+@media (min-width: 1024px) {
+    .hf-container { padding-left: 4rem; padding-right: 4rem; }
+}
+
+@media (min-width: 1280px) {
+    .hf-container { padding-left: 6rem; padding-right: 6rem; }
+}
+
+.map-embed-borderless {
+    border: 0;
+}
