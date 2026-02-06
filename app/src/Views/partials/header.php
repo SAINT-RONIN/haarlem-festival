@@ -20,6 +20,14 @@ $includeNav = $includeNav ?? false;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'Zorus Serif';
+            src: url('/assets/fonts/zorus-serif/ZorusSerif-Regular.woff2') format('woff2'),
+                 url('/assets/fonts/zorus-serif/ZorusSerif-Regular.woff') format('woff');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
         html { font-size: 16px; }
         body { 
             font-family: 'Montserrat', sans-serif;
