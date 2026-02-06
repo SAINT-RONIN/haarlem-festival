@@ -1,38 +1,28 @@
 <?php
 /**
- * Event type card partial - Single event type showcase card.
- *
- * @var array $eventType Event type data with keys: slug, title, description, darkBg
- * @var bool $imageFirst Whether image appears before text (alternating layout)
+ * @var array $eventType
+ * @var bool $imageFirst
  */
 
 $darkBg = $eventType['darkBg'] ?? false;
-
 $bgClass = $darkBg ? 'bg-slate-800' : 'bg-stone-100';
 $textClass = $darkBg ? 'text-stone-100' : 'text-slate-800';
 $titleClass = $darkBg ? 'text-stone-100' : 'text-slate-800 underline';
-
 $buttonBg = 'bg-stone-100';
 $buttonText = 'text-slate-800';
-
-/**
- * Button border:
- * - default border: slate
- * - hover border: sand (using a hex color so it always works)
- */
 $buttonBorder = 'border border-slate-800 hover:border-[#F5F1EB]';
 
 $title = htmlspecialchars($eventType['title']);
 $description = htmlspecialchars($eventType['description']);
+$button = htmlspecialchars($eventType['button'] ?? 'Explore ' . $title . ' Events');
 $slug = htmlspecialchars($eventType['slug']);
 
-// Map slugs to image filenames
 $imageMap = [
-        'jazz' => 'Image (Jazz).png',
-        'dance' => 'Image (Dance).png',
-        'history' => 'Image (History).png',
-        'restaurant' => 'Image (Yummy).png',
-        'storytelling' => 'Image (Story).png',
+    'jazz' => 'Image (Jazz).png',
+    'dance' => 'Image (Dance).png',
+    'history' => 'Image (History).png',
+    'restaurant' => 'Image (Yummy).png',
+    'storytelling' => 'Image (Story).png',
 ];
 $imageSrc = '/assets/Image/' . ($imageMap[$slug] ?? 'Image (Jazz).png');
 ?>
@@ -51,7 +41,7 @@ $imageSrc = '/assets/Image/' . ($imageMap[$slug] ?? 'Image (Jazz).png');
                       <?php echo $buttonBorder; ?>
                       inline-flex justify-center items-center transition-colors duration-200 group">
                 <span class="text-center <?php echo $buttonText; ?> group-hover:text-stone-100 text-base md:text-xl font-normal transition-colors duration-200">
-                    Explore <?php echo $title; ?> Events
+                    <?php echo $button; ?>
                 </span>
             </a>
         </div>
@@ -67,7 +57,7 @@ $imageSrc = '/assets/Image/' . ($imageMap[$slug] ?? 'Image (Jazz).png');
                       <?php echo $buttonBorder; ?>
                       inline-flex justify-center items-center transition-colors duration-200 group">
                 <span class="text-center <?php echo $buttonText; ?> group-hover:text-stone-100 text-base md:text-xl font-normal transition-colors duration-200">
-                    Explore <?php echo $title; ?> Events
+                    <?php echo $button; ?>
                 </span>
             </a>
         </div>

@@ -1,17 +1,13 @@
 <?php
 /**
- * Homepage view - Main landing page for Haarlem Festival.
- *
- * @var \App\ViewModels\HomePageViewModel $viewModel Contains all page data
+ * @var \App\ViewModels\HomePageViewModel $viewModel
  */
 
-// Extract data from viewModel for use in partials
 $eventTypes = $viewModel->eventTypes;
 $locations = $viewModel->locations;
 $scheduleDays = $viewModel->scheduleDays;
+$cms = $viewModel->cmsContent;
 $currentPage = 'home';
-
-// For homepage, navigation is inside hero section (not separate)
 $includeNav = false;
 ?>
 <?php require __DIR__ . '/../partials/header.php'; ?>

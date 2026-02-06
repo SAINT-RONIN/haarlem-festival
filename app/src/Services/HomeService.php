@@ -8,6 +8,7 @@ use App\Repositories\EventSessionRepository;
 use App\Repositories\EventTypeRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\VenueRepository;
+use App\Services\CmsService;
 use App\Services\Interfaces\IHomeService;
 use App\ViewModels\HomePageViewModel;
 
@@ -23,10 +24,8 @@ class HomeService implements IHomeService
     private VenueRepository $venueRepository;
     private RestaurantRepository $restaurantRepository;
     private EventSessionRepository $eventSessionRepository;
+    private CmsService $cmsService;
 
-    /**
-     * Maps event type slugs to Tailwind CSS classes for badges.
-     */
     private const BADGE_COLORS = [
         'jazz' => 'bg-sky-600/80',
         'dance' => 'bg-orange-800/80',
@@ -35,9 +34,6 @@ class HomeService implements IHomeService
         'storytelling' => 'bg-violet-800/80',
     ];
 
-    /**
-     * Maps event type slugs to schedule card border colors.
-     */
     private const SCHEDULE_COLORS = [
         'jazz' => 'bg-sky-600',
         'dance' => 'bg-sky-800',
@@ -46,41 +42,7 @@ class HomeService implements IHomeService
         'storytelling' => 'bg-violet-800',
     ];
 
-    /**
-     * Order of event types for homepage showcase display.
-     */
     private const EVENT_TYPE_ORDER = ['jazz', 'dance', 'history', 'restaurant', 'storytelling'];
-
-    /**
-     * Event type showcase content for the homepage.
-     */
-    private const EVENT_TYPE_CONTENT = [
-        'jazz' => [
-            'title' => 'Jazz',
-            'description' => 'Experience world-class jazz performances at Haarlem\'s most iconic venues, where every note feels close, alive, and full of character. From intimate late night sessions to grand concerts featuring internationally acclaimed artists, the festival offers something for every jazz lover, whether you are discovering the genre or already know what you like. Expect smooth melodies, bold improvisation, and those rare moments when the whole room holds its breath together.',
-            'darkBg' => true,
-        ],
-        'dance' => [
-            'title' => 'Dance',
-            'description' => 'Feel the rhythm at our dance events with electronic beats, live DJs, and vibrant club nights across multiple venues throughout the city. From pulsing dance floors to immersive light and sound, each night is designed to build energy, spark connection, and keep you moving. Come with friends or show up solo, you will be surrounded by people who are there for the same reason: great music and a real night out. Lose yourself in the vibe, discover new DJs, and celebrate Haarlem until the early hours.',
-            'darkBg' => false,
-        ],
-        'history' => [
-            'title' => 'History',
-            'description' => 'Discover Haarlem\'s rich heritage through guided walking tours, museum visits, and historical storytelling that brings the past to life. Walk in the footsteps of centuries as expert guides reveal hidden details, iconic landmarks, and the surprising moments that shaped this remarkable city. Whether you are new to Haarlem or think you already know it, you will see familiar streets with fresh eyes and leave with stories worth sharing.',
-            'darkBg' => true,
-        ],
-        'restaurant' => [
-            'title' => 'Restaurants',
-            'description' => 'Savor exceptional cuisine at Haarlem\'s finest restaurants and discover why the city is becoming a true food destination. Enjoy exclusive dining experiences, special chef collaborations, and hands-on culinary workshops designed for both curious beginners and passionate food lovers. From locally sourced ingredients to bold international inspiration, every dish is crafted to surprise and delight. Bring your appetite, treat yourself, and join fellow food lovers for unforgettable flavors, great company, and a festival experience you will be talking about long after the last bite.',
-            'darkBg' => false,
-        ],
-        'storytelling' => [
-            'title' => 'Storytelling',
-            'description' => 'Immerse yourself in captivating narratives from local storytellers as they bring Haarlem\'s culture, legends, and present day life to vivid reality. Step into intimate festival settings where the art of oral tradition comes alive, and every story feels personal, surprising, and unforgettable. Come with friends or meet new people as you listen, laugh, and discover Haarlem through voices that know it best.',
-            'darkBg' => true,
-        ],
-    ];
 
     public function __construct()
     {
@@ -88,6 +50,7 @@ class HomeService implements IHomeService
         $this->venueRepository = new VenueRepository();
         $this->restaurantRepository = new RestaurantRepository();
         $this->eventSessionRepository = new EventSessionRepository();
+        $this->cmsService = new CmsService();
     }
 
     /**
@@ -95,45 +58,57 @@ class HomeService implements IHomeService
      */
     public function getHomePageData(): HomePageViewModel
     {
+        $cmsContent = $this->cmsService->getHomePageContent();
+        
         return new HomePageViewModel(
-            eventTypes: $this->buildEventTypes(),
+            eventTypes: $this->buildEventTypes($cmsContent),
             locations: $this->buildLocations(),
             scheduleDays: $this->buildScheduleDays(),
+            cmsContent: $cmsContent,
         );
     }
 
     /**
      * Builds event type showcase data with precomputed styles.
      */
-    private function buildEventTypes(): array
+    private function buildEventTypes(array $cmsContent): array
     {
         $types = $this->eventTypeRepository->findAll();
         $typesBySlug = [];
 
-        // Index types by slug for easy lookup
         foreach ($types as $type) {
             $typesBySlug[$type['Slug']] = $type;
         }
 
         $result = [];
+        $sectionMap = [
+            'jazz' => 'event_jazz',
+            'dance' => 'event_dance',
+            'history' => 'event_history',
+            'restaurant' => 'event_restaurant',
+            'storytelling' => 'event_storytelling',
+        ];
 
-        // Build in the defined display order
+        $darkBgMap = ['jazz' => true, 'dance' => false, 'history' => true, 'restaurant' => false, 'storytelling' => true];
+
         foreach (self::EVENT_TYPE_ORDER as $slug) {
             if (!isset($typesBySlug[$slug])) {
                 continue;
             }
 
-            $content = self::EVENT_TYPE_CONTENT[$slug] ?? null;
-
-            if ($content === null) {
+            $sectionKey = $sectionMap[$slug] ?? null;
+            if (!$sectionKey || !isset($cmsContent[$sectionKey])) {
                 continue;
             }
 
+            $section = $cmsContent[$sectionKey];
+
             $result[] = [
                 'slug' => $slug,
-                'title' => $content['title'],
-                'description' => $content['description'],
-                'darkBg' => $content['darkBg'],
+                'title' => $section[$slug . '_title'] ?? ucfirst($slug),
+                'description' => $section[$slug . '_description'] ?? '',
+                'button' => $section[$slug . '_button'] ?? 'Explore Events',
+                'darkBg' => $darkBgMap[$slug] ?? false,
                 'badgeClass' => self::BADGE_COLORS[$slug] ?? 'bg-gray-500',
             ];
         }
