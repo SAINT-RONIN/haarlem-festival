@@ -28,6 +28,8 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
     }
 }
 
+use App\Controllers\AuthController;
+use App\Controllers\CmsAuthController;
 use App\Controllers\HomeController;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -36,6 +38,28 @@ use FastRoute\RouteCollector;
 $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Homepage
     $r->addRoute('GET', '/', [HomeController::class, 'index']);
+
+    // Website Authentication Routes
+    $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
+    $r->addRoute('POST', '/login', [AuthController::class, 'login']);
+    $r->addRoute('GET', '/logout', [AuthController::class, 'logout']);
+    $r->addRoute('GET', '/register', [AuthController::class, 'showRegister']);
+    $r->addRoute('POST', '/register', [AuthController::class, 'register']);
+    $r->addRoute('GET', '/forgot-password', [AuthController::class, 'showForgotPassword']);
+    $r->addRoute('POST', '/forgot-password', [AuthController::class, 'forgotPassword']);
+    $r->addRoute('GET', '/reset-password', [AuthController::class, 'showResetPassword']);
+    $r->addRoute('POST', '/reset-password', [AuthController::class, 'resetPassword']);
+
+    // CMS Authentication Routes
+    $r->addRoute('GET', '/cms/login', [CmsAuthController::class, 'showLogin']);
+    $r->addRoute('POST', '/cms/login', [CmsAuthController::class, 'login']);
+    $r->addRoute('GET', '/cms/logout', [CmsAuthController::class, 'logout']);
+
+    // CMS Dashboard (placeholder - redirects to login if not admin)
+    $r->addRoute('GET', '/cms', function () {
+        CmsAuthController::requireAdmin();
+        echo '<h1>CMS Dashboard</h1><p>Welcome, Administrator!</p><p><a href="/cms/logout">Logout</a></p>';
+    });
 });
 
 // Fetch method and URI from request
@@ -66,7 +90,13 @@ switch ($routeInfo[0]) {
         $handler = $routeInfo[1];
         $vars = $routeInfo[2];
 
-        // Instantiate controller and call method
+        // Handle closure routes
+        if ($handler instanceof \Closure) {
+            $handler(...array_values($vars));
+            break;
+        }
+
+        // Handle controller routes
         [$controllerClass, $method] = $handler;
         $controller = new $controllerClass();
         $controller->$method(...array_values($vars));

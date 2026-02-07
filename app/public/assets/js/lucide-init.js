@@ -2,6 +2,11 @@
  * Initialize Lucide icons after page load.
  */
 if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            lucide.createIcons();
+        });
+    } else {
+        lucide.createIcons();
+    }
 }
-
