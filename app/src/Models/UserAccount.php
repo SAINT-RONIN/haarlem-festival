@@ -18,20 +18,21 @@ class UserAccount
      */
 
     public function __construct(
-        public int $userAccountId,
-        public int $userRoleId,
-        public string $username,
-        public string $email,
-        public string $passwordHash,
-        public string $passwordSalt,
-        public string $firstName,
-        public string $lastName,
-        public ?int $profilePictureAssetId,
-        public bool $isEmailConfirmed,
-        public bool $isActive,
+        public int                $userAccountId,
+        public int                $userRoleId,
+        public string             $username,
+        public string             $email,
+        public string             $passwordHash,
+        public ?string            $passwordSalt, // Nullable for Argon2id (salt embedded in hash)
+        public string             $firstName,
+        public string             $lastName,
+        public ?int               $profilePictureAssetId,
+        public bool               $isEmailConfirmed,
+        public bool               $isActive,
         public \DateTimeImmutable $registeredAtUtc,
         public \DateTimeImmutable $updatedAtUtc,
-    ) {
+    )
+    {
     }
 
     /**
@@ -41,17 +42,17 @@ class UserAccount
     public static function fromRow(array $row): self
     {
         return new self(
-            userAccountId: (int) $row['UserAccountId'],
-            userRoleId: (int) $row['UserRoleId'],
-            username: (string) $row['Username'],
-            email: (string) $row['Email'],
-            passwordHash: (string) $row['PasswordHash'],
-            passwordSalt: (string) $row['PasswordSalt'],
-            firstName: (string) $row['FirstName'],
-            lastName: (string) $row['LastName'],
-            profilePictureAssetId: isset($row['ProfilePictureAssetId']) ? (int) $row['ProfilePictureAssetId'] : null,
-            isEmailConfirmed: (bool) $row['IsEmailConfirmed'],
-            isActive: (bool) $row['IsActive'],
+            userAccountId: (int)$row['UserAccountId'],
+            userRoleId: (int)$row['UserRoleId'],
+            username: (string)$row['Username'],
+            email: (string)$row['Email'],
+            passwordHash: (string)$row['PasswordHash'],
+            passwordSalt: isset($row['PasswordSalt']) ? (string)$row['PasswordSalt'] : null,
+            firstName: (string)$row['FirstName'],
+            lastName: (string)$row['LastName'],
+            profilePictureAssetId: isset($row['ProfilePictureAssetId']) ? (int)$row['ProfilePictureAssetId'] : null,
+            isEmailConfirmed: (bool)$row['IsEmailConfirmed'],
+            isActive: (bool)$row['IsActive'],
             registeredAtUtc: new \DateTimeImmutable($row['RegisteredAtUtc']),
             updatedAtUtc: new \DateTimeImmutable($row['UpdatedAtUtc']),
         );
