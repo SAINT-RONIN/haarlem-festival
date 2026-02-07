@@ -11,6 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $currentPage = $currentPage ?? 'home';
 $includeNav = $includeNav ?? false;
+$useLayoutWrapper = $useLayoutWrapper ?? false;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +23,7 @@ $includeNav = $includeNav ?? false;
     <link rel="icon" href="/assets/Icons/Logo.svg" type="image/svg+xml" sizes="any">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/assets/js/lucide-init.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,6 +35,10 @@ $includeNav = $includeNav ?? false;
 </head>
 <body class="bg-sand">
 
-<?php if ($includeNav): ?>
-    <?php require __DIR__ . '/navbar.php'; ?>
-<?php endif; ?>
+<?php if ($useLayoutWrapper): ?>
+<div class="min-h-screen flex flex-col">
+    <?php endif; ?>
+
+    <?php if ($includeNav): ?>
+        <?php require __DIR__ . '/navbar.php'; ?>
+    <?php endif; ?>

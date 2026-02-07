@@ -68,6 +68,9 @@
     </div>
 </div>
 
-<script src="/assets/js/lucide-init.js"></script>
+<?php if (!empty($useLayoutWrapper)): ?>
+    </div>
+<?php endif; ?>
+
 </body>
 </html>

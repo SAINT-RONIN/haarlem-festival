@@ -7,10 +7,11 @@
  */
 $currentPage = 'login';
 $includeNav = true;
+$useLayoutWrapper = true;
 ?>
 <?php require __DIR__ . '/../partials/header.php'; ?>
 
-<main class="w-full min-h-screen bg-sand flex flex-col items-center justify-center px-4 py-12">
+<main class="flex-1 w-full bg-sand flex flex-col items-center justify-center px-4 py-12">
     <div class="w-full max-w-md">
         <!-- Card -->
         <div class="bg-white rounded-2xl shadow-lg p-8">
@@ -102,4 +103,3 @@ $includeNav = true;
 </main>
 
 <?php require __DIR__ . '/../partials/footer.php'; ?>
-
