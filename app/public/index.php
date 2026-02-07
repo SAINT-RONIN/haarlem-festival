@@ -30,6 +30,7 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
 
 use App\Controllers\AuthController;
 use App\Controllers\CmsAuthController;
+use App\Controllers\CmsDashboardController;
 use App\Controllers\HomeController;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -55,11 +56,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/login', [CmsAuthController::class, 'login']);
     $r->addRoute('GET', '/cms/logout', [CmsAuthController::class, 'logout']);
 
-    // CMS Dashboard (placeholder - redirects to login if not admin)
-    $r->addRoute('GET', '/cms', function () {
-        CmsAuthController::requireAdmin();
-        echo '<h1>CMS Dashboard</h1><p>Welcome, Administrator!</p><p><a href="/cms/logout">Logout</a></p>';
-    });
+    // CMS Dashboard Routes
+    $r->addRoute('GET', '/cms', [CmsDashboardController::class, 'index']);
+    $r->addRoute('GET', '/cms/pages', [CmsDashboardController::class, 'pages']);
 });
 
 // Fetch method and URI from request

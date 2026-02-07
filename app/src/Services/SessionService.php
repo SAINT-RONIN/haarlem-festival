@@ -106,4 +106,3 @@ class SessionService
         return $_SESSION[self::ROLE_ID_KEY] ?? null;
     }
 }
-

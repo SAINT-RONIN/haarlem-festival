@@ -91,4 +91,3 @@ class PasswordResetTokenRepository
         return $stmt->rowCount();
     }
 }
-

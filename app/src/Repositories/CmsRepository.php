@@ -56,4 +56,24 @@ class CmsRepository implements ICmsRepository
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Retrieves all CMS pages.
+     *
+     * @return array Array of page records
+     */
+    public function findAllPages(): array
+    {
+        $sql = '
+            SELECT cp.*, 
+                   MAX(ci.UpdatedAtUtc) as UpdatedAtUtc
+            FROM CmsPage cp
+            LEFT JOIN CmsSection cs ON cp.CmsPageId = cs.CmsPageId
+            LEFT JOIN CmsItem ci ON cs.CmsSectionId = ci.CmsSectionId
+            GROUP BY cp.CmsPageId
+            ORDER BY UpdatedAtUtc DESC
+        ';
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

@@ -280,4 +280,3 @@ class AuthService
         return ['success' => true];
     }
 }
-
