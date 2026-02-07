@@ -14,7 +14,7 @@ $pageTitle = match ($currentView) {
 };
 ?>
 <!-- Header -->
-<header class="bg-white border-b border-gray-200 px-6 py-4">
+<header class="bg-white border-b border-gray-200 px-6 py-4" role="banner">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-semibold text-gray-900"><?= htmlspecialchars($pageTitle) ?></h1>
@@ -28,18 +28,23 @@ $pageTitle = match ($currentView) {
         </div>
 
         <?php if ($currentView === 'pages'): ?>
-            <!-- Search (only shown on pages view) -->
             <div class="flex items-center gap-4">
-                <div class="relative">
-                    <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                <form action="/cms/pages" method="get" class="relative" role="search">
+                    <label for="cms-pages-search" class="sr-only">Search pages</label>
+                    <i data-lucide="search"
+                       class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                        aria-hidden="true"></i>
                     <input
+                            id="cms-pages-search"
+                            name="search"
                             type="search"
                             placeholder="Search pages..."
                             value="<?= htmlspecialchars($searchQuery) ?>"
-                            class="pl-10 pr-4 py-2 w-64 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            aria-label="Search pages">
-                </div>
+                            class="pl-10 pr-4 py-2 w-64 border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
+                            aria-describedby="cms-pages-search-help">
+                    <span id="cms-pages-search-help"
+                          class="sr-only">Type and press Enter to filter the pages list.</span>
+                </form>
             </div>
         <?php endif; ?>
     </div>
