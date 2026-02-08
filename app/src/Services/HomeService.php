@@ -136,6 +136,7 @@ class HomeService implements IHomeService
             'title' => $section[$slug . '_title'] ?? ucfirst($slug),
             'description' => $section[$slug . '_description'] ?? '',
             'button' => $section[$slug . '_button'] ?? 'Explore Events',
+            'image' => $section[$slug . '_image'] ?? null,
             'darkBg' => self::DARK_BG_MAP[$slug] ?? false,
             'badgeClass' => self::BADGE_COLORS[$slug] ?? 'bg-gray-500',
         ];

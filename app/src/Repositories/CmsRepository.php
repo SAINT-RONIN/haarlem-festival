@@ -76,4 +76,66 @@ class CmsRepository implements ICmsRepository
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Retrieves a CMS page by ID.
+     */
+    public function getPageById(int $cmsPageId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM CmsPage WHERE CmsPageId = ?');
+        $stmt->execute([$cmsPageId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
+    /**
+     * Retrieves a CMS item by ID.
+     */
+    public function getItemById(int $cmsItemId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM CmsItem WHERE CmsItemId = ?');
+        $stmt->execute([$cmsItemId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
+    /**
+     * Updates a CMS item's text/html content.
+     *
+     * @param int $cmsItemId The item ID
+     * @param array $data Keys: TextValue, HtmlValue
+     */
+    public function updateItem(int $cmsItemId, array $data): bool
+    {
+        $fields = [];
+        $values = [];
+
+        if (array_key_exists('TextValue', $data)) {
+            $fields[] = 'TextValue = ?';
+            $values[] = $data['TextValue'];
+        }
+
+        if (array_key_exists('HtmlValue', $data)) {
+            $fields[] = 'HtmlValue = ?';
+            $values[] = $data['HtmlValue'];
+        }
+
+        if (empty($fields)) {
+            return false;
+        }
+
+        $values[] = $cmsItemId;
+        $sql = 'UPDATE CmsItem SET ' . implode(', ', $fields) . ' WHERE CmsItemId = ?';
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($values);
+    }
+
+    /**
+     * Updates a CMS item's media asset reference.
+     */
+    public function updateItemMediaAsset(int $cmsItemId, ?int $mediaAssetId): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = ? WHERE CmsItemId = ?');
+        return $stmt->execute([$mediaAssetId, $cmsItemId]);
+    }
 }

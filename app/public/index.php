@@ -59,6 +59,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // CMS Dashboard Routes
     $r->addRoute('GET', '/cms', [CmsDashboardController::class, 'index']);
     $r->addRoute('GET', '/cms/pages', [CmsDashboardController::class, 'pages']);
+    $r->addRoute('GET', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'edit']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'update']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
 });
 
 // Fetch method and URI from request

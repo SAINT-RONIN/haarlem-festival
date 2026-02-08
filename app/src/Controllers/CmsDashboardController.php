@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Repositories\CmsRepository;
+use App\Services\CmsEditService;
+use App\Services\MediaAssetService;
 use App\Services\SessionService;
+use App\ViewModels\CmsPageEditViewModel;
+use App\Exceptions\ValidationException;
 
 /**
  * Controller for the CMS Dashboard.
@@ -17,11 +21,15 @@ class CmsDashboardController
 {
     private SessionService $sessionService;
     private CmsRepository $cmsRepository;
+    private CmsEditService $cmsEditService;
+    private MediaAssetService $mediaAssetService;
 
     public function __construct()
     {
         $this->sessionService = new SessionService();
         $this->cmsRepository = new CmsRepository();
+        $this->cmsEditService = new CmsEditService();
+        $this->mediaAssetService = new MediaAssetService();
     }
 
     /**
@@ -195,6 +203,112 @@ class CmsDashboardController
             }
         } catch (\Exception $e) {
             return 'recently';
+        }
+    }
+
+    /**
+     * Displays the page edit form.
+     * GET /cms/pages/{id}/edit
+     */
+    public function edit(string $id): void
+    {
+        CmsAuthController::requireAdmin();
+
+        $pageId = (int)$id;
+        $pageData = $this->cmsEditService->getPageForEditing($pageId);
+
+        if (!$pageData) {
+            http_response_code(404);
+            echo 'Page not found';
+            return;
+        }
+
+        $viewModel = new CmsPageEditViewModel($pageData);
+        $viewData = $viewModel->getViewData();
+
+        $page = $viewData['page'];
+        $sections = $viewData['sections'];
+        $contentLimits = $viewData['contentLimits'];
+        $imageLimits = $viewData['imageLimits'];
+
+        $successMessage = $_SESSION['cms_success'] ?? null;
+        $errorMessage = $_SESSION['cms_error'] ?? null;
+        unset($_SESSION['cms_success'], $_SESSION['cms_error']);
+
+        require __DIR__ . '/../Views/pages/cms/page-edit.php';
+    }
+
+    /**
+     * Handles page content update.
+     * POST /cms/pages/{id}/edit
+     */
+    public function update(string $id): void
+    {
+        CmsAuthController::requireAdmin();
+
+        $pageId = (int)$id;
+        $items = $_POST['items'] ?? [];
+
+        if (empty($items)) {
+            $_SESSION['cms_error'] = 'No changes submitted';
+            header("Location: /cms/pages/{$pageId}/edit");
+            exit;
+        }
+
+        $formattedItems = [];
+        foreach ($items as $itemId => $value) {
+            $formattedItems[$itemId] = ['value' => $value];
+        }
+
+        $result = $this->cmsEditService->updatePageItems($pageId, $formattedItems);
+
+        if ($result['success']) {
+            $_SESSION['cms_success'] = "Updated {$result['updatedCount']} item(s) successfully";
+        } else {
+            $_SESSION['cms_error'] = implode(', ', $result['errors']);
+        }
+
+        header("Location: /cms/pages/{$pageId}/edit");
+        exit;
+    }
+
+    /**
+     * Handles image upload via AJAX.
+     * POST /cms/pages/{id}/upload-image
+     */
+    public function uploadImage(string $id): void
+    {
+        CmsAuthController::requireAdmin();
+
+        header('Content-Type: application/json');
+
+        $pageId = (int)$id;
+        $itemId = (int)($_POST['item_id'] ?? 0);
+
+        if (!$itemId) {
+            echo json_encode(['success' => false, 'error' => 'Missing item ID']);
+            return;
+        }
+
+        if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
+            echo json_encode(['success' => false, 'error' => 'No file uploaded']);
+            return;
+        }
+
+        try {
+            $mediaAsset = $this->mediaAssetService->uploadImage($_FILES['image'], 'cms');
+            $this->cmsEditService->updateItemImage($itemId, $mediaAsset['MediaAssetId']);
+
+            echo json_encode([
+                'success' => true,
+                'mediaAssetId' => $mediaAsset['MediaAssetId'],
+                'filePath' => $mediaAsset['FilePath'],
+                'message' => 'Image uploaded successfully'
+            ]);
+        } catch (ValidationException $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'error' => 'Upload failed: ' . $e->getMessage()]);
         }
     }
 }

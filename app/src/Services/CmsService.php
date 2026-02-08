@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Repositories\CmsRepository;
+use App\Repositories\MediaAssetRepository;
 
 class CmsService
 {
     private CmsRepository $cmsRepository;
+    private MediaAssetRepository $mediaAssetRepository;
 
     public function __construct()
     {
         $this->cmsRepository = new CmsRepository();
+        $this->mediaAssetRepository = new MediaAssetRepository();
     }
 
     public function getHomePageContent(): array
@@ -30,8 +33,7 @@ class CmsService
             $sectionData = [];
 
             foreach ($items as $item) {
-                $value = $item['TextValue'] ?? $item['HtmlValue'] ?? null;
-                $sectionData[$item['ItemKey']] = $value;
+                $sectionData[$item['ItemKey']] = $this->getItemValue($item);
             }
 
             $content[$section['SectionKey']] = $sectionData;
@@ -51,10 +53,25 @@ class CmsService
         $content = [];
 
         foreach ($items as $item) {
-            $value = $item['TextValue'] ?? $item['HtmlValue'] ?? null;
-            $content[$item['ItemKey']] = $value;
+            $content[$item['ItemKey']] = $this->getItemValue($item);
         }
 
         return $content;
+    }
+
+    /**
+     * Gets the value from a CMS item based on its type.
+     * For MEDIA items, returns the file path from MediaAsset.
+     */
+    private function getItemValue(array $item): ?string
+    {
+        // Handle MEDIA type - get file path from MediaAsset
+        if (strtoupper($item['ItemType']) === 'MEDIA' && !empty($item['MediaAssetId'])) {
+            $mediaAsset = $this->mediaAssetRepository->findById((int)$item['MediaAssetId']);
+            return $mediaAsset['FilePath'] ?? null;
+        }
+
+        // Handle text/html types
+        return $item['TextValue'] ?? $item['HtmlValue'] ?? null;
     }
 }
