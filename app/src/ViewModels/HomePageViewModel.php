@@ -13,10 +13,13 @@ namespace App\ViewModels;
 class HomePageViewModel
 {
     public function __construct(
-        public array $eventTypes = [],
-        public array $locations = [],
-        public array $scheduleDays = [],
-        public array $cmsContent = [],
-    ) {
+        public HeroData     $heroData,
+        public GlobalUiData $globalUi,
+        public array        $eventTypes = [],
+        public array        $locations = [],
+        public array        $scheduleDays = [],
+        public array        $cmsContent = [],
+    )
+    {
     }
 }

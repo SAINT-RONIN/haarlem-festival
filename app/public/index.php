@@ -32,6 +32,7 @@ use App\Controllers\AuthController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\HomeController;
+use App\Controllers\StorytellingController;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -39,6 +40,9 @@ use FastRoute\RouteCollector;
 $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Homepage
     $r->addRoute('GET', '/', [HomeController::class, 'index']);
+
+    // Storytelling page
+    $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
 
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
