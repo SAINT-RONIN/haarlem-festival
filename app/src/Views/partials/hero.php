@@ -3,9 +3,6 @@
  * @var string $currentPage
  * @var array $cms
  */
-
-use App\Helpers\CmsOutputHelper;
-
 $currentPage = $currentPage ?? 'home';
 $hero = $cms['hero_section'];
 $global = $cms['global_ui'];
@@ -15,16 +12,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 $isLoggedIn = isset($_SESSION['user_id']);
-
-// Get hero background image from CMS or use fallback
-$heroBackgroundImage = $hero['hero_background_image'] ?? '/assets/Image/HeroImageHome.png';
 ?>
 
 <!-- Hero Section with Floating Navigation -->
 <section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5"
          aria-labelledby="hero-heading">
-    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative"
-         style="background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('<?= htmlspecialchars($heroBackgroundImage) ?>') center/cover;"
+    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative hero-background"
          role="img" aria-label="Haarlem Festival hero background">
 
         <!-- Sticky Navigation - Floating on top of hero image -->
@@ -225,8 +218,8 @@ $heroBackgroundImage = $hero['hero_background_image'] ?? '/assets/Image/HeroImag
         <!-- Hero Content - Title and Subtitle -->
         <div class="self-stretch px-3 sm:px-4 md:px-8 lg:px-16 xl:px-24 flex flex-col justify-center items-start">
             <h1 id="hero-heading"
-                class="self-stretch text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-normal leading-tight"><?= CmsOutputHelper::text($hero['hero_main_title']) ?></h1>
-            <p class="self-stretch text-white text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-light leading-snug"><?= CmsOutputHelper::text($hero['hero_subtitle']) ?></p>
+                class="self-stretch text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-normal leading-tight"><?= htmlspecialchars($hero['hero_main_title']) ?></h1>
+            <p class="self-stretch text-white text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-light leading-snug"><?= htmlspecialchars($hero['hero_subtitle']) ?></p>
         </div>
 
         <!-- CTA Buttons - Bottom RIGHT -->
@@ -238,7 +231,7 @@ $heroBackgroundImage = $hero['hero_background_image'] ?? '/assets/Image/HeroImag
                      aria-label="Hero call to action">
                     <a href="#events"
                        class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-red hover:bg-royal-blue rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 outline-offset-[-1px] outline-red hover:outline-royal-blue flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                        <span class="text-center text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap"><?= CmsOutputHelper::text($hero['hero_button_primary']) ?></span>
+                        <span class="text-center text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap"><?= htmlspecialchars($hero['hero_button_primary']) ?></span>
                         <span class="px-1 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 lg:py-1.5 flex justify-center items-center"
                               aria-hidden="true">
                             <svg class="w-1.5 h-3 sm:w-2 sm:h-4" viewBox="0 0 6 12" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -248,7 +241,7 @@ $heroBackgroundImage = $hero['hero_background_image'] ?? '/assets/Image/HeroImag
                     </a>
                     <a href="#schedule"
                        class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-sand hover:bg-red rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 sm:outline-2 outline-offset-[-1px] sm:outline-offset-[-2px] outline-red flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                        <span class="text-center text-red group-hover:text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap transition-colors duration-200"><?= CmsOutputHelper::text($hero['hero_button_secondary']) ?></span>
+                        <span class="text-center text-red group-hover:text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap transition-colors duration-200"><?= htmlspecialchars($hero['hero_button_secondary']) ?></span>
                     </a>
                 </div>
             </div>

@@ -3,6 +3,8 @@
  * @var \App\ViewModels\HomePageViewModel $viewModel
  */
 
+$heroData = $viewModel->heroData;
+$globalUi = $viewModel->globalUi;
 $eventTypes = $viewModel->eventTypes;
 $locations = $viewModel->locations;
 $scheduleDays = $viewModel->scheduleDays;
