@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\ViewModels;
+
+/**
+ * ViewModel for the homepage.
+ *
+ * Contains all pre-formatted data needed by the home page view.
+ * The service prepares this data so the view only needs to loop and print.
+ */
+class HomePageViewModel
+{
+    public function __construct(
+        public array $eventTypes = [],
+        public array $locations = [],
+        public array $scheduleDays = [],
+        public array $cmsContent = [],
+    ) {
+    }
+}

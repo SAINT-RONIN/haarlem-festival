@@ -15,6 +15,26 @@ services:
       dockerfile: PHP.Dockerfile
     volumes:
       - ./app:/app
+    env_file:
+      - ./.env
+    environment:
+      DB_HOST: mysql
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASS: ${MYSQL_PASSWORD}
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
+      APP_URL: ${APP_URL:-http://localhost}
+      APP_ENV: ${APP_ENV:-local}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@haarlemfestival.nl}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Haarlem Festival}
+      MAIL_FORCE_SEND: ${MAIL_FORCE_SEND:-false}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_DEBUG: ${MAIL_DEBUG:-false}
 
   mysql:
     image: mariadb:latest
@@ -36,4 +56,4 @@ services:
       - PMA_HOST=mysql
 
 volumes:
-  mysqldata: {}
+  mysqldata: { }

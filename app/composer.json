@@ -2,11 +2,12 @@
   "name": "haarlem-festival/app",
   "type": "project",
   "require": {
-    "php": ">=8.0",
-    "nikic/fast-route": "^1.3",
+    "php": ">=8.4",
     "ext-fileinfo": "*",
     "ext-mbstring": "*",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "nikic/fast-route": "^1.3",
+    "phpmailer/phpmailer": "^7.0"
   },
   "autoload": {
     "psr-4": {
@@ -19,6 +20,7 @@
     }
   },
   "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.93",
     "squizlabs/php_codesniffer": "^4.0"
   },
   "config": {

@@ -1,0 +1,142 @@
+/**
+ * Haarlem Festival Design Tokens
+ *
+ * This file defines the global color system using CSS variables and utility classes.
+ * Compatible with Tailwind CDN (no build tools required).
+ *
+ * LOAD ORDER RULE:
+ * - tokens.css must be loaded BEFORE components.css
+ * - tokens.css owns all token variables and utility classes
+ * - components.css may use var(--sand) etc. but must NEVER redefine token utility classes
+ */
+
+/* ==========================================================================
+   CSS Variables (Design Tokens)
+   ========================================================================== */
+
+:root {
+  /* Primary brand colors (used most) */
+  --sand: #F5F1EB;
+  --royal-blue: #1A2A40;
+  --red: #BD3852;
+  --black: #000000;
+  --white: #FFFFFF;
+
+  /* Secondary colors (category indicators) */
+  --azure-blue: #0288D1;
+  --deep-crimson: #A52714;
+  --amber-gold: #F9A825;
+  --olive-green: #598E33;
+  --deep-purple: #673AB7;
+}
+
+/* ==========================================================================
+   Background Utilities
+   ========================================================================== */
+
+/* Primary backgrounds */
+.bg-sand { background-color: var(--sand); }
+.bg-royal-blue { background-color: var(--royal-blue); }
+.bg-red { background-color: var(--red); }
+
+/* Secondary backgrounds */
+.bg-azure-blue { background-color: var(--azure-blue); }
+.bg-deep-crimson { background-color: var(--deep-crimson); }
+.bg-amber-gold { background-color: var(--amber-gold); }
+.bg-olive-green { background-color: var(--olive-green); }
+.bg-deep-purple { background-color: var(--deep-purple); }
+
+/* Opacity variants for badges (80% opacity) */
+.bg-azure-blue-80 { background-color: rgba(2, 136, 209, 0.8); }
+.bg-deep-crimson-80 { background-color: rgba(165, 39, 20, 0.8); }
+.bg-amber-gold-80 { background-color: rgba(249, 168, 37, 0.8); }
+.bg-olive-green-80 { background-color: rgba(89, 142, 51, 0.8); }
+.bg-deep-purple-80 { background-color: rgba(103, 58, 183, 0.8); }
+
+/* ==========================================================================
+   Text Utilities
+   ========================================================================== */
+
+.text-sand { color: var(--sand); }
+.text-royal-blue { color: var(--royal-blue); }
+.text-red { color: var(--red); }
+.text-azure-blue { color: var(--azure-blue); }
+.text-deep-crimson { color: var(--deep-crimson); }
+.text-amber-gold { color: var(--amber-gold); }
+.text-olive-green { color: var(--olive-green); }
+.text-deep-purple { color: var(--deep-purple); }
+
+/* ==========================================================================
+   Border Utilities
+   ========================================================================== */
+
+.border-sand { border-color: var(--sand); }
+.border-royal-blue { border-color: var(--royal-blue); }
+.border-red { border-color: var(--red); }
+.border-azure-blue { border-color: var(--azure-blue); }
+.border-deep-crimson { border-color: var(--deep-crimson); }
+.border-amber-gold { border-color: var(--amber-gold); }
+.border-olive-green { border-color: var(--olive-green); }
+.border-deep-purple { border-color: var(--deep-purple); }
+
+/* ==========================================================================
+   Outline Utilities
+   ========================================================================== */
+
+.outline-sand { outline-color: var(--sand); }
+.outline-royal-blue { outline-color: var(--royal-blue); }
+.outline-red { outline-color: var(--red); }
+
+/* ==========================================================================
+   Hover State Utilities (Background)
+   ========================================================================== */
+
+.hover\:bg-sand:hover { background-color: var(--sand); }
+.hover\:bg-royal-blue:hover { background-color: var(--royal-blue); }
+.hover\:bg-red:hover { background-color: var(--red); }
+
+/* ==========================================================================
+   Hover State Utilities (Text)
+   ========================================================================== */
+
+.hover\:text-sand:hover { color: var(--sand); }
+.hover\:text-royal-blue:hover { color: var(--royal-blue); }
+.hover\:text-red:hover { color: var(--red); }
+
+/* Group-hover text variants (for parent hover effects) */
+.group:hover .group-hover\:text-sand { color: var(--sand); }
+.group:hover .group-hover\:text-royal-blue { color: var(--royal-blue); }
+.group:hover .group-hover\:text-red { color: var(--red); }
+.group:hover .group-hover\:text-white { color: var(--white); }
+
+/* ==========================================================================
+   Hover State Utilities (Border)
+   ========================================================================== */
+
+.hover\:border-sand:hover { border-color: var(--sand); }
+.hover\:border-royal-blue:hover { border-color: var(--royal-blue); }
+.hover\:border-red:hover { border-color: var(--red); }
+
+/* ==========================================================================
+   Hover State Utilities (Outline)
+   ========================================================================== */
+
+.hover\:outline-sand:hover { outline-color: var(--sand); }
+.hover\:outline-royal-blue:hover { outline-color: var(--royal-blue); }
+.hover\:outline-red:hover { outline-color: var(--red); }
+
+/* ==========================================================================
+   Focus Ring Utilities
+   Uses Tailwind's --tw-ring-color variable for compatibility
+   ========================================================================== */
+
+.ring-red { --tw-ring-color: var(--red); }
+.ring-royal-blue { --tw-ring-color: var(--royal-blue); }
+.ring-sand { --tw-ring-color: var(--sand); }
+
+.focus\:ring-red:focus { --tw-ring-color: var(--red); }
+.focus\:ring-royal-blue:focus { --tw-ring-color: var(--royal-blue); }
+
+.focus-visible\:ring-red:focus-visible { --tw-ring-color: var(--red); }
+.focus-visible\:ring-royal-blue:focus-visible { --tw-ring-color: var(--royal-blue); }
+
