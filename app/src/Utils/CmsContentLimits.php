@@ -49,7 +49,8 @@ class CmsContentLimits
             'TEXT' => 'Text',
             'HTML' => 'Rich Text (HTML)',
             'BUTTON_TEXT' => 'Button Text',
-            'MEDIA' => 'Image',
+            'MEDIA', 'IMAGE_PATH' => 'Image',
+            'LINK' => 'Link',
             default => 'Content',
         };
     }
@@ -60,7 +61,7 @@ class CmsContentLimits
     public static function usesTinyMce(string $itemType): bool
     {
         $type = strtoupper($itemType);
-        return $type === 'HTML' || $type === 'TEXT';
+        return $type === 'HTML';
     }
 
     /**
@@ -69,8 +70,8 @@ class CmsContentLimits
     public static function getInputType(string $itemType): string
     {
         return match (strtoupper($itemType)) {
-            'HTML', 'TEXT' => 'tinymce',
-            'MEDIA' => 'file',
+            'HTML' => 'tinymce',
+            'MEDIA', 'IMAGE_PATH' => 'file',
             default => 'text',
         };
     }

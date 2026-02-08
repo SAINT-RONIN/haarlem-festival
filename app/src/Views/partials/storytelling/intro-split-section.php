@@ -25,6 +25,6 @@
         <img
                 class="w-full max-w-lg md:max-w-none h-full rounded-[20px] sm:rounded-[30px] md:rounded-[40px] object-cover"
                 src="<?= htmlspecialchars($introSplitSection->imageUrl) ?>"
-                alt="Stories in Haarlem">
+                alt="<?= htmlspecialchars($introSplitSection->imageAltText) ?>">
     </div>
 </section>

@@ -7,6 +7,9 @@ $currentPage = $currentPage ?? 'home';
 $hero = $cms['hero_section'];
 $global = $cms['global_ui'];
 
+// Get the background image from CMS, fallback to default
+$heroBackgroundImage = $hero['hero_background_image'] ?? '/assets/Image/HeroImageHome.png';
+
 // Ensure login state is available for the hero navbar
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -17,7 +20,8 @@ $isLoggedIn = isset($_SESSION['user_id']);
 <!-- Hero Section with Floating Navigation -->
 <section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5"
          aria-labelledby="hero-heading">
-    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative hero-background"
+    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative hero-background-base"
+         style="background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), url('<?= htmlspecialchars($heroBackgroundImage) ?>');"
          role="img" aria-label="Haarlem Festival hero background">
 
         <!-- Sticky Navigation - Floating on top of hero image -->
@@ -234,7 +238,9 @@ $isLoggedIn = isset($_SESSION['user_id']);
                         <span class="text-center text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap"><?= htmlspecialchars($hero['hero_button_primary']) ?></span>
                         <span class="px-1 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 lg:py-1.5 flex justify-center items-center"
                               aria-hidden="true">
-                            <svg class="w-1.5 h-3 sm:w-2 sm:h-4" viewBox="0 0 6 12" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <svg class="w-1.5 h-3 sm:w-2 sm:h-4" viewBox="0 0 6 12" fill="none" stroke="white"
+                                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                                 focusable="false">
                                 <path d="M1 1l4 5-4 5"></path>
                             </svg>
                         </span>

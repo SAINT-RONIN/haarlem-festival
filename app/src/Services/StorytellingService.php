@@ -26,30 +26,7 @@ class StorytellingService implements IStorytellingService
     // Masonry layout constants
     private const MASONRY_COLUMNS = 4;
     private const MASONRY_IMAGES_PER_COLUMN = 3;
-
-    // Deterministic shuffle seed for stable ordering
-    private const MASONRY_SHUFFLE_SEED = 'storytelling-masonry-v1';
-
-    // Hardcoded image paths for storytelling page sections
-    private const HERO_IMAGE = '/assets/Image/storytelling/hero-storytelling.jpg';
-    private const GRADIENT_BG_IMAGE = '/assets/Image/storytelling/picture-looking-text.jpg';
-    private const INTRO_IMAGE = '/assets/Image/storytelling/where-stories-come-alive.jpg';
-
-    // All 12 masonry images (filenames without base path)
-    private const MASONRY_IMAGE_FILES = [
-        'd-student.jpg',
-        'd-student2.jpg',
-        'm-student.jpg',
-        'winnie-the-pooh.jpg',
-        'pig.jpg',
-        'entrance-kweek.jpg',
-        'building.jpg',
-        'anansi-pointing.png',
-        'anansi-conversation.jpg',
-        'anansi-drip.jpg',
-        'anansi-visser.jpg',
-        'WinnieThePoohHeader.png',
-    ];
+    private const MASONRY_TOTAL_IMAGES = 12;
 
     public function __construct()
     {
@@ -62,11 +39,7 @@ class StorytellingService implements IStorytellingService
     public function getStorytellingPageData(): StorytellingPageViewModel
     {
         return new StorytellingPageViewModel(
-            heroData: $this->cmsService->buildHeroDataWithImage(
-                'storytelling',
-                'storytelling',
-                self::HERO_IMAGE
-            ),
+            heroData: $this->cmsService->buildHeroData('storytelling', 'storytelling'),
             globalUi: $this->cmsService->buildGlobalUiData(),
             gradientSection: $this->buildGradientSection(),
             introSplitSection: $this->buildIntroSplitSection(),
@@ -75,7 +48,7 @@ class StorytellingService implements IStorytellingService
     }
 
     /**
-     * Builds the gradient section data with background image.
+     * Builds the gradient section data with background image from CMS.
      */
     private function buildGradientSection(): GradientSectionData
     {
@@ -84,21 +57,23 @@ class StorytellingService implements IStorytellingService
         return new GradientSectionData(
             headingText: $this->getStringValue($content, 'gradient_heading', ''),
             subheadingText: $this->getStringValue($content, 'gradient_subheading', ''),
-            backgroundImageUrl: self::GRADIENT_BG_IMAGE,
+            backgroundImageUrl: $this->validateImagePath($content['gradient_background_image'] ?? ''),
         );
     }
 
     /**
-     * Builds the intro split section data with image.
+     * Builds the intro split section data with image from CMS.
      */
     private function buildIntroSplitSection(): IntroSplitSectionData
     {
         $content = $this->cmsService->getSectionContent('storytelling', 'intro_split_section');
+        $heading = $this->getStringValue($content, 'intro_heading', 'Stories in Haarlem');
 
         return new IntroSplitSectionData(
-            headingText: $this->getStringValue($content, 'intro_heading', ''),
+            headingText: $heading,
             bodyText: $this->getStringValue($content, 'intro_body', ''),
-            imageUrl: self::INTRO_IMAGE,
+            imageUrl: $this->validateImagePath($content['intro_image'] ?? ''),
+            imageAltText: $heading, // Use heading as alt text
         );
     }
 
@@ -140,20 +115,28 @@ class StorytellingService implements IStorytellingService
     }
 
     /**
-     * Builds masonry images with deterministic shuffle.
-     * Sort filenames first, then apply fixed shuffle based on seed.
+     * Builds masonry images from CMS content.
+     * Reads image paths from CMS masonry_image_01 through masonry_image_12.
      * Assigns varying size classes for true masonry effect.
      */
     private function buildShuffledMasonryImages(): array
     {
-        $basePath = '/assets/Image/storytelling/';
+        $content = $this->cmsService->getSectionContent('storytelling', 'masonry_section');
 
-        // Sort filenames for consistent starting order
-        $files = self::MASONRY_IMAGE_FILES;
-        sort($files);
+        // Collect image paths from CMS (masonry_image_01 through masonry_image_12)
+        $imagePaths = [];
+        for ($i = 1; $i <= self::MASONRY_TOTAL_IMAGES; $i++) {
+            $key = sprintf('masonry_image_%02d', $i);
+            $path = $content[$key] ?? null;
+            if (!empty($path)) {
+                $imagePaths[] = $path;
+            }
+        }
 
-        // Apply deterministic shuffle using seed
-        $files = $this->deterministicShuffle($files, self::MASONRY_SHUFFLE_SEED);
+        // If no images found in CMS, return empty array
+        if (empty($imagePaths)) {
+            return [];
+        }
 
         // Size class pattern for varied heights (repeating pattern)
         $sizeClasses = [
@@ -173,11 +156,10 @@ class StorytellingService implements IStorytellingService
 
         // Build image DTOs with size classes
         $images = [];
-        foreach ($files as $index => $filename) {
-            $path = $basePath . $filename;
+        foreach ($imagePaths as $index => $path) {
             $images[] = new MasonryImageData(
                 imageUrl: $this->validateImagePath($path),
-                altText: $this->generateAltText($filename),
+                altText: $this->generateAltText(basename($path)),
                 sizeClass: $sizeClasses[$index] ?? 'masonry-medium',
             );
         }
@@ -185,29 +167,6 @@ class StorytellingService implements IStorytellingService
         return $images;
     }
 
-    /**
-     * Applies a deterministic shuffle to an array using a seed string.
-     * Same seed always produces the same shuffle result.
-     */
-    private function deterministicShuffle(array $items, string $seed): array
-    {
-        // Generate numeric seed from string
-        $numericSeed = crc32($seed);
-
-        // Fisher-Yates shuffle with seeded random
-        mt_srand($numericSeed);
-
-        $count = count($items);
-        for ($i = $count - 1; $i > 0; $i--) {
-            $j = mt_rand(0, $i);
-            [$items[$i], $items[$j]] = [$items[$j], $items[$i]];
-        }
-
-        // Reset random seed to avoid affecting other code
-        mt_srand();
-
-        return $items;
-    }
 
     /**
      * Generates alt text from filename.

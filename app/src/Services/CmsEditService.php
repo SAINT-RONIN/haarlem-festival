@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Utils\CmsContentLimits;
-use App\Exceptions\ValidationException;
 
 /**
  * Service for CMS page editing operations.
@@ -164,6 +163,17 @@ class CmsEditService
 
         foreach ($items as $item) {
             $type = $item['ItemType'];
+            $mediaAsset = $this->getMediaAssetInfo($item['MediaAssetId']);
+
+            // For IMAGE_PATH type, create a pseudo media asset from TextValue
+            if (strtoupper($type) === 'IMAGE_PATH' && !$mediaAsset && !empty($item['TextValue'])) {
+                $mediaAsset = [
+                    'FilePath' => $item['TextValue'],
+                    'OriginalFileName' => basename($item['TextValue']),
+                    'AltText' => $this->formatItemKeyName($item['ItemKey'])
+                ];
+            }
+
             $enriched[] = [
                 'itemId' => $item['CmsItemId'],
                 'itemKey' => $item['ItemKey'],
@@ -174,7 +184,7 @@ class CmsEditService
                 'maxChars' => CmsContentLimits::getCharLimitForType($type),
                 'value' => $this->getItemValue($item),
                 'mediaAssetId' => $item['MediaAssetId'],
-                'mediaAsset' => $this->getMediaAssetInfo($item['MediaAssetId'])
+                'mediaAsset' => $mediaAsset
             ];
         }
 
