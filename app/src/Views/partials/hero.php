@@ -184,33 +184,33 @@ $isLoggedIn = isset($_SESSION['user_id']);
                         </div>
                     </div>
 
-                    <!-- Login/Logout Button -->
-                    <?php if ($isLoggedIn): ?>
-                        <a href="/logout"
-                           class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                            <i data-lucide="user"
-                               class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-white transition-colors duration-200"
-                               aria-hidden="true"></i>
-                            <span class="text-center text-royal-blue group-hover:text-white text-sm 2xl:text-base font-normal transition-colors duration-200">Logout</span>
-                        </a>
-                    <?php else: ?>
-                        <a href="/login" role="menuitem"
-                           class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2" <?php echo $currentPage === 'login' ? 'aria-current="page"' : ''; ?>>
-                            <i data-lucide="user"
-                               class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-white transition-colors duration-200"
-                               aria-hidden="true"></i>
-                            <span class="text-center text-royal-blue group-hover:text-white text-sm 2xl:text-base font-normal transition-colors duration-200">Login</span>
-                        </a>
-                    <?php endif; ?>
-
                     <!-- My Program Button -->
                     <a href="/program"
                        class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         <i data-lucide="shopping-cart"
-                           class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-white transition-colors duration-200"
+                           class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200"
                            aria-hidden="true"></i>
-                        <span class="text-center text-royal-blue group-hover:text-white text-sm 2xl:text-base font-normal transition-colors duration-200"><?= htmlspecialchars($global['btn_my_program']) ?></span>
+                        <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200"><?= htmlspecialchars($global['btn_my_program']) ?></span>
                     </a>
+
+                    <!-- Login/Logout Button -->
+                    <?php if ($isLoggedIn): ?>
+                        <a href="/logout"
+                           class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                            <i data-lucide="log-out"
+                               class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200"
+                               aria-hidden="true"></i>
+                            <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200">Logout</span>
+                        </a>
+                    <?php else: ?>
+                        <a href="/login" role="menuitem"
+                           class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2" <?php echo $currentPage === 'login' ? 'aria-current="page"' : ''; ?>>
+                            <i data-lucide="log-in"
+                               class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200"
+                               aria-hidden="true"></i>
+                            <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200">Login</span>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </nav>
         </header>
@@ -234,10 +234,8 @@ $isLoggedIn = isset($_SESSION['user_id']);
                         <span class="text-center text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap"><?= htmlspecialchars($hero['hero_button_primary']) ?></span>
                         <span class="px-1 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 lg:py-1.5 flex justify-center items-center"
                               aria-hidden="true">
-                            <svg class="w-1 h-2 sm:w-1.5 sm:h-3 lg:w-2 lg:h-4" fill="none" stroke="currentColor"
-                                 viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M9 5l7 7-7 7"></path>
+                            <svg class="w-1.5 h-3 sm:w-2 sm:h-4" viewBox="0 0 6 12" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <path d="M1 1l4 5-4 5"></path>
                             </svg>
                         </span>
                     </a>

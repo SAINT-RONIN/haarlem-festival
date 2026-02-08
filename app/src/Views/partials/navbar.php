@@ -178,32 +178,33 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
             </div>
 
             <!-- Login/Logout Button -->
-            <?php if ($isLoggedIn): ?>
-                <a href="/logout"
-                   class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                    <i data-lucide="user"
-                       class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-white transition-colors duration-200"
-                       aria-hidden="true"></i>
-                    <span class="text-center text-royal-blue group-hover:text-white text-sm 2xl:text-base font-normal transition-colors duration-200">Logout</span>
-                </a>
-            <?php else: ?>
-                <a href="/login" role="menuitem"
-                   class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2" <?php echo $currentPage === 'login' ? 'aria-current="page"' : ''; ?>>
-                    <i data-lucide="user"
-                       class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-white transition-colors duration-200"
-                       aria-hidden="true"></i>
-                    <span class="text-center text-royal-blue group-hover:text-white text-sm 2xl:text-base font-normal transition-colors duration-200">Login</span>
-                </a>
-            <?php endif; ?>
-
             <!-- My Program Button -->
             <a href="/program"
                class="w-full xl:w-auto px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 <i data-lucide="shopping-cart"
-                   class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-white transition-colors duration-200"
+                   class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200"
                    aria-hidden="true"></i>
-                <span class="text-center text-royal-blue group-hover:text-white text-sm 2xl:text-base font-normal transition-colors duration-200">My Program</span>
+                <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200">My Program</span>
             </a>
+
+            <!-- Login/Logout Button -->
+            <?php if ($isLoggedIn): ?>
+                <a href="/logout"
+                   class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                    <i data-lucide="log-out"
+                       class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200"
+                       aria-hidden="true"></i>
+                    <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200">Logout</span>
+                </a>
+            <?php else: ?>
+                <a href="/login" role="menuitem"
+                   class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2" <?php echo $currentPage === 'login' ? 'aria-current="page"' : ''; ?>>
+                    <i data-lucide="log-in"
+                       class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200"
+                       aria-hidden="true"></i>
+                    <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200">Login</span>
+                </a>
+            <?php endif; ?>
         </div>
     </nav>
 </header>
