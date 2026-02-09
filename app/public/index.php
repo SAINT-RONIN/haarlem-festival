@@ -31,6 +31,7 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
 use App\Controllers\AuthController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
+use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -39,6 +40,9 @@ use FastRoute\RouteCollector;
 $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Homepage
     $r->addRoute('GET', '/', [HomeController::class, 'index']);
+
+    // History Routes
+    $r->addRoute('GET', '/history', [HistoryController::class, 'index']);
 
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
@@ -59,6 +63,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // CMS Dashboard Routes
     $r->addRoute('GET', '/cms', [CmsDashboardController::class, 'index']);
     $r->addRoute('GET', '/cms/pages', [CmsDashboardController::class, 'pages']);
+
 });
 
 // Fetch method and URI from request
