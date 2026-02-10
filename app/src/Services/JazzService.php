@@ -32,6 +32,7 @@ class JazzService
 {
     private CmsRepository $cmsRepository;
     private MediaAssetRepository $mediaAssetRepository;
+    private ScheduleService $scheduleService;
     private ?array $jazzPageData = null;
     private ?array $jazzSections = null;
 
@@ -39,6 +40,7 @@ class JazzService
     {
         $this->cmsRepository = new CmsRepository();
         $this->mediaAssetRepository = new MediaAssetRepository();
+        $this->scheduleService = new ScheduleService();
     }
 
     public function getJazzPageData(): JazzPageViewModel
@@ -57,6 +59,7 @@ class JazzService
             artistsData: $this->buildArtistsData(),
             scheduleData: $this->buildScheduleData(),
             bookingCtaData: $this->buildBookingCtaData(),
+            scheduleSection: $this->scheduleService->buildScheduleSection('jazz', 1, 7),
         );
     }
 

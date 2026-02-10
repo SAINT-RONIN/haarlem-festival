@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
@@ -69,10 +68,11 @@ class ScheduleService
         $eventCountLabel = $this->getStringValue($cmsContent, 'schedule_event_count_label',
             $this->getStringValue($cmsContent, 'schedule_story_count_label', 'Events'));
         $showEventCount = ($cmsContent['schedule_show_event_count'] ??
-            $cmsContent['schedule_show_story_count'] ?? '1') === '1';
+                $cmsContent['schedule_show_story_count'] ?? '1') === '1';
         $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
         $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
         $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
+        $noEventsText = $this->getStringValue($cmsContent, 'schedule_no_events_text', 'No events scheduled');
 
         // Build day ViewModels
         $days = $this->buildScheduleDays(
@@ -88,6 +88,7 @@ class ScheduleService
         $eventCount = array_sum(array_map(fn($day) => count($day->events), $days));
 
         return new ScheduleSectionViewModel(
+            sectionId: $pageSlug . '-schedule',
             title: $title,
             year: $year,
             eventTypeSlug: $eventTypeSlug,
@@ -103,6 +104,7 @@ class ScheduleService
             ctaButtonText: $ctaButtonText,
             payWhatYouLikeText: $payWhatYouLikeText,
             currencySymbol: $currencySymbol,
+            noEventsText: $noEventsText,
             days: $days,
         );
     }
@@ -111,13 +113,14 @@ class ScheduleService
      * Builds day ViewModels from schedule data.
      */
     private function buildScheduleDays(
-        array $scheduleData,
+        array  $scheduleData,
         string $eventTypeSlug,
-        int $eventTypeId,
+        int    $eventTypeId,
         string $defaultCtaText,
         string $payWhatYouLikeText,
         string $currencySymbol
-    ): array {
+    ): array
+    {
         $days = $scheduleData['days'] ?? [];
         $sessions = $scheduleData['sessions'] ?? [];
 
@@ -177,15 +180,16 @@ class ScheduleService
      * Builds an event card ViewModel from session data.
      */
     private function buildEventCard(
-        array $session,
+        array  $session,
         string $eventTypeSlug,
-        int $eventTypeId,
-        array $labelsMap,
-        array $pricesMap,
+        int    $eventTypeId,
+        array  $labelsMap,
+        array  $pricesMap,
         string $defaultCtaText,
         string $payWhatYouLikeText,
         string $currencySymbol
-    ): ScheduleEventCardViewModel {
+    ): ScheduleEventCardViewModel
+    {
         $sessionId = (int)$session['EventSessionId'];
         $startDateTime = new \DateTimeImmutable($session['StartDateTime']);
         $endDateTime = $session['EndDateTime'] ? new \DateTimeImmutable($session['EndDateTime']) : null;
@@ -213,6 +217,7 @@ class ScheduleService
             ctaLabel: $ctaLabel,
             ctaUrl: $ctaUrl,
             locationName: $session['VenueName'] ?? '',
+            hallName: $session['HallName'] ?? '',
             dateDisplay: $startDateTime->format('l, F j'),
             isoDate: $startDateTime->format('Y-m-d'),
             timeDisplay: $endDateTime
@@ -221,6 +226,7 @@ class ScheduleService
             startTimeIso: $startDateTime->format('H:i'),
             endTimeIso: $endDateTime ? $endDateTime->format('H:i') : '',
             labels: $labels,
+            capacityTotal: isset($session['CapacityTotal']) ? (int)$session['CapacityTotal'] : null,
             seatsAvailable: isset($session['SeatsAvailable']) ? (int)$session['SeatsAvailable'] : null,
             historyTicketLabel: $session['HistoryTicketLabel'] ?? null,
             artistName: $session['ArtistName'] ?? null,

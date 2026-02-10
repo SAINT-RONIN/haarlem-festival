@@ -10,6 +10,7 @@ namespace App\ViewModels\Schedule;
 final readonly class ScheduleSectionViewModel
 {
     /**
+     * @param string $sectionId HTML ID for the section (e.g., 'jazz-schedule')
      * @param string $title Section title from CMS
      * @param string $year Year display from CMS
      * @param string $eventTypeSlug Event type slug for card selection (storytelling, jazz, history, dance)
@@ -25,9 +26,11 @@ final readonly class ScheduleSectionViewModel
      * @param string $ctaButtonText Default CTA button text from CMS
      * @param string $payWhatYouLikeText Pay-what-you-like display text from CMS
      * @param string $currencySymbol Currency symbol from CMS
+     * @param string $noEventsText Text to show when no events on a day
      * @param array<ScheduleDayViewModel> $days Array of day columns
      */
     public function __construct(
+        public string $sectionId,
         public string $title,
         public string $year,
         public string $eventTypeSlug,
@@ -43,6 +46,7 @@ final readonly class ScheduleSectionViewModel
         public string $ctaButtonText,
         public string $payWhatYouLikeText,
         public string $currencySymbol,
+        public string $noEventsText,
         public array  $days,
     )
     {

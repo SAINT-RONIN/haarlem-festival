@@ -10,9 +10,9 @@ use App\Repositories\EventSessionRepository;
 use App\Services\Interfaces\IStorytellingService;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
-use App\ViewModels\Schedule\StorytellingScheduleCardViewModel;
-use App\ViewModels\Schedule\StorytellingScheduleDayViewModel;
-use App\ViewModels\Schedule\StorytellingScheduleViewModel;
+use App\ViewModels\Schedule\ScheduleDayViewModel;
+use App\ViewModels\Schedule\ScheduleEventCardViewModel;
+use App\ViewModels\Schedule\ScheduleSectionViewModel;
 use App\ViewModels\Storytelling\MasonryImageData;
 use App\ViewModels\Storytelling\MasonrySectionData;
 use App\ViewModels\Storytelling\StorytellingPageViewModel;
@@ -244,7 +244,7 @@ class StorytellingService implements IStorytellingService
     /**
      * Builds the schedule section with events grouped by day.
      */
-    private function buildScheduleSection(): StorytellingScheduleViewModel
+    private function buildScheduleSection(): ScheduleSectionViewModel
     {
         $cmsContent = $this->cmsService->getSectionContent('storytelling', 'schedule_section');
 
@@ -259,8 +259,8 @@ class StorytellingService implements IStorytellingService
         $additionalInfoTitle = $this->getStringValue($cmsContent, 'schedule_additional_info_title', '');
         $additionalInfoBody = $cmsContent['schedule_additional_info_body'] ?? '';
         $showAdditionalInfo = ($cmsContent['schedule_show_additional_info'] ?? '1') === '1';
-        $storyCountLabel = $this->getStringValue($cmsContent, 'schedule_story_count_label', '');
-        $showStoryCount = ($cmsContent['schedule_show_story_count'] ?? '1') === '1';
+        $eventCountLabel = $this->getStringValue($cmsContent, 'schedule_story_count_label', '');
+        $showEventCount = ($cmsContent['schedule_show_story_count'] ?? '1') === '1';
         $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', '');
         $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', '');
         $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '');
@@ -273,19 +273,22 @@ class StorytellingService implements IStorytellingService
             $currencySymbol
         );
 
-        $storyCount = array_sum(array_map(fn($day) => count($day->events), $days));
+        $eventCount = array_sum(array_map(fn($day) => count($day->events), $days));
 
-        return new StorytellingScheduleViewModel(
+        return new ScheduleSectionViewModel(
+            sectionId: 'storytelling-schedule',
             title: $title,
             year: $year,
+            eventTypeSlug: 'storytelling',
+            eventTypeId: 4,
             filtersButtonText: $filtersButtonText,
             showFilters: $showFilters,
             additionalInfoTitle: $additionalInfoTitle,
             additionalInfoBody: $additionalInfoBody,
             showAdditionalInfo: $showAdditionalInfo,
-            storyCountLabel: $storyCountLabel,
-            storyCount: $storyCount,
-            showStoryCount: $showStoryCount,
+            eventCountLabel: $eventCountLabel,
+            eventCount: $eventCount,
+            showEventCount: $showEventCount,
             ctaButtonText: $ctaButtonText,
             payWhatYouLikeText: $payWhatYouLikeText,
             currencySymbol: $currencySymbol,
@@ -345,11 +348,12 @@ class StorytellingService implements IStorytellingService
                 );
             }
 
-            $dayViewModels[] = new StorytellingScheduleDayViewModel(
+            $dayViewModels[] = new ScheduleDayViewModel(
                 dayName: $dateObj->format('l'),
                 dateFormatted: $dateObj->format('l, F j'),
                 isoDate: $date,
                 events: $events,
+                isEmpty: empty($events),
             );
         }
 
@@ -366,9 +370,10 @@ class StorytellingService implements IStorytellingService
         string $defaultCtaText,
         string $payWhatYouLikeText,
         string $currencySymbol
-    ): StorytellingScheduleCardViewModel
+    ): ScheduleEventCardViewModel
     {
         $sessionId = (int)$session['EventSessionId'];
+        $eventId = (int)($session['EventId'] ?? 0);
         $startDateTime = new \DateTimeImmutable($session['StartDateTime']);
         $endDateTime = $session['EndDateTime'] ? new \DateTimeImmutable($session['EndDateTime']) : null;
 
@@ -389,8 +394,14 @@ class StorytellingService implements IStorytellingService
         $soldTickets = (int)($session['SoldSingleTickets'] ?? 0) + (int)($session['SoldReservedSeats'] ?? 0);
         $seatsAvailable = max(0, $capacityTotal - $soldTickets);
 
-        return new StorytellingScheduleCardViewModel(
+        $eventTypeSlug = $session['EventTypeSlug'] ?? 'storytelling';
+        $eventTypeId = (int)($session['EventTypeId'] ?? 4);
+
+        return new ScheduleEventCardViewModel(
             eventSessionId: $sessionId,
+            eventId: $eventId,
+            eventTypeSlug: $eventTypeSlug,
+            eventTypeId: $eventTypeId,
             title: $session['EventTitle'] ?? '',
             priceDisplay: $priceResult['display'],
             isPayWhatYouLike: $priceResult['isPayWhatYouLike'],
@@ -398,8 +409,6 @@ class StorytellingService implements IStorytellingService
             ctaUrl: $ctaUrl,
             locationName: $session['VenueName'] ?? '',
             hallName: $session['HallName'] ?? '',
-            seatsAvailable: $seatsAvailable,
-            eventTypeSlug: 'storytelling', // This is the storytelling service
             dateDisplay: $startDateTime->format('l, F j'),
             isoDate: $startDateTime->format('Y-m-d'),
             timeDisplay: $endDateTime
@@ -408,6 +417,10 @@ class StorytellingService implements IStorytellingService
             startTimeIso: $startDateTime->format('H:i'),
             endTimeIso: $endDateTime ? $endDateTime->format('H:i') : '',
             labels: $labels,
+            capacityTotal: $capacityTotal,
+            seatsAvailable: $seatsAvailable,
+            artistName: $session['ArtistName'] ?? null,
+            artistImageUrl: $session['ArtistImageUrl'] ?? null,
         );
     }
 
