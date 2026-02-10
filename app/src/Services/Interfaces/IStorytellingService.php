@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\StorytellingPageViewModel;
+use App\ViewModels\Storytelling\StorytellingPageViewModel;
 
 /**
  * Interface for Storytelling page service.

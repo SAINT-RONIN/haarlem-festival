@@ -15,7 +15,7 @@ class CmsContentLimits
 {
     // Text content limits (characters)
     public const HEADING_MAX_CHARS = 100;
-    public const TEXT_MAX_CHARS = 800;
+    public const TEXT_MAX_CHARS = 1000;
     public const HTML_MAX_CHARS = 5000;
     public const BUTTON_MAX_CHARS = 50;
 
@@ -60,8 +60,33 @@ class CmsContentLimits
      */
     public static function usesTinyMce(string $itemType): bool
     {
-        $type = strtoupper($itemType);
-        return $type === 'HTML';
+        return strtoupper($itemType) === 'HTML';
+    }
+
+    /**
+     * Determines whether a TEXT item should be edited with TinyMCE based on its key.
+     *
+     * This prevents TinyMCE from wrapping short plain fields (addresses, labels) in <p> tags,
+     * while still enabling formatting for longer descriptive content.
+     */
+    public static function textKeyUsesTinyMce(string $itemKey): bool
+    {
+        $key = strtolower($itemKey);
+
+        $allowContains = [
+            'description',
+            'subtitle',
+            'body',
+            '_info',
+        ];
+
+        foreach ($allowContains as $needle) {
+            if (str_contains($key, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -76,4 +101,3 @@ class CmsContentLimits
         };
     }
 }
-

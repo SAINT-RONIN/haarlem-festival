@@ -32,6 +32,7 @@ use App\Controllers\AuthController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\HomeController;
+use App\Controllers\JazzController;
 use App\Controllers\StorytellingController;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -40,6 +41,9 @@ use FastRoute\RouteCollector;
 $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Homepage
     $r->addRoute('GET', '/', [HomeController::class, 'index']);
+
+    // Jazz page
+    $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
@@ -63,6 +67,13 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // CMS Dashboard Routes
     $r->addRoute('GET', '/cms', [CmsDashboardController::class, 'index']);
     $r->addRoute('GET', '/cms/pages', [CmsDashboardController::class, 'pages']);
+
+    // Slug-aware routes (preferred)
+    $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'update']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
+
+    // Legacy routes (id-only)
     $r->addRoute('GET', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'edit']);
     $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'update']);
     $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsDashboardController::class, 'uploadImage']);

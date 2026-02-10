@@ -25,7 +25,10 @@ $currentView = 'pages'; // For sidebar highlighting
     <title>Edit <?= htmlspecialchars($page['title']) ?> | CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- TinyMCE (CDN, keyless/community build) -->
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -85,7 +88,7 @@ $currentView = 'pages'; // For sidebar highlighting
                 </div>
             <?php endif; ?>
 
-            <form id="page-edit-form" action="/cms/pages/<?= $page['id'] ?>/edit" method="POST" class="space-y-6">
+            <form id="page-edit-form" action="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit" method="POST" class="space-y-6">
                 <?php foreach ($sections as $section): ?>
                     <?php if ($section['isEditable']): ?>
                         <?php require __DIR__ . '/../../partials/cms/edit-section-accordion.php'; ?>
@@ -104,6 +107,7 @@ $currentView = 'pages'; // For sidebar highlighting
     const contentLimits = <?= json_encode($contentLimits) ?>;
     const imageLimits = <?= json_encode($imageLimits) ?>;
     const pageId = <?= $page['id'] ?>;
+    const pageSlug = <?= json_encode($page['slug']) ?>;
 
     // Initialize TinyMCE for HTML fields
     document.addEventListener('DOMContentLoaded', function() {
@@ -112,13 +116,8 @@ $currentView = 'pages'; // For sidebar highlighting
             height: 300,
             menubar: false,
             plugins: 'lists link',
-            toolbar: 'bold italic underline | bullist numlist | link | removeformat',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
             content_style: 'body { font-family: Montserrat, sans-serif; font-size: 14px; }',
-            base_url: 'https://cdn.jsdelivr.net/npm/tinymce@6',
-            suffix: '.min',
-            license_key: 'gpl',
-            promotion: false,
-            branding: false,
             setup: function(editor) {
                 editor.on('change keyup', function() {
                     editor.save();
@@ -191,7 +190,7 @@ $currentView = 'pages'; // For sidebar highlighting
         const previewContainer = document.getElementById('preview-' + itemId);
         previewContainer.innerHTML = '<div class="text-gray-500">Uploading...</div>';
 
-        fetch('/cms/pages/' + pageId + '/upload-image', {
+        fetch('/cms/pages/' + pageId + '/' + encodeURIComponent(pageSlug) + '/upload-image', {
             method: 'POST',
             body: formData
         })
