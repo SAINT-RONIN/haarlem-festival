@@ -466,8 +466,8 @@ class CmsEventsService
                 sdc.IsVisible,
                 et.Name AS EventTypeName
             FROM ScheduleDayConfig sdc
-            LEFT JOIN EventType et ON sdc.EventTypeId = et.EventTypeId
-            ORDER BY sdc.EventTypeId IS NULL DESC, sdc.EventTypeId, sdc.DayOfWeek
+            LEFT JOIN EventType et ON sdc.EventTypeId = et.EventTypeId AND sdc.EventTypeId > 0
+            ORDER BY sdc.EventTypeId = 0 DESC, sdc.EventTypeId, sdc.DayOfWeek
         ');
         return $stmt->fetchAll();
     }
@@ -475,12 +475,12 @@ class CmsEventsService
     /**
      * Sets the visibility of a schedule day.
      *
-     * @param int|null $eventTypeId NULL for global setting
+     * @param int $eventTypeId 0 for global setting, >0 for specific event type
      * @param int $dayOfWeek 0=Sunday, 1=Monday, ..., 6=Saturday
      * @param bool $isVisible
      * @throws ValidationException
      */
-    public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
+    public function setScheduleDayVisibility(int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {
         if ($dayOfWeek < 0 || $dayOfWeek > 6) {
             throw new ValidationException(['Invalid day of week']);
@@ -506,11 +506,11 @@ class CmsEventsService
      */
     public function getVisibleDays(?int $eventTypeId = null): array
     {
-        // Get global settings first
+        // Get global settings first (EventTypeId = 0 means global)
         $stmt = $this->pdo->prepare('
             SELECT DayOfWeek, IsVisible
             FROM ScheduleDayConfig
-            WHERE EventTypeId IS NULL
+            WHERE EventTypeId = 0
         ');
         $stmt->execute();
         $globalSettings = [];
@@ -520,7 +520,7 @@ class CmsEventsService
 
         // If event type specified, get type-specific overrides
         $typeSettings = [];
-        if ($eventTypeId !== null) {
+        if ($eventTypeId !== null && $eventTypeId > 0) {
             $stmt = $this->pdo->prepare('
                 SELECT DayOfWeek, IsVisible
                 FROM ScheduleDayConfig

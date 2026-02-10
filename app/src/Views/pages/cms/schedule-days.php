@@ -11,14 +11,15 @@
 
 $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-// Group configs by event type
+// Group configs by event type (0 = global)
 $globalConfigs = [];
 $typeConfigs = [];
 foreach ($dayConfigs as $config) {
-    if ($config['EventTypeId'] === null) {
-        $globalConfigs[$config['DayOfWeek']] = $config;
+    $eventTypeId = (int)$config['EventTypeId'];
+    if ($eventTypeId === 0) {
+        $globalConfigs[(int)$config['DayOfWeek']] = $config;
     } else {
-        $typeConfigs[$config['EventTypeId']][$config['DayOfWeek']] = $config;
+        $typeConfigs[$eventTypeId][(int)$config['DayOfWeek']] = $config;
     }
 }
 ?>
@@ -64,7 +65,7 @@ foreach ($dayConfigs as $config) {
                     <?php for ($day = 0; $day <= 6; $day++): ?>
                         <?php $isVisible = (bool)($globalConfigs[$day]['IsVisible'] ?? 1); ?>
                         <form method="POST" action="/cms/schedule-days/toggle" class="text-center">
-                            <input type="hidden" name="EventTypeId" value="">
+                            <input type="hidden" name="EventTypeId" value="0">
                             <input type="hidden" name="DayOfWeek" value="<?= $day ?>">
                             <input type="hidden" name="IsVisible" value="<?= $isVisible ? 0 : 1 ?>">
                             <button type="submit"
@@ -80,6 +81,7 @@ foreach ($dayConfigs as $config) {
 
         <!-- Per Event Type Settings -->
         <?php foreach ($eventTypes as $eventType): ?>
+            <?php $etId = (int)$eventType['EventTypeId']; ?>
             <div class="bg-white rounded-lg shadow mb-6">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900">
@@ -91,13 +93,13 @@ foreach ($dayConfigs as $config) {
                     <div class="grid grid-cols-7 gap-3">
                         <?php for ($day = 0; $day <= 6; $day++): ?>
                             <?php
-                            $typeConfig = $typeConfigs[$eventType['EventTypeId']][$day] ?? null;
+                            $typeConfig = $typeConfigs[$etId][$day] ?? null;
                             $globalVisible = (bool)($globalConfigs[$day]['IsVisible'] ?? 1);
                             $isVisible = $typeConfig !== null ? (bool)$typeConfig['IsVisible'] : $globalVisible;
                             $isOverridden = $typeConfig !== null;
                             ?>
                             <form method="POST" action="/cms/schedule-days/toggle" class="text-center">
-                                <input type="hidden" name="EventTypeId" value="<?= $eventType['EventTypeId'] ?>">
+                                <input type="hidden" name="EventTypeId" value="<?= $etId ?>">
                                 <input type="hidden" name="DayOfWeek" value="<?= $day ?>">
                                 <input type="hidden" name="IsVisible" value="<?= $isVisible ? 0 : 1 ?>">
                                 <button type="submit"

@@ -305,8 +305,8 @@ class CmsEventsController
     {
         CmsAuthController::requireAdmin();
 
-        $eventTypeId = $_POST['EventTypeId'] ?? null;
-        $eventTypeId = $eventTypeId === '' ? null : (int)$eventTypeId;
+        // EventTypeId: 0 = global, >0 = specific event type
+        $eventTypeId = (int)($_POST['EventTypeId'] ?? 0);
         $dayOfWeek = (int)($_POST['DayOfWeek'] ?? 0);
         $isVisible = (int)($_POST['IsVisible'] ?? 1);
 
