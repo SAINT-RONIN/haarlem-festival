@@ -7,6 +7,19 @@
 
 $itemId = $item['itemId'];
 $inputId = 'item-' . $itemId;
+
+$rawValue = (string) $item['value'];
+
+// Remove any style attributes that contain text-decoration: underline
+$cleanValue = preg_replace(
+    '/\sstyle=("|\')[^"\']*text-decoration\s*:\s*underline[^"\']*("|\')/i',
+    '',
+    $rawValue
+);
+
+if ($cleanValue === null) {
+    $cleanValue = $rawValue;
+}
 ?>
 
 <div class="space-y-2">
@@ -31,7 +44,7 @@ $inputId = 'item-' . $itemId;
         data-char-limit="<?= $item['maxChars'] ?>"
         data-item-type="<?= htmlspecialchars($item['type']) ?>"
         class="w-full"
-    ><?= htmlspecialchars($item['value']) ?></textarea>
+    ><?= htmlspecialchars($cleanValue) ?></textarea>
 
     <p class="text-xs text-gray-400">
         Rich text editor • Maximum <?= $item['maxChars'] ?> characters (plain text count)

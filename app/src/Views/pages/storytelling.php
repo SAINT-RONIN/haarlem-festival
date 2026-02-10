@@ -2,7 +2,7 @@
 /**
  * Storytelling page view.
  *
- * @var \App\ViewModels\StorytellingPageViewModel $viewModel
+ * @var \App\ViewModels\Storytelling\StorytellingPageViewModel $viewModel
  */
 
 $heroData = $viewModel->heroData;
@@ -10,6 +10,7 @@ $globalUi = $viewModel->globalUi;
 $gradientSection = $viewModel->gradientSection;
 $introSplitSection = $viewModel->introSplitSection;
 $masonrySection = $viewModel->masonrySection;
+$scheduleSection = $viewModel->scheduleSection;
 $currentPage = 'storytelling';
 $includeNav = false;
 
@@ -42,13 +43,14 @@ $cms = [
 
     <?php require __DIR__ . '/../partials/hero.php'; ?>
 
-    <?php require __DIR__ . '/../partials/storytelling/gradient-section.php'; ?>
+    <?php require __DIR__ . '/../partials/sections/gradient-section.php'; ?>
 
-    <?php require __DIR__ . '/../partials/storytelling/intro-split-section.php'; ?>
+    <?php require __DIR__ . '/../partials/sections/intro-split-section.php'; ?>
 
-    <?php require __DIR__ . '/../partials/storytelling/masonry-section.php'; ?>
+    <?php require __DIR__ . '/../partials/storytelling-masonry-section.php'; ?>
+
+    <?php require __DIR__ . '/../partials/storytelling/schedule-section.php'; ?>
 
 </main>
 
 <?php require __DIR__ . '/../partials/footer.php'; ?>
-

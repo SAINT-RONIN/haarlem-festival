@@ -137,8 +137,16 @@ class CmsEditService
      */
     private function prepareUpdateData(string $value, string $type): array
     {
-        if (strtoupper($type) === 'HTML') {
+        $normalizedType = strtoupper($type);
+
+        if ($normalizedType === 'HTML') {
             return ['HtmlValue' => $value, 'TextValue' => null];
+        }
+
+        if ($normalizedType === 'TEXT') {
+            $decoded = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $plain = trim(strip_tags($decoded));
+            return ['TextValue' => $plain, 'HtmlValue' => null];
         }
 
         return ['TextValue' => $value, 'HtmlValue' => null];
@@ -165,13 +173,24 @@ class CmsEditService
             $type = $item['ItemType'];
             $mediaAsset = $this->getMediaAssetInfo($item['MediaAssetId']);
 
-            // For IMAGE_PATH type, create a pseudo media asset from TextValue
-            if (strtoupper($type) === 'IMAGE_PATH' && !$mediaAsset && !empty($item['TextValue'])) {
+            $resolvedFilePath = null;
+            if (is_array($mediaAsset) && !empty($mediaAsset['FilePath'])) {
+                $resolvedFilePath = (string)$mediaAsset['FilePath'];
+            } elseif (!empty($item['TextValue'])) {
+                $resolvedFilePath = (string)$item['TextValue'];
+            }
+
+            if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH' && !$mediaAsset) {
                 $mediaAsset = [
-                    'FilePath' => $item['TextValue'],
-                    'OriginalFileName' => basename($item['TextValue']),
+                    'FilePath' => $resolvedFilePath,
+                    'OriginalFileName' => basename($resolvedFilePath),
                     'AltText' => $this->formatItemKeyName($item['ItemKey'])
                 ];
+            }
+
+            $inputType = CmsContentLimits::getInputType($type);
+            if (strtoupper((string)$type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce((string)$item['ItemKey'])) {
+                $inputType = 'tinymce';
             }
 
             $enriched[] = [
@@ -180,11 +199,11 @@ class CmsEditService
                 'displayName' => $this->formatItemKeyName($item['ItemKey']),
                 'type' => $type,
                 'typeLabel' => CmsContentLimits::getLabelForType($type),
-                'inputType' => CmsContentLimits::getInputType($type),
+                'inputType' => $inputType,
                 'maxChars' => CmsContentLimits::getCharLimitForType($type),
                 'value' => $this->getItemValue($item),
                 'mediaAssetId' => $item['MediaAssetId'],
-                'mediaAsset' => $mediaAsset
+                'mediaAsset' => $mediaAsset,
             ];
         }
 
@@ -196,10 +215,18 @@ class CmsEditService
      */
     private function getItemValue(array $item): string
     {
-        if (strtoupper($item['ItemType']) === 'HTML') {
-            return $item['HtmlValue'] ?? '';
+        $type = strtoupper((string)($item['ItemType'] ?? ''));
+
+        if ($type === 'HTML') {
+            return (string)($item['HtmlValue'] ?? '');
         }
-        return $item['TextValue'] ?? '';
+
+        $value = (string)($item['TextValue'] ?? '');
+        if ($type === 'TEXT' && $value !== '' && preg_match('/<[^>]+>/', $value) === 1) {
+            return trim(strip_tags(html_entity_decode($value)));
+        }
+
+        return $value;
     }
 
     /**

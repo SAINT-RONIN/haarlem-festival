@@ -36,4 +36,23 @@ class EventTypeRepository implements IEventTypeRepository
 
         return $stmt->fetchAll();
     }
+
+    /**
+     * Returns a single event type by ID.
+     *
+     * @param int $eventTypeId
+     * @return array|null EventType row or null if not found
+     */
+    public function findById(int $eventTypeId): ?array
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT EventTypeId, Name, Slug
+            FROM EventType
+            WHERE EventTypeId = :eventTypeId
+        ');
+        $stmt->execute(['eventTypeId' => $eventTypeId]);
+
+        $result = $stmt->fetch();
+        return $result !== false ? $result : null;
+    }
 }

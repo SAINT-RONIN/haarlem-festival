@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Repositories\CmsRepository;
+use App\Repositories\MediaAssetRepository;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 
 class CmsService
 {
     private CmsRepository $cmsRepository;
+    private MediaAssetRepository $mediaAssetRepository;
 
     // Default values for Global UI
     private const DEFAULT_SITE_NAME = 'Haarlem Festivals';
@@ -34,6 +36,7 @@ class CmsService
     public function __construct()
     {
         $this->cmsRepository = new CmsRepository();
+        $this->mediaAssetRepository = new MediaAssetRepository();
     }
 
     public function getHomePageContent(): array
@@ -51,8 +54,7 @@ class CmsService
             $sectionData = [];
 
             foreach ($items as $item) {
-                $value = $item['TextValue'] ?? $item['HtmlValue'] ?? null;
-                $sectionData[$item['ItemKey']] = $value;
+                $sectionData[$item['ItemKey']] = $this->resolveItemValue($item);
             }
 
             $content[$section['SectionKey']] = $sectionData;
@@ -72,11 +74,31 @@ class CmsService
         $content = [];
 
         foreach ($items as $item) {
-            $value = $item['TextValue'] ?? $item['HtmlValue'] ?? null;
-            $content[$item['ItemKey']] = $value;
+            $content[$item['ItemKey']] = $this->resolveItemValue($item);
         }
 
         return $content;
+    }
+
+    /**
+     * Resolves the value to expose to views for a CMS item.
+     *
+     * - If the item references a MediaAsset, returns its FilePath.
+     * - Otherwise returns TextValue or HtmlValue.
+     */
+    private function resolveItemValue(array $item): ?string
+    {
+        $mediaAssetId = $item['MediaAssetId'] ?? null;
+        if (is_numeric($mediaAssetId) && (int)$mediaAssetId > 0) {
+            $asset = $this->mediaAssetRepository->findById((int)$mediaAssetId);
+            $filePath = is_array($asset) ? ($asset['FilePath'] ?? null) : null;
+            if (is_string($filePath) && $filePath !== '') {
+                return $filePath;
+            }
+        }
+
+        $value = $item['TextValue'] ?? $item['HtmlValue'] ?? null;
+        return is_string($value) ? $value : null;
     }
 
     /**
