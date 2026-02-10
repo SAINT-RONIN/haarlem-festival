@@ -10,6 +10,7 @@ $globalUi = $viewModel->globalUi;
 $gradientSection = $viewModel->gradientSection;
 $introSplitSection = $viewModel->introSplitSection;
 $masonrySection = $viewModel->masonrySection;
+$scheduleSection = $viewModel->scheduleSection;
 $currentPage = 'storytelling';
 $includeNav = false;
 
@@ -47,6 +48,8 @@ $cms = [
     <?php require __DIR__ . '/../partials/sections/intro-split-section.php'; ?>
 
     <?php require __DIR__ . '/../partials/storytelling-masonry-section.php'; ?>
+
+    <?php require __DIR__ . '/../partials/storytelling/schedule-section.php'; ?>
 
 </main>
 

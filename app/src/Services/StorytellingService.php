@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Repositories\EventSessionLabelRepository;
+use App\Repositories\EventSessionPriceRepository;
+use App\Repositories\EventSessionRepository;
 use App\Services\Interfaces\IStorytellingService;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
+use App\ViewModels\Schedule\StorytellingScheduleCardViewModel;
+use App\ViewModels\Schedule\StorytellingScheduleDayViewModel;
+use App\ViewModels\Schedule\StorytellingScheduleViewModel;
 use App\ViewModels\Storytelling\MasonryImageData;
 use App\ViewModels\Storytelling\MasonrySectionData;
 use App\ViewModels\Storytelling\StorytellingPageViewModel;
@@ -19,6 +25,10 @@ use App\ViewModels\Storytelling\StorytellingPageViewModel;
 class StorytellingService implements IStorytellingService
 {
     private CmsService $cmsService;
+    private CmsEventsService $cmsEventsService;
+    private EventSessionRepository $eventSessionRepository;
+    private EventSessionLabelRepository $labelRepository;
+    private EventSessionPriceRepository $priceRepository;
 
     private const DEFAULT_IMAGE = '/assets/Image/Image (Story).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'heic'];
@@ -28,9 +38,17 @@ class StorytellingService implements IStorytellingService
     private const MASONRY_IMAGES_PER_COLUMN = 3;
     private const MASONRY_TOTAL_IMAGES = 12;
 
+    // Price tier constants
+    private const PRICE_TIER_ADULT = 1;
+    private const PRICE_TIER_PAY_WHAT_YOU_LIKE = 5;
+
     public function __construct()
     {
         $this->cmsService = new CmsService();
+        $this->cmsEventsService = new CmsEventsService();
+        $this->eventSessionRepository = new EventSessionRepository();
+        $this->labelRepository = new EventSessionLabelRepository();
+        $this->priceRepository = new EventSessionPriceRepository();
     }
 
     /**
@@ -44,6 +62,7 @@ class StorytellingService implements IStorytellingService
             gradientSection: $this->buildGradientSection(),
             introSplitSection: $this->buildIntroSplitSection(),
             masonrySection: $this->buildMasonrySection(),
+            scheduleSection: $this->buildScheduleSection(),
         );
     }
 
@@ -221,5 +240,217 @@ class StorytellingService implements IStorytellingService
         $value = $content[$key] ?? null;
         return is_string($value) && $value !== '' ? $value : $default;
     }
-}
 
+    /**
+     * Builds the schedule section with events grouped by day.
+     */
+    private function buildScheduleSection(): StorytellingScheduleViewModel
+    {
+        $cmsContent = $this->cmsService->getSectionContent('storytelling', 'schedule_section');
+
+        // Get visible days for storytelling event type (4)
+        $visibleDays = $this->cmsEventsService->getVisibleDays(4);
+        $scheduleData = $this->eventSessionRepository->findStorytellingScheduleData($visibleDays);
+
+        $title = $this->getStringValue($cmsContent, 'schedule_title', '');
+        $year = $this->getStringValue($cmsContent, 'schedule_year', '');
+        $filtersButtonText = $this->getStringValue($cmsContent, 'schedule_filters_button_text', '');
+        $showFilters = ($cmsContent['schedule_show_filters'] ?? '1') === '1';
+        $additionalInfoTitle = $this->getStringValue($cmsContent, 'schedule_additional_info_title', '');
+        $additionalInfoBody = $cmsContent['schedule_additional_info_body'] ?? '';
+        $showAdditionalInfo = ($cmsContent['schedule_show_additional_info'] ?? '1') === '1';
+        $storyCountLabel = $this->getStringValue($cmsContent, 'schedule_story_count_label', '');
+        $showStoryCount = ($cmsContent['schedule_show_story_count'] ?? '1') === '1';
+        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', '');
+        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', '');
+        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '');
+        $noEventsText = $this->getStringValue($cmsContent, 'schedule_no_events_text', '');
+
+        $days = $this->buildScheduleDays(
+            $scheduleData,
+            $ctaButtonText,
+            $payWhatYouLikeText,
+            $currencySymbol
+        );
+
+        $storyCount = array_sum(array_map(fn($day) => count($day->events), $days));
+
+        return new StorytellingScheduleViewModel(
+            title: $title,
+            year: $year,
+            filtersButtonText: $filtersButtonText,
+            showFilters: $showFilters,
+            additionalInfoTitle: $additionalInfoTitle,
+            additionalInfoBody: $additionalInfoBody,
+            showAdditionalInfo: $showAdditionalInfo,
+            storyCountLabel: $storyCountLabel,
+            storyCount: $storyCount,
+            showStoryCount: $showStoryCount,
+            ctaButtonText: $ctaButtonText,
+            payWhatYouLikeText: $payWhatYouLikeText,
+            currencySymbol: $currencySymbol,
+            noEventsText: $noEventsText,
+            days: $days,
+        );
+    }
+
+    /**
+     * Builds day ViewModels from schedule data.
+     */
+    private function buildScheduleDays(
+        array  $scheduleData,
+        string $defaultCtaText,
+        string $payWhatYouLikeText,
+        string $currencySymbol
+    ): array
+    {
+        $days = $scheduleData['days'] ?? [];
+        $sessions = $scheduleData['sessions'] ?? [];
+
+        if (empty($days)) {
+            return [];
+        }
+
+        // Get session IDs for batch loading labels and prices
+        $sessionIds = array_column($sessions, 'EventSessionId');
+        $labelsMap = !empty($sessionIds) ? $this->labelRepository->findBySessionIds($sessionIds) : [];
+        $pricesMap = !empty($sessionIds) ? $this->priceRepository->findBySessionIds($sessionIds) : [];
+
+        // Group sessions by date
+        $sessionsByDate = [];
+        foreach ($sessions as $session) {
+            $date = $session['SessionDate'];
+            if (!isset($sessionsByDate[$date])) {
+                $sessionsByDate[$date] = [];
+            }
+            $sessionsByDate[$date][] = $session;
+        }
+
+        // Build day ViewModels
+        $dayViewModels = [];
+        foreach ($days as $day) {
+            $date = $day['Date'];
+            $dateObj = new \DateTimeImmutable($date);
+            $daySessions = $sessionsByDate[$date] ?? [];
+
+            $events = [];
+            foreach ($daySessions as $session) {
+                $events[] = $this->buildEventCard(
+                    $session,
+                    $labelsMap,
+                    $pricesMap,
+                    $defaultCtaText,
+                    $payWhatYouLikeText,
+                    $currencySymbol
+                );
+            }
+
+            $dayViewModels[] = new StorytellingScheduleDayViewModel(
+                dayName: $dateObj->format('l'),
+                dateFormatted: $dateObj->format('l, F j'),
+                isoDate: $date,
+                events: $events,
+            );
+        }
+
+        return $dayViewModels;
+    }
+
+    /**
+     * Builds an event card ViewModel from session data.
+     */
+    private function buildEventCard(
+        array  $session,
+        array  $labelsMap,
+        array  $pricesMap,
+        string $defaultCtaText,
+        string $payWhatYouLikeText,
+        string $currencySymbol
+    ): StorytellingScheduleCardViewModel
+    {
+        $sessionId = (int)$session['EventSessionId'];
+        $startDateTime = new \DateTimeImmutable($session['StartDateTime']);
+        $endDateTime = $session['EndDateTime'] ? new \DateTimeImmutable($session['EndDateTime']) : null;
+
+        // Get labels for this session
+        $sessionLabels = $labelsMap[$sessionId] ?? [];
+        $labels = array_map(fn($l) => $l['LabelText'], $sessionLabels);
+
+        // Get price display
+        $sessionPrices = $pricesMap[$sessionId] ?? [];
+        $priceResult = $this->getPriceDisplay($sessionPrices, $payWhatYouLikeText, $currencySymbol);
+
+        // CTA label: use session-specific if set, otherwise default
+        $ctaLabel = !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText;
+        $ctaUrl = $session['CtaUrl'] ?? '#';
+
+        // Calculate available seats for jazz
+        $capacityTotal = (int)($session['CapacityTotal'] ?? 0);
+        $soldTickets = (int)($session['SoldSingleTickets'] ?? 0) + (int)($session['SoldReservedSeats'] ?? 0);
+        $seatsAvailable = max(0, $capacityTotal - $soldTickets);
+
+        return new StorytellingScheduleCardViewModel(
+            eventSessionId: $sessionId,
+            title: $session['EventTitle'] ?? '',
+            priceDisplay: $priceResult['display'],
+            isPayWhatYouLike: $priceResult['isPayWhatYouLike'],
+            ctaLabel: $ctaLabel,
+            ctaUrl: $ctaUrl,
+            locationName: $session['VenueName'] ?? '',
+            hallName: $session['HallName'] ?? '',
+            seatsAvailable: $seatsAvailable,
+            eventTypeSlug: 'storytelling', // This is the storytelling service
+            dateDisplay: $startDateTime->format('l, F j'),
+            isoDate: $startDateTime->format('Y-m-d'),
+            timeDisplay: $endDateTime
+                ? $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i')
+                : $startDateTime->format('H:i'),
+            startTimeIso: $startDateTime->format('H:i'),
+            endTimeIso: $endDateTime ? $endDateTime->format('H:i') : '',
+            labels: $labels,
+        );
+    }
+
+    /**
+     * Determines price display text.
+     * Priority: PayWhatYouLike tier → Adult tier → first available → empty
+     */
+    private function getPriceDisplay(array $prices, string $payWhatYouLikeText, string $currencySymbol): array
+    {
+        // Check for PayWhatYouLike tier first
+        foreach ($prices as $price) {
+            if ((int)$price['PriceTierId'] === self::PRICE_TIER_PAY_WHAT_YOU_LIKE) {
+                return ['display' => $payWhatYouLikeText, 'isPayWhatYouLike' => true];
+            }
+        }
+
+        // Check for Adult tier
+        foreach ($prices as $price) {
+            if ((int)$price['PriceTierId'] === self::PRICE_TIER_ADULT) {
+                return [
+                    'display' => $this->formatPrice((float)$price['Price'], $currencySymbol),
+                    'isPayWhatYouLike' => false,
+                ];
+            }
+        }
+
+        // Fallback to first available price
+        if (!empty($prices)) {
+            $price = $prices[0];
+            return [
+                'display' => $this->formatPrice((float)$price['Price'], $currencySymbol),
+                'isPayWhatYouLike' => false,
+            ];
+        }
+
+        return ['display' => '', 'isPayWhatYouLike' => false];
+    }
+
+    /**
+     * Formats a price with currency symbol.
+     */
+    private function formatPrice(float $amount, string $currencySymbol): string
+    {
+        return $currencySymbol . ' ' . number_format($amount, 2);
+    }
+}

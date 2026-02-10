@@ -25,19 +25,28 @@ $currentView = 'pages'; // For sidebar highlighting
     <title>Edit <?= htmlspecialchars($page['title']) ?> | CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- TinyMCE (CDN, keyless/community build) -->
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
     <link rel="icon" href="/assets/Icons/Logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/assets/css/tokens.css">
     <style>
-        body { font-family: 'Montserrat', sans-serif; }
-        .char-counter.warning { color: #f59e0b; }
-        .char-counter.error { color: #ef4444; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .char-counter.warning {
+            color: #f59e0b;
+        }
+
+        .char-counter.error {
+            color: #ef4444;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -49,7 +58,8 @@ $currentView = 'pages'; // For sidebar highlighting
         <!-- Header -->
         <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="/cms/pages" class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                <a href="/cms/pages"
+                   class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </a>
                 <div>
@@ -58,7 +68,7 @@ $currentView = 'pages'; // For sidebar highlighting
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <a href="/<?= htmlspecialchars($page['slug'] === 'home' ? '' : $page['slug']) ?>" 
+                <a href="/<?= htmlspecialchars($page['slug'] === 'home' ? '' : $page['slug']) ?>"
                    target="_blank"
                    class="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                     <i data-lucide="external-link" class="w-4 h-4"></i>
@@ -88,7 +98,8 @@ $currentView = 'pages'; // For sidebar highlighting
                 </div>
             <?php endif; ?>
 
-            <form id="page-edit-form" action="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit" method="POST" class="space-y-6">
+            <form id="page-edit-form" action="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit"
+                  method="POST" class="space-y-6">
                 <?php foreach ($sections as $section): ?>
                     <?php if ($section['isEditable']): ?>
                         <?php require __DIR__ . '/../../partials/cms/edit-section-accordion.php'; ?>
@@ -110,16 +121,26 @@ $currentView = 'pages'; // For sidebar highlighting
     const pageSlug = <?= json_encode($page['slug']) ?>;
 
     // Initialize TinyMCE for HTML fields
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         tinymce.init({
             selector: 'textarea[data-tinymce]',
             height: 300,
             menubar: false,
             plugins: 'lists link',
             toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
-            content_style: 'body { font-family: Montserrat, sans-serif; font-size: 14px; }',
-            setup: function(editor) {
-                editor.on('change keyup', function() {
+            content_style: 'body { font-family: Montserrat, sans-serif; font-size: 14px; line-height: 1.6; }',
+            forced_root_block: '',
+            force_br_newlines: true,
+            convert_newlines_to_brs: true,
+            remove_linebreaks: false,
+            setup: function (editor) {
+                editor.on('keydown', function (e) {
+                    if (e.keyCode === 13 && !e.shiftKey) {
+                        e.preventDefault();
+                        editor.execCommand('InsertLineBreak');
+                    }
+                });
+                editor.on('change keyup', function () {
                     editor.save();
                     updateCharCounter(editor.getElement());
                 });
@@ -130,8 +151,8 @@ $currentView = 'pages'; // For sidebar highlighting
         document.querySelectorAll('[data-char-limit]').forEach(initCharCounter);
 
         // Initialize accordion toggles
-        document.querySelectorAll('[data-accordion-toggle]').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-accordion-toggle]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
                 const content = this.closest('.accordion-section').querySelector('.accordion-content');
                 const icon = this.querySelector('[data-lucide="chevron-down"]');
                 content.classList.toggle('hidden');
@@ -142,7 +163,7 @@ $currentView = 'pages'; // For sidebar highlighting
 
     function initCharCounter(input) {
         updateCharCounter(input);
-        input.addEventListener('input', function() {
+        input.addEventListener('input', function () {
             updateCharCounter(this);
         });
     }
@@ -194,23 +215,23 @@ $currentView = 'pages'; // For sidebar highlighting
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Server returned ' + response.status);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                previewContainer.innerHTML = '<img src="' + data.filePath + '" class="max-h-40 rounded-lg" alt="Uploaded image">';
-            } else {
-                previewContainer.innerHTML = '<div class="text-red-500">' + (data.error || 'Unknown error') + '</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Upload error:', error);
-            previewContainer.innerHTML = '<div class="text-red-500">Upload failed: ' + error.message + '</div>';
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server returned ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    previewContainer.innerHTML = '<img src="' + data.filePath + '" class="max-h-40 rounded-lg" alt="Uploaded image">';
+                } else {
+                    previewContainer.innerHTML = '<div class="text-red-500">' + (data.error || 'Unknown error') + '</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                previewContainer.innerHTML = '<div class="text-red-500">Upload failed: ' + error.message + '</div>';
+            });
     }
 </script>
 </body>
