@@ -7,9 +7,9 @@ namespace App\Services;
 use App\Services\Interfaces\IStorytellingService;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
-use App\ViewModels\MasonryImageData;
-use App\ViewModels\MasonrySectionData;
-use App\ViewModels\StorytellingPageViewModel;
+use App\ViewModels\Storytelling\MasonryImageData;
+use App\ViewModels\Storytelling\MasonrySectionData;
+use App\ViewModels\Storytelling\StorytellingPageViewModel;
 
 /**
  * Service for preparing storytelling page data.

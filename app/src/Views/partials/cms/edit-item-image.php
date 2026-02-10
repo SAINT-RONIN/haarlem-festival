@@ -8,6 +8,21 @@
 $itemId = $item['itemId'];
 $inputId = 'item-' . $itemId;
 $mediaAsset = $item['mediaAsset'];
+
+$rawFilePath = is_array($mediaAsset) ? (string)($mediaAsset['FilePath'] ?? '') : '';
+$previewSrc = '';
+if ($rawFilePath !== '') {
+    $path = parse_url($rawFilePath, PHP_URL_PATH);
+    $query = parse_url($rawFilePath, PHP_URL_QUERY);
+
+    if (is_string($path) && $path !== '') {
+        $segments = array_map('rawurlencode', explode('/', ltrim($path, '/')));
+        $previewSrc = '/' . implode('/', $segments);
+        if (is_string($query) && $query !== '') {
+            $previewSrc .= '?' . $query;
+        }
+    }
+}
 ?>
 <div class="space-y-3">
     <div class="flex items-center justify-between">
@@ -20,8 +35,8 @@ $mediaAsset = $item['mediaAsset'];
     </div>
     <div class="flex items-start gap-6">
         <div id="preview-<?= $itemId ?>" class="flex-shrink-0">
-            <?php if ($mediaAsset && !empty($mediaAsset['FilePath'])): ?>
-                <img src="<?= htmlspecialchars($mediaAsset['FilePath']) ?>" 
+            <?php if ($previewSrc !== ''): ?>
+                <img src="<?= htmlspecialchars($previewSrc) ?>" 
                      class="max-h-40 rounded-lg border border-gray-200" 
                      alt="<?= htmlspecialchars($mediaAsset['AltText'] ?? 'Current image') ?>">
             <?php else: ?>

@@ -30,18 +30,31 @@ class CmsOutputHelper
     }
 
     /**
-     * Outputs HTML content as-is (for TinyMCE rich text).
+     * Outputs HTML content with unsafe inline styles removed.
      * Use for descriptions and rich text areas.
      *
      * @param string|null $content The CMS HTML content
-     * @return string The HTML content (not escaped)
+     * @return string The cleaned HTML content (not escaped)
      */
     public static function html(?string $content): string
     {
         if ($content === null) {
             return '';
         }
-        return $content;
+
+        $clean = (string) $content;
+
+        // Remove any style attributes that contain text-decoration: underline
+        $clean = preg_replace(
+            '/\sstyle=("|\')[^"\']*text-decoration\s*:\s*underline[^"\']*("|\')/i',
+            '',
+            $clean
+        );
+
+        if ($clean === null) {
+            return $content;
+        }
+
+        return $clean;
     }
 }
-
