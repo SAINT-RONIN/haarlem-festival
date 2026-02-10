@@ -27,6 +27,8 @@ class HistoryService implements IHistoryService
     private EventSessionRepository $eventSessionRepository;
     private CmsService $cmsService;
     private IHistoryRepository $historyRepository;
+    private const DEFAULT_IMAGE = '/assets/Image/Image (History).png';
+    private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'heic'];
 
     public function __construct()
     {

@@ -30,9 +30,7 @@ class HistoryController
 
     public function index(): void
     {
-
-        $viewModel = $this->historyService->getHistoryPageData();
-
+        //$viewModel = $this->historyService->getHistoryPageData();
         require __DIR__ . '/../Views/pages/history.php';
     }
 }
