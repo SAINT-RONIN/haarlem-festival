@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\ValidationException;
 use App\Repositories\CmsRepository;
 use App\Services\CmsEditService;
 use App\Services\MediaAssetService;
 use App\Services\SessionService;
 use App\ViewModels\CmsPageEditViewModel;
-use App\Exceptions\ValidationException;
 
 /**
  * Controller for the CMS Dashboard.
@@ -247,11 +247,12 @@ class CmsDashboardController
         CmsAuthController::requireAdmin();
 
         $pageId = (int)$id;
+        $pageSlug =
         $items = $_POST['items'] ?? [];
 
         if (empty($items)) {
             $_SESSION['cms_error'] = 'No changes submitted';
-            header("Location: /cms/pages/{$pageId}/edit");
+            header("Location: /cms/pages/edit");
             exit;
         }
 

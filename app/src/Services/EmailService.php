@@ -94,13 +94,14 @@ EMAIL;
     private function send(string $to, string $subject, string $body): bool
     {
         if (!$this->isSmtpConfigured()) {
-            return false;
+            throw new \RuntimeException("SMTP not configured. Email to {$to} with subject '{$subject}' was not sent.");
         }
 
         if ($this->isLocalEnvironment() && !$this->forceSend) {
-            return false;
+            throw new \RuntimeException("Cannot send mail to local email address '{$to}'.");
         }
 
+        // Email has been sent successfully if we reach this point, even if it fails to send, we log the error and return false
         return $this->sendViaSmtp($to, $subject, $body);
     }
 
