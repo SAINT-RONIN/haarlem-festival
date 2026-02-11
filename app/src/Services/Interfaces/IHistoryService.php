@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\HistoryPageViewModel;
+use App\ViewModels\History\HistoryPageViewModel;
 
 /**
  * Interface for History page service.
