@@ -216,5 +216,34 @@ class MediaAssetService implements IMediaAssetService
             default => 'Unknown upload error'
         };
     }
+
+    /**
+     * Links an uploaded media asset to a CMS item.
+     *
+     * @param int $mediaAssetId Media asset ID
+     * @param int $cmsItemId CMS item ID
+     * @return bool Success status
+     */
+    public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
+    {
+        return $this->mediaAssetRepository->linkToCmsItem($mediaAssetId, $cmsItemId);
+    }
+
+    /**
+     * Gets the image validation limits for client-side validation.
+     *
+     * @return array Validation limits
+     */
+    public function getImageLimits(): array
+    {
+        return [
+            'maxFileSize' => CmsContentLimits::IMAGE_MAX_FILE_SIZE,
+            'maxFileSizeFormatted' => $this->formatFileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
+            'maxWidth' => CmsContentLimits::IMAGE_MAX_WIDTH,
+            'maxHeight' => CmsContentLimits::IMAGE_MAX_HEIGHT,
+            'allowedMimes' => CmsContentLimits::IMAGE_ALLOWED_MIMES,
+            'allowedExtensions' => ['jpg', 'jpeg', 'png', 'webp'],
+        ];
+    }
 }
 
