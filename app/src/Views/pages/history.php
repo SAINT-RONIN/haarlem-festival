@@ -142,15 +142,17 @@ require __DIR__ . '/../partials/header.php';
                     </div>
                 </div>
                 <div class="self-stretch inline-flex justify-start items-start">
-                    <div class="flex-1 justify-start text-slate-800 text-lg font-normal font-['Montserrat'] leading-8">
-                        Minimum age requirement: 12 years old<br/>
-                        No strollers allowed due to the nature of the walking route<br/>
-                        Tour duration: Approximately 2.5 hours including 15-minute break<br/>
-                        Group ticket is the best value for a group of 4 or for a family<br/>
-                        Starting point: Look for the giant flag near Church of St. Bavo at Grote Markt<br/>
-                        Group size: Maximum 12 participants per guide<br/>
-                        Comfortable walking shoes recommended<br/>
-                        Tours run in light rain; severe weather cancellations will be communicated via email
+                    <div class="tour-info flex-1 justify-start text-slate-800 text-lg font-normal font-['Montserrat'] leading-8">
+                        <ul class="list-disc pl-6 space-y-1">
+                            <li><?php require __DIR__ . '/../partials/history-tour-info-item.php'; ?></li>
+                            <li><?php require __DIR__ . '/../partials/history-tour-info-item.php'; ?></li>
+                            <li><?php require __DIR__ . '/../partials/history-tour-info-item.php'; ?></li>
+                            <li><?php require __DIR__ . '/../partials/history-tour-info-item.php'; ?></li>
+                            <li><?php require __DIR__ . '/../partials/history-tour-info-item.php'; ?></li>
+                            <li><?php require __DIR__ . '/../partials/history-tour-info-item.php'; ?></li>
+                            <li><?php require __DIR__ . '/../partials/history-tour-info-item.php'; ?></li>
+                            <li><?php require __DIR__ . '/../partials/history-tour-info-item.php'; ?></li>
+                        </ul>
                     </div>
                 </div>
             </div>
