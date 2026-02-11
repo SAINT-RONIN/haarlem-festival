@@ -9,10 +9,10 @@
  * @var array $venues
  * @var string|null $successMessage
  * @var string|null $errorMessage
+ * @var string|int $selectedType Currently selected type filter (passed from controller)
+ * @var string $selectedDay Currently selected day filter (passed from controller)
  */
 
-$selectedType = $_GET['type'] ?? '';
-$selectedDay = $_GET['day'] ?? '';
 $weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 // Define type colors for badges
@@ -264,9 +264,7 @@ $typeColors = [
     </main>
 </div>
 
-<script>
-    lucide.createIcons();
-</script>
+<script src="/assets/js/cms/cms-common.js"></script>
 </body>
 </html>
 

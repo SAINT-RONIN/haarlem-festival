@@ -39,6 +39,7 @@ $cms = [
                 'nav_restaurant' => $globalUi->navRestaurant,
                 'nav_storytelling' => $globalUi->navStorytelling,
                 'btn_my_program' => $globalUi->btnMyProgram,
+                'is_logged_in' => $globalUi->isLoggedIn,
         ],
 ];
 ?>

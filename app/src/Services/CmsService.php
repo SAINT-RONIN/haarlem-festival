@@ -6,13 +6,15 @@ namespace App\Services;
 
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
+use App\Services\Interfaces\ICmsService;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 
-class CmsService
+class CmsService implements ICmsService
 {
     private CmsRepository $cmsRepository;
     private MediaAssetRepository $mediaAssetRepository;
+    private SessionService $sessionService;
 
     // Default values for Global UI
     private const DEFAULT_SITE_NAME = 'Haarlem Festivals';
@@ -37,6 +39,7 @@ class CmsService
     {
         $this->cmsRepository = new CmsRepository();
         $this->mediaAssetRepository = new MediaAssetRepository();
+        $this->sessionService = new SessionService();
     }
 
     public function getHomePageContent(): array
@@ -159,6 +162,7 @@ class CmsService
             navRestaurant: $globalContent['nav_restaurant'] ?? self::DEFAULT_NAV_RESTAURANT,
             navStorytelling: $globalContent['nav_storytelling'] ?? self::DEFAULT_NAV_STORYTELLING,
             btnMyProgram: $globalContent['btn_my_program'] ?? self::DEFAULT_BTN_MY_PROGRAM,
+            isLoggedIn: $this->sessionService->isLoggedIn(),
         );
     }
 }

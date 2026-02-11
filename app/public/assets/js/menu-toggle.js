@@ -1,6 +1,48 @@
 /**
  * Mobile menu toggle functions for hero and navbar.
+ *
+ * Uses data attributes for event binding to avoid inline JavaScript.
+ * - data-toggle-menu="<menu-id>" on buttons
+ * - data-scroll-top on scroll-to-top links
  */
+
+/**
+ * Initialize all menu toggles and scroll handlers on DOM ready.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    initMenuToggles();
+    initScrollToTop();
+});
+
+/**
+ * Initializes menu toggle buttons.
+ */
+function initMenuToggles() {
+    var buttons = document.querySelectorAll('[data-toggle-menu]');
+    buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var menuId = btn.getAttribute('data-toggle-menu');
+            if (menuId === 'hero-nav-menu') {
+                toggleHeroMenu();
+            } else if (menuId === 'nav-menu') {
+                toggleNavMenu();
+            }
+        });
+    });
+}
+
+/**
+ * Initializes scroll-to-top links.
+ */
+function initScrollToTop() {
+    var links = document.querySelectorAll('[data-scroll-top]');
+    links.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        });
+    });
+}
 
 /**
  * Toggles the hero navigation menu (used on homepage).
@@ -51,7 +93,7 @@ function closeMenu(menu, bar1, bar2, bar3) {
     bar3.classList.remove('-rotate-45', 'top-1/2', '-translate-y-1/2');
     bar3.classList.add('bottom-0');
 
-    setTimeout(function() {
+    setTimeout(function () {
         menu.classList.add('hidden');
         menu.classList.remove('flex');
     }, 300);

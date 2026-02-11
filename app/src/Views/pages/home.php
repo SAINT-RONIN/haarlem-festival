@@ -11,6 +11,11 @@ $scheduleDays = $viewModel->scheduleDays;
 $cms = $viewModel->cmsContent;
 $currentPage = 'home';
 $includeNav = false;
+
+// Ensure isLoggedIn is available in cms global_ui for hero.php partial
+if (isset($cms['global_ui'])) {
+    $cms['global_ui']['is_logged_in'] = $globalUi->isLoggedIn;
+}
 ?>
 <?php require __DIR__ . '/../partials/header.php'; ?>
 

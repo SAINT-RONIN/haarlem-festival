@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Services\Interfaces\IEmailService;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
@@ -22,7 +23,7 @@ use PHPMailer\PHPMailer\PHPMailer;
  *   APP_URL       - Application URL for links
  *   APP_ENV       - Environment (local/production)
  */
-class EmailService
+class EmailService implements IEmailService
 {
     private string $host;
     private int $port;

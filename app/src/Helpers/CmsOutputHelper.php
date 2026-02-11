@@ -42,7 +42,7 @@ class CmsOutputHelper
             return '';
         }
 
-        $clean = (string) $content;
+        $clean = (string)$content;
 
         // Remove any style attributes that contain text-decoration: underline
         $clean = preg_replace(
@@ -56,5 +56,20 @@ class CmsOutputHelper
         }
 
         return $clean;
+    }
+
+    /**
+     * Gets a string value from content array with default fallback.
+     * Use for extracting values from CMS content arrays.
+     *
+     * @param array $content The content array
+     * @param string $key The key to look up
+     * @param string $default Default value if key not found or empty
+     * @return string The value or default
+     */
+    public static function getString(array $content, string $key, string $default = ''): string
+    {
+        $value = $content[$key] ?? null;
+        return is_string($value) && $value !== '' ? $value : $default;
     }
 }

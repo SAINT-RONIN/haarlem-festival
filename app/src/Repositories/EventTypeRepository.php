@@ -55,4 +55,13 @@ class EventTypeRepository implements IEventTypeRepository
         $result = $stmt->fetch();
         return $result !== false ? $result : null;
     }
+
+    /**
+     * Returns all event types for dropdown (EventTypeId, Name, Slug).
+     */
+    public function findAllForDropdown(): array
+    {
+        $stmt = $this->pdo->query('SELECT EventTypeId, Name, Slug FROM EventType ORDER BY Name ASC');
+        return $stmt->fetchAll();
+    }
 }

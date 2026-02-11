@@ -91,7 +91,7 @@
                         ✅ Sessions automatically appear on the public page (up to 4 days shown).
                     </p>
                 </div>
-                <button type="button" onclick="toggleAddSession()"
+                <button type="button" data-toggle="addSessionForm"
                         class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">
                     + Add Session
                 </button>
@@ -173,7 +173,7 @@
                         <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                             Create Session
                         </button>
-                        <button type="button" onclick="toggleAddSession()"
+                        <button type="button" data-toggle="addSessionForm"
                                 class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
                             Cancel
                         </button>
@@ -361,14 +361,8 @@
     </main>
 </div>
 
-<script>
-    lucide.createIcons();
-
-    function toggleAddSession() {
-        const form = document.getElementById('addSessionForm');
-        form.classList.toggle('hidden');
-    }
-</script>
+<script src="/assets/js/cms/cms-common.js"></script>
+<script src="/assets/js/cms/event-edit.js"></script>
 </body>
 </html>
 

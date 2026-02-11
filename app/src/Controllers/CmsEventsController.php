@@ -36,6 +36,10 @@ class CmsEventsController
         $eventTypeId = isset($_GET['type']) && is_numeric($_GET['type']) ? (int)$_GET['type'] : null;
         $dayOfWeek = isset($_GET['day']) && !empty($_GET['day']) ? $_GET['day'] : null;
 
+        // Pass filter values to view
+        $selectedType = $_GET['type'] ?? '';
+        $selectedDay = $_GET['day'] ?? '';
+
         // Get data for the view
         $events = $this->eventsService->getAllEventsWithDetails($eventTypeId, $dayOfWeek);
         $eventTypes = $this->eventsService->getEventTypes();
@@ -60,6 +64,7 @@ class CmsEventsController
         $eventTypes = $this->eventsService->getEventTypes();
         $venues = $this->eventsService->getVenues();
         $errorMessage = $_GET['error'] ?? null;
+        $preselectedDay = $_GET['day'] ?? '';
 
         require __DIR__ . '/../Views/pages/cms/event-create.php';
     }

@@ -6,9 +6,8 @@
  * @var array $eventTypes
  * @var array $venues
  * @var string|null $errorMessage
+ * @var string $preselectedDay Pre-selected day from URL (passed from controller)
  */
-
-$preselectedDay = $_GET['day'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -123,7 +122,7 @@ $preselectedDay = $_GET['day'] ?? '';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                            <button type="button" onclick="toggleNewVenueForm()"
+                            <button type="button" data-toggle="newVenueForm"
                                     class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm whitespace-nowrap">
                                 + New Venue
                             </button>
@@ -150,11 +149,11 @@ $preselectedDay = $_GET['day'] ?? '';
                                            placeholder="e.g., Zijlsingel 2">
                                 </div>
                                 <div class="flex gap-2">
-                                    <button type="button" onclick="createVenue()"
+                                    <button type="button" data-action="createVenue"
                                             class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
                                         Create Venue
                                     </button>
-                                    <button type="button" onclick="toggleNewVenueForm()"
+                                    <button type="button" data-toggle="newVenueForm"
                                             class="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">
                                         Cancel
                                     </button>
@@ -207,64 +206,8 @@ $preselectedDay = $_GET['day'] ?? '';
     </main>
 </div>
 
-<script>
-    lucide.createIcons();
-
-    function toggleNewVenueForm() {
-        const form = document.getElementById('newVenueForm');
-        form.classList.toggle('hidden');
-        if (!form.classList.contains('hidden')) {
-            document.getElementById('NewVenueName').focus();
-        }
-    }
-
-    async function createVenue() {
-        const name = document.getElementById('NewVenueName').value.trim();
-        const address = document.getElementById('NewVenueAddress').value.trim();
-        const errorEl = document.getElementById('venueError');
-
-        if (!name) {
-            errorEl.textContent = 'Venue name is required';
-            errorEl.classList.remove('hidden');
-            return;
-        }
-
-        errorEl.classList.add('hidden');
-
-        try {
-            const response = await fetch('/cms/venues', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `VenueName=${encodeURIComponent(name)}&AddressLine=${encodeURIComponent(address)}`
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Add new venue to dropdown and select it
-                const select = document.getElementById('VenueId');
-                const option = document.createElement('option');
-                option.value = data.venueId;
-                option.textContent = data.name + (address ? ' - ' + address : '');
-                option.selected = true;
-                select.appendChild(option);
-
-                // Clear and hide the form
-                document.getElementById('NewVenueName').value = '';
-                document.getElementById('NewVenueAddress').value = '';
-                toggleNewVenueForm();
-            } else {
-                errorEl.textContent = data.errors ? data.errors.join(', ') : 'Failed to create venue';
-                errorEl.classList.remove('hidden');
-            }
-        } catch (error) {
-            errorEl.textContent = 'An error occurred. Please try again.';
-            errorEl.classList.remove('hidden');
-        }
-    }
-</script>
+<script src="/assets/js/cms/cms-common.js"></script>
+<script src="/assets/js/cms/event-create.js"></script>
 </body>
 </html>
 

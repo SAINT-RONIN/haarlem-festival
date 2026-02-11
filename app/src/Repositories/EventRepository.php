@@ -150,5 +150,33 @@ class EventRepository implements IEventRepository
         $stmt = $this->pdo->prepare('DELETE FROM Event WHERE EventId = :eventId');
         return $stmt->execute(['eventId' => $eventId]);
     }
+
+    /**
+     * Checks if an event exists.
+     */
+    public function exists(int $eventId): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT EventId FROM Event WHERE EventId = :eventId');
+        $stmt->execute(['eventId' => $eventId]);
+        return $stmt->fetch() !== false;
+    }
+
+    /**
+     * Soft deletes an event by setting IsActive = 0.
+     */
+    public function softDelete(int $eventId): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE Event SET IsActive = 0 WHERE EventId = :eventId');
+        return $stmt->execute(['eventId' => $eventId]);
+    }
+
+    /**
+     * Deactivates all sessions for an event.
+     */
+    public function deactivateSessions(int $eventId): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
+        return $stmt->execute(['eventId' => $eventId]);
+    }
 }
 

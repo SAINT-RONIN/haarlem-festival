@@ -136,9 +136,7 @@ foreach ($dayConfigs as $config) {
     </main>
 </div>
 
-<script>
-    lucide.createIcons();
-</script>
+<script src="/assets/js/cms/cms-common.js"></script>
 </body>
 </html>
 

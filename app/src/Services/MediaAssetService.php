@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\MediaAssetRepository;
-use App\Utils\CmsContentLimits;
 use App\Exceptions\ValidationException;
+use App\Repositories\MediaAssetRepository;
+use App\Services\Interfaces\IMediaAssetService;
+use App\Utils\CmsContentLimits;
 
 /**
  * Service for handling media asset operations.
  *
  * Manages image uploads, validation, and storage.
  */
-class MediaAssetService
+class MediaAssetService implements IMediaAssetService
 {
     private MediaAssetRepository $mediaAssetRepository;
     private string $uploadBasePath;
@@ -21,7 +22,7 @@ class MediaAssetService
     public function __construct()
     {
         $this->mediaAssetRepository = new MediaAssetRepository();
-        
+
         // Determine the public directory path
         // In Docker: /app/public, locally: use __DIR__ relative path
         if (is_dir('/app/public')) {
@@ -29,7 +30,7 @@ class MediaAssetService
         } else {
             $publicPath = realpath(__DIR__ . '/../../public') ?: __DIR__ . '/../../public';
         }
-        
+
         $this->uploadBasePath = $publicPath . '/assets/Image';
     }
 
@@ -46,14 +47,14 @@ class MediaAssetService
         $this->validateFile($file);
 
         $targetDir = $this->uploadBasePath . '/' . $folder;
-        
+
         // Create directory if it doesn't exist
         if (!is_dir($targetDir)) {
             if (!mkdir($targetDir, 0755, true)) {
                 throw new ValidationException('Failed to create upload directory');
             }
         }
-        
+
         // Check if directory is writable
         if (!is_writable($targetDir)) {
             throw new ValidationException('Upload directory is not writable');
@@ -95,7 +96,7 @@ class MediaAssetService
         } else {
             $publicPath = realpath(__DIR__ . '/../../public') ?: __DIR__ . '/../../public';
         }
-        
+
         $filePath = $publicPath . $asset['FilePath'];
         if (file_exists($filePath)) {
             unlink($filePath);
@@ -141,7 +142,7 @@ class MediaAssetService
 
         if ($file['size'] > CmsContentLimits::IMAGE_MAX_FILE_SIZE) {
             throw new ValidationException(
-                'File too large. Maximum size: ' . 
+                'File too large. Maximum size: ' .
                 $this->formatFileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE)
             );
         }
@@ -153,14 +154,14 @@ class MediaAssetService
             [$width, $height] = $imageInfo;
             if ($width > CmsContentLimits::IMAGE_MAX_WIDTH) {
                 throw new ValidationException(
-                    "Image width ({$width}px) exceeds maximum of " . 
+                    "Image width ({$width}px) exceeds maximum of " .
                     CmsContentLimits::IMAGE_MAX_WIDTH . 'px'
                 );
             }
 
             if ($height > CmsContentLimits::IMAGE_MAX_HEIGHT) {
                 throw new ValidationException(
-                    "Image height ({$height}px) exceeds maximum of " . 
+                    "Image height ({$height}px) exceeds maximum of " .
                     CmsContentLimits::IMAGE_MAX_HEIGHT . 'px'
                 );
             }

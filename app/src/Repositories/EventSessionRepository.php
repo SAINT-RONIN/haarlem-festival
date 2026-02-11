@@ -330,4 +330,50 @@ class EventSessionRepository implements IEventSessionRepository
 
         return $stmt->execute(['sessionId' => $sessionId]);
     }
+
+    /**
+     * Returns sessions grouped by day of week for CMS weekly overview.
+     *
+     * @param int|null $eventTypeId Optional filter by event type
+     * @return array Sessions with event details
+     */
+    public function findWeeklyScheduleOverview(?int $eventTypeId = null): array
+    {
+        $typeFilter = $eventTypeId ? 'AND e.EventTypeId = :eventTypeId' : '';
+
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                es.EventSessionId,
+                es.EventId,
+                es.StartDateTime,
+                es.EndDateTime,
+                es.CapacityTotal,
+                es.SoldSingleTickets,
+                es.SoldReservedSeats,
+                DAYNAME(es.StartDateTime) AS DayOfWeek,
+                DATE(es.StartDateTime) AS SessionDate,
+                e.Title AS EventTitle,
+                e.EventTypeId,
+                et.Name AS EventTypeName,
+                et.Slug AS EventTypeSlug,
+                v.Name AS VenueName
+            FROM EventSession es
+            INNER JOIN Event e ON es.EventId = e.EventId
+            INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
+            LEFT JOIN Venue v ON e.VenueId = v.VenueId
+            WHERE es.IsActive = 1
+              AND es.IsCancelled = 0
+              AND e.IsActive = 1
+              {$typeFilter}
+            ORDER BY es.StartDateTime ASC
+        ");
+
+        if ($eventTypeId) {
+            $stmt->execute(['eventTypeId' => $eventTypeId]);
+        } else {
+            $stmt->execute();
+        }
+
+        return $stmt->fetchAll();
+    }
 }

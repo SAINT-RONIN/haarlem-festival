@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Services\Interfaces\ISessionService;
+
 /**
  * Service for managing PHP sessions.
  *
  * Handles session lifecycle, user login state, and role-based access checks.
  * All session operations are centralized here for consistency and security.
  */
-class SessionService
+class SessionService implements ISessionService
 {
     private const USER_ID_KEY = 'user_id';
     private const ROLE_ID_KEY = 'role_id';

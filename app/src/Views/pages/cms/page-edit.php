@@ -8,14 +8,11 @@
  * @var array $imageLimits Image dimension/size limits
  * @var string|null $successMessage Flash success message
  * @var string|null $errorMessage Flash error message
+ * @var string $userName Admin user display name (passed from controller)
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$userName = $_SESSION['user_display_name'] ?? 'Administrator';
 $currentView = 'pages'; // For sidebar highlighting
+$userName = $userName ?? 'Administrator';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,21 +32,9 @@ $currentView = 'pages'; // For sidebar highlighting
           rel="stylesheet">
     <link rel="icon" href="/assets/Icons/Logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/assets/css/tokens.css">
-    <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .char-counter.warning {
-            color: #f59e0b;
-        }
-
-        .char-counter.error {
-            color: #ef4444;
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/cms.css">
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 cms-body">
 
 <div class="flex h-screen">
     <?php require __DIR__ . '/../../partials/cms/sidebar.php'; ?>
@@ -110,130 +95,15 @@ $currentView = 'pages'; // For sidebar highlighting
     </section>
 </div>
 
+<!-- Configuration for JS -->
 <script>
-    // Initialize Lucide icons
-    lucide.createIcons();
-
-    // Content limits from PHP
     const contentLimits = <?= json_encode($contentLimits) ?>;
     const imageLimits = <?= json_encode($imageLimits) ?>;
     const pageId = <?= $page['id'] ?>;
     const pageSlug = <?= json_encode($page['slug']) ?>;
-
-    // Initialize TinyMCE for HTML fields
-    document.addEventListener('DOMContentLoaded', function () {
-        tinymce.init({
-            selector: 'textarea[data-tinymce]',
-            height: 300,
-            menubar: false,
-            plugins: 'lists link',
-            toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
-            content_style: 'body { font-family: Montserrat, sans-serif; font-size: 14px; line-height: 1.6; }',
-            forced_root_block: '',
-            force_br_newlines: true,
-            convert_newlines_to_brs: true,
-            remove_linebreaks: false,
-            setup: function (editor) {
-                editor.on('keydown', function (e) {
-                    if (e.keyCode === 13 && !e.shiftKey) {
-                        e.preventDefault();
-                        editor.execCommand('InsertLineBreak');
-                    }
-                });
-                editor.on('change keyup', function () {
-                    editor.save();
-                    updateCharCounter(editor.getElement());
-                });
-            }
-        });
-
-        // Initialize character counters
-        document.querySelectorAll('[data-char-limit]').forEach(initCharCounter);
-
-        // Initialize accordion toggles
-        document.querySelectorAll('[data-accordion-toggle]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const content = this.closest('.accordion-section').querySelector('.accordion-content');
-                const icon = this.querySelector('[data-lucide="chevron-down"]');
-                content.classList.toggle('hidden');
-                icon.classList.toggle('rotate-180');
-            });
-        });
-    });
-
-    function initCharCounter(input) {
-        updateCharCounter(input);
-        input.addEventListener('input', function () {
-            updateCharCounter(this);
-        });
-    }
-
-    function updateCharCounter(input) {
-        const counterId = input.id + '-counter';
-        const counter = document.getElementById(counterId);
-        if (!counter) return;
-
-        const type = input.dataset.itemType;
-        const maxChars = contentLimits[type] || 500;
-        const text = input.value.replace(/<[^>]*>/g, '');
-        const currentLength = text.length;
-
-        counter.textContent = currentLength + ' / ' + maxChars;
-        counter.classList.remove('warning', 'error');
-
-        if (currentLength > maxChars) {
-            counter.classList.add('error');
-        } else if (currentLength > maxChars * 0.9) {
-            counter.classList.add('warning');
-        }
-    }
-
-    // Image upload handler
-    function uploadImage(itemId, fileInput) {
-        const file = fileInput.files[0];
-        if (!file) return;
-
-        // Client-side validation
-        if (!imageLimits.allowedMimes.includes(file.type)) {
-            alert('Invalid file type. Allowed: JPG, PNG, WebP');
-            return;
-        }
-
-        if (file.size > imageLimits.maxFileSize) {
-            alert('File too large. Maximum: ' + imageLimits.maxFileSizeFormatted);
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('item_id', itemId);
-
-        const previewContainer = document.getElementById('preview-' + itemId);
-        previewContainer.innerHTML = '<div class="text-gray-500">Uploading...</div>';
-
-        fetch('/cms/pages/' + pageId + '/' + encodeURIComponent(pageSlug) + '/upload-image', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Server returned ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    previewContainer.innerHTML = '<img src="' + data.filePath + '" class="max-h-40 rounded-lg" alt="Uploaded image">';
-                } else {
-                    previewContainer.innerHTML = '<div class="text-red-500">' + (data.error || 'Unknown error') + '</div>';
-                }
-            })
-            .catch(error => {
-                console.error('Upload error:', error);
-                previewContainer.innerHTML = '<div class="text-red-500">Upload failed: ' + error.message + '</div>';
-            });
-    }
 </script>
+<script src="/assets/js/cms/cms-common.js"></script>
+<script src="/assets/js/cms/page-edit.js"></script>
 </body>
 </html>
 

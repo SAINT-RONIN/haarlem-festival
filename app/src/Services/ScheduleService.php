@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\CmsOutputHelper;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
 use App\Repositories\EventTypeRepository;
+use App\Services\Interfaces\IScheduleService;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
@@ -17,7 +19,7 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
  *
  * This is a global service - not tied to any specific event type.
  */
-class ScheduleService
+class ScheduleService implements IScheduleService
 {
     private CmsService $cmsService;
     private EventSessionRepository $sessionRepository;
