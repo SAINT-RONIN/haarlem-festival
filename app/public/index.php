@@ -31,8 +31,14 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
 use App\Controllers\AuthController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
+
 use App\Controllers\HistoryController;
+
+use App\Controllers\CmsEventsController;
+
 use App\Controllers\HomeController;
+use App\Controllers\JazzController;
+use App\Controllers\StorytellingController;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -41,8 +47,16 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Homepage
     $r->addRoute('GET', '/', [HomeController::class, 'index']);
 
+
     // History Routes
     $r->addRoute('GET', '/history', [HistoryController::class, 'index']);
+
+    // Jazz page
+    $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
+
+    // Storytelling page
+    $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
+
 
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
@@ -63,6 +77,34 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // CMS Dashboard Routes
     $r->addRoute('GET', '/cms', [CmsDashboardController::class, 'index']);
     $r->addRoute('GET', '/cms/pages', [CmsDashboardController::class, 'pages']);
+
+
+    // CMS Events Routes
+    $r->addRoute('GET', '/cms/events', [CmsEventsController::class, 'index']);
+    $r->addRoute('GET', '/cms/events/create', [CmsEventsController::class, 'create']);
+    $r->addRoute('POST', '/cms/events', [CmsEventsController::class, 'store']);
+    $r->addRoute('GET', '/cms/events/{id:\d+}/edit', [CmsEventsController::class, 'edit']);
+    $r->addRoute('POST', '/cms/events/{id:\d+}/edit', [CmsEventsController::class, 'update']);
+    $r->addRoute('POST', '/cms/events/{id:\d+}/delete', [CmsEventsController::class, 'delete']);
+    $r->addRoute('POST', '/cms/events/{eventId:\d+}/sessions', [CmsEventsController::class, 'createSession']);
+    $r->addRoute('POST', '/cms/sessions/{id:\d+}', [CmsEventsController::class, 'updateSession']);
+    $r->addRoute('POST', '/cms/sessions/{id:\d+}/delete', [CmsEventsController::class, 'deleteSession']);
+    $r->addRoute('POST', '/cms/sessions/{id:\d+}/labels', [CmsEventsController::class, 'addLabel']);
+    $r->addRoute('POST', '/cms/labels/{id:\d+}/delete', [CmsEventsController::class, 'deleteLabel']);
+    $r->addRoute('POST', '/cms/sessions/{id:\d+}/price', [CmsEventsController::class, 'setPrice']);
+    $r->addRoute('POST', '/cms/venues', [CmsEventsController::class, 'createVenue']);
+    $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
+    $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
+
+    // Slug-aware routes (preferred)
+    $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'update']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
+
+    // Legacy routes (id-only)
+    $r->addRoute('GET', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'edit']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'update']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
 
 });
 

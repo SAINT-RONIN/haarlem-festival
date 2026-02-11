@@ -8,7 +8,6 @@ use App\Repositories\EventSessionRepository;
 use App\Repositories\EventTypeRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\VenueRepository;
-use App\Services\CmsService;
 use App\Services\Interfaces\IHomeService;
 use App\ViewModels\HomePageViewModel;
 
@@ -61,6 +60,8 @@ class HomeService implements IHomeService
         $cmsContent = $this->cmsService->getHomePageContent();
 
         return new HomePageViewModel(
+            heroData: $this->cmsService->buildHeroData('home', 'home'),
+            globalUi: $this->cmsService->buildGlobalUiData(),
             eventTypes: $this->buildEventTypes($cmsContent),
             locations: $this->buildLocations(),
             scheduleDays: $this->buildScheduleDays(),
@@ -136,6 +137,7 @@ class HomeService implements IHomeService
             'title' => $section[$slug . '_title'] ?? ucfirst($slug),
             'description' => $section[$slug . '_description'] ?? '',
             'button' => $section[$slug . '_button'] ?? 'Explore Events',
+            'image' => $section[$slug . '_image'] ?? null,
             'darkBg' => self::DARK_BG_MAP[$slug] ?? false,
             'badgeClass' => self::BADGE_COLORS[$slug] ?? 'bg-gray-500',
         ];
@@ -329,8 +331,8 @@ class HomeService implements IHomeService
      */
     private function calculateTimeRange(array $sessions): string
     {
-        $starts = array_map(fn ($s) => strtotime($s['StartDateTime']), $sessions);
-        $ends = array_map(fn ($s) => strtotime($s['EndDateTime']), $sessions);
+        $starts = array_map(fn($s) => strtotime($s['StartDateTime']), $sessions);
+        $ends = array_map(fn($s) => strtotime($s['EndDateTime']), $sessions);
 
         $minStart = min($starts);
         $maxEnd = max($ends);

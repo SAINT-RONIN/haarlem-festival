@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Repositories\Interfaces\IPasswordResetTokenRepository;
 use PDO;
 
 /**
@@ -13,7 +14,7 @@ use PDO;
  * Handles creation, lookup, and status updates for password reset tokens.
  * Note: The Token column stores SHA-256 hashes, never raw tokens.
  */
-class PasswordResetTokenRepository
+class PasswordResetTokenRepository implements IPasswordResetTokenRepository
 {
     private PDO $pdo;
 

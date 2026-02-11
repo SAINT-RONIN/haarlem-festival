@@ -69,7 +69,7 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <a href="/cms/pages/<?= $page['id'] ?>/edit"
+                            <a href="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit"
                                class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                                aria-label="Edit <?= htmlspecialchars($page['title']) ?>">
                                 <i data-lucide="edit" class="w-4 h-4" aria-hidden="true"></i>
