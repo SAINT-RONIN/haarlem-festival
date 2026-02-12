@@ -64,7 +64,7 @@
 
         <!-- Card 1: Ratatouille -->
         <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
-            <img src="https://placehold.co/600x400" alt="Ratatouille" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
+            <img src="/assets/Image/restaurants/Restaurant-Ratatouille-card.png" alt="Ratatouille" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
             <div class="w-full h-1 bg-stone-300 border-b-2 border-slate-800"></div>
             <div class="flex-1 p-4 sm:p-5 flex flex-col justify-start gap-3 sm:gap-4">
                 <div class="flex justify-between items-start gap-4">
@@ -108,7 +108,7 @@
 
         <!-- Card 2: Urban Frenchy Bistro Toujours -->
         <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
-            <img src="https://placehold.co/600x400" alt="Urban Frenchy Bistro Toujours" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
+            <img src="/assets/Image/restaurants/Restaurant-UrbanFrenchy.png" alt="Urban Frenchy Bistro Toujours" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
             <div class="w-full h-1 bg-stone-300 border-b-2 border-slate-800"></div>
             <div class="flex-1 p-4 sm:p-5 flex flex-col justify-start gap-3 sm:gap-4">
                 <div class="flex justify-between items-start gap-4">
@@ -151,7 +151,7 @@
 
         <!-- Card 3: New Vegas -->
         <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
-            <div class="w-full h-48 sm:h-60 bg-gradient-to-br from-pink-100 to-pink-200 p-2.5 flex justify-end items-start">
+            <div class="w-full h-48 sm:h-60 p-2.5 flex justify-end items-start" style="background-image: url('/assets/Image/restaurants/Restaurant-NewVegas-card.jpg'); background-size: cover; background-position: center;">
                 <div class="px-3 py-2 bg-stone-100 rounded-lg flex justify-center items-center">
                     <svg class="w-7 h-7" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M15 1.2737e-10C11.0218 -1.6393e-05 7.20645 1.58236 4.39339 4.39902C1.58034 7.21568 -1.614e-05 11.0359 1.23629e-10 15.0193C0.000188882 22.7357 5.84023 29.1965 13.5086 29.9637C13.4878 29.4853 13.4564 28.9733 13.4071 28.6122C12.8042 24.1881 11.9475 19.7609 10.505 15.5359C8.62258 10.0224 4.63161 4.53513 4.63161 4.53513C4.63161 4.53513 6.59687 5.39103 7.47651 6.10613C8.80021 7.18223 9.98985 8.86111 10.8993 10.3392C13.3782 14.3676 15.1346 23.0772 15.1346 23.0772C15.1346 23.0772 17.0807 17.7877 18.3132 15.2591C19.4082 13.0123 20.9612 10.8093 22.191 8.80448C21.4552 8.71317 20.8195 9.31694 20.2109 9.8269C19.3763 10.5263 18.0569 12.8341 18.0569 12.8341C18.0569 12.8341 18.2356 10.1567 18.5372 9.28385C18.9802 8.00186 19.8905 6.90043 20.9354 6.35422C21.685 5.96237 25.1036 5.36932 26.2996 5.16993C23.4563 1.89246 19.3358 0.00717447 15 1.2737e-10ZM27.7492 7.12614C27.5525 8.63868 27.1757 10.6795 26.4988 11.6984C26.0445 12.3822 24.8151 12.9634 24.0755 13.3184C22.8815 13.8915 21.0366 13.9732 21.0366 13.9732C21.0366 13.9732 19.2141 17.2879 18.5895 19.0644C17.3657 22.5448 16.527 26.3728 16.0859 29.8464C16.0794 29.8977 16.0735 29.9488 16.0675 30C23.9174 29.4392 29.9998 22.8993 30 15.0193C29.9963 12.23 29.2169 9.49687 27.7492 7.12614Z" fill="#1A2A40"/>
@@ -200,7 +200,7 @@
 
         <!-- Card 4: Grand Cafe Brinkman -->
         <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
-            <img src="https://placehold.co/600x400" alt="Grand Cafe Brinkman" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
+            <img src="/assets/Image/restaurants/Restaurant-CafeDeBrinkman-card.png" alt="Grand Cafe Brinkman" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
             <div class="w-full h-1 bg-stone-300 border-b-2 border-slate-800"></div>
             <div class="flex-1 p-4 sm:p-5 flex flex-col justify-start gap-3 sm:gap-4">
                 <div class="flex justify-between items-start gap-4">
@@ -243,7 +243,7 @@
 
         <!-- Card 5: Restaurant ML -->
         <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
-            <img src="https://placehold.co/600x400" alt="Restaurant ML" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
+            <img src="/assets/Image/restaurants/Restaurant-ML-card.png" alt="Restaurant ML" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
             <div class="w-full h-1 bg-stone-300 border-b-2 border-slate-800"></div>
             <div class="flex-1 p-4 sm:p-5 flex flex-col justify-start gap-3 sm:gap-4">
                 <div class="flex justify-between items-start gap-4">
@@ -287,7 +287,7 @@
 
         <!-- Card 6: Café de Roemer -->
         <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
-            <img src="https://placehold.co/600x400" alt="Café de Roemer" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
+            <img src="/assets/Image/restaurants/Restaurant-deRoemer-card.png" alt="Café de Roemer" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
             <div class="w-full h-1 bg-stone-300 border-b-2 border-slate-800"></div>
             <div class="flex-1 p-4 sm:p-5 flex flex-col justify-start gap-3 sm:gap-4">
                 <div class="flex justify-between items-start gap-4">
@@ -331,7 +331,7 @@
 
         <!-- Card 7: Restaurant Fris -->
         <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
-            <img src="https://placehold.co/600x400" alt="Restaurant Fris" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
+            <img src="/assets/Image/restaurants/Restaurant-Fris-card.png" alt="Restaurant Fris" class="w-full h-48 sm:h-60 object-cover p-2.5"/>
             <div class="w-full h-1 bg-stone-300 border-b-2 border-slate-800"></div>
             <div class="flex-1 p-4 sm:p-5 flex flex-col justify-start gap-3 sm:gap-4">
                 <div class="flex justify-between items-start gap-4">
