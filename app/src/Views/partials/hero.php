@@ -15,6 +15,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 $isLoggedIn = isset($_SESSION['user_id']);
+
+// CTA links (allow CMS to override; keep existing defaults)
+$primaryCtaHref = $hero['hero_button_primary_link'] ?? '#events';
+$secondaryCtaHref = $hero['hero_button_secondary_link'] ?? '#schedule';
 ?>
 
 <!-- Hero Section with Floating Navigation -->
@@ -223,7 +227,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
         <div class="self-stretch px-3 sm:px-4 md:px-8 lg:px-16 xl:px-24 flex flex-col justify-center items-start">
             <h1 id="hero-heading"
                 class="self-stretch text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-normal leading-tight"><?= htmlspecialchars($hero['hero_main_title']) ?></h1>
-            <p class="self-stretch text-white text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-light leading-snug"><?= htmlspecialchars($hero['hero_subtitle']) ?></p>
+            <p class="self-stretch text-white text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-light leading-snug"><?= nl2br(htmlspecialchars($hero['hero_subtitle'])) ?></p>
         </div>
 
         <!-- CTA Buttons - Bottom RIGHT -->
@@ -233,7 +237,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
             <div class="pr-2 sm:pr-3 md:pr-4 lg:pr-12 xl:pr-24 pl-2 sm:pl-3 md:pl-4 py-2 sm:py-3 md:py-4 lg:py-5 bg-sand rounded-tl-[12px] sm:rounded-tl-[15px] md:rounded-tl-[25px] lg:rounded-tl-[35px] flex justify-end items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-5">
                 <div class="flex flex-row justify-start items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-5" role="group"
                      aria-label="Hero call to action">
-                    <a href="#events"
+                    <a href="<?= htmlspecialchars($primaryCtaHref) ?>"
                        class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-red hover:bg-royal-blue rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 outline-offset-[-1px] outline-red hover:outline-royal-blue flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         <span class="text-center text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap"><?= htmlspecialchars($hero['hero_button_primary']) ?></span>
                         <span class="px-1 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 lg:py-1.5 flex justify-center items-center"
@@ -245,7 +249,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
                             </svg>
                         </span>
                     </a>
-                    <a href="#schedule"
+                    <a href="<?= htmlspecialchars($secondaryCtaHref) ?>"
                        class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-sand hover:bg-red rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 sm:outline-2 outline-offset-[-1px] sm:outline-offset-[-2px] outline-red flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         <span class="text-center text-red group-hover:text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap transition-colors duration-200"><?= htmlspecialchars($hero['hero_button_secondary']) ?></span>
                     </a>
