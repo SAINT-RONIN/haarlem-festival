@@ -7,9 +7,9 @@
  */
 ?>
 
-<section id="how-it-works" class="self-stretch px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-12 flex flex-col justify-start items-center gap-8 sm:gap-10 md:gap-12">
+<section id="how-it-works" class="self-stretch px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-12 flex flex-col justify-start items-start gap-8 sm:gap-10 md:gap-12">
     <!-- Section Title -->
-    <h2 class="self-stretch text-center text-slate-800 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-['Montserrat']">
+    <h2 class="text-gray-900 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
         How reservations work
     </h2>
 

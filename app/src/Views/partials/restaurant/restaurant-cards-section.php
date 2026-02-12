@@ -2,6 +2,7 @@
 /**
  * Restaurant Cards section partial.
  * Displays participating restaurants with filters and card grid.
+ * Button colors now match hero section (red/royal-blue).
  *
  * Restaurant-only section.
  */
@@ -11,10 +12,10 @@
 
     <!-- Section Header -->
     <div class="self-stretch flex flex-col justify-start items-start gap-4 sm:gap-6">
-        <h2 class="self-stretch text-slate-800 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-['Montserrat'] leading-tight">
+        <h2 class="text-gray-900 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
             Explore the participant <br/>restaurants
         </h2>
-        <p class="self-stretch text-slate-800 text-base sm:text-lg md:text-xl font-normal font-['Montserrat'] leading-relaxed">
+        <p class="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed">
             Discover all restaurants participating in Yummy! <br/>Each one offers a special festival menu, unique flavors, and limited time slots throughout the weekend.
         </p>
     </div>
@@ -32,27 +33,27 @@
 
         <div class="flex justify-start items-center gap-2 sm:gap-3 overflow-x-auto flex-shrink-0">
             <!-- All (Active) -->
-            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-lg sm:rounded-xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors">
+            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-lg sm:rounded-xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 All
             </button>
 
             <!-- Other filters (Inactive) -->
-            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors">
+            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-red rounded-lg sm:rounded-xl text-slate-800 hover:text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 Dutch
             </button>
-            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors">
+            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-red rounded-lg sm:rounded-xl text-slate-800 hover:text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 European
             </button>
-            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors">
+            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-red rounded-lg sm:rounded-xl text-slate-800 hover:text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 French
             </button>
-            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors">
+            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-red rounded-lg sm:rounded-xl text-slate-800 hover:text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 Modern
             </button>
-            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors">
+            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-red rounded-lg sm:rounded-xl text-slate-800 hover:text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 Fish & Seafood
             </button>
-            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors">
+            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-red rounded-lg sm:rounded-xl text-slate-800 hover:text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 Vegetarian
             </button>
         </div>
@@ -83,19 +84,22 @@
                     <p class="text-slate-800 text-sm sm:text-base font-['Montserrat']"><span class="font-bold">Address:</span> Spaarne 96, 2011 CL Haarlem</p>
                 </div>
                 <p class="text-slate-800 text-sm sm:text-base font-normal font-['Montserrat'] leading-relaxed">
-                    Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.
+                    A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.
                 </p>
-                <div class="flex items-center gap-2 text-slate-800 text-sm sm:text-base font-normal font-['Montserrat']">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <div class="flex items-center gap-2 text-gray-700 text-sm sm:text-base font-normal font-['Montserrat']">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M3.33289 13.3346V11.3513C3.33289 9.58464 2.47456 8.7513 2.49956 6.66797C2.52456 4.4013 3.74123 1.66797 6.24956 1.66797C7.80789 1.66797 8.33289 3.16797 8.33289 4.58464C8.33289 7.1763 6.66623 9.3013 6.66623 11.818V13.3346C6.66623 13.7767 6.49063 14.2006 6.17807 14.5131C5.86551 14.8257 5.44159 15.0013 4.99956 15.0013C4.55753 15.0013 4.13361 14.8257 3.82105 14.5131C3.50849 14.2006 3.33289 13.7767 3.33289 13.3346Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.667 16.6667V14.6833C16.667 12.9167 17.5253 12.0833 17.5003 10C17.4753 7.73333 16.2587 5 13.7503 5C12.192 5 11.667 6.5 11.667 7.91667C11.667 10.5083 13.3337 12.6333 13.3337 15.15V16.6667C13.3337 17.1087 13.5093 17.5326 13.8218 17.8452C14.1344 18.1577 14.5583 18.3333 15.0003 18.3333C15.4424 18.3333 15.8663 18.1577 16.1788 17.8452C16.4914 17.5326 16.667 17.1087 16.667 16.6667Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13.333 14.168H16.6663" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.33301 10.832H6.66634" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>5 min walk from Patronaat</span>
+                    <span>10 min walk from Patronaat</span>
                 </div>
                 <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         About it
                     </button>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         Book table
                     </button>
                 </div>
@@ -125,17 +129,20 @@
                 <p class="text-slate-800 text-sm sm:text-base font-normal font-['Montserrat'] leading-relaxed">
                     A cozy city bistro focused on seafood and comforting dishes in a lively central setting.
                 </p>
-                <div class="flex items-center gap-2 text-slate-800 text-sm sm:text-base font-normal font-['Montserrat']">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <div class="flex items-center gap-2 text-gray-700 text-sm sm:text-base font-normal font-['Montserrat']">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M3.33289 13.3346V11.3513C3.33289 9.58464 2.47456 8.7513 2.49956 6.66797C2.52456 4.4013 3.74123 1.66797 6.24956 1.66797C7.80789 1.66797 8.33289 3.16797 8.33289 4.58464C8.33289 7.1763 6.66623 9.3013 6.66623 11.818V13.3346C6.66623 13.7767 6.49063 14.2006 6.17807 14.5131C5.86551 14.8257 5.44159 15.0013 4.99956 15.0013C4.55753 15.0013 4.13361 14.8257 3.82105 14.5131C3.50849 14.2006 3.33289 13.7767 3.33289 13.3346Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.667 16.6667V14.6833C16.667 12.9167 17.5253 12.0833 17.5003 10C17.4753 7.73333 16.2587 5 13.7503 5C12.192 5 11.667 6.5 11.667 7.91667C11.667 10.5083 13.3337 12.6333 13.3337 15.15V16.6667C13.3337 17.1087 13.5093 17.5326 13.8218 17.8452C14.1344 18.1577 14.5583 18.3333 15.0003 18.3333C15.4424 18.3333 15.8663 18.1577 16.1788 17.8452C16.4914 17.5326 16.667 17.1087 16.667 16.6667Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13.333 14.168H16.6663" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.33301 10.832H6.66634" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span>2 min walk from Jopenkerk</span>
                 </div>
                 <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         About it
                     </button>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         Book table
                     </button>
                 </div>
@@ -146,8 +153,8 @@
         <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
             <div class="w-full h-48 sm:h-60 bg-gradient-to-br from-pink-100 to-pink-200 p-2.5 flex justify-end items-start">
                 <div class="px-3 py-2 bg-stone-100 rounded-lg flex justify-center items-center">
-                    <svg class="w-7 h-7 text-slate-800" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                    <svg class="w-7 h-7" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 1.2737e-10C11.0218 -1.6393e-05 7.20645 1.58236 4.39339 4.39902C1.58034 7.21568 -1.614e-05 11.0359 1.23629e-10 15.0193C0.000188882 22.7357 5.84023 29.1965 13.5086 29.9637C13.4878 29.4853 13.4564 28.9733 13.4071 28.6122C12.8042 24.1881 11.9475 19.7609 10.505 15.5359C8.62258 10.0224 4.63161 4.53513 4.63161 4.53513C4.63161 4.53513 6.59687 5.39103 7.47651 6.10613C8.80021 7.18223 9.98985 8.86111 10.8993 10.3392C13.3782 14.3676 15.1346 23.0772 15.1346 23.0772C15.1346 23.0772 17.0807 17.7877 18.3132 15.2591C19.4082 13.0123 20.9612 10.8093 22.191 8.80448C21.4552 8.71317 20.8195 9.31694 20.2109 9.8269C19.3763 10.5263 18.0569 12.8341 18.0569 12.8341C18.0569 12.8341 18.2356 10.1567 18.5372 9.28385C18.9802 8.00186 19.8905 6.90043 20.9354 6.35422C21.685 5.96237 25.1036 5.36932 26.2996 5.16993C23.4563 1.89246 19.3358 0.00717447 15 1.2737e-10ZM27.7492 7.12614C27.5525 8.63868 27.1757 10.6795 26.4988 11.6984C26.0445 12.3822 24.8151 12.9634 24.0755 13.3184C22.8815 13.8915 21.0366 13.9732 21.0366 13.9732C21.0366 13.9732 19.2141 17.2879 18.5895 19.0644C17.3657 22.5448 16.527 26.3728 16.0859 29.8464C16.0794 29.8977 16.0735 29.9488 16.0675 30C23.9174 29.4392 29.9998 22.8993 30 15.0193C29.9963 12.23 29.2169 9.49687 27.7492 7.12614Z" fill="#1A2A40"/>
                     </svg>
                 </div>
             </div>
@@ -171,17 +178,20 @@
                 <p class="text-slate-800 text-sm sm:text-base font-normal font-['Montserrat'] leading-relaxed">
                     A casual spot with an international feel, offering familiar dishes and vegetarian options right in the city center.
                 </p>
-                <div class="flex items-center gap-2 text-slate-800 text-sm sm:text-base font-normal font-['Montserrat']">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <div class="flex items-center gap-2 text-gray-700 text-sm sm:text-base font-normal font-['Montserrat']">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M3.33289 13.3346V11.3513C3.33289 9.58464 2.47456 8.7513 2.49956 6.66797C2.52456 4.4013 3.74123 1.66797 6.24956 1.66797C7.80789 1.66797 8.33289 3.16797 8.33289 4.58464C8.33289 7.1763 6.66623 9.3013 6.66623 11.818V13.3346C6.66623 13.7767 6.49063 14.2006 6.17807 14.5131C5.86551 14.8257 5.44159 15.0013 4.99956 15.0013C4.55753 15.0013 4.13361 14.8257 3.82105 14.5131C3.50849 14.2006 3.33289 13.7767 3.33289 13.3346Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.667 16.6667V14.6833C16.667 12.9167 17.5253 12.0833 17.5003 10C17.4753 7.73333 16.2587 5 13.7503 5C12.192 5 11.667 6.5 11.667 7.91667C11.667 10.5083 13.3337 12.6333 13.3337 15.15V16.6667C13.3337 17.1087 13.5093 17.5326 13.8218 17.8452C14.1344 18.1577 14.5583 18.3333 15.0003 18.3333C15.4424 18.3333 15.8663 18.1577 16.1788 17.8452C16.4914 17.5326 16.667 17.1087 16.667 16.6667Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13.333 14.168H16.6663" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.33301 10.832H6.66634" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span>5 min walk from Patronaat</span>
                 </div>
                 <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         About it
                     </button>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         Book table
                     </button>
                 </div>
@@ -211,17 +221,20 @@
                 <p class="text-slate-800 text-sm sm:text-base font-normal font-['Montserrat'] leading-relaxed">
                     A classic grand café on Haarlem's main square, serving familiar European dishes in the heart of the festival buzz.
                 </p>
-                <div class="flex items-center gap-2 text-slate-800 text-sm sm:text-base font-normal font-['Montserrat']">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <div class="flex items-center gap-2 text-gray-700 text-sm sm:text-base font-normal font-['Montserrat']">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3.33289 13.3346V11.3513C3.33289 9.58464 2.47456 8.7513 2.49956 6.66797C2.52456 4.4013 3.74123 1.66797 6.24956 1.66797C7.80789 1.66797 8.33289 3.16797 8.33289 4.58464C8.33289 7.1763 6.66623 9.3013 6.66623 11.818V13.3346C6.66623 13.7767 6.49063 14.2006 6.17807 14.5131C5.86551 14.8257 5.44159 15.0013 4.99956 15.0013C4.55753 15.0013 4.13361 14.8257 3.82105 14.5131C3.50849 14.2006 3.33289 13.7767 3.33289 13.3346Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.667 16.6667V14.6833C16.667 12.9167 17.5253 12.0833 17.5003 10C17.4753 7.73333 16.2587 5 13.7503 5C12.192 5 11.667 6.5 11.667 7.91667C11.667 10.5083 13.3337 12.6333 13.3337 15.15V16.6667C13.3337 17.1087 13.5093 17.5326 13.8218 17.8452C14.1344 18.1577 14.5583 18.3333 15.0003 18.3333C15.4424 18.3333 15.8663 18.1577 16.1788 17.8452C16.4914 17.5326 16.667 17.1087 16.667 16.6667Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13.333 14.168H16.6663" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.33301 10.832H6.66634" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span>Located directly on Grote Markt</span>
                 </div>
                 <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         About it
                     </button>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         Book table
                     </button>
                 </div>
@@ -252,17 +265,20 @@
                 <p class="text-slate-800 text-sm sm:text-base font-normal font-['Montserrat'] leading-relaxed">
                     A modern fine-dining restaurant known for a refined yet welcoming atmosphere.
                 </p>
-                <div class="flex items-center gap-2 text-slate-800 text-sm sm:text-base font-normal font-['Montserrat']">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <div class="flex items-center gap-2 text-gray-700 text-sm sm:text-base font-normal font-['Montserrat']">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3.33289 13.3346V11.3513C3.33289 9.58464 2.47456 8.7513 2.49956 6.66797C2.52456 4.4013 3.74123 1.66797 6.24956 1.66797C7.80789 1.66797 8.33289 3.16797 8.33289 4.58464C8.33289 7.1763 6.66623 9.3013 6.66623 11.818V13.3346C6.66623 13.7767 6.49063 14.2006 6.17807 14.5131C5.86551 14.8257 5.44159 15.0013 4.99956 15.0013C4.55753 15.0013 4.13361 14.8257 3.82105 14.5131C3.50849 14.2006 3.33289 13.7767 3.33289 13.3346Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.667 16.6667V14.6833C16.667 12.9167 17.5253 12.0833 17.5003 10C17.4753 7.73333 16.2587 5 13.7503 5C12.192 5 11.667 6.5 11.667 7.91667C11.667 10.5083 13.3337 12.6333 13.3337 15.15V16.6667C13.3337 17.1087 13.5093 17.5326 13.8218 17.8452C14.1344 18.1577 14.5583 18.3333 15.0003 18.3333C15.4424 18.3333 15.8663 18.1577 16.1788 17.8452C16.4914 17.5326 16.667 17.1087 16.667 16.6667Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13.333 14.168H16.6663" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.33301 10.832H6.66634" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span>12 min walk from Slachthuis</span>
                 </div>
                 <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         About it
                     </button>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         Book table
                     </button>
                 </div>
@@ -293,17 +309,20 @@
                 <p class="text-slate-800 text-sm sm:text-base font-normal font-['Montserrat'] leading-relaxed">
                     A cozy neighborhood café serving honest food and classic flavors in a relaxed and friendly setting.
                 </p>
-                <div class="flex items-center gap-2 text-slate-800 text-sm sm:text-base font-normal font-['Montserrat']">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <div class="flex items-center gap-2 text-gray-700 text-sm sm:text-base font-normal font-['Montserrat']">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M3.33289 13.3346V11.3513C3.33289 9.58464 2.47456 8.7513 2.49956 6.66797C2.52456 4.4013 3.74123 1.66797 6.24956 1.66797C7.80789 1.66797 8.33289 3.16797 8.33289 4.58464C8.33289 7.1763 6.66623 9.3013 6.66623 11.818V13.3346C6.66623 13.7767 6.49063 14.2006 6.17807 14.5131C5.86551 14.8257 5.44159 15.0013 4.99956 15.0013C4.55753 15.0013 4.13361 14.8257 3.82105 14.5131C3.50849 14.2006 3.33289 13.7767 3.33289 13.3346Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.667 16.6667V14.6833C16.667 12.9167 17.5253 12.0833 17.5003 10C17.4753 7.73333 16.2587 5 13.7503 5C12.192 5 11.667 6.5 11.667 7.91667C11.667 10.5083 13.3337 12.6333 13.3337 15.15V16.6667C13.3337 17.1087 13.5093 17.5326 13.8218 17.8452C14.1344 18.1577 14.5583 18.3333 15.0003 18.3333C15.4424 18.3333 15.8663 18.1577 16.1788 17.8452C16.4914 17.5326 16.667 17.1087 16.667 16.6667Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13.333 14.168H16.6663" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.33301 10.832H6.66634" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span>7 min walk from Puncher Comedy Club</span>
                 </div>
                 <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         About it
                     </button>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         Book table
                     </button>
                 </div>
@@ -334,17 +353,20 @@
                 <p class="text-slate-800 text-sm sm:text-base font-normal font-['Montserrat'] leading-relaxed">
                     A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.
                 </p>
-                <div class="flex items-center gap-2 text-slate-800 text-sm sm:text-base font-normal font-['Montserrat']">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <div class="flex items-center gap-2 text-gray-700 text-sm sm:text-base font-normal font-['Montserrat']">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M3.33289 13.3346V11.3513C3.33289 9.58464 2.47456 8.7513 2.49956 6.66797C2.52456 4.4013 3.74123 1.66797 6.24956 1.66797C7.80789 1.66797 8.33289 3.16797 8.33289 4.58464C8.33289 7.1763 6.66623 9.3013 6.66623 11.818V13.3346C6.66623 13.7767 6.49063 14.2006 6.17807 14.5131C5.86551 14.8257 5.44159 15.0013 4.99956 15.0013C4.55753 15.0013 4.13361 14.8257 3.82105 14.5131C3.50849 14.2006 3.33289 13.7767 3.33289 13.3346Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.667 16.6667V14.6833C16.667 12.9167 17.5253 12.0833 17.5003 10C17.4753 7.73333 16.2587 5 13.7503 5C12.192 5 11.667 6.5 11.667 7.91667C11.667 10.5083 13.3337 12.6333 13.3337 15.15V16.6667C13.3337 17.1087 13.5093 17.5326 13.8218 17.8452C14.1344 18.1577 14.5583 18.3333 15.0003 18.3333C15.4424 18.3333 15.8663 18.1577 16.1788 17.8452C16.4914 17.5326 16.667 17.1087 16.667 16.6667Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13.333 14.168H16.6663" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.33301 10.832H6.66634" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span>10 min walk from Patronaat</span>
                 </div>
                 <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         About it
                     </button>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-pink-700 hover:bg-pink-800 rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors">
+                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         Book table
                     </button>
                 </div>
