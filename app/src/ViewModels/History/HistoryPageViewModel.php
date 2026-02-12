@@ -11,8 +11,8 @@ use App\ViewModels\Jazz\ArtistsData;
 use App\ViewModels\Jazz\BookingCallToActionData;
 use App\ViewModels\Jazz\PricingData;
 use App\ViewModels\Jazz\ScheduleCallToActionData;
-use App\ViewModels\Jazz\ScheduleData;
-use App\ViewModels\Jazz\VenuesData;
+use App\ViewModels\History\ScheduleData;
+use App\ViewModels\History\VenuesData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**

@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\ViewModels\History;
+
+/**
+ * DTO for schedule section data.
+ */
+final readonly class ScheduleData
+{
+    /**
+     * @param ScheduleDayData[] $days
+     */
+    public function __construct(
+        public string $headingText,
+        public string $filterLabel,
+        public array $days,
+    ) {
+    }
+}

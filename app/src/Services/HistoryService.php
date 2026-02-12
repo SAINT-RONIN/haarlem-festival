@@ -12,6 +12,12 @@ use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoryPageViewModel;
 use App\ViewModels\IntroSplitSectionData;
+use App\ViewModels\History\ScheduleData;
+use App\ViewModels\History\ScheduleDayData;
+use App\ViewModels\History\ScheduleEventData;
+use App\ViewModels\History\RouteData;
+use App\ViewModels\History\VenueCardData;
+use App\ViewModels\History\VenuesData;
 
 /**
  * Service for preparing history page data.
@@ -49,7 +55,7 @@ class HistoryService implements IHistoryService
             globalUi: $this->buildGlobalUi(),
             gradientSection: $this->buildGradientSection(),
             introSplitSection: $this->buildIntroSplitSection(),
-            routeData: $this->buildRouteData(),
+            routeData: $this->buildRouteData(),//TODO: implement route data building
             venuesData: $this->buildVenuesData(),
             ticketOptionsData: $this->buildTicketOptionsData(),
             infoAboutTourData: $this->buildInfoAboutTourData(),
@@ -152,6 +158,174 @@ class HistoryService implements IHistoryService
             bodyText: $bodyText,
             imageUrl: '/assets/Image/History/History-third-section.png',
             imageAltText: 'A corner of a historic building in Haarlem',
+        );
+    }
+
+    private function buildRouteData(): RouteData
+    {
+        return new RouteData;
+    }
+
+    private function buildVenuesData(): VenuesData
+    {
+        $venues = [
+            new VenueCardData(
+                name: $this->getCmsItem('historical_locations_section', 'history_grotemarkt_name', 'Grote Markt'),
+                description: $this->getCmsItem(
+                    'historical_locations_section',
+                    'history_grotemarkt_description',
+                    'The heart of the historic center of Haarlem.'
+                ),
+                imageUrl: $this->getCmsImage('historical_locations_section', 'history_grotemarkt_image', '/assets/Image/History/History-GroteMarkt.png'),
+            ),
+            new VenueCardData(
+                name: $this->getCmsItem('historical_locations_section', 'history_grotemarkt_name', 'Grote Markt'),
+                description: $this->getCmsItem(
+                    'historical_locations_section',
+                    'history_grotemarkt_description',
+                    'The heart of the historic center of Haarlem.'
+                ),
+                imageUrl: $this->getCmsImage('historical_locations_section', 'history_grotemarkt_image', '/assets/Image/History/History-GroteMarkt.png'),
+            ),
+            new VenueCardData(
+                name: $this->getCmsItem('historical_locations_section', 'history_grotemarkt_name', 'Grote Markt'),
+                description: $this->getCmsItem(
+                    'historical_locations_section',
+                    'history_grotemarkt_description',
+                    'The heart of the historic center of Haarlem.'
+                ),
+                imageUrl: $this->getCmsImage('historical_locations_section', 'history_grotemarkt_image', '/assets/Image/History/History-GroteMarkt.png'),
+            ),
+        ];
+
+        return new ArtistsData(
+            headingText: $this->getCmsItem('artists_section', 'artists_heading', 'Discover our lineup'),
+            artists: $artists,
+            currentPage: 1,
+            totalPages: 4,
+            totalArtists: 12,
+        );
+    }
+
+    private function buildScheduleData(): ScheduleData
+    {
+        // Schedule data remains hardcoded for now (as per requirements)
+        $thursday = new ScheduleDayData(
+            dayName: 'Thursday',
+            fullDate: 'Thursday, July 25',
+            events: [
+                new ScheduleEventData(
+                    '10:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 25',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+                new ScheduleEventData(
+                    '13:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 25',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+                new ScheduleEventData(
+                    '16:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 25',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+            ],
+        );
+
+        $friday = new ScheduleDayData(
+            dayName: 'Friday',
+            fullDate: 'Friday, July 26',
+            events: [
+                new ScheduleEventData(
+                    '10:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 26',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+                new ScheduleEventData(
+                    '13:00',
+                    ['In English', 'In Dutch', 'In Chinese'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 26',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+                new ScheduleEventData(
+                    '16:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 26',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+            ],
+        );
+
+        $saturday = new ScheduleDayData(
+            dayName: 'Saturday',
+            fullDate: 'Saturday, July 27',
+            events: [
+                new ScheduleEventData(
+                    '10:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 27',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+                new ScheduleEventData(
+                    '13:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 27',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+                new ScheduleEventData(
+                    '16:00',
+                    ['In English', 'In Dutch', 'In Chinese'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 27',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+            ],
+        );
+
+        $sunday = new ScheduleDayData(
+            dayName: 'Sunday',
+            fullDate: 'Sunday, July 29',
+            events: [
+                new ScheduleEventData(
+                    '10:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 29',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+                new ScheduleEventData(
+                    '13:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 29',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+                new ScheduleEventData(
+                    '16:00',
+                    ['In English', 'In Dutch'],
+                    'A giant flag near Church of St. Bavo at Grote Markt',
+                    'Thursday, July 29',
+                    'Group ticket - best value for 4 people',
+                    'from €17.50'),
+            ],
+        );
+
+        return new ScheduleData(
+            headingText: 'Tour schedule',
+            filterLabel: 'Filters',
+            days: [$thursday, $friday, $saturday, $sunday],
         );
     }
 }
