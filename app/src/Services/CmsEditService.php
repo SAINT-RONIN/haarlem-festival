@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
+use App\Services\Interfaces\ICmsEditService;
 use App\Utils\CmsContentLimits;
 
 /**
@@ -14,7 +15,7 @@ use App\Utils\CmsContentLimits;
  * Handles business logic for loading, validating, and saving
  * CMS page content.
  */
-class CmsEditService
+class CmsEditService implements ICmsEditService
 {
     private CmsRepository $cmsRepository;
     private MediaAssetRepository $mediaAssetRepository;

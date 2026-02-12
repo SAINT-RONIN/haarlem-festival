@@ -5,16 +5,12 @@
  * @var string $currentPage Current page identifier for nav highlighting
  * @var bool $isSticky Whether the navbar should be sticky (default true)
  * @var bool $isDark Whether to use dark background style (default true)
+ * @var bool $isLoggedIn Whether user is logged in (passed from controller/ViewModel)
  */
 $currentPage = $currentPage ?? 'home';
 $isSticky = $isSticky ?? true;
 $isDark = $isDark ?? true;
-
-// Check if user is logged in
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-$isLoggedIn = isset($_SESSION['user_id']);
+$isLoggedIn = $isLoggedIn ?? false;
 
 $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
 ?>
@@ -35,7 +31,7 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
 
         <!-- Mobile Menu Button -->
         <button type="button" id="nav-menu-btn"
-                onclick="document.getElementById('nav-menu').classList.toggle('hidden'); document.getElementById('nav-menu').classList.toggle('flex'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');"
+                data-toggle-menu="nav-menu"
                 class="xl:hidden p-2 sm:p-2.5 mr-1.5 sm:mr-2 text-sand focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 rounded-lg"
                 aria-expanded="false" aria-controls="nav-menu" aria-label="Toggle navigation menu">
             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"

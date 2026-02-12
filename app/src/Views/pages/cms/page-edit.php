@@ -8,14 +8,11 @@
  * @var array $imageLimits Image dimension/size limits
  * @var string|null $successMessage Flash success message
  * @var string|null $errorMessage Flash error message
+ * @var string $userName Admin user display name (passed from controller)
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$userName = $_SESSION['user_display_name'] ?? 'Administrator';
 $currentView = 'pages'; // For sidebar highlighting
+$userName = $userName ?? 'Administrator';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,22 +22,19 @@ $currentView = 'pages'; // For sidebar highlighting
     <title>Edit <?= htmlspecialchars($page['title']) ?> | CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- TinyMCE (CDN, keyless/community build) -->
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
     <link rel="icon" href="/assets/Icons/Logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/assets/css/tokens.css">
-    <style>
-        body { font-family: 'Montserrat', sans-serif; }
-        .char-counter.warning { color: #f59e0b; }
-        .char-counter.error { color: #ef4444; }
-    </style>
+    <link rel="stylesheet" href="/assets/css/cms.css">
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 cms-body">
 
 <div class="flex h-screen">
     <?php require __DIR__ . '/../../partials/cms/sidebar.php'; ?>
@@ -49,7 +43,8 @@ $currentView = 'pages'; // For sidebar highlighting
         <!-- Header -->
         <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="/cms/pages" class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                <a href="/cms/pages"
+                   class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </a>
                 <div>
@@ -58,7 +53,7 @@ $currentView = 'pages'; // For sidebar highlighting
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <a href="/<?= htmlspecialchars($page['slug'] === 'home' ? '' : $page['slug']) ?>" 
+                <a href="/<?= htmlspecialchars($page['slug'] === 'home' ? '' : $page['slug']) ?>"
                    target="_blank"
                    class="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                     <i data-lucide="external-link" class="w-4 h-4"></i>
@@ -88,7 +83,8 @@ $currentView = 'pages'; // For sidebar highlighting
                 </div>
             <?php endif; ?>
 
-            <form id="page-edit-form" action="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit" method="POST" class="space-y-6">
+            <form id="page-edit-form" action="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit"
+                  method="POST" class="space-y-6">
                 <?php foreach ($sections as $section): ?>
                     <?php if ($section['isEditable']): ?>
                         <?php require __DIR__ . '/../../partials/cms/edit-section-accordion.php'; ?>
@@ -99,120 +95,15 @@ $currentView = 'pages'; // For sidebar highlighting
     </section>
 </div>
 
+<!-- Configuration for JS -->
 <script>
-    // Initialize Lucide icons
-    lucide.createIcons();
-
-    // Content limits from PHP
     const contentLimits = <?= json_encode($contentLimits) ?>;
     const imageLimits = <?= json_encode($imageLimits) ?>;
     const pageId = <?= $page['id'] ?>;
     const pageSlug = <?= json_encode($page['slug']) ?>;
-
-    // Initialize TinyMCE for HTML fields
-    document.addEventListener('DOMContentLoaded', function() {
-        tinymce.init({
-            selector: 'textarea[data-tinymce]',
-            height: 300,
-            menubar: false,
-            plugins: 'lists link',
-            toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
-            content_style: 'body { font-family: Montserrat, sans-serif; font-size: 14px; }',
-            setup: function(editor) {
-                editor.on('change keyup', function() {
-                    editor.save();
-                    updateCharCounter(editor.getElement());
-                });
-            }
-        });
-
-        // Initialize character counters
-        document.querySelectorAll('[data-char-limit]').forEach(initCharCounter);
-
-        // Initialize accordion toggles
-        document.querySelectorAll('[data-accordion-toggle]').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                const content = this.closest('.accordion-section').querySelector('.accordion-content');
-                const icon = this.querySelector('[data-lucide="chevron-down"]');
-                content.classList.toggle('hidden');
-                icon.classList.toggle('rotate-180');
-            });
-        });
-    });
-
-    function initCharCounter(input) {
-        updateCharCounter(input);
-        input.addEventListener('input', function() {
-            updateCharCounter(this);
-        });
-    }
-
-    function updateCharCounter(input) {
-        const counterId = input.id + '-counter';
-        const counter = document.getElementById(counterId);
-        if (!counter) return;
-
-        const type = input.dataset.itemType;
-        const maxChars = contentLimits[type] || 500;
-        const text = input.value.replace(/<[^>]*>/g, '');
-        const currentLength = text.length;
-
-        counter.textContent = currentLength + ' / ' + maxChars;
-        counter.classList.remove('warning', 'error');
-
-        if (currentLength > maxChars) {
-            counter.classList.add('error');
-        } else if (currentLength > maxChars * 0.9) {
-            counter.classList.add('warning');
-        }
-    }
-
-    // Image upload handler
-    function uploadImage(itemId, fileInput) {
-        const file = fileInput.files[0];
-        if (!file) return;
-
-        // Client-side validation
-        if (!imageLimits.allowedMimes.includes(file.type)) {
-            alert('Invalid file type. Allowed: JPG, PNG, WebP');
-            return;
-        }
-
-        if (file.size > imageLimits.maxFileSize) {
-            alert('File too large. Maximum: ' + imageLimits.maxFileSizeFormatted);
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('item_id', itemId);
-
-        const previewContainer = document.getElementById('preview-' + itemId);
-        previewContainer.innerHTML = '<div class="text-gray-500">Uploading...</div>';
-
-        fetch('/cms/pages/' + pageId + '/' + encodeURIComponent(pageSlug) + '/upload-image', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Server returned ' + response.status);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                previewContainer.innerHTML = '<img src="' + data.filePath + '" class="max-h-40 rounded-lg" alt="Uploaded image">';
-            } else {
-                previewContainer.innerHTML = '<div class="text-red-500">' + (data.error || 'Unknown error') + '</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Upload error:', error);
-            previewContainer.innerHTML = '<div class="text-red-500">Upload failed: ' + error.message + '</div>';
-        });
-    }
 </script>
+<script src="/assets/js/cms/cms-common.js"></script>
+<script src="/assets/js/cms/page-edit.js"></script>
 </body>
 </html>
 

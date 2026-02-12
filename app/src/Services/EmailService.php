@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Services\Interfaces\IEmailService;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
@@ -22,7 +23,7 @@ use PHPMailer\PHPMailer\PHPMailer;
  *   APP_URL       - Application URL for links
  *   APP_ENV       - Environment (local/production)
  */
-class EmailService
+class EmailService implements IEmailService
 {
     private string $host;
     private int $port;
@@ -94,13 +95,14 @@ EMAIL;
     private function send(string $to, string $subject, string $body): bool
     {
         if (!$this->isSmtpConfigured()) {
-            return false;
+            throw new \RuntimeException("SMTP not configured. Email to {$to} with subject '{$subject}' was not sent.");
         }
 
         if ($this->isLocalEnvironment() && !$this->forceSend) {
-            return false;
+            throw new \RuntimeException("Cannot send mail to local email address '{$to}'.");
         }
 
+        // Email has been sent successfully if we reach this point, even if it fails to send, we log the error and return false
         return $this->sendViaSmtp($to, $subject, $body);
     }
 

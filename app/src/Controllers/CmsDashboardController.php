@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\ValidationException;
 use App\Repositories\CmsRepository;
 use App\Services\CmsEditService;
 use App\Services\MediaAssetService;
 use App\Services\SessionService;
 use App\ViewModels\CmsPageEditViewModel;
-use App\Exceptions\ValidationException;
 
 /**
  * Controller for the CMS Dashboard.
@@ -43,6 +43,7 @@ class CmsDashboardController
         $currentView = 'dashboard';
         $recentPages = $this->getRecentPages();
         $activities = $this->getRecentActivities();
+        $userName = $this->getUserDisplayName();
 
         require __DIR__ . '/../Views/pages/cms/dashboard.php';
     }
@@ -58,97 +59,110 @@ class CmsDashboardController
         $currentView = 'pages';
         $searchQuery = $_GET['search'] ?? '';
         $pages = $this->getAllPages();
+        $userName = $this->getUserDisplayName();
 
         require __DIR__ . '/../Views/pages/cms/dashboard.php';
     }
 
     /**
+     * Gets the current user's display name from session.
+     */
+    private function getUserDisplayName(): string
+    {
+        $this->sessionService->start();
+        return $_SESSION['user_display_name'] ?? 'Administrator';
+    }
+
+    /**
      * Gets recently updated pages for the dashboard.
-     *
-     * @return array Array of recent pages with title, status, and time
      */
     private function getRecentPages(): array
     {
-        // Fetch actual CMS pages from database
         try {
             $cmsPages = $this->cmsRepository->findAllPages();
-            $pages = [];
+            $pages = $this->mapPagesToRecentFormat(array_slice($cmsPages, 0, 4));
 
-            foreach (array_slice($cmsPages, 0, 4) as $page) {
-                $pages[] = [
-                    'title' => $page['Title'],
-                    'status' => 'Published', // All CMS pages are published for now
-                    'time' => $this->formatTimeAgo($page['UpdatedAtUtc'] ?? null),
-                ];
-            }
-
-            // If no pages in database, return default - WE WILL REMOVE THIS ONCE WE HAVE REAL DATA
-            if (empty($pages)) {
-                return [
-                    ['title' => 'Home', 'status' => 'Published', 'time' => '2h ago'],
-                    ['title' => 'Jazz', 'status' => 'Published', 'time' => 'yesterday'],
-                    ['title' => 'Dance', 'status' => 'Published', 'time' => '3d ago'],
-                    ['title' => 'History', 'status' => 'Draft', 'time' => '6d ago'],
-                ];
-            }
-
-            return $pages;
+            return !empty($pages) ? $pages : $this->getDefaultRecentPages();
         } catch (\Exception $e) {
-            // Fallback to static data if database error
-            return [
-                ['title' => 'Home', 'status' => 'Published', 'time' => '2h ago'],
-                ['title' => 'Jazz', 'status' => 'Published', 'time' => 'yesterday'],
-                ['title' => 'Dance', 'status' => 'Published', 'time' => '3d ago'],
-                ['title' => 'History', 'status' => 'Draft', 'time' => '6d ago'],
-            ];
+            return $this->getDefaultRecentPages();
         }
     }
 
     /**
+     * Maps CMS pages to recent pages format.
+     */
+    private function mapPagesToRecentFormat(array $cmsPages): array
+    {
+        $pages = [];
+        foreach ($cmsPages as $page) {
+            $pages[] = [
+                'title' => $page['Title'],
+                'status' => 'Published',
+                'time' => $this->formatTimeAgo($page['UpdatedAtUtc'] ?? null),
+            ];
+        }
+        return $pages;
+    }
+
+    /**
+     * Returns fallback data when database is unavailable.
+     */
+    private function getDefaultRecentPages(): array
+    {
+        return [
+            ['title' => 'Home', 'status' => 'Published', 'time' => '2h ago'],
+            ['title' => 'Jazz', 'status' => 'Published', 'time' => 'yesterday'],
+            ['title' => 'Dance', 'status' => 'Published', 'time' => '3d ago'],
+            ['title' => 'History', 'status' => 'Draft', 'time' => '6d ago'],
+        ];
+    }
+
+    /**
      * Gets all pages for the pages list view.
-     *
-     * @return array Array of pages with id, title, slug, status, updatedAt
      */
     private function getAllPages(): array
     {
         try {
             $cmsPages = $this->cmsRepository->findAllPages();
-            $pages = [];
+            $pages = $this->mapPagesToListFormat($cmsPages);
 
-            foreach ($cmsPages as $page) {
-                $pages[] = [
-                    'id' => $page['CmsPageId'],
-                    'title' => $page['Title'],
-                    'slug' => $page['Slug'],
-                    'status' => 'Published',
-                    'updatedAt' => $this->formatTimeAgo($page['UpdatedAtUtc'] ?? null),
-                ];
-            }
-
-            // If no pages, return default list
-            if (empty($pages)) {
-                return [
-                    ['id' => 1, 'title' => 'Home', 'slug' => 'home', 'status' => 'Published', 'updatedAt' => '2h ago'],
-                    ['id' => 2, 'title' => 'Jazz', 'slug' => 'jazz', 'status' => 'Published', 'updatedAt' => 'yesterday'],
-                    ['id' => 3, 'title' => 'Dance', 'slug' => 'dance', 'status' => 'Published', 'updatedAt' => '3d ago'],
-                    ['id' => 4, 'title' => 'History', 'slug' => 'history', 'status' => 'Draft', 'updatedAt' => '6d ago'],
-                    ['id' => 5, 'title' => 'Restaurant', 'slug' => 'restaurant', 'status' => 'Published', 'updatedAt' => '1w ago'],
-                    ['id' => 6, 'title' => 'Storytelling', 'slug' => 'storytelling', 'status' => 'Published', 'updatedAt' => '1w ago'],
-                ];
-            }
-
-            return $pages;
+            return !empty($pages) ? $pages : $this->getDefaultAllPages();
         } catch (\Exception $e) {
-            // Fallback to static data
-            return [
-                ['id' => 1, 'title' => 'Home', 'slug' => 'home', 'status' => 'Published', 'updatedAt' => '2h ago'],
-                ['id' => 2, 'title' => 'Jazz', 'slug' => 'jazz', 'status' => 'Published', 'updatedAt' => 'yesterday'],
-                ['id' => 3, 'title' => 'Dance', 'slug' => 'dance', 'status' => 'Published', 'updatedAt' => '3d ago'],
-                ['id' => 4, 'title' => 'History', 'slug' => 'history', 'status' => 'Draft', 'updatedAt' => '6d ago'],
-                ['id' => 5, 'title' => 'Restaurant', 'slug' => 'restaurant', 'status' => 'Published', 'updatedAt' => '1w ago'],
-                ['id' => 6, 'title' => 'Storytelling', 'slug' => 'storytelling', 'status' => 'Published', 'updatedAt' => '1w ago'],
+            return $this->getDefaultAllPages();
+        }
+    }
+
+    /**
+     * Maps CMS pages to pages list format.
+     */
+    private function mapPagesToListFormat(array $cmsPages): array
+    {
+        $pages = [];
+        foreach ($cmsPages as $page) {
+            $pages[] = [
+                'id' => $page['CmsPageId'],
+                'title' => $page['Title'],
+                'slug' => $page['Slug'],
+                'status' => 'Published',
+                'updatedAt' => $this->formatTimeAgo($page['UpdatedAtUtc'] ?? null),
             ];
         }
+        return $pages;
+    }
+
+    /**
+     * Returns fallback pages list.
+     */
+    private function getDefaultAllPages(): array
+    {
+        return [
+            ['id' => 1, 'title' => 'Home', 'slug' => 'home', 'status' => 'Published', 'updatedAt' => '2h ago'],
+            ['id' => 2, 'title' => 'Jazz', 'slug' => 'jazz', 'status' => 'Published', 'updatedAt' => 'yesterday'],
+            ['id' => 3, 'title' => 'Dance', 'slug' => 'dance', 'status' => 'Published', 'updatedAt' => '3d ago'],
+            ['id' => 4, 'title' => 'History', 'slug' => 'history', 'status' => 'Draft', 'updatedAt' => '6d ago'],
+            ['id' => 5, 'title' => 'Restaurant', 'slug' => 'restaurant', 'status' => 'Published', 'updatedAt' => '1w ago'],
+            ['id' => 6, 'title' => 'Storytelling', 'slug' => 'storytelling', 'status' => 'Published', 'updatedAt' => '1w ago'],
+        ];
     }
 
     /**
@@ -230,6 +244,7 @@ class CmsDashboardController
         $sections = $viewData['sections'];
         $contentLimits = $viewData['contentLimits'];
         $imageLimits = $viewData['imageLimits'];
+        $userName = $this->getUserDisplayName();
 
         $successMessage = $_SESSION['cms_success'] ?? null;
         $errorMessage = $_SESSION['cms_error'] ?? null;
@@ -247,11 +262,12 @@ class CmsDashboardController
         CmsAuthController::requireAdmin();
 
         $pageId = (int)$id;
+        $pageSlug =
         $items = $_POST['items'] ?? [];
 
         if (empty($items)) {
             $_SESSION['cms_error'] = 'No changes submitted';
-            header("Location: /cms/pages/{$pageId}/edit");
+            header("Location: /cms/pages/edit");
             exit;
         }
 

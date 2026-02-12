@@ -4,14 +4,12 @@
  *
  * @var string $currentPage Current page identifier for nav highlighting
  * @var bool $includeNav Whether to include standalone navigation (false for homepage where nav is in hero)
+ * @var bool $isLoggedIn Whether user is logged in (passed from controller/ViewModel, defaults to false)
  */
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 $currentPage = $currentPage ?? 'home';
 $includeNav = $includeNav ?? false;
 $useLayoutWrapper = $useLayoutWrapper ?? false;
+$isLoggedIn = $isLoggedIn ?? false;
 ?>
 <!DOCTYPE html>
 <html lang="en">

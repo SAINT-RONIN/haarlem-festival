@@ -85,5 +85,18 @@ class MediaAssetRepository implements IMediaAssetRepository
         $stmt = $this->pdo->prepare('DELETE FROM MediaAsset WHERE MediaAssetId = ?');
         return $stmt->execute([$mediaAssetId]);
     }
+
+    /**
+     * Links a media asset to a CMS item by updating the CmsItem's MediaAssetId.
+     *
+     * @param int $mediaAssetId Media asset ID
+     * @param int $cmsItemId CMS item ID
+     * @return bool Success status
+     */
+    public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = ? WHERE CmsItemId = ?');
+        return $stmt->execute([$mediaAssetId, $cmsItemId]);
+    }
 }
 

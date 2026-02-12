@@ -2,13 +2,13 @@
 /**
  * Reset password page for website visitors.
  *
- * @var string $token The reset token from the URL
+ * @var string $token The reset token from the URL (passed from controller)
  * @var bool $validToken Whether the token is valid
  * @var string|null $error Error message to display
  */
 $currentPage = 'reset-password';
 $includeNav = true;
-$token = $_GET['token'] ?? '';
+// $token is passed from the controller
 ?>
 <?php require __DIR__ . '/../partials/header.php'; ?>
 

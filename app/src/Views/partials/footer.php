@@ -51,7 +51,7 @@
                         class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
                         src="/assets/Icons/Logo.svg"
                         alt="Haarlem Festival logo">
-                <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;"
+                <a href="#" data-scroll-top
                    class="group py-1.5 sm:py-2 md:py-2.5 inline-flex justify-start items-center gap-2 sm:gap-3 md:gap-5">
                     <span class="text-center text-white text-sm sm:text-base md:text-lg lg:text-xl font-normal">BACK TO THE TOP</span>
                     <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-9 lg:h-9 fill-none text-white transition-transform duration-200 group-hover:scale-125"
@@ -72,5 +72,6 @@
     </div>
 <?php endif; ?>
 
+<script src="/assets/js/menu-toggle.js"></script>
 </body>
 </html>
