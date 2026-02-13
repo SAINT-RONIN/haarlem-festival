@@ -17,6 +17,9 @@ use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoryPageViewModel;
+use App\ViewModels\History\ImportantInfoAboutTour;
+use App\ViewModels\History\PricingCard;
+use App\ViewModels\History\TicketOptions;
 use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\History\ScheduleData;
 use App\ViewModels\History\ScheduleDayData;
@@ -47,7 +50,7 @@ class HistoryService implements IHistoryService
     ];
     private ICmsRepository $cmsRepository;
     private IMediaAssetRepository $mediaAssetRepository;
-    private IScheduleService $scheduleService;
+
     private ISessionService $sessionService;
     private ?array $historyPageData = null;
     private ?array $historySections = null;
@@ -57,7 +60,6 @@ class HistoryService implements IHistoryService
     {
         $this->cmsRepository = new CmsRepository();
         $this->mediaAssetRepository = new MediaAssetRepository();
-        $this->scheduleService = new ScheduleService();
         $this->sessionService = new SessionService();
         $this->venueRepository = new VenueRepository();
     }
@@ -159,7 +161,7 @@ class HistoryService implements IHistoryService
     private function buildHeroData(): HeroData
     {
         return new HeroData(
-            mainTitle: $this->getCmsItem('hero_section', 'hero_main_title', 'HAARLEM HISTORY'),
+            mainTitle: $this->getCmsItem('hero_section', 'hero_main_title', 'A STROLL THROUGH HISTORY'),
             subtitle: $this->getCmsItem(
                 'hero_section',
                 'hero_subtitle',
@@ -357,6 +359,61 @@ class HistoryService implements IHistoryService
                 'historical_locations_heading',
                 'Read more about these locations'),
             venues: $venues,
+        );
+    }
+
+
+
+    private function buildTicketOptionsData() : TicketOptions
+    {
+        return new TicketOptions(
+            headingText: $this->getCmsItem(
+                'ticket_options_section',
+                'ticket_options_heading',
+                'Your ticket options to join the experience'),
+            pricingCards: [
+                new PricingCard(
+                    icon: $this->getCmsImage('history_ticket_options_section', 'history_single_ticket_icon', '/assets/Icons/History/History/single-ticket-icon.svg'),
+                    title: $this->getCmsItem('history_ticket_options_section', 'history_pricing_single_title', 'Single Ticket'),
+                    price: $this->getCmsItem('history_pricing_section', 'history_pricing_single_price', '€17.50'),
+                    descriptionItems: [
+                        $this->getCmsItem('history_pricing_section', 'history_pricing_single_include1', 'Per person'),
+                        $this->getCmsItem('history_pricing_section', 'history_pricing_single_include2', 'Includes one complimentary drink'),
+                        $this->getCmsItem('history_pricing_section', 'history_pricing_single_include3', '2.5 hour guided tour'),
+                    ]
+                ),
+                new PricingCard(
+                    icon: $this->getCmsImage(
+                        'history_ticket_options_section', 'history_group_ticket_icon', '/assets/Icons/History/History/group-ticket-icon.svg'),
+                    title: $this->getCmsItem('history_ticket_options_section', 'history_pricing_group_title', 'Group Ticket'),
+                    price: $this->getCmsItem('history_pricing_section', 'history_pricing_group_price', '€60.00'),
+                    descriptionItems: [
+                        $this->getCmsItem('history_pricing_section', 'history_pricing_group_include1', 'For up to 4 people'),
+                        $this->getCmsItem('history_pricing_section', 'history_pricing_group_include2', 'Includes four complimentary drinks'),
+                        $this->getCmsItem('history_pricing_section', 'history_pricing_group_include3', 'Best value for families!'),
+                    ]
+                )
+            ],
+        );
+    }
+
+    private function buildInfoAboutTourData() : ImportantInfoAboutTour
+    {
+        return new ImportantInfoAboutTour(
+            headingText: $this->getCmsItem(
+                'history_important_tour_info_section',
+                'history_important_tour_info_heading',
+                'Important information about the tour'),
+            infoItems: [
+                $this->getCmsItem('history_important_tour_info_section', 'important_info_item1', 'Minimum age requirement: 12 years old'),
+                $this->getCmsItem('history_important_tour_info_section', 'important_info_item2', 'No strollers allowed due to the nature of the walking route'),
+                $this->getCmsItem('history_important_tour_info_section', 'important_info_item3', 'Tour duration: Approximately 2.5 hours including 15-minute break'),
+                $this->getCmsItem('history_important_tour_info_section', 'important_info_item4', 'Group ticket is the best value for a group of 4 or for a family'),
+                $this->getCmsItem('history_important_tour_info_section', 'important_info_item5', 'Starting point: Look for the giant flag near Church of St. Bavo at Grote Markt'),
+                $this->getCmsItem('history_important_tour_info_section', 'important_info_item6', 'Group size: Maximum 12 participants per guide'),
+                $this->getCmsItem('history_important_tour_info_section', 'important_info_item7', 'Comfortable walking shoes recommended'),
+                $this->getCmsItem('history_important_tour_info_section', 'important_info_item8', 'Tours run in light rain; severe weather cancellations will be communicated via email'),
+            ],
         );
     }
 

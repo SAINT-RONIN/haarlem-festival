@@ -2,20 +2,48 @@
 /**
  * History page view.
  *
- * Hardcoded layout for the "A Stroll Through History" landing page.
- * Navigation is handled via the shared header/navbar/footer partials.
+ * @var \App\ViewModels\History\HistoryPageViewModel $viewModel
  */
 
-// Set any view-specific variables before including the header
+$heroData = $viewModel->heroData;
+$globalUi = $viewModel->globalUi;
+$gradientSection = $viewModel->gradientSection;
+$introSplitSection = $viewModel->introSplitSection;
+$routeData = $viewModel->routeData;
+$venuesData = $viewModel->venuesData;
+$ticketOptionsData = $viewModel->ticketOptionsData;
+$infoAboutTourData = $viewModel->infoAboutTourData;
+$scheduleData = $viewModel->scheduleData;
 $currentPage = 'history';
-$includeNav = true;
+$includeNav = false;
 
-// Include header BEFORE any HTML output so session_start() can send headers safely
-require __DIR__ . '/../partials/header.php';
+// Build $cms array for hero.php partial compatibility
+$cms = [
+        'hero_section' => [
+                'hero_main_title' => $heroData->mainTitle,
+                'hero_subtitle' => $heroData->subtitle,
+                'hero_button_primary' => $heroData->primaryButtonText,
+                'hero_button_primary_link' => $heroData->primaryButtonLink,
+                'hero_button_secondary' => $heroData->secondaryButtonText,
+                'hero_button_secondary_link' => $heroData->secondaryButtonLink,
+                'hero_background_image' => $heroData->backgroundImageUrl,
+        ],
+        'global_ui' => [
+                'site_name' => $globalUi->siteName,
+                'nav_home' => $globalUi->navHome,
+                'nav_jazz' => $globalUi->navJazz,
+                'nav_dance' => $globalUi->navDance,
+                'nav_history' => $globalUi->navHistory,
+                'nav_restaurant' => $globalUi->navRestaurant,
+                'nav_storytelling' => $globalUi->navStorytelling,
+                'btn_my_program' => $globalUi->btnMyProgram,
+                'is_logged_in' => $globalUi->isLoggedIn,
+        ],
+];
 ?>
+<?php require __DIR__ . '/../partials/header.php'; ?>
 
 <main class="w-full bg-sand inline-flex flex-col justify-start items-center">
-    <!-- Hardcoded History homepage content -->
 
     <?php require __DIR__ . '/../partials/hero.php'; ?>
 
@@ -25,36 +53,7 @@ require __DIR__ . '/../partials/header.php';
 
     <?php require __DIR__ . '/../partials/history/locations-section.php'; ?>
 
-        <div class="w-full px-6 lg:px-24 py-12 flex flex-col justify-start items-start gap-2.5 overflow-hidden">
-            <div class="self-stretch justify-start text-slate-800 text-5xl font-bold font-['Montserrat'] leading-[62px]">The Route</div>
-            <div class="self-stretch p-3.5 bg-stone-100 rounded-2xl flex flex-col justify-start items-start overflow-hidden route">
-                <div class="w-full flex flex-col lg:flex-row justify-start items-stretch gap-8 lg:gap-12">
-                    <!-- LEFT: locations list -->
-                    <div class="flex-1 inline-flex flex-col justify-center items-stretch gap-[5px]">
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                        <?php require __DIR__ . '/../partials/history-map-venue.php'; ?>
-                    </div>
-                    <!-- RIGHT: map -->
-                    <figure class="flex-1 min-h-[200px] sm:min-h-[250px] md:min-h-[300px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] flex">
-                        <div class="flex-1 relative rounded-xl sm:rounded-2xl overflow-hidden">
-                            <iframe
-                                class="w-full h-full min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-0 map-embed-borderless"
-                                src="https://www.openstreetmap.org/export/embed.html?bbox=4.6200%2C52.3700%2C4.6600%2C52.3900&layer=mapnik&marker=52.3808%2C4.6368"
-                                loading="lazy"
-                                title="Interactive map showing Haarlem Festival event locations">
-                            </iframe>
-                        </div>
-                    </figure>
-                </div>
-            </div>
-        </div>
+
         <div class="w-full px-6 lg:px-24 py-12 flex flex-col justify-start items-start gap-2.5 overflow-hidden">
             <div class="justify-center text-slate-800 text-5xl font-bold font-['Montserrat'] leading-[62px]">Read more about these locations</div>
             <div class="w-full inline-flex justify-start items-stretch gap-12">

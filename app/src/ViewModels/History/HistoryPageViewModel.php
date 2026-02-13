@@ -30,8 +30,8 @@ final readonly class HistoryPageViewModel
         public IntroSplitSectionData $introSplitSection,
         public RouteData $routeData,
         public VenuesData $venuesData,
-        public TicketOptionsData $ticketOptionsData,
-        public InfoAboutTourData $infoAboutTourData,
+        public TicketOptions $ticketOptionsData,
+        public ImportantInfoAboutTour $infoAboutTourData,
         public ScheduleData $scheduleData,
     )
     {
