@@ -15,9 +15,6 @@ final readonly class VenuesData
     public function __construct(
         public string $headingText,
         public array $venues,
-        public int $currentPage,
-        public int $totalPages,
-        public int $totalVenues,
     ) {
     }
 }

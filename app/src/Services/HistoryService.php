@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Repositories\CmsRepository;
+use App\Repositories\Interfaces\ICmsRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
+use App\Repositories\Interfaces\IVenueRepository;
 use App\Repositories\MediaAssetRepository;
+use App\Repositories\VenueRepository;
 use App\Services\Interfaces\IHistoryService;
+use App\Services\Interfaces\IScheduleService;
+use App\Services\Interfaces\ISessionService;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -27,12 +33,25 @@ use App\ViewModels\History\VenuesData;
  */
 class HistoryService implements IHistoryService
 {
-    private CmsRepository $cmsRepository;
-    private MediaAssetRepository $mediaAssetRepository;
-    private ScheduleService $scheduleService;
-    private SessionService $sessionService;
+    // Map each historical route stop to its specific color
+    private const BADGE_COLORS = [
+        'stbavo'           => 'bg-sky-600/80',      // 1. Church of St.Bavo
+        'grotemarkt'      => 'bg-orange-800/80',   // Grote Markt
+        'dehallen'        => 'bg-amber-400/80',    // De Hallen
+        'proveniershof'   => 'bg-lime-700/80',     // Proveniershof
+        'jopenkerk'       => 'bg-violet-800/80',   // Jopenkerk
+        'waalsekerk'      => 'bg-rose-500/80',     // Waalse Kerk
+        'molendeadriaan'  => 'bg-lime-500/80',     // Molen de Adriaan
+        'amsterdamsepoort'=> 'bg-stone-700/80',    // Amsterdamse Poort
+        'hofvanbakenes'   => 'bg-orange-500/80',   // Hof van Bakenes
+    ];
+    private ICmsRepository $cmsRepository;
+    private IMediaAssetRepository $mediaAssetRepository;
+    private IScheduleService $scheduleService;
+    private ISessionService $sessionService;
     private ?array $historyPageData = null;
     private ?array $historySections = null;
+    private IVenueRepository $venueRepository;
 
     public function __construct()
     {
@@ -40,6 +59,7 @@ class HistoryService implements IHistoryService
         $this->mediaAssetRepository = new MediaAssetRepository();
         $this->scheduleService = new ScheduleService();
         $this->sessionService = new SessionService();
+        $this->venueRepository = new VenueRepository();
     }
 
     /**
@@ -55,7 +75,7 @@ class HistoryService implements IHistoryService
             globalUi: $this->buildGlobalUi(),
             gradientSection: $this->buildGradientSection(),
             introSplitSection: $this->buildIntroSplitSection(),
-            routeData: $this->buildRouteData(),//TODO: implement route data building
+            routeData: $this->buildRouteData(),
             venuesData: $this->buildVenuesData(),
             ticketOptionsData: $this->buildTicketOptionsData(),
             infoAboutTourData: $this->buildInfoAboutTourData(),
@@ -94,6 +114,46 @@ class HistoryService implements IHistoryService
         }
 
         return $default;
+    }
+
+    /**
+     * Gets a CMS-managed image URL for the History page.
+     *
+     * Supports both:
+     * - MEDIA items (MediaAssetId)
+     * - legacy IMAGE_PATH items (TextValue)
+     */
+    private function getCmsImage(string $sectionKey, string $itemKey, string $defaultUrl): string
+    {
+        if (!isset($this->historySections[$sectionKey])) {
+            return $defaultUrl;
+        }
+
+        $sectionId = (int)$this->historySections[$sectionKey]['CmsSectionId'];
+        $items = $this->cmsRepository->getItemsBySectionId($sectionId);
+
+        foreach ($items as $item) {
+            if ($item['ItemKey'] !== $itemKey) {
+                continue;
+            }
+
+            if (!empty($item['MediaAssetId'])) {
+                $media = $this->mediaAssetRepository->findById((int)$item['MediaAssetId']);
+                $filePath = is_array($media) ? ($media['FilePath'] ?? null) : null;
+                if (is_string($filePath) && $filePath !== '') {
+                    return $filePath;
+                }
+            }
+
+            $textPath = $item['TextValue'] ?? null;
+            if (is_string($textPath) && $textPath !== '') {
+                return $textPath;
+            }
+
+            return $defaultUrl;
+        }
+
+        return $defaultUrl;
     }
 
     private function buildHeroData(): HeroData
@@ -163,47 +223,140 @@ class HistoryService implements IHistoryService
 
     private function buildRouteData(): RouteData
     {
-        return new RouteData;
+        // Reuse the venue locations builder to provide data for the route list and map.
+        $locations = $this->buildLocations();
+
+        return new RouteData(
+            locations: $locations,
+        );
+    }
+
+    /**
+     * Builds locations list for the History page from active venues.
+     */
+    private function buildLocations(): array
+    {
+        $locations = [];
+
+        foreach ($this->venueRepository->findAllActive() as $venue) {
+            $locations[] = $this->buildVenueLocation($venue);
+        }
+
+        return $locations;
+    }
+
+    /**
+     * Builds location data for a single venue.
+     */
+    private function buildVenueLocation(array $venue): array
+    {
+        $routeKey = $this->determineVenueRouteKey($venue['Name']);
+
+        return [
+            'name'       => $venue['Name'],
+            'address'    => $venue['AddressLine'],
+            'routeKey'   => $routeKey,
+            'badgeClass' => self::BADGE_COLORS[$routeKey] ?? 'bg-slate-800/60',
+            'lat'        => $venue['Latitude'] ?? null,
+            'lng'        => $venue['Longitude'] ?? null,
+        ];
+    }
+
+    /**
+     * Determines a stable route key for a historical stop based on venue name.
+     */
+    private function determineVenueRouteKey(string $venueName): string
+    {
+        $name = strtolower($venueName);
+
+        if (str_contains($name, 'st. bavo') || str_contains($name, 'st bavo') || str_contains($name, 'bavo')) {
+            return 'stbavo';
+        }
+        if (str_contains($name, 'grote markt')) {
+            return 'grotemarkt';
+        }
+        if (str_contains($name, 'de hallen') || str_contains($name, 'hallen')) {
+            return 'dehallen';
+        }
+        if (str_contains($name, 'proveniershof')) {
+            return 'proveniershof';
+        }
+        if (str_contains($name, 'jopenkerk')) {
+            return 'jopenkerk';
+        }
+        if (str_contains($name, 'waalse kerk') || str_contains($name, 'waalsekerk')) {
+            return 'waalsekerk';
+        }
+        if (str_contains($name, 'molen de adriaan') || str_contains($name, 'de adriaan')) {
+            return 'molendeadriaan';
+        }
+        if (str_contains($name, 'amsterdamse poort')) {
+            return 'amsterdamsepoort';
+        }
+        if (str_contains($name, 'hof van bakenes') || str_contains($name, 'bakenes')) {
+            return 'hofvanbakenes';
+        }
+
+        // Fallback color for any additional locations
+        return array_key_first(self::BADGE_COLORS) ?: 'stbavo';
     }
 
     private function buildVenuesData(): VenuesData
     {
         $venues = [
             new VenueCardData(
-                name: $this->getCmsItem('historical_locations_section', 'history_grotemarkt_name', 'Grote Markt'),
+                name: $this->getCmsItem(
+                    'historical_locations_section',
+                    'history_grotemarkt_name',
+                    'Grote Markt'),
                 description: $this->getCmsItem(
                     'historical_locations_section',
                     'history_grotemarkt_description',
                     'The heart of the historic center of Haarlem.'
                 ),
-                imageUrl: $this->getCmsImage('historical_locations_section', 'history_grotemarkt_image', '/assets/Image/History/History-GroteMarkt.png'),
+                imageUrl: $this->getCmsImage(
+                    'historical_locations_section',
+                    'history_grotemarkt_image',
+                    '/assets/Image/History/History-GroteMarkt.png'),
             ),
             new VenueCardData(
-                name: $this->getCmsItem('historical_locations_section', 'history_grotemarkt_name', 'Grote Markt'),
+                name: $this->getCmsItem(
+                    'historical_locations_section',
+                    'history_amsterdamsepoort_name',
+                    'Amsterdamse Poort'),
                 description: $this->getCmsItem(
                     'historical_locations_section',
-                    'history_grotemarkt_description',
+                    'history_amsterdamsepoort_description',
                     'The heart of the historic center of Haarlem.'
                 ),
-                imageUrl: $this->getCmsImage('historical_locations_section', 'history_grotemarkt_image', '/assets/Image/History/History-GroteMarkt.png'),
+                imageUrl: $this->getCmsImage(
+                    'historical_locations_section',
+                    'history_amsterdamsepoort_image',
+                    '/assets/Image/History/History-AmsterdamsePoort.png'),
             ),
             new VenueCardData(
-                name: $this->getCmsItem('historical_locations_section', 'history_grotemarkt_name', 'Grote Markt'),
+                name: $this->getCmsItem(
+                    'historical_locations_section',
+                    'history_molendeadriaan_name',
+                    'Molen De Adriaan'),
                 description: $this->getCmsItem(
                     'historical_locations_section',
-                    'history_grotemarkt_description',
+                    'history_molendeadriaan_description',
                     'The heart of the historic center of Haarlem.'
                 ),
-                imageUrl: $this->getCmsImage('historical_locations_section', 'history_grotemarkt_image', '/assets/Image/History/History-GroteMarkt.png'),
+                imageUrl: $this->getCmsImage(
+                    'historical_locations_section',
+                    'history_molendeadriaan_image',
+                    '/assets/Image/History/History-MolenDeAdriaan.png'),
             ),
         ];
 
-        return new ArtistsData(
-            headingText: $this->getCmsItem('artists_section', 'artists_heading', 'Discover our lineup'),
-            artists: $artists,
-            currentPage: 1,
-            totalPages: 4,
-            totalArtists: 12,
+        return new VenuesData(
+            headingText: $this->getCmsItem(
+                'historical_locations_section',
+                'historical_locations_heading',
+                'Read more about these locations'),
+            venues: $venues,
         );
     }
 

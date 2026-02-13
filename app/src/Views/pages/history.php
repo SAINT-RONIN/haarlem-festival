@@ -23,6 +23,8 @@ require __DIR__ . '/../partials/header.php';
 
     <?php require __DIR__ . '/../partials/sections/intro-split-section.php'; ?>
 
+    <?php require __DIR__ . '/../partials/history/locations-section.php'; ?>
+
         <div class="w-full px-6 lg:px-24 py-12 flex flex-col justify-start items-start gap-2.5 overflow-hidden">
             <div class="self-stretch justify-start text-slate-800 text-5xl font-bold font-['Montserrat'] leading-[62px]">The Route</div>
             <div class="self-stretch p-3.5 bg-stone-100 rounded-2xl flex flex-col justify-start items-start overflow-hidden route">
@@ -99,6 +101,6 @@ require __DIR__ . '/../partials/header.php';
                 </div>
             </div>
         </div>
-    </div>
+    <?php require __DIR__ . '/../partials/history/schedule-section.php'; ?>
 </main>
 <?php require __DIR__ . '/../partials/footer.php'; ?>
