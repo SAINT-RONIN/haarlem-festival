@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Helpers\CmsOutputHelper;
+use App\Enums\PriceTierId;
+use App\Models\EventSessionLabel;
+use App\Models\EventSessionPrice;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
@@ -27,8 +29,6 @@ class ScheduleService implements IScheduleService
     private EventSessionPriceRepository $priceRepository;
     private EventTypeRepository $eventTypeRepository;
 
-    private const PRICE_TIER_ADULT = 1;
-    private const PRICE_TIER_PAY_WHAT_YOU_LIKE = 5;
 
     public function __construct()
     {
@@ -51,7 +51,7 @@ class ScheduleService implements IScheduleService
     {
         // Get event type info
         $eventType = $this->eventTypeRepository->findById($eventTypeId);
-        $eventTypeSlug = $eventType['Slug'] ?? $pageSlug;
+        $eventTypeSlug = $eventType?->slug ?? $pageSlug;
 
         // Get CMS content for this page's schedule section
         $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
@@ -198,7 +198,7 @@ class ScheduleService implements IScheduleService
 
         // Get labels for this session
         $sessionLabels = $labelsMap[$sessionId] ?? [];
-        $labels = array_map(fn($l) => $l['LabelText'], $sessionLabels);
+        $labels = array_map(fn(EventSessionLabel $l) => $l->labelText, $sessionLabels);
 
         // Get price display
         $sessionPrices = $pricesMap[$sessionId] ?? [];
@@ -238,21 +238,23 @@ class ScheduleService implements IScheduleService
 
     /**
      * Determines price display text.
+     *
+     * @param EventSessionPrice[] $prices
      */
     private function getPriceDisplay(array $prices, string $payWhatYouLikeText, string $currencySymbol): array
     {
         // Check for PayWhatYouLike tier first
         foreach ($prices as $price) {
-            if ((int)$price['PriceTierId'] === self::PRICE_TIER_PAY_WHAT_YOU_LIKE) {
+            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
                 return ['display' => $payWhatYouLikeText, 'isPayWhatYouLike' => true];
             }
         }
 
         // Check for Adult tier
         foreach ($prices as $price) {
-            if ((int)$price['PriceTierId'] === self::PRICE_TIER_ADULT) {
+            if ($price->priceTierId === PriceTierId::Adult->value) {
                 return [
-                    'display' => $currencySymbol . ' ' . number_format((float)$price['Price'], 2),
+                    'display' => $currencySymbol . ' ' . number_format((float)$price->price, 2),
                     'isPayWhatYouLike' => false,
                 ];
             }
@@ -262,7 +264,7 @@ class ScheduleService implements IScheduleService
         if (!empty($prices)) {
             $price = $prices[0];
             return [
-                'display' => $currencySymbol . ' ' . number_format((float)$price['Price'], 2),
+                'display' => $currencySymbol . ' ' . number_format((float)$price->price, 2),
                 'isPayWhatYouLike' => false,
             ];
         }

@@ -18,10 +18,11 @@ class EventType
      */
 
     public function __construct(
-        public int $eventTypeId,
-        public string $name,
-        public string $slug,
-    ) {
+        public readonly int    $eventTypeId,
+        public readonly string $name,
+        public readonly string $slug,
+    )
+    {
     }
 
     /**
@@ -31,9 +32,9 @@ class EventType
     public static function fromRow(array $row): self
     {
         return new self(
-            eventTypeId: (int) $row['EventTypeId'],
-            name: (string) $row['Name'],
-            slug: (string) $row['Slug'],
+            eventTypeId: (int)$row['EventTypeId'],
+            name: (string)$row['Name'],
+            slug: (string)$row['Slug'],
         );
     }
 

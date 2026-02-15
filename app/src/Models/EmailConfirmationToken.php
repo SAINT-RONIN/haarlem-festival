@@ -18,12 +18,13 @@ class EmailConfirmationToken
      */
 
     public function __construct(
-        public int $emailConfirmationTokenId,
-        public int $userAccountId,
-        public string $token,
-        public \DateTimeImmutable $expiresAtUtc,
-        public ?\DateTimeImmutable $usedAtUtc,
-    ) {
+        public readonly int                 $emailConfirmationTokenId,
+        public readonly int                 $userAccountId,
+        public readonly string              $token,
+        public readonly \DateTimeImmutable  $expiresAtUtc,
+        public readonly ?\DateTimeImmutable $usedAtUtc,
+    )
+    {
     }
 
     /**
@@ -33,9 +34,9 @@ class EmailConfirmationToken
     public static function fromRow(array $row): self
     {
         return new self(
-            emailConfirmationTokenId: (int) $row['EmailConfirmationTokenId'],
-            userAccountId: (int) $row['UserAccountId'],
-            token: (string) $row['Token'],
+            emailConfirmationTokenId: (int)$row['EmailConfirmationTokenId'],
+            userAccountId: (int)$row['UserAccountId'],
+            token: (string)$row['Token'],
             expiresAtUtc: new \DateTimeImmutable($row['ExpiresAtUtc']),
             usedAtUtc: isset($row['UsedAtUtc']) ? new \DateTimeImmutable($row['UsedAtUtc']) : null,
         );

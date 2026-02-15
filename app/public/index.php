@@ -31,11 +31,8 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
 use App\Controllers\AuthController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
-
-use App\Controllers\HistoryController;
-
 use App\Controllers\CmsEventsController;
-
+use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\StorytellingController;
@@ -124,7 +121,7 @@ $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 switch ($routeInfo[0]) {
     case Dispatcher::NOT_FOUND:
         http_response_code(404);
-        echo '404 Not Found';
+        require __DIR__ . '/../src/Views/pages/errors/404.php';
         break;
 
     case Dispatcher::METHOD_NOT_ALLOWED:

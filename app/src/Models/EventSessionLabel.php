@@ -18,10 +18,11 @@ class EventSessionLabel
      */
 
     public function __construct(
-        public int $eventSessionLabelId,
-        public int $eventSessionId,
-        public string $labelText,
-    ) {
+        public readonly int    $eventSessionLabelId,
+        public readonly int    $eventSessionId,
+        public readonly string $labelText,
+    )
+    {
     }
 
     /**
@@ -31,9 +32,9 @@ class EventSessionLabel
     public static function fromRow(array $row): self
     {
         return new self(
-            eventSessionLabelId: (int) $row['EventSessionLabelId'],
-            eventSessionId: (int) $row['EventSessionId'],
-            labelText: (string) $row['LabelText'],
+            eventSessionLabelId: (int)$row['EventSessionLabelId'],
+            eventSessionId: (int)$row['EventSessionId'],
+            labelText: (string)$row['LabelText'],
         );
     }
 

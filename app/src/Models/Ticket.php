@@ -18,14 +18,15 @@ class Ticket
      */
 
     public function __construct(
-        public int $ticketId,
-        public int $orderItemId,
-        public string $ticketCode,
-        public bool $isScanned,
-        public ?\DateTimeImmutable $scannedAtUtc,
-        public ?int $scannedByUserId,
-        public ?int $pdfAssetId,
-    ) {
+        public readonly int                 $ticketId,
+        public readonly int                 $orderItemId,
+        public readonly string              $ticketCode,
+        public readonly bool                $isScanned,
+        public readonly ?\DateTimeImmutable $scannedAtUtc,
+        public readonly ?int                $scannedByUserId,
+        public readonly ?int                $pdfAssetId,
+    )
+    {
     }
 
     /**
@@ -35,13 +36,13 @@ class Ticket
     public static function fromRow(array $row): self
     {
         return new self(
-            ticketId: (int) $row['TicketId'],
-            orderItemId: (int) $row['OrderItemId'],
-            ticketCode: (string) $row['TicketCode'],
-            isScanned: (bool) $row['IsScanned'],
+            ticketId: (int)$row['TicketId'],
+            orderItemId: (int)$row['OrderItemId'],
+            ticketCode: (string)$row['TicketCode'],
+            isScanned: (bool)$row['IsScanned'],
             scannedAtUtc: isset($row['ScannedAtUtc']) ? new \DateTimeImmutable($row['ScannedAtUtc']) : null,
-            scannedByUserId: isset($row['ScannedByUserId']) ? (int) $row['ScannedByUserId'] : null,
-            pdfAssetId: isset($row['PdfAssetId']) ? (int) $row['PdfAssetId'] : null,
+            scannedByUserId: isset($row['ScannedByUserId']) ? (int)$row['ScannedByUserId'] : null,
+            pdfAssetId: isset($row['PdfAssetId']) ? (int)$row['PdfAssetId'] : null,
         );
     }
 

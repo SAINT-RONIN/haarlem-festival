@@ -18,9 +18,10 @@ class PriceTier
      */
 
     public function __construct(
-        public int $priceTierId,
-        public string $name,
-    ) {
+        public readonly int    $priceTierId,
+        public readonly string $name,
+    )
+    {
     }
 
     /**
@@ -30,8 +31,8 @@ class PriceTier
     public static function fromRow(array $row): self
     {
         return new self(
-            priceTierId: (int) $row['PriceTierId'],
-            name: (string) $row['Name'],
+            priceTierId: (int)$row['PriceTierId'],
+            name: (string)$row['Name'],
         );
     }
 

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\CmsItem;
+use App\Models\CmsPage;
+use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
@@ -18,15 +21,15 @@ use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoryPageViewModel;
 use App\ViewModels\History\ImportantInfoAboutTour;
 use App\ViewModels\History\PricingCard;
+use App\ViewModels\History\RouteData;
 use App\ViewModels\History\RouteVenue;
-use App\ViewModels\History\TicketOptions;
-use App\ViewModels\IntroSplitSectionData;
+use App\ViewModels\History\ScheduleCard;
 use App\ViewModels\History\ScheduleData;
 use App\ViewModels\History\ScheduleDayData;
-use App\ViewModels\History\ScheduleCard;
-use App\ViewModels\History\RouteData;
+use App\ViewModels\History\TicketOptions;
 use App\ViewModels\History\VenueCardData;
 use App\ViewModels\History\VenuesData;
+use App\ViewModels\IntroSplitSectionData;
 
 /**
  * Service for preparing history page data.
@@ -40,7 +43,8 @@ class HistoryService implements IHistoryService
     private IMediaAssetRepository $mediaAssetRepository;
 
     private ISessionService $sessionService;
-    private ?array $historyPageData = null;
+    private ?CmsPage $historyPageData = null;
+    /** @var array<string, CmsSection>|null */
     private ?array $historySections = null;
     private IVenueRepository $venueRepository;
 
@@ -81,10 +85,11 @@ class HistoryService implements IHistoryService
         if ($this->historyPageData === null) {
             $this->historyPageData = $this->cmsRepository->getPageBySlug('history');
             if ($this->historyPageData) {
-                $sections = $this->cmsRepository->getSectionsByPageId((int)$this->historyPageData['CmsPageId']);
-                $this->historyPageData = [];
+                $sections = $this->cmsRepository->getSectionsByPageId($this->historyPageData->cmsPageId);
+                $this->historySections = [];
                 foreach ($sections as $section) {
-                    $this->historySections[$section['SectionKey']] = $section;
+                    /** @var CmsSection $section */
+                    $this->historySections[$section->sectionKey] = $section;
                 }
             }
         }
@@ -94,8 +99,8 @@ class HistoryService implements IHistoryService
      * Retrieve a CMS-managed text/HTML item for the history page.
      *
      * @param string $sectionKey The CMS section key.
-     * @param string $itemKey    The item key inside the section.
-     * @param string $default    Fallback value if no CMS item is found.
+     * @param string $itemKey The item key inside the section.
+     * @param string $default Fallback value if no CMS item is found.
      */
     private function getCmsItem(string $sectionKey, string $itemKey, string $default = ''): string
     {
@@ -103,12 +108,13 @@ class HistoryService implements IHistoryService
             return $default;
         }
 
-        $sectionId = (int)$this->historySections[$sectionKey]['CmsSectionId'];
+        $sectionId = $this->historySections[$sectionKey]->cmsSectionId;
         $items = $this->cmsRepository->getItemsBySectionId($sectionId);
 
         foreach ($items as $item) {
-            if ($item['ItemKey'] === $itemKey) {
-                $value = $item['TextValue'] ?? $item['HtmlValue'] ?? $default;
+            /** @var CmsItem $item */
+            if ($item->itemKey === $itemKey) {
+                $value = $item->textValue ?? $item->htmlValue ?? $default;
                 return is_string($value) ? $value : $default;
             }
         }
@@ -132,23 +138,23 @@ class HistoryService implements IHistoryService
             return $defaultUrl;
         }
 
-        $sectionId = (int)$this->historySections[$sectionKey]['CmsSectionId'];
+        $sectionId = $this->historySections[$sectionKey]->cmsSectionId;
         $items = $this->cmsRepository->getItemsBySectionId($sectionId);
 
         foreach ($items as $item) {
-            if ($item['ItemKey'] !== $itemKey) {
+            /** @var CmsItem $item */
+            if ($item->itemKey !== $itemKey) {
                 continue;
             }
 
-            if (!empty($item['MediaAssetId'])) {
-                $media = $this->mediaAssetRepository->findById((int)$item['MediaAssetId']);
-                $filePath = is_array($media) ? ($media['FilePath'] ?? null) : null;
-                if (is_string($filePath) && $filePath !== '') {
-                    return $filePath;
+            if ($item->mediaAssetId !== null) {
+                $media = $this->mediaAssetRepository->findById($item->mediaAssetId);
+                if ($media !== null && $media->filePath !== '') {
+                    return $media->filePath;
                 }
             }
 
-            $textPath = $item['TextValue'] ?? null;
+            $textPath = $item->textValue ?? null;
             if (is_string($textPath) && $textPath !== '') {
                 return $textPath;
             }
@@ -443,7 +449,7 @@ class HistoryService implements IHistoryService
     /**
      * Builds ticket options (single and group pricing cards) for the tour.
      */
-    private function buildTicketOptionsData() : TicketOptions
+    private function buildTicketOptionsData(): TicketOptions
     {
         return new TicketOptions(
             headingText: $this->getCmsItem(
@@ -479,7 +485,7 @@ class HistoryService implements IHistoryService
     /**
      * Builds the "Important information about the tour" bullet list.
      */
-    private function buildInfoAboutTourData() : ImportantInfoAboutTour
+    private function buildInfoAboutTourData(): ImportantInfoAboutTour
     {
         return new ImportantInfoAboutTour(
             headingText: $this->getCmsItem(

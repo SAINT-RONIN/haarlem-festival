@@ -4,12 +4,20 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\MediaAsset;
+
 /**
  * Interface for MediaAsset repository operations.
  */
 interface IMediaAssetRepository
 {
-    public function findById(int $mediaAssetId): ?array;
+    /**
+     * Finds a media asset by ID.
+     *
+     * @param int $mediaAssetId
+     * @return MediaAsset|null
+     */
+    public function findById(int $mediaAssetId): ?MediaAsset;
 
     public function create(array $data): int;
 

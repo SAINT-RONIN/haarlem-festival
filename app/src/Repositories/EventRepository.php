@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\Event;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
 
@@ -20,6 +21,9 @@ class EventRepository implements IEventRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * @return array<int, array{EventId: int, EventTypeId: int, Title: string, ShortDescription: string, VenueName: ?string, EventTypeName: string}>
+     */
     public function findAllByType(int $eventTypeId): array
     {
         $stmt = $this->pdo->prepare('
@@ -34,6 +38,9 @@ class EventRepository implements IEventRepository
         return $stmt->fetchAll();
     }
 
+    /**
+     * @return array<int, array{EventId: int, EventTypeId: int, Title: string, VenueName: ?string, EventTypeName: string, EventTypeSlug: string, SessionCount: int, IsActive: bool}>
+     */
     public function findAllWithDetails(): array
     {
         $stmt = $this->pdo->prepare('
@@ -51,6 +58,8 @@ class EventRepository implements IEventRepository
 
     /**
      * Finds all events with optional filtering by type and day.
+     *
+     * @return array<int, array{EventId: int, EventTypeId: int, Title: string, VenueName: ?string, EventTypeName: string, EventTypeSlug: string, SessionCount: int}>
      */
     public function findAllWithDetailsFiltered(?int $eventTypeId = null, ?string $dayOfWeek = null): array
     {
@@ -85,12 +94,12 @@ class EventRepository implements IEventRepository
         return $stmt->fetchAll();
     }
 
-    public function findById(int $eventId): ?array
+    public function findById(int $eventId): ?Event
     {
         $stmt = $this->pdo->prepare('SELECT * FROM Event WHERE EventId = :eventId');
         $stmt->execute(['eventId' => $eventId]);
-        $result = $stmt->fetch();
-        return $result ?: null;
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? Event::fromRow($result) : null;
     }
 
     public function findByIdWithDetails(int $eventId): ?array

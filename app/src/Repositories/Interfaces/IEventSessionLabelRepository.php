@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\EventSessionLabel;
+
 /**
  * Interface for EventSessionLabel repository operations.
  */
@@ -13,7 +15,7 @@ interface IEventSessionLabelRepository
      * Find all labels for a session.
      *
      * @param int $sessionId
-     * @return array Array of label rows
+     * @return EventSessionLabel[]
      */
     public function findBySessionId(int $sessionId): array;
 
@@ -21,7 +23,7 @@ interface IEventSessionLabelRepository
      * Find all labels for multiple sessions.
      *
      * @param array<int> $sessionIds
-     * @return array Array of label rows keyed by session ID
+     * @return array<int, EventSessionLabel[]> Labels keyed by session ID
      */
     public function findBySessionIds(array $sessionIds): array;
 

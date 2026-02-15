@@ -2,16 +2,27 @@
 /**
  * CMS Dashboard - Main admin panel view.
  *
- * @var array $recentPages Recently updated pages
- * @var array $activities Recent activity feed
+ * @var \App\ViewModels\Cms\DashboardViewModel|\App\ViewModels\Cms\PagesListViewModel $viewModel
  * @var string $currentView Current navigation state
- * @var string $userName Admin user display name (passed from controller)
  */
 
+use App\ViewModels\Cms\DashboardViewModel;
+use App\ViewModels\Cms\PagesListViewModel;
+
 $currentView = $currentView ?? 'dashboard';
-$recentPages = $recentPages ?? [];
-$activities = $activities ?? [];
-$userName = $userName ?? 'Administrator';
+
+// Extract data from ViewModel for use in partials
+if ($viewModel instanceof DashboardViewModel) {
+    $recentPages = $viewModel->recentPages;
+    $activities = $viewModel->activities;
+    $userName = $viewModel->userName;
+} elseif ($viewModel instanceof PagesListViewModel) {
+    $pages = $viewModel->pages;
+    $searchQuery = $viewModel->searchQuery;
+    $userName = $viewModel->userName;
+} else {
+    $userName = 'Administrator';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

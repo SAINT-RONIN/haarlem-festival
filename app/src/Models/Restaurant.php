@@ -18,17 +18,18 @@ class Restaurant
      */
 
     public function __construct(
-        public int $restaurantId,
-        public string $name,
-        public string $addressLine,
-        public string $city,
-        public ?int $stars,
-        public string $cuisineType,
-        public string $descriptionHtml,
-        public ?int $imageAssetId,
-        public bool $isActive,
-        public \DateTimeImmutable $createdAtUtc,
-    ) {
+        public readonly int                $restaurantId,
+        public readonly string             $name,
+        public readonly string             $addressLine,
+        public readonly string             $city,
+        public readonly ?int               $stars,
+        public readonly string             $cuisineType,
+        public readonly string             $descriptionHtml,
+        public readonly ?int               $imageAssetId,
+        public readonly bool               $isActive,
+        public readonly \DateTimeImmutable $createdAtUtc,
+    )
+    {
     }
 
     /**
@@ -38,15 +39,15 @@ class Restaurant
     public static function fromRow(array $row): self
     {
         return new self(
-            restaurantId: (int) $row['RestaurantId'],
-            name: (string) $row['Name'],
-            addressLine: (string) $row['AddressLine'],
-            city: (string) $row['City'],
-            stars: isset($row['Stars']) ? (int) $row['Stars'] : null,
-            cuisineType: (string) $row['CuisineType'],
-            descriptionHtml: (string) $row['DescriptionHtml'],
-            imageAssetId: isset($row['ImageAssetId']) ? (int) $row['ImageAssetId'] : null,
-            isActive: (bool) $row['IsActive'],
+            restaurantId: (int)$row['RestaurantId'],
+            name: (string)$row['Name'],
+            addressLine: (string)$row['AddressLine'],
+            city: (string)$row['City'],
+            stars: isset($row['Stars']) ? (int)$row['Stars'] : null,
+            cuisineType: (string)$row['CuisineType'],
+            descriptionHtml: (string)$row['DescriptionHtml'],
+            imageAssetId: isset($row['ImageAssetId']) ? (int)$row['ImageAssetId'] : null,
+            isActive: (bool)$row['IsActive'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
         );
     }

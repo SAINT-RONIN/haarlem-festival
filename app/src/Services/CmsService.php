@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\CmsItem;
+use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\ICmsService;
@@ -49,18 +51,20 @@ class CmsService implements ICmsService
             return [];
         }
 
-        $sections = $this->cmsRepository->getSectionsByPageId((int)$page['CmsPageId']);
+        $sections = $this->cmsRepository->getSectionsByPageId($page->cmsPageId);
         $content = [];
 
         foreach ($sections as $section) {
-            $items = $this->cmsRepository->getItemsBySectionId((int)$section['CmsSectionId']);
+            /** @var CmsSection $section */
+            $items = $this->cmsRepository->getItemsBySectionId($section->cmsSectionId);
             $sectionData = [];
 
             foreach ($items as $item) {
-                $sectionData[$item['ItemKey']] = $this->resolveItemValue($item);
+                /** @var CmsItem $item */
+                $sectionData[$item->itemKey] = $this->resolveItemValue($item);
             }
 
-            $content[$section['SectionKey']] = $sectionData;
+            $content[$section->sectionKey] = $sectionData;
         }
 
         return $content;
@@ -73,11 +77,12 @@ class CmsService implements ICmsService
             return [];
         }
 
-        $items = $this->cmsRepository->getItemsBySectionKey((int)$page['CmsPageId'], $sectionKey);
+        $items = $this->cmsRepository->getItemsBySectionKey($page->cmsPageId, $sectionKey);
         $content = [];
 
         foreach ($items as $item) {
-            $content[$item['ItemKey']] = $this->resolveItemValue($item);
+            /** @var CmsItem $item */
+            $content[$item->itemKey] = $this->resolveItemValue($item);
         }
 
         return $content;
@@ -89,18 +94,17 @@ class CmsService implements ICmsService
      * - If the item references a MediaAsset, returns its FilePath.
      * - Otherwise returns TextValue or HtmlValue.
      */
-    private function resolveItemValue(array $item): ?string
+    private function resolveItemValue(CmsItem $item): ?string
     {
-        $mediaAssetId = $item['MediaAssetId'] ?? null;
-        if (is_numeric($mediaAssetId) && (int)$mediaAssetId > 0) {
-            $asset = $this->mediaAssetRepository->findById((int)$mediaAssetId);
-            $filePath = is_array($asset) ? ($asset['FilePath'] ?? null) : null;
-            if (is_string($filePath) && $filePath !== '') {
-                return $filePath;
+        $mediaAssetId = $item->mediaAssetId;
+        if ($mediaAssetId !== null && $mediaAssetId > 0) {
+            $asset = $this->mediaAssetRepository->findById($mediaAssetId);
+            if ($asset !== null && $asset->filePath !== '') {
+                return $asset->filePath;
             }
         }
 
-        $value = $item['TextValue'] ?? $item['HtmlValue'] ?? null;
+        $value = $item->textValue ?? $item->htmlValue ?? null;
         return is_string($value) ? $value : null;
     }
 

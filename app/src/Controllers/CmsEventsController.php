@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Exceptions\ValidationException;
 use App\Services\CmsEventsService;
+use App\ViewModels\Cms\CmsEventsListViewModel;
 
 /**
  * Controller for CMS Events management.
@@ -36,18 +37,23 @@ class CmsEventsController
         $eventTypeId = isset($_GET['type']) && is_numeric($_GET['type']) ? (int)$_GET['type'] : null;
         $dayOfWeek = isset($_GET['day']) && !empty($_GET['day']) ? $_GET['day'] : null;
 
-        // Pass filter values to view
-        $selectedType = $_GET['type'] ?? '';
-        $selectedDay = $_GET['day'] ?? '';
-
-        // Get data for the view
+        // Get data from service
         $events = $this->eventsService->getAllEventsWithDetails($eventTypeId, $dayOfWeek);
         $eventTypes = $this->eventsService->getEventTypes();
         $weeklySchedule = $this->eventsService->getWeeklyScheduleOverview($eventTypeId);
         $venues = $this->eventsService->getVenues();
 
-        $successMessage = $_GET['success'] ?? null;
-        $errorMessage = $_GET['error'] ?? null;
+        // Build ViewModel
+        $viewModel = new CmsEventsListViewModel(
+            events: $events,
+            eventTypes: $eventTypes,
+            venues: $venues,
+            weeklySchedule: $weeklySchedule,
+            selectedType: $_GET['type'] ?? '',
+            selectedDay: $_GET['day'] ?? '',
+            successMessage: $_GET['success'] ?? null,
+            errorMessage: $_GET['error'] ?? null,
+        );
 
         require __DIR__ . '/../Views/pages/cms/events.php';
     }
@@ -95,16 +101,14 @@ class CmsEventsController
 
         $eventId = (int)$id;
         $currentView = 'events';
-        $eventData = $this->eventsService->getEventForEdit($eventId);
+        $viewModel = $this->eventsService->getEventForEdit($eventId);
 
-        if (!$eventData) {
+        if (!$viewModel) {
             http_response_code(404);
             echo 'Event not found';
             return;
         }
 
-        $event = $eventData['event'];
-        $sessions = $eventData['sessions'];
         $priceTiers = $this->eventsService->getPriceTiers();
         $successMessage = $_GET['success'] ?? null;
         $errorMessage = $_GET['error'] ?? null;

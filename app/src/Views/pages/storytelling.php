@@ -50,7 +50,7 @@ $cms = [
 
     <?php require __DIR__ . '/../partials/storytelling-masonry-section.php'; ?>
 
-    <?php require __DIR__ . '/../partials/storytelling/schedule-section.php'; ?>
+    <?php require __DIR__ . '/../partials/sections/schedule/schedule-section.php'; ?>
 
 </main>
 

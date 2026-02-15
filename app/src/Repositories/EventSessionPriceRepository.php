@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\EventSessionPrice;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use PDO;
 
@@ -21,7 +22,17 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
     }
 
     /**
-     * @inheritDoc
+     * Find all prices for a session with tier names (joined query).
+     *
+     * @return array<int, array{
+     *     EventSessionPriceId: int,
+     *     EventSessionId: int,
+     *     PriceTierId: int,
+     *     Price: string,
+     *     CurrencyCode: string,
+     *     VatRate: string,
+     *     PriceTierName: string
+     * }>
      */
     public function findBySessionId(int $sessionId): array
     {
@@ -36,11 +47,14 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
         ');
         $stmt->execute(['sessionId' => $sessionId]);
 
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * @inheritDoc
+     * Find all prices for multiple sessions.
+     *
+     * @param array<int> $sessionIds
+     * @return array<int, EventSessionPrice[]>
      */
     public function findBySessionIds(array $sessionIds): array
     {
@@ -50,17 +64,13 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
 
         $placeholders = implode(',', array_fill(0, count($sessionIds), '?'));
         $stmt = $this->pdo->prepare("
-            SELECT esp.EventSessionPriceId, esp.EventSessionId, esp.PriceTierId,
-                   esp.Price, esp.CurrencyCode, esp.VatRate,
-                   pt.Name AS PriceTierName
-            FROM EventSessionPrice esp
-            INNER JOIN PriceTier pt ON esp.PriceTierId = pt.PriceTierId
-            WHERE esp.EventSessionId IN ($placeholders)
-            ORDER BY esp.EventSessionId, esp.PriceTierId ASC
+            SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate
+            FROM EventSessionPrice
+            WHERE EventSessionId IN ($placeholders)
+            ORDER BY EventSessionId, PriceTierId ASC
         ");
         $stmt->execute($sessionIds);
-
-        $rows = $stmt->fetchAll();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Group by session ID
         $grouped = [];
@@ -69,7 +79,7 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
             if (!isset($grouped[$sid])) {
                 $grouped[$sid] = [];
             }
-            $grouped[$sid][] = $row;
+            $grouped[$sid][] = EventSessionPrice::fromRow($row);
         }
 
         return $grouped;

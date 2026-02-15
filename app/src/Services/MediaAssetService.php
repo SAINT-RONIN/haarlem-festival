@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Exceptions\ValidationException;
+use App\Infrastructure\PathResolver;
+use App\Models\MediaAsset;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\IMediaAssetService;
 use App\Utils\CmsContentLimits;
@@ -17,21 +19,10 @@ use App\Utils\CmsContentLimits;
 class MediaAssetService implements IMediaAssetService
 {
     private MediaAssetRepository $mediaAssetRepository;
-    private string $uploadBasePath;
 
     public function __construct()
     {
         $this->mediaAssetRepository = new MediaAssetRepository();
-
-        // Determine the public directory path
-        // In Docker: /app/public, locally: use __DIR__ relative path
-        if (is_dir('/app/public')) {
-            $publicPath = '/app/public';
-        } else {
-            $publicPath = realpath(__DIR__ . '/../../public') ?: __DIR__ . '/../../public';
-        }
-
-        $this->uploadBasePath = $publicPath . '/assets/Image';
     }
 
     /**
@@ -46,7 +37,7 @@ class MediaAssetService implements IMediaAssetService
     {
         $this->validateFile($file);
 
-        $targetDir = $this->uploadBasePath . '/' . $folder;
+        $targetDir = PathResolver::getUploadPath($folder);
 
         // Create directory if it doesn't exist
         if (!is_dir($targetDir)) {
@@ -90,14 +81,7 @@ class MediaAssetService implements IMediaAssetService
             return false;
         }
 
-        // Determine the public directory path
-        if (is_dir('/app/public')) {
-            $publicPath = '/app/public';
-        } else {
-            $publicPath = realpath(__DIR__ . '/../../public') ?: __DIR__ . '/../../public';
-        }
-
-        $filePath = $publicPath . $asset['FilePath'];
+        $filePath = PathResolver::getPublicPath() . $asset->filePath;
         if (file_exists($filePath)) {
             unlink($filePath);
         }
@@ -108,7 +92,7 @@ class MediaAssetService implements IMediaAssetService
     /**
      * Gets a media asset by ID.
      */
-    public function getAssetById(int $mediaAssetId): ?array
+    public function getAssetById(int $mediaAssetId): ?MediaAsset
     {
         return $this->mediaAssetRepository->findById($mediaAssetId);
     }

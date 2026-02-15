@@ -18,20 +18,21 @@ class Invoice
      */
 
     public function __construct(
-        public int $invoiceId,
-        public int $orderId,
-        public string $invoiceNumber,
-        public \DateTimeImmutable $invoiceDateUtc,
-        public string $clientName,
-        public string $phoneNumber,
-        public string $addressLine,
-        public string $emailAddress,
-        public string $subtotalAmount,
-        public string $totalVatAmount,
-        public string $totalAmount,
-        public ?\DateTimeImmutable $paymentDateUtc,
-        public ?int $pdfAssetId,
-    ) {
+        public readonly int                 $invoiceId,
+        public readonly int                 $orderId,
+        public readonly string              $invoiceNumber,
+        public readonly \DateTimeImmutable  $invoiceDateUtc,
+        public readonly string              $clientName,
+        public readonly string              $phoneNumber,
+        public readonly string              $addressLine,
+        public readonly string              $emailAddress,
+        public readonly string              $subtotalAmount,
+        public readonly string              $totalVatAmount,
+        public readonly string              $totalAmount,
+        public readonly ?\DateTimeImmutable $paymentDateUtc,
+        public readonly ?int                $pdfAssetId,
+    )
+    {
     }
 
     /**
@@ -41,19 +42,19 @@ class Invoice
     public static function fromRow(array $row): self
     {
         return new self(
-            invoiceId: (int) $row['InvoiceId'],
-            orderId: (int) $row['OrderId'],
-            invoiceNumber: (string) $row['InvoiceNumber'],
+            invoiceId: (int)$row['InvoiceId'],
+            orderId: (int)$row['OrderId'],
+            invoiceNumber: (string)$row['InvoiceNumber'],
             invoiceDateUtc: new \DateTimeImmutable($row['InvoiceDateUtc']),
-            clientName: (string) $row['ClientName'],
-            phoneNumber: (string) $row['PhoneNumber'],
-            addressLine: (string) $row['AddressLine'],
-            emailAddress: (string) $row['EmailAddress'],
-            subtotalAmount: (string) $row['SubtotalAmount'],
-            totalVatAmount: (string) $row['TotalVatAmount'],
-            totalAmount: (string) $row['TotalAmount'],
+            clientName: (string)$row['ClientName'],
+            phoneNumber: (string)$row['PhoneNumber'],
+            addressLine: (string)$row['AddressLine'],
+            emailAddress: (string)$row['EmailAddress'],
+            subtotalAmount: (string)$row['SubtotalAmount'],
+            totalVatAmount: (string)$row['TotalVatAmount'],
+            totalAmount: (string)$row['TotalAmount'],
             paymentDateUtc: isset($row['PaymentDateUtc']) ? new \DateTimeImmutable($row['PaymentDateUtc']) : null,
-            pdfAssetId: isset($row['PdfAssetId']) ? (int) $row['PdfAssetId'] : null,
+            pdfAssetId: isset($row['PdfAssetId']) ? (int)$row['PdfAssetId'] : null,
         );
     }
 

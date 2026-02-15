@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\UserRoleId;
 use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\UserAccountRepository;
 use App\Services\Interfaces\IAuthService;
@@ -25,7 +26,6 @@ class AuthService implements IAuthService
     private const USERNAME_MIN_LENGTH = 3;
     private const USERNAME_MAX_LENGTH = 60;
     private const RESET_TOKEN_EXPIRY_HOURS = 1;
-    private const CUSTOMER_ROLE_ID = 1;
 
     public function __construct()
     {
@@ -195,7 +195,7 @@ class AuthService implements IAuthService
         $passwordHash = PasswordHasher::hash($data['password']);
 
         return $this->userRepository->create([
-            'roleId' => self::CUSTOMER_ROLE_ID,
+            'roleId' => UserRoleId::Customer->value,
             'username' => trim($data['username']),
             'email' => trim($data['email']),
             'passwordHash' => $passwordHash,
@@ -235,9 +235,9 @@ class AuthService implements IAuthService
     public function validateResetToken(string $rawToken): array
     {
         $tokenHash = hash('sha256', $rawToken);
-        $tokenData = $this->resetTokenRepository->findValidByTokenHash($tokenHash);
+        $token = $this->resetTokenRepository->findValidByTokenHash($tokenHash);
 
-        if ($tokenData === null) {
+        if ($token === null) {
             return [
                 'valid' => false,
                 'error' => 'This password reset link is invalid or has expired.',
@@ -246,8 +246,8 @@ class AuthService implements IAuthService
 
         return [
             'valid' => true,
-            'tokenId' => (int)$tokenData['PasswordResetTokenId'],
-            'userId' => (int)$tokenData['UserAccountId'],
+            'tokenId' => $token->passwordResetTokenId,
+            'userId' => $token->userAccountId,
         ];
     }
 

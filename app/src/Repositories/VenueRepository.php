@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\Venue;
 use App\Repositories\Interfaces\IVenueRepository;
 use PDO;
 
@@ -21,30 +22,35 @@ class VenueRepository implements IVenueRepository
     }
 
     /**
-     * Returns all active venues.
+     * Returns all active venues as Venue models.
      *
-     * @return array Array of Venue rows
+     * @return Venue[]
      */
     public function findAllActive(): array
     {
         $stmt = $this->pdo->prepare('
-            SELECT VenueId, Name, AddressLine, City
+            SELECT VenueId, Name, AddressLine, City, CreatedAtUtc, IsActive
             FROM Venue
             WHERE IsActive = 1
             ORDER BY Name ASC
         ');
         $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $stmt->fetchAll();
+        return array_map([Venue::class, 'fromRow'], $rows);
     }
 
     /**
      * Returns all active venues for dropdown (VenueId, Name, AddressLine).
+     *
+     * Returns array for lightweight dropdown population.
+     *
+     * @return array<int, array{VenueId: int, Name: string, AddressLine: string}>
      */
     public function findAllForDropdown(): array
     {
         $stmt = $this->pdo->query('SELECT VenueId, Name, AddressLine FROM Venue WHERE IsActive = 1 ORDER BY Name ASC');
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**

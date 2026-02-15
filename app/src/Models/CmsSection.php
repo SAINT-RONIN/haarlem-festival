@@ -18,10 +18,11 @@ class CmsSection
      */
 
     public function __construct(
-        public int $cmsSectionId,
-        public int $cmsPageId,
-        public string $sectionKey,
-    ) {
+        public readonly int    $cmsSectionId,
+        public readonly int    $cmsPageId,
+        public readonly string $sectionKey,
+    )
+    {
     }
 
     /**
@@ -31,9 +32,9 @@ class CmsSection
     public static function fromRow(array $row): self
     {
         return new self(
-            cmsSectionId: (int) $row['CmsSectionId'],
-            cmsPageId: (int) $row['CmsPageId'],
-            sectionKey: (string) $row['SectionKey'],
+            cmsSectionId: (int)$row['CmsSectionId'],
+            cmsPageId: (int)$row['CmsPageId'],
+            sectionKey: (string)$row['SectionKey'],
         );
     }
 

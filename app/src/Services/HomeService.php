@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\EventType;
+use App\Models\Restaurant;
+use App\Models\Venue;
 use App\Repositories\EventSessionRepository;
 use App\Repositories\EventTypeRepository;
 use App\Repositories\RestaurantRepository;
@@ -106,12 +109,15 @@ class HomeService implements IHomeService
 
     /**
      * Indexes event types by slug for quick lookup.
+     *
+     * @param EventType[] $types
+     * @return array<string, EventType>
      */
     private function indexTypesBySlug(array $types): array
     {
         $typesBySlug = [];
         foreach ($types as $type) {
-            $typesBySlug[$type['Slug']] = $type;
+            $typesBySlug[$type->slug] = $type;
         }
         return $typesBySlug;
     }
@@ -165,13 +171,13 @@ class HomeService implements IHomeService
     /**
      * Builds location data for a single venue.
      */
-    private function buildVenueLocation(array $venue): array
+    private function buildVenueLocation(Venue $venue): array
     {
-        $category = $this->determineVenueCategory($venue['Name']);
+        $category = $this->determineVenueCategory($venue->name);
 
         return [
-            'name' => $venue['Name'],
-            'address' => $venue['AddressLine'],
+            'name' => $venue->name,
+            'address' => $venue->addressLine,
             'category' => $category,
             'badgeClass' => self::BADGE_COLORS[$category] ?? 'bg-gray-500',
         ];
@@ -180,11 +186,11 @@ class HomeService implements IHomeService
     /**
      * Builds location data for a single restaurant.
      */
-    private function buildRestaurantLocation(array $restaurant): array
+    private function buildRestaurantLocation(Restaurant $restaurant): array
     {
         return [
-            'name' => $restaurant['Name'],
-            'address' => $restaurant['AddressLine'],
+            'name' => $restaurant->name,
+            'address' => $restaurant->addressLine,
             'category' => 'restaurant',
             'badgeClass' => self::BADGE_COLORS['restaurant'],
         ];
@@ -278,6 +284,7 @@ class HomeService implements IHomeService
             'dayName' => $dateObj->format('l'),
             'dayNumber' => $dateObj->format('j'),
             'monthShort' => strtoupper($dateObj->format('M')),
+            'isoDate' => $dateObj->format('Y-m-d'), // Pre-formatted for datetime attribute
             'eventCount' => count($byType),
             'sessions' => $this->formatSessionsForDisplay($byType),
         ];

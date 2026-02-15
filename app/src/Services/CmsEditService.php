@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\CmsItem;
+use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\ICmsEditService;
@@ -42,19 +44,20 @@ class CmsEditService implements ICmsEditService
         $sectionsWithItems = [];
 
         foreach ($sections as $section) {
-            $items = $this->cmsRepository->getItemsBySectionId($section['CmsSectionId']);
+            /** @var CmsSection $section */
+            $items = $this->cmsRepository->getItemsBySectionId($section->cmsSectionId);
             $enrichedItems = $this->enrichItemsWithMetadata($items);
 
             $sectionsWithItems[] = [
-                'sectionId' => $section['CmsSectionId'],
-                'sectionKey' => $section['SectionKey'],
-                'displayName' => $this->formatSectionName($section['SectionKey']),
+                'sectionId' => $section->cmsSectionId,
+                'sectionKey' => $section->sectionKey,
+                'displayName' => $this->formatSectionName($section->sectionKey),
                 'items' => $enrichedItems
             ];
         }
 
         return [
-            'page' => $page,
+            'page' => $page->toArray(),
             'sections' => $sectionsWithItems
         ];
     }
@@ -85,10 +88,10 @@ class CmsEditService implements ICmsEditService
                 continue;
             }
 
-            $type = $item['ItemType'];
+            $type = $item->itemType->value;
             $value = $itemData['value'] ?? '';
 
-            $validationError = $this->validateItemValue($value, $type, $item['ItemKey']);
+            $validationError = $this->validateItemValue($value, $type, $item->itemKey);
             if ($validationError) {
                 $errors[] = $validationError;
                 continue;
@@ -156,55 +159,65 @@ class CmsEditService implements ICmsEditService
     /**
      * Checks if an item belongs to the given page.
      */
-    private function itemBelongsToPage(array $item, int $pageId): bool
+    private function itemBelongsToPage(CmsItem $item, int $pageId): bool
     {
         $sections = $this->cmsRepository->getSectionsByPageId($pageId);
-        $sectionIds = array_column($sections, 'CmsSectionId');
-        return in_array($item['CmsSectionId'], $sectionIds, true);
+        $sectionIds = array_map(fn(CmsSection $s) => $s->cmsSectionId, $sections);
+        return in_array($item->cmsSectionId, $sectionIds, true);
     }
 
     /**
      * Enriches items with display metadata.
+     *
+     * @param CmsItem[] $items
      */
     private function enrichItemsWithMetadata(array $items): array
     {
         $enriched = [];
 
         foreach ($items as $item) {
-            $type = $item['ItemType'];
-            $mediaAsset = $this->getMediaAssetInfo($item['MediaAssetId']);
+            /** @var CmsItem $item */
+            $type = $item->itemType->value;
+            $mediaAsset = $this->getMediaAssetInfo($item->mediaAssetId);
 
             $resolvedFilePath = null;
-            if (is_array($mediaAsset) && !empty($mediaAsset['FilePath'])) {
-                $resolvedFilePath = (string)$mediaAsset['FilePath'];
-            } elseif (!empty($item['TextValue'])) {
-                $resolvedFilePath = (string)$item['TextValue'];
+            if ($mediaAsset !== null && $mediaAsset->filePath !== '') {
+                $resolvedFilePath = $mediaAsset->filePath;
+            } elseif (!empty($item->textValue)) {
+                $resolvedFilePath = (string)$item->textValue;
             }
 
-            if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH' && !$mediaAsset) {
-                $mediaAsset = [
+            // Convert model to array for view consumption
+            $mediaAssetArray = $mediaAsset ? [
+                'FilePath' => $mediaAsset->filePath,
+                'OriginalFileName' => $mediaAsset->originalFileName,
+                'AltText' => $mediaAsset->altText
+            ] : null;
+
+            if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH' && !$mediaAssetArray) {
+                $mediaAssetArray = [
                     'FilePath' => $resolvedFilePath,
                     'OriginalFileName' => basename($resolvedFilePath),
-                    'AltText' => $this->formatItemKeyName($item['ItemKey'])
+                    'AltText' => $this->formatItemKeyName($item->itemKey)
                 ];
             }
 
             $inputType = CmsContentLimits::getInputType($type);
-            if (strtoupper((string)$type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce((string)$item['ItemKey'])) {
+            if (strtoupper((string)$type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce((string)$item->itemKey)) {
                 $inputType = 'tinymce';
             }
 
             $enriched[] = [
-                'itemId' => $item['CmsItemId'],
-                'itemKey' => $item['ItemKey'],
-                'displayName' => $this->formatItemKeyName($item['ItemKey']),
+                'itemId' => $item->cmsItemId,
+                'itemKey' => $item->itemKey,
+                'displayName' => $this->formatItemKeyName($item->itemKey),
                 'type' => $type,
                 'typeLabel' => CmsContentLimits::getLabelForType($type),
                 'inputType' => $inputType,
                 'maxChars' => CmsContentLimits::getCharLimitForType($type),
                 'value' => $this->getItemValue($item),
-                'mediaAssetId' => $item['MediaAssetId'],
-                'mediaAsset' => $mediaAsset,
+                'mediaAssetId' => $item->mediaAssetId,
+                'mediaAsset' => $mediaAssetArray,
             ];
         }
 
@@ -214,15 +227,15 @@ class CmsEditService implements ICmsEditService
     /**
      * Gets the appropriate value from an item.
      */
-    private function getItemValue(array $item): string
+    private function getItemValue(CmsItem $item): string
     {
-        $type = strtoupper((string)($item['ItemType'] ?? ''));
+        $type = strtoupper($item->itemType->value);
 
         if ($type === 'HTML') {
-            return (string)($item['HtmlValue'] ?? '');
+            return (string)($item->htmlValue ?? '');
         }
 
-        $value = (string)($item['TextValue'] ?? '');
+        $value = (string)($item->textValue ?? '');
         if ($type === 'TEXT' && $value !== '' && preg_match('/<[^>]+>/', $value) === 1) {
             return trim(strip_tags(html_entity_decode($value)));
         }
@@ -233,7 +246,7 @@ class CmsEditService implements ICmsEditService
     /**
      * Gets media asset info if exists.
      */
-    private function getMediaAssetInfo(?int $mediaAssetId): ?array
+    private function getMediaAssetInfo(?int $mediaAssetId): ?\App\Models\MediaAsset
     {
         if (!$mediaAssetId) {
             return null;

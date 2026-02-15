@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\MediaAsset;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 use PDO;
 
@@ -22,13 +23,16 @@ class MediaAssetRepository implements IMediaAssetRepository
 
     /**
      * Finds a media asset by ID.
+     *
+     * @param int $mediaAssetId
+     * @return MediaAsset|null
      */
-    public function findById(int $mediaAssetId): ?array
+    public function findById(int $mediaAssetId): ?MediaAsset
     {
         $stmt = $this->pdo->prepare('SELECT * FROM MediaAsset WHERE MediaAssetId = ?');
         $stmt->execute([$mediaAssetId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ?: null;
+        return $result ? MediaAsset::fromRow($result) : null;
     }
 
     /**

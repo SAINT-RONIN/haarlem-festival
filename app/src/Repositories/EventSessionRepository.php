@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\EventSession;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
@@ -212,9 +213,11 @@ class EventSessionRepository implements IEventSessionRepository
 
     /**
      * Find all sessions for an event.
+     * /**
+     * Finds all sessions for an event.
      *
      * @param int $eventId
-     * @return array Array of session rows
+     * @return EventSession[]
      */
     public function findByEventId(int $eventId): array
     {
@@ -225,8 +228,9 @@ class EventSessionRepository implements IEventSessionRepository
             ORDER BY StartDateTime ASC
         ');
         $stmt->execute(['eventId' => $eventId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $stmt->fetchAll();
+        return array_map([EventSession::class, 'fromRow'], $rows);
     }
 
     /**

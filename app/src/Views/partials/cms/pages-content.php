@@ -1,5 +1,12 @@
 <?php
-// ...existing code...
+/**
+ * CMS Pages List Content partial.
+ *
+ * @var \App\ViewModels\Cms\PageListItemViewModel[] $pages List of pages
+ * @var string $searchQuery Current search query
+ */
+
+$pages = $pages ?? [];
 ?>
 
 <section aria-labelledby="pages-table-heading" class="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -53,36 +60,36 @@
                                  aria-hidden="true">
                                 <i data-lucide="file-text" class="w-5 h-5" aria-hidden="true"></i>
                             </div>
-                            <span class="text-sm font-medium text-gray-900"><?= htmlspecialchars($page['title']) ?></span>
+                            <span class="text-sm font-medium text-gray-900"><?= htmlspecialchars($page->title) ?></span>
                         </div>
                     </th>
                     <td class="px-6 py-4">
-                        <code class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">/<?= htmlspecialchars($page['slug']) ?></code>
+                        <code class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">/<?= htmlspecialchars($page->slug) ?></code>
                     </td>
                     <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $page['status'] === 'Published' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200' ?>">
-                                <?= htmlspecialchars($page['status']) ?>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $page->status === 'Published' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200' ?>">
+                                <?= htmlspecialchars($page->status) ?>
                             </span>
                     </td>
                     <td class="px-6 py-4">
-                        <span class="text-sm text-gray-500"><?= htmlspecialchars($page['updatedAt']) ?></span>
+                        <span class="text-sm text-gray-500"><?= htmlspecialchars($page->updatedAt) ?></span>
                     </td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <a href="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit"
+                            <a href="/cms/pages/<?= $page->id ?>/<?= htmlspecialchars($page->slug) ?>/edit"
                                class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                               aria-label="Edit <?= htmlspecialchars($page['title']) ?>">
+                               aria-label="Edit <?= htmlspecialchars($page->title) ?>">
                                 <i data-lucide="edit" class="w-4 h-4" aria-hidden="true"></i>
                             </a>
-                            <a href="/<?= htmlspecialchars($page['slug']) ?>"
+                            <a href="/<?= htmlspecialchars($page->slug) ?>"
                                target="_blank"
                                class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                               aria-label="View <?= htmlspecialchars($page['title']) ?>">
+                               aria-label="View <?= htmlspecialchars($page->title) ?>">
                                 <i data-lucide="external-link" class="w-4 h-4" aria-hidden="true"></i>
                             </a>
                             <button type="button"
                                     class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                    aria-label="Delete <?= htmlspecialchars($page['title']) ?>">
+                                    aria-label="Delete <?= htmlspecialchars($page->title) ?>">
                                 <i data-lucide="trash-2" class="w-4 h-4" aria-hidden="true"></i>
                             </button>
                         </div>

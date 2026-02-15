@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\PriceTierId;
+use App\Models\EventSessionLabel;
+use App\Models\EventSessionPrice;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
@@ -38,9 +41,6 @@ class StorytellingService implements IStorytellingService
     private const MASONRY_IMAGES_PER_COLUMN = 3;
     private const MASONRY_TOTAL_IMAGES = 12;
 
-    // Price tier constants
-    private const PRICE_TIER_ADULT = 1;
-    private const PRICE_TIER_PAY_WHAT_YOU_LIKE = 5;
 
     public function __construct()
     {
@@ -379,7 +379,7 @@ class StorytellingService implements IStorytellingService
 
         // Get labels for this session
         $sessionLabels = $labelsMap[$sessionId] ?? [];
-        $labels = array_map(fn($l) => $l['LabelText'], $sessionLabels);
+        $labels = array_map(fn(EventSessionLabel $l) => $l->labelText, $sessionLabels);
 
         // Get price display
         $sessionPrices = $pricesMap[$sessionId] ?? [];
@@ -427,21 +427,23 @@ class StorytellingService implements IStorytellingService
     /**
      * Determines price display text.
      * Priority: PayWhatYouLike tier → Adult tier → first available → empty
+     *
+     * @param EventSessionPrice[] $prices
      */
     private function getPriceDisplay(array $prices, string $payWhatYouLikeText, string $currencySymbol): array
     {
         // Check for PayWhatYouLike tier first
         foreach ($prices as $price) {
-            if ((int)$price['PriceTierId'] === self::PRICE_TIER_PAY_WHAT_YOU_LIKE) {
+            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
                 return ['display' => $payWhatYouLikeText, 'isPayWhatYouLike' => true];
             }
         }
 
         // Check for Adult tier
         foreach ($prices as $price) {
-            if ((int)$price['PriceTierId'] === self::PRICE_TIER_ADULT) {
+            if ($price->priceTierId === PriceTierId::Adult->value) {
                 return [
-                    'display' => $this->formatPrice((float)$price['Price'], $currencySymbol),
+                    'display' => $this->formatPrice((float)$price->price, $currencySymbol),
                     'isPayWhatYouLike' => false,
                 ];
             }
@@ -451,7 +453,7 @@ class StorytellingService implements IStorytellingService
         if (!empty($prices)) {
             $price = $prices[0];
             return [
-                'display' => $this->formatPrice((float)$price['Price'], $currencySymbol),
+                'display' => $this->formatPrice((float)$price->price, $currencySymbol),
                 'isPayWhatYouLike' => false,
             ];
         }

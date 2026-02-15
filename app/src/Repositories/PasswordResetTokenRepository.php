@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\PasswordResetToken;
 use App\Repositories\Interfaces\IPasswordResetTokenRepository;
 use PDO;
 
@@ -53,9 +54,9 @@ class PasswordResetTokenRepository implements IPasswordResetTokenRepository
      * Finds a valid (not expired, not used) token by its hash.
      *
      * @param string $tokenHash SHA-256 hash of the token from the URL
-     * @return array|null Token data with UserAccountId, or null if invalid
+     * @return PasswordResetToken|null Token or null if invalid
      */
-    public function findValidByTokenHash(string $tokenHash): ?array
+    public function findValidByTokenHash(string $tokenHash): ?PasswordResetToken
     {
         $sql = '
             SELECT * FROM PasswordResetToken 
@@ -67,7 +68,7 @@ class PasswordResetTokenRepository implements IPasswordResetTokenRepository
         $stmt->execute(['token' => $tokenHash]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ?: null;
+        return $row ? PasswordResetToken::fromRow($row) : null;
     }
 
     /**

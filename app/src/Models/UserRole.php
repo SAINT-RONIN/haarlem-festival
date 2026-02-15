@@ -20,9 +20,10 @@ class UserRole
      */
 
     public function __construct(
-        public int $userRoleId,
-        public UserRoleName $roleName,
-    ) {
+        public readonly int          $userRoleId,
+        public readonly UserRoleName $roleName,
+    )
+    {
     }
 
     /**
@@ -32,7 +33,7 @@ class UserRole
     public static function fromRow(array $row): self
     {
         return new self(
-            userRoleId: (int) $row['UserRoleId'],
+            userRoleId: (int)$row['UserRoleId'],
             roleName: UserRoleName::from($row['RoleName']),
         );
     }

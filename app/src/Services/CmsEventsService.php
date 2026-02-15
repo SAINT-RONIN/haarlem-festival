@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
 use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
@@ -14,6 +15,8 @@ use App\Repositories\PriceTierRepository;
 use App\Repositories\ScheduleDayConfigRepository;
 use App\Repositories\VenueRepository;
 use App\Services\Interfaces\ICmsEventsService;
+use App\ViewModels\Cms\CmsEventEditViewModel;
+use App\ViewModels\Cms\CmsEventSessionViewModel;
 
 /**
  * Service for CMS Events management.
@@ -33,7 +36,6 @@ class CmsEventsService implements ICmsEventsService
 
     private const MAX_LABELS_PER_SESSION = 6;
     private const MAX_LABEL_LENGTH = 60;
-    private const PRICE_TIER_PAY_WHAT_YOU_LIKE = 5;
 
     public function __construct()
     {
@@ -114,18 +116,22 @@ class CmsEventsService implements ICmsEventsService
 
     /**
      * Gets weekly schedule overview for CMS.
-     * Returns events grouped by day of week across all 7 days.
+     * Returns sessions as ViewModels grouped by day of week across all 7 days.
+     *
+     * @return array<string, CmsEventSessionViewModel[]>
      */
     public function getWeeklyScheduleOverview(?int $eventTypeId = null): array
     {
         $schedule = $this->initializeWeekSchedule();
         $sessions = $this->sessionRepository->findWeeklyScheduleOverview($eventTypeId);
 
-        return $this->groupSessionsByDay($sessions, $schedule);
+        return $this->groupSessionsByDayAsViewModels($sessions, $schedule);
     }
 
     /**
      * Initializes empty schedule array for all week days.
+     *
+     * @return array<string, CmsEventSessionViewModel[]>
      */
     private function initializeWeekSchedule(): array
     {
@@ -134,14 +140,16 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Groups sessions by their day of week.
+     * Groups sessions by their day of week as ViewModels.
+     *
+     * @return array<string, CmsEventSessionViewModel[]>
      */
-    private function groupSessionsByDay(array $sessions, array $schedule): array
+    private function groupSessionsByDayAsViewModels(array $sessions, array $schedule): array
     {
         foreach ($sessions as $session) {
             $dayName = $session['DayOfWeek'];
             if (isset($schedule[$dayName])) {
-                $schedule[$dayName][] = $session;
+                $schedule[$dayName][] = CmsEventSessionViewModel::fromArray($session);
             }
         }
         return $schedule;
@@ -164,48 +172,28 @@ class CmsEventsService implements ICmsEventsService
 
     /**
      * Gets a single event with all related data for editing.
+     *
+     * @return CmsEventEditViewModel|null
      */
-    public function getEventForEdit(int $eventId): ?array
+    public function getEventForEdit(int $eventId): ?CmsEventEditViewModel
     {
         $event = $this->eventRepository->findByIdWithDetails($eventId);
         if (!$event) {
             return null;
         }
 
-        $sessions = $this->getEnrichedSessions($eventId);
-
-        return ['event' => $event, 'sessions' => $sessions];
-    }
-
-    /**
-     * Gets sessions with labels and prices attached.
-     */
-    private function getEnrichedSessions(int $eventId): array
-    {
         $sessions = $this->sessionRepository->findByEventId($eventId);
         $sessionIds = array_column($sessions, 'EventSessionId');
 
-        if (empty($sessionIds)) {
-            return $sessions;
+        $labelsMap = [];
+        $pricesMap = [];
+
+        if (!empty($sessionIds)) {
+            $labelsMap = $this->labelRepository->findBySessionIds($sessionIds);
+            $pricesMap = $this->priceRepository->findBySessionIds($sessionIds);
         }
 
-        $labelsMap = $this->labelRepository->findBySessionIds($sessionIds);
-        $pricesMap = $this->priceRepository->findBySessionIds($sessionIds);
-
-        return $this->attachLabelsAndPrices($sessions, $labelsMap, $pricesMap);
-    }
-
-    /**
-     * Attaches labels and prices to sessions.
-     */
-    private function attachLabelsAndPrices(array $sessions, array $labelsMap, array $pricesMap): array
-    {
-        foreach ($sessions as &$session) {
-            $sid = (int)$session['EventSessionId'];
-            $session['labels'] = $labelsMap[$sid] ?? [];
-            $session['prices'] = $pricesMap[$sid] ?? [];
-        }
-        return $sessions;
+        return CmsEventEditViewModel::fromData($event, $sessions, $pricesMap, $labelsMap);
     }
 
     /**
@@ -413,7 +401,7 @@ class CmsEventsService implements ICmsEventsService
         }
 
         // PayWhatYouLike must have price = 0
-        if ($priceTierId === self::PRICE_TIER_PAY_WHAT_YOU_LIKE && $price > 0) {
+        if ($priceTierId === PriceTierId::PayWhatYouLike->value && $price > 0) {
             $errors[] = 'Pay-what-you-like events must have price 0';
         }
 

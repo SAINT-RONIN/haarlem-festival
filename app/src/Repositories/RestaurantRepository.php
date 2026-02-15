@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\Restaurant;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use PDO;
 
@@ -23,18 +24,19 @@ class RestaurantRepository implements IRestaurantRepository
     /**
      * Returns all active restaurants.
      *
-     * @return array Array of Restaurant rows
+     * @return Restaurant[]
      */
     public function findAllActive(): array
     {
         $stmt = $this->pdo->prepare('
-            SELECT RestaurantId, Name, AddressLine, City, Stars, CuisineType
+            SELECT *
             FROM Restaurant
             WHERE IsActive = 1
             ORDER BY Name ASC
         ');
         $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $stmt->fetchAll();
+        return array_map([Restaurant::class, 'fromRow'], $rows);
     }
 }

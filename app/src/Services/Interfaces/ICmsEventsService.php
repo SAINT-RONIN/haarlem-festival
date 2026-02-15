@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Exceptions\ValidationException;
+use App\ViewModels\Cms\CmsEventEditViewModel;
 
 /**
  * Interface for CMS Events management service.
@@ -57,7 +58,7 @@ interface ICmsEventsService
     /**
      * Gets a single event with all related data for editing.
      */
-    public function getEventForEdit(int $eventId): ?array;
+    public function getEventForEdit(int $eventId): ?CmsEventEditViewModel;
 
     /**
      * Updates an event's basic information.

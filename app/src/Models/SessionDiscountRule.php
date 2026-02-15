@@ -18,12 +18,13 @@ class SessionDiscountRule
      */
 
     public function __construct(
-        public int $sessionDiscountRuleId,
-        public int $eventSessionId,
-        public string $ruleName,
-        public string $discountPercent,
-        public ?int $appliesToPriceTierId,
-    ) {
+        public readonly int    $sessionDiscountRuleId,
+        public readonly int    $eventSessionId,
+        public readonly string $ruleName,
+        public readonly string $discountPercent,
+        public readonly ?int   $appliesToPriceTierId,
+    )
+    {
     }
 
     /**
@@ -33,11 +34,11 @@ class SessionDiscountRule
     public static function fromRow(array $row): self
     {
         return new self(
-            sessionDiscountRuleId: (int) $row['SessionDiscountRuleId'],
-            eventSessionId: (int) $row['EventSessionId'],
-            ruleName: (string) $row['RuleName'],
-            discountPercent: (string) $row['DiscountPercent'],
-            appliesToPriceTierId: isset($row['AppliesToPriceTierId']) ? (int) $row['AppliesToPriceTierId'] : null,
+            sessionDiscountRuleId: (int)$row['SessionDiscountRuleId'],
+            eventSessionId: (int)$row['EventSessionId'],
+            ruleName: (string)$row['RuleName'],
+            discountPercent: (string)$row['DiscountPercent'],
+            appliesToPriceTierId: isset($row['AppliesToPriceTierId']) ? (int)$row['AppliesToPriceTierId'] : null,
         );
     }
 

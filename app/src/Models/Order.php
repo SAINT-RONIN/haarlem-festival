@@ -20,17 +20,18 @@ class Order
      */
 
     public function __construct(
-        public int $orderId,
-        public string $orderNumber,
-        public int $userAccountId,
-        public int $programId,
-        public OrderStatus $status,
-        public \DateTimeImmutable $createdAtUtc,
-        public ?\DateTimeImmutable $payBeforeUtc,
-        public string $subtotal,
-        public string $vatTotal,
-        public string $totalAmount,
-    ) {
+        public readonly int                 $orderId,
+        public readonly string              $orderNumber,
+        public readonly int                 $userAccountId,
+        public readonly int                 $programId,
+        public readonly OrderStatus         $status,
+        public readonly \DateTimeImmutable  $createdAtUtc,
+        public readonly ?\DateTimeImmutable $payBeforeUtc,
+        public readonly string              $subtotal,
+        public readonly string              $vatTotal,
+        public readonly string              $totalAmount,
+    )
+    {
     }
 
     /**
@@ -40,16 +41,16 @@ class Order
     public static function fromRow(array $row): self
     {
         return new self(
-            orderId: (int) $row['OrderId'],
-            orderNumber: (string) $row['OrderNumber'],
-            userAccountId: (int) $row['UserAccountId'],
-            programId: (int) $row['ProgramId'],
+            orderId: (int)$row['OrderId'],
+            orderNumber: (string)$row['OrderNumber'],
+            userAccountId: (int)$row['UserAccountId'],
+            programId: (int)$row['ProgramId'],
             status: OrderStatus::from($row['Status']),
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
             payBeforeUtc: isset($row['PayBeforeUtc']) ? new \DateTimeImmutable($row['PayBeforeUtc']) : null,
-            subtotal: (string) $row['Subtotal'],
-            vatTotal: (string) $row['VatTotal'],
-            totalAmount: (string) $row['TotalAmount'],
+            subtotal: (string)$row['Subtotal'],
+            vatTotal: (string)$row['VatTotal'],
+            totalAmount: (string)$row['TotalAmount'],
         );
     }
 

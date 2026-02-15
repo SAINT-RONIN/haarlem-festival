@@ -18,17 +18,18 @@ class OrderItem
      */
 
     public function __construct(
-        public int $orderItemId,
-        public int $orderId,
-        public ?int $eventSessionId,
-        public ?int $historyTourId,
-        public ?int $passPurchaseId,
-        public int $quantity,
-        public string $unitPrice,
-        public string $vatRate,
-        public ?string $donationAmount,
-        public string $specialRequest,
-    ) {
+        public readonly int     $orderItemId,
+        public readonly int     $orderId,
+        public readonly ?int    $eventSessionId,
+        public readonly ?int    $historyTourId,
+        public readonly ?int    $passPurchaseId,
+        public readonly int     $quantity,
+        public readonly string  $unitPrice,
+        public readonly string  $vatRate,
+        public readonly ?string $donationAmount,
+        public readonly string  $specialRequest,
+    )
+    {
     }
 
     /**
@@ -38,16 +39,16 @@ class OrderItem
     public static function fromRow(array $row): self
     {
         return new self(
-            orderItemId: (int) $row['OrderItemId'],
-            orderId: (int) $row['OrderId'],
-            eventSessionId: isset($row['EventSessionId']) ? (int) $row['EventSessionId'] : null,
-            historyTourId: isset($row['HistoryTourId']) ? (int) $row['HistoryTourId'] : null,
-            passPurchaseId: isset($row['PassPurchaseId']) ? (int) $row['PassPurchaseId'] : null,
-            quantity: (int) $row['Quantity'],
-            unitPrice: (string) $row['UnitPrice'],
-            vatRate: (string) $row['VatRate'],
+            orderItemId: (int)$row['OrderItemId'],
+            orderId: (int)$row['OrderId'],
+            eventSessionId: isset($row['EventSessionId']) ? (int)$row['EventSessionId'] : null,
+            historyTourId: isset($row['HistoryTourId']) ? (int)$row['HistoryTourId'] : null,
+            passPurchaseId: isset($row['PassPurchaseId']) ? (int)$row['PassPurchaseId'] : null,
+            quantity: (int)$row['Quantity'],
+            unitPrice: (string)$row['UnitPrice'],
+            vatRate: (string)$row['VatRate'],
             donationAmount: $row['DonationAmount'] ?? null,
-            specialRequest: (string) $row['SpecialRequest'],
+            specialRequest: (string)$row['SpecialRequest'],
         );
     }
 

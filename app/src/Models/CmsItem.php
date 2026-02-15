@@ -20,15 +20,16 @@ class CmsItem
      */
 
     public function __construct(
-        public int $cmsItemId,
-        public int $cmsSectionId,
-        public string $itemKey,
-        public CmsItemType $itemType,
-        public ?string $textValue,
-        public ?string $htmlValue,
-        public ?int $mediaAssetId,
-        public \DateTimeImmutable $updatedAtUtc,
-    ) {
+        public readonly int                $cmsItemId,
+        public readonly int                $cmsSectionId,
+        public readonly string             $itemKey,
+        public readonly CmsItemType        $itemType,
+        public readonly ?string            $textValue,
+        public readonly ?string            $htmlValue,
+        public readonly ?int               $mediaAssetId,
+        public readonly \DateTimeImmutable $updatedAtUtc,
+    )
+    {
     }
 
     /**
@@ -38,13 +39,13 @@ class CmsItem
     public static function fromRow(array $row): self
     {
         return new self(
-            cmsItemId: (int) $row['CmsItemId'],
-            cmsSectionId: (int) $row['CmsSectionId'],
-            itemKey: (string) $row['ItemKey'],
+            cmsItemId: (int)$row['CmsItemId'],
+            cmsSectionId: (int)$row['CmsSectionId'],
+            itemKey: (string)$row['ItemKey'],
             itemType: CmsItemType::from($row['ItemType']),
             textValue: $row['TextValue'] ?? null,
             htmlValue: $row['HtmlValue'] ?? null,
-            mediaAssetId: isset($row['MediaAssetId']) ? (int) $row['MediaAssetId'] : null,
+            mediaAssetId: isset($row['MediaAssetId']) ? (int)$row['MediaAssetId'] : null,
             updatedAtUtc: new \DateTimeImmutable($row['UpdatedAtUtc']),
         );
     }

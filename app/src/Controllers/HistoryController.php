@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Repositories\EventSessionRepository;
 use App\Services\HistoryService;
 use App\Services\Interfaces\IHistoryService;
-use App\Services\SessionService;
 
 
 /**
@@ -23,6 +21,7 @@ class HistoryController
      * GET /history
      */
     private IHistoryService $historyService;
+
     public function __construct()
     {
         $this->historyService = new HistoryService();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\EventSessionLabel;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use PDO;
 
@@ -21,7 +22,10 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
     }
 
     /**
-     * @inheritDoc
+     * Find all labels for a session.
+     *
+     * @param int $sessionId
+     * @return EventSessionLabel[]
      */
     public function findBySessionId(int $sessionId): array
     {
@@ -32,12 +36,16 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
             ORDER BY EventSessionLabelId ASC
         ');
         $stmt->execute(['sessionId' => $sessionId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $stmt->fetchAll();
+        return array_map([EventSessionLabel::class, 'fromRow'], $rows);
     }
 
     /**
-     * @inheritDoc
+     * Find all labels for multiple sessions.
+     *
+     * @param array<int> $sessionIds
+     * @return array<int, EventSessionLabel[]>
      */
     public function findBySessionIds(array $sessionIds): array
     {
@@ -53,8 +61,7 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
             ORDER BY EventSessionId, EventSessionLabelId ASC
         ");
         $stmt->execute($sessionIds);
-
-        $rows = $stmt->fetchAll();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Group by session ID
         $grouped = [];
@@ -63,7 +70,7 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
             if (!isset($grouped[$sid])) {
                 $grouped[$sid] = [];
             }
-            $grouped[$sid][] = $row;
+            $grouped[$sid][] = EventSessionLabel::fromRow($row);
         }
 
         return $grouped;

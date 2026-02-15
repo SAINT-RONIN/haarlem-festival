@@ -18,15 +18,16 @@ class ProgramItem
      */
 
     public function __construct(
-        public int $programItemId,
-        public int $programId,
-        public ?int $eventSessionId,
-        public ?int $historyTourId,
-        public ?int $passTypeId,
-        public ?\DateTimeImmutable $passValidDate,
-        public int $quantity,
-        public ?string $donationAmount,
-    ) {
+        public readonly int                 $programItemId,
+        public readonly int                 $programId,
+        public readonly ?int                $eventSessionId,
+        public readonly ?int                $historyTourId,
+        public readonly ?int                $passTypeId,
+        public readonly ?\DateTimeImmutable $passValidDate,
+        public readonly int                 $quantity,
+        public readonly ?string             $donationAmount,
+    )
+    {
     }
 
     /**
@@ -36,13 +37,13 @@ class ProgramItem
     public static function fromRow(array $row): self
     {
         return new self(
-            programItemId: (int) $row['ProgramItemId'],
-            programId: (int) $row['ProgramId'],
-            eventSessionId: isset($row['EventSessionId']) ? (int) $row['EventSessionId'] : null,
-            historyTourId: isset($row['HistoryTourId']) ? (int) $row['HistoryTourId'] : null,
-            passTypeId: isset($row['PassTypeId']) ? (int) $row['PassTypeId'] : null,
+            programItemId: (int)$row['ProgramItemId'],
+            programId: (int)$row['ProgramId'],
+            eventSessionId: isset($row['EventSessionId']) ? (int)$row['EventSessionId'] : null,
+            historyTourId: isset($row['HistoryTourId']) ? (int)$row['HistoryTourId'] : null,
+            passTypeId: isset($row['PassTypeId']) ? (int)$row['PassTypeId'] : null,
             passValidDate: isset($row['PassValidDate']) ? new \DateTimeImmutable($row['PassValidDate']) : null,
-            quantity: (int) $row['Quantity'],
+            quantity: (int)$row['Quantity'],
             donationAmount: $row['DonationAmount'] ?? null,
         );
     }

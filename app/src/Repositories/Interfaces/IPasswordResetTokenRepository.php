@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\PasswordResetToken;
+
 /**
  * Interface for PasswordResetToken repository.
  */
@@ -23,9 +25,9 @@ interface IPasswordResetTokenRepository
      * Finds a valid (not expired, not used) token by its hash.
      *
      * @param string $tokenHash SHA-256 hash of the raw token
-     * @return array|null Token data or null if not found/invalid
+     * @return PasswordResetToken|null Token or null if not found/invalid
      */
-    public function findValidByTokenHash(string $tokenHash): ?array;
+    public function findValidByTokenHash(string $tokenHash): ?PasswordResetToken;
 
     /**
      * Marks a token as used.

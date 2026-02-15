@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\Event;
+
 /**
  * Interface for Event repository operations.
  */
@@ -13,14 +15,31 @@ interface IEventRepository
      * Find all events by event type.
      *
      * @param int $eventTypeId
-     * @return array Array of event rows
+     * @return array<int, array{
+     *     EventId: int,
+     *     EventTypeId: int,
+     *     Title: string,
+     *     ShortDescription: string,
+     *     VenueName: ?string,
+     *     EventTypeName: string
+     * }>
      */
     public function findAllByType(int $eventTypeId): array;
 
     /**
      * Find all events with type and venue info.
      *
-     * @return array Array of event rows with joins
+     * @return array<int, array{
+     *     EventId: int,
+     *     EventTypeId: int,
+     *     Title: string,
+     *     ShortDescription: string,
+     *     VenueName: ?string,
+     *     EventTypeName: string,
+     *     EventTypeSlug: string,
+     *     SessionCount: int,
+     *     IsActive: bool
+     * }>
      */
     public function findAllWithDetails(): array;
 
@@ -28,15 +47,26 @@ interface IEventRepository
      * Find an event by ID.
      *
      * @param int $eventId
-     * @return array|null Event row or null
+     * @return Event|null
      */
-    public function findById(int $eventId): ?array;
+    public function findById(int $eventId): ?Event;
 
     /**
      * Find an event by ID with related details.
      *
      * @param int $eventId
-     * @return array|null Event row with venue/type or null
+     * @return array{
+     *     EventId: int,
+     *     EventTypeId: int,
+     *     Title: string,
+     *     ShortDescription: string,
+     *     LongDescriptionHtml: string,
+     *     VenueId: ?int,
+     *     VenueName: ?string,
+     *     EventTypeName: string,
+     *     EventTypeSlug: string,
+     *     IsActive: bool
+     * }|null
      */
     public function findByIdWithDetails(int $eventId): ?array;
 

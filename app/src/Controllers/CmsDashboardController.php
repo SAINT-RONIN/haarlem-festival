@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\NotFoundException;
 use App\Exceptions\ValidationException;
-use App\Repositories\CmsRepository;
+use App\Services\CmsDashboardService;
 use App\Services\CmsEditService;
 use App\Services\MediaAssetService;
 use App\Services\SessionService;
@@ -16,18 +17,19 @@ use App\ViewModels\CmsPageEditViewModel;
  *
  * Handles the main CMS admin panel views including
  * dashboard overview and pages management.
+ * Thin controller - delegates business logic to services.
  */
 class CmsDashboardController
 {
     private SessionService $sessionService;
-    private CmsRepository $cmsRepository;
+    private CmsDashboardService $dashboardService;
     private CmsEditService $cmsEditService;
     private MediaAssetService $mediaAssetService;
 
     public function __construct()
     {
         $this->sessionService = new SessionService();
-        $this->cmsRepository = new CmsRepository();
+        $this->dashboardService = new CmsDashboardService();
         $this->cmsEditService = new CmsEditService();
         $this->mediaAssetService = new MediaAssetService();
     }
@@ -41,9 +43,7 @@ class CmsDashboardController
         CmsAuthController::requireAdmin();
 
         $currentView = 'dashboard';
-        $recentPages = $this->getRecentPages();
-        $activities = $this->getRecentActivities();
-        $userName = $this->getUserDisplayName();
+        $viewModel = $this->dashboardService->getDashboardData($this->getUserDisplayName());
 
         require __DIR__ . '/../Views/pages/cms/dashboard.php';
     }
@@ -58,8 +58,7 @@ class CmsDashboardController
 
         $currentView = 'pages';
         $searchQuery = $_GET['search'] ?? '';
-        $pages = $this->getAllPages();
-        $userName = $this->getUserDisplayName();
+        $viewModel = $this->dashboardService->getPagesListData($searchQuery, $this->getUserDisplayName());
 
         require __DIR__ . '/../Views/pages/cms/dashboard.php';
     }
@@ -73,152 +72,6 @@ class CmsDashboardController
         return $_SESSION['user_display_name'] ?? 'Administrator';
     }
 
-    /**
-     * Gets recently updated pages for the dashboard.
-     */
-    private function getRecentPages(): array
-    {
-        try {
-            $cmsPages = $this->cmsRepository->findAllPages();
-            $pages = $this->mapPagesToRecentFormat(array_slice($cmsPages, 0, 4));
-
-            return !empty($pages) ? $pages : $this->getDefaultRecentPages();
-        } catch (\Exception $e) {
-            return $this->getDefaultRecentPages();
-        }
-    }
-
-    /**
-     * Maps CMS pages to recent pages format.
-     */
-    private function mapPagesToRecentFormat(array $cmsPages): array
-    {
-        $pages = [];
-        foreach ($cmsPages as $page) {
-            $pages[] = [
-                'title' => $page['Title'],
-                'status' => 'Published',
-                'time' => $this->formatTimeAgo($page['UpdatedAtUtc'] ?? null),
-            ];
-        }
-        return $pages;
-    }
-
-    /**
-     * Returns fallback data when database is unavailable.
-     */
-    private function getDefaultRecentPages(): array
-    {
-        return [
-            ['title' => 'Home', 'status' => 'Published', 'time' => '2h ago'],
-            ['title' => 'Jazz', 'status' => 'Published', 'time' => 'yesterday'],
-            ['title' => 'Dance', 'status' => 'Published', 'time' => '3d ago'],
-            ['title' => 'History', 'status' => 'Draft', 'time' => '6d ago'],
-        ];
-    }
-
-    /**
-     * Gets all pages for the pages list view.
-     */
-    private function getAllPages(): array
-    {
-        try {
-            $cmsPages = $this->cmsRepository->findAllPages();
-            $pages = $this->mapPagesToListFormat($cmsPages);
-
-            return !empty($pages) ? $pages : $this->getDefaultAllPages();
-        } catch (\Exception $e) {
-            return $this->getDefaultAllPages();
-        }
-    }
-
-    /**
-     * Maps CMS pages to pages list format.
-     */
-    private function mapPagesToListFormat(array $cmsPages): array
-    {
-        $pages = [];
-        foreach ($cmsPages as $page) {
-            $pages[] = [
-                'id' => $page['CmsPageId'],
-                'title' => $page['Title'],
-                'slug' => $page['Slug'],
-                'status' => 'Published',
-                'updatedAt' => $this->formatTimeAgo($page['UpdatedAtUtc'] ?? null),
-            ];
-        }
-        return $pages;
-    }
-
-    /**
-     * Returns fallback pages list.
-     */
-    private function getDefaultAllPages(): array
-    {
-        return [
-            ['id' => 1, 'title' => 'Home', 'slug' => 'home', 'status' => 'Published', 'updatedAt' => '2h ago'],
-            ['id' => 2, 'title' => 'Jazz', 'slug' => 'jazz', 'status' => 'Published', 'updatedAt' => 'yesterday'],
-            ['id' => 3, 'title' => 'Dance', 'slug' => 'dance', 'status' => 'Published', 'updatedAt' => '3d ago'],
-            ['id' => 4, 'title' => 'History', 'slug' => 'history', 'status' => 'Draft', 'updatedAt' => '6d ago'],
-            ['id' => 5, 'title' => 'Restaurant', 'slug' => 'restaurant', 'status' => 'Published', 'updatedAt' => '1w ago'],
-            ['id' => 6, 'title' => 'Storytelling', 'slug' => 'storytelling', 'status' => 'Published', 'updatedAt' => '1w ago'],
-        ];
-    }
-
-    /**
-     * Gets recent activity feed for the dashboard.
-     *
-     * @return array Array of activities with icon, text, time, and color
-     */
-    private function getRecentActivities(): array
-    {
-        // For now, return static activities
-        // This could be enhanced to pull from an activity log table
-        return [
-            ['icon' => 'edit', 'text' => "You updated 'Home'", 'time' => '2h ago', 'color' => 'blue'],
-            ['icon' => 'file-text', 'text' => "Draft saved: 'History'", 'time' => 'yesterday', 'color' => 'amber'],
-            ['icon' => 'image', 'text' => 'Media uploaded: header.jpg', 'time' => '3d ago', 'color' => 'purple'],
-            ['icon' => 'user', 'text' => "User 'Editor' role updated", 'time' => '1w ago', 'color' => 'green'],
-        ];
-    }
-
-    /**
-     * Formats a timestamp as a human-readable "time ago" string.
-     *
-     * @param string|null $timestamp The UTC timestamp
-     * @return string Human-readable time string
-     */
-    private function formatTimeAgo(?string $timestamp): string
-    {
-        if ($timestamp === null) {
-            return 'recently';
-        }
-
-        try {
-            $time = new \DateTime($timestamp, new \DateTimeZone('UTC'));
-            $now = new \DateTime('now', new \DateTimeZone('UTC'));
-            $diff = $now->diff($time);
-
-            if ($diff->days === 0) {
-                if ($diff->h === 0) {
-                    return $diff->i . 'm ago';
-                }
-                return $diff->h . 'h ago';
-            } elseif ($diff->days === 1) {
-                return 'yesterday';
-            } elseif ($diff->days < 7) {
-                return $diff->days . 'd ago';
-            } elseif ($diff->days < 30) {
-                $weeks = floor($diff->days / 7);
-                return $weeks . 'w ago';
-            } else {
-                $months = floor($diff->days / 30);
-                return $months . 'mo ago';
-            }
-        } catch (\Exception $e) {
-            return 'recently';
-        }
-    }
 
     /**
      * Displays the page edit form.
@@ -228,29 +81,33 @@ class CmsDashboardController
     {
         CmsAuthController::requireAdmin();
 
-        $pageId = (int)$id;
-        $pageData = $this->cmsEditService->getPageForEditing($pageId);
+        try {
+            $pageId = (int)$id;
+            $pageData = $this->cmsEditService->getPageForEditing($pageId);
 
-        if (!$pageData) {
+            if (!$pageData) {
+                throw new NotFoundException('Page', $pageId);
+            }
+
+            $viewModel = new CmsPageEditViewModel($pageData);
+            $viewData = $viewModel->getViewData();
+
+            $page = $viewData['page'];
+            $sections = $viewData['sections'];
+            $contentLimits = $viewData['contentLimits'];
+            $imageLimits = $viewData['imageLimits'];
+            $userName = $this->getUserDisplayName();
+
+            $successMessage = $_SESSION['cms_success'] ?? null;
+            $errorMessage = $_SESSION['cms_error'] ?? null;
+            unset($_SESSION['cms_success'], $_SESSION['cms_error']);
+
+            require __DIR__ . '/../Views/pages/cms/page-edit.php';
+        } catch (NotFoundException $e) {
             http_response_code(404);
-            echo 'Page not found';
-            return;
+            $errorMessage = $e->getMessage();
+            require __DIR__ . '/../Views/pages/errors/404.php';
         }
-
-        $viewModel = new CmsPageEditViewModel($pageData);
-        $viewData = $viewModel->getViewData();
-
-        $page = $viewData['page'];
-        $sections = $viewData['sections'];
-        $contentLimits = $viewData['contentLimits'];
-        $imageLimits = $viewData['imageLimits'];
-        $userName = $this->getUserDisplayName();
-
-        $successMessage = $_SESSION['cms_success'] ?? null;
-        $errorMessage = $_SESSION['cms_error'] ?? null;
-        unset($_SESSION['cms_success'], $_SESSION['cms_error']);
-
-        require __DIR__ . '/../Views/pages/cms/page-edit.php';
     }
 
     /**
@@ -262,7 +119,6 @@ class CmsDashboardController
         CmsAuthController::requireAdmin();
 
         $pageId = (int)$id;
-        $pageSlug =
         $items = $_POST['items'] ?? [];
 
         if (empty($items)) {

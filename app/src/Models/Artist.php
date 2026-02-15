@@ -18,14 +18,15 @@ class Artist
      */
 
     public function __construct(
-        public int $artistId,
-        public string $name,
-        public string $style,
-        public string $bioHtml,
-        public ?int $imageAssetId,
-        public bool $isActive,
-        public \DateTimeImmutable $createdAtUtc,
-    ) {
+        public readonly int                $artistId,
+        public readonly string             $name,
+        public readonly string             $style,
+        public readonly string             $bioHtml,
+        public readonly ?int               $imageAssetId,
+        public readonly bool               $isActive,
+        public readonly \DateTimeImmutable $createdAtUtc,
+    )
+    {
     }
 
     /**
@@ -35,12 +36,12 @@ class Artist
     public static function fromRow(array $row): self
     {
         return new self(
-            artistId: (int) $row['ArtistId'],
-            name: (string) $row['Name'],
-            style: (string) $row['Style'],
-            bioHtml: (string) $row['BioHtml'],
-            imageAssetId: isset($row['ImageAssetId']) ? (int) $row['ImageAssetId'] : null,
-            isActive: (bool) $row['IsActive'],
+            artistId: (int)$row['ArtistId'],
+            name: (string)$row['Name'],
+            style: (string)$row['Style'],
+            bioHtml: (string)$row['BioHtml'],
+            imageAssetId: isset($row['ImageAssetId']) ? (int)$row['ImageAssetId'] : null,
+            isActive: (bool)$row['IsActive'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
         );
     }

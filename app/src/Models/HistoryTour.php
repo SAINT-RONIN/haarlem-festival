@@ -18,12 +18,13 @@ class HistoryTour
      */
 
     public function __construct(
-        public int $historyTourId,
-        public int $eventSessionId,
-        public string $languageCode,
-        public int $guideCount,
-        public int $seatsPerTour,
-    ) {
+        public readonly int    $historyTourId,
+        public readonly int    $eventSessionId,
+        public readonly string $languageCode,
+        public readonly int    $guideCount,
+        public readonly int    $seatsPerTour,
+    )
+    {
     }
 
     /**
@@ -33,11 +34,11 @@ class HistoryTour
     public static function fromRow(array $row): self
     {
         return new self(
-            historyTourId: (int) $row['HistoryTourId'],
-            eventSessionId: (int) $row['EventSessionId'],
-            languageCode: (string) $row['LanguageCode'],
-            guideCount: (int) $row['GuideCount'],
-            seatsPerTour: (int) $row['SeatsPerTour'],
+            historyTourId: (int)$row['HistoryTourId'],
+            eventSessionId: (int)$row['EventSessionId'],
+            languageCode: (string)$row['LanguageCode'],
+            guideCount: (int)$row['GuideCount'],
+            seatsPerTour: (int)$row['SeatsPerTour'],
         );
     }
 

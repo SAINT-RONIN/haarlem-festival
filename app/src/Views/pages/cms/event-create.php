@@ -58,8 +58,8 @@
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                             <option value="">Select event type...</option>
                             <?php foreach ($eventTypes as $type): ?>
-                                <option value="<?= (int)$type['EventTypeId'] ?>">
-                                    <?= htmlspecialchars($type['Name']) ?>
+                                <option value="<?= $type->eventTypeId ?>">
+                                    <?= htmlspecialchars($type->name) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

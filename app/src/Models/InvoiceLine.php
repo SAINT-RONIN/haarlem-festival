@@ -18,17 +18,18 @@ class InvoiceLine
      */
 
     public function __construct(
-        public int $invoiceLineId,
-        public int $invoiceId,
-        public string $lineDescription,
-        public int $quantity,
-        public string $unitPrice,
-        public string $vatRate,
-        public string $lineSubtotal,
-        public string $lineVatAmount,
-        public string $lineTotal,
-        public ?string $donationAmount,
-    ) {
+        public readonly int     $invoiceLineId,
+        public readonly int     $invoiceId,
+        public readonly string  $lineDescription,
+        public readonly int     $quantity,
+        public readonly string  $unitPrice,
+        public readonly string  $vatRate,
+        public readonly string  $lineSubtotal,
+        public readonly string  $lineVatAmount,
+        public readonly string  $lineTotal,
+        public readonly ?string $donationAmount,
+    )
+    {
     }
 
     /**
@@ -38,15 +39,15 @@ class InvoiceLine
     public static function fromRow(array $row): self
     {
         return new self(
-            invoiceLineId: (int) $row['InvoiceLineId'],
-            invoiceId: (int) $row['InvoiceId'],
-            lineDescription: (string) $row['LineDescription'],
-            quantity: (int) $row['Quantity'],
-            unitPrice: (string) $row['UnitPrice'],
-            vatRate: (string) $row['VatRate'],
-            lineSubtotal: (string) $row['LineSubtotal'],
-            lineVatAmount: (string) $row['LineVatAmount'],
-            lineTotal: (string) $row['LineTotal'],
+            invoiceLineId: (int)$row['InvoiceLineId'],
+            invoiceId: (int)$row['InvoiceId'],
+            lineDescription: (string)$row['LineDescription'],
+            quantity: (int)$row['Quantity'],
+            unitPrice: (string)$row['UnitPrice'],
+            vatRate: (string)$row['VatRate'],
+            lineSubtotal: (string)$row['LineSubtotal'],
+            lineVatAmount: (string)$row['LineVatAmount'],
+            lineTotal: (string)$row['LineTotal'],
             donationAmount: $row['DonationAmount'] ?? null,
         );
     }

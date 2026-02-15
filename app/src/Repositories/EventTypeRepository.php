@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\EventType;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use PDO;
 
@@ -23,7 +24,7 @@ class EventTypeRepository implements IEventTypeRepository
     /**
      * Returns all event types.
      *
-     * @return array Array of EventType rows
+     * @return EventType[]
      */
     public function findAll(): array
     {
@@ -33,17 +34,18 @@ class EventTypeRepository implements IEventTypeRepository
             ORDER BY EventTypeId ASC
         ');
         $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $stmt->fetchAll();
+        return array_map([EventType::class, 'fromRow'], $rows);
     }
 
     /**
      * Returns a single event type by ID.
      *
      * @param int $eventTypeId
-     * @return array|null EventType row or null if not found
+     * @return EventType|null
      */
-    public function findById(int $eventTypeId): ?array
+    public function findById(int $eventTypeId): ?EventType
     {
         $stmt = $this->pdo->prepare('
             SELECT EventTypeId, Name, Slug
@@ -51,17 +53,21 @@ class EventTypeRepository implements IEventTypeRepository
             WHERE EventTypeId = :eventTypeId
         ');
         $stmt->execute(['eventTypeId' => $eventTypeId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $result = $stmt->fetch();
-        return $result !== false ? $result : null;
+        return $result ? EventType::fromRow($result) : null;
     }
 
     /**
-     * Returns all event types for dropdown (EventTypeId, Name, Slug).
+     * Returns all event types for dropdown.
+     *
+     * @return EventType[]
      */
     public function findAllForDropdown(): array
     {
         $stmt = $this->pdo->query('SELECT EventTypeId, Name, Slug FROM EventType ORDER BY Name ASC');
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map([EventType::class, 'fromRow'], $rows);
     }
 }

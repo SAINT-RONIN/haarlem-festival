@@ -18,18 +18,19 @@ class Event
      */
 
     public function __construct(
-        public int $eventId,
-        public int $eventTypeId,
-        public string $title,
-        public string $shortDescription,
-        public string $longDescriptionHtml,
-        public ?int $featuredImageAssetId,
-        public ?int $venueId,
-        public ?int $artistId,
-        public ?int $restaurantId,
-        public bool $isActive,
-        public \DateTimeImmutable $createdAtUtc,
-    ) {
+        public readonly int                $eventId,
+        public readonly int                $eventTypeId,
+        public readonly string             $title,
+        public readonly string             $shortDescription,
+        public readonly string             $longDescriptionHtml,
+        public readonly ?int               $featuredImageAssetId,
+        public readonly ?int               $venueId,
+        public readonly ?int               $artistId,
+        public readonly ?int               $restaurantId,
+        public readonly bool               $isActive,
+        public readonly \DateTimeImmutable $createdAtUtc,
+    )
+    {
     }
 
     /**
@@ -39,16 +40,16 @@ class Event
     public static function fromRow(array $row): self
     {
         return new self(
-            eventId: (int) $row['EventId'],
-            eventTypeId: (int) $row['EventTypeId'],
-            title: (string) $row['Title'],
-            shortDescription: (string) $row['ShortDescription'],
-            longDescriptionHtml: (string) $row['LongDescriptionHtml'],
-            featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null,
-            venueId: isset($row['VenueId']) ? (int) $row['VenueId'] : null,
-            artistId: isset($row['ArtistId']) ? (int) $row['ArtistId'] : null,
-            restaurantId: isset($row['RestaurantId']) ? (int) $row['RestaurantId'] : null,
-            isActive: (bool) $row['IsActive'],
+            eventId: (int)$row['EventId'],
+            eventTypeId: (int)$row['EventTypeId'],
+            title: (string)$row['Title'],
+            shortDescription: (string)$row['ShortDescription'],
+            longDescriptionHtml: (string)$row['LongDescriptionHtml'],
+            featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int)$row['FeaturedImageAssetId'] : null,
+            venueId: isset($row['VenueId']) ? (int)$row['VenueId'] : null,
+            artistId: isset($row['ArtistId']) ? (int)$row['ArtistId'] : null,
+            restaurantId: isset($row['RestaurantId']) ? (int)$row['RestaurantId'] : null,
+            isActive: (bool)$row['IsActive'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
         );
     }

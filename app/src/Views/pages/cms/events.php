@@ -3,17 +3,20 @@
  * CMS Events list page with weekly schedule overview.
  *
  * @var string $currentView
- * @var array $events
- * @var array $eventTypes
- * @var array $weeklySchedule
- * @var array $venues
- * @var string|null $successMessage
- * @var string|null $errorMessage
- * @var string|int $selectedType Currently selected type filter (passed from controller)
- * @var string $selectedDay Currently selected day filter (passed from controller)
+ * @var \App\ViewModels\Cms\CmsEventsListViewModel $viewModel
  */
 
 $weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+// Extract from ViewModel
+$events = $viewModel->events;
+$eventTypes = $viewModel->eventTypes;
+$weeklySchedule = $viewModel->weeklySchedule;
+$venues = $viewModel->venues;
+$selectedType = $viewModel->selectedType;
+$selectedDay = $viewModel->selectedDay;
+$successMessage = $viewModel->successMessage;
+$errorMessage = $viewModel->errorMessage;
 
 // Define type colors for badges
 $typeColors = [
@@ -75,9 +78,9 @@ $typeColors = [
                             class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                         <option value="">All Types</option>
                         <?php foreach ($eventTypes as $type): ?>
-                            <option value="<?= (int)$type['EventTypeId'] ?>"
-                                    <?= $selectedType == $type['EventTypeId'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($type['Name']) ?>
+                            <option value="<?= $type->eventTypeId ?>"
+                                    <?= $selectedType == $type->eventTypeId ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($type->name) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -135,28 +138,25 @@ $typeColors = [
                             <?php else: ?>
                                 <?php foreach ($daySessions as $session): ?>
                                     <?php
-                                    $typeSlug = $session['EventTypeSlug'] ?? 'default';
-                                    $colorClass = $typeColors[$typeSlug] ?? 'bg-gray-100 text-gray-800';
-                                    $startTime = date('H:i', strtotime($session['StartDateTime']));
-                                    $endTime = $session['EndDateTime'] ? date('H:i', strtotime($session['EndDateTime'])) : '';
-                                    $seatsAvailable = (int)$session['CapacityTotal'] - (int)$session['SoldSingleTickets'] - (int)$session['SoldReservedSeats'];
+                                    /** @var \App\ViewModels\Cms\CmsEventSessionViewModel $session */
+                                    $colorClass = $typeColors[$session->eventTypeSlug] ?? 'bg-gray-100 text-gray-800';
                                     ?>
-                                    <a href="/cms/events/<?= (int)$session['EventId'] ?>/edit"
+                                    <a href="/cms/events/<?= $session->eventId ?>/edit"
                                        class="block p-2 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all text-xs">
                                         <div class="flex justify-between items-start mb-1">
                                             <span class="font-medium text-gray-900 line-clamp-2">
-                                                <?= htmlspecialchars($session['EventTitle']) ?>
+                                                <?= htmlspecialchars($session->eventTitle) ?>
                                             </span>
                                         </div>
                                         <div class="text-gray-500 mb-1">
-                                            <?= $startTime ?><?= $endTime ? ' - ' . $endTime : '' ?>
+                                            <?= $session->formattedStartTime ?><?= $session->formattedEndTime ? ' - ' . $session->formattedEndTime : '' ?>
                                         </div>
                                         <span class="inline-block px-1.5 py-0.5 rounded text-[10px] <?= $colorClass ?>">
-                                            <?= htmlspecialchars($session['EventTypeName']) ?>
+                                            <?= htmlspecialchars($session->eventTypeSlug) ?>
                                         </span>
-                                        <?php if ($session['EventTypeSlug'] === 'jazz'): ?>
+                                        <?php if ($session->eventTypeSlug === 'jazz'): ?>
                                             <div class="text-[10px] text-gray-400 mt-1">
-                                                <?= $seatsAvailable ?> seats left
+                                                <?= $session->seatsAvailable ?> seats left
                                             </div>
                                         <?php endif; ?>
                                     </a>

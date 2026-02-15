@@ -18,12 +18,13 @@ class Program
      */
 
     public function __construct(
-        public int $programId,
-        public ?int $userAccountId,
-        public ?string $sessionKey,
-        public \DateTimeImmutable $createdAtUtc,
-        public bool $isCheckedOut,
-    ) {
+        public readonly int                $programId,
+        public readonly ?int               $userAccountId,
+        public readonly ?string            $sessionKey,
+        public readonly \DateTimeImmutable $createdAtUtc,
+        public readonly bool               $isCheckedOut,
+    )
+    {
     }
 
     /**
@@ -33,11 +34,11 @@ class Program
     public static function fromRow(array $row): self
     {
         return new self(
-            programId: (int) $row['ProgramId'],
-            userAccountId: isset($row['UserAccountId']) ? (int) $row['UserAccountId'] : null,
+            programId: (int)$row['ProgramId'],
+            userAccountId: isset($row['UserAccountId']) ? (int)$row['UserAccountId'] : null,
             sessionKey: $row['SessionKey'] ?? null,
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
-            isCheckedOut: (bool) $row['IsCheckedOut'],
+            isCheckedOut: (bool)$row['IsCheckedOut'],
         );
     }
 

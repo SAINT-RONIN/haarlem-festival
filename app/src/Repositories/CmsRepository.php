@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\CmsItem;
+use App\Models\CmsPage;
+use App\Models\CmsSection;
 use App\Repositories\Interfaces\ICmsRepository;
 use PDO;
 
@@ -17,30 +20,41 @@ class CmsRepository implements ICmsRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function getPageBySlug(string $slug): ?array
+    public function getPageBySlug(string $slug): ?CmsPage
     {
         $stmt = $this->pdo->prepare('SELECT * FROM CmsPage WHERE Slug = ?');
         $stmt->execute([$slug]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ?: null;
+        return $result ? CmsPage::fromRow($result) : null;
     }
 
+    /**
+     * @return CmsSection[]
+     */
     public function getSectionsByPageId(int $cmsPageId): array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM CmsSection WHERE CmsPageId = :cmsPageId ORDER BY CmsSectionId ASC');
         $stmt->bindValue(':cmsPageId', $cmsPageId, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([CmsSection::class, 'fromRow'], $rows);
     }
 
+    /**
+     * @return CmsItem[]
+     */
     public function getItemsBySectionId(int $cmsSectionId): array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM CmsItem WHERE CmsSectionId = :cmsSectionId ORDER BY CmsItemId ASC');
         $stmt->bindValue(':cmsSectionId', $cmsSectionId, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([CmsItem::class, 'fromRow'], $rows);
     }
 
+    /**
+     * @return CmsItem[]
+     */
     public function getItemsBySectionKey(int $cmsPageId, string $sectionKey): array
     {
         $sql = '
@@ -54,13 +68,16 @@ class CmsRepository implements ICmsRepository
         $stmt->bindValue(':cmsPageId', $cmsPageId, PDO::PARAM_INT);
         $stmt->bindValue(':sectionKey', $sectionKey, PDO::PARAM_STR);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([CmsItem::class, 'fromRow'], $rows);
     }
 
     /**
-     * Retrieves all CMS pages.
+     * Retrieves all CMS pages with last update time.
      *
-     * @return array Array of page records
+     * Returns arrays for this aggregate query (includes MAX UpdatedAtUtc).
+     *
+     * @return array<int, array{CmsPageId: int, Title: string, Slug: string, UpdatedAtUtc: ?string}>
      */
     public function findAllPages(): array
     {
@@ -80,23 +97,23 @@ class CmsRepository implements ICmsRepository
     /**
      * Retrieves a CMS page by ID.
      */
-    public function getPageById(int $cmsPageId): ?array
+    public function getPageById(int $cmsPageId): ?CmsPage
     {
         $stmt = $this->pdo->prepare('SELECT * FROM CmsPage WHERE CmsPageId = ?');
         $stmt->execute([$cmsPageId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ?: null;
+        return $result ? CmsPage::fromRow($result) : null;
     }
 
     /**
      * Retrieves a CMS item by ID.
      */
-    public function getItemById(int $cmsItemId): ?array
+    public function getItemById(int $cmsItemId): ?CmsItem
     {
         $stmt = $this->pdo->prepare('SELECT * FROM CmsItem WHERE CmsItemId = ?');
         $stmt->execute([$cmsItemId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ?: null;
+        return $result ? CmsItem::fromRow($result) : null;
     }
 
     /**

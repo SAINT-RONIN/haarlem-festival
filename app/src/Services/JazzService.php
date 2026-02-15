@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\CmsItem;
+use App\Models\CmsPage;
+use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\IJazzService;
@@ -35,7 +38,8 @@ class JazzService implements IJazzService
     private MediaAssetRepository $mediaAssetRepository;
     private ScheduleService $scheduleService;
     private SessionService $sessionService;
-    private ?array $jazzPageData = null;
+    private ?CmsPage $jazzPageData = null;
+    /** @var array<string, CmsSection> */
     private ?array $jazzSections = null;
 
     public function __construct()
@@ -71,10 +75,11 @@ class JazzService implements IJazzService
         if ($this->jazzPageData === null) {
             $this->jazzPageData = $this->cmsRepository->getPageBySlug('jazz');
             if ($this->jazzPageData) {
-                $sections = $this->cmsRepository->getSectionsByPageId((int)$this->jazzPageData['CmsPageId']);
+                $sections = $this->cmsRepository->getSectionsByPageId($this->jazzPageData->cmsPageId);
                 $this->jazzSections = [];
                 foreach ($sections as $section) {
-                    $this->jazzSections[$section['SectionKey']] = $section;
+                    /** @var CmsSection $section */
+                    $this->jazzSections[$section->sectionKey] = $section;
                 }
             }
         }
@@ -86,12 +91,13 @@ class JazzService implements IJazzService
             return $default;
         }
 
-        $sectionId = (int)$this->jazzSections[$sectionKey]['CmsSectionId'];
+        $sectionId = $this->jazzSections[$sectionKey]->cmsSectionId;
         $items = $this->cmsRepository->getItemsBySectionId($sectionId);
 
         foreach ($items as $item) {
-            if ($item['ItemKey'] === $itemKey) {
-                $value = $item['TextValue'] ?? $item['HtmlValue'] ?? $default;
+            /** @var CmsItem $item */
+            if ($item->itemKey === $itemKey) {
+                $value = $item->textValue ?? $item->htmlValue ?? $default;
                 return is_string($value) ? $value : $default;
             }
         }
@@ -112,23 +118,23 @@ class JazzService implements IJazzService
             return $defaultUrl;
         }
 
-        $sectionId = (int)$this->jazzSections[$sectionKey]['CmsSectionId'];
+        $sectionId = $this->jazzSections[$sectionKey]->cmsSectionId;
         $items = $this->cmsRepository->getItemsBySectionId($sectionId);
 
         foreach ($items as $item) {
-            if ($item['ItemKey'] !== $itemKey) {
+            /** @var CmsItem $item */
+            if ($item->itemKey !== $itemKey) {
                 continue;
             }
 
-            if (!empty($item['MediaAssetId'])) {
-                $media = $this->mediaAssetRepository->findById((int)$item['MediaAssetId']);
-                $filePath = is_array($media) ? ($media['FilePath'] ?? null) : null;
-                if (is_string($filePath) && $filePath !== '') {
-                    return $filePath;
+            if ($item->mediaAssetId !== null) {
+                $media = $this->mediaAssetRepository->findById($item->mediaAssetId);
+                if ($media !== null && $media->filePath !== '') {
+                    return $media->filePath;
                 }
             }
 
-            $textPath = $item['TextValue'] ?? null;
+            $textPath = $item->textValue ?? null;
             if (is_string($textPath) && $textPath !== '') {
                 return $textPath;
             }
