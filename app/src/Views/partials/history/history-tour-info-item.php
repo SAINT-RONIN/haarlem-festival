@@ -1,1 +1,0 @@
-<p>Minimum age requirement: 12 years old</p>

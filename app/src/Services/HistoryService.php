@@ -11,7 +11,6 @@ use App\Repositories\Interfaces\IVenueRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Repositories\VenueRepository;
 use App\Services\Interfaces\IHistoryService;
-use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
@@ -19,11 +18,12 @@ use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoryPageViewModel;
 use App\ViewModels\History\ImportantInfoAboutTour;
 use App\ViewModels\History\PricingCard;
+use App\ViewModels\History\RouteVenue;
 use App\ViewModels\History\TicketOptions;
 use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\History\ScheduleData;
 use App\ViewModels\History\ScheduleDayData;
-use App\ViewModels\History\ScheduleEventData;
+use App\ViewModels\History\ScheduleCard;
 use App\ViewModels\History\RouteData;
 use App\ViewModels\History\VenueCardData;
 use App\ViewModels\History\VenuesData;
@@ -36,18 +36,6 @@ use App\ViewModels\History\VenuesData;
  */
 class HistoryService implements IHistoryService
 {
-    // Map each historical route stop to its specific color
-    private const BADGE_COLORS = [
-        'stbavo'           => 'bg-sky-600/80',      // 1. Church of St.Bavo
-        'grotemarkt'      => 'bg-orange-800/80',   // Grote Markt
-        'dehallen'        => 'bg-amber-400/80',    // De Hallen
-        'proveniershof'   => 'bg-lime-700/80',     // Proveniershof
-        'jopenkerk'       => 'bg-violet-800/80',   // Jopenkerk
-        'waalsekerk'      => 'bg-rose-500/80',     // Waalse Kerk
-        'molendeadriaan'  => 'bg-lime-500/80',     // Molen de Adriaan
-        'amsterdamsepoort'=> 'bg-stone-700/80',    // Amsterdamse Poort
-        'hofvanbakenes'   => 'bg-orange-500/80',   // Hof van Bakenes
-    ];
     private ICmsRepository $cmsRepository;
     private IMediaAssetRepository $mediaAssetRepository;
 
@@ -65,7 +53,7 @@ class HistoryService implements IHistoryService
     }
 
     /**
-     * Builds the homepage view model with all required data.
+     * Builds the history page view model with all required data.
      */
     public function getHistoryPageData(): HistoryPageViewModel
     {
@@ -85,6 +73,9 @@ class HistoryService implements IHistoryService
         );
     }
 
+    /**
+     * Loads and caches CMS page and sections for the history page.
+     */
     private function loadPageData(): void
     {
         if ($this->historyPageData === null) {
@@ -99,6 +90,13 @@ class HistoryService implements IHistoryService
         }
     }
 
+    /**
+     * Retrieve a CMS-managed text/HTML item for the history page.
+     *
+     * @param string $sectionKey The CMS section key.
+     * @param string $itemKey    The item key inside the section.
+     * @param string $default    Fallback value if no CMS item is found.
+     */
     private function getCmsItem(string $sectionKey, string $itemKey, string $default = ''): string
     {
         if (!isset($this->historySections[$sectionKey])) {
@@ -121,9 +119,12 @@ class HistoryService implements IHistoryService
     /**
      * Gets a CMS-managed image URL for the History page.
      *
-     * Supports both:
-     * - MEDIA items (MediaAssetId)
-     * - legacy IMAGE_PATH items (TextValue)
+     * Supports both MEDIA items (MediaAssetId) and legacy IMAGE_PATH items (TextValue).
+     *
+     * @param string $sectionKey
+     * @param string $itemKey
+     * @param string $defaultUrl
+     * @return string
      */
     private function getCmsImage(string $sectionKey, string $itemKey, string $defaultUrl): string
     {
@@ -158,6 +159,9 @@ class HistoryService implements IHistoryService
         return $defaultUrl;
     }
 
+    /**
+     * Builds hero section data for the history page.
+     */
     private function buildHeroData(): HeroData
     {
         return new HeroData(
@@ -175,6 +179,9 @@ class HistoryService implements IHistoryService
         );
     }
 
+    /**
+     * Builds global UI navigation and button labels.
+     */
     private function buildGlobalUi(): GlobalUiData
     {
         return new GlobalUiData(
@@ -190,6 +197,9 @@ class HistoryService implements IHistoryService
         );
     }
 
+    /**
+     * Builds the gradient overlay section content.
+     */
     private function buildGradientSection(): GradientSectionData
     {
         return new GradientSectionData(
@@ -205,6 +215,9 @@ class HistoryService implements IHistoryService
         );
     }
 
+    /**
+     * Builds the split intro section with text and supporting image.
+     */
     private function buildIntroSplitSection(): IntroSplitSectionData
     {
         $bodyText = $this->getCmsItem(
@@ -223,86 +236,151 @@ class HistoryService implements IHistoryService
         );
     }
 
+    /**
+     * Builds the route data for the historical walking tour.
+     *
+     * @return RouteData Contains route heading, ordered venues and map image.
+     */
     private function buildRouteData(): RouteData
     {
-        // Reuse the venue locations builder to provide data for the route list and map.
-        $locations = $this->buildLocations();
+        $locations = [
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location1_name',
+                    'Church of St.Bavo'
+                ),
+                venueBadgeColor: 'bg-sky-600/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location1_description',
+                    'A monumental Gothic church famed for its towering nave and historic Müller organ once played by Mozart.'
+                ),
+            ),
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location2_name',
+                    'Grote Markt'
+                ),
+                venueBadgeColor: 'bg-orange-800/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location2_description',
+                    'A vibrant central square surrounded by landmark buildings and lively cafés;  the city’s cultural heart.'
+                ),
+            ),
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location3_name',
+                    'De Hallen'
+                ),
+                venueBadgeColor: 'bg-amber-400/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location3_description',
+                    'A former meat hall turned into an art and photography museum space that hosts exhibitions as part of the Frans Hals Museum.'
+                ),
+            ),
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location4_name',
+                    'Proveniershof'
+                ),
+                venueBadgeColor: 'bg-lime-700/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location4_description',
+                    'A peaceful 18th-century hofje (courtyard community) offering a quiet oasis with historic almshouses.'
+                ),
+            ),
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location5_name',
+                    'Jopenkerk'
+                ),
+                venueBadgeColor: 'bg-violet-800/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location5_description',
+                    'A former church transformed into Haarlem’s iconic craft brewery and restaurant, blending tradition with modern beer culture.'
+                ),
+            ),
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location6_name',
+                    'Waalse Kerk'
+                ),
+                venueBadgeColor: 'bg-rose-500/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location6_description',
+                    'An intimate 17th-century Walloon church known for its serene atmosphere and historic interior.'
+                ),
+            ),
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location7_name',
+                    'Molen de Adriaan'
+                ),
+                venueBadgeColor: 'bg-lime-500/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location7_description',
+                    'A reconstructed 18th-century riverside windmill offering tours and panoramic views over the Spaarne.'
+                ),
+            ),
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location8_name',
+                    'Amsterdamse Poort'
+                ),
+                venueBadgeColor: 'bg-stone-700/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location8_description',
+                    'Haarlem’s last surviving medieval city gate, showcasing impressive brickwork and centuries of history.'
+                ),
+            ),
+            new RouteVenue(
+                venueName: $this->getCmsItem(
+                    'route_section',
+                    'route_location9_name',
+                    'Hof van Bakenes'
+                ),
+                venueBadgeColor: 'bg-orange-500/80',
+                venueDescription: $this->getCmsItem(
+                    'route_section',
+                    'route_location9_description',
+                    'The oldest hofje in the Netherlands, featuring charming gardens and classic courtyard architecture dating back to 1395.'
+                ),
+            ),
+        ];
 
         return new RouteData(
-            locations: $locations,
+            headingText: $this->getCmsItem(
+                'route_section',
+                'route_heading',
+                'The Route'),
+            venues: $locations,
+            mapImagePath: $this->getCmsImage(
+                'route_section',
+                'route_map_image',
+                '/assets/Image/History/History-RouteMap.png')
         );
     }
 
     /**
-     * Builds locations list for the History page from active venues.
+     * Builds the "Read more about these locations" venues section.
+     *
+     * @return VenuesData Card data for a curated subset of route venues.
      */
-    private function buildLocations(): array
-    {
-        $locations = [];
-
-        foreach ($this->venueRepository->findAllActive() as $venue) {
-            $locations[] = $this->buildVenueLocation($venue);
-        }
-
-        return $locations;
-    }
-
-    /**
-     * Builds location data for a single venue.
-     */
-    private function buildVenueLocation(array $venue): array
-    {
-        $routeKey = $this->determineVenueRouteKey($venue['Name']);
-
-        return [
-            'name'       => $venue['Name'],
-            'address'    => $venue['AddressLine'],
-            'routeKey'   => $routeKey,
-            'badgeClass' => self::BADGE_COLORS[$routeKey] ?? 'bg-slate-800/60',
-            'lat'        => $venue['Latitude'] ?? null,
-            'lng'        => $venue['Longitude'] ?? null,
-        ];
-    }
-
-    /**
-     * Determines a stable route key for a historical stop based on venue name.
-     */
-    private function determineVenueRouteKey(string $venueName): string
-    {
-        $name = strtolower($venueName);
-
-        if (str_contains($name, 'st. bavo') || str_contains($name, 'st bavo') || str_contains($name, 'bavo')) {
-            return 'stbavo';
-        }
-        if (str_contains($name, 'grote markt')) {
-            return 'grotemarkt';
-        }
-        if (str_contains($name, 'de hallen') || str_contains($name, 'hallen')) {
-            return 'dehallen';
-        }
-        if (str_contains($name, 'proveniershof')) {
-            return 'proveniershof';
-        }
-        if (str_contains($name, 'jopenkerk')) {
-            return 'jopenkerk';
-        }
-        if (str_contains($name, 'waalse kerk') || str_contains($name, 'waalsekerk')) {
-            return 'waalsekerk';
-        }
-        if (str_contains($name, 'molen de adriaan') || str_contains($name, 'de adriaan')) {
-            return 'molendeadriaan';
-        }
-        if (str_contains($name, 'amsterdamse poort')) {
-            return 'amsterdamsepoort';
-        }
-        if (str_contains($name, 'hof van bakenes') || str_contains($name, 'bakenes')) {
-            return 'hofvanbakenes';
-        }
-
-        // Fallback color for any additional locations
-        return array_key_first(self::BADGE_COLORS) ?: 'stbavo';
-    }
-
     private function buildVenuesData(): VenuesData
     {
         $venues = [
@@ -362,8 +440,9 @@ class HistoryService implements IHistoryService
         );
     }
 
-
-
+    /**
+     * Builds ticket options (single and group pricing cards) for the tour.
+     */
     private function buildTicketOptionsData() : TicketOptions
     {
         return new TicketOptions(
@@ -373,7 +452,7 @@ class HistoryService implements IHistoryService
                 'Your ticket options to join the experience'),
             pricingCards: [
                 new PricingCard(
-                    icon: $this->getCmsImage('history_ticket_options_section', 'history_single_ticket_icon', '/assets/Icons/History/History/single-ticket-icon.svg'),
+                    icon: $this->getCmsImage('history_ticket_options_section', 'history_single_ticket_icon', '/assets/Icons/History/single-ticket-icon.svg'),
                     title: $this->getCmsItem('history_ticket_options_section', 'history_pricing_single_title', 'Single Ticket'),
                     price: $this->getCmsItem('history_pricing_section', 'history_pricing_single_price', '€17.50'),
                     descriptionItems: [
@@ -384,7 +463,7 @@ class HistoryService implements IHistoryService
                 ),
                 new PricingCard(
                     icon: $this->getCmsImage(
-                        'history_ticket_options_section', 'history_group_ticket_icon', '/assets/Icons/History/History/group-ticket-icon.svg'),
+                        'history_ticket_options_section', 'history_group_ticket_icon', '/assets/Icons/History/group-ticket-icon.svg'),
                     title: $this->getCmsItem('history_ticket_options_section', 'history_pricing_group_title', 'Group Ticket'),
                     price: $this->getCmsItem('history_pricing_section', 'history_pricing_group_price', '€60.00'),
                     descriptionItems: [
@@ -397,6 +476,9 @@ class HistoryService implements IHistoryService
         );
     }
 
+    /**
+     * Builds the "Important information about the tour" bullet list.
+     */
     private function buildInfoAboutTourData() : ImportantInfoAboutTour
     {
         return new ImportantInfoAboutTour(
@@ -424,21 +506,21 @@ class HistoryService implements IHistoryService
             dayName: 'Thursday',
             fullDate: 'Thursday, July 25',
             events: [
-                new ScheduleEventData(
+                new ScheduleCard(
                     '10:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 25',
                     'Group ticket - best value for 4 people',
                     'from €17.50'),
-                new ScheduleEventData(
+                new ScheduleCard(
                     '13:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 25',
                     'Group ticket - best value for 4 people',
                     'from €17.50'),
-                new ScheduleEventData(
+                new ScheduleCard(
                     '16:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
@@ -452,21 +534,21 @@ class HistoryService implements IHistoryService
             dayName: 'Friday',
             fullDate: 'Friday, July 26',
             events: [
-                new ScheduleEventData(
+                new ScheduleCard(
                     '10:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 26',
                     'Group ticket - best value for 4 people',
                     'from €17.50'),
-                new ScheduleEventData(
+                new ScheduleCard(
                     '13:00',
                     ['In English', 'In Dutch', 'In Chinese'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 26',
                     'Group ticket - best value for 4 people',
                     'from €17.50'),
-                new ScheduleEventData(
+                new ScheduleCard(
                     '16:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
@@ -480,21 +562,21 @@ class HistoryService implements IHistoryService
             dayName: 'Saturday',
             fullDate: 'Saturday, July 27',
             events: [
-                new ScheduleEventData(
+                new ScheduleCard(
                     '10:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 27',
                     'Group ticket - best value for 4 people',
                     'from €17.50'),
-                new ScheduleEventData(
+                new ScheduleCard(
                     '13:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 27',
                     'Group ticket - best value for 4 people',
                     'from €17.50'),
-                new ScheduleEventData(
+                new ScheduleCard(
                     '16:00',
                     ['In English', 'In Dutch', 'In Chinese'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
@@ -508,21 +590,21 @@ class HistoryService implements IHistoryService
             dayName: 'Sunday',
             fullDate: 'Sunday, July 29',
             events: [
-                new ScheduleEventData(
+                new ScheduleCard(
                     '10:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 29',
                     'Group ticket - best value for 4 people',
                     'from €17.50'),
-                new ScheduleEventData(
+                new ScheduleCard(
                     '13:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 29',
                     'Group ticket - best value for 4 people',
                     'from €17.50'),
-                new ScheduleEventData(
+                new ScheduleCard(
                     '16:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',

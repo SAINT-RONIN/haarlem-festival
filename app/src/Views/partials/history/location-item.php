@@ -1,21 +1,34 @@
 <?php
 /**
- * Location item partial - Single location row with name, address, and category badge.
+ * Partial for rendering a single location card in the History locations section.
  *
- * @var array $location Location data with keys: name, address, category, badgeClass
+ * Expects a \App\ViewModels\History\VenueCardData instance as $venue.
+ *
+ * @var \App\ViewModels\History\VenueCardData $venue
  */
 
-$name = htmlspecialchars($location['name']);
-$address = htmlspecialchars($location['address']);
-$category = htmlspecialchars($location['category'] ?? 'venue');
-$badgeClass = htmlspecialchars($location['badgeClass']);
+use App\ViewModels\History\VenueCardData;
+
+/** @var VenueCardData $venue */
 ?>
-
-<button type="button" class="w-full flex justify-start items-start gap-1 sm:gap-[5px] group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 rounded-lg" aria-label="<?php echo $name; ?> - <?php echo $address; ?>">
-    <span class="flex-1 p-2 sm:p-2.5 md:p-3 lg:p-3.5 bg-white group-hover:bg-gray-50 rounded-lg sm:rounded-[10px] outline outline-[0.50px] outline-offset-[-0.50px] outline-royal-blue flex flex-col justify-start items-start gap-0.5 sm:gap-1 transition-colors duration-200">
-        <strong class="self-stretch justify-start text-royal-blue text-xs sm:text-sm md:text-base font-bold leading-tight"><?php echo $name; ?></strong>
-        <span class="self-stretch justify-start text-royal-blue text-[10px] sm:text-xs md:text-sm lg:text-base font-light leading-tight"><?php echo $address; ?></span>
-    </span>
-    <span class="w-6 sm:w-7 md:w-8 lg:w-9 self-stretch p-2 sm:p-2.5 md:p-3 lg:p-3.5 <?php echo $badgeClass; ?> rounded-lg sm:rounded-[10px] border sm:border-2 border-royal-blue/70 transition-transform duration-200 group-hover:scale-105" aria-hidden="true"></span>
-</button>
-
+<article class="flex-1 min-w-[280px] max-w-sm bg-white rounded-2xl shadow-[0px_0px_24px_-2px_rgba(0,0,0,0.25)] inline-flex flex-col justify-start items-start overflow-hidden">
+    <img
+        class="w-full aspect-[541/510] p-2.5 object-cover"
+        src="<?= htmlspecialchars($venue->imageUrl) ?>"
+        alt="<?= htmlspecialchars($venue->name) ?>" />
+    <div class="w-full p-6 flex flex-col justify-start items-start gap-5 overflow-hidden">
+        <div class="w-full flex flex-col justify-start items-start">
+            <div class="w-full text-slate-800 text-2xl font-semibold font-['Montserrat']">
+                <?= htmlspecialchars($venue->name) ?>
+            </div>
+        </div>
+        <div class="w-full text-slate-800 text-lg font-normal font-['Montserrat']">
+            <?= htmlspecialchars($venue->description) ?>
+        </div>
+        <div class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center">
+            <div class="flex-1 text-white text-xl font-normal font-['Montserrat'] leading-5">
+                View more
+            </div>
+        </div>
+    </div>
+</article>

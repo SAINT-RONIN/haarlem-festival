@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace App\ViewModels\History;
 
 /**
- * ViewModel for the History page route section.
- *
- * Contains the list of locations used for the route list and map.
+ * View model for the History route section containing the ordered
+ * list of route venues and the associated map image.
  */
 final readonly class RouteData
 {
     /**
-     * @param array<int, array{name:string,address:string,category:string,badgeClass:string,lat:float|null,lng:float|null}> $locations
+     * @param RouteVenue[] $venues
      */
     public function __construct(
-        public array $locations = [],
+        public string $headingText,
+        public array $venues = [],
+        public string $mapImagePath = '',
     ) {
     }
 }

@@ -7,7 +7,7 @@ namespace App\ViewModels\History;
 /**
  * DTO for single schedule event data.
  */
-final readonly class ScheduleEventData
+final readonly class ScheduleCard
 {
     public function __construct(
         public string $time,

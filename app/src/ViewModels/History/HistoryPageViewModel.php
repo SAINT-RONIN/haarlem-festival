@@ -16,7 +16,7 @@ use App\ViewModels\History\VenuesData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
- * ViewModel for the History page.
+ * Aggregates all data required to render the History landing page.
  *
  * Contains all pre-formatted data needed by the history page view.
  * The service prepares this data so the view only needs to render.

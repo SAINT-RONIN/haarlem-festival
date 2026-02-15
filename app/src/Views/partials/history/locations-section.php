@@ -1,56 +1,49 @@
 <?php
 /**
- * Route section partial - Map placeholder .
+ * "Read more about these locations" section for the History page.
  *
- * @var array $locations Array of location data
- * @var array $cms
+ * Expects a \App\ViewModels\History\HistoryPageViewModel as $viewModel
+ * and uses its venuesData property.
+ *
+ * @var \App\ViewModels\History\HistoryPageViewModel $viewModel
  */
 
-use App\Helpers\CmsOutputHelper;
+use App\ViewModels\History\VenuesData;
+use App\ViewModels\History\VenueCardData;
 
-/** @var \App\ViewModels\History\HistoryPageViewModel $viewModel */
-
-use App\ViewModels\History\RouteData;
-
-/** @var RouteData $route */
-$route = $viewModel->routeData;
-$locations = $route->locations ?? [];
+/** @var VenuesData $venuesData */
+$venuesData = $viewModel->venuesData;
+$heading = $venuesData->headingText;
+$venues  = $venuesData->venues;
 ?>
-
-<div class="w-full px-6 lg:px-24 py-12 flex flex-col justify-start items-start gap-2.5 overflow-hidden">
-    <div class="self-stretch justify-start text-slate-800 text-5xl font-bold font-['Montserrat'] leading-[62px]">
-        The Route
+<section class="w-full px-6 lg:px-24 py-12 flex flex-col justify-start items-start gap-12 overflow-hidden">
+    <div class="text-slate-800 text-5xl font-bold font-['Montserrat'] leading-[62px]">
+        <?= htmlspecialchars($heading) ?>
     </div>
-    <div class="self-stretch p-3.5 bg-stone-100 rounded-2xl flex flex-col justify-start items-start overflow-hidden route">
-        <div class="w-full flex flex-col lg:flex-row justify-start items-stretch gap-8 lg:gap-12">
-            <!-- LEFT: locations list -->
-            <div class="flex-1 inline-flex flex-col justify-center items-stretch gap-[5px]">
-                <?php foreach ($locations as $location): ?>
-                    <div class="self-stretch inline-flex justify-start items-start gap-[5px]">
-                        <div class="flex-1 p-3.5 bg-white rounded-[10px] outline outline-[0.50px] outline-offset-[-0.50px] outline-slate-800 inline-flex flex-col justify-start items-start gap-[5px] overflow-hidden">
-                            <div class="self-stretch justify-start text-slate-800 text-base font-bold font-['Montserrat'] leading-4">
-                                <?= htmlspecialchars($location['name']) ?>
-                            </div>
-                            <div class="self-stretch justify-start text-slate-800 text-base font-light font-['Montserrat']">
-                                <?= htmlspecialchars($location['address']) ?>
-                            </div>
+    <div class="w-full inline-flex flex-wrap justify-start items-stretch gap-8 xl:gap-12">
+        <?php foreach ($venues as $venue): ?>
+            <?php /** @var VenueCardData $venue */ ?>
+            <article class="flex-1 min-w-[280px] max-w-sm bg-white rounded-2xl shadow-[0px_0px_24px_-2px_rgba(0,0,0,0.25)] inline-flex flex-col justify-start items-start overflow-hidden">
+                <img
+                    class="w-full aspect-[541/510] p-2.5 object-cover"
+                    src="<?= htmlspecialchars($venue->imageUrl) ?>"
+                    alt="<?= htmlspecialchars($venue->name) ?>" />
+                <div class="w-full p-6 flex flex-col justify-start items-start gap-5 overflow-hidden">
+                    <div class="w-full flex flex-col justify-start items-start">
+                        <div class="w-full text-slate-800 text-2xl font-semibold font-['Montserrat']">
+                            <?= htmlspecialchars($venue->name) ?>
                         </div>
-                        <div class="w-9 self-stretch p-3.5 rounded-[10px] border-2 border-slate-800/70 <?= htmlspecialchars($location['badgeClass']) ?>"></div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-
-            <!-- RIGHT: map -->
-            <figure class="flex-1 min-h-[200px] sm:min-h-[250px] md:min-h-[300px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] flex">
-                <div class="flex-1 relative rounded-xl sm:rounded-2xl overflow-hidden">
-                    <iframe
-                            class="w-full h-full min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-0 map-embed-borderless"
-                            src="https://www.openstreetmap.org/export/embed.html?bbox=4.6200%2C52.3700%2C4.6600%2C52.3900&layer=mapnik&marker=52.3808%2C4.6368"
-                            loading="lazy"
-                            title="Interactive map showing Haarlem Festival event locations">
-                    </iframe>
+                    <div class="w-full text-slate-800 text-lg font-normal font-['Montserrat']">
+                        <?= htmlspecialchars($venue->description) ?>
+                    </div>
+                    <div class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center">
+                        <div class="flex-1 text-white text-xl font-normal font-['Montserrat'] leading-5">
+                            View more
+                        </div>
+                    </div>
                 </div>
-            </figure>
-        </div>
+            </article>
+        <?php endforeach; ?>
     </div>
-</div>
+</section>

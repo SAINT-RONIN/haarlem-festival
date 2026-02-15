@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\History;
 
 /**
- * DTO for schedule section data.
+ * View model for the ticket options section containing multiple pricing cards.
  */
 final readonly class TicketOptions
 {

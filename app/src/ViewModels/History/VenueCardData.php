@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\History;
 
 /**
- * DTO for single venue card data.
+ * Represents a single "Read more about these locations" card.
  */
 final readonly class VenueCardData
 {

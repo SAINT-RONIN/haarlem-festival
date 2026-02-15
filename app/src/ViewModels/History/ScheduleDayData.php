@@ -10,7 +10,7 @@ namespace App\ViewModels\History;
 final readonly class ScheduleDayData
 {
     /**
-     * @param ScheduleEventData[] $events
+     * @param ScheduleCard[] $events
      */
     public function __construct(
         public string $dayName,

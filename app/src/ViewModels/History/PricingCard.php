@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\History;
 
 /**
- * DTO for single pricing card data.
+ * View model for a single pricing card (e.g. Single ticket, Group ticket).
  */
 final readonly class PricingCard
 {
@@ -16,7 +16,7 @@ final readonly class PricingCard
         public string $icon,
         public string $title,
         public string $price,
-        public array $descriptionItems
+        public array $descriptionItems,
     ) {
     }
 }
