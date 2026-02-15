@@ -91,15 +91,15 @@ $sectionId = $schedule->sectionId ?? 'schedule';
     <!-- Schedule Days Grid -->
     <?php
     $dayCount = count($schedule->days);
-    // For 1-4 days: single row with equal columns
-    // For 5+ days: wrap into multiple rows with max 4 per row
-    $gridClasses = $dayCount <= 4
-        ? 'lg:flex-row lg:flex-nowrap'
-        : 'lg:flex-row lg:flex-wrap';
-    $itemClasses = $dayCount <= 4
-        ? 'lg:flex-1'
-        : 'lg:w-[calc(25%-1.5rem)] lg:min-w-[280px]';
-    ?>
+// For 1-4 days: single row with equal columns
+// For 5+ days: wrap into multiple rows with max 4 per row
+$gridClasses = $dayCount <= 4
+    ? 'lg:flex-row lg:flex-nowrap'
+    : 'lg:flex-row lg:flex-wrap';
+$itemClasses = $dayCount <= 4
+    ? 'lg:flex-1'
+    : 'lg:w-[calc(25%-1.5rem)] lg:min-w-[280px]';
+?>
     <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 pt-2.5 pb-8 sm:pb-12">
         <ul class="w-full flex flex-col <?= $gridClasses ?> justify-center items-start gap-4 sm:gap-6 lg:gap-12"
             role="list" aria-label="Schedule days">

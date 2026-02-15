@@ -23,8 +23,7 @@ class EmailConfirmationToken
         public readonly string              $token,
         public readonly \DateTimeImmutable  $expiresAtUtc,
         public readonly ?\DateTimeImmutable $usedAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

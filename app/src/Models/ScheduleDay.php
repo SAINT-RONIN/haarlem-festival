@@ -23,8 +23,7 @@ class ScheduleDay
         public readonly \DateTimeImmutable  $date,
         public readonly bool                $isDeleted,
         public readonly ?\DateTimeImmutable $deletedAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

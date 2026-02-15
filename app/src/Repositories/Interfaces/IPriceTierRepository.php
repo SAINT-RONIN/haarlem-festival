@@ -26,4 +26,3 @@ interface IPriceTierRepository
      */
     public function findById(int $priceTierId): ?PriceTier;
 }
-

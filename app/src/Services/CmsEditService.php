@@ -162,7 +162,7 @@ class CmsEditService implements ICmsEditService
     private function itemBelongsToPage(CmsItem $item, int $pageId): bool
     {
         $sections = $this->cmsRepository->getSectionsByPageId($pageId);
-        $sectionIds = array_map(fn(CmsSection $s) => $s->cmsSectionId, $sections);
+        $sectionIds = array_map(fn (CmsSection $s) => $s->cmsSectionId, $sections);
         return in_array($item->cmsSectionId, $sectionIds, true);
     }
 
@@ -282,4 +282,3 @@ class CmsEditService implements ICmsEditService
         return strip_tags(html_entity_decode($value));
     }
 }
-

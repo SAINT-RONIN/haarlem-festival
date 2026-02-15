@@ -24,8 +24,7 @@ class EventSessionPrice
         public readonly string $price,
         public readonly string $currencyCode,
         public readonly string $vatRate,
-    )
-    {
+    ) {
     }
 
     /**

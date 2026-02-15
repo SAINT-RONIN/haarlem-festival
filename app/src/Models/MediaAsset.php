@@ -25,8 +25,7 @@ class MediaAsset
         public readonly int                $fileSizeBytes,
         public readonly string             $altText,
         public readonly \DateTimeImmutable $createdAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

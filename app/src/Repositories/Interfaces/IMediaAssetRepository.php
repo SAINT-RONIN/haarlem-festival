@@ -34,4 +34,3 @@ interface IMediaAssetRepository
      */
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool;
 }
-

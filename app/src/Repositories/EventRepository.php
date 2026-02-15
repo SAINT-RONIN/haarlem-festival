@@ -188,4 +188,3 @@ class EventRepository implements IEventRepository
         return $stmt->execute(['eventId' => $eventId]);
     }
 }
-

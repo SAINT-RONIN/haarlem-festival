@@ -40,4 +40,3 @@ interface IScheduleDayConfigRepository
      */
     public function upsert(int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
 }
-

@@ -69,8 +69,7 @@ class EventSessionRepository implements IEventSessionRepository
         ?string $startDate = null,
         ?string $endDate = null,
         ?array  $visibleDays = null
-    ): array
-    {
+    ): array {
         // Build date filter clause
         $dateFilter = '';
         $dateParams = [];
@@ -87,7 +86,7 @@ class EventSessionRepository implements IEventSessionRepository
         // Filter by visible days of week
         $dayOfWeekFilter = '';
         if ($visibleDays !== null && count($visibleDays) < 7) {
-            $dayPlaceholders = implode(',', array_map(fn($d) => (int)$d, $visibleDays));
+            $dayPlaceholders = implode(',', array_map(fn ($d) => (int)$d, $visibleDays));
             $dayOfWeekFilter = " AND DAYOFWEEK(es.StartDateTime) - 1 IN ({$dayPlaceholders})";
         }
 

@@ -504,4 +504,3 @@ class CmsEventsService implements ICmsEventsService
         return $visibleDays;
     }
 }
-

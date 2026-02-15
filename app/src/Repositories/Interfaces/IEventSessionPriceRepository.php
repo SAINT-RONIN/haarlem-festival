@@ -55,4 +55,3 @@ interface IEventSessionPriceRepository
      */
     public function deleteBySessionAndTier(int $sessionId, int $priceTierId): bool;
 }
-

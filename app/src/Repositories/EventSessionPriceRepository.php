@@ -137,4 +137,3 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
         ]);
     }
 }
-

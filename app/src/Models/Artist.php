@@ -25,8 +25,7 @@ class Artist
         public readonly ?int               $imageAssetId,
         public readonly bool               $isActive,
         public readonly \DateTimeImmutable $createdAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

@@ -21,8 +21,7 @@ class EventSessionLabel
         public readonly int    $eventSessionLabelId,
         public readonly int    $eventSessionId,
         public readonly string $labelText,
-    )
-    {
+    ) {
     }
 
     /**

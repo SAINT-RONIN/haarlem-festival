@@ -14,8 +14,6 @@ final readonly class ActivityViewModel
         public string $text,
         public string $time,
         public string $color,
-    )
-    {
+    ) {
     }
 }
-

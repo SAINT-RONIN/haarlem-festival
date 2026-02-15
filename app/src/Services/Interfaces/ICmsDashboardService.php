@@ -22,4 +22,3 @@ interface ICmsDashboardService
      */
     public function getPagesListData(string $searchQuery, string $userName): PagesListViewModel;
 }
-

@@ -34,5 +34,3 @@ enum PriceTierId: int
         return self::tryFrom($value);
     }
 }
-
-

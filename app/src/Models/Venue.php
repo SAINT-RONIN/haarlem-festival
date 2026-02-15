@@ -24,8 +24,7 @@ class Venue
         public readonly string             $city,
         public readonly \DateTimeImmutable $createdAtUtc,
         public readonly bool               $isActive,
-    )
-    {
+    ) {
     }
 
     /**

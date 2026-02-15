@@ -15,8 +15,6 @@ final readonly class PageListItemViewModel
         public string $slug,
         public string $status,
         public string $updatedAt,
-    )
-    {
+    ) {
     }
 }
-

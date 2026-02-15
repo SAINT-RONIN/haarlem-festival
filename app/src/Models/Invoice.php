@@ -31,8 +31,7 @@ class Invoice
         public readonly string              $totalAmount,
         public readonly ?\DateTimeImmutable $paymentDateUtc,
         public readonly ?int                $pdfAssetId,
-    )
-    {
+    ) {
     }
 
     /**

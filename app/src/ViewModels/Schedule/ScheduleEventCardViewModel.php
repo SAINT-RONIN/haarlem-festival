@@ -57,8 +57,7 @@ final readonly class ScheduleEventCardViewModel
         public ?string $historyTicketLabel = null,
         public ?string $artistName = null,
         public ?string $artistImageUrl = null,
-    )
-    {
+    ) {
     }
 
     /**
@@ -82,4 +81,3 @@ final readonly class ScheduleEventCardViewModel
         return $this->locationName;
     }
 }
-

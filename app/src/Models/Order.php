@@ -30,8 +30,7 @@ class Order
         public readonly string              $subtotal,
         public readonly string              $vatTotal,
         public readonly string              $totalAmount,
-    )
-    {
+    ) {
     }
 
     /**

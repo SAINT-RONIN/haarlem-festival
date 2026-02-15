@@ -95,4 +95,3 @@ interface IEventRepository
      */
     public function delete(int $eventId): bool;
 }
-

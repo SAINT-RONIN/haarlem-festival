@@ -37,4 +37,3 @@ interface IMediaAssetService
      */
     public function getImageLimits(): array;
 }
-

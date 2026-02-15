@@ -20,8 +20,7 @@ class Guide
         public readonly int    $guideId,
         public readonly string $name,
         public readonly bool   $isActive,
-    )
-    {
+    ) {
     }
 
     /**

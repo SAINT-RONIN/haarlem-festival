@@ -22,8 +22,6 @@ final readonly class GlobalUiData
         public string $navStorytelling,
         public string $btnMyProgram,
         public bool   $isLoggedIn = false,
-    )
-    {
+    ) {
     }
 }
-

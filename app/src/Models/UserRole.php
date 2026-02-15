@@ -22,8 +22,7 @@ class UserRole
     public function __construct(
         public readonly int          $userRoleId,
         public readonly UserRoleName $roleName,
-    )
-    {
+    ) {
     }
 
     /**

@@ -28,8 +28,7 @@ class OrderItem
         public readonly string  $vatRate,
         public readonly ?string $donationAmount,
         public readonly string  $specialRequest,
-    )
-    {
+    ) {
     }
 
     /**

@@ -338,8 +338,8 @@ class HomeService implements IHomeService
      */
     private function calculateTimeRange(array $sessions): string
     {
-        $starts = array_map(fn($s) => strtotime($s['StartDateTime']), $sessions);
-        $ends = array_map(fn($s) => strtotime($s['EndDateTime']), $sessions);
+        $starts = array_map(fn ($s) => strtotime($s['StartDateTime']), $sessions);
+        $ends = array_map(fn ($s) => strtotime($s['EndDateTime']), $sessions);
 
         $minStart = min($starts);
         $maxEnd = max($ends);

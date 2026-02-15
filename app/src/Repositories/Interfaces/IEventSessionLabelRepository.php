@@ -60,4 +60,3 @@ interface IEventSessionLabelRepository
      */
     public function countBySession(int $sessionId): int;
 }
-

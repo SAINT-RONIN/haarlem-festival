@@ -18,4 +18,3 @@ interface IEmailService
      */
     public function sendPasswordResetEmail(string $toEmail, string $resetToken): bool;
 }
-

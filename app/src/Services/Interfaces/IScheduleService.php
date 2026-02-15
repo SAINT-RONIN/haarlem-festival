@@ -21,4 +21,3 @@ interface IScheduleService
      */
     public function buildScheduleSection(string $pageSlug, int $eventTypeId, int $maxDays = 4): ScheduleSectionViewModel;
 }
-

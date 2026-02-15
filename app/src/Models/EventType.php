@@ -21,8 +21,7 @@ class EventType
         public readonly int    $eventTypeId,
         public readonly string $name,
         public readonly string $slug,
-    )
-    {
+    ) {
     }
 
     /**

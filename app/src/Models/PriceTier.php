@@ -20,8 +20,7 @@ class PriceTier
     public function __construct(
         public readonly int    $priceTierId,
         public readonly string $name,
-    )
-    {
+    ) {
     }
 
     /**

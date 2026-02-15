@@ -44,4 +44,3 @@ interface ICmsService
      */
     public function buildGlobalUiData(): GlobalUiData;
 }
-

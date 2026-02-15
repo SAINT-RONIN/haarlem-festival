@@ -19,7 +19,6 @@ class HomePageViewModel
         public array        $locations = [],
         public array        $scheduleDays = [],
         public array        $cmsContent = [],
-    )
-    {
+    ) {
     }
 }

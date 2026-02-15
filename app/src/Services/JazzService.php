@@ -454,4 +454,3 @@ class JazzService implements IJazzService
         );
     }
 }
-

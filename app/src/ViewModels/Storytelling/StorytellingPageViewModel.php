@@ -22,8 +22,6 @@ final readonly class StorytellingPageViewModel
         public IntroSplitSectionData    $introSplitSection,
         public MasonrySectionData       $masonrySection,
         public ScheduleSectionViewModel $scheduleSection,
-    )
-    {
+    ) {
     }
 }
-

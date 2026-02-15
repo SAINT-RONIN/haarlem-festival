@@ -42,8 +42,6 @@ final readonly class StorytellingScheduleViewModel
         public string $currencySymbol,
         public string $noEventsText,
         public array  $days,
-    )
-    {
+    ) {
     }
 }
-

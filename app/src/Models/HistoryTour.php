@@ -23,8 +23,7 @@ class HistoryTour
         public readonly string $languageCode,
         public readonly int    $guideCount,
         public readonly int    $seatsPerTour,
-    )
-    {
+    ) {
     }
 
     /**

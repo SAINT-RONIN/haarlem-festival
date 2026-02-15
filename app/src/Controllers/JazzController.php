@@ -27,4 +27,3 @@ class JazzController
         require __DIR__ . '/../Views/pages/jazz.php';
     }
 }
-

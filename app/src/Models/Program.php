@@ -23,8 +23,7 @@ class Program
         public readonly ?string            $sessionKey,
         public readonly \DateTimeImmutable $createdAtUtc,
         public readonly bool               $isCheckedOut,
-    )
-    {
+    ) {
     }
 
     /**

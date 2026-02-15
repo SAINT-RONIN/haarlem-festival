@@ -67,8 +67,11 @@ class ScheduleService implements IScheduleService
         $additionalInfoTitle = $this->getStringValue($cmsContent, 'schedule_additional_info_title', 'Additional Information:');
         $additionalInfoBody = $cmsContent['schedule_additional_info_body'] ?? '';
         $showAdditionalInfo = ($cmsContent['schedule_show_additional_info'] ?? '0') === '1';
-        $eventCountLabel = $this->getStringValue($cmsContent, 'schedule_event_count_label',
-            $this->getStringValue($cmsContent, 'schedule_story_count_label', 'Events'));
+        $eventCountLabel = $this->getStringValue(
+            $cmsContent,
+            'schedule_event_count_label',
+            $this->getStringValue($cmsContent, 'schedule_story_count_label', 'Events')
+        );
         $showEventCount = ($cmsContent['schedule_show_event_count'] ??
                 $cmsContent['schedule_show_story_count'] ?? '1') === '1';
         $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
@@ -87,7 +90,7 @@ class ScheduleService implements IScheduleService
         );
 
         // Count total events
-        $eventCount = array_sum(array_map(fn($day) => count($day->events), $days));
+        $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
 
         return new ScheduleSectionViewModel(
             sectionId: $pageSlug . '-schedule',
@@ -121,8 +124,7 @@ class ScheduleService implements IScheduleService
         string $defaultCtaText,
         string $payWhatYouLikeText,
         string $currencySymbol
-    ): array
-    {
+    ): array {
         $days = $scheduleData['days'] ?? [];
         $sessions = $scheduleData['sessions'] ?? [];
 
@@ -190,15 +192,14 @@ class ScheduleService implements IScheduleService
         string $defaultCtaText,
         string $payWhatYouLikeText,
         string $currencySymbol
-    ): ScheduleEventCardViewModel
-    {
+    ): ScheduleEventCardViewModel {
         $sessionId = (int)$session['EventSessionId'];
         $startDateTime = new \DateTimeImmutable($session['StartDateTime']);
         $endDateTime = $session['EndDateTime'] ? new \DateTimeImmutable($session['EndDateTime']) : null;
 
         // Get labels for this session
         $sessionLabels = $labelsMap[$sessionId] ?? [];
-        $labels = array_map(fn(EventSessionLabel $l) => $l->labelText, $sessionLabels);
+        $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
 
         // Get price display
         $sessionPrices = $pricesMap[$sessionId] ?? [];
@@ -281,4 +282,3 @@ class ScheduleService implements IScheduleService
         return is_string($value) && $value !== '' ? $value : $default;
     }
 }
-

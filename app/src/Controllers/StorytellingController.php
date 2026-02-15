@@ -26,4 +26,3 @@ class StorytellingController
         require __DIR__ . '/../Views/pages/storytelling.php';
     }
 }
-

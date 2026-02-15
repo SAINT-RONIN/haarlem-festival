@@ -24,4 +24,3 @@ interface ICaptchaService
      */
     public function getSiteKey(): string;
 }
-

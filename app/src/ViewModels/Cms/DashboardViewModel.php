@@ -19,8 +19,6 @@ final readonly class DashboardViewModel
         public array  $recentPages,
         public array  $activities,
         public string $userName,
-    )
-    {
+    ) {
     }
 }
-

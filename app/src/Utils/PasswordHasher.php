@@ -76,4 +76,3 @@ class PasswordHasher
         return password_get_info($hash);
     }
 }
-

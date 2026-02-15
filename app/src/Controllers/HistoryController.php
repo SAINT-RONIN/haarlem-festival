@@ -7,7 +7,6 @@ namespace App\Controllers;
 use App\Services\HistoryService;
 use App\Services\Interfaces\IHistoryService;
 
-
 /**
  * Controller for the history page.
  *

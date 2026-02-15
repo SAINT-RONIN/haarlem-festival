@@ -21,8 +21,7 @@ class CmsPage
         public readonly int    $cmsPageId,
         public readonly string $slug,
         public readonly string $title,
-    )
-    {
+    ) {
     }
 
     /**

@@ -133,4 +133,3 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
         return (int)$stmt->fetchColumn();
     }
 }
-

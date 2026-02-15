@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\ViewModels\History;
@@ -33,7 +34,6 @@ final readonly class HistoryPageViewModel
         public TicketOptions $ticketOptionsData,
         public ImportantInfoAboutTour $infoAboutTourData,
         public ScheduleData $scheduleData,
-    )
-    {
+    ) {
     }
 }

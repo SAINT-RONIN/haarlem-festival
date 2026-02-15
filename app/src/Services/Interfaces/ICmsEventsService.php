@@ -110,4 +110,3 @@ interface ICmsEventsService
      */
     public function getVisibleDays(?int $eventTypeId = null): array;
 }
-

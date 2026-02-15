@@ -19,8 +19,7 @@ class HistoryTourGuide
     public function __construct(
         public readonly int $historyTourId,
         public readonly int $guideId,
-    )
-    {
+    ) {
     }
 
     /**

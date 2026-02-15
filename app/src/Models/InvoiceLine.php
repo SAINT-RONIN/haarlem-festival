@@ -28,8 +28,7 @@ class InvoiceLine
         public readonly string  $lineVatAmount,
         public readonly string  $lineTotal,
         public readonly ?string $donationAmount,
-    )
-    {
+    ) {
     }
 
     /**

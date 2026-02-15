@@ -36,8 +36,7 @@ class EventSession
         public readonly bool                $isCancelled,
         public readonly \DateTimeImmutable  $createdAtUtc,
         public readonly bool                $isActive,
-    )
-    {
+    ) {
     }
 
     /**

@@ -176,4 +176,3 @@ class CmsDashboardService implements ICmsDashboardService
         ];
     }
 }
-

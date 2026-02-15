@@ -28,8 +28,7 @@ class PassType
         public readonly string    $vatRate,
         public readonly string    $currencyCode,
         public readonly bool      $isActive,
-    )
-    {
+    ) {
     }
 
     /**

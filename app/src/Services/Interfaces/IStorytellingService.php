@@ -18,4 +18,3 @@ interface IStorytellingService
      */
     public function getStorytellingPageData(): StorytellingPageViewModel;
 }
-

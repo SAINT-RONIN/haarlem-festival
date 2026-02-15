@@ -25,8 +25,7 @@ class Ticket
         public readonly ?\DateTimeImmutable $scannedAtUtc,
         public readonly ?int                $scannedByUserId,
         public readonly ?int                $pdfAssetId,
-    )
-    {
+    ) {
     }
 
     /**

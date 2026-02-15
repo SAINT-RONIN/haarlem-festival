@@ -273,7 +273,7 @@ class StorytellingService implements IStorytellingService
             $currencySymbol
         );
 
-        $eventCount = array_sum(array_map(fn($day) => count($day->events), $days));
+        $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
 
         return new ScheduleSectionViewModel(
             sectionId: 'storytelling-schedule',
@@ -305,8 +305,7 @@ class StorytellingService implements IStorytellingService
         string $defaultCtaText,
         string $payWhatYouLikeText,
         string $currencySymbol
-    ): array
-    {
+    ): array {
         $days = $scheduleData['days'] ?? [];
         $sessions = $scheduleData['sessions'] ?? [];
 
@@ -370,8 +369,7 @@ class StorytellingService implements IStorytellingService
         string $defaultCtaText,
         string $payWhatYouLikeText,
         string $currencySymbol
-    ): ScheduleEventCardViewModel
-    {
+    ): ScheduleEventCardViewModel {
         $sessionId = (int)$session['EventSessionId'];
         $eventId = (int)($session['EventId'] ?? 0);
         $startDateTime = new \DateTimeImmutable($session['StartDateTime']);
@@ -379,7 +377,7 @@ class StorytellingService implements IStorytellingService
 
         // Get labels for this session
         $sessionLabels = $labelsMap[$sessionId] ?? [];
-        $labels = array_map(fn(EventSessionLabel $l) => $l->labelText, $sessionLabels);
+        $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
 
         // Get price display
         $sessionPrices = $pricesMap[$sessionId] ?? [];

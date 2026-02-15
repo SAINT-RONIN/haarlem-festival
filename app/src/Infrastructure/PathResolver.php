@@ -47,4 +47,3 @@ class PathResolver
         return '/assets/Image/' . $folder . '/' . $fileName;
     }
 }
-

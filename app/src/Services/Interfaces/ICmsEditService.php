@@ -26,4 +26,3 @@ interface ICmsEditService
      */
     public function updatePageItems(int $pageId, array $items): array;
 }
-

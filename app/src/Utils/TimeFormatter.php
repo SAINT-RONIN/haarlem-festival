@@ -71,4 +71,3 @@ class TimeFormatter
         return $diff->h . 'h ago';
     }
 }
-

@@ -28,8 +28,7 @@ class Payment
         public readonly ?string             $providerRef,
         public readonly \DateTimeImmutable  $createdAtUtc,
         public readonly ?\DateTimeImmutable $paidAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

@@ -29,8 +29,7 @@ class Event
         public readonly ?int               $restaurantId,
         public readonly bool               $isActive,
         public readonly \DateTimeImmutable $createdAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

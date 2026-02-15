@@ -44,8 +44,7 @@ final readonly class StorytellingScheduleCardViewModel
         public string $startTimeIso,
         public string $endTimeIso,
         public array  $labels,
-    )
-    {
+    ) {
     }
 
     /**
@@ -69,4 +68,3 @@ final readonly class StorytellingScheduleCardViewModel
         return $this->locationName;
     }
 }
-

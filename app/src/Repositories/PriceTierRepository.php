@@ -47,4 +47,3 @@ class PriceTierRepository implements IPriceTierRepository
         return $result ? PriceTier::fromRow($result) : null;
     }
 }
-

@@ -21,8 +21,7 @@ class CmsSection
         public readonly int    $cmsSectionId,
         public readonly int    $cmsPageId,
         public readonly string $sectionKey,
-    )
-    {
+    ) {
     }
 
     /**

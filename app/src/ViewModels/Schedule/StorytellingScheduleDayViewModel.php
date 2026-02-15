@@ -20,8 +20,6 @@ final readonly class StorytellingScheduleDayViewModel
         public string $dateFormatted,
         public string $isoDate,
         public array  $events,
-    )
-    {
+    ) {
     }
 }
-

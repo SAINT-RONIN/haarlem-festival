@@ -16,8 +16,6 @@ final readonly class PagesListViewModel
         public array  $pages,
         public string $searchQuery,
         public string $userName,
-    )
-    {
+    ) {
     }
 }
-

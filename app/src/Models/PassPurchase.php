@@ -25,8 +25,7 @@ class PassPurchase
         public readonly ?\DateTimeImmutable $validFromDate,
         public readonly ?\DateTimeImmutable $validToDate,
         public readonly \DateTimeImmutable  $createdAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

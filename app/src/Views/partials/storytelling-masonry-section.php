@@ -23,12 +23,12 @@
         // Flatten columns into a single list so the browser can naturally
         // flow items into CSS multi-columns without our PHP grouping
         $allImages = [];
-        foreach ($masonrySection->columns as $columnImages) {
-            foreach ($columnImages as $image) {
-                $allImages[] = $image;
-            }
-        }
-        ?>
+foreach ($masonrySection->columns as $columnImages) {
+    foreach ($columnImages as $image) {
+        $allImages[] = $image;
+    }
+}
+?>
 
         <?php foreach ($allImages as $image): ?>
             <figure class="break-inside-avoid mb-4 overflow-hidden rounded-2xl">

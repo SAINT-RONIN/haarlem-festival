@@ -28,8 +28,7 @@ class CmsItem
         public readonly ?string            $htmlValue,
         public readonly ?int               $mediaAssetId,
         public readonly \DateTimeImmutable $updatedAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

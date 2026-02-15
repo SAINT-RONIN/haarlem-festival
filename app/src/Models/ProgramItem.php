@@ -26,8 +26,7 @@ class ProgramItem
         public readonly ?\DateTimeImmutable $passValidDate,
         public readonly int                 $quantity,
         public readonly ?string             $donationAmount,
-    )
-    {
+    ) {
     }
 
     /**

@@ -31,8 +31,7 @@ class UserAccount
         public readonly bool               $isActive,
         public readonly \DateTimeImmutable $registeredAtUtc,
         public readonly \DateTimeImmutable $updatedAtUtc,
-    )
-    {
+    ) {
     }
 
     /**

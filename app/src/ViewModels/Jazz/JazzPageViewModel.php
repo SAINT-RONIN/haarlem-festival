@@ -27,7 +27,6 @@ final readonly class JazzPageViewModel
         public ScheduleData              $scheduleData,
         public BookingCallToActionData   $bookingCtaData,
         public ?ScheduleSectionViewModel $scheduleSection = null,
-    )
-    {
+    ) {
     }
 }

@@ -23,8 +23,7 @@ class SessionDiscountRule
         public readonly string $ruleName,
         public readonly string $discountPercent,
         public readonly ?int   $appliesToPriceTierId,
-    )
-    {
+    ) {
     }
 
     /**

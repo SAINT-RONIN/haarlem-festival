@@ -36,4 +36,3 @@ interface IPasswordResetTokenRepository
      */
     public function markAsUsed(int $tokenId): void;
 }
-

@@ -175,7 +175,8 @@ class HistoryService implements IHistoryService
             subtitle: $this->getCmsItem(
                 'hero_section',
                 'hero_subtitle',
-                'Explore nine centuries of turbulent history, magnificent architecture, and cultural treasures'),
+                'Explore nine centuries of turbulent history, magnificent architecture, and cultural treasures'
+            ),
             primaryButtonText: $this->getCmsItem('hero_section', 'hero_button_primary', 'Explore the tour'),
             primaryButtonLink: $this->getCmsItem('hero_section', 'hero_button_primary_link', '#route'),
             secondaryButtonText: $this->getCmsItem('hero_section', 'hero_button_secondary', 'Get tickets'),
@@ -212,11 +213,13 @@ class HistoryService implements IHistoryService
             headingText: $this->getCmsItem(
                 'gradient_section',
                 'gradient_heading',
-                'Every street holds echoes of the past, shaped by the people who once walked there.'),
+                'Every street holds echoes of the past, shaped by the people who once walked there.'
+            ),
             subheadingText: $this->getCmsItem(
                 'gradient_section',
                 'gradient_subheading',
-                'Where history comes alive through places, paths, and people.'),
+                'Where history comes alive through places, paths, and people.'
+            ),
             backgroundImageUrl: '/assets/Image/History/History-second-section.png',
         );
     }
@@ -229,13 +232,15 @@ class HistoryService implements IHistoryService
         $bodyText = $this->getCmsItem(
             'intro_section',
             'intro_body',
-            'A Stroll Through History invites visitors to explore  rich past of Haarlem');
+            'A Stroll Through History invites visitors to explore  rich past of Haarlem'
+        );
 
         return new IntroSplitSectionData(
             headingText: $this->getCmsItem(
                 'intro_section',
                 'intro_heading',
-                'Experience the living history of Haarlem'),
+                'Experience the living history of Haarlem'
+            ),
             bodyText: $bodyText,
             imageUrl: '/assets/Image/History/History-third-section.png',
             imageAltText: 'A corner of a historic building in Haarlem',
@@ -373,12 +378,14 @@ class HistoryService implements IHistoryService
             headingText: $this->getCmsItem(
                 'route_section',
                 'route_heading',
-                'The Route'),
+                'The Route'
+            ),
             venues: $locations,
             mapImagePath: $this->getCmsImage(
                 'route_section',
                 'route_map_image',
-                '/assets/Image/History/History-RouteMap.png')
+                '/assets/Image/History/History-RouteMap.png'
+            )
         );
     }
 
@@ -394,7 +401,8 @@ class HistoryService implements IHistoryService
                 name: $this->getCmsItem(
                     'historical_locations_section',
                     'history_grotemarkt_name',
-                    'Grote Markt'),
+                    'Grote Markt'
+                ),
                 description: $this->getCmsItem(
                     'historical_locations_section',
                     'history_grotemarkt_description',
@@ -403,13 +411,15 @@ class HistoryService implements IHistoryService
                 imageUrl: $this->getCmsImage(
                     'historical_locations_section',
                     'history_grotemarkt_image',
-                    '/assets/Image/History/History-GroteMarkt.png'),
+                    '/assets/Image/History/History-GroteMarkt.png'
+                ),
             ),
             new VenueCardData(
                 name: $this->getCmsItem(
                     'historical_locations_section',
                     'history_amsterdamsepoort_name',
-                    'Amsterdamse Poort'),
+                    'Amsterdamse Poort'
+                ),
                 description: $this->getCmsItem(
                     'historical_locations_section',
                     'history_amsterdamsepoort_description',
@@ -418,13 +428,15 @@ class HistoryService implements IHistoryService
                 imageUrl: $this->getCmsImage(
                     'historical_locations_section',
                     'history_amsterdamsepoort_image',
-                    '/assets/Image/History/History-AmsterdamsePoort.png'),
+                    '/assets/Image/History/History-AmsterdamsePoort.png'
+                ),
             ),
             new VenueCardData(
                 name: $this->getCmsItem(
                     'historical_locations_section',
                     'history_molendeadriaan_name',
-                    'Molen De Adriaan'),
+                    'Molen De Adriaan'
+                ),
                 description: $this->getCmsItem(
                     'historical_locations_section',
                     'history_molendeadriaan_description',
@@ -433,7 +445,8 @@ class HistoryService implements IHistoryService
                 imageUrl: $this->getCmsImage(
                     'historical_locations_section',
                     'history_molendeadriaan_image',
-                    '/assets/Image/History/History-MolenDeAdriaan.png'),
+                    '/assets/Image/History/History-MolenDeAdriaan.png'
+                ),
             ),
         ];
 
@@ -441,7 +454,8 @@ class HistoryService implements IHistoryService
             headingText: $this->getCmsItem(
                 'historical_locations_section',
                 'historical_locations_heading',
-                'Read more about these locations'),
+                'Read more about these locations'
+            ),
             venues: $venues,
         );
     }
@@ -455,7 +469,8 @@ class HistoryService implements IHistoryService
             headingText: $this->getCmsItem(
                 'ticket_options_section',
                 'ticket_options_heading',
-                'Your ticket options to join the experience'),
+                'Your ticket options to join the experience'
+            ),
             pricingCards: [
                 new PricingCard(
                     icon: $this->getCmsImage('history_ticket_options_section', 'history_single_ticket_icon', '/assets/Icons/History/single-ticket-icon.svg'),
@@ -469,7 +484,10 @@ class HistoryService implements IHistoryService
                 ),
                 new PricingCard(
                     icon: $this->getCmsImage(
-                        'history_ticket_options_section', 'history_group_ticket_icon', '/assets/Icons/History/group-ticket-icon.svg'),
+                        'history_ticket_options_section',
+                        'history_group_ticket_icon',
+                        '/assets/Icons/History/group-ticket-icon.svg'
+                    ),
                     title: $this->getCmsItem('history_ticket_options_section', 'history_pricing_group_title', 'Group Ticket'),
                     price: $this->getCmsItem('history_pricing_section', 'history_pricing_group_price', '€60.00'),
                     descriptionItems: [
@@ -491,7 +509,8 @@ class HistoryService implements IHistoryService
             headingText: $this->getCmsItem(
                 'history_important_tour_info_section',
                 'history_important_tour_info_heading',
-                'Important information about the tour'),
+                'Important information about the tour'
+            ),
             infoItems: [
                 $this->getCmsItem('history_important_tour_info_section', 'important_info_item1', 'Minimum age requirement: 12 years old'),
                 $this->getCmsItem('history_important_tour_info_section', 'important_info_item2', 'No strollers allowed due to the nature of the walking route'),
@@ -518,21 +537,24 @@ class HistoryService implements IHistoryService
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 25',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
                 new ScheduleCard(
                     '13:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 25',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
                 new ScheduleCard(
                     '16:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 25',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
             ],
         );
 
@@ -546,21 +568,24 @@ class HistoryService implements IHistoryService
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 26',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
                 new ScheduleCard(
                     '13:00',
                     ['In English', 'In Dutch', 'In Chinese'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 26',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
                 new ScheduleCard(
                     '16:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 26',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
             ],
         );
 
@@ -574,21 +599,24 @@ class HistoryService implements IHistoryService
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 27',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
                 new ScheduleCard(
                     '13:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 27',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
                 new ScheduleCard(
                     '16:00',
                     ['In English', 'In Dutch', 'In Chinese'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 27',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
             ],
         );
 
@@ -602,21 +630,24 @@ class HistoryService implements IHistoryService
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 29',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
                 new ScheduleCard(
                     '13:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 29',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
                 new ScheduleCard(
                     '16:00',
                     ['In English', 'In Dutch'],
                     'A giant flag near Church of St. Bavo at Grote Markt',
                     'Thursday, July 29',
                     'Group ticket - best value for 4 people',
-                    'from €17.50'),
+                    'from €17.50'
+                ),
             ],
         );
 

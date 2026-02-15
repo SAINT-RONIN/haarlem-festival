@@ -60,4 +60,3 @@ interface IAuthService
      */
     public function resetPassword(string $rawToken, string $newPassword, string $confirmPassword): array;
 }
-

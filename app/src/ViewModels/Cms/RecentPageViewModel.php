@@ -13,8 +13,6 @@ final readonly class RecentPageViewModel
         public string $title,
         public string $status,
         public string $timeAgo,
-    )
-    {
+    ) {
     }
 }
-

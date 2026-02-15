@@ -59,4 +59,3 @@ interface IUserAccountRepository
      */
     public function updatePasswordHash(int $userId, string $passwordHash): void;
 }
-

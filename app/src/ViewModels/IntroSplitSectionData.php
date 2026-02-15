@@ -16,7 +16,6 @@ final readonly class IntroSplitSectionData
         public string $bodyText,
         public string $imageUrl,
         public string $imageAltText,
-    )
-    {
+    ) {
     }
 }

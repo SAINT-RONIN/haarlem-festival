@@ -18,4 +18,3 @@ interface IJazzService
      */
     public function getJazzPageData(): JazzPageViewModel;
 }
-

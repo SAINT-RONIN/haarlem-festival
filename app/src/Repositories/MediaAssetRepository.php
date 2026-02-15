@@ -103,4 +103,3 @@ class MediaAssetRepository implements IMediaAssetRepository
         return $stmt->execute([$mediaAssetId, $cmsItemId]);
     }
 }
-
