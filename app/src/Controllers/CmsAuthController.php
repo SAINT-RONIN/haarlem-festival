@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Enums\UserRoleId;
 use App\Services\AuthService;
 use App\Services\SessionService;
 
@@ -62,7 +63,7 @@ class CmsAuthController
         $user = $result['user'];
 
         // Check if user is an administrator
-        if ($user->userRoleId !== 3) {
+        if ($user->userRoleId !== UserRoleId::Administrator->value) {
             // Silent redirect - don't reveal that login worked but access denied
             $this->redirectWithError('Invalid username/email or password.');
             return;

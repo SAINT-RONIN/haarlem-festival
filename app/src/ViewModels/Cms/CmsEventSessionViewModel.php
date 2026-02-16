@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+use App\Models\EventSession;
+
 /**
  * ViewModel for displaying event sessions in CMS views.
  *
@@ -34,7 +36,8 @@ class CmsEventSessionViewModel
         public readonly bool    $isFree,
         public readonly bool    $isCancelled,
         public readonly string  $sessionDate,
-    ) {
+    )
+    {
     }
 
     /**
@@ -89,6 +92,50 @@ class CmsEventSessionViewModel
             durationMinutes: isset($data['DurationMinutes']) ? (int)$data['DurationMinutes'] : null,
             isFree: (bool)($data['IsFree'] ?? false),
             isCancelled: (bool)($data['IsCancelled'] ?? false),
+            sessionDate: date('Y-m-d', $startTimestamp),
+        );
+    }
+
+    /**
+     * Creates a ViewModel from an EventSession model.
+     *
+     * @param EventSession $session The EventSession model
+     * @param string $eventTitle Optional event title for display
+     * @param string $eventTypeSlug Optional event type slug for styling
+     */
+    public static function fromEventSession(
+        EventSession $session,
+        string       $eventTitle = '',
+        string       $eventTypeSlug = 'default'
+    ): self
+    {
+        $startTimestamp = $session->startDateTime->getTimestamp();
+        $endTimestamp = $session->endDateTime?->getTimestamp();
+
+        $soldTicketsTotal = $session->soldSingleTickets + $session->soldReservedSeats;
+        $seatsAvailable = $session->seatsAvailable ?? ($session->capacityTotal - $soldTicketsTotal);
+
+        return new self(
+            eventSessionId: $session->eventSessionId,
+            eventId: $session->eventId,
+            eventTitle: $eventTitle,
+            eventTypeSlug: $eventTypeSlug,
+            formattedStartTime: date('H:i', $startTimestamp),
+            formattedEndTime: $endTimestamp ? date('H:i', $endTimestamp) : '',
+            formattedDate: date('Y-m-d', $startTimestamp),
+            formattedDateLong: date('l, F j, Y', $startTimestamp),
+            formattedDateTimeLocal: date('Y-m-d\TH:i', $startTimestamp),
+            formattedEndDateTimeLocal: $endTimestamp ? date('Y-m-d\TH:i', $endTimestamp) : '',
+            capacityTotal: $session->capacityTotal,
+            soldSingleTickets: $session->soldSingleTickets,
+            soldReservedSeats: $session->soldReservedSeats,
+            soldTicketsTotal: $soldTicketsTotal,
+            seatsAvailable: $seatsAvailable,
+            hallName: $session->hallName,
+            sessionType: $session->sessionType,
+            durationMinutes: $session->durationMinutes,
+            isFree: $session->isFree,
+            isCancelled: $session->isCancelled,
             sessionDate: date('Y-m-d', $startTimestamp),
         );
     }

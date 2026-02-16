@@ -41,16 +41,20 @@ class VenueRepository implements IVenueRepository
     }
 
     /**
-     * Returns all active venues for dropdown (VenueId, Name, AddressLine).
+     * Returns all active venues for dropdown.
      *
-     * Returns array for lightweight dropdown population.
-     *
-     * @return array<int, array{VenueId: int, Name: string, AddressLine: string}>
+     * @return Venue[]
      */
     public function findAllForDropdown(): array
     {
-        $stmt = $this->pdo->query('SELECT VenueId, Name, AddressLine FROM Venue WHERE IsActive = 1 ORDER BY Name ASC');
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->pdo->query('
+            SELECT VenueId, Name, AddressLine, City, CreatedAtUtc, IsActive 
+            FROM Venue 
+            WHERE IsActive = 1 
+            ORDER BY Name ASC
+        ');
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([Venue::class, 'fromRow'], $rows);
     }
 
     /**

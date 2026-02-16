@@ -4,7 +4,7 @@
  *
  * @var string $currentView
  * @var array $eventTypes
- * @var array $venues
+ * @var \App\Models\Venue[] $venues
  * @var string|null $errorMessage
  * @var string $preselectedDay Pre-selected day from URL (passed from controller)
  */
@@ -114,10 +114,11 @@
                                     class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                                 <option value="">No venue selected</option>
                                 <?php foreach ($venues as $venue): ?>
-                                    <option value="<?= (int)$venue['VenueId'] ?>">
-                                        <?= htmlspecialchars($venue['Name']) ?>
-                                        <?php if (!empty($venue['AddressLine'])): ?>
-                                            - <?= htmlspecialchars($venue['AddressLine']) ?>
+                                    <?php /** @var \App\Models\Venue $venue */ ?>
+                                    <option value="<?= $venue->venueId ?>">
+                                        <?= htmlspecialchars($venue->name) ?>
+                                        <?php if (!empty($venue->addressLine)): ?>
+                                            - <?= htmlspecialchars($venue->addressLine) ?>
                                         <?php endif; ?>
                                     </option>
                                 <?php endforeach; ?>

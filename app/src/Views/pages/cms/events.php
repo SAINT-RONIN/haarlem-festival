@@ -214,38 +214,38 @@ $typeColors = [
                 <?php else: ?>
                     <?php foreach ($events as $event): ?>
                         <?php
-                        $typeSlug = $event['EventTypeSlug'] ?? 'default';
-                        $colorClass = $typeColors[$typeSlug] ?? 'bg-gray-100 text-gray-800';
+                        /** @var \App\ViewModels\Cms\CmsEventListItemViewModel $event */
+                        $colorClass = $typeColors[$event->eventTypeSlug] ?? 'bg-gray-100 text-gray-800';
                         ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">
-                                    <?= htmlspecialchars($event['Title']) ?>
+                                    <?= htmlspecialchars($event->title) ?>
                                 </div>
-                                <?php if (!empty($event['ShortDescription'])): ?>
+                                <?php if (!empty($event->shortDescription)): ?>
                                     <div class="text-xs text-gray-500 truncate max-w-xs">
-                                        <?= htmlspecialchars($event['ShortDescription']) ?>
+                                        <?= htmlspecialchars($event->shortDescription) ?>
                                     </div>
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $colorClass ?>">
-                                    <?= htmlspecialchars($event['EventTypeName']) ?>
+                                    <?= htmlspecialchars($event->eventTypeName) ?>
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= htmlspecialchars($event['VenueName'] ?? 'Not set') ?>
+                                <?= htmlspecialchars($event->venueName ?? 'Not set') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= (int)$event['SessionCount'] ?> session(s)
+                                <?= $event->sessionCount ?> session(s)
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="/cms/events/<?= (int)$event['EventId'] ?>/edit"
+                                <a href="/cms/events/<?= $event->eventId ?>/edit"
                                    class="text-blue-600 hover:text-blue-900 inline-flex items-center mr-3">
                                     <i data-lucide="edit" class="w-4 h-4 mr-1"></i>
                                     Edit
                                 </a>
-                                <form method="POST" action="/cms/events/<?= (int)$event['EventId'] ?>/delete"
+                                <form method="POST" action="/cms/events/<?= $event->eventId ?>/delete"
                                       class="inline"
                                       onsubmit="return confirm('Are you sure you want to delete this event? This will also deactivate all its sessions.');">
                                     <button type="submit"

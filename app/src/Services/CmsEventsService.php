@@ -62,6 +62,8 @@ class CmsEventsService implements ICmsEventsService
 
     /**
      * Gets all event types for dropdown.
+     *
+     * @return \App\Models\EventType[]
      */
     public function getEventTypes(): array
     {
@@ -70,6 +72,8 @@ class CmsEventsService implements ICmsEventsService
 
     /**
      * Gets all venues for dropdown.
+     *
+     * @return \App\Models\Venue[]
      */
     public function getVenues(): array
     {

@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Exceptions\ValidationException;
 use App\Services\CmsEventsService;
+use App\ViewModels\Cms\CmsEventListItemViewModel;
 use App\ViewModels\Cms\CmsEventsListViewModel;
 
 /**
@@ -38,10 +39,16 @@ class CmsEventsController
         $dayOfWeek = isset($_GET['day']) && !empty($_GET['day']) ? $_GET['day'] : null;
 
         // Get data from service
-        $events = $this->eventsService->getAllEventsWithDetails($eventTypeId, $dayOfWeek);
+        $eventsData = $this->eventsService->getAllEventsWithDetails($eventTypeId, $dayOfWeek);
         $eventTypes = $this->eventsService->getEventTypes();
         $weeklySchedule = $this->eventsService->getWeeklyScheduleOverview($eventTypeId);
         $venues = $this->eventsService->getVenues();
+
+        // Transform events to ViewModels
+        $events = array_map(
+            fn(array $event) => CmsEventListItemViewModel::fromArray($event),
+            $eventsData
+        );
 
         // Build ViewModel
         $viewModel = new CmsEventsListViewModel(

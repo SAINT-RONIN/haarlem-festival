@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+use App\Models\EventSession;
+
 /**
  * ViewModel for the CMS event edit page.
  *
@@ -41,26 +43,35 @@ class CmsEventEditViewModel
         public readonly array   $sessions,
         public readonly array   $sessionPrices,
         public readonly array   $sessionLabels,
-    ) {
+    )
+    {
     }
 
     /**
      * Creates a ViewModel from event data array and sessions.
      *
      * @param array $eventData Event data from repository
-     * @param array $sessionsData Sessions data from repository
+     * @param EventSession[] $sessions EventSession models from repository
      * @param array<int, array> $pricesData Prices keyed by session ID
      * @param array<int, array> $labelsData Labels keyed by session ID
      */
     public static function fromData(
         array $eventData,
-        array $sessionsData,
+        array $sessions,
         array $pricesData = [],
         array $labelsData = []
-    ): self {
-        $sessions = array_map(
-            fn (array $session) => CmsEventSessionViewModel::fromArray($session),
-            $sessionsData
+    ): self
+    {
+        $eventTitle = (string)($eventData['Title'] ?? '');
+        $eventTypeSlug = (string)($eventData['EventTypeSlug'] ?? 'default');
+
+        $sessionViewModels = array_map(
+            fn(EventSession $session) => CmsEventSessionViewModel::fromEventSession(
+                $session,
+                $eventTitle,
+                $eventTypeSlug
+            ),
+            $sessions
         );
 
         return new self(
@@ -74,7 +85,7 @@ class CmsEventEditViewModel
             venueId: isset($eventData['VenueId']) ? (int)$eventData['VenueId'] : null,
             venueName: $eventData['VenueName'] ?? null,
             isActive: (bool)($eventData['IsActive'] ?? true),
-            sessions: $sessions,
+            sessions: $sessionViewModels,
             sessionPrices: $pricesData,
             sessionLabels: $labelsData,
         );

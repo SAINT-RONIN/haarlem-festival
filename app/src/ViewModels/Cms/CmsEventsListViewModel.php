@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+use App\Models\EventType;
+use App\Models\Venue;
+
 /**
  * ViewModel for the CMS events list page.
  *
@@ -12,9 +15,9 @@ namespace App\ViewModels\Cms;
 class CmsEventsListViewModel
 {
     /**
-     * @param array<array{EventId: int, Title: string, EventTypeName: string, EventTypeSlug: string, VenueName: ?string, SessionCount: int, IsActive: bool}> $events
-     * @param array<array{EventTypeId: int, Name: string, Slug: string}> $eventTypes
-     * @param array<array{VenueId: int, Name: string, AddressLine: string}> $venues
+     * @param CmsEventListItemViewModel[] $events Event items as ViewModels
+     * @param EventType[] $eventTypes Event types as Models
+     * @param Venue[] $venues Venues as Models
      * @param array<string, CmsEventSessionViewModel[]> $weeklySchedule Sessions grouped by day name
      * @param string $selectedType Current type filter
      * @param string $selectedDay Current day filter
@@ -28,6 +31,7 @@ class CmsEventsListViewModel
         public readonly string  $selectedDay,
         public readonly ?string $successMessage,
         public readonly ?string $errorMessage,
-    ) {
+    )
+    {
     }
 }
