@@ -36,8 +36,7 @@ class CmsEventSessionViewModel
         public readonly bool    $isFree,
         public readonly bool    $isCancelled,
         public readonly string  $sessionDate,
-    )
-    {
+    ) {
     }
 
     /**
@@ -107,8 +106,7 @@ class CmsEventSessionViewModel
         EventSession $session,
         string       $eventTitle = '',
         string       $eventTypeSlug = 'default'
-    ): self
-    {
+    ): self {
         $startTimestamp = $session->startDateTime->getTimestamp();
         $endTimestamp = $session->endDateTime?->getTimestamp();
 

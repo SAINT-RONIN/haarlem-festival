@@ -46,7 +46,7 @@ class CmsEventsController
 
         // Transform events to ViewModels
         $events = array_map(
-            fn(array $event) => CmsEventListItemViewModel::fromArray($event),
+            fn (array $event) => CmsEventListItemViewModel::fromArray($event),
             $eventsData
         );
 

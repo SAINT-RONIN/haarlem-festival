@@ -20,7 +20,6 @@ final readonly class RestaurantPageViewModel
         public ?IntroSplitSectionData $introSplit2Section = null,
         public ?array                $instructionsSection = null,
         public ?array                $restaurantCardsSection = null,
-    )
-    {
+    ) {
     }
 }

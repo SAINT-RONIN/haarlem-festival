@@ -50,23 +50,27 @@ $cms = [
 
     <?php require __DIR__ . '/../partials/sections/gradient-section.php'; ?>
 
-    <?php $sectionId = 'about'; $introSplitImageClass = null; require __DIR__ . '/../partials/sections/intro-split-section.php'; ?>
+    <?php $sectionId = 'about';
+$introSplitImageClass = null;
+require __DIR__ . '/../partials/sections/intro-split-section.php'; ?>
 
     <?php if ($viewModel->introSplit2Section !== null): ?>
         <?php
-            $introSplitSection = $viewModel->introSplit2Section;
-            $sectionId = 'restaurants';
-            $introSplitImageClass = null;
-            require __DIR__ . '/../partials/restaurant/intro-split2-restaurant-section.php';
+        $introSplitSection = $viewModel->introSplit2Section;
+        $sectionId = 'restaurants';
+        $introSplitImageClass = null;
+        require __DIR__ . '/../partials/restaurant/intro-split2-restaurant-section.php';
         ?>
     <?php endif; ?>
 
     <?php if ($viewModel->instructionsSection !== null): ?>
-        <?php $instructionsSection = $viewModel->instructionsSection; require __DIR__ . '/../partials/restaurant/instructions-section.php'; ?>
+        <?php $instructionsSection = $viewModel->instructionsSection;
+        require __DIR__ . '/../partials/restaurant/instructions-section.php'; ?>
     <?php endif; ?>
 
     <?php if ($viewModel->restaurantCardsSection !== null): ?>
-        <?php $restaurantCardsSection = $viewModel->restaurantCardsSection; require __DIR__ . '/../partials/restaurant/restaurant-cards-section.php'; ?>
+        <?php $restaurantCardsSection = $viewModel->restaurantCardsSection;
+        require __DIR__ . '/../partials/restaurant/restaurant-cards-section.php'; ?>
     <?php endif; ?>
 
 </main>

@@ -21,8 +21,7 @@ final readonly class CmsEventListItemViewModel
         public ?string $venueName,
         public int     $sessionCount,
         public bool    $isActive,
-    )
-    {
+    ) {
     }
 
     /**
@@ -79,4 +78,3 @@ final readonly class CmsEventListItemViewModel
         return $this->isActive ? 'badge-success' : 'badge-secondary';
     }
 }
-

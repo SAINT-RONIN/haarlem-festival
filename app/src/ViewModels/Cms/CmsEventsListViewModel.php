@@ -31,7 +31,6 @@ class CmsEventsListViewModel
         public readonly string  $selectedDay,
         public readonly ?string $successMessage,
         public readonly ?string $errorMessage,
-    )
-    {
+    ) {
     }
 }

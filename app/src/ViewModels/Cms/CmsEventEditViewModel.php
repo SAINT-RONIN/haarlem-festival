@@ -43,8 +43,7 @@ class CmsEventEditViewModel
         public readonly array   $sessions,
         public readonly array   $sessionPrices,
         public readonly array   $sessionLabels,
-    )
-    {
+    ) {
     }
 
     /**
@@ -60,13 +59,12 @@ class CmsEventEditViewModel
         array $sessions,
         array $pricesData = [],
         array $labelsData = []
-    ): self
-    {
+    ): self {
         $eventTitle = (string)($eventData['Title'] ?? '');
         $eventTypeSlug = (string)($eventData['EventTypeSlug'] ?? 'default');
 
         $sessionViewModels = array_map(
-            fn(EventSession $session) => CmsEventSessionViewModel::fromEventSession(
+            fn (EventSession $session) => CmsEventSessionViewModel::fromEventSession(
                 $session,
                 $eventTitle,
                 $eventTypeSlug

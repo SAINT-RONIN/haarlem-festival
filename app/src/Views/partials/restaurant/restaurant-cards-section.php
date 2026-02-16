@@ -61,16 +61,16 @@ $cards = $restaurantCardsSection['cards'] ?? null;
             <?php foreach ($cards as $index => $card): ?>
                 <?php
                     $name = (string)($card['name'] ?? '');
-                    $cuisine = (string)($card['cuisine'] ?? '');
-                    $address = (string)($card['address'] ?? '');
-                    $description = (string)($card['description'] ?? '');
-                    $distanceText = (string)($card['distanceText'] ?? '');
-                    $rating = (int)($card['rating'] ?? 0);
-                    $price = (string)($card['price'] ?? '');
-                    $image = (string)($card['image'] ?? '');
-                    $aboutLabel = (string)($card['aboutLabel'] ?? 'About it');
-                    $bookLabel = (string)($card['bookLabel'] ?? 'Book table');
-                    $isNewVegas = (stripos($name, 'new vegas') !== false);
+                $cuisine = (string)($card['cuisine'] ?? '');
+                $address = (string)($card['address'] ?? '');
+                $description = (string)($card['description'] ?? '');
+                $distanceText = (string)($card['distanceText'] ?? '');
+                $rating = (int)($card['rating'] ?? 0);
+                $price = (string)($card['price'] ?? '');
+                $image = (string)($card['image'] ?? '');
+                $aboutLabel = (string)($card['aboutLabel'] ?? 'About it');
+                $bookLabel = (string)($card['bookLabel'] ?? 'Book table');
+                $isNewVegas = (stripos($name, 'new vegas') !== false);
                 ?>
 
                 <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">

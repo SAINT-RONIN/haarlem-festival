@@ -26,9 +26,9 @@ $cards = $instructionsSection['cards'] ?? null;
             <?php foreach ($cards as $index => $card): ?>
                 <?php
                     $number = (string)($card['number'] ?? (string)($index + 1));
-                    $cardTitle = (string)($card['title'] ?? '');
-                    $cardText = (string)($card['text'] ?? '');
-                    $icon = (string)($card['icon'] ?? '');
+                $cardTitle = (string)($card['title'] ?? '');
+                $cardText = (string)($card['text'] ?? '');
+                $icon = (string)($card['icon'] ?? '');
                 ?>
 
                 <div class="flex-1 max-w-sm mx-auto lg:mx-0 p-5 bg-white rounded-3xl flex flex-col justify-start items-start gap-3 shadow-sm">
