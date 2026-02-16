@@ -123,7 +123,7 @@ class CmsDashboardController
 
         if (empty($items)) {
             $_SESSION['cms_error'] = 'No changes submitted';
-            header("Location: /cms/pages/edit");
+            header("Location: /cms/pages/{$pageId}/edit");
             exit;
         }
 
