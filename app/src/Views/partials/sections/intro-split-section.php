@@ -24,9 +24,9 @@ $introSplitImageClass = $introSplitImageClass ?? 'w-full h-auto rounded-2xl obje
             <div class="w-full flex flex-col gap-4 mt-2">
                 <?php foreach ($introSplitSection->subsections as $subsection): ?>
                     <div class="flex flex-col gap-1">
-                        <h3 class="text-gray-900 text-lg sm:text-xl md:text-2xl font-semibold">
+                        <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
                             <?= htmlspecialchars((string)($subsection['heading'] ?? '')) ?>
-                        </h3>
+                        </p>
                         <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
                             <?= htmlspecialchars((string)($subsection['text'] ?? '')) ?>
                         </p>
@@ -36,7 +36,7 @@ $introSplitImageClass = $introSplitImageClass ?? 'w-full h-auto rounded-2xl obje
         <?php endif; ?>
 
         <?php if (!empty($introSplitSection->closingLine)): ?>
-            <p class="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed mt-2 font-medium">
+            <p class="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed mt-2">
                 <?= htmlspecialchars($introSplitSection->closingLine) ?>
             </p>
         <?php endif; ?>

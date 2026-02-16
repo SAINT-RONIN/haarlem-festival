@@ -262,12 +262,11 @@ class CmsDashboardController
         CmsAuthController::requireAdmin();
 
         $pageId = (int)$id;
-        $pageSlug =
         $items = $_POST['items'] ?? [];
 
         if (empty($items)) {
             $_SESSION['cms_error'] = 'No changes submitted';
-            header("Location: /cms/pages/edit");
+            header("Location: /cms/pages/{$pageId}/edit");
             exit;
         }
 
