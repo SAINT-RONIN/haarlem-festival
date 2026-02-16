@@ -11,7 +11,8 @@ $sectionId = $sectionId ?? 'intro';
 $introSplitImageClass = $introSplitImageClass ?? 'w-full h-auto rounded-2xl object-cover';
 ?>
 
-<section id="<?= htmlspecialchars($sectionId) ?>" class="self-stretch px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-12 flex flex-col lg:flex-row justify-center items-stretch gap-6 sm:gap-8 md:gap-10 lg:gap-12">
+<section id="<?= htmlspecialchars($sectionId) ?>"
+         class="self-stretch px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-12 flex flex-col lg:flex-row justify-center items-stretch gap-6 sm:gap-8 md:gap-10 lg:gap-12">
     <div class="flex-1 flex flex-col justify-center items-start gap-4 sm:gap-5 md:gap-6">
         <h2 class="text-gray-900 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
             <?= htmlspecialchars($introSplitSection->headingText) ?>
@@ -43,7 +44,7 @@ $introSplitImageClass = $introSplitImageClass ?? 'w-full h-auto rounded-2xl obje
     </div>
 
     <div class="flex-1 flex justify-center items-center">
-        <img src="<?= htmlspecialchars($introSplitSection->imageUrl) ?>"
+        <img class="h-full w-full object-cover rounded-2xl" src="<?= htmlspecialchars($introSplitSection->imageUrl) ?>"
              alt="<?= htmlspecialchars($introSplitSection->imageAltText) ?>"
              class="<?= htmlspecialchars($introSplitImageClass) ?>">
     </div>

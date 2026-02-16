@@ -1,0 +1,11 @@
+1. TODO: Hero section buttons needs to get connected
+2. TODO: Yummy Restaurant events schedule section needs to be tailored to his needs that also include giving him the ability to add pictures to the events.
+3. TODO: CMS Media page needs to be created properly. It should include the ability to upload images, and also to organize them in folders. It should also (Optionally) have a search functionality to easily find media files.
+4. TODO: Footer active link needs to be highlighted.
+5. TODO: When user login they should be able to logout from the page. As of now we can only login and logout can only be done by writing /logout on the url.
+6. TODO: Program page needs to be created.
+7. TODO: 404 page needs to be updated as of now it's basic.
+8. TODO: Check code consistency after merging every branch.
+9. TODO: Yummy page inverted split section needs to be fixed.
+10. TODO: Filter in event schedule should work properly.
+11. TODO: User page should be created.
