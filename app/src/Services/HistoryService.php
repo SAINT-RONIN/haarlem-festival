@@ -407,7 +407,7 @@ class HistoryService implements IHistoryService
                 description: $this->getCmsItem(
                     'historical_locations_section',
                     'history_amsterdamsepoort_description',
-                    'The heart of the historic center of Haarlem.'
+                    'As the only remaining city gate.'
                 ),
                 imageUrl: $this->getCmsImage(
                     'historical_locations_section',
@@ -422,7 +422,7 @@ class HistoryService implements IHistoryService
                 description: $this->getCmsItem(
                     'historical_locations_section',
                     'history_molendeadriaan_description',
-                    'The heart of the historic center of Haarlem.'
+                    'A striking riverside windmill.'
                 ),
                 imageUrl: $this->getCmsImage(
                     'historical_locations_section',
@@ -499,6 +499,9 @@ class HistoryService implements IHistoryService
         );
     }
 
+    /**
+     * Builds the hardcoded schedule for historical route.
+     */
     private function buildScheduleData(): ScheduleData
     {
         // Schedule data remains hardcoded for now (as per requirements)
