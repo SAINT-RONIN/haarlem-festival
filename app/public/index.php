@@ -32,8 +32,10 @@ use App\Controllers\AuthController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
+use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
+use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -43,11 +45,19 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Homepage
     $r->addRoute('GET', '/', [HomeController::class, 'index']);
 
+
+    // History Routes
+    $r->addRoute('GET', '/history', [HistoryController::class, 'index']);
+
     // Jazz page
     $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
+
+    // Restaurant page
+    $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
+
 
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
@@ -68,6 +78,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // CMS Dashboard Routes
     $r->addRoute('GET', '/cms', [CmsDashboardController::class, 'index']);
     $r->addRoute('GET', '/cms/pages', [CmsDashboardController::class, 'pages']);
+
 
     // CMS Events Routes
     $r->addRoute('GET', '/cms/events', [CmsEventsController::class, 'index']);
@@ -95,6 +106,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'edit']);
     $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'update']);
     $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
+
 });
 
 // Fetch method and URI from request
@@ -113,7 +125,7 @@ $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 switch ($routeInfo[0]) {
     case Dispatcher::NOT_FOUND:
         http_response_code(404);
-        echo '404 Not Found';
+        require __DIR__ . '/../src/Views/pages/errors/404.php';
         break;
 
     case Dispatcher::METHOD_NOT_ALLOWED:
