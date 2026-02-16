@@ -1,0 +1,147 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.3
+-- https://www.phpmyadmin.net/
+--
+-- Host: mysql
+-- Generation Time: Feb 16, 2026 at 02:19 PM
+-- Server version: 12.0.2-MariaDB-ubu2404
+-- PHP Version: 8.3.27
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `haarlem_festival_db`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CmsItem`
+--
+
+CREATE TABLE `CmsItem` (
+  `CmsItemId` int(11) NOT NULL,
+  `CmsSectionId` int(11) NOT NULL,
+  `ItemKey` varchar(80) NOT NULL,
+  `ItemType` varchar(20) NOT NULL,
+  `TextValue` text DEFAULT NULL,
+  `HtmlValue` text DEFAULT NULL,
+  `MediaAssetId` int(11) DEFAULT NULL,
+  `UpdatedAtUtc` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+--
+-- Dumping data for table `CmsItem`
+--
+
+INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
+(225, 40, 'intro_body', 'TEXT', 'A Stroll Through History invites visitors to explore  rich past of Haarlem on foot. Guided tour leads participants through historic streets and landmarks, including locations that played an important role in the city’s cultural, social, and architectural development. The walks are offered in Dutch, English, and Chinese and are suitable for a wide audience.\r\n\r\nThe route has been carefully curated and prepared by local historians and guides to ensure an engaging, informative, and memorable experience. By combining historical facts with stories from the past, the event helps visitors better understand how Haarlem grew into the city it is today.\r\n\r\nMultiple time slots are available throughout the festival, with different ticket options to keep the event accessible for individuals and families. By joining A Stroll Through History, visitors not only discover Haarlem’s landmarks but also connect with the city through the people, places, and moments that shaped it.', NULL, NULL, '2026-02-13 18:05:59'),
+(226, 42, 'hero_main_title', 'HEADING', 'A STROLL THROUGH HISTORY', NULL, NULL, '2026-02-16 12:19:16'),
+(227, 42, 'hero_button_primary', 'BUTTON_TEXT', 'Explore the tour', NULL, NULL, '2026-02-16 12:19:16'),
+(228, 42, 'hero_button_primary_link', 'URL', '#route', NULL, NULL, '2026-02-16 13:18:59'),
+(229, 42, 'hero_button_secondary', 'BUTTON_TEXT', 'Get tickets', NULL, NULL, '2026-02-16 12:19:16'),
+(230, 42, 'hero_button_secondary_link', 'URL', '#tickets', NULL, NULL, '2026-02-16 13:18:40'),
+(231, 45, 'gradient_heading', 'HEADING', 'Every street holds echoes of the past, shaped by the people who once walked there.', NULL, NULL, '2026-02-16 12:52:54'),
+(232, 45, 'gradient_subheading', 'TEXT', 'Where history comes alive through places, paths, and people.', NULL, NULL, '2026-02-16 12:52:54'),
+(233, 40, 'intro_heading', 'HEADING', 'Experience the living history of Haarlem', NULL, NULL, '2026-02-16 13:01:35'),
+(234, 51, 'route_location1_name', 'TEXT', 'Church of St.Bavo', NULL, NULL, '2026-02-16 13:04:58'),
+(235, 51, 'route_location1_description', 'TEXT', 'A monumental Gothic church famed for its towering nave and historic Müller organ once played by Mozart.', NULL, NULL, '2026-02-16 13:04:58'),
+(236, 51, 'route_location2_name', 'TEXT', 'Grote Markt', NULL, NULL, '2026-02-16 13:06:02'),
+(237, 51, 'route_location2_description', 'TEXT', 'A vibrant central square surrounded by landmark buildings and lively cafés;  the city’s cultural heart.', NULL, NULL, '2026-02-16 13:06:02'),
+(238, 51, 'route_location3_name', 'TEXT', 'De Hallen', NULL, NULL, '2026-02-16 13:16:21'),
+(239, 51, 'route_location3_description', 'TEXT', 'A former meat hall turned into an art and photography museum space that hosts exhibitions as part of the Frans Hals Museum.', NULL, NULL, '2026-02-16 13:16:21'),
+(240, 51, 'route_location4_name', 'TEXT', 'Proveniershof', NULL, NULL, '2026-02-16 13:16:21'),
+(241, 51, 'route_location4_description', 'TEXT', 'A peaceful 18th-century hofje (courtyard community) offering a quiet oasis with historic almshouses.', NULL, NULL, '2026-02-16 13:16:21'),
+(242, 51, 'route_location5_name', 'TEXT', 'Jopenkerk', NULL, NULL, '2026-02-16 13:16:21'),
+(243, 51, 'route_location5_description', 'TEXT', 'A former church transformed into Haarlem’s iconic craft brewery and restaurant, blending tradition with modern beer culture.', NULL, NULL, '2026-02-16 13:16:21'),
+(244, 51, 'route_location6_name', 'TEXT', 'Waalse Kerk', NULL, NULL, '2026-02-16 13:16:21'),
+(245, 51, 'route_location6_description', 'TEXT', 'An intimate 17th-century Walloon church known for its serene atmosphere and historic interior.', NULL, NULL, '2026-02-16 13:16:21'),
+(246, 51, 'route_location7_name', 'TEXT', 'Molen de Adriaan', NULL, NULL, '2026-02-16 13:16:21'),
+(247, 51, 'route_location7_description', 'TEXT', 'A reconstructed 18th-century riverside windmill offering tours and panoramic views over the Spaarne.', NULL, NULL, '2026-02-16 13:16:21'),
+(248, 51, 'route_location8_name', 'TEXT', 'Amsterdamse Poort', NULL, NULL, '2026-02-16 13:16:21'),
+(249, 51, 'route_location8_description', 'TEXT', 'Haarlem’s last surviving medieval city gate, showcasing impressive brickwork and centuries of history.', NULL, NULL, '2026-02-16 13:16:21'),
+(250, 51, 'route_location9_name', 'TEXT', 'Hof van Bakenes', NULL, NULL, '2026-02-16 13:16:21'),
+(251, 51, 'route_location9_description', 'TEXT', 'The oldest hofje in the Netherlands, featuring charming gardens and classic courtyard architecture dating back to 1395.', NULL, NULL, '2026-02-16 13:16:21'),
+(252, 51, 'route_heading', 'HEADING', 'The Route', NULL, NULL, '2026-02-16 13:18:19'),
+(253, 51, 'route_map_image', 'URL', '/assets/Image/History/History-RouteMap.png', NULL, NULL, '2026-02-16 13:18:19'),
+(254, 38, 'history_grotemarkt_name', 'TEXT', 'Grote Markt', NULL, NULL, '2026-02-16 13:21:46'),
+(255, 38, 'history_grotemarkt_description', 'TEXT', 'The heart of the historic center of Haarlem.', NULL, NULL, '2026-02-16 13:21:46'),
+(256, 38, 'history_grotemarkt_image', 'URL', '/assets/Image/History/History-GroteMarkt.png', NULL, NULL, '2026-02-16 13:21:46'),
+(257, 38, 'history_amsterdamsepoort_name', 'TEXT', 'Amsterdamse Poort', NULL, NULL, '2026-02-16 13:31:17'),
+(258, 38, 'history_amsterdamsepoort_description', 'TEXT', 'As the only remaining city gate.', NULL, NULL, '2026-02-16 13:31:17'),
+(259, 38, 'history_amsterdamsepoort_image', 'URL', '/assets/Image/History/History-AmsterdamsePoort.png', NULL, NULL, '2026-02-16 13:31:17'),
+(260, 38, 'history_molendeadriaan_name', 'TEXT', 'Molen De Adriaan', NULL, NULL, '2026-02-16 13:31:17'),
+(261, 38, 'history_molendeadriaan_description', 'TEXT', 'A striking riverside windmill.', NULL, NULL, '2026-02-16 13:31:17'),
+(262, 38, 'history_molendeadriaan_image', 'URL', '/assets/Image/History/History-MolenDeAdriaan.png', NULL, NULL, '2026-02-16 13:31:17'),
+(263, 38, 'historical_locations_heading', 'HEADING', 'Read more about these locations', NULL, NULL, '2026-02-16 13:36:54'),
+(264, 52, 'ticket_options_heading', 'HEADING', 'Your ticket options to join the experience', NULL, NULL, '2026-02-16 13:38:08'),
+(265, 52, 'history_single_ticket_icon', 'URL', '/assets/Icons/History/single-ticket-icon.svg', NULL, NULL, '2026-02-16 13:49:05'),
+(266, 52, 'history_pricing_single_title', 'TEXT', 'Single Ticket', NULL, NULL, '2026-02-16 13:49:05'),
+(267, 53, 'history_pricing_single_price', 'TEXT', '€17.50', NULL, NULL, '2026-02-16 13:49:05'),
+(268, 53, 'history_pricing_single_include1', 'TEXT', 'Per person', NULL, NULL, '2026-02-16 13:49:05'),
+(269, 53, 'history_pricing_single_include2', 'TEXT', 'Includes one complimentary drink', NULL, NULL, '2026-02-16 13:49:05'),
+(270, 53, 'history_pricing_single_include3', 'TEXT', '2.5 hour guided tour', NULL, NULL, '2026-02-16 13:49:05'),
+(271, 52, 'history_group_ticket_icon', 'URL', '/assets/Icons/History/group-ticket-icon.svg', NULL, NULL, '2026-02-16 13:49:05'),
+(272, 52, 'history_pricing_group_title', 'TEXT', 'Group Ticket', NULL, NULL, '2026-02-16 13:49:05'),
+(273, 53, 'history_pricing_group_price', 'TEXT', '€60.00', NULL, NULL, '2026-02-16 13:49:05'),
+(274, 53, 'history_pricing_group_include1', 'TEXT', 'For up to 4 people', NULL, NULL, '2026-02-16 13:49:05'),
+(275, 53, 'history_pricing_group_include2', 'TEXT', 'Includes four complimentary drinks', NULL, NULL, '2026-02-16 13:49:05'),
+(276, 53, 'history_pricing_group_include3', 'TEXT', 'Best value for families!', NULL, NULL, '2026-02-16 13:49:05'),
+(277, 54, 'history_important_tour_info_heading', 'TEXT', 'Important information about the tour', NULL, NULL, '2026-02-16 13:45:24'),
+(278, 54, 'important_info_item1', 'TEXT', 'Minimum age requirement: 12 years old', NULL, NULL, '2026-02-16 13:45:24'),
+(279, 54, 'important_info_item2', 'TEXT', 'No strollers allowed due to the nature of the walking route', NULL, NULL, '2026-02-16 13:45:24'),
+(280, 54, 'important_info_item3', 'TEXT', 'Tour duration: Approximately 2.5 hours including 15-minute break', NULL, NULL, '2026-02-16 13:45:24'),
+(281, 54, 'important_info_item4', 'TEXT', 'Group ticket is the best value for a group of 4 or for a family', NULL, NULL, '2026-02-16 13:45:24'),
+(282, 54, 'important_info_item5', 'TEXT', 'Starting point: Look for the giant flag near Church of St. Bavo at Grote Markt', NULL, NULL, '2026-02-16 13:45:24'),
+(283, 54, 'important_info_item6', 'TEXT', 'Group size: Maximum 12 participants per guide', NULL, NULL, '2026-02-16 13:45:24'),
+(284, 54, 'important_info_item7', 'TEXT', 'Comfortable walking shoes recommended', NULL, NULL, '2026-02-16 13:45:24'),
+(285, 54, 'important_info_item8', 'TEXT', 'Tours run in light rain; severe weather cancellations will be communicated via email', NULL, NULL, '2026-02-16 13:45:24');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `CmsItem`
+--
+ALTER TABLE `CmsItem`
+  ADD PRIMARY KEY (`CmsItemId`),
+  ADD UNIQUE KEY `UQ_CmsItem` (`CmsSectionId`,`ItemKey`),
+  ADD UNIQUE KEY `UNQ_CmsItem_SectionKey` (`CmsSectionId`,`ItemKey`),
+  ADD KEY `FK_CmsItem_Asset` (`MediaAssetId`),
+  ADD KEY `IX_CmsItem_Section` (`CmsSectionId`),
+  ADD KEY `IDX_CmsItem_Section` (`CmsSectionId`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `CmsItem`
+--
+ALTER TABLE `CmsItem`
+  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=286;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `CmsItem`
+--
+ALTER TABLE `CmsItem`
+  ADD CONSTRAINT `FK_CmsItem_Asset` FOREIGN KEY (`MediaAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
+  ADD CONSTRAINT `FK_CmsItem_Section` FOREIGN KEY (`CmsSectionId`) REFERENCES `CmsSection` (`CmsSectionId`) ON DELETE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
