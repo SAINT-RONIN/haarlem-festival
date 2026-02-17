@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\HistoryService;
 use App\Services\Interfaces\IHistoryService;
 
@@ -28,7 +29,11 @@ class HistoryController
 
     public function index(): void
     {
-        $viewModel = $this->historyService->getHistoryPageData();
-        require __DIR__ . '/../Views/pages/history.php';
+        try {
+            $viewModel = $this->historyService->getHistoryPageData();
+            require __DIR__ . '/../Views/pages/history.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 }

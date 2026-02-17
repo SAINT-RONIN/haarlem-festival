@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventTypeId;
 use App\Models\CmsItem;
-use App\Models\CmsPage;
 use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
@@ -38,9 +38,11 @@ class JazzService implements IJazzService
     private MediaAssetRepository $mediaAssetRepository;
     private ScheduleService $scheduleService;
     private SessionService $sessionService;
-    private ?CmsPage $jazzPageData = null;
+    private ?int $jazzPageId = null;
     /** @var array<string, CmsSection> */
     private ?array $jazzSections = null;
+    /** @var array<string, list<CmsItem>>|null */
+    private ?array $jazzItemsBySection = null;
 
     public function __construct()
     {
@@ -66,22 +68,38 @@ class JazzService implements IJazzService
             artistsData: $this->buildArtistsData(),
             scheduleData: $this->buildScheduleData(),
             bookingCtaData: $this->buildBookingCtaData(),
-            scheduleSection: $this->scheduleService->buildScheduleSection('jazz', 1, 7),
+            scheduleSection: $this->scheduleService->buildScheduleSection('jazz', EventTypeId::Jazz->value, 7),
         );
     }
 
     private function loadPageData(): void
     {
-        if ($this->jazzPageData === null) {
-            $this->jazzPageData = $this->cmsRepository->getPageBySlug('jazz');
-            if ($this->jazzPageData) {
-                $sections = $this->cmsRepository->getSectionsByPageId($this->jazzPageData->cmsPageId);
-                $this->jazzSections = [];
-                foreach ($sections as $section) {
-                    /** @var CmsSection $section */
-                    $this->jazzSections[$section->sectionKey] = $section;
-                }
-            }
+        if ($this->jazzPageId !== null) {
+            return;
+        }
+
+        $pages = $this->cmsRepository->findPages(['slug' => 'jazz']);
+        if ($pages === []) {
+            return;
+        }
+
+        $this->jazzPageId = (int)$pages[0]['CmsPageId'];
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $this->jazzPageId]);
+        $this->jazzSections = [];
+        foreach ($sections as $section) {
+            /** @var CmsSection $section */
+            $this->jazzSections[$section->sectionKey] = $section;
+        }
+
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $this->jazzPageId]);
+        $itemsBySectionId = [];
+        foreach ($items as $item) {
+            $itemsBySectionId[$item->cmsSectionId][] = $item;
+        }
+
+        $this->jazzItemsBySection = [];
+        foreach ($this->jazzSections as $sectionKey => $section) {
+            $this->jazzItemsBySection[$sectionKey] = $itemsBySectionId[$section->cmsSectionId] ?? [];
         }
     }
 
@@ -91,8 +109,7 @@ class JazzService implements IJazzService
             return $default;
         }
 
-        $sectionId = $this->jazzSections[$sectionKey]->cmsSectionId;
-        $items = $this->cmsRepository->getItemsBySectionId($sectionId);
+        $items = $this->jazzItemsBySection[$sectionKey] ?? [];
 
         foreach ($items as $item) {
             /** @var CmsItem $item */
@@ -118,8 +135,7 @@ class JazzService implements IJazzService
             return $defaultUrl;
         }
 
-        $sectionId = $this->jazzSections[$sectionKey]->cmsSectionId;
-        $items = $this->cmsRepository->getItemsBySectionId($sectionId);
+        $items = $this->jazzItemsBySection[$sectionKey] ?? [];
 
         foreach ($items as $item) {
             /** @var CmsItem $item */

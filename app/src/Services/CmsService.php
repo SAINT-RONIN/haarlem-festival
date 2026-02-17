@@ -46,20 +46,21 @@ class CmsService implements ICmsService
 
     public function getHomePageContent(): array
     {
-        $page = $this->cmsRepository->getPageBySlug('home');
-        if (!$page) {
+        $pageId = $this->getPageIdBySlug('home');
+        if ($pageId === null) {
             return [];
         }
 
-        $sections = $this->cmsRepository->getSectionsByPageId($page->cmsPageId);
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $itemsBySection = $this->indexItemsBySectionId($items);
         $content = [];
 
         foreach ($sections as $section) {
             /** @var CmsSection $section */
-            $items = $this->cmsRepository->getItemsBySectionId($section->cmsSectionId);
             $sectionData = [];
 
-            foreach ($items as $item) {
+            foreach ($itemsBySection[$section->cmsSectionId] ?? [] as $item) {
                 /** @var CmsItem $item */
                 $sectionData[$item->itemKey] = $this->resolveItemValue($item);
             }
@@ -72,12 +73,15 @@ class CmsService implements ICmsService
 
     public function getSectionContent(string $pageSlug, string $sectionKey): array
     {
-        $page = $this->cmsRepository->getPageBySlug($pageSlug);
-        if (!$page) {
+        $pageId = $this->getPageIdBySlug($pageSlug);
+        if ($pageId === null) {
             return [];
         }
 
-        $items = $this->cmsRepository->getItemsBySectionKey($page->cmsPageId, $sectionKey);
+        $items = $this->cmsRepository->findItems([
+            'cmsPageId' => $pageId,
+            'sectionKey' => $sectionKey,
+        ]);
         $content = [];
 
         foreach ($items as $item) {
@@ -106,6 +110,30 @@ class CmsService implements ICmsService
 
         $value = $item->textValue ?? $item->htmlValue ?? null;
         return is_string($value) ? $value : null;
+    }
+
+    private function getPageIdBySlug(string $slug): ?int
+    {
+        $rows = $this->cmsRepository->findPages(['slug' => $slug]);
+        if ($rows === []) {
+            return null;
+        }
+
+        return (int)$rows[0]['CmsPageId'];
+    }
+
+    /**
+     * @param CmsItem[] $items
+     * @return array<int, list<CmsItem>>
+     */
+    private function indexItemsBySectionId(array $items): array
+    {
+        $indexed = [];
+        foreach ($items as $item) {
+            $indexed[$item->cmsSectionId][] = $item;
+        }
+
+        return $indexed;
     }
 
     /**

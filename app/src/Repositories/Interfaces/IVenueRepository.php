@@ -6,22 +6,13 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\Venue;
 
-/**
- * Interface for Venue repository.
- */
 interface IVenueRepository
 {
     /**
-     * Returns all active venues.
-     *
+     * @param array{isActive?: bool} $filters
      * @return Venue[]
      */
-    public function findAllActive(): array;
+    public function findVenues(array $filters = []): array;
 
-    /**
-     * Returns all active venues for dropdown.
-     *
-     * @return Venue[]
-     */
-    public function findAllForDropdown(): array;
+    public function create(string $name, string $addressLine, string $city = 'Haarlem'): int;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\HomeService;
 
 /**
@@ -20,10 +21,12 @@ class HomeController
      */
     public function index(): void
     {
-        $homeService = new HomeService();
-        $viewModel = $homeService->getHomePageData();
-
-        // Pass viewModel to the view
-        require __DIR__ . '/../Views/pages/home.php';
+        try {
+            $homeService = new HomeService();
+            $viewModel = $homeService->getHomePageData();
+            require __DIR__ . '/../Views/pages/home.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 }

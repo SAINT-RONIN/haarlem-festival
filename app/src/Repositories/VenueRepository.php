@@ -9,9 +9,6 @@ use App\Models\Venue;
 use App\Repositories\Interfaces\IVenueRepository;
 use PDO;
 
-/**
- * Repository for Venue database operations.
- */
 class VenueRepository implements IVenueRepository
 {
     private PDO $pdo;
@@ -21,47 +18,30 @@ class VenueRepository implements IVenueRepository
         $this->pdo = Database::getConnection();
     }
 
-    /**
-     * Returns all active venues as Venue models.
-     *
-     * @return Venue[]
-     */
-    public function findAllActive(): array
+    public function findVenues(array $filters = []): array
     {
-        $stmt = $this->pdo->prepare('
+        $sql = '
             SELECT VenueId, Name, AddressLine, City, CreatedAtUtc, IsActive
             FROM Venue
-            WHERE IsActive = 1
-            ORDER BY Name ASC
-        ');
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            WHERE 1 = 1
+        ';
 
-        return array_map([Venue::class, 'fromRow'], $rows);
-    }
+        $params = [];
 
-    /**
-     * Returns all active venues for dropdown.
-     *
-     * @return Venue[]
-     */
-    public function findAllForDropdown(): array
-    {
-        $stmt = $this->pdo->query('
-            SELECT VenueId, Name, AddressLine, City, CreatedAtUtc, IsActive 
-            FROM Venue 
-            WHERE IsActive = 1 
-            ORDER BY Name ASC
-        ');
+        if (array_key_exists('isActive', $filters)) {
+            $sql .= ' AND IsActive = :isActive';
+            $params['isActive'] = ((bool)$filters['isActive']) ? 1 : 0;
+        }
+
+        $sql .= ' ORDER BY Name ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return array_map([Venue::class, 'fromRow'], $rows);
     }
 
-    /**
-     * Creates a new venue.
-     *
-     * @return int The new venue ID
-     */
     public function create(string $name, string $addressLine, string $city = 'Haarlem'): int
     {
         $stmt = $this->pdo->prepare('

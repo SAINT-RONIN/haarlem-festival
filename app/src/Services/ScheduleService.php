@@ -50,14 +50,21 @@ class ScheduleService implements IScheduleService
     public function buildScheduleSection(string $pageSlug, int $eventTypeId, int $maxDays = 4): ScheduleSectionViewModel
     {
         // Get event type info
-        $eventType = $this->eventTypeRepository->findById($eventTypeId);
+        $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
 
         // Get CMS content for this page's schedule section
         $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
 
-        // Get schedule data from repository
-        $scheduleData = $this->sessionRepository->findScheduleDataByEventType($eventTypeId, $maxDays);
+        $scheduleData = $this->sessionRepository->findSessions([
+            'eventTypeId' => $eventTypeId,
+            'isActive' => true,
+            'eventIsActive' => true,
+            'includeCancelled' => false,
+            'groupByDay' => true,
+            'maxDays' => $maxDays,
+            'orderBy' => 'es.StartDateTime ASC',
+        ]);
 
         // Extract CMS values with defaults
         $title = $this->getStringValue($cmsContent, 'schedule_title', ucfirst($pageSlug) . ' schedule');
@@ -134,8 +141,12 @@ class ScheduleService implements IScheduleService
 
         // Get session IDs for batch loading labels and prices
         $sessionIds = array_column($sessions, 'EventSessionId');
-        $labelsMap = !empty($sessionIds) ? $this->labelRepository->findBySessionIds($sessionIds) : [];
-        $pricesMap = !empty($sessionIds) ? $this->priceRepository->findBySessionIds($sessionIds) : [];
+        $labelsMap = !empty($sessionIds)
+            ? $this->labelRepository->findLabels(['sessionIds' => $sessionIds, 'groupBySession' => true])
+            : [];
+        $pricesMap = !empty($sessionIds)
+            ? $this->priceRepository->findPrices(['sessionIds' => $sessionIds, 'groupBySession' => true])
+            : [];
 
         // Group sessions by date
         $sessionsByDate = [];

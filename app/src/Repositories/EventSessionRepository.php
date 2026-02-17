@@ -5,13 +5,9 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
-use App\Models\EventSession;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
-/**
- * Repository for EventSession database operations.
- */
 class EventSessionRepository implements IEventSessionRepository
 {
     private PDO $pdo;
@@ -21,223 +17,167 @@ class EventSessionRepository implements IEventSessionRepository
         $this->pdo = Database::getConnection();
     }
 
-    /**
-     * Returns upcoming sessions with event and type details.
-     *
-     * Joins EventSession with Event and EventType to get all needed data
-     * for the homepage schedule display.
-     *
-     * @return array Array of session data with event title and type slug
-     */
-    public function findUpcomingWithDetails(): array
+    public function findSessions(array $filters = []): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT 
-                es.EventSessionId,
-                es.StartDateTime,
-                es.EndDateTime,
-                e.Title AS EventTitle,
-                et.Name AS EventTypeName,
-                et.Slug AS EventTypeSlug
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
-            WHERE es.IsActive = 1 
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-            ORDER BY es.StartDateTime ASC
-        ');
-        $stmt->execute();
+        $conditions = [];
+        $params = [];
 
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Returns schedule data for any event type.
-     * Auto-discovers days from sessions, optionally filtered by date range.
-     *
-     * @param int $eventTypeId Event type to filter by
-     * @param int $maxDays Maximum number of days to return (default 7)
-     * @param string|null $startDate Optional start date filter (Y-m-d format)
-     * @param string|null $endDate Optional end date filter (Y-m-d format)
-     * @param array|null $visibleDays Optional array of visible day numbers (0=Sun, 1=Mon, etc.)
-     * @return array Array with 'days' and 'sessions' keys
-     */
-    public function findScheduleDataByEventType(
-        int     $eventTypeId,
-        int     $maxDays = 7,
-        ?string $startDate = null,
-        ?string $endDate = null,
-        ?array  $visibleDays = null
-    ): array {
-        // Build date filter clause
-        $dateFilter = '';
-        $dateParams = [];
-
-        if ($startDate !== null) {
-            $dateFilter .= ' AND DATE(es.StartDateTime) >= :startDate';
-            $dateParams['startDate'] = $startDate;
-        }
-        if ($endDate !== null) {
-            $dateFilter .= ' AND DATE(es.StartDateTime) <= :endDate';
-            $dateParams['endDate'] = $endDate;
+        if (isset($filters['eventId'])) {
+            $conditions[] = 'es.EventId = :eventId';
+            $params['eventId'] = (int)$filters['eventId'];
         }
 
-        // Filter by visible days of week
-        $dayOfWeekFilter = '';
-        if ($visibleDays !== null && count($visibleDays) < 7) {
-            $dayPlaceholders = implode(',', array_map(fn ($d) => (int)$d, $visibleDays));
-            $dayOfWeekFilter = " AND DAYOFWEEK(es.StartDateTime) - 1 IN ({$dayPlaceholders})";
+        if (isset($filters['eventTypeId'])) {
+            $conditions[] = 'e.EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = (int)$filters['eventTypeId'];
         }
 
-        // Step 1: Get distinct dates that have sessions for this event type (auto-discover days)
-        $daysStmt = $this->pdo->prepare("
-            SELECT DISTINCT DATE(es.StartDateTime) AS Date
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            WHERE e.EventTypeId = :eventTypeId
-              AND es.IsActive = 1
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-              {$dateFilter}
-              {$dayOfWeekFilter}
-            ORDER BY Date ASC
-            LIMIT :maxDays
-        ");
-        $daysStmt->bindValue(':eventTypeId', $eventTypeId, \PDO::PARAM_INT);
-        $daysStmt->bindValue(':maxDays', $maxDays, \PDO::PARAM_INT);
-        foreach ($dateParams as $key => $value) {
-            $daysStmt->bindValue(':' . $key, $value);
-        }
-        $daysStmt->execute();
-        $days = $daysStmt->fetchAll();
-
-        if (empty($days)) {
-            return ['days' => [], 'sessions' => []];
+        if (isset($filters['sessionId'])) {
+            $conditions[] = 'es.EventSessionId = :sessionId';
+            $params['sessionId'] = (int)$filters['sessionId'];
         }
 
-        // Extract dates for the query
-        $dates = array_column($days, 'Date');
-        $datePlaceholders = implode(',', array_fill(0, count($dates), '?'));
+        if (array_key_exists('isActive', $filters)) {
+            $conditions[] = 'es.IsActive = :isActive';
+            $params['isActive'] = ((bool)$filters['isActive']) ? 1 : 0;
+        }
 
-        // Step 2: Get sessions for those dates with all required fields
-        $sessionsStmt = $this->pdo->prepare("
-            SELECT 
-                es.EventSessionId,
-                es.EventId,
-                es.StartDateTime,
-                es.EndDateTime,
-                es.CtaLabel,
-                es.CtaUrl,
-                es.CapacityTotal,
-                es.SoldSingleTickets,
-                es.SoldReservedSeats,
-                es.HallName,
-                es.HistoryTicketLabel,
-                DATE(es.StartDateTime) AS SessionDate,
-                e.Title AS EventTitle,
-                e.EventTypeId,
-                et.Slug AS EventTypeSlug,
-                v.Name AS VenueName,
-                a.Name AS ArtistName,
-                ma.FilePath AS ArtistImageUrl
+        $includeCancelled = (bool)($filters['includeCancelled'] ?? false);
+        if (!$includeCancelled) {
+            $conditions[] = 'es.IsCancelled = 0';
+        }
+
+        if (isset($filters['eventIsActive'])) {
+            $conditions[] = 'e.IsActive = :eventIsActive';
+            $params['eventIsActive'] = ((bool)$filters['eventIsActive']) ? 1 : 0;
+        }
+
+        if (isset($filters['startDate']) && is_string($filters['startDate']) && $filters['startDate'] !== '') {
+            $conditions[] = 'DATE(es.StartDateTime) >= :startDate';
+            $params['startDate'] = $filters['startDate'];
+        }
+
+        if (isset($filters['endDate']) && is_string($filters['endDate']) && $filters['endDate'] !== '') {
+            $conditions[] = 'DATE(es.StartDateTime) <= :endDate';
+            $params['endDate'] = $filters['endDate'];
+        }
+
+        if (isset($filters['dayOfWeek']) && is_string($filters['dayOfWeek']) && $filters['dayOfWeek'] !== '') {
+            $conditions[] = 'DAYNAME(es.StartDateTime) = :dayOfWeek';
+            $params['dayOfWeek'] = $filters['dayOfWeek'];
+        }
+
+        $visibleDays = $filters['visibleDays'] ?? null;
+        if (is_array($visibleDays) && $visibleDays !== [] && count($visibleDays) < 7) {
+            $dayLiterals = array_map(
+                static fn (mixed $day): int => (int)$day,
+                array_values($visibleDays)
+            );
+            $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayLiterals) . ')';
+        }
+
+        $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
+        $requestedOrderBy = is_string($filters['orderBy'] ?? null) ? $filters['orderBy'] : '';
+        $allowedOrderBy = [
+            'es.StartDateTime ASC',
+            'es.StartDateTime DESC',
+            'DATE(es.StartDateTime) ASC, es.StartDateTime ASC',
+        ];
+        $orderBy = in_array($requestedOrderBy, $allowedOrderBy, true)
+            ? $requestedOrderBy
+            : 'es.StartDateTime ASC';
+
+        $baseFrom = '
             FROM EventSession es
             INNER JOIN Event e ON es.EventId = e.EventId
             INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
             LEFT JOIN Venue v ON e.VenueId = v.VenueId
             LEFT JOIN Artist a ON e.ArtistId = a.ArtistId
             LEFT JOIN MediaAsset ma ON a.ImageAssetId = ma.MediaAssetId
-            WHERE e.EventTypeId = ?
-              AND es.IsActive = 1
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-              AND DATE(es.StartDateTime) IN ($datePlaceholders)
-            ORDER BY DATE(es.StartDateTime) ASC, es.StartDateTime ASC
-        ");
+        ';
 
-        // Bind event type ID first, then dates
-        $params = array_merge([$eventTypeId], $dates);
-        $sessionsStmt->execute($params);
-        $sessions = $sessionsStmt->fetchAll();
+        $groupByDay = (bool)($filters['groupByDay'] ?? false);
+        if ($groupByDay) {
+            $maxDays = (int)($filters['maxDays'] ?? 7);
+            if ($maxDays <= 0) {
+                $maxDays = 7;
+            }
 
-        return [
-            'days' => $days,
-            'sessions' => $sessions,
-        ];
-    }
+            $daysSql = '
+                SELECT DISTINCT DATE(es.StartDateTime) AS Date
+                ' . $baseFrom . '
+                ' . $whereClause . '
+                ORDER BY Date ASC
+                LIMIT :maxDays
+            ';
+            $daysStmt = $this->pdo->prepare($daysSql);
+            foreach ($params as $key => $value) {
+                $daysStmt->bindValue(':' . $key, $value);
+            }
+            $daysStmt->bindValue(':maxDays', $maxDays, PDO::PARAM_INT);
+            $daysStmt->execute();
+            $days = $daysStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    /**
-     * Returns storytelling schedule data.
-     *
-     * Fetches up to 7 active days for storytelling (EventTypeId = 4).
-     *
-     * @param array|null $visibleDays Optional array of visible day numbers (0=Sun, 1=Mon, etc.)
-     * @return array Array with 'days' and 'sessions' keys
-     */
-    public function findStorytellingScheduleData(?array $visibleDays = null): array
-    {
-        // Show all storytelling sessions, up to 7 days
-        // Filter by visible days if specified
-        return $this->findScheduleDataByEventType(
-            eventTypeId: 4,
-            maxDays: 7,
-            visibleDays: $visibleDays
-        );
-    }
+            if ($days === []) {
+                return ['days' => [], 'sessions' => []];
+            }
 
-    /**
-     * Find a session by ID with event and venue details.
-     *
-     * @param int $sessionId
-     * @return array|null Session data or null if not found
-     */
-    public function findByIdWithDetails(int $sessionId): ?array
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT 
+            $dates = array_column($days, 'Date');
+            $dateBindings = [];
+            $datePlaceholders = [];
+            foreach ($dates as $index => $date) {
+                $placeholder = 'sessionDate' . $index;
+                $datePlaceholders[] = ':' . $placeholder;
+                $dateBindings[$placeholder] = $date;
+            }
+            $sessionDateCondition = 'DATE(es.StartDateTime) IN (' . implode(',', $datePlaceholders) . ')';
+            $sessionsWhereClause = $whereClause === ''
+                ? 'WHERE ' . $sessionDateCondition
+                : $whereClause . ' AND ' . $sessionDateCondition;
+            $sessionsSql = '
+                SELECT
+                    es.*,
+                    DATE(es.StartDateTime) AS SessionDate,
+                    DAYNAME(es.StartDateTime) AS DayOfWeek,
+                    e.Title AS EventTitle,
+                    e.EventTypeId,
+                    et.Name AS EventTypeName,
+                    et.Slug AS EventTypeSlug,
+                    v.Name AS VenueName,
+                    a.Name AS ArtistName,
+                    ma.FilePath AS ArtistImageUrl
+                ' . $baseFrom . '
+                ' . $sessionsWhereClause . '
+                ORDER BY ' . $orderBy;
+
+            $prepared = $this->pdo->prepare($sessionsSql);
+            $prepared->execute(array_merge($params, $dateBindings));
+            $sessions = $prepared->fetchAll(PDO::FETCH_ASSOC);
+
+            return ['days' => $days, 'sessions' => $sessions];
+        }
+
+        $sessionsSql = '
+            SELECT
                 es.*,
+                DATE(es.StartDateTime) AS SessionDate,
+                DAYNAME(es.StartDateTime) AS DayOfWeek,
                 e.Title AS EventTitle,
                 e.EventTypeId,
-                v.Name AS VenueName
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            LEFT JOIN Venue v ON e.VenueId = v.VenueId
-            WHERE es.EventSessionId = :sessionId
-        ');
-        $stmt->execute(['sessionId' => $sessionId]);
-        $result = $stmt->fetch();
+                et.Name AS EventTypeName,
+                et.Slug AS EventTypeSlug,
+                v.Name AS VenueName,
+                a.Name AS ArtistName,
+                ma.FilePath AS ArtistImageUrl
+            ' . $baseFrom . '
+            ' . $whereClause . '
+            ORDER BY ' . $orderBy;
 
-        return $result ?: null;
+        $stmt = $this->pdo->prepare($sessionsSql);
+        $stmt->execute($params);
+        return ['sessions' => $stmt->fetchAll(PDO::FETCH_ASSOC)];
     }
 
-    /**
-     * Find all sessions for an event.
-     * /**
-     * Finds all sessions for an event.
-     *
-     * @param int $eventId
-     * @return EventSession[]
-     */
-    public function findByEventId(int $eventId): array
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT *
-            FROM EventSession
-            WHERE EventId = :eventId
-            ORDER BY StartDateTime ASC
-        ');
-        $stmt->execute(['eventId' => $eventId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([EventSession::class, 'fromRow'], $rows);
-    }
-
-    /**
-     * Create a new event session.
-     *
-     * @param array $data Session data
-     * @return int The new session ID
-     */
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare('
@@ -279,13 +219,6 @@ class EventSessionRepository implements IEventSessionRepository
         return (int)$this->pdo->lastInsertId();
     }
 
-    /**
-     * Update an event session.
-     *
-     * @param int $sessionId
-     * @param array $data Session data to update
-     * @return bool Success status
-     */
     public function update(int $sessionId, array $data): bool
     {
         $stmt = $this->pdo->prepare('
@@ -318,65 +251,9 @@ class EventSessionRepository implements IEventSessionRepository
         ]);
     }
 
-    /**
-     * Delete an event session.
-     *
-     * @param int $sessionId
-     * @return bool Success status
-     */
     public function delete(int $sessionId): bool
     {
-        $stmt = $this->pdo->prepare('
-            DELETE FROM EventSession
-            WHERE EventSessionId = :sessionId
-        ');
-
+        $stmt = $this->pdo->prepare('DELETE FROM EventSession WHERE EventSessionId = :sessionId');
         return $stmt->execute(['sessionId' => $sessionId]);
-    }
-
-    /**
-     * Returns sessions grouped by day of week for CMS weekly overview.
-     *
-     * @param int|null $eventTypeId Optional filter by event type
-     * @return array Sessions with event details
-     */
-    public function findWeeklyScheduleOverview(?int $eventTypeId = null): array
-    {
-        $typeFilter = $eventTypeId ? 'AND e.EventTypeId = :eventTypeId' : '';
-
-        $stmt = $this->pdo->prepare("
-            SELECT 
-                es.EventSessionId,
-                es.EventId,
-                es.StartDateTime,
-                es.EndDateTime,
-                es.CapacityTotal,
-                es.SoldSingleTickets,
-                es.SoldReservedSeats,
-                DAYNAME(es.StartDateTime) AS DayOfWeek,
-                DATE(es.StartDateTime) AS SessionDate,
-                e.Title AS EventTitle,
-                e.EventTypeId,
-                et.Name AS EventTypeName,
-                et.Slug AS EventTypeSlug,
-                v.Name AS VenueName
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
-            LEFT JOIN Venue v ON e.VenueId = v.VenueId
-            WHERE es.IsActive = 1
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-              {$typeFilter}
-            ORDER BY es.StartDateTime ASC
-        ");
-
-        if ($eventTypeId) {
-            $stmt->execute(['eventTypeId' => $eventTypeId]);
-        } else {
-            $stmt->execute();
-        }
-
-        return $stmt->fetchAll();
     }
 }

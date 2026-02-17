@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\JazzService;
 
 /**
@@ -23,7 +24,11 @@ class JazzController
      */
     public function index(): void
     {
-        $viewModel = $this->jazzService->getJazzPageData();
-        require __DIR__ . '/../Views/pages/jazz.php';
+        try {
+            $viewModel = $this->jazzService->getJazzPageData();
+            require __DIR__ . '/../Views/pages/jazz.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 }

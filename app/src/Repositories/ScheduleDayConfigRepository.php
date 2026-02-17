@@ -20,51 +20,52 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
         $this->pdo = Database::getConnection();
     }
 
-    /**
-     * Returns all schedule day configurations.
-     */
-    public function findAll(): array
+    public function findConfigs(array $filters = []): array
     {
-        $stmt = $this->pdo->query('
-            SELECT 
-                sdc.ScheduleDayConfigId,
-                sdc.EventTypeId,
-                sdc.DayOfWeek,
-                sdc.IsVisible,
-                et.Name AS EventTypeName
-            FROM ScheduleDayConfig sdc
-            LEFT JOIN EventType et ON sdc.EventTypeId = et.EventTypeId AND sdc.EventTypeId > 0
-            ORDER BY sdc.EventTypeId = 0 DESC, sdc.EventTypeId, sdc.DayOfWeek
-        ');
-        return $stmt->fetchAll();
-    }
+        $includeEventTypeName = (bool)($filters['includeEventTypeName'] ?? false);
 
-    /**
-     * Gets global settings (EventTypeId = 0).
-     */
-    public function findGlobalSettings(): array
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT DayOfWeek, IsVisible
-            FROM ScheduleDayConfig
-            WHERE EventTypeId = 0
-        ');
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
+        $sql = $includeEventTypeName
+            ? '
+                SELECT
+                    sdc.ScheduleDayConfigId,
+                    sdc.EventTypeId,
+                    sdc.DayOfWeek,
+                    sdc.IsVisible,
+                    et.Name AS EventTypeName
+                FROM ScheduleDayConfig sdc
+                LEFT JOIN EventType et ON sdc.EventTypeId = et.EventTypeId AND sdc.EventTypeId > 0
+                WHERE 1 = 1
+            '
+            : '
+                SELECT
+                    sdc.ScheduleDayConfigId,
+                    sdc.EventTypeId,
+                    sdc.DayOfWeek,
+                    sdc.IsVisible
+                FROM ScheduleDayConfig sdc
+                WHERE 1 = 1
+            ';
 
-    /**
-     * Gets settings for a specific event type.
-     */
-    public function findByEventTypeId(int $eventTypeId): array
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT DayOfWeek, IsVisible
-            FROM ScheduleDayConfig
-            WHERE EventTypeId = :eventTypeId
-        ');
-        $stmt->execute(['eventTypeId' => $eventTypeId]);
-        return $stmt->fetchAll();
+        $params = [];
+
+        if (isset($filters['eventTypeId'])) {
+            $sql .= ' AND sdc.EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = (int)$filters['eventTypeId'];
+        } elseif (($filters['includeGlobal'] ?? true) === false) {
+            $sql .= ' AND sdc.EventTypeId > 0';
+        }
+
+        $requestedOrder = is_string($filters['orderBy'] ?? null) ? (string)$filters['orderBy'] : 'scope';
+        $allowedOrders = [
+            'scope' => ' ORDER BY sdc.EventTypeId = 0 DESC, sdc.EventTypeId ASC, sdc.DayOfWeek ASC',
+            'day' => ' ORDER BY sdc.DayOfWeek ASC',
+        ];
+        $sql .= $allowedOrders[$requestedOrder] ?? $allowedOrders['scope'];
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**

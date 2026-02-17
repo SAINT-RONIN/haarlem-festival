@@ -35,18 +35,21 @@ class CmsEditService implements ICmsEditService
      */
     public function getPageForEditing(int $pageId): ?array
     {
-        $page = $this->cmsRepository->getPageById($pageId);
-        if (!$page) {
+        $pages = $this->cmsRepository->findPages(['cmsPageId' => $pageId]);
+        $page = $pages[0] ?? null;
+        if ($page === null) {
             return null;
         }
 
-        $sections = $this->cmsRepository->getSectionsByPageId($pageId);
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $itemsBySection = $this->groupItemsBySection($items);
         $sectionsWithItems = [];
 
         foreach ($sections as $section) {
             /** @var CmsSection $section */
-            $items = $this->cmsRepository->getItemsBySectionId($section->cmsSectionId);
-            $enrichedItems = $this->enrichItemsWithMetadata($items);
+            $sectionItems = $itemsBySection[$section->cmsSectionId] ?? [];
+            $enrichedItems = $this->enrichItemsWithMetadata($sectionItems);
 
             $sectionsWithItems[] = [
                 'sectionId' => $section->cmsSectionId,
@@ -57,7 +60,7 @@ class CmsEditService implements ICmsEditService
         }
 
         return [
-            'page' => $page->toArray(),
+            'page' => $page,
             'sections' => $sectionsWithItems
         ];
     }
@@ -73,18 +76,18 @@ class CmsEditService implements ICmsEditService
     {
         $errors = [];
         $updatedCount = 0;
+        $pageItems = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $pageItemsById = [];
+        foreach ($pageItems as $pageItem) {
+            $pageItemsById[$pageItem->cmsItemId] = $pageItem;
+        }
 
         foreach ($items as $itemId => $itemData) {
             $itemId = (int)$itemId;
-            $item = $this->cmsRepository->getItemById($itemId);
+            $item = $pageItemsById[$itemId] ?? null;
 
             if (!$item) {
                 $errors[] = "Item ID {$itemId} not found";
-                continue;
-            }
-
-            if (!$this->itemBelongsToPage($item, $pageId)) {
-                $errors[] = "Item ID {$itemId} does not belong to this page";
                 continue;
             }
 
@@ -157,13 +160,17 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
-     * Checks if an item belongs to the given page.
+     * @param CmsItem[] $items
+     * @return array<int, list<CmsItem>>
      */
-    private function itemBelongsToPage(CmsItem $item, int $pageId): bool
+    private function groupItemsBySection(array $items): array
     {
-        $sections = $this->cmsRepository->getSectionsByPageId($pageId);
-        $sectionIds = array_map(fn (CmsSection $s) => $s->cmsSectionId, $sections);
-        return in_array($item->cmsSectionId, $sectionIds, true);
+        $grouped = [];
+        foreach ($items as $item) {
+            $grouped[$item->cmsSectionId][] = $item;
+        }
+
+        return $grouped;
     }
 
     /**

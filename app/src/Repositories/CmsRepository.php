@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\CmsItem;
-use App\Models\CmsPage;
 use App\Models\CmsSection;
 use App\Repositories\Interfaces\ICmsRepository;
 use PDO;
@@ -20,108 +19,111 @@ class CmsRepository implements ICmsRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function getPageBySlug(string $slug): ?CmsPage
+    public function findPages(array $filters = []): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM CmsPage WHERE Slug = ?');
-        $stmt->execute([$slug]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? CmsPage::fromRow($result) : null;
-    }
+        $includeLastUpdated = (bool)($filters['includeLastUpdated'] ?? false);
 
-    /**
-     * @return CmsSection[]
-     */
-    public function getSectionsByPageId(int $cmsPageId): array
-    {
-        $stmt = $this->pdo->prepare('SELECT * FROM CmsSection WHERE CmsPageId = :cmsPageId ORDER BY CmsSectionId ASC');
-        $stmt->bindValue(':cmsPageId', $cmsPageId, PDO::PARAM_INT);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map([CmsSection::class, 'fromRow'], $rows);
-    }
+        $select = $includeLastUpdated
+            ? '
+                SELECT cp.*, MAX(ci.UpdatedAtUtc) AS UpdatedAtUtc
+                FROM CmsPage cp
+                LEFT JOIN CmsSection cs ON cp.CmsPageId = cs.CmsPageId
+                LEFT JOIN CmsItem ci ON cs.CmsSectionId = ci.CmsSectionId
+            '
+            : 'SELECT cp.* FROM CmsPage cp';
 
-    /**
-     * @return CmsItem[]
-     */
-    public function getItemsBySectionId(int $cmsSectionId): array
-    {
-        $stmt = $this->pdo->prepare('SELECT * FROM CmsItem WHERE CmsSectionId = :cmsSectionId ORDER BY CmsItemId ASC');
-        $stmt->bindValue(':cmsSectionId', $cmsSectionId, PDO::PARAM_INT);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map([CmsItem::class, 'fromRow'], $rows);
-    }
+        $conditions = [];
+        $params = [];
 
-    /**
-     * @return CmsItem[]
-     */
-    public function getItemsBySectionKey(int $cmsPageId, string $sectionKey): array
-    {
-        $sql = '
-            SELECT ci.* 
-            FROM CmsItem ci
-            INNER JOIN CmsSection cs ON ci.CmsSectionId = cs.CmsSectionId
-            WHERE cs.CmsPageId = :cmsPageId AND cs.SectionKey = :sectionKey
-            ORDER BY ci.CmsItemId ASC
-        ';
+        if (isset($filters['cmsPageId'])) {
+            $conditions[] = 'cp.CmsPageId = :cmsPageId';
+            $params['cmsPageId'] = (int)$filters['cmsPageId'];
+        }
+
+        if (isset($filters['slug']) && is_string($filters['slug']) && $filters['slug'] !== '') {
+            $conditions[] = 'cp.Slug = :slug';
+            $params['slug'] = $filters['slug'];
+        }
+
+        $sql = $select;
+        if ($conditions !== []) {
+            $sql .= ' WHERE ' . implode(' AND ', $conditions);
+        }
+
+        if ($includeLastUpdated) {
+            $sql .= ' GROUP BY cp.CmsPageId ORDER BY UpdatedAtUtc DESC';
+        }
+
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':cmsPageId', $cmsPageId, PDO::PARAM_INT);
-        $stmt->bindValue(':sectionKey', $sectionKey, PDO::PARAM_STR);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map([CmsItem::class, 'fromRow'], $rows);
-    }
+        $stmt->execute($params);
 
-    /**
-     * Retrieves all CMS pages with last update time.
-     *
-     * Returns arrays for this aggregate query (includes MAX UpdatedAtUtc).
-     *
-     * @return array<int, array{CmsPageId: int, Title: string, Slug: string, UpdatedAtUtc: ?string}>
-     */
-    public function findAllPages(): array
-    {
-        $sql = '
-            SELECT cp.*, 
-                   MAX(ci.UpdatedAtUtc) as UpdatedAtUtc
-            FROM CmsPage cp
-            LEFT JOIN CmsSection cs ON cp.CmsPageId = cs.CmsPageId
-            LEFT JOIN CmsItem ci ON cs.CmsSectionId = ci.CmsSectionId
-            GROUP BY cp.CmsPageId
-            ORDER BY UpdatedAtUtc DESC
-        ';
-        $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Retrieves a CMS page by ID.
-     */
-    public function getPageById(int $cmsPageId): ?CmsPage
+    public function findSections(array $filters = []): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM CmsPage WHERE CmsPageId = ?');
-        $stmt->execute([$cmsPageId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? CmsPage::fromRow($result) : null;
+        $sql = 'SELECT * FROM CmsSection WHERE 1 = 1';
+        $params = [];
+
+        if (isset($filters['cmsPageId'])) {
+            $sql .= ' AND CmsPageId = :cmsPageId';
+            $params['cmsPageId'] = (int)$filters['cmsPageId'];
+        }
+
+        if (isset($filters['sectionKey']) && is_string($filters['sectionKey']) && $filters['sectionKey'] !== '') {
+            $sql .= ' AND SectionKey = :sectionKey';
+            $params['sectionKey'] = $filters['sectionKey'];
+        }
+
+        $sql .= ' ORDER BY CmsSectionId ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map([CmsSection::class, 'fromRow'], $rows);
     }
 
-    /**
-     * Retrieves a CMS item by ID.
-     */
-    public function getItemById(int $cmsItemId): ?CmsItem
+    public function findItems(array $filters = []): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM CmsItem WHERE CmsItemId = ?');
-        $stmt->execute([$cmsItemId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? CmsItem::fromRow($result) : null;
+        $sql = '
+            SELECT ci.*
+            FROM CmsItem ci
+            INNER JOIN CmsSection cs ON ci.CmsSectionId = cs.CmsSectionId
+            INNER JOIN CmsPage cp ON cs.CmsPageId = cp.CmsPageId
+            WHERE 1 = 1
+        ';
+        $params = [];
+
+        if (isset($filters['cmsItemId'])) {
+            $sql .= ' AND ci.CmsItemId = :cmsItemId';
+            $params['cmsItemId'] = (int)$filters['cmsItemId'];
+        }
+
+        if (isset($filters['cmsSectionId'])) {
+            $sql .= ' AND ci.CmsSectionId = :cmsSectionId';
+            $params['cmsSectionId'] = (int)$filters['cmsSectionId'];
+        }
+
+        if (isset($filters['cmsPageId'])) {
+            $sql .= ' AND cs.CmsPageId = :cmsPageId';
+            $params['cmsPageId'] = (int)$filters['cmsPageId'];
+        }
+
+        if (isset($filters['sectionKey']) && is_string($filters['sectionKey']) && $filters['sectionKey'] !== '') {
+            $sql .= ' AND cs.SectionKey = :sectionKey';
+            $params['sectionKey'] = $filters['sectionKey'];
+        }
+
+        $sql .= ' ORDER BY ci.CmsItemId ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map([CmsItem::class, 'fromRow'], $rows);
     }
 
-    /**
-     * Updates a CMS item's text/html content.
-     *
-     * @param int $cmsItemId The item ID
-     * @param array $data Keys: TextValue, HtmlValue
-     */
     public function updateItem(int $cmsItemId, array $data): bool
     {
         $fields = [];
@@ -137,7 +139,7 @@ class CmsRepository implements ICmsRepository
             $values[] = $data['HtmlValue'];
         }
 
-        if (empty($fields)) {
+        if ($fields === []) {
             return false;
         }
 
@@ -147,9 +149,6 @@ class CmsRepository implements ICmsRepository
         return $stmt->execute($values);
     }
 
-    /**
-     * Updates a CMS item's media asset reference.
-     */
     public function updateItemMediaAsset(int $cmsItemId, ?int $mediaAssetId): bool
     {
         $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = ? WHERE CmsItemId = ?');

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
-use App\Models\EventSession;
-
 /**
  * ViewModel for the CMS event edit page.
  *
@@ -50,7 +48,7 @@ class CmsEventEditViewModel
      * Creates a ViewModel from event data array and sessions.
      *
      * @param array $eventData Event data from repository
-     * @param EventSession[] $sessions EventSession models from repository
+     * @param array<int, array<string, mixed>> $sessions Session rows from repository
      * @param array<int, array> $pricesData Prices keyed by session ID
      * @param array<int, array> $labelsData Labels keyed by session ID
      */
@@ -63,14 +61,15 @@ class CmsEventEditViewModel
         $eventTitle = (string)($eventData['Title'] ?? '');
         $eventTypeSlug = (string)($eventData['EventTypeSlug'] ?? 'default');
 
-        $sessionViewModels = array_map(
-            fn (EventSession $session) => CmsEventSessionViewModel::fromEventSession(
-                $session,
-                $eventTitle,
-                $eventTypeSlug
-            ),
-            $sessions
-        );
+        $sessionViewModels = array_map(static function (mixed $session) use ($eventTitle, $eventTypeSlug): CmsEventSessionViewModel {
+            if (is_array($session)) {
+                $session['EventTitle'] = $session['EventTitle'] ?? $eventTitle;
+                $session['EventTypeSlug'] = $session['EventTypeSlug'] ?? $eventTypeSlug;
+                return CmsEventSessionViewModel::fromArray($session);
+            }
+
+            return CmsEventSessionViewModel::fromEventSession($session, $eventTitle, $eventTypeSlug);
+        }, $sessions);
 
         return new self(
             eventId: (int)$eventData['EventId'],

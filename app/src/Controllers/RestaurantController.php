@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\RestaurantPageService;
 
 /**
@@ -20,9 +21,12 @@ class RestaurantController
      */
     public function index(): void
     {
-        $service = new RestaurantPageService();
-        $viewModel = $service->getRestaurantPageData();
-
-        require __DIR__ . '/../Views/pages/restaurant.php';
+        try {
+            $service = new RestaurantPageService();
+            $viewModel = $service->getRestaurantPageData();
+            require __DIR__ . '/../Views/pages/restaurant.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 }

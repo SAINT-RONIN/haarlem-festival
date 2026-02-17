@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ValidationException;
 use App\Services\CmsDashboardService;
@@ -12,13 +13,6 @@ use App\Services\MediaAssetService;
 use App\Services\SessionService;
 use App\ViewModels\CmsPageEditViewModel;
 
-/**
- * Controller for the CMS Dashboard.
- *
- * Handles the main CMS admin panel views including
- * dashboard overview and pages management.
- * Thin controller - delegates business logic to services.
- */
 class CmsDashboardController
 {
     private SessionService $sessionService;
@@ -34,58 +28,39 @@ class CmsDashboardController
         $this->mediaAssetService = new MediaAssetService();
     }
 
-    /**
-     * Displays the CMS Dashboard.
-     * GET /cms
-     */
     public function index(): void
     {
-        CmsAuthController::requireAdmin();
-
-        $currentView = 'dashboard';
-        $viewModel = $this->dashboardService->getDashboardData($this->getUserDisplayName());
-
-        require __DIR__ . '/../Views/pages/cms/dashboard.php';
+        try {
+            CmsAuthController::requireAdmin();
+            $currentView = 'dashboard';
+            $viewModel = $this->dashboardService->getDashboardData($this->getUserDisplayName());
+            require __DIR__ . '/../Views/pages/cms/dashboard.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
-    /**
-     * Displays the CMS Pages list.
-     * GET /cms/pages
-     */
     public function pages(): void
     {
-        CmsAuthController::requireAdmin();
-
-        $currentView = 'pages';
-        $searchQuery = $_GET['search'] ?? '';
-        $viewModel = $this->dashboardService->getPagesListData($searchQuery, $this->getUserDisplayName());
-
-        require __DIR__ . '/../Views/pages/cms/dashboard.php';
+        try {
+            CmsAuthController::requireAdmin();
+            $currentView = 'pages';
+            $searchQuery = $_GET['search'] ?? '';
+            $viewModel = $this->dashboardService->getPagesListData($searchQuery, $this->getUserDisplayName());
+            require __DIR__ . '/../Views/pages/cms/dashboard.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
-    /**
-     * Gets the current user's display name from session.
-     */
-    private function getUserDisplayName(): string
-    {
-        $this->sessionService->start();
-        return $_SESSION['user_display_name'] ?? 'Administrator';
-    }
-
-
-    /**
-     * Displays the page edit form.
-     * GET /cms/pages/{id}/edit
-     */
     public function edit(string $id): void
     {
-        CmsAuthController::requireAdmin();
-
         try {
+            CmsAuthController::requireAdmin();
+
             $pageId = (int)$id;
             $pageData = $this->cmsEditService->getPageForEditing($pageId);
-
-            if (!$pageData) {
+            if ($pageData === null) {
                 throw new NotFoundException('Page', $pageId);
             }
 
@@ -97,77 +72,70 @@ class CmsDashboardController
             $contentLimits = $viewData['contentLimits'];
             $imageLimits = $viewData['imageLimits'];
             $userName = $this->getUserDisplayName();
-
             $successMessage = $_SESSION['cms_success'] ?? null;
             $errorMessage = $_SESSION['cms_error'] ?? null;
             unset($_SESSION['cms_success'], $_SESSION['cms_error']);
 
             require __DIR__ . '/../Views/pages/cms/page-edit.php';
-        } catch (NotFoundException $e) {
+        } catch (NotFoundException $error) {
             http_response_code(404);
-            $errorMessage = $e->getMessage();
+            $errorMessage = $error->getMessage();
             require __DIR__ . '/../Views/pages/errors/404.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Handles page content update.
-     * POST /cms/pages/{id}/edit
-     */
     public function update(string $id): void
     {
-        CmsAuthController::requireAdmin();
+        try {
+            CmsAuthController::requireAdmin();
 
-        $pageId = (int)$id;
-        $items = $_POST['items'] ?? [];
+            $pageId = (int)$id;
+            $items = $_POST['items'] ?? [];
+            if ($items === []) {
+                $_SESSION['cms_error'] = 'No changes submitted';
+                header("Location: /cms/pages/{$pageId}/edit");
+                exit;
+            }
 
-        if (empty($items)) {
-            $_SESSION['cms_error'] = 'No changes submitted';
+            $formattedItems = [];
+            foreach ($items as $itemId => $value) {
+                $formattedItems[$itemId] = ['value' => $value];
+            }
+
+            $result = $this->cmsEditService->updatePageItems($pageId, $formattedItems);
+            if ($result['success']) {
+                $_SESSION['cms_success'] = "Updated {$result['updatedCount']} item(s) successfully";
+            } else {
+                $_SESSION['cms_error'] = implode(', ', $result['errors']);
+            }
+
             header("Location: /cms/pages/{$pageId}/edit");
             exit;
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
-
-        $formattedItems = [];
-        foreach ($items as $itemId => $value) {
-            $formattedItems[$itemId] = ['value' => $value];
-        }
-
-        $result = $this->cmsEditService->updatePageItems($pageId, $formattedItems);
-
-        if ($result['success']) {
-            $_SESSION['cms_success'] = "Updated {$result['updatedCount']} item(s) successfully";
-        } else {
-            $_SESSION['cms_error'] = implode(', ', $result['errors']);
-        }
-
-        header("Location: /cms/pages/{$pageId}/edit");
-        exit;
     }
 
-    /**
-     * Handles image upload via AJAX.
-     * POST /cms/pages/{id}/upload-image
-     */
     public function uploadImage(string $id): void
     {
-        CmsAuthController::requireAdmin();
-
-        header('Content-Type: application/json');
-
-        $pageId = (int)$id;
-        $itemId = (int)($_POST['item_id'] ?? 0);
-
-        if (!$itemId) {
-            echo json_encode(['success' => false, 'error' => 'Missing item ID']);
-            return;
-        }
-
-        if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
-            echo json_encode(['success' => false, 'error' => 'No file uploaded']);
-            return;
-        }
-
         try {
+            CmsAuthController::requireAdmin();
+
+            header('Content-Type: application/json');
+            $itemId = (int)($_POST['item_id'] ?? 0);
+
+            if ($itemId === 0) {
+                echo json_encode(['success' => false, 'error' => 'Missing item ID']);
+                return;
+            }
+
+            if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
+                echo json_encode(['success' => false, 'error' => 'No file uploaded']);
+                return;
+            }
+
             $mediaAsset = $this->mediaAssetService->uploadImage($_FILES['image'], 'cms');
             $this->cmsEditService->updateItemImage($itemId, $mediaAsset['MediaAssetId']);
 
@@ -175,12 +143,18 @@ class CmsDashboardController
                 'success' => true,
                 'mediaAssetId' => $mediaAsset['MediaAssetId'],
                 'filePath' => $mediaAsset['FilePath'],
-                'message' => 'Image uploaded successfully'
+                'message' => 'Image uploaded successfully',
             ]);
-        } catch (ValidationException $e) {
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-        } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'error' => 'Upload failed: ' . $e->getMessage()]);
+        } catch (ValidationException $error) {
+            echo json_encode(['success' => false, 'error' => $error->getMessage()]);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
+    }
+
+    private function getUserDisplayName(): string
+    {
+        $this->sessionService->start();
+        return $_SESSION['user_display_name'] ?? 'Administrator';
     }
 }

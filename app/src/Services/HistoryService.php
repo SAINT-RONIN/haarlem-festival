@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\CmsItem;
-use App\Models\CmsPage;
 use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\Interfaces\ICmsRepository;
@@ -43,9 +42,11 @@ class HistoryService implements IHistoryService
     private IMediaAssetRepository $mediaAssetRepository;
 
     private ISessionService $sessionService;
-    private ?CmsPage $historyPageData = null;
+    private ?int $historyPageId = null;
     /** @var array<string, CmsSection>|null */
     private ?array $historySections = null;
+    /** @var array<string, list<CmsItem>>|null */
+    private ?array $historyItemsBySection = null;
     private IVenueRepository $venueRepository;
 
     public function __construct()
@@ -82,16 +83,32 @@ class HistoryService implements IHistoryService
      */
     private function loadPageData(): void
     {
-        if ($this->historyPageData === null) {
-            $this->historyPageData = $this->cmsRepository->getPageBySlug('history');
-            if ($this->historyPageData) {
-                $sections = $this->cmsRepository->getSectionsByPageId($this->historyPageData->cmsPageId);
-                $this->historySections = [];
-                foreach ($sections as $section) {
-                    /** @var CmsSection $section */
-                    $this->historySections[$section->sectionKey] = $section;
-                }
-            }
+        if ($this->historyPageId !== null) {
+            return;
+        }
+
+        $pages = $this->cmsRepository->findPages(['slug' => 'history']);
+        if ($pages === []) {
+            return;
+        }
+
+        $this->historyPageId = (int)$pages[0]['CmsPageId'];
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $this->historyPageId]);
+        $this->historySections = [];
+        foreach ($sections as $section) {
+            /** @var CmsSection $section */
+            $this->historySections[$section->sectionKey] = $section;
+        }
+
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $this->historyPageId]);
+        $itemsBySectionId = [];
+        foreach ($items as $item) {
+            $itemsBySectionId[$item->cmsSectionId][] = $item;
+        }
+
+        $this->historyItemsBySection = [];
+        foreach ($this->historySections as $sectionKey => $section) {
+            $this->historyItemsBySection[$sectionKey] = $itemsBySectionId[$section->cmsSectionId] ?? [];
         }
     }
 
@@ -108,8 +125,7 @@ class HistoryService implements IHistoryService
             return $default;
         }
 
-        $sectionId = $this->historySections[$sectionKey]->cmsSectionId;
-        $items = $this->cmsRepository->getItemsBySectionId($sectionId);
+        $items = $this->historyItemsBySection[$sectionKey] ?? [];
 
         foreach ($items as $item) {
             /** @var CmsItem $item */
@@ -138,8 +154,7 @@ class HistoryService implements IHistoryService
             return $defaultUrl;
         }
 
-        $sectionId = $this->historySections[$sectionKey]->cmsSectionId;
-        $items = $this->cmsRepository->getItemsBySectionId($sectionId);
+        $items = $this->historyItemsBySection[$sectionKey] ?? [];
 
         foreach ($items as $item) {
             /** @var CmsItem $item */

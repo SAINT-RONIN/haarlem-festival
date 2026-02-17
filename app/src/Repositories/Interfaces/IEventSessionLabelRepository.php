@@ -12,20 +12,16 @@ use App\Models\EventSessionLabel;
 interface IEventSessionLabelRepository
 {
     /**
-     * Find all labels for a session.
+     * Find labels using optional filters.
      *
-     * @param int $sessionId
-     * @return EventSessionLabel[]
+     * @param array{
+     *   sessionId?: int,
+     *   sessionIds?: array<int>,
+     *   groupBySession?: bool
+     * } $filters
+     * @return EventSessionLabel[]|array<int, EventSessionLabel[]>
      */
-    public function findBySessionId(int $sessionId): array;
-
-    /**
-     * Find all labels for multiple sessions.
-     *
-     * @param array<int> $sessionIds
-     * @return array<int, EventSessionLabel[]> Labels keyed by session ID
-     */
-    public function findBySessionIds(array $sessionIds): array;
+    public function findLabels(array $filters = []): array;
 
     /**
      * Create a new label for a session.

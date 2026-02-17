@@ -12,24 +12,10 @@ use App\Models\EventType;
 interface IEventTypeRepository
 {
     /**
-     * Returns all event types.
+     * Returns event types using optional filters.
      *
+     * @param array{eventTypeId?: int, orderBy?: string} $filters
      * @return EventType[]
      */
-    public function findAll(): array;
-
-    /**
-     * Returns a single event type by ID.
-     *
-     * @param int $eventTypeId
-     * @return EventType|null
-     */
-    public function findById(int $eventTypeId): ?EventType;
-
-    /**
-     * Returns all event types for dropdown.
-     *
-     * @return EventType[]
-     */
-    public function findAllForDropdown(): array;
+    public function findEventTypes(array $filters = []): array;
 }

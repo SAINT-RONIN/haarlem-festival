@@ -10,26 +10,17 @@ namespace App\Repositories\Interfaces;
 interface IScheduleDayConfigRepository
 {
     /**
-     * Returns all schedule day configurations.
+     * Returns schedule day configurations using optional filters.
      *
-     * @return array List of all configurations
+     * @param array{
+     *   eventTypeId?: int,
+     *   includeEventTypeName?: bool,
+     *   includeGlobal?: bool,
+     *   orderBy?: string
+     * } $filters
+     * @return array List of matching configurations
      */
-    public function findAll(): array;
-
-    /**
-     * Gets global settings (EventTypeId = 0).
-     *
-     * @return array List of global day settings
-     */
-    public function findGlobalSettings(): array;
-
-    /**
-     * Gets settings for a specific event type.
-     *
-     * @param int $eventTypeId The event type ID
-     * @return array List of day settings for the event type
-     */
-    public function findByEventTypeId(int $eventTypeId): array;
+    public function findConfigs(array $filters = []): array;
 
     /**
      * Upserts a schedule day visibility setting.

@@ -12,28 +12,16 @@ use App\Models\EventSessionPrice;
 interface IEventSessionPriceRepository
 {
     /**
-     * Find all prices for a session with tier names (joined query).
+     * Find prices using optional filters.
      *
-     * @param int $sessionId
-     * @return array<int, array{
-     *     EventSessionPriceId: int,
-     *     EventSessionId: int,
-     *     PriceTierId: int,
-     *     Price: string,
-     *     CurrencyCode: string,
-     *     VatRate: string,
-     *     PriceTierName: string
-     * }>
+     * @param array{
+     *   sessionId?: int,
+     *   sessionIds?: array<int>,
+     *   groupBySession?: bool
+     * } $filters
+     * @return EventSessionPrice[]|array<int, EventSessionPrice[]>
      */
-    public function findBySessionId(int $sessionId): array;
-
-    /**
-     * Find all prices for multiple sessions.
-     *
-     * @param array<int> $sessionIds
-     * @return array<int, EventSessionPrice[]> Prices keyed by session ID
-     */
-    public function findBySessionIds(array $sessionIds): array;
+    public function findPrices(array $filters = []): array;
 
     /**
      * Create or update a price for a session and tier.

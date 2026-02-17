@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace App\ViewModels\History;
 
+use App\ViewModels\BaseViewModel;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
-use App\ViewModels\Jazz\ArtistsData;
-use App\ViewModels\Jazz\BookingCallToActionData;
-use App\ViewModels\Jazz\PricingData;
-use App\ViewModels\Jazz\ScheduleCallToActionData;
-use App\ViewModels\History\ScheduleData;
-use App\ViewModels\History\VenuesData;
-use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
  * Aggregates all data required to render the History landing page.
@@ -22,11 +16,11 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
  * Contains all pre-formatted data needed by the history page view.
  * The service prepares this data so the view only needs to render.
  */
-final readonly class HistoryPageViewModel
+final readonly class HistoryPageViewModel extends BaseViewModel
 {
     public function __construct(
         public HeroData $heroData,
-        public GlobalUiData $globalUi,
+        GlobalUiData $globalUi,
         public GradientSectionData $gradientSection,
         public IntroSplitSectionData $introSplitSection,
         public RouteData $routeData,
@@ -35,5 +29,6 @@ final readonly class HistoryPageViewModel
         public ImportantInfoAboutTour $infoAboutTourData,
         public ScheduleData $scheduleData,
     ) {
+        parent::__construct($globalUi);
     }
 }

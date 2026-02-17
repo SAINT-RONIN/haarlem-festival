@@ -60,7 +60,7 @@ class CmsDashboardService implements ICmsDashboardService
     private function getRecentPages(): array
     {
         try {
-            $cmsPages = $this->cmsRepository->findAllPages();
+            $cmsPages = $this->cmsRepository->findPages(['includeLastUpdated' => true]);
             $pages = $this->mapPagesToRecentViewModels(array_slice($cmsPages, 0, 4));
 
             return !empty($pages) ? $pages : $this->getDefaultRecentPages();
@@ -112,7 +112,7 @@ class CmsDashboardService implements ICmsDashboardService
     private function getAllPages(): array
     {
         try {
-            $cmsPages = $this->cmsRepository->findAllPages();
+            $cmsPages = $this->cmsRepository->findPages(['includeLastUpdated' => true]);
             $pages = $this->mapPagesToListViewModels($cmsPages);
 
             return !empty($pages) ? $pages : $this->getDefaultAllPages();

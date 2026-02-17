@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
@@ -248,9 +249,18 @@ class StorytellingService implements IStorytellingService
     {
         $cmsContent = $this->cmsService->getSectionContent('storytelling', 'schedule_section');
 
-        // Get visible days for storytelling event type (4)
-        $visibleDays = $this->cmsEventsService->getVisibleDays(4);
-        $scheduleData = $this->eventSessionRepository->findStorytellingScheduleData($visibleDays);
+        $storytellingTypeId = EventTypeId::Storytelling->value;
+        $visibleDays = $this->cmsEventsService->getVisibleDays($storytellingTypeId);
+        $scheduleData = $this->eventSessionRepository->findSessions([
+            'eventTypeId' => $storytellingTypeId,
+            'isActive' => true,
+            'eventIsActive' => true,
+            'includeCancelled' => false,
+            'groupByDay' => true,
+            'maxDays' => 7,
+            'visibleDays' => $visibleDays,
+            'orderBy' => 'es.StartDateTime ASC',
+        ]);
 
         $title = $this->getStringValue($cmsContent, 'schedule_title', '');
         $year = $this->getStringValue($cmsContent, 'schedule_year', '');
@@ -280,7 +290,7 @@ class StorytellingService implements IStorytellingService
             title: $title,
             year: $year,
             eventTypeSlug: 'storytelling',
-            eventTypeId: 4,
+            eventTypeId: $storytellingTypeId,
             filtersButtonText: $filtersButtonText,
             showFilters: $showFilters,
             additionalInfoTitle: $additionalInfoTitle,
@@ -315,8 +325,12 @@ class StorytellingService implements IStorytellingService
 
         // Get session IDs for batch loading labels and prices
         $sessionIds = array_column($sessions, 'EventSessionId');
-        $labelsMap = !empty($sessionIds) ? $this->labelRepository->findBySessionIds($sessionIds) : [];
-        $pricesMap = !empty($sessionIds) ? $this->priceRepository->findBySessionIds($sessionIds) : [];
+        $labelsMap = !empty($sessionIds)
+            ? $this->labelRepository->findLabels(['sessionIds' => $sessionIds, 'groupBySession' => true])
+            : [];
+        $pricesMap = !empty($sessionIds)
+            ? $this->priceRepository->findPrices(['sessionIds' => $sessionIds, 'groupBySession' => true])
+            : [];
 
         // Group sessions by date
         $sessionsByDate = [];
@@ -393,7 +407,7 @@ class StorytellingService implements IStorytellingService
         $seatsAvailable = max(0, $capacityTotal - $soldTickets);
 
         $eventTypeSlug = $session['EventTypeSlug'] ?? 'storytelling';
-        $eventTypeId = (int)($session['EventTypeId'] ?? 4);
+        $eventTypeId = (int)($session['EventTypeId'] ?? EventTypeId::Storytelling->value);
 
         return new ScheduleEventCardViewModel(
             eventSessionId: $sessionId,
