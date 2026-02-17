@@ -68,12 +68,17 @@ class EventSessionRepository implements IEventSessionRepository
         }
 
         $visibleDays = $filters['visibleDays'] ?? null;
-        if (is_array($visibleDays) && $visibleDays !== [] && count($visibleDays) < 7) {
-            $dayLiterals = array_map(
-                static fn (mixed $day): int => (int)$day,
-                array_values($visibleDays)
-            );
-            $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayLiterals) . ')';
+        if (is_array($visibleDays)) {
+            if ($visibleDays === []) {
+                // Explicitly no visible days configured: force an empty result set.
+                $conditions[] = '1 = 0';
+            } elseif (count($visibleDays) < 7) {
+                $dayLiterals = array_map(
+                    static fn (mixed $day): int => (int)$day,
+                    array_values($visibleDays)
+                );
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayLiterals) . ')';
+            }
         }
 
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);

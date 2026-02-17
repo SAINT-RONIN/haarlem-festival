@@ -25,6 +25,7 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
 class ScheduleService implements IScheduleService
 {
     private CmsService $cmsService;
+    private CmsEventsService $cmsEventsService;
     private EventSessionRepository $sessionRepository;
     private EventSessionLabelRepository $labelRepository;
     private EventSessionPriceRepository $priceRepository;
@@ -34,6 +35,7 @@ class ScheduleService implements IScheduleService
     public function __construct()
     {
         $this->cmsService = new CmsService();
+        $this->cmsEventsService = new CmsEventsService();
         $this->sessionRepository = new EventSessionRepository();
         $this->labelRepository = new EventSessionLabelRepository();
         $this->priceRepository = new EventSessionPriceRepository();
@@ -56,6 +58,7 @@ class ScheduleService implements IScheduleService
 
         // Get CMS content for this page's schedule section
         $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
+        $visibleDays = $this->cmsEventsService->getVisibleDays($eventTypeId);
 
         $scheduleData = $this->sessionRepository->findSessions([
             'eventTypeId' => $eventTypeId,
@@ -64,6 +67,7 @@ class ScheduleService implements IScheduleService
             'includeCancelled' => false,
             'groupByDay' => true,
             'maxDays' => $maxDays,
+            'visibleDays' => $visibleDays,
             'orderBy' => 'es.StartDateTime ASC',
         ]);
 
