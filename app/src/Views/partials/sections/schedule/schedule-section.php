@@ -8,6 +8,14 @@
 
 use App\Helpers\CmsOutputHelper;
 
+if (!isset($scheduleSection) && isset($viewModel) && property_exists($viewModel, 'scheduleSection')) {
+    $scheduleSection = $viewModel->scheduleSection;
+}
+
+if (!isset($scheduleSection) || $scheduleSection === null) {
+    return;
+}
+
 $schedule = $scheduleSection;
 $sectionId = $schedule->sectionId ?? 'schedule';
 ?>
@@ -110,4 +118,3 @@ $itemClasses = $dayCount <= 4
         </ul>
     </div>
 </section>
-

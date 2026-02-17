@@ -19,7 +19,7 @@ use App\ViewModels\IntroSplitSectionData;
 final readonly class HistoryPageViewModel extends BaseViewModel
 {
     public function __construct(
-        public HeroData $heroData,
+        HeroData $heroData,
         GlobalUiData $globalUi,
         public GradientSectionData $gradientSection,
         public IntroSplitSectionData $introSplitSection,
@@ -29,6 +29,11 @@ final readonly class HistoryPageViewModel extends BaseViewModel
         public ImportantInfoAboutTour $infoAboutTourData,
         public ScheduleData $scheduleData,
     ) {
-        parent::__construct($globalUi);
+        parent::__construct(
+            heroData: $heroData,
+            globalUi: $globalUi,
+            currentPage: $heroData->currentPage,
+            includeNav: false,
+        );
     }
 }

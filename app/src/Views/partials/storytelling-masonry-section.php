@@ -8,6 +8,14 @@
  * Required variable (set before including this partial):
  * @var \App\ViewModels\Storytelling\MasonrySectionData $masonrySection
  */
+
+if (!isset($masonrySection) && isset($viewModel) && property_exists($viewModel, 'masonrySection')) {
+    $masonrySection = $viewModel->masonrySection;
+}
+
+if (!isset($masonrySection)) {
+    return;
+}
 ?>
 
 <!-- Masonry Grid Section -->
@@ -41,4 +49,3 @@ foreach ($masonrySection->columns as $columnImages) {
         <?php endforeach; ?>
     </div>
 </section>
-

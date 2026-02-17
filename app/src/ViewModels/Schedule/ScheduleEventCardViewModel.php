@@ -30,6 +30,9 @@ final readonly class ScheduleEventCardViewModel
      * @param array<string> $labels Array of label texts
      * @param int|null $capacityTotal Total venue capacity (for Jazz: displayed as "X seats")
      * @param int|null $seatsAvailable Available seats (Jazz specific)
+     * @param int|null $minAge Minimum age restriction for this session
+     * @param int|null $maxAge Maximum age restriction for this session
+     * @param string|null $ageLabel Pre-formatted age restriction label (e.g., "Age 12+")
      * @param string|null $historyTicketLabel History ticket label text (History specific)
      * @param string|null $artistName Artist name (Jazz specific)
      * @param string|null $artistImageUrl Artist image URL (Jazz specific)
@@ -54,6 +57,9 @@ final readonly class ScheduleEventCardViewModel
         public array   $labels,
         public ?int    $capacityTotal = null,
         public ?int    $seatsAvailable = null,
+        public ?int    $minAge = null,
+        public ?int    $maxAge = null,
+        public ?string $ageLabel = null,
         public ?string $historyTicketLabel = null,
         public ?string $artistName = null,
         public ?string $artistImageUrl = null,

@@ -17,7 +17,7 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
 final readonly class JazzPageViewModel extends BaseViewModel
 {
     public function __construct(
-        public HeroData                  $heroData,
+        HeroData $heroData,
         GlobalUiData $globalUi,
         public GradientSectionData       $gradientSection,
         public IntroSplitSectionData     $introSplitSection,
@@ -29,6 +29,11 @@ final readonly class JazzPageViewModel extends BaseViewModel
         public BookingCallToActionData   $bookingCtaData,
         public ?ScheduleSectionViewModel $scheduleSection = null,
     ) {
-        parent::__construct($globalUi);
+        parent::__construct(
+            heroData: $heroData,
+            globalUi: $globalUi,
+            currentPage: $heroData->currentPage,
+            includeNav: false,
+        );
     }
 }

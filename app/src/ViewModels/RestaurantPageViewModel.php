@@ -13,7 +13,7 @@ namespace App\ViewModels;
 final readonly class RestaurantPageViewModel extends BaseViewModel
 {
     public function __construct(
-        public HeroData              $heroData,
+        HeroData $heroData,
         GlobalUiData $globalUi,
         public GradientSectionData   $gradientSection,
         public IntroSplitSectionData $introSplitSection,
@@ -21,6 +21,11 @@ final readonly class RestaurantPageViewModel extends BaseViewModel
         public ?array                $instructionsSection = null,
         public ?array                $restaurantCardsSection = null,
     ) {
-        parent::__construct($globalUi);
+        parent::__construct(
+            heroData: $heroData,
+            globalUi: $globalUi,
+            currentPage: $heroData->currentPage,
+            includeNav: false,
+        );
     }
 }

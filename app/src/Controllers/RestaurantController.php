@@ -12,7 +12,7 @@ use App\Services\RestaurantPageService;
  *
  * Handles HTTP requests for the restaurant landing page.
  */
-class RestaurantController
+class RestaurantController extends BaseController
 {
     /**
      * Displays the restaurant page.
@@ -24,7 +24,7 @@ class RestaurantController
         try {
             $service = new RestaurantPageService();
             $viewModel = $service->getRestaurantPageData();
-            require __DIR__ . '/../Views/pages/restaurant.php';
+            $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }

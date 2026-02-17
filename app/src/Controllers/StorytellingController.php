@@ -12,7 +12,7 @@ use App\Services\StorytellingService;
  *
  * Handles HTTP requests for the storytelling landing page.
  */
-class StorytellingController
+class StorytellingController extends BaseController
 {
     /**
      * Displays the storytelling page.
@@ -24,7 +24,7 @@ class StorytellingController
         try {
             $storytellingService = new StorytellingService();
             $viewModel = $storytellingService->getStorytellingPageData();
-            require __DIR__ . '/../Views/pages/storytelling.php';
+            $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }

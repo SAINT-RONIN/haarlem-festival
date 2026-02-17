@@ -12,6 +12,7 @@ use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
 use App\Repositories\EventTypeRepository;
 use App\Services\Interfaces\IScheduleService;
+use App\ViewModels\Age\AgeLabelFormatter;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
@@ -211,6 +212,15 @@ class ScheduleService implements IScheduleService
         // Get labels for this session
         $sessionLabels = $labelsMap[$sessionId] ?? [];
         $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
+        $minAge = isset($session['MinAge']) && (int)$session['MinAge'] > 0 ? (int)$session['MinAge'] : null;
+        $maxAge = isset($session['MaxAge']) && (int)$session['MaxAge'] > 0 ? (int)$session['MaxAge'] : null;
+
+        if ($minAge !== null && $maxAge !== null && $minAge > $maxAge) {
+            [$minAge, $maxAge] = [$maxAge, $minAge];
+        }
+
+        $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
+        $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
 
         // Get price display
         $sessionPrices = $pricesMap[$sessionId] ?? [];
@@ -242,6 +252,9 @@ class ScheduleService implements IScheduleService
             labels: $labels,
             capacityTotal: isset($session['CapacityTotal']) ? (int)$session['CapacityTotal'] : null,
             seatsAvailable: isset($session['SeatsAvailable']) ? (int)$session['SeatsAvailable'] : null,
+            minAge: $minAge,
+            maxAge: $maxAge,
+            ageLabel: $ageLabel,
             historyTicketLabel: $session['HistoryTicketLabel'] ?? null,
             artistName: $session['ArtistName'] ?? null,
             artistImageUrl: $session['ArtistImageUrl'] ?? null,

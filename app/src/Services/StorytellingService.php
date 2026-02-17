@@ -12,6 +12,7 @@ use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
 use App\Services\Interfaces\IStorytellingService;
+use App\ViewModels\Age\AgeLabelFormatter;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
@@ -392,6 +393,15 @@ class StorytellingService implements IStorytellingService
         // Get labels for this session
         $sessionLabels = $labelsMap[$sessionId] ?? [];
         $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
+        $minAge = isset($session['MinAge']) && (int)$session['MinAge'] > 0 ? (int)$session['MinAge'] : null;
+        $maxAge = isset($session['MaxAge']) && (int)$session['MaxAge'] > 0 ? (int)$session['MaxAge'] : null;
+
+        if ($minAge !== null && $maxAge !== null && $minAge > $maxAge) {
+            [$minAge, $maxAge] = [$maxAge, $minAge];
+        }
+
+        $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
+        $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
 
         // Get price display
         $sessionPrices = $pricesMap[$sessionId] ?? [];
@@ -431,6 +441,9 @@ class StorytellingService implements IStorytellingService
             labels: $labels,
             capacityTotal: $capacityTotal,
             seatsAvailable: $seatsAvailable,
+            minAge: $minAge,
+            maxAge: $maxAge,
+            ageLabel: $ageLabel,
             artistName: $session['ArtistName'] ?? null,
             artistImageUrl: $session['ArtistImageUrl'] ?? null,
         );

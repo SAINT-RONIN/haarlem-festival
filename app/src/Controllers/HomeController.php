@@ -12,7 +12,7 @@ use App\Services\HomeService;
  *
  * Handles HTTP requests for the main landing page.
  */
-class HomeController
+class HomeController extends BaseController
 {
     /**
      * Displays the homepage.
@@ -24,7 +24,7 @@ class HomeController
         try {
             $homeService = new HomeService();
             $viewModel = $homeService->getHomePageData();
-            require __DIR__ . '/../Views/pages/home.php';
+            $this->renderPage(__DIR__ . '/../Views/pages/home.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }

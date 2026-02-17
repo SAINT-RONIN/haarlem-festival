@@ -13,7 +13,7 @@ use App\Services\Interfaces\IHistoryService;
  *
  * Handles HTTP requests for the history landing page.
  */
-class HistoryController
+class HistoryController extends BaseController
 {
     /**
      * Displays the history page.
@@ -31,7 +31,7 @@ class HistoryController
     {
         try {
             $viewModel = $this->historyService->getHistoryPageData();
-            require __DIR__ . '/../Views/pages/history.php';
+            $this->renderPage(__DIR__ . '/../Views/pages/history.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }

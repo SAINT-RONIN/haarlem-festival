@@ -4,6 +4,14 @@
  *
  * @var \App\ViewModels\VenuesData $venuesData
  */
+
+if (!isset($venuesData) && isset($viewModel) && property_exists($viewModel, 'venuesData')) {
+    $venuesData = $viewModel->venuesData;
+}
+
+if (!isset($venuesData)) {
+    return;
+}
 ?>
 
 <!-- Venues Section -->
@@ -33,4 +41,3 @@
         <?php endforeach; ?>
     </div>
 </section>
-

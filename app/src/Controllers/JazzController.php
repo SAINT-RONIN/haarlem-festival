@@ -10,7 +10,7 @@ use App\Services\JazzService;
 /**
  * Controller for Jazz page.
  */
-class JazzController
+class JazzController extends BaseController
 {
     private JazzService $jazzService;
 
@@ -26,7 +26,7 @@ class JazzController
     {
         try {
             $viewModel = $this->jazzService->getJazzPageData();
-            require __DIR__ . '/../Views/pages/jazz.php';
+            $this->renderPage(__DIR__ . '/../Views/pages/jazz.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }

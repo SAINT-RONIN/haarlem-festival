@@ -7,6 +7,14 @@
  * @var \App\ViewModels\IntroSplitSectionData $introSplitSection
  */
 
+if (!isset($introSplitSection) && isset($viewModel) && property_exists($viewModel, 'introSplitSection')) {
+    $introSplitSection = $viewModel->introSplitSection;
+}
+
+if (!isset($introSplitSection)) {
+    return;
+}
+
 $sectionId = $sectionId ?? 'intro';
 $introSplitImageClass = $introSplitImageClass ?? 'w-full h-auto rounded-2xl object-cover';
 ?>
@@ -49,4 +57,3 @@ $introSplitImageClass = $introSplitImageClass ?? 'w-full h-auto rounded-2xl obje
              class="<?= htmlspecialchars($introSplitImageClass) ?>">
     </div>
 </section>
-

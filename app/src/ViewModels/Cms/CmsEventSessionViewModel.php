@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Cms;
 
 use App\Models\EventSession;
+use App\ViewModels\Age\AgeLabelFormatter;
 
 /**
  * ViewModel for displaying event sessions in CMS views.
@@ -33,6 +34,7 @@ class CmsEventSessionViewModel
         public readonly ?string $hallName,
         public readonly ?string $sessionType,
         public readonly ?int    $durationMinutes,
+        public readonly ?string $ageLabel,
         public readonly bool    $isFree,
         public readonly bool    $isCancelled,
         public readonly string  $sessionDate,
@@ -55,6 +57,8 @@ class CmsEventSessionViewModel
      *     HallName: ?string,
      *     SessionType: ?string,
      *     DurationMinutes: ?int,
+     *     MinAge?: ?int,
+     *     MaxAge?: ?int,
      *     IsFree?: int|bool,
      *     IsCancelled?: int|bool
      * } $data
@@ -69,6 +73,9 @@ class CmsEventSessionViewModel
         $capacityTotal = (int)$data['CapacityTotal'];
         $soldSingleTickets = (int)$data['SoldSingleTickets'];
         $soldReservedSeats = (int)$data['SoldReservedSeats'];
+        $minAge = isset($data['MinAge']) ? (int)$data['MinAge'] : null;
+        $maxAge = isset($data['MaxAge']) ? (int)$data['MaxAge'] : null;
+        $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
 
         return new self(
             eventSessionId: (int)$data['EventSessionId'],
@@ -89,6 +96,7 @@ class CmsEventSessionViewModel
             hallName: $data['HallName'] ?? null,
             sessionType: $data['SessionType'] ?? null,
             durationMinutes: isset($data['DurationMinutes']) ? (int)$data['DurationMinutes'] : null,
+            ageLabel: $ageLabel,
             isFree: (bool)($data['IsFree'] ?? false),
             isCancelled: (bool)($data['IsCancelled'] ?? false),
             sessionDate: date('Y-m-d', $startTimestamp),
@@ -109,6 +117,7 @@ class CmsEventSessionViewModel
     ): self {
         $startTimestamp = $session->startDateTime->getTimestamp();
         $endTimestamp = $session->endDateTime?->getTimestamp();
+        $ageLabel = AgeLabelFormatter::format($session->minAge, $session->maxAge);
 
         $soldTicketsTotal = $session->soldSingleTickets + $session->soldReservedSeats;
         $seatsAvailable = $session->seatsAvailable ?? ($session->capacityTotal - $soldTicketsTotal);
@@ -132,6 +141,7 @@ class CmsEventSessionViewModel
             hallName: $session->hallName,
             sessionType: $session->sessionType,
             durationMinutes: $session->durationMinutes,
+            ageLabel: $ageLabel,
             isFree: $session->isFree,
             isCancelled: $session->isCancelled,
             sessionDate: date('Y-m-d', $startTimestamp),

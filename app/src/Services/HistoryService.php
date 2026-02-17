@@ -14,6 +14,7 @@ use App\Repositories\MediaAssetRepository;
 use App\Repositories\VenueRepository;
 use App\Services\Interfaces\IHistoryService;
 use App\Services\Interfaces\ISessionService;
+use App\ViewModels\Age\AgeLabelFormatter;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -527,7 +528,11 @@ class HistoryService implements IHistoryService
                 'Important information about the tour'
             ),
             infoItems: [
-                $this->getCmsItem('history_important_tour_info_section', 'important_info_item1', 'Minimum age requirement: 12 years old'),
+                $this->getCmsItem(
+                    'history_important_tour_info_section',
+                    'important_info_item1',
+                    AgeLabelFormatter::formatRequirement(12, null)
+                ),
                 $this->getCmsItem('history_important_tour_info_section', 'important_info_item2', 'No strollers allowed due to the nature of the walking route'),
                 $this->getCmsItem('history_important_tour_info_section', 'important_info_item3', 'Tour duration: Approximately 2.5 hours including 15-minute break'),
                 $this->getCmsItem('history_important_tour_info_section', 'important_info_item4', 'Group ticket is the best value for a group of 4 or for a family'),

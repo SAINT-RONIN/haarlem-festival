@@ -10,6 +10,7 @@ use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\IJazzService;
+use App\ViewModels\Age\AgeLabelFormatter;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -327,7 +328,11 @@ class JazzService implements IJazzService
             includes: [
                 $this->getCmsItem('pricing_section', 'pricing_3day_include1', 'Unlimited access all 3 days'),
                 $this->getCmsItem('pricing_section', 'pricing_3day_include2', 'All venues'),
-                $this->getCmsItem('pricing_section', 'pricing_3day_include3', '18+ performances'),
+                $this->getCmsItem(
+                    'pricing_section',
+                    'pricing_3day_include3',
+                    (AgeLabelFormatter::format(18, null) ?? '18+') . ' performances'
+                ),
                 $this->getCmsItem('pricing_section', 'pricing_3day_include4', 'Save €25'),
             ],
             additionalInfo: $this->getCmsItem('pricing_section', 'pricing_3day_info', ''),
