@@ -5,18 +5,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\EventTypeId;
-use App\Enums\PriceTierId;
-use App\Models\EventSessionLabel;
-use App\Models\EventSessionPrice;
-use App\Repositories\EventSessionLabelRepository;
-use App\Repositories\EventSessionPriceRepository;
-use App\Repositories\EventSessionRepository;
 use App\Services\Interfaces\IStorytellingService;
-use App\ViewModels\Age\AgeLabelFormatter;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
-use App\ViewModels\Schedule\ScheduleDayViewModel;
-use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 use App\ViewModels\Storytelling\MasonryImageData;
 use App\ViewModels\Storytelling\MasonrySectionData;
@@ -24,42 +15,66 @@ use App\ViewModels\Storytelling\StorytellingPageViewModel;
 
 /**
  * Service for preparing storytelling page data.
- *
- * Assembles all data needed for the storytelling page view.
  */
 class StorytellingService implements IStorytellingService
 {
-    private CmsService $cmsService;
-    private CmsEventsService $cmsEventsService;
-    private EventSessionRepository $eventSessionRepository;
-    private EventSessionLabelRepository $labelRepository;
-    private EventSessionPriceRepository $priceRepository;
+    private const PAGE_SLUG = 'storytelling';
 
-    private const DEFAULT_IMAGE = '/assets/Image/Image (Story).png';
+    private const SECTION_GRADIENT = 'gradient_section';
+    private const SECTION_INTRO_SPLIT = 'intro_split_section';
+    private const SECTION_MASONRY = 'masonry_section';
+
+    private const DEFAULT_IMAGE_PATH = '/assets/Image/Image (Story).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'heic'];
 
-    // Masonry layout constants
+    private const DEFAULT_GRADIENT_HEADING = 'Every story opens a new world.';
+    private const DEFAULT_GRADIENT_SUBHEADING = 'Discover voices, moments, and memories in Haarlem.';
+    private const DEFAULT_INTRO_HEADING = 'Stories in Haarlem';
+    private const DEFAULT_INTRO_BODY = 'Storytelling sessions connect people through culture, humor, and lived experiences.';
+    private const DEFAULT_MASONRY_HEADING = 'Captured storytelling moments';
+    private const DEFAULT_IMAGE_ALT_TEXT = 'Storytelling moment';
+
     private const MASONRY_COLUMNS = 4;
     private const MASONRY_IMAGES_PER_COLUMN = 3;
     private const MASONRY_TOTAL_IMAGES = 12;
+    private const MASONRY_IMAGE_KEY_PATTERN = 'masonry_image_%02d';
+    private const MASONRY_DEFAULT_SIZE_CLASS = 'masonry-medium';
+    private const MASONRY_SIZE_CLASSES = [
+        'masonry-tall',
+        'masonry-short',
+        'masonry-medium',
+        'masonry-medium',
+        'masonry-tall',
+        'masonry-short',
+        'masonry-short',
+        'masonry-medium',
+        'masonry-tall',
+        'masonry-medium',
+        'masonry-short',
+        'masonry-tall',
+    ];
 
+    private const SCHEDULE_MAX_DAYS = 7;
 
+    private CmsService $cmsService;
+    private ScheduleService $scheduleService;
+
+    /**
+     * Creates dependencies used to assemble the storytelling page data.
+     */
     public function __construct()
     {
         $this->cmsService = new CmsService();
-        $this->cmsEventsService = new CmsEventsService();
-        $this->eventSessionRepository = new EventSessionRepository();
-        $this->labelRepository = new EventSessionLabelRepository();
-        $this->priceRepository = new EventSessionPriceRepository();
+        $this->scheduleService = new ScheduleService();
     }
 
     /**
-     * Builds the storytelling page view model with all required data.
+     * Builds the complete page ViewModel consumed by the storytelling view.
      */
     public function getStorytellingPageData(): StorytellingPageViewModel
     {
         return new StorytellingPageViewModel(
-            heroData: $this->cmsService->buildHeroData('storytelling', 'storytelling'),
+            heroData: $this->cmsService->buildHeroData(self::PAGE_SLUG, self::PAGE_SLUG),
             globalUi: $this->cmsService->buildGlobalUiData(),
             gradientSection: $this->buildGradientSection(),
             introSplitSection: $this->buildIntroSplitSection(),
@@ -69,66 +84,73 @@ class StorytellingService implements IStorytellingService
     }
 
     /**
-     * Builds the gradient section data with background image from CMS.
+     * Builds the gradient section from CMS content with sensible fallbacks.
      */
     private function buildGradientSection(): GradientSectionData
     {
-        $content = $this->cmsService->getSectionContent('storytelling', 'gradient_section');
+        $content = $this->getSectionContent(self::SECTION_GRADIENT);
 
         return new GradientSectionData(
-            headingText: $this->getStringValue($content, 'gradient_heading', ''),
-            subheadingText: $this->getStringValue($content, 'gradient_subheading', ''),
-            backgroundImageUrl: $this->validateImagePath($content['gradient_background_image'] ?? ''),
+            headingText: $this->getStringValue(
+                $content,
+                'gradient_heading',
+                self::DEFAULT_GRADIENT_HEADING
+            ),
+            subheadingText: $this->getStringValue(
+                $content,
+                'gradient_subheading',
+                self::DEFAULT_GRADIENT_SUBHEADING
+            ),
+            backgroundImageUrl: $this->validateImagePath((string)($content['gradient_background_image'] ?? '')),
         );
     }
 
     /**
-     * Builds the intro split section data with image from CMS.
+     * Builds the intro split section from CMS content with safe defaults.
      */
     private function buildIntroSplitSection(): IntroSplitSectionData
     {
-        $content = $this->cmsService->getSectionContent('storytelling', 'intro_split_section');
-        $heading = $this->getStringValue($content, 'intro_heading', 'Stories in Haarlem');
+        $content = $this->getSectionContent(self::SECTION_INTRO_SPLIT);
+        $heading = $this->getStringValue($content, 'intro_heading', self::DEFAULT_INTRO_HEADING);
 
         return new IntroSplitSectionData(
             headingText: $heading,
-            bodyText: $this->getStringValue($content, 'intro_body', ''),
-            imageUrl: $this->validateImagePath($content['intro_image'] ?? ''),
-            imageAltText: $heading, // Use heading as alt text
+            bodyText: $this->getStringValue($content, 'intro_body', self::DEFAULT_INTRO_BODY),
+            imageUrl: $this->validateImagePath((string)($content['intro_image'] ?? '')),
+            imageAltText: $this->getStringValue($content, 'intro_image_alt', $heading),
         );
     }
 
     /**
-     * Builds the masonry section data with exactly 4 columns × 3 images.
-     * Uses deterministic shuffle for stable ordering.
+     * Builds the storytelling masonry section and image columns.
      */
     private function buildMasonrySection(): MasonrySectionData
     {
-        $content = $this->cmsService->getSectionContent('storytelling', 'masonry_section');
+        $content = $this->getSectionContent(self::SECTION_MASONRY);
 
         return new MasonrySectionData(
-            headingText: $this->getStringValue($content, 'masonry_heading', ''),
-            columns: $this->buildMasonryColumns(),
+            headingText: $this->getStringValue($content, 'masonry_heading', self::DEFAULT_MASONRY_HEADING),
+            columns: $this->buildMasonryColumns($content),
         );
     }
 
     /**
-     * Builds exactly 4 columns with 3 images each.
-     * Applies deterministic shuffle to the image list for visual variety.
+     * Distributes masonry images into a fixed grid of columns and rows.
+     *
+     * @return array<int, array<int, MasonryImageData>>
      */
-    private function buildMasonryColumns(): array
+    private function buildMasonryColumns(array $content): array
     {
-        $images = $this->buildShuffledMasonryImages();
-
-        // Distribute into 4 columns × 3 images
+        $images = $this->buildMasonryImages($content);
         $columns = [];
-        $index = 0;
+        $imageIndex = 0;
 
-        for ($col = 0; $col < self::MASONRY_COLUMNS; $col++) {
-            $columns[$col] = [];
-            for ($row = 0; $row < self::MASONRY_IMAGES_PER_COLUMN; $row++) {
-                $columns[$col][] = $images[$index] ?? $this->createPlaceholderImage();
-                $index++;
+        for ($columnIndex = 0; $columnIndex < self::MASONRY_COLUMNS; $columnIndex++) {
+            $columns[$columnIndex] = [];
+
+            for ($rowIndex = 0; $rowIndex < self::MASONRY_IMAGES_PER_COLUMN; $rowIndex++) {
+                $columns[$columnIndex][] = $images[$imageIndex] ?? $this->createPlaceholderImage();
+                $imageIndex++;
             }
         }
 
@@ -136,361 +158,121 @@ class StorytellingService implements IStorytellingService
     }
 
     /**
-     * Builds masonry images from CMS content.
-     * Reads image paths from CMS masonry_image_01 through masonry_image_12.
-     * Assigns varying size classes for true masonry effect.
+     * Converts masonry image paths into ViewModels with predefined size classes.
+     *
+     * @return array<int, MasonryImageData>
      */
-    private function buildShuffledMasonryImages(): array
+    private function buildMasonryImages(array $content): array
     {
-        $content = $this->cmsService->getSectionContent('storytelling', 'masonry_section');
-
-        // Collect image paths from CMS (masonry_image_01 through masonry_image_12)
-        $imagePaths = [];
-        for ($i = 1; $i <= self::MASONRY_TOTAL_IMAGES; $i++) {
-            $key = sprintf('masonry_image_%02d', $i);
-            $path = $content[$key] ?? null;
-            if (!empty($path)) {
-                $imagePaths[] = $path;
-            }
-        }
-
-        // If no images found in CMS, return empty array
-        if (empty($imagePaths)) {
+        $imagePaths = $this->collectMasonryImagePaths($content);
+        if ($imagePaths === []) {
             return [];
         }
 
-        // Size class pattern for varied heights (repeating pattern)
-        $sizeClasses = [
-            'masonry-tall',
-            'masonry-short',
-            'masonry-medium',
-            'masonry-medium',
-            'masonry-tall',
-            'masonry-short',
-            'masonry-short',
-            'masonry-medium',
-            'masonry-tall',
-            'masonry-medium',
-            'masonry-short',
-            'masonry-tall',
-        ];
-
-        // Build image DTOs with size classes
         $images = [];
         foreach ($imagePaths as $index => $path) {
             $images[] = new MasonryImageData(
                 imageUrl: $this->validateImagePath($path),
                 altText: $this->generateAltText(basename($path)),
-                sizeClass: $sizeClasses[$index] ?? 'masonry-medium',
+                sizeClass: self::MASONRY_SIZE_CLASSES[$index] ?? self::MASONRY_DEFAULT_SIZE_CLASS,
             );
         }
 
         return $images;
     }
 
-
     /**
-     * Generates alt text from filename.
+     * Collects non-empty masonry image paths from the CMS section.
+     *
+     * @return list<string>
      */
-    private function generateAltText(string $filename): string
+    private function collectMasonryImagePaths(array $content): array
     {
-        // Remove extension and convert to readable text
-        $name = pathinfo($filename, PATHINFO_FILENAME);
-        $name = str_replace(['-', '_'], ' ', $name);
-        return ucfirst($name) . ' - Storytelling moment';
+        $paths = [];
+
+        for ($index = 1; $index <= self::MASONRY_TOTAL_IMAGES; $index++) {
+            $key = sprintf(self::MASONRY_IMAGE_KEY_PATTERN, $index);
+            $path = $content[$key] ?? null;
+
+            if (is_string($path) && $path !== '') {
+                $paths[] = $path;
+            }
+        }
+
+        return $paths;
     }
 
     /**
-     * Creates a placeholder image for empty slots.
+     * Builds the shared schedule section for storytelling events.
+     */
+    private function buildScheduleSection(): ScheduleSectionViewModel
+    {
+        return $this->scheduleService->buildScheduleSection(
+            pageSlug: self::PAGE_SLUG,
+            eventTypeId: EventTypeId::Storytelling->value,
+            maxDays: self::SCHEDULE_MAX_DAYS,
+        );
+    }
+
+    /**
+     * Fetches one storytelling CMS section by key.
+     */
+    private function getSectionContent(string $sectionKey): array
+    {
+        return $this->cmsService->getSectionContent(self::PAGE_SLUG, $sectionKey);
+    }
+
+    /**
+     * Generates a readable alt text from an image filename.
+     */
+    private function generateAltText(string $filename): string
+    {
+        $name = pathinfo($filename, PATHINFO_FILENAME);
+        $name = str_replace(['-', '_'], ' ', $name);
+
+        return ucfirst($name) . ' - ' . self::DEFAULT_IMAGE_ALT_TEXT;
+    }
+
+    /**
+     * Creates a fallback masonry image when CMS content is missing.
      */
     private function createPlaceholderImage(): MasonryImageData
     {
         return new MasonryImageData(
-            imageUrl: self::DEFAULT_IMAGE,
-            altText: 'Storytelling moment',
-            sizeClass: 'masonry-medium',
+            imageUrl: self::DEFAULT_IMAGE_PATH,
+            altText: self::DEFAULT_IMAGE_ALT_TEXT,
+            sizeClass: self::MASONRY_DEFAULT_SIZE_CLASS,
         );
     }
 
-
     /**
-     * Validates an image path. Returns default if invalid.
+     * Validates an image path and returns a safe fallback when invalid.
      */
     private function validateImagePath(string $path): string
     {
-        if (empty($path)) {
-            return self::DEFAULT_IMAGE;
+        if ($path === '') {
+            return self::DEFAULT_IMAGE_PATH;
         }
 
         if (!str_starts_with($path, '/assets/')) {
-            return self::DEFAULT_IMAGE;
+            return self::DEFAULT_IMAGE_PATH;
         }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if (!in_array($extension, self::VALID_IMAGE_EXTENSIONS, true)) {
-            return self::DEFAULT_IMAGE;
+            return self::DEFAULT_IMAGE_PATH;
         }
 
         return $path;
     }
 
     /**
-     * Gets a string value from content array with default fallback.
+     * Returns a non-empty string value from CMS content or a default value.
      */
     private function getStringValue(array $content, string $key, string $default): string
     {
         $value = $content[$key] ?? null;
+
         return is_string($value) && $value !== '' ? $value : $default;
-    }
-
-    /**
-     * Builds the schedule section with events grouped by day.
-     */
-    private function buildScheduleSection(): ScheduleSectionViewModel
-    {
-        $cmsContent = $this->cmsService->getSectionContent('storytelling', 'schedule_section');
-
-        $storytellingTypeId = EventTypeId::Storytelling->value;
-        $visibleDays = $this->cmsEventsService->getVisibleDays($storytellingTypeId);
-        $scheduleData = $this->eventSessionRepository->findSessions([
-            'eventTypeId' => $storytellingTypeId,
-            'isActive' => true,
-            'eventIsActive' => true,
-            'includeCancelled' => false,
-            'groupByDay' => true,
-            'maxDays' => 7,
-            'visibleDays' => $visibleDays,
-            'orderBy' => 'es.StartDateTime ASC',
-        ]);
-
-        $title = $this->getStringValue($cmsContent, 'schedule_title', '');
-        $year = $this->getStringValue($cmsContent, 'schedule_year', '');
-        $filtersButtonText = $this->getStringValue($cmsContent, 'schedule_filters_button_text', '');
-        $showFilters = ($cmsContent['schedule_show_filters'] ?? '1') === '1';
-        $additionalInfoTitle = $this->getStringValue($cmsContent, 'schedule_additional_info_title', '');
-        $additionalInfoBody = $cmsContent['schedule_additional_info_body'] ?? '';
-        $showAdditionalInfo = ($cmsContent['schedule_show_additional_info'] ?? '1') === '1';
-        $eventCountLabel = $this->getStringValue($cmsContent, 'schedule_story_count_label', '');
-        $showEventCount = ($cmsContent['schedule_show_story_count'] ?? '1') === '1';
-        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', '');
-        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', '');
-        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '');
-        $noEventsText = $this->getStringValue($cmsContent, 'schedule_no_events_text', '');
-
-        $days = $this->buildScheduleDays(
-            $scheduleData,
-            $ctaButtonText,
-            $payWhatYouLikeText,
-            $currencySymbol
-        );
-
-        $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
-
-        return new ScheduleSectionViewModel(
-            sectionId: 'storytelling-schedule',
-            title: $title,
-            year: $year,
-            eventTypeSlug: 'storytelling',
-            eventTypeId: $storytellingTypeId,
-            filtersButtonText: $filtersButtonText,
-            showFilters: $showFilters,
-            additionalInfoTitle: $additionalInfoTitle,
-            additionalInfoBody: $additionalInfoBody,
-            showAdditionalInfo: $showAdditionalInfo,
-            eventCountLabel: $eventCountLabel,
-            eventCount: $eventCount,
-            showEventCount: $showEventCount,
-            ctaButtonText: $ctaButtonText,
-            payWhatYouLikeText: $payWhatYouLikeText,
-            currencySymbol: $currencySymbol,
-            noEventsText: $noEventsText,
-            days: $days,
-        );
-    }
-
-    /**
-     * Builds day ViewModels from schedule data.
-     */
-    private function buildScheduleDays(
-        array  $scheduleData,
-        string $defaultCtaText,
-        string $payWhatYouLikeText,
-        string $currencySymbol
-    ): array {
-        $days = $scheduleData['days'] ?? [];
-        $sessions = $scheduleData['sessions'] ?? [];
-
-        if (empty($days)) {
-            return [];
-        }
-
-        // Get session IDs for batch loading labels and prices
-        $sessionIds = array_column($sessions, 'EventSessionId');
-        $labelsMap = !empty($sessionIds)
-            ? $this->labelRepository->findLabels(['sessionIds' => $sessionIds, 'groupBySession' => true])
-            : [];
-        $pricesMap = !empty($sessionIds)
-            ? $this->priceRepository->findPrices(['sessionIds' => $sessionIds, 'groupBySession' => true])
-            : [];
-
-        // Group sessions by date
-        $sessionsByDate = [];
-        foreach ($sessions as $session) {
-            $date = $session['SessionDate'];
-            if (!isset($sessionsByDate[$date])) {
-                $sessionsByDate[$date] = [];
-            }
-            $sessionsByDate[$date][] = $session;
-        }
-
-        // Build day ViewModels
-        $dayViewModels = [];
-        foreach ($days as $day) {
-            $date = $day['Date'];
-            $dateObj = new \DateTimeImmutable($date);
-            $daySessions = $sessionsByDate[$date] ?? [];
-
-            $events = [];
-            foreach ($daySessions as $session) {
-                $events[] = $this->buildEventCard(
-                    $session,
-                    $labelsMap,
-                    $pricesMap,
-                    $defaultCtaText,
-                    $payWhatYouLikeText,
-                    $currencySymbol
-                );
-            }
-
-            $dayViewModels[] = new ScheduleDayViewModel(
-                dayName: $dateObj->format('l'),
-                dateFormatted: $dateObj->format('l, F j'),
-                isoDate: $date,
-                events: $events,
-                isEmpty: empty($events),
-            );
-        }
-
-        return $dayViewModels;
-    }
-
-    /**
-     * Builds an event card ViewModel from session data.
-     */
-    private function buildEventCard(
-        array  $session,
-        array  $labelsMap,
-        array  $pricesMap,
-        string $defaultCtaText,
-        string $payWhatYouLikeText,
-        string $currencySymbol
-    ): ScheduleEventCardViewModel {
-        $sessionId = (int)$session['EventSessionId'];
-        $eventId = (int)($session['EventId'] ?? 0);
-        $startDateTime = new \DateTimeImmutable($session['StartDateTime']);
-        $endDateTime = $session['EndDateTime'] ? new \DateTimeImmutable($session['EndDateTime']) : null;
-
-        // Get labels for this session
-        $sessionLabels = $labelsMap[$sessionId] ?? [];
-        $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
-        $minAge = isset($session['MinAge']) && (int)$session['MinAge'] > 0 ? (int)$session['MinAge'] : null;
-        $maxAge = isset($session['MaxAge']) && (int)$session['MaxAge'] > 0 ? (int)$session['MaxAge'] : null;
-
-        if ($minAge !== null && $maxAge !== null && $minAge > $maxAge) {
-            [$minAge, $maxAge] = [$maxAge, $minAge];
-        }
-
-        $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
-        $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
-
-        // Get price display
-        $sessionPrices = $pricesMap[$sessionId] ?? [];
-        $priceResult = $this->getPriceDisplay($sessionPrices, $payWhatYouLikeText, $currencySymbol);
-
-        // CTA label: use session-specific if set, otherwise default
-        $ctaLabel = !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText;
-        $ctaUrl = $session['CtaUrl'] ?? '#';
-
-        // Calculate available seats for jazz
-        $capacityTotal = (int)($session['CapacityTotal'] ?? 0);
-        $soldTickets = (int)($session['SoldSingleTickets'] ?? 0) + (int)($session['SoldReservedSeats'] ?? 0);
-        $seatsAvailable = max(0, $capacityTotal - $soldTickets);
-
-        $eventTypeSlug = $session['EventTypeSlug'] ?? 'storytelling';
-        $eventTypeId = (int)($session['EventTypeId'] ?? EventTypeId::Storytelling->value);
-
-        return new ScheduleEventCardViewModel(
-            eventSessionId: $sessionId,
-            eventId: $eventId,
-            eventTypeSlug: $eventTypeSlug,
-            eventTypeId: $eventTypeId,
-            title: $session['EventTitle'] ?? '',
-            priceDisplay: $priceResult['display'],
-            isPayWhatYouLike: $priceResult['isPayWhatYouLike'],
-            ctaLabel: $ctaLabel,
-            ctaUrl: $ctaUrl,
-            locationName: $session['VenueName'] ?? '',
-            hallName: $session['HallName'] ?? '',
-            dateDisplay: $startDateTime->format('l, F j'),
-            isoDate: $startDateTime->format('Y-m-d'),
-            timeDisplay: $endDateTime
-                ? $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i')
-                : $startDateTime->format('H:i'),
-            startTimeIso: $startDateTime->format('H:i'),
-            endTimeIso: $endDateTime ? $endDateTime->format('H:i') : '',
-            labels: $labels,
-            capacityTotal: $capacityTotal,
-            seatsAvailable: $seatsAvailable,
-            minAge: $minAge,
-            maxAge: $maxAge,
-            ageLabel: $ageLabel,
-            artistName: $session['ArtistName'] ?? null,
-            artistImageUrl: $session['ArtistImageUrl'] ?? null,
-        );
-    }
-
-    /**
-     * Determines price display text.
-     * Priority: PayWhatYouLike tier → Adult tier → first available → empty
-     *
-     * @param EventSessionPrice[] $prices
-     */
-    private function getPriceDisplay(array $prices, string $payWhatYouLikeText, string $currencySymbol): array
-    {
-        // Check for PayWhatYouLike tier first
-        foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
-                return ['display' => $payWhatYouLikeText, 'isPayWhatYouLike' => true];
-            }
-        }
-
-        // Check for Adult tier
-        foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::Adult->value) {
-                return [
-                    'display' => $this->formatPrice((float)$price->price, $currencySymbol),
-                    'isPayWhatYouLike' => false,
-                ];
-            }
-        }
-
-        // Fallback to first available price
-        if (!empty($prices)) {
-            $price = $prices[0];
-            return [
-                'display' => $this->formatPrice((float)$price->price, $currencySymbol),
-                'isPayWhatYouLike' => false,
-            ];
-        }
-
-        return ['display' => '', 'isPayWhatYouLike' => false];
-    }
-
-    /**
-     * Formats a price with currency symbol.
-     */
-    private function formatPrice(float $amount, string $currencySymbol): string
-    {
-        return $currencySymbol . ' ' . number_format($amount, 2);
     }
 }

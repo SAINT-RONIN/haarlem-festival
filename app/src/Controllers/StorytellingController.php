@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Services\Interfaces\IStorytellingService;
 use App\Services\StorytellingService;
 
 /**
@@ -14,6 +15,13 @@ use App\Services\StorytellingService;
  */
 class StorytellingController extends BaseController
 {
+    private IStorytellingService $storytellingService;
+
+    public function __construct()
+    {
+        $this->storytellingService = new StorytellingService();
+    }
+
     /**
      * Displays the storytelling page.
      *
@@ -22,8 +30,7 @@ class StorytellingController extends BaseController
     public function index(): void
     {
         try {
-            $storytellingService = new StorytellingService();
-            $viewModel = $storytellingService->getStorytellingPageData();
+            $viewModel = $this->storytellingService->getStorytellingPageData();
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
