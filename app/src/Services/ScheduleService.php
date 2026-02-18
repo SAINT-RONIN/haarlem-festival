@@ -262,6 +262,9 @@ class ScheduleService implements IScheduleService
             historyTicketLabel: $session['HistoryTicketLabel'] ?? null,
             artistName: $session['ArtistName'] ?? null,
             artistImageUrl: $session['ArtistImageUrl'] ?? null,
+            historyTimeTitle: $session['HistoryTimeTitle'] ?? null,
+            historyVenue: $session['HistoryVenue'] ?? null,
+            groupTicketInfo: $session['GroupTicketInfo'] ?? null,
         );
     }
 
