@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\PriceTierId;
+use App\Models\CmsItem;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
 use App\Repositories\EventSessionLabelRepository;
@@ -86,6 +87,11 @@ class ScheduleService implements IScheduleService
         );
         $showEventCount = ($cmsContent['schedule_show_event_count'] ??
                 $cmsContent['schedule_show_story_count'] ?? '1') === '1';
+        if ($pageSlug === 'history') {
+            $year = null; // History tours don't have a year display, so we set it to null to hide it in the view
+            $eventCountLabel = null; // History tours don't show event count, so we set it to null to hide it in the view
+            $showEventCount = false;
+        }
         $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
         $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
         $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
@@ -224,6 +230,7 @@ class ScheduleService implements IScheduleService
         }
 
         $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
+
         $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
 
         // Get price display
@@ -234,12 +241,15 @@ class ScheduleService implements IScheduleService
         $ctaLabel = !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText;
         $ctaUrl = !empty($session['CtaUrl']) ? $session['CtaUrl'] : '#';
 
+        // For History, the card title should be the start time (e.g., "10:00") instead of the generic event title.
+        $eventTitle = $eventTypeSlug === 'history' ? $startDateTime->format('H:i') : ($session['EventTitle'] ?? '');
+
         return new ScheduleEventCardViewModel(
             eventSessionId: $sessionId,
             eventId: (int)$session['EventId'],
             eventTypeSlug: $eventTypeSlug,
             eventTypeId: $eventTypeId,
-            title: $session['EventTitle'] ?? '',
+            title: $eventTitle,
             priceDisplay: $priceResult['display'],
             isPayWhatYouLike: $priceResult['isPayWhatYouLike'],
             ctaLabel: $ctaLabel,

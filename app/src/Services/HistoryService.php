@@ -80,7 +80,7 @@ class HistoryService implements IHistoryService
             venuesData: $this->buildVenuesData(),
             ticketOptionsData: $this->buildTicketOptionsData(),
             infoAboutTourData: $this->buildInfoAboutTourData(),
-            scheduleSection: $this->scheduleService->buildScheduleSection('history', EventTypeId::History->value, 7),
+            scheduleSection: $this->buildScheduleSection(),
         );
     }
 
@@ -683,6 +683,18 @@ class HistoryService implements IHistoryService
             headingText: 'Tour schedule',
             filterLabel: 'Filters',
             days: [$thursday, $friday, $saturday, $sunday],
+        );
+    }
+
+    /**
+     * Builds the shared schedule section for storytelling events.
+     */
+    private function buildScheduleSection(): ScheduleSectionViewModel
+    {
+        return $this->scheduleService->buildScheduleSection(
+            pageSlug: 'history',
+            eventTypeId: EventTypeId::History->value,
+            maxDays: 7,
         );
     }
 }
