@@ -2,34 +2,68 @@
 /**
  * Reusable schedule event card partial.
  *
- * @var \App\ViewModels\Schedule\ScheduleCardViewModel $event
+ * @var \App\ViewModels\Schedule\ScheduleEventCardViewModel $event
  * @var int $eventIndex
  * @var int $dayIndex
  */
 
 $eventId = 'event-' . $dayIndex . '-' . $eventIndex;
+$isHistoryEvent = $event->eventTypeSlug === 'history';
 ?>
 
 <li class="w-full">
     <article
-            class="w-full p-4 sm:p-5 bg-white rounded-2xl sm:rounded-3xl inline-flex flex-col justify-start items-start overflow-hidden gap-2"
-            aria-labelledby="<?= $eventId ?>-title">
+        class="w-full p-4 sm:p-5 bg-white rounded-2xl sm:rounded-3xl inline-flex flex-col justify-start items-start overflow-hidden gap-2"
+        aria-labelledby="<?= $eventId ?>-title">
 
         <!-- Title & Labels Row -->
         <div class="w-full inline-flex justify-start items-start gap-[5px]">
-            <div class="flex-1 flex justify-center items-center gap-2.5">
-                <h4 id="<?= $eventId ?>-title"
-                    class="flex-1 text-slate-800 text-xl sm:text-2xl font-semibold font-['Montserrat'] leading-6">
-                    <?= htmlspecialchars($event->title) ?>
-                </h4>
+            <div class="flex-1 flex flex-col justify-start items-start gap-1.5">
+                <?php if ($isHistoryEvent): ?>
+                    <!-- History: time icon + time-based title, aligned with details column -->
+                    <h4 id="<?= $eventId ?>-title"
+                        class="flex-1 inline-flex items-center gap-2.5 text-slate-800 text-xl sm:text-2xl font-semibold font-['Montserrat'] leading-6">
+                        <img
+                            src="/assets/Icons/History/time-icon.svg"
+                            alt="Time icon"
+                            class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                            loading="lazy"
+                        >
+                        <span><?= htmlspecialchars($event->title) ?></span>
+                    </h4>
+
+                    <?php if (!empty($event->labels)): ?>
+                        <!-- History: language labels directly under the time, in one row (extra small / subtle) -->
+                        <div class="w-full inline-flex justify-start items-center gap-1">
+                            <?php foreach ($event->labels as $label): ?>
+                                <div class="flex justify-start items-start gap-1.5">
+                                    <span class="px-1 py-1 bg-pink-700/90 rounded-[4px] flex justify-start items-center gap-1.5">
+                                        <span class="text-white text-[12px] sm:text-[11px] font-normal font-['Montserrat'] leading-3 tracking-tight">
+                                            <?= htmlspecialchars($label) ?>
+                                        </span>
+                                    </span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <!-- Default: plain text title -->
+                    <h4 id="<?= $eventId ?>-title"
+                        class="flex-1 text-slate-800 text-xl sm:text-2xl font-semibold font-['Montserrat'] leading-6">
+                        <?= htmlspecialchars($event->title) ?>
+                    </h4>
+                <?php endif; ?>
             </div>
 
-            <?php if (!empty($event->labels)): ?>
+            <?php if (!$isHistoryEvent && !empty($event->labels)): ?>
+                <!-- Non-history: labels stacked in the top-right corner -->
                 <ul class="inline-flex flex-col justify-center items-end gap-1" aria-label="Event labels">
                     <?php foreach ($event->labels as $label): ?>
                         <li class="inline-flex justify-start items-start gap-2.5">
                             <span class="px-2.5 py-[5px] bg-pink-700 rounded-[10px] flex justify-start items-center gap-2">
-                                <span class="text-white text-base font-normal font-['Montserrat'] leading-6"><?= htmlspecialchars($label) ?></span>
+                                <span class="text-white text-base font-normal font-['Montserrat'] leading-6">
+                                    <?= htmlspecialchars($label) ?>
+                                </span>
                             </span>
                         </li>
                     <?php endforeach; ?>
@@ -96,6 +130,9 @@ $eventId = 'event-' . $dayIndex . '-' . $eventIndex;
                     <div class="w-full h-px bg-gray-200" aria-hidden="true"></div>
                     <div class="w-full inline-flex justify-between items-center">
                         <span class="text-center text-slate-800 text-base sm:text-lg font-normal font-['Montserrat']">
+                            <?php if ($isHistoryEvent): ?>
+                                from
+                            <?php endif; ?>
                             <?= htmlspecialchars($event->priceDisplay) ?>
                         </span>
                         <a href="<?= htmlspecialchars($event->ctaUrl) ?>"

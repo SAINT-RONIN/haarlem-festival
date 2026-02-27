@@ -231,7 +231,10 @@ class ScheduleService implements IScheduleService
 
         $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
 
-        $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
+        if ($eventTypeSlug !== 'history'){
+            $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
+        }
+
 
         // Get price display
         $sessionPrices = $pricesMap[$sessionId] ?? [];
@@ -272,7 +275,6 @@ class ScheduleService implements IScheduleService
             historyTicketLabel: $session['HistoryTicketLabel'] ?? null,
             artistName: $session['ArtistName'] ?? null,
             artistImageUrl: $session['ArtistImageUrl'] ?? null,
-            historyTimeTitle: $session['HistoryTimeTitle'] ?? null,
             historyVenue: $session['HistoryVenue'] ?? null,
             groupTicketInfo: $session['GroupTicketInfo'] ?? null,
         );

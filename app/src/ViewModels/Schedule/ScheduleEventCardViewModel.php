@@ -36,7 +36,6 @@ final readonly class ScheduleEventCardViewModel
      * @param string|null $historyTicketLabel History ticket label text (History specific)
      * @param string|null $artistName Artist name (Jazz specific)
      * @param string|null $artistImageUrl Artist image URL (Jazz specific)
-     * @param string|null $historyTimeTitle Start time title for history tours (History specific)
      * @param string|null $historyVenue Start venue name for history tours (History specific)
      * @param string|null $groupTicketInfo Group ticket information text (History specific)
      */
@@ -66,7 +65,6 @@ final readonly class ScheduleEventCardViewModel
         public ?string $historyTicketLabel = null,
         public ?string $artistName = null,
         public ?string $artistImageUrl = null,
-        public ?string $historyTimeTitle = null,
         public ?string $historyVenue = null,
         public ?string $groupTicketInfo = null,
     ) {
