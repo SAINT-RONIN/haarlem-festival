@@ -17,24 +17,22 @@ use App\ViewModels\Restaurant\RestaurantPageViewModel;
 /**
  * Service for preparing restaurant page data.
  *
- * CMS provides page copy (hero, gradient, intro, instructions titles).
- * Domain (Restaurant table) provides restaurant cards and cuisine filters.
  */
 class RestaurantService implements IRestaurantService
 {
+    // ── Page identifier ─────────────────────────────────────────────────
     private const PAGE_SLUG = 'restaurant';
 
+    // ── CMS section keys (must match what's stored in CmsSection table) ─
     private const SECTION_GRADIENT = 'gradient_section';
     private const SECTION_INTRO_SPLIT = 'intro_split_section';
     private const SECTION_INTRO_SPLIT2 = 'intro_split2_section';
     private const SECTION_INSTRUCTIONS = 'instructions_section';
     private const SECTION_CARDS = 'restaurant_cards_section';
 
+    // ── Image settings ──────────────────────────────────────────────────
     private const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
-
-    private const DEFAULT_CARDS_TITLE = 'Explore the participant restaurants';
-    private const DEFAULT_CARDS_SUBTITLE = 'Discover all restaurants participating in Yummy! Each one offers a special festival menu, unique flavors, and limited time slots throughout the weekend.';
 
     private CmsService $cmsService;
     private RestaurantRepository $restaurantRepository;
@@ -62,15 +60,16 @@ class RestaurantService implements IRestaurantService
     }
 
     // ── CMS section builders ────────────────────────────────────────────
+    // Each method: 1) reads CMS content  2) returns a ViewModel
 
     private function buildGradientSection(): GradientSectionData
     {
         $content = $this->getSectionContent(self::SECTION_GRADIENT);
 
         return new GradientSectionData(
-            headingText: $this->val($content, 'gradient_heading'),
-            subheadingText: $this->val($content, 'gradient_subheading'),
-            backgroundImageUrl: $this->imagePath($content, 'gradient_background_image'),
+            headingText: $this->getStringValue($content, 'gradient_heading'),
+            subheadingText: $this->getStringValue($content, 'gradient_subheading'),
+            backgroundImageUrl: $this->validateImagePath((string)($content['gradient_background_image'] ?? '')),
         );
     }
 
@@ -78,14 +77,14 @@ class RestaurantService implements IRestaurantService
     {
         $content = $this->getSectionContent(self::SECTION_INTRO_SPLIT);
 
-        $heading = $this->val($content, 'intro_heading');
-        $parsed = $this->parseIntroBody($this->val($content, 'intro_body'));
+        $heading = $this->getStringValue($content, 'intro_heading');
+        $parsed = $this->parseIntroBody($this->getStringValue($content, 'intro_body'));
 
         return new IntroSplitSectionData(
             headingText: $heading,
             bodyText: $parsed['bodyText'],
-            imageUrl: $this->imagePath($content, 'intro_image'),
-            imageAltText: $this->val($content, 'intro_image_alt', $heading),
+            imageUrl: $this->validateImagePath((string)($content['intro_image'] ?? '')),
+            imageAltText: $this->getStringValue($content, 'intro_image_alt', $heading),
             subsections: $parsed['subsections'],
             closingLine: $parsed['closingLine'],
         );
@@ -99,13 +98,13 @@ class RestaurantService implements IRestaurantService
             return null;
         }
 
-        $heading = $this->val($content, 'intro2_heading');
+        $heading = $this->getStringValue($content, 'intro2_heading');
 
         return new IntroSplitSectionData(
             headingText: $heading,
-            bodyText: $this->val($content, 'intro2_body'),
-            imageUrl: $this->imagePath($content, 'intro2_image'),
-            imageAltText: $this->val($content, 'intro2_image_alt', $heading),
+            bodyText: $this->getStringValue($content, 'intro2_body'),
+            imageUrl: $this->validateImagePath((string)($content['intro2_image'] ?? '')),
+            imageAltText: $this->getStringValue($content, 'intro2_image_alt', $heading),
         );
     }
 
@@ -118,16 +117,18 @@ class RestaurantService implements IRestaurantService
         }
 
         return new InstructionsSectionData(
-            title: $this->val($content, 'instructions_title'),
+            title: $this->getStringValue($content, 'instructions_title'),
             cards: [
-                new InstructionCardData('1', $this->val($content, 'instructions_card_1_title'), $this->val($content, 'instructions_card_1_text'), 'search'),
-                new InstructionCardData('2', $this->val($content, 'instructions_card_2_title'), $this->val($content, 'instructions_card_2_text'), 'calendar'),
-                new InstructionCardData('3', $this->val($content, 'instructions_card_3_title'), $this->val($content, 'instructions_card_3_text'), 'check'),
+                new InstructionCardData('1', $this->getStringValue($content, 'instructions_card_1_title'), $this->getStringValue($content, 'instructions_card_1_text'), 'search'),
+                new InstructionCardData('2', $this->getStringValue($content, 'instructions_card_2_title'), $this->getStringValue($content, 'instructions_card_2_text'), 'calendar'),
+                new InstructionCardData('3', $this->getStringValue($content, 'instructions_card_3_title'), $this->getStringValue($content, 'instructions_card_3_text'), 'check'),
             ],
         );
     }
 
     // ── Domain-driven cards section ─────────────────────────────────────
+    // Cards come from the Restaurant DB table.
+    // CMS only provides the section title + subtitle.
 
     private function buildRestaurantCardsSection(): RestaurantCardsSectionData
     {
@@ -135,8 +136,8 @@ class RestaurantService implements IRestaurantService
         $restaurants = $this->restaurantRepository->findAllActive();
 
         return new RestaurantCardsSectionData(
-            title: $this->val($cmsCopy, 'cards_title', self::DEFAULT_CARDS_TITLE),
-            subtitle: $this->val($cmsCopy, 'cards_subtitle', self::DEFAULT_CARDS_SUBTITLE),
+            title: $this->getStringValue($cmsCopy, 'cards_title', 'Explore the participant restaurants'),
+            subtitle: $this->getStringValue($cmsCopy, 'cards_subtitle', 'Discover all restaurants participating in Yummy! Each one offers a special festival menu, unique flavors, and limited time slots throughout the weekend.'),
             filters: $this->buildCuisineFilters($restaurants),
             cards: $this->buildCards($restaurants),
         );
@@ -178,11 +179,25 @@ class RestaurantService implements IRestaurantService
         $cards = [];
 
         foreach ($restaurants as $restaurant) {
+            // Build address: "Street 1, Haarlem"
+            $address = trim($restaurant->addressLine);
+            if ($restaurant->city !== '') {
+                $address .= ', ' . $restaurant->city;
+            }
+
+            // Strip HTML from description so cards show plain text
+            $description = '';
+            $rawHtml = trim($restaurant->descriptionHtml);
+            if ($rawHtml !== '' && $rawHtml !== '<p></p>') {
+                $text = html_entity_decode(strip_tags($rawHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $description = trim(preg_replace('/\s+/', ' ', $text) ?? $text);
+            }
+
             $cards[] = new RestaurantCardData(
                 name: $restaurant->name,
                 cuisine: $restaurant->cuisineType,
-                address: $this->formatAddress($restaurant->addressLine, $restaurant->city),
-                description: $this->htmlToPlainText($restaurant->descriptionHtml),
+                address: $address,
+                description: $description,
                 rating: $restaurant->stars ?? 0,
                 image: $this->resolveCardImage($restaurant->name),
             );
@@ -204,18 +219,10 @@ class RestaurantService implements IRestaurantService
     /**
      * Returns a non-empty string value from CMS content or a default.
      */
-    private function val(array $content, string $key, string $default = ''): string
+    private function getStringValue(array $content, string $key, string $default = ''): string
     {
         $value = $content[$key] ?? null;
         return is_string($value) && $value !== '' ? $value : $default;
-    }
-
-    /**
-     * Validates and returns an image path from CMS content.
-     */
-    private function imagePath(array $content, string $key): string
-    {
-        return $this->validateImagePath((string)($content[$key] ?? ''));
     }
 
     private function validateImagePath(string $path): string
@@ -227,25 +234,6 @@ class RestaurantService implements IRestaurantService
         return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), self::VALID_IMAGE_EXTENSIONS, true)
             ? $path
             : self::DEFAULT_IMAGE;
-    }
-
-    private function formatAddress(string $addressLine, string $city): string
-    {
-        return trim($addressLine . ($city !== '' ? ', ' . $city : ''));
-    }
-
-    /**
-     * Strips HTML tags and normalises whitespace for card descriptions.
-     */
-    private function htmlToPlainText(string $html): string
-    {
-        $html = trim($html);
-        if ($html === '' || $html === '<p></p>') {
-            return '';
-        }
-
-        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        return trim(preg_replace('/\s+/', ' ', $text) ?? $text);
     }
 
     /**
