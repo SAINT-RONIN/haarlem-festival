@@ -23,7 +23,7 @@ class RestaurantService implements IRestaurantService
     // ── Page identifier ─────────────────────────────────────────────────
     private const PAGE_SLUG = 'restaurant';
 
-    // ── CMS section keys (must match what's stored in CmsSection table) ─
+    // ── CMS section keys (match in CmsSection table) ─
     private const SECTION_GRADIENT = 'gradient_section';
     private const SECTION_INTRO_SPLIT = 'intro_split_section';
     private const SECTION_INTRO_SPLIT2 = 'intro_split2_section';
