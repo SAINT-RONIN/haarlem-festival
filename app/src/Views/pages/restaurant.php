@@ -1,15 +1,9 @@
 <?php
-
-declare(strict_types=1);
-
 /**
  * Restaurant page view.
  *
- * CMS-driven (DB-first) via RestaurantPageService → RestaurantPageViewModel.
- * Falls back to hardcoded values inside the service unless ?source=db is used.
+ * @var \App\ViewModels\Restaurant\RestaurantPageViewModel $viewModel
  */
-
-/** @var \App\ViewModels\RestaurantPageViewModel $viewModel */
 
 $includeEventSections = true;
 $eventIntroSectionId = 'about';

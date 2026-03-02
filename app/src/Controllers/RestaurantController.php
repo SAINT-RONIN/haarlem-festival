@@ -5,15 +5,21 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\RestaurantPageService;
+use App\Services\Interfaces\IRestaurantService;
+use App\Services\RestaurantService;
 
 /**
- * Controller for the restaurant page.
- *
- * Handles HTTP requests for the restaurant landing page.
+ * Controller for Restaurant page.
  */
 class RestaurantController extends BaseController
 {
+    private IRestaurantService $restaurantService;
+
+    public function __construct()
+    {
+        $this->restaurantService = new RestaurantService();
+    }
+
     /**
      * Displays the restaurant page.
      *
@@ -22,8 +28,7 @@ class RestaurantController extends BaseController
     public function index(): void
     {
         try {
-            $service = new RestaurantPageService();
-            $viewModel = $service->getRestaurantPageData();
+            $viewModel = $this->restaurantService->getRestaurantPageData();
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

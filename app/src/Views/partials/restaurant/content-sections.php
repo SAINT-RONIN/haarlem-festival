@@ -2,7 +2,7 @@
 /**
  * Restaurant page-specific content sections rendered inside the shared shell.
  *
- * @var \App\ViewModels\RestaurantPageViewModel $viewModel
+ * @var \App\ViewModels\Restaurant\RestaurantPageViewModel $viewModel
  */
 
 if ($viewModel->introSplit2Section !== null) {
