@@ -20,7 +20,7 @@ $isHistoryEvent = $event->eventTypeSlug === 'history';
         <div class="w-full inline-flex justify-start items-start gap-[5px]">
             <div class="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <?php if ($isHistoryEvent): ?>
-                    <!-- History: time icon + time-based title, aligned with details column -->
+                    <!-- History: time icon + time-based title -->
                     <h4 id="<?= $eventId ?>-title"
                         class="flex-1 inline-flex items-center gap-2.5 text-slate-800 text-xl sm:text-2xl font-semibold font-['Montserrat'] leading-6">
                         <img
@@ -33,7 +33,7 @@ $isHistoryEvent = $event->eventTypeSlug === 'history';
                     </h4>
 
                     <?php if (!empty($event->labels)): ?>
-                        <!-- History: language labels directly under the time, in one row (extra small / subtle) -->
+                        <!-- History: language labels under the title in a single row, smaller -->
                         <div class="w-full inline-flex justify-start items-center gap-1">
                             <?php foreach ($event->labels as $label): ?>
                                 <div class="flex justify-start items-start gap-1.5">
@@ -71,7 +71,7 @@ $isHistoryEvent = $event->eventTypeSlug === 'history';
             <?php endif; ?>
         </div>
 
-        <!-- Event Details (Location, Date, Time) -->
+        <!-- Event Details (Location, Date, Time / Group ticket info for history) -->
         <dl class="w-full inline-flex justify-start items-center gap-2.5">
             <div class="flex-1 inline-flex flex-col justify-center items-start gap-2.5">
                 <!-- Location -->
@@ -107,23 +107,42 @@ $isHistoryEvent = $event->eventTypeSlug === 'history';
                     </dd>
                 </div>
 
-                <!-- Time -->
-                <div class="inline-flex justify-start items-center gap-[5px]">
-                    <dt class="sr-only">Time</dt>
-                    <dd class="inline-flex items-center gap-[5px]">
-                        <svg class="w-4 h-4 text-slate-800 flex-shrink-0" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                             aria-hidden="true" focusable="false">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4">
-                            <time datetime="<?= htmlspecialchars($event->startTimeIso) ?>"><?= htmlspecialchars(explode(' - ', $event->timeDisplay)[0]) ?></time><?php if (!empty($event->endTimeIso)): ?> -
-                                <time
-                                datetime="<?= htmlspecialchars($event->endTimeIso) ?>"><?= htmlspecialchars(explode(' - ', $event->timeDisplay)[1] ?? '') ?></time><?php endif; ?>
-                        </span>
-                    </dd>
-                </div>
+                <!-- Third row: Time (default) or group ticket info (history) -->
+                <?php if ($isHistoryEvent): ?>
+                    <!-- History: group ticket value instead of time, keeping the same structural row -->
+                    <div class="inline-flex justify-start items-center gap-[5px]">
+                        <dt class="sr-only">Group ticket</dt>
+                        <dd class="inline-flex items-center gap-[5px]">
+                            <img
+                                src="/assets/Icons/History/price-icon.svg"
+                                alt="Group ticket icon"
+                                class="w-4 h-4 flex-shrink-0"
+                                loading="lazy"
+                            >
+                            <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4">
+                                Group ticket - best value for family
+                            </span>
+                        </dd>
+                    </div>
+                <?php else: ?>
+                    <!-- Default: time row used by jazz/storytelling/etc. -->
+                    <div class="inline-flex justify-start items-center gap-[5px]">
+                        <dt class="sr-only">Time</dt>
+                        <dd class="inline-flex items-center gap-[5px]">
+                            <svg class="w-4 h-4 text-slate-800 flex-shrink-0" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                 aria-hidden="true" focusable="false">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4">
+                                <time datetime="<?= htmlspecialchars($event->startTimeIso) ?>"><?= htmlspecialchars(explode(' - ', $event->timeDisplay)[0]) ?></time><?php if (!empty($event->endTimeIso)): ?> -
+                                    <time
+                                        datetime="<?= htmlspecialchars($event->endTimeIso) ?>"><?= htmlspecialchars(explode(' - ', $event->timeDisplay)[1] ?? '') ?></time><?php endif; ?>
+                            </span>
+                        </dd>
+                    </div>
+                <?php endif; ?>
 
                 <!-- Price & CTA Row -->
                 <div class="w-full inline-flex flex-col justify-start items-start gap-2.5">
