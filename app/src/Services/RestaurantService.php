@@ -15,33 +15,46 @@ use App\ViewModels\Restaurant\RestaurantCardsSectionData;
 use App\ViewModels\Restaurant\RestaurantPageViewModel;
 
 /**
- * Service for preparing restaurant page data.
+ * Service for preparing all data needed by the Restaurant page.
  *
+ * This service uses TWO different data sources:
+ *
+ *  1. CMS (CmsItem table) — for page copy: titles, descriptions, images
+ *     that an admin can edit. Used by: hero, gradient, intro, instructions.
+ *
+ *  2. Domain (Restaurant table) — for real restaurant business data:
+ *     names, addresses, cuisine types, star ratings, card images.
+ *     Used by: restaurant cards section.
  */
 class RestaurantService implements IRestaurantService
 {
-    // ── Page identifier ─────────────────────────────────────────────────
     private const PAGE_SLUG = 'restaurant';
 
-    // ── CMS section keys (match in CmsSection table) ─
-    private const SECTION_GRADIENT = 'gradient_section';
-    private const SECTION_INTRO_SPLIT = 'intro_split_section';
+    // CMS section keys — must match the SectionKey values in the CmsSection table.
+    private const SECTION_GRADIENT     = 'gradient_section';
+    private const SECTION_INTRO_SPLIT  = 'intro_split_section';
     private const SECTION_INTRO_SPLIT2 = 'intro_split2_section';
     private const SECTION_INSTRUCTIONS = 'instructions_section';
-    private const SECTION_CARDS = 'restaurant_cards_section';
+    private const SECTION_CARDS        = 'restaurant_cards_section';
 
-    // ── Image settings ──────────────────────────────────────────────────
+    // Fallback image shown when a CMS image path is missing or invalid.
     private const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 
     private CmsService $cmsService;
     private RestaurantRepository $restaurantRepository;
 
-    public function __construct()
-    {
-        $this->cmsService = new CmsService();
-        $this->restaurantRepository = new RestaurantRepository();
+    public function __construct(
+        ?CmsService $cmsService = null,
+        ?RestaurantRepository $restaurantRepository = null
+    ) {
+        $this->cmsService = $cmsService ?? new CmsService();
+        $this->restaurantRepository = $restaurantRepository ?? new RestaurantRepository();
     }
+
+    // =====================================================================
+    //  ENTRY POINT — builds the full page ViewModel
+    // =====================================================================
 
     /**
      * Builds the complete page ViewModel consumed by the restaurant view.
@@ -49,129 +62,159 @@ class RestaurantService implements IRestaurantService
     public function getRestaurantPageData(): RestaurantPageViewModel
     {
         return new RestaurantPageViewModel(
-            heroData: $this->cmsService->buildHeroData(self::PAGE_SLUG, self::PAGE_SLUG),
-            globalUi: $this->cmsService->buildGlobalUiData(),
-            gradientSection: $this->buildGradientSection(),
-            introSplitSection: $this->buildIntroSplitSection(),
-            introSplit2Section: $this->buildIntroSplit2Section(),
-            instructionsSection: $this->buildInstructionsSection(),
+            heroData:              $this->cmsService->buildHeroData(self::PAGE_SLUG, self::PAGE_SLUG),
+            globalUi:              $this->cmsService->buildGlobalUiData(),
+            gradientSection:       $this->buildGradientSection(),
+            introSplitSection:     $this->buildIntroSplitSection(),
+            introSplit2Section:    $this->buildIntroSplit2Section(),
+            instructionsSection:   $this->buildInstructionsSection(),
             restaurantCardsSection: $this->buildRestaurantCardsSection(),
         );
     }
 
-    // ── CMS section builders ────────────────────────────────────────────
-    // Each method: 1) reads CMS content  2) returns a ViewModel
+    // =====================================================================
+    //  CMS-DRIVEN SECTIONS — text/images from CmsItem table
+    //  Admin can edit these through the CMS dashboard.
+    // =====================================================================
 
     private function buildGradientSection(): GradientSectionData
     {
-        $content = $this->getSectionContent(self::SECTION_GRADIENT);
+        $cms = $this->getCmsSection(self::SECTION_GRADIENT);
 
         return new GradientSectionData(
-            headingText: $this->getStringValue($content, 'gradient_heading'),
-            subheadingText: $this->getStringValue($content, 'gradient_subheading'),
-            backgroundImageUrl: $this->validateImagePath((string)($content['gradient_background_image'] ?? '')),
+            headingText:      $this->text($cms, 'gradient_heading'),
+            subheadingText:   $this->text($cms, 'gradient_subheading'),
+            backgroundImageUrl: $this->imagePath($cms, 'gradient_background_image'),
         );
     }
 
     private function buildIntroSplitSection(): IntroSplitSectionData
     {
-        $content = $this->getSectionContent(self::SECTION_INTRO_SPLIT);
-
-        $heading = $this->getStringValue($content, 'intro_heading');
-        $parsed = $this->parseIntroBody($this->getStringValue($content, 'intro_body'));
+        $cms     = $this->getCmsSection(self::SECTION_INTRO_SPLIT);
+        $heading = $this->text($cms, 'intro_heading');
+        $closing = $this->text($cms, 'intro_closing');
 
         return new IntroSplitSectionData(
-            headingText: $heading,
-            bodyText: $parsed['bodyText'],
-            imageUrl: $this->validateImagePath((string)($content['intro_image'] ?? '')),
-            imageAltText: $this->getStringValue($content, 'intro_image_alt', $heading),
-            subsections: $parsed['subsections'],
-            closingLine: $parsed['closingLine'],
+            headingText:  $heading,
+            bodyText:     $this->text($cms, 'intro_body'),
+            imageUrl:     $this->imagePath($cms, 'intro_image'),
+            imageAltText: $this->text($cms, 'intro_image_alt', $heading),
+            subsections:  $this->buildIntroSubsections($cms),
+            closingLine:  $closing !== '' ? $closing : null,
         );
+    }
+
+    /**
+     * Reads subsection CMS keys (intro_sub1_heading, intro_sub1_text, etc.)
+     * Returns null if no subsections exist in CMS.
+     */
+    private function buildIntroSubsections(array $cms): ?array
+    {
+        $subsections = [];
+
+        for ($i = 1; $i <= 3; $i++) {
+            $heading = $this->text($cms, 'intro_sub' . $i . '_heading');
+            if ($heading !== '') {
+                $subsections[] = [
+                    'heading' => $heading,
+                    'text'    => $this->text($cms, 'intro_sub' . $i . '_text'),
+                ];
+            }
+        }
+
+        return $subsections !== [] ? $subsections : null;
     }
 
     private function buildIntroSplit2Section(): ?IntroSplitSectionData
     {
-        $content = $this->getSectionContent(self::SECTION_INTRO_SPLIT2);
+        $cms = $this->getCmsSection(self::SECTION_INTRO_SPLIT2);
 
-        if ($content === []) {
+        if ($cms === []) {
             return null;
         }
 
-        $heading = $this->getStringValue($content, 'intro2_heading');
+        $heading = $this->text($cms, 'intro2_heading');
 
         return new IntroSplitSectionData(
-            headingText: $heading,
-            bodyText: $this->getStringValue($content, 'intro2_body'),
-            imageUrl: $this->validateImagePath((string)($content['intro2_image'] ?? '')),
-            imageAltText: $this->getStringValue($content, 'intro2_image_alt', $heading),
+            headingText:  $heading,
+            bodyText:     $this->text($cms, 'intro2_body'),
+            imageUrl:     $this->imagePath($cms, 'intro2_image'),
+            imageAltText: $this->text($cms, 'intro2_image_alt', $heading),
         );
     }
 
     private function buildInstructionsSection(): ?InstructionsSectionData
     {
-        $content = $this->getSectionContent(self::SECTION_INSTRUCTIONS);
+        $cms = $this->getCmsSection(self::SECTION_INSTRUCTIONS);
 
-        if ($content === []) {
+        if ($cms === []) {
             return null;
         }
 
         return new InstructionsSectionData(
-            title: $this->getStringValue($content, 'instructions_title'),
+            title: $this->text($cms, 'instructions_title'),
             cards: [
-                new InstructionCardData('1', $this->getStringValue($content, 'instructions_card_1_title'), $this->getStringValue($content, 'instructions_card_1_text'), 'search'),
-                new InstructionCardData('2', $this->getStringValue($content, 'instructions_card_2_title'), $this->getStringValue($content, 'instructions_card_2_text'), 'calendar'),
-                new InstructionCardData('3', $this->getStringValue($content, 'instructions_card_3_title'), $this->getStringValue($content, 'instructions_card_3_text'), 'check'),
+                new InstructionCardData('1', $this->text($cms, 'instructions_card_1_title'), $this->text($cms, 'instructions_card_1_text'), 'search'),
+                new InstructionCardData('2', $this->text($cms, 'instructions_card_2_title'), $this->text($cms, 'instructions_card_2_text'), 'calendar'),
+                new InstructionCardData('3', $this->text($cms, 'instructions_card_3_title'), $this->text($cms, 'instructions_card_3_text'), 'check'),
             ],
         );
     }
 
-    // ── Domain-driven cards section ─────────────────────────────────────
-    // Cards come from the Restaurant DB table.
-    // CMS only provides the section title + subtitle.
+    // =====================================================================
+    //  DOMAIN-DRIVEN SECTION — restaurant cards from the Restaurant table
+    //  CMS only provides the section title + subtitle.
+    //  The actual card data comes from the Restaurant DB table
+    //  (joined with MediaAsset for images).
+    // =====================================================================
 
     private function buildRestaurantCardsSection(): RestaurantCardsSectionData
     {
-        $cmsCopy = $this->getSectionContent(self::SECTION_CARDS);
+        $cms         = $this->getCmsSection(self::SECTION_CARDS);
         $restaurants = $this->restaurantRepository->findAllActive();
 
         return new RestaurantCardsSectionData(
-            title: $this->getStringValue($cmsCopy, 'cards_title', 'Explore the participant restaurants'),
-            subtitle: $this->getStringValue($cmsCopy, 'cards_subtitle', 'Discover all restaurants participating in Yummy! Each one offers a special festival menu, unique flavors, and limited time slots throughout the weekend.'),
-            filters: $this->buildCuisineFilters($restaurants),
-            cards: $this->buildCards($restaurants),
+            title:    $this->text($cms, 'cards_title', 'Explore the participant restaurants'),
+            subtitle: $this->text($cms, 'cards_subtitle', 'Discover all restaurants participating in Yummy! Each one offers a special festival menu, unique flavors, and limited time slots throughout the weekend.'),
+            filters:  $this->buildCuisineFilters($restaurants),
+            cards:    $this->buildCards($restaurants),
         );
     }
-
     /**
-     * Derives unique cuisine filter labels from the Restaurant domain data.
+     * Builds the filter button labels (e.g. "All", "Dutch", "French"...)
+     * Why is this here and not in the repository?
+     * Because it's presentation logic — it decides what labels to show
+     * in the UI filter bar. The repository just returns raw data.
      *
-     * @param \App\Models\Restaurant[] $restaurants
+     * @param  \App\Models\Restaurant[] $restaurants
      * @return string[]
      */
     private function buildCuisineFilters(array $restaurants): array
     {
-        $seen = [];
+        $unique = [];
 
         foreach ($restaurants as $restaurant) {
-            foreach (array_filter(array_map('trim', explode(',', $restaurant->cuisineType))) as $cuisine) {
-                $key = mb_strtolower($cuisine);
-                if ($key !== '' && !isset($seen[$key])) {
-                    $seen[$key] = $cuisine;
+            foreach (explode(',', $restaurant->cuisineType) as $cuisine) {
+                $cuisine = trim($cuisine);
+                $key     = mb_strtolower($cuisine);
+
+                // Skip empty values and duplicates (case-insensitive).
+                if ($key !== '' && !isset($unique[$key])) {
+                    $unique[$key] = $cuisine;
                 }
             }
         }
-
-        $labels = array_values($seen);
+        // Sort alphabetically, then prepend "All" as the first filter.
+        $labels = array_values($unique);
         sort($labels, SORT_NATURAL | SORT_FLAG_CASE);
 
         return ['All', ...$labels];
     }
 
     /**
-     * Maps domain Restaurant models to card ViewModels.
+     * Converts Restaurant domain models into card ViewModels for the view.
      *
-     * @param \App\Models\Restaurant[] $restaurants
+     * @param  \App\Models\Restaurant[] $restaurants
      * @return RestaurantCardData[]
      */
     private function buildCards(array $restaurants): array
@@ -179,167 +222,93 @@ class RestaurantService implements IRestaurantService
         $cards = [];
 
         foreach ($restaurants as $restaurant) {
-            // Build address: "Street 1, Haarlem"
-            $address = trim($restaurant->addressLine);
-            if ($restaurant->city !== '') {
-                $address .= ', ' . $restaurant->city;
-            }
-
-            // Strip HTML from description so cards show plain text
-            $description = '';
-            $rawHtml = trim($restaurant->descriptionHtml);
-            if ($rawHtml !== '' && $rawHtml !== '<p></p>') {
-                $text = html_entity_decode(strip_tags($rawHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                $description = trim(preg_replace('/\s+/', ' ', $text) ?? $text);
-            }
-
             $cards[] = new RestaurantCardData(
-                name: $restaurant->name,
-                cuisine: $restaurant->cuisineType,
-                address: $address,
-                description: $description,
-                rating: $restaurant->stars ?? 0,
-                image: $this->resolveCardImage($restaurant->name),
+                name:        $restaurant->name,
+                cuisine:     $restaurant->cuisineType,
+                address:     $this->buildAddress($restaurant),
+                description: $this->cleanDescription($restaurant->descriptionHtml),
+                rating:      $restaurant->stars ?? 0,
+                image:       $restaurant->imagePath ?? self::DEFAULT_IMAGE,
             );
         }
 
         return $cards;
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────
+    /**
+     * Combines address line + city into one string: "Street 1, Haarlem".
+     */
+    private function buildAddress(\App\Models\Restaurant $restaurant): string
+    {
+        $address = trim($restaurant->addressLine);
+
+        if ($restaurant->city !== '') {
+            $address .= ', ' . $restaurant->city;
+        }
+
+        return $address;
+    }
 
     /**
-     * Shorthand for fetching a CMS section for this page.
+     * Strips HTML tags from the restaurant description so cards show plain text.
+     * Returns empty string if the description is empty or just "<p></p>".
      */
-    private function getSectionContent(string $sectionKey): array
+    private function cleanDescription(string $html): string
+    {
+        $html = trim($html);
+
+        if ($html === '' || $html === '<p></p>') {
+            return '';
+        }
+
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim(preg_replace('/\s+/', ' ', $text) ?? $text);
+    }
+
+    // =====================================================================
+    //  HELPERS
+    // =====================================================================
+    /**
+     * Reads one CMS section for this page.
+     * Returns an array like ['gradient_heading' => 'Some text', ...].
+     */
+    private function getCmsSection(string $sectionKey): array
     {
         return $this->cmsService->getSectionContent(self::PAGE_SLUG, $sectionKey);
     }
 
     /**
-     * Returns a non-empty string value from CMS content or a default.
+     * Gets a text value from a CMS section array.
+     * Returns the default if the key is missing or empty.
      */
-    private function getStringValue(array $content, string $key, string $default = ''): string
+    private function text(array $cms, string $key, string $default = ''): string
     {
-        $value = $content[$key] ?? null;
-        return is_string($value) && $value !== '' ? $value : $default;
+        $value = $cms[$key] ?? null;
+        $result = is_string($value) && $value !== '' ? $value : $default;
+
+        // The DB may store newlines as literal '\n' (backslash + n).
+        // Convert them to real newlines so nl2br() works in the view.
+        return str_replace('\n', "\n", $result);
     }
 
-    private function validateImagePath(string $path): string
+    /**
+     * Gets an image path from a CMS section array.
+     * Returns DEFAULT_IMAGE if the path is missing, empty, or invalid.
+     */
+    private function imagePath(array $cms, string $key): string
     {
+        $path = (string)($cms[$key] ?? '');
+
         if ($path === '' || !str_starts_with($path, '/assets/')) {
             return self::DEFAULT_IMAGE;
         }
 
-        return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), self::VALID_IMAGE_EXTENSIONS, true)
-            ? $path
-            : self::DEFAULT_IMAGE;
-    }
-
-    /**
-     * Resolves a card image path from the restaurant name.
-     *
-     * Convention: /assets/Image/restaurants/Restaurant-<Slug>-card.(png|jpg)
-     */
-    private function resolveCardImage(string $name): string
-    {
-        $slug = $this->sanitiseName($name);
-        if ($slug === '') {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!in_array($extension, self::VALID_IMAGE_EXTENSIONS, true)) {
             return self::DEFAULT_IMAGE;
         }
 
-        $base = '/assets/Image/restaurants/Restaurant-' . $slug . '-card';
-        $publicRoot = __DIR__ . '/../../public';
-
-        if (is_file($publicRoot . $base . '.png')) {
-            return $base . '.png';
-        }
-        if (is_file($publicRoot . $base . '.jpg')) {
-            return $base . '.jpg';
-        }
-
-        return self::DEFAULT_IMAGE;
-    }
-
-    /**
-     * Converts a restaurant name to a safe filename fragment.
-     * "Café de Roemer" → "CafeDeRoemer"
-     */
-    private function sanitiseName(string $name): string
-    {
-        $name = trim($name);
-        if ($name === '') {
-            return '';
-        }
-
-        $ascii = iconv('UTF-8', 'ASCII//TRANSLIT', $name);
-        if ($ascii !== false) {
-            $name = $ascii;
-        }
-
-        return preg_replace('/[^A-Za-z0-9]+/', '', $name) ?? '';
-    }
-
-    /**
-     * Parses an intro body blob with ## subsection markers.
-     *
-     * @return array{bodyText: string, subsections: ?array, closingLine: ?string}
-     */
-    private function parseIntroBody(string $raw): array
-    {
-        $result = ['bodyText' => '', 'subsections' => null, 'closingLine' => null];
-        $raw = trim(str_replace(["\r\n", "\r"], "\n", $raw));
-
-        if ($raw === '') {
-            return $result;
-        }
-
-        $blocks = preg_split("/\n\n+/", $raw);
-        if ($blocks === false || $blocks === []) {
-            return ['bodyText' => $raw] + $result;
-        }
-
-        $bodyParts = [];
-        $subsections = [];
-        $i = 0;
-
-        for (; $i < count($blocks); $i++) {
-            $b = trim($blocks[$i]);
-            if (str_starts_with($b, '## ')) {
-                break;
-            }
-            if ($b !== '') {
-                $bodyParts[] = $b;
-            }
-        }
-        $result['bodyText'] = implode("\n\n", $bodyParts);
-
-        for (; $i < count($blocks); $i++) {
-            $b = trim($blocks[$i]);
-            if ($b === '') {
-                continue;
-            }
-
-            if (str_starts_with($b, '## ')) {
-                $text = '';
-                if (($i + 1) < count($blocks)) {
-                    $next = trim($blocks[$i + 1]);
-                    if ($next !== '' && !str_starts_with($next, '## ')) {
-                        $text = $next;
-                        $i++;
-                    }
-                }
-                $subsections[] = ['heading' => trim(substr($b, 3)), 'text' => $text];
-                continue;
-            }
-
-            $result['closingLine'] = $b;
-        }
-
-        if ($subsections !== []) {
-            $result['subsections'] = $subsections;
-        }
-
-        return $result;
+        return $path;
     }
 }

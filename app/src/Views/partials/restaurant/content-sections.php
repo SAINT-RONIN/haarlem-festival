@@ -9,7 +9,9 @@ if ($viewModel->introSplit2Section !== null) {
     $introSplitSection = $viewModel->introSplit2Section;
     $sectionId = 'restaurants';
     $introSplitImageClass = null;
-    require __DIR__ . '/intro-split2-restaurant-section.php';
+    $introSplitReversed = true;
+    require __DIR__ . '/../sections/intro-split-section.php';
+    $introSplitReversed = false;  // Reset so it doesn't affect other sections
 }
 
 if ($viewModel->instructionsSection !== null) {
