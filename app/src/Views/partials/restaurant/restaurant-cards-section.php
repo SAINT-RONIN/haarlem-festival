@@ -100,9 +100,10 @@ $cards = $restaurantCardsSection->cards;
                         <?php endif; ?>
 
                         <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                            <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                            <a href="/restaurant/<?= $card->id ?>"
+                               class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 text-center">
                                 About it
-                            </button>
+                            </a>
                             <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                                 Book table
                             </button>

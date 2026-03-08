@@ -7,11 +7,13 @@ namespace App\Services;
 use App\Repositories\RestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
 use App\ViewModels\GradientSectionData;
+use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\Restaurant\InstructionCardData;
 use App\ViewModels\Restaurant\InstructionsSectionData;
 use App\ViewModels\Restaurant\RestaurantCardData;
 use App\ViewModels\Restaurant\RestaurantCardsSectionData;
+use App\ViewModels\Restaurant\RestaurantDetailViewModel;
 use App\ViewModels\Restaurant\RestaurantPageViewModel;
 
 /**
@@ -36,6 +38,7 @@ class RestaurantService implements IRestaurantService
     private const SECTION_INTRO_SPLIT2 = 'intro_split2_section';
     private const SECTION_INSTRUCTIONS = 'instructions_section';
     private const SECTION_CARDS        = 'restaurant_cards_section';
+    private const SECTION_DETAIL       = 'detail_section';
 
     // Fallback image shown when a CMS image path is missing or invalid.
     private const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
@@ -69,6 +72,126 @@ class RestaurantService implements IRestaurantService
             introSplit2Section:    $this->buildIntroSplit2Section(),
             instructionsSection:   $this->buildInstructionsSection(),
             restaurantCardsSection: $this->buildRestaurantCardsSection(),
+        );
+    }
+
+    /**
+     * Builds the detail page ViewModel for a single restaurant.
+     * Returns null if the restaurant is not found.
+     *
+     * All detail content comes from the Restaurant domain table columns.
+     * Images come from MediaAsset JOINs in the repository.
+     */
+    public function getRestaurantDetailData(int $id): ?RestaurantDetailViewModel
+    {
+        $restaurant = $this->restaurantRepository->findById($id);
+
+        if ($restaurant === null) {
+            return null;
+        }
+
+        // Read CMS labels for the detail page (admin-editable section titles).
+        $cms = $this->getCmsSection(self::SECTION_DETAIL);
+
+        // Build hero — subtitle template comes from CMS with {name} and {cuisine} placeholders.
+        $subtitleTemplate = $this->text($cms, 'detail_hero_subtitle_template');
+        $heroSubtitle = str_replace(
+            ['{name}', '{cuisine}'],
+            [$restaurant->name, $restaurant->cuisineType],
+            $subtitleTemplate
+        );
+
+        $heroData = new HeroData(
+            mainTitle: $restaurant->name,
+            subtitle: $heroSubtitle,
+            primaryButtonText: $this->text($cms, 'detail_hero_btn_primary'),
+            primaryButtonLink: '#reservation',
+            secondaryButtonText: $this->text($cms, 'detail_hero_btn_secondary'),
+            secondaryButtonLink: '/restaurant',
+            backgroundImageUrl: $restaurant->imagePath ?? self::DEFAULT_IMAGE,
+            currentPage: self::PAGE_SLUG,
+        );
+
+        // Parse cuisine type string into individual tags for the menu section.
+        $cuisineTags = array_map('trim', explode(',', $restaurant->cuisineType));
+        $cuisineTags = array_filter($cuisineTags, fn(string $tag) => $tag !== '');
+
+        // TODO: Replace with EventSession data when available.
+        // For now, time slots and prices are per-restaurant hardcoded lookups.
+        $restaurantData = $this->getRestaurantScheduleData($restaurant->name);
+        $timeSlots = $restaurantData['timeSlots'];
+        $priceCards = $restaurantData['priceCards'];
+
+        return new RestaurantDetailViewModel(
+            heroData: $heroData,
+            globalUi: $this->cmsService->buildGlobalUiData(),
+
+            id:          $restaurant->restaurantId,
+            name:        $restaurant->name,
+            cuisine:     $restaurant->cuisineType,
+            address:     $this->buildAddress($restaurant),
+            description: $this->cleanDescription($restaurant->descriptionHtml),
+            rating:      $restaurant->stars ?? 0,
+            image:       $restaurant->imagePath ?? self::DEFAULT_IMAGE,
+
+            phone:   $restaurant->phone ?? '',
+            email:   $restaurant->email ?? '',
+            website: $restaurant->website ?? '',
+
+            aboutText:  str_replace('\n', "\n", $restaurant->aboutText ?? ''),
+            aboutImage: $restaurant->aboutImagePath ?? self::DEFAULT_IMAGE,
+
+            chefName:  $restaurant->chefName ?? '',
+            chefText:  str_replace('\n', "\n", $restaurant->chefText ?? ''),
+            chefImage: $restaurant->chefImagePath ?? self::DEFAULT_IMAGE,
+
+            menuDescription: $restaurant->menuDescription ?? '',
+            cuisineTags:     array_values($cuisineTags),
+            menuImage1:      $restaurant->menuImage1Path ?? self::DEFAULT_IMAGE,
+            menuImage2:      $restaurant->menuImage2Path ?? self::DEFAULT_IMAGE,
+
+            locationDescription: str_replace('\n', "\n", $restaurant->locationDescription ?? ''),
+            mapEmbedUrl:         $restaurant->mapEmbedUrl ?? '',
+
+            michelinStars:       $restaurant->michelinStars ?? 0,
+            seatsPerSession:     $restaurant->seatsPerSession ?? 0,
+            durationMinutes:     $restaurant->durationMinutes ?? 0,
+            specialRequestsNote: $restaurant->specialRequestsNote ?? '',
+
+            galleryImage1: $restaurant->galleryImage1Path ?? self::DEFAULT_IMAGE,
+            galleryImage2: $restaurant->galleryImage2Path ?? self::DEFAULT_IMAGE,
+            galleryImage3: $restaurant->galleryImage3Path ?? self::DEFAULT_IMAGE,
+
+            reservationImage: $restaurant->reservationImagePath ?? self::DEFAULT_IMAGE,
+            timeSlots:        $timeSlots,
+            priceCards:       $priceCards,
+
+            // CMS labels — admin-editable section titles and labels
+            labelContactTitle:    $this->text($cms, 'detail_contact_title'),
+            labelAddress:         $this->text($cms, 'detail_label_address'),
+            labelContact:         $this->text($cms, 'detail_label_contact'),
+            labelOpenHours:       $this->text($cms, 'detail_label_open_hours'),
+            labelPracticalTitle:  $this->text($cms, 'detail_practical_title'),
+            labelPriceFood:       $this->text($cms, 'detail_label_price_food'),
+            labelRating:          $this->text($cms, 'detail_label_rating'),
+            labelSpecialRequests: $this->text($cms, 'detail_label_special_requests'),
+            labelGalleryTitle:    $this->text($cms, 'detail_gallery_title'),
+            labelAboutPrefix:     $this->text($cms, 'detail_about_title_prefix'),
+            labelChefTitle:       $this->text($cms, 'detail_chef_title'),
+            labelMenuTitle:       $this->text($cms, 'detail_menu_title'),
+            labelCuisineType:     $this->text($cms, 'detail_menu_cuisine_label'),
+            labelLocationTitle:   $this->text($cms, 'detail_location_title'),
+            labelLocationAddress: $this->text($cms, 'detail_location_address_label'),
+            labelReservationTitle: $this->text($cms, 'detail_reservation_title'),
+            labelReservationDesc: $this->text($cms, 'detail_reservation_description'),
+            labelSlotsLabel:      $this->text($cms, 'detail_reservation_slots_label'),
+            labelReservationNote: $this->text($cms, 'detail_reservation_note'),
+            labelReservationBtn:  $this->text($cms, 'detail_reservation_btn'),
+            labelDuration:        $this->text($cms, 'detail_label_duration'),
+            labelSeats:           $this->text($cms, 'detail_label_seats'),
+            labelFestivalRated:   $this->text($cms, 'detail_label_festival_rated'),
+            labelMichelin:        $this->text($cms, 'detail_label_michelin'),
+            labelMapFallback:     $this->text($cms, 'detail_map_fallback_text'),
         );
     }
 
@@ -174,8 +297,8 @@ class RestaurantService implements IRestaurantService
         $restaurants = $this->restaurantRepository->findAllActive();
 
         return new RestaurantCardsSectionData(
-            title:    $this->text($cms, 'cards_title', 'Explore the participant restaurants'),
-            subtitle: $this->text($cms, 'cards_subtitle', 'Discover all restaurants participating in Yummy! Each one offers a special festival menu, unique flavors, and limited time slots throughout the weekend.'),
+            title:    $this->text($cms, 'cards_title'),
+            subtitle: $this->text($cms, 'cards_subtitle'),
             filters:  $this->buildCuisineFilters($restaurants),
             cards:    $this->buildCards($restaurants),
         );
@@ -223,6 +346,7 @@ class RestaurantService implements IRestaurantService
 
         foreach ($restaurants as $restaurant) {
             $cards[] = new RestaurantCardData(
+                id:          $restaurant->restaurantId,
                 name:        $restaurant->name,
                 cuisine:     $restaurant->cuisineType,
                 address:     $this->buildAddress($restaurant),
@@ -310,5 +434,34 @@ class RestaurantService implements IRestaurantService
         }
 
         return $path;
+    }
+
+    /**
+     * Returns per-restaurant time slots and price cards.
+     * TODO: Replace with EventSession/pricing data from database.
+     */
+    private function getRestaurantScheduleData(string $name): array
+    {
+        $schedules = [
+            'Ratatouille' => [
+                'timeSlots' => ['17:00', '19:15', '21:30'],
+                'priceCards' => [
+                    ['label' => 'Per adult (drinks not included)', 'price' => '€ 45.00'],
+                    ['label' => 'Under 12 (drinks not included)',  'price' => '€ 22.50'],
+                ],
+            ],
+            'Urban Frenchy Bistro Toujours' => [
+                'timeSlots' => ['17:30', '19:15', '21:00'],
+                'priceCards' => [
+                    ['label' => 'Per adult (drinks not included)', 'price' => '€ 35.00'],
+                    ['label' => 'Under 12 (drinks not included)',  'price' => '€ 17.50'],
+                ],
+            ],
+        ];
+
+        return $schedules[$name] ?? [
+            'timeSlots' => [],
+            'priceCards' => [],
+        ];
     }
 }
