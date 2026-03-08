@@ -31,6 +31,45 @@ class Restaurant
         // Image path from MediaAsset table (filled by JOIN in repository).
         // null when the restaurant has no linked image.
         public readonly ?string            $imagePath = null,
+
+        // --- Detail page fields (added by migration v29) ---
+        // Contact info
+        public readonly ?string $phone = null,
+        public readonly ?string $email = null,
+        public readonly ?string $website = null,
+        // About section
+        public readonly ?string $aboutText = null,
+        // Chef section
+        public readonly ?string $chefName = null,
+        public readonly ?string $chefText = null,
+        // Menu section
+        public readonly ?string $menuDescription = null,
+        // Location section
+        public readonly ?string $locationDescription = null,
+        public readonly ?string $mapEmbedUrl = null,
+        // Practical info
+        public readonly ?int    $michelinStars = null,
+        public readonly ?int    $seatsPerSession = null,
+        public readonly ?int    $durationMinutes = null,
+        public readonly ?string $specialRequestsNote = null,
+        // Gallery & section image asset IDs
+        public readonly ?int    $galleryImage1AssetId = null,
+        public readonly ?int    $galleryImage2AssetId = null,
+        public readonly ?int    $galleryImage3AssetId = null,
+        public readonly ?int    $aboutImageAssetId = null,
+        public readonly ?int    $chefImageAssetId = null,
+        public readonly ?int    $menuImage1AssetId = null,
+        public readonly ?int    $menuImage2AssetId = null,
+        public readonly ?int    $reservationImageAssetId = null,
+        // Image paths resolved from MediaAsset JOINs (detail page only)
+        public readonly ?string $galleryImage1Path = null,
+        public readonly ?string $galleryImage2Path = null,
+        public readonly ?string $galleryImage3Path = null,
+        public readonly ?string $aboutImagePath = null,
+        public readonly ?string $chefImagePath = null,
+        public readonly ?string $menuImage1Path = null,
+        public readonly ?string $menuImage2Path = null,
+        public readonly ?string $reservationImagePath = null,
     ) {
     }
 
@@ -52,8 +91,39 @@ class Restaurant
             isActive: (bool)$row['IsActive'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
             // ImagePath comes from the LEFT JOIN with MediaAsset.
-            // It will be null when there is no linked image.
             imagePath: isset($row['ImagePath']) ? (string)$row['ImagePath'] : null,
+
+            // Detail page fields (may be null if columns don't exist yet)
+            phone: $row['Phone'] ?? null,
+            email: $row['Email'] ?? null,
+            website: $row['Website'] ?? null,
+            aboutText: $row['AboutText'] ?? null,
+            chefName: $row['ChefName'] ?? null,
+            chefText: $row['ChefText'] ?? null,
+            menuDescription: $row['MenuDescription'] ?? null,
+            locationDescription: $row['LocationDescription'] ?? null,
+            mapEmbedUrl: $row['MapEmbedUrl'] ?? null,
+            michelinStars: isset($row['MichelinStars']) ? (int)$row['MichelinStars'] : null,
+            seatsPerSession: isset($row['SeatsPerSession']) ? (int)$row['SeatsPerSession'] : null,
+            durationMinutes: isset($row['DurationMinutes']) ? (int)$row['DurationMinutes'] : null,
+            specialRequestsNote: $row['SpecialRequestsNote'] ?? null,
+            galleryImage1AssetId: isset($row['GalleryImage1AssetId']) ? (int)$row['GalleryImage1AssetId'] : null,
+            galleryImage2AssetId: isset($row['GalleryImage2AssetId']) ? (int)$row['GalleryImage2AssetId'] : null,
+            galleryImage3AssetId: isset($row['GalleryImage3AssetId']) ? (int)$row['GalleryImage3AssetId'] : null,
+            aboutImageAssetId: isset($row['AboutImageAssetId']) ? (int)$row['AboutImageAssetId'] : null,
+            chefImageAssetId: isset($row['ChefImageAssetId']) ? (int)$row['ChefImageAssetId'] : null,
+            menuImage1AssetId: isset($row['MenuImage1AssetId']) ? (int)$row['MenuImage1AssetId'] : null,
+            menuImage2AssetId: isset($row['MenuImage2AssetId']) ? (int)$row['MenuImage2AssetId'] : null,
+            reservationImageAssetId: isset($row['ReservationImageAssetId']) ? (int)$row['ReservationImageAssetId'] : null,
+            // Image paths from JOINs (only present in detail queries)
+            galleryImage1Path: $row['GalleryImage1Path'] ?? null,
+            galleryImage2Path: $row['GalleryImage2Path'] ?? null,
+            galleryImage3Path: $row['GalleryImage3Path'] ?? null,
+            aboutImagePath: $row['AboutImagePath'] ?? null,
+            chefImagePath: $row['ChefImagePath'] ?? null,
+            menuImage1Path: $row['MenuImage1Path'] ?? null,
+            menuImage2Path: $row['MenuImage2Path'] ?? null,
+            reservationImagePath: $row['ReservationImagePath'] ?? null,
         );
     }
 
@@ -74,6 +144,19 @@ class Restaurant
             'ImageAssetId' => $this->imageAssetId,
             'IsActive' => $this->isActive,
             'CreatedAtUtc' => $this->createdAtUtc->format('Y-m-d H:i:s'),
+            'Phone' => $this->phone,
+            'Email' => $this->email,
+            'Website' => $this->website,
+            'AboutText' => $this->aboutText,
+            'ChefName' => $this->chefName,
+            'ChefText' => $this->chefText,
+            'MenuDescription' => $this->menuDescription,
+            'LocationDescription' => $this->locationDescription,
+            'MapEmbedUrl' => $this->mapEmbedUrl,
+            'MichelinStars' => $this->michelinStars,
+            'SeatsPerSession' => $this->seatsPerSession,
+            'DurationMinutes' => $this->durationMinutes,
+            'SpecialRequestsNote' => $this->specialRequestsNote,
         ];
     }
 }

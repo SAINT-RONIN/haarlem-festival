@@ -34,4 +34,26 @@ class RestaurantController extends BaseController
             ControllerErrorResponder::respond($error);
         }
     }
+
+    /**
+     * Displays a single restaurant detail page.
+     *
+     * GET /restaurant/{id}
+     */
+    public function detail(string $id): void
+    {
+        try {
+            $viewModel = $this->restaurantService->getRestaurantDetailData((int) $id);
+
+            if ($viewModel === null) {
+                http_response_code(404);
+                require __DIR__ . '/../Views/pages/errors/404.php';
+                return;
+            }
+
+            $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
 }
