@@ -97,6 +97,8 @@ class ScheduleService implements IScheduleService
         $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
         $noEventsText = $this->getStringValue($cmsContent, 'schedule_no_events_text', 'No events scheduled');
 
+
+
         // Build day ViewModels
         $days = $this->buildScheduleDays(
             $scheduleData,
@@ -323,6 +325,21 @@ class ScheduleService implements IScheduleService
         // For History, the card title should be the start time (e.g., "10:00") instead of the generic event title.
         $eventTitle = $eventTypeSlug === 'history' ? $startDateTime->format('H:i') : ($session['EventTitle'] ?? '');
 
+        //for history, get schedule_start_point from CMS so it can be used as the location name
+        $historyStartPoint = null;
+        if ($eventTypeSlug === 'history') {
+            $cmsContent = $this->cmsService->getSectionContent("history", 'schedule_section');
+            $historyStartPoint = $this->getStringValue($cmsContent, 'schedule_start_point', 'A giant flag near Church of St. Bavo at Grote Markt');
+        }
+
+        // Determine location name:
+        // - For history: CMS schedule_start_point
+        // - For other event types: keep using VenueName from the session.
+        $locationName = $session['VenueName'] ?? '';
+        if ($eventTypeSlug === 'history' && $historyStartPoint !== null && $historyStartPoint !== '') {
+            $locationName = $historyStartPoint;
+        }
+
         return new ScheduleEventCardViewModel(
             eventSessionId: $sessionId,
             eventId: $eventId,
@@ -333,7 +350,7 @@ class ScheduleService implements IScheduleService
             isPayWhatYouLike: $priceResult['isPayWhatYouLike'],
             ctaLabel: $ctaLabel,
             ctaUrl: $ctaUrl,
-            locationName: $session['VenueName'] ?? '',
+            locationName: $locationName,
             hallName: $session['HallName'] ?? '',
             dateDisplay: $startDateTime->format('l, F j'),
             isoDate: $startDateTime->format('Y-m-d'),
