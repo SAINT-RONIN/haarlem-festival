@@ -190,6 +190,9 @@ class ScheduleService implements IScheduleService
                 );
             }
 
+            // Merge history events with same time/title into one card with combined labels
+            $events = $this->mergeHistoryEventsByTimeAndTitle($events, $eventTypeSlug);
+
             $dayViewModels[] = new ScheduleDayViewModel(
                 dayName: $dateObj->format('l'),
                 dateFormatted: $dateObj->format('l, F j'),
@@ -200,6 +203,78 @@ class ScheduleService implements IScheduleService
         }
 
         return $dayViewModels;
+    }
+
+    /**
+     * For history schedules, merge events that share the same start time and title into a single card
+     * with combined, de-duplicated labels. Other event types are returned unchanged.
+     *
+     * @param ScheduleEventCardViewModel[] $events
+     * @return ScheduleEventCardViewModel[]
+     */
+    private function mergeHistoryEventsByTimeAndTitle(array $events, string $eventTypeSlug): array
+    {
+        if ($eventTypeSlug !== 'history' || empty($events)) {
+            return $events;
+        }
+
+        $grouped = [];
+
+        foreach ($events as $event) {
+            if (!$event instanceof ScheduleEventCardViewModel) {
+                // Safety: if something unexpected is in the array, keep it as-is using a unique key
+                $grouped[spl_object_hash($event)] = $event;
+                continue;
+            }
+
+            // Use start time + title as a stable grouping key
+            $key = $event->startTimeIso . '|' . $event->title;
+
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = $event;
+                continue;
+            }
+
+            /** @var ScheduleEventCardViewModel $existing */
+            $existing = $grouped[$key];
+
+            // Merge and de-duplicate labels
+            $mergedLabels = array_values(array_unique(array_merge($existing->labels, $event->labels)));
+
+            // Create a new immutable view model instance with merged labels, preserving other fields
+            $grouped[$key] = new ScheduleEventCardViewModel(
+                eventSessionId: $existing->eventSessionId,
+                eventId: $existing->eventId,
+                eventTypeSlug: $existing->eventTypeSlug,
+                eventTypeId: $existing->eventTypeId,
+                title: $existing->title,
+                priceDisplay: $existing->priceDisplay,
+                isPayWhatYouLike: $existing->isPayWhatYouLike,
+                ctaLabel: $existing->ctaLabel,
+                ctaUrl: $existing->ctaUrl,
+                locationName: $existing->locationName,
+                hallName: $existing->hallName,
+                dateDisplay: $existing->dateDisplay,
+                isoDate: $existing->isoDate,
+                timeDisplay: $existing->timeDisplay,
+                startTimeIso: $existing->startTimeIso,
+                endTimeIso: $existing->endTimeIso,
+                labels: $mergedLabels,
+                capacityTotal: $existing->capacityTotal,
+                seatsAvailable: $existing->seatsAvailable,
+                minAge: $existing->minAge,
+                maxAge: $existing->maxAge,
+                ageLabel: $existing->ageLabel,
+                historyTicketLabel: $existing->historyTicketLabel,
+                artistName: $existing->artistName,
+                artistImageUrl: $existing->artistImageUrl,
+                historyVenue: $existing->historyVenue,
+                groupTicketInfo: $existing->groupTicketInfo,
+            );
+        }
+
+        // Re-index to get a clean numeric array
+        return array_values($grouped);
     }
 
     /**
