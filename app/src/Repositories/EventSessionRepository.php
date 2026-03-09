@@ -167,6 +167,76 @@ class EventSessionRepository implements IEventSessionRepository
     }
 
     /**
+     * Returns schedule data for a specific event (all its sessions grouped by day).
+     * Used on detail pages to show only that event's sessions.
+     *
+     * @param int $eventId
+     * @return array Array with 'days' and 'sessions' keys
+     */
+    public function findByEventIdForDetailPage(int $eventId): array
+    {
+        $daysStmt = $this->pdo->prepare('
+            SELECT DISTINCT DATE(es.StartDateTime) AS Date
+            FROM EventSession es
+            WHERE es.EventId = :eventId
+              AND es.IsActive = 1
+              AND es.IsCancelled = 0
+            ORDER BY Date ASC
+        ');
+        $daysStmt->execute(['eventId' => $eventId]);
+        $days = $daysStmt->fetchAll();
+
+        if (empty($days)) {
+            return ['days' => [], 'sessions' => []];
+        }
+
+        $dates = array_column($days, 'Date');
+        $datePlaceholders = implode(',', array_fill(0, count($dates), '?'));
+
+        $sessionsStmt = $this->pdo->prepare("
+            SELECT
+                es.EventSessionId,
+                es.EventId,
+                es.StartDateTime,
+                es.EndDateTime,
+                es.CtaLabel,
+                es.CtaUrl,
+                es.CapacityTotal,
+                es.SoldSingleTickets,
+                es.SoldReservedSeats,
+                es.HallName,
+                es.HistoryTicketLabel,
+                DATE(es.StartDateTime) AS SessionDate,
+                e.Title AS EventTitle,
+                e.EventTypeId,
+                et.Slug AS EventTypeSlug,
+                v.Name AS VenueName,
+                a.Name AS ArtistName,
+                ma.FilePath AS ArtistImageUrl
+            FROM EventSession es
+            INNER JOIN Event e ON es.EventId = e.EventId
+            INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
+            LEFT JOIN Venue v ON e.VenueId = v.VenueId
+            LEFT JOIN Artist a ON e.ArtistId = a.ArtistId
+            LEFT JOIN MediaAsset ma ON a.ImageAssetId = ma.MediaAssetId
+            WHERE es.EventId = ?
+              AND es.IsActive = 1
+              AND es.IsCancelled = 0
+              AND DATE(es.StartDateTime) IN ($datePlaceholders)
+            ORDER BY DATE(es.StartDateTime) ASC, es.StartDateTime ASC
+        ");
+
+        $params = array_merge([$eventId], $dates);
+        $sessionsStmt->execute($params);
+        $sessions = $sessionsStmt->fetchAll();
+
+        return [
+            'days' => $days,
+            'sessions' => $sessions,
+        ];
+    }
+
+    /**
      * Returns storytelling schedule data.
      *
      * Fetches up to 7 active days for storytelling (EventTypeId = 4).

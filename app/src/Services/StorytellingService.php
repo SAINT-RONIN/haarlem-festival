@@ -7,9 +7,11 @@ namespace App\Services;
 use App\Enums\PriceTierId;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
+use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
+use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\IStorytellingService;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
@@ -18,6 +20,8 @@ use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 use App\ViewModels\Storytelling\MasonryImageData;
 use App\ViewModels\Storytelling\MasonrySectionData;
+use App\ViewModels\Storytelling\StoryHighlightData;
+use App\ViewModels\Storytelling\StorytellingDetailPageViewModel;
 use App\ViewModels\Storytelling\StorytellingPageViewModel;
 
 /**
@@ -29,9 +33,11 @@ class StorytellingService implements IStorytellingService
 {
     private CmsService $cmsService;
     private CmsEventsService $cmsEventsService;
+    private EventRepository $eventRepository;
     private EventSessionRepository $eventSessionRepository;
     private EventSessionLabelRepository $labelRepository;
     private EventSessionPriceRepository $priceRepository;
+    private MediaAssetRepository $mediaAssetRepository;
 
     private const DEFAULT_IMAGE = '/assets/Image/Image (Story).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'heic'];
@@ -46,9 +52,11 @@ class StorytellingService implements IStorytellingService
     {
         $this->cmsService = new CmsService();
         $this->cmsEventsService = new CmsEventsService();
+        $this->eventRepository = new EventRepository();
         $this->eventSessionRepository = new EventSessionRepository();
         $this->labelRepository = new EventSessionLabelRepository();
         $this->priceRepository = new EventSessionPriceRepository();
+        $this->mediaAssetRepository = new MediaAssetRepository();
     }
 
     /**
@@ -63,6 +71,167 @@ class StorytellingService implements IStorytellingService
             introSplitSection: $this->buildIntroSplitSection(),
             masonrySection: $this->buildMasonrySection(),
             scheduleSection: $this->buildScheduleSection(),
+        );
+    }
+
+    /**
+     * Builds the storytelling detail page view model for a single event.
+     *
+     * @throws \RuntimeException if the event is not found or not a storytelling event
+     */
+    public function getStorytellingDetailPageData(int $eventId): StorytellingDetailPageViewModel
+    {
+        $event = $this->eventRepository->findByIdWithDetails($eventId);
+
+        if (!$event || (int)$event['EventTypeId'] !== 4) {
+            throw new \RuntimeException("Storytelling event {$eventId} not found.");
+        }
+
+        // Hero image from featured media asset
+        $heroImageUrl = self::DEFAULT_IMAGE;
+        if (!empty($event['FeaturedImageAssetId'])) {
+            $asset = $this->mediaAssetRepository->findById((int)$event['FeaturedImageAssetId']);
+            if ($asset) {
+                $heroImageUrl = $this->validateImagePath($asset->filePath);
+            }
+        }
+
+        // CMS content scoped to this event (optional, graceful fallback)
+        $cms = $this->cmsService->getSectionContent('storytelling-detail', 'event_' . $eventId);
+
+        $aboutHeading = $this->getStringValue($cms, 'about_heading', $event['Title']);
+        $aboutBodyHtml = !empty($cms['about_body'])
+            ? $cms['about_body']
+            : ($event['LongDescriptionHtml'] ?? htmlspecialchars($event['ShortDescription'] ?? ''));
+
+        $aboutImage1Url = $this->validateImagePath($cms['about_image_1'] ?? '');
+        $aboutImage2Url = $this->validateImagePath($cms['about_image_2'] ?? '');
+
+        // Story highlights (up to 3 from CMS)
+        $highlights = $this->buildHighlights($cms);
+
+        // Gallery images (up to 5 from CMS)
+        $galleryImages = $this->buildGalleryImages($cms);
+
+        $videoUrl = $cms['video_url'] ?? '';
+
+        // Labels from the event's sessions (first available session)
+        $labels = $this->buildEventLabels($eventId);
+
+        // Schedule filtered to this event
+        $scheduleSection = $this->buildDetailScheduleSection($eventId, $event);
+
+        return new StorytellingDetailPageViewModel(
+            globalUi: $this->cmsService->buildGlobalUiData(),
+            eventId: $eventId,
+            title: $event['Title'],
+            subtitle: $event['ShortDescription'] ?? '',
+            heroImageUrl: $heroImageUrl,
+            labels: $labels,
+            aboutHeading: $aboutHeading,
+            aboutBodyHtml: $aboutBodyHtml,
+            aboutImage1Url: $aboutImage1Url,
+            aboutImage2Url: $aboutImage2Url,
+            highlights: $highlights,
+            galleryImages: $galleryImages,
+            videoUrl: $videoUrl,
+            scheduleSection: $scheduleSection,
+        );
+    }
+
+    /**
+     * Builds story highlight cards from CMS (up to 3).
+     */
+    private function buildHighlights(array $cms): array
+    {
+        $highlights = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $title = $cms["highlight_{$i}_title"] ?? '';
+            if (empty($title)) {
+                continue;
+            }
+            $highlights[] = new StoryHighlightData(
+                imageUrl: $this->validateImagePath($cms["highlight_{$i}_image"] ?? ''),
+                title: $title,
+                description: $cms["highlight_{$i}_description"] ?? '',
+            );
+        }
+        return $highlights;
+    }
+
+    /**
+     * Builds gallery image URL list from CMS (up to 5).
+     */
+    private function buildGalleryImages(array $cms): array
+    {
+        $images = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $path = $cms["gallery_image_{$i}"] ?? '';
+            $images[] = $this->validateImagePath($path);
+        }
+        return $images;
+    }
+
+    /**
+     * Collects display labels from the first session of an event.
+     */
+    private function buildEventLabels(int $eventId): array
+    {
+        $scheduleData = $this->eventSessionRepository->findByEventIdForDetailPage($eventId);
+        $sessions = $scheduleData['sessions'] ?? [];
+
+        if (empty($sessions)) {
+            return [];
+        }
+
+        $sessionId = (int)$sessions[0]['EventSessionId'];
+        $labelsMap = $this->labelRepository->findBySessionIds([$sessionId]);
+        $sessionLabels = $labelsMap[$sessionId] ?? [];
+
+        return array_map(fn ($l) => $l->labelText, $sessionLabels);
+    }
+
+    /**
+     * Builds the schedule section for a single event's sessions.
+     */
+    private function buildDetailScheduleSection(int $eventId, array $event): ScheduleSectionViewModel
+    {
+        $cmsContent = $this->cmsService->getSectionContent('storytelling', 'schedule_section');
+
+        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
+        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
+        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Add to program');
+
+        $scheduleData = $this->eventSessionRepository->findByEventIdForDetailPage($eventId);
+
+        $days = $this->buildScheduleDays(
+            $scheduleData,
+            $ctaButtonText,
+            $payWhatYouLikeText,
+            $currencySymbol
+        );
+
+        $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
+
+        return new ScheduleSectionViewModel(
+            sectionId: 'storytelling-detail-schedule',
+            title: 'Storytelling schedule',
+            year: '2026',
+            eventTypeSlug: 'storytelling',
+            eventTypeId: 4,
+            filtersButtonText: '',
+            showFilters: false,
+            additionalInfoTitle: '',
+            additionalInfoBody: '',
+            showAdditionalInfo: false,
+            eventCountLabel: 'sessions',
+            eventCount: $eventCount,
+            showEventCount: false,
+            ctaButtonText: $ctaButtonText,
+            payWhatYouLikeText: $payWhatYouLikeText,
+            currencySymbol: $currencySymbol,
+            noEventsText: 'No sessions scheduled.',
+            days: $days,
         );
     }
 
@@ -385,7 +554,8 @@ class StorytellingService implements IStorytellingService
 
         // CTA label: use session-specific if set, otherwise default
         $ctaLabel = !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText;
-        $ctaUrl = $session['CtaUrl'] ?? '#';
+        // Default to the storytelling detail page when no explicit booking URL is set
+        $ctaUrl = !empty($session['CtaUrl']) ? $session['CtaUrl'] : '/storytelling/' . $eventId;
 
         // Calculate available seats for jazz
         $capacityTotal = (int)($session['CapacityTotal'] ?? 0);
