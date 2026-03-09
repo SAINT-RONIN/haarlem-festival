@@ -20,10 +20,10 @@ $venues  = $venuesData->venues;
     <div class="text-slate-800 text-5xl font-bold font-['Montserrat'] leading-[62px]">
         <?= htmlspecialchars($heading) ?>
     </div>
-    <div class="w-full inline-flex flex-wrap justify-center items-stretch gap-8 xl:gap-12">
+    <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-8 xl:gap-12">
         <?php foreach ($venues as $venue): ?>
             <?php /** @var VenueCardData $venue */ ?>
-            <article class="flex-1 min-w-[280px] max-w-sm bg-white rounded-2xl shadow-[0px_0px_24px_-2px_rgba(0,0,0,0.25)] inline-flex flex-col justify-start items-stretch overflow-hidden">
+            <article class="w-full bg-white rounded-2xl shadow-[0px_0px_24px_-2px_rgba(0,0,0,0.25)] flex flex-col justify-start items-stretch overflow-hidden">
                 <img
                     class="w-full aspect-[541/510] p-2.5 object-cover"
                     src="<?= htmlspecialchars($venue->imageUrl) ?>"
