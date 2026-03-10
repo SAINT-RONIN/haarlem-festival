@@ -40,6 +40,13 @@ class StorytellingService implements IStorytellingService
     private const DEFAULT_MASONRY_HEADING = 'Captured storytelling moments';
     private const DEFAULT_IMAGE_ALT_TEXT = 'Storytelling moment';
 
+    private const DEFAULT_BACK_BUTTON_LABEL = 'Back to storytelling';
+    private const DEFAULT_RESERVE_BUTTON_LABEL = 'Reserve your spot';
+    private const DEFAULT_HIGHLIGHTS_HEADING = 'Story highlights';
+    private const DEFAULT_GALLERY_HEADING = 'Where stories come alive';
+    private const DEFAULT_VIDEO_HEADING = 'A moment from the show';
+    private const DEFAULT_VIDEO_PLACEHOLDER = 'Video coming soon';
+
     private const MASONRY_COLUMNS = 4;
     private const MASONRY_IMAGES_PER_COLUMN = 3;
     private const MASONRY_TOTAL_IMAGES = 12;
@@ -101,6 +108,38 @@ class StorytellingService implements IStorytellingService
      */
     public function getStorytellingDetailPageData(int $eventId): StorytellingDetailPageViewModel
     {
+        $event = $this->findStorytellingEvent($eventId);
+        $cms = $this->getDetailSectionContent($eventId);
+
+        return new StorytellingDetailPageViewModel(
+            globalUi: $this->cmsService->buildGlobalUiData(),
+            eventId: $eventId,
+            title: $event['Title'],
+            subtitle: $event['ShortDescription'] ?? '',
+            heroImageUrl: $this->resolveHeroImage($event),
+            labels: $this->buildEventLabels($eventId),
+            backButtonLabel: $this->getStringValue($cms, 'back_button_label', self::DEFAULT_BACK_BUTTON_LABEL),
+            reserveButtonLabel: $this->getStringValue($cms, 'reserve_button_label', self::DEFAULT_RESERVE_BUTTON_LABEL),
+            aboutHeading: $this->getStringValue($cms, 'about_heading', $event['Title']),
+            aboutBodyHtml: $this->resolveAboutBody($cms, $event),
+            aboutImage1Url: $this->validateImagePath((string)($cms['about_image_1'] ?? '')),
+            aboutImage2Url: $this->validateImagePath((string)($cms['about_image_2'] ?? '')),
+            highlights: $this->buildHighlights($cms),
+            highlightsSectionHeading: $this->getStringValue($cms, 'highlights_heading', self::DEFAULT_HIGHLIGHTS_HEADING),
+            galleryImages: $this->buildGalleryImages($cms),
+            gallerySectionHeading: $this->getStringValue($cms, 'gallery_heading', self::DEFAULT_GALLERY_HEADING),
+            videoSectionHeading: $this->getStringValue($cms, 'video_heading', self::DEFAULT_VIDEO_HEADING),
+            videoUrl: $cms['video_url'] ?? '',
+            videoPlaceholderText: $this->getStringValue($cms, 'video_placeholder', self::DEFAULT_VIDEO_PLACEHOLDER),
+            scheduleSection: $this->buildScheduleSection(),
+        );
+    }
+
+    /**
+     * @throws \RuntimeException if the event does not exist or is not a storytelling event
+     */
+    private function findStorytellingEvent(int $eventId): array
+    {
         $events = $this->eventRepository->findEvents(['eventId' => $eventId]);
         $event = $events[0] ?? null;
 
@@ -108,25 +147,12 @@ class StorytellingService implements IStorytellingService
             throw new \RuntimeException("Storytelling event {$eventId} not found.");
         }
 
-        $heroImageUrl = $this->resolveHeroImage($event);
-        $cms = $this->cmsService->getSectionContent('storytelling-detail', 'event_' . $eventId);
+        return $event;
+    }
 
-        return new StorytellingDetailPageViewModel(
-            globalUi: $this->cmsService->buildGlobalUiData(),
-            eventId: $eventId,
-            title: $event['Title'],
-            subtitle: $event['ShortDescription'] ?? '',
-            heroImageUrl: $heroImageUrl,
-            labels: $this->buildEventLabels($eventId),
-            aboutHeading: $this->getStringValue($cms, 'about_heading', $event['Title']),
-            aboutBodyHtml: $this->resolveAboutBody($cms, $event),
-            aboutImage1Url: $this->validateImagePath((string)($cms['about_image_1'] ?? '')),
-            aboutImage2Url: $this->validateImagePath((string)($cms['about_image_2'] ?? '')),
-            highlights: $this->buildHighlights($cms),
-            galleryImages: $this->buildGalleryImages($cms),
-            videoUrl: $cms['video_url'] ?? '',
-            scheduleSection: $this->buildScheduleSection(),
-        );
+    private function getDetailSectionContent(int $eventId): array
+    {
+        return $this->cmsService->getSectionContent('storytelling-detail', 'event_' . $eventId);
     }
 
     private function resolveHeroImage(array $event): string
@@ -145,7 +171,7 @@ class StorytellingService implements IStorytellingService
         if (!empty($cms['about_body'])) {
             return $cms['about_body'];
         }
-        return $event['LongDescriptionHtml'] ?? htmlspecialchars($event['ShortDescription'] ?? '');
+        return $event['LongDescriptionHtml'] ?? ($event['ShortDescription'] ?? '');
     }
 
     /**

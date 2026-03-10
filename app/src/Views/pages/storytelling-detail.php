@@ -87,13 +87,13 @@ $isLoggedIn      = $globalUi->isLoggedIn;
                             <a href="/logout"
                                class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                                 <i data-lucide="log-out" class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200" aria-hidden="true"></i>
-                                <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200">Logout</span>
+                                <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200"><?= htmlspecialchars($globalUi->logoutLabel) ?></span>
                             </a>
                         <?php else: ?>
                             <a href="/login"
                                class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                                 <i data-lucide="log-in" class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200" aria-hidden="true"></i>
-                                <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200">Login</span>
+                                <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200"><?= htmlspecialchars($globalUi->loginLabel) ?></span>
                             </a>
                         <?php endif; ?>
                     </div>
@@ -142,14 +142,14 @@ $isLoggedIn      = $globalUi->isLoggedIn;
                              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M15 18l-6-6 6-6"/>
                         </svg>
-                        Back to storytelling
+                        <?= htmlspecialchars($viewModel->backButtonLabel) ?>
                     </a>
                     <a href="#storytelling-detail-schedule"
                        class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3.5
                               bg-red hover:bg-royal-blue rounded-lg sm:rounded-xl md:rounded-2xl
                               text-white text-sm sm:text-base md:text-lg font-normal
                               transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                        Reserve your spot
+                        <?= htmlspecialchars($viewModel->reserveButtonLabel) ?>
                     </a>
                 </div>
             </div>
@@ -192,7 +192,7 @@ $isLoggedIn      = $globalUi->isLoggedIn;
              aria-labelledby="highlights-heading">
         <h2 id="highlights-heading"
             class="text-royal-blue text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold">
-            Story highlights
+            <?= htmlspecialchars($viewModel->highlightsSectionHeading) ?>
         </h2>
         <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
             <?php foreach ($viewModel->highlights as $highlight): ?>
@@ -222,7 +222,7 @@ $isLoggedIn      = $globalUi->isLoggedIn;
              aria-labelledby="gallery-heading">
         <h2 id="gallery-heading"
             class="text-royal-blue text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold">
-            Where stories come alive
+            <?= htmlspecialchars($viewModel->gallerySectionHeading) ?>
         </h2>
         <!-- Top row: 3 images -->
         <?php if (!empty($viewModel->galleryImages)): ?>
@@ -230,7 +230,7 @@ $isLoggedIn      = $globalUi->isLoggedIn;
             <div class="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 lg:gap-12 h-auto sm:h-72 md:h-80 lg:h-96">
                 <?php foreach (array_slice($viewModel->galleryImages, 0, 3) as $imgUrl): ?>
                     <div class="rounded-3xl overflow-hidden h-48 sm:h-full">
-                        <img src="<?= htmlspecialchars($imgUrl) ?>" alt="Story moment"
+                        <img src="<?= htmlspecialchars($imgUrl) ?>" alt="<?= htmlspecialchars($viewModel->gallerySectionHeading) ?>"
                              class="w-full h-full object-cover">
                     </div>
                 <?php endforeach; ?>
@@ -241,7 +241,7 @@ $isLoggedIn      = $globalUi->isLoggedIn;
             <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 lg:gap-12 h-auto sm:h-[300px] md:h-[400px] lg:h-[500px]">
                 <?php foreach ($bottomImages as $imgUrl): ?>
                     <div class="rounded-3xl overflow-hidden h-48 sm:h-full">
-                        <img src="<?= htmlspecialchars($imgUrl) ?>" alt="Story moment"
+                        <img src="<?= htmlspecialchars($imgUrl) ?>" alt="<?= htmlspecialchars($viewModel->gallerySectionHeading) ?>"
                              class="w-full h-full object-cover">
                     </div>
                 <?php endforeach; ?>
@@ -259,20 +259,19 @@ $isLoggedIn      = $globalUi->isLoggedIn;
              aria-labelledby="video-heading">
         <h2 id="video-heading"
             class="text-royal-blue text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold">
-            A moment from the show
+            <?= htmlspecialchars($viewModel->videoSectionHeading) ?>
         </h2>
         <div class="w-full rounded-2xl overflow-hidden bg-royal-blue/10 aspect-video flex items-center justify-center">
             <?php if (!empty($viewModel->videoUrl)): ?>
                 <iframe
                     src="<?= htmlspecialchars($viewModel->videoUrl) ?>"
                     class="w-full h-full"
-                    title="A moment from <?= htmlspecialchars($viewModel->title) ?>"
+                    title="<?= htmlspecialchars($viewModel->videoSectionHeading) ?>"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
                     loading="lazy">
                 </iframe>
             <?php else: ?>
-                <!-- Placeholder when no video is set in CMS -->
                 <div class="w-full h-full min-h-[300px] sm:min-h-[400px] lg:min-h-[600px]
                             bg-royal-blue/10 rounded-2xl flex flex-col items-center justify-center gap-4 p-8">
                     <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-royal-blue/20 flex items-center justify-center">
@@ -281,7 +280,7 @@ $isLoggedIn      = $globalUi->isLoggedIn;
                             <path d="M8 5v14l11-7z"/>
                         </svg>
                     </div>
-                    <p class="text-royal-blue/60 text-lg font-normal text-center">Video coming soon</p>
+                    <p class="text-royal-blue/60 text-lg font-normal text-center"><?= htmlspecialchars($viewModel->videoPlaceholderText) ?></p>
                 </div>
             <?php endif; ?>
         </div>

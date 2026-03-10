@@ -27,6 +27,8 @@ class CmsService implements ICmsService
     private const DEFAULT_NAV_RESTAURANT = 'Restaurant';
     private const DEFAULT_NAV_STORYTELLING = 'Storytelling';
     private const DEFAULT_BTN_MY_PROGRAM = 'My Program';
+    private const DEFAULT_LOGIN_LABEL = 'Login';
+    private const DEFAULT_LOGOUT_LABEL = 'Logout';
 
     // Default values for Hero section
     private const DEFAULT_HERO_TITLE = 'Welcome';
@@ -194,6 +196,8 @@ class CmsService implements ICmsService
             navRestaurant: $globalContent['nav_restaurant'] ?? self::DEFAULT_NAV_RESTAURANT,
             navStorytelling: $globalContent['nav_storytelling'] ?? self::DEFAULT_NAV_STORYTELLING,
             btnMyProgram: $globalContent['btn_my_program'] ?? self::DEFAULT_BTN_MY_PROGRAM,
+            loginLabel: $globalContent['login_label'] ?? self::DEFAULT_LOGIN_LABEL,
+            logoutLabel: $globalContent['logout_label'] ?? self::DEFAULT_LOGOUT_LABEL,
             isLoggedIn: $this->sessionService->isLoggedIn(),
         );
     }

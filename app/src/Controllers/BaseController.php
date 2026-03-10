@@ -21,4 +21,9 @@ abstract class BaseController
 
         require $viewPath;
     }
+
+    protected function renderView(string $viewPath, object $viewModel): void
+    {
+        require $viewPath;
+    }
 }
