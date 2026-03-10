@@ -9,6 +9,8 @@ use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\ICmsService;
+use App\ViewModels\GlobalUiData;
+use App\ViewModels\HeroData;
 
 class CmsService implements ICmsService
 {
@@ -76,6 +78,11 @@ class CmsService implements ICmsService
         return $this->getSectionContent($pageSlug, 'hero_section');
     }
 
+    public function buildHeroData(string $pageSlug, string $currentPage): HeroData
+    {
+        return HeroData::fromCms($this->getHeroSectionContent($pageSlug), $currentPage);
+    }
+
     /**
      * @return array{content: array, isLoggedIn: bool}
      */
@@ -85,6 +92,13 @@ class CmsService implements ICmsService
             'content' => $this->getSectionContent('home', 'global_ui'),
             'isLoggedIn' => $this->sessionService->isLoggedIn(),
         ];
+    }
+
+    public function buildGlobalUiData(): GlobalUiData
+    {
+        $globalUiContent = $this->getGlobalUiContent();
+
+        return GlobalUiData::fromCms($globalUiContent['content'], $globalUiContent['isLoggedIn']);
     }
 
     /**
