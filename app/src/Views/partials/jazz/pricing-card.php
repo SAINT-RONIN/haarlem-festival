@@ -28,10 +28,10 @@ $borderClass = $card->isHighlighted ? 'border-black' : 'border-royal-blue';
                             <?php
                             // Parse item text (e.g., "Main Hall Shows - €15.00 - 300 seats available per show")
                             $parts = explode(' - ', $item);
-                            $name = $parts[0] ?? '';
-                            $price = $parts[1] ?? '';
-                            $capacity = $parts[2] ?? '';
-                            ?>
+                    $name = $parts[0] ?? '';
+                    $price = $parts[1] ?? '';
+                    $capacity = $parts[2] ?? '';
+                    ?>
                             <p class="self-stretch text-royal-blue text-lg sm:text-xl font-normal font-['Montserrat'] leading-5">
                                 <?= htmlspecialchars($name) ?>
                             </p>

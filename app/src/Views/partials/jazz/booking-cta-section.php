@@ -4,6 +4,14 @@
  *
  * @var \App\ViewModels\BookingCallToActionData $bookingCtaData
  */
+
+if (!isset($bookingCtaData) && isset($viewModel) && property_exists($viewModel, 'bookingCtaData')) {
+    $bookingCtaData = $viewModel->bookingCtaData;
+}
+
+if (!isset($bookingCtaData)) {
+    return;
+}
 ?>
 
 <!-- Booking CTA Section -->
@@ -19,4 +27,3 @@
         </div>
     </div>
 </section>
-

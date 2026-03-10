@@ -2,6 +2,7 @@
 /**
  * @var string $currentPage
  * @var array $cms
+ * @var bool $isLoggedIn (optional - passed from controller or extracted from $globalUi)
  */
 $currentPage = $currentPage ?? 'home';
 $hero = $cms['hero_section'];
@@ -10,11 +11,8 @@ $global = $cms['global_ui'];
 // Get the background image from CMS, fallback to default
 $heroBackgroundImage = $hero['hero_background_image'] ?? '/assets/Image/HeroImageHome.png';
 
-// Ensure login state is available for the hero navbar
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-$isLoggedIn = isset($_SESSION['user_id']);
+// Get login state from globalUi or direct variable (for backward compatibility)
+$isLoggedIn = $isLoggedIn ?? ($global['is_logged_in'] ?? false);
 ?>
 
 <!-- Hero Section with Floating Navigation -->
@@ -39,7 +37,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
                 </a>
 
                 <!-- Mobile Menu Button with Animation -->
-                <button id="hero-menu-btn" onclick="toggleHeroMenu()"
+                <button id="hero-menu-btn" data-toggle-menu="hero-nav-menu"
                         class="xl:hidden p-2 sm:p-2.5 mr-1.5 sm:mr-2 text-sand relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 rounded-lg"
                         aria-expanded="false" aria-controls="hero-nav-menu" aria-label="Toggle navigation menu">
                     <span class="sr-only">Toggle menu</span>

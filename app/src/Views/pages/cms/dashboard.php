@@ -2,20 +2,27 @@
 /**
  * CMS Dashboard - Main admin panel view.
  *
- * @var array $recentPages Recently updated pages
- * @var array $activities Recent activity feed
+ * @var \App\ViewModels\Cms\DashboardViewModel|\App\ViewModels\Cms\PagesListViewModel $viewModel
  * @var string $currentView Current navigation state
  */
 
-// Ensure we have session data
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+use App\ViewModels\Cms\DashboardViewModel;
+use App\ViewModels\Cms\PagesListViewModel;
 
-$userName = $_SESSION['user_display_name'] ?? 'Administrator';
 $currentView = $currentView ?? 'dashboard';
-$recentPages = $recentPages ?? [];
-$activities = $activities ?? [];
+
+// Extract data from ViewModel for use in partials
+if ($viewModel instanceof DashboardViewModel) {
+    $recentPages = $viewModel->recentPages;
+    $activities = $viewModel->activities;
+    $userName = $viewModel->userName;
+} elseif ($viewModel instanceof PagesListViewModel) {
+    $pages = $viewModel->pages;
+    $searchQuery = $viewModel->searchQuery;
+    $userName = $viewModel->userName;
+} else {
+    $userName = 'Administrator';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,13 +38,9 @@ $activities = $activities ?? [];
           rel="stylesheet">
     <link rel="icon" href="/assets/Icons/Logo.svg" type="image/svg+xml" sizes="any">
     <link rel="stylesheet" href="/assets/css/tokens.css">
-    <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/cms.css">
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 cms-body">
 <a href="#cms-main"
    class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-royal-blue focus:rounded-lg focus:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
     Skip to main content
@@ -60,10 +63,7 @@ $activities = $activities ?? [];
     </section>
 </div>
 
-<script>
-    // Initialize Lucide icons
-    lucide.createIcons();
-</script>
+<script src="/assets/js/cms/cms-common.js"></script>
 </body>
 </html>
 

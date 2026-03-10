@@ -6,6 +6,14 @@
  * Required variable (set before including this partial):
  * @var \App\ViewModels\GradientSectionData $gradientSection
  */
+
+if (!isset($gradientSection) && isset($viewModel) && property_exists($viewModel, 'gradientSection')) {
+    $gradientSection = $viewModel->gradientSection;
+}
+
+if (!isset($gradientSection)) {
+    return;
+}
 ?>
 
 <section class="self-stretch px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-12 inline-flex flex-col justify-center items-center gap-2.5 overflow-hidden">
@@ -19,4 +27,3 @@
         </p>
     </div>
 </section>
-

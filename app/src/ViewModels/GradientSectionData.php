@@ -15,8 +15,6 @@ final readonly class GradientSectionData
         public string $headingText,
         public string $subheadingText,
         public string $backgroundImageUrl,
-    )
-    {
+    ) {
     }
 }
-

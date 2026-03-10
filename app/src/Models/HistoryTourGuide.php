@@ -17,8 +17,8 @@ class HistoryTourGuide
      */
 
     public function __construct(
-        public int $historyTourId,
-        public int $guideId,
+        public readonly int $historyTourId,
+        public readonly int $guideId,
     ) {
     }
 
@@ -29,8 +29,8 @@ class HistoryTourGuide
     public static function fromRow(array $row): self
     {
         return new self(
-            historyTourId: (int) $row['HistoryTourId'],
-            guideId: (int) $row['GuideId'],
+            historyTourId: (int)$row['HistoryTourId'],
+            guideId: (int)$row['GuideId'],
         );
     }
 

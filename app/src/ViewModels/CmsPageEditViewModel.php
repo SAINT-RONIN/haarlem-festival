@@ -146,4 +146,3 @@ class CmsPageEditViewModel
         return round($bytes / 1024, 1) . ' KB';
     }
 }
-

@@ -18,12 +18,12 @@ class EventSessionPrice
      */
 
     public function __construct(
-        public int $eventSessionPriceId,
-        public int $eventSessionId,
-        public int $priceTierId,
-        public string $price,
-        public string $currencyCode,
-        public string $vatRate,
+        public readonly int    $eventSessionPriceId,
+        public readonly int    $eventSessionId,
+        public readonly int    $priceTierId,
+        public readonly string $price,
+        public readonly string $currencyCode,
+        public readonly string $vatRate,
     ) {
     }
 
@@ -34,12 +34,12 @@ class EventSessionPrice
     public static function fromRow(array $row): self
     {
         return new self(
-            eventSessionPriceId: (int) $row['EventSessionPriceId'],
-            eventSessionId: (int) $row['EventSessionId'],
-            priceTierId: (int) $row['PriceTierId'],
-            price: (string) $row['Price'],
-            currencyCode: (string) $row['CurrencyCode'],
-            vatRate: (string) $row['VatRate'],
+            eventSessionPriceId: (int)$row['EventSessionPriceId'],
+            eventSessionId: (int)$row['EventSessionId'],
+            priceTierId: (int)$row['PriceTierId'],
+            price: (string)$row['Price'],
+            currencyCode: (string)$row['CurrencyCode'],
+            vatRate: (string)$row['VatRate'],
         );
     }
 

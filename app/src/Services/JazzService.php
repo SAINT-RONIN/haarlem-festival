@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventTypeId;
+use App\Models\CmsItem;
+use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
+use App\Services\Interfaces\IJazzService;
+use App\ViewModels\Age\AgeLabelFormatter;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -28,19 +33,24 @@ use App\ViewModels\Jazz\VenuesData;
  * Service for Jazz page data.
  * Fetches content from CMS database.
  */
-class JazzService
+class JazzService implements IJazzService
 {
     private CmsRepository $cmsRepository;
     private MediaAssetRepository $mediaAssetRepository;
     private ScheduleService $scheduleService;
-    private ?array $jazzPageData = null;
+    private SessionService $sessionService;
+    private ?int $jazzPageId = null;
+    /** @var array<string, CmsSection> */
     private ?array $jazzSections = null;
+    /** @var array<string, list<CmsItem>>|null */
+    private ?array $jazzItemsBySection = null;
 
     public function __construct()
     {
         $this->cmsRepository = new CmsRepository();
         $this->mediaAssetRepository = new MediaAssetRepository();
         $this->scheduleService = new ScheduleService();
+        $this->sessionService = new SessionService();
     }
 
     public function getJazzPageData(): JazzPageViewModel
@@ -59,21 +69,38 @@ class JazzService
             artistsData: $this->buildArtistsData(),
             scheduleData: $this->buildScheduleData(),
             bookingCtaData: $this->buildBookingCtaData(),
-            scheduleSection: $this->scheduleService->buildScheduleSection('jazz', 1, 7),
+            scheduleSection: $this->scheduleService->buildScheduleSection('jazz', EventTypeId::Jazz->value, 7),
         );
     }
 
     private function loadPageData(): void
     {
-        if ($this->jazzPageData === null) {
-            $this->jazzPageData = $this->cmsRepository->getPageBySlug('jazz');
-            if ($this->jazzPageData) {
-                $sections = $this->cmsRepository->getSectionsByPageId((int)$this->jazzPageData['CmsPageId']);
-                $this->jazzSections = [];
-                foreach ($sections as $section) {
-                    $this->jazzSections[$section['SectionKey']] = $section;
-                }
-            }
+        if ($this->jazzPageId !== null) {
+            return;
+        }
+
+        $pages = $this->cmsRepository->findPages(['slug' => 'jazz']);
+        if ($pages === []) {
+            return;
+        }
+
+        $this->jazzPageId = (int)$pages[0]['CmsPageId'];
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $this->jazzPageId]);
+        $this->jazzSections = [];
+        foreach ($sections as $section) {
+            /** @var CmsSection $section */
+            $this->jazzSections[$section->sectionKey] = $section;
+        }
+
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $this->jazzPageId]);
+        $itemsBySectionId = [];
+        foreach ($items as $item) {
+            $itemsBySectionId[$item->cmsSectionId][] = $item;
+        }
+
+        $this->jazzItemsBySection = [];
+        foreach ($this->jazzSections as $sectionKey => $section) {
+            $this->jazzItemsBySection[$sectionKey] = $itemsBySectionId[$section->cmsSectionId] ?? [];
         }
     }
 
@@ -83,12 +110,12 @@ class JazzService
             return $default;
         }
 
-        $sectionId = (int)$this->jazzSections[$sectionKey]['CmsSectionId'];
-        $items = $this->cmsRepository->getItemsBySectionId($sectionId);
+        $items = $this->jazzItemsBySection[$sectionKey] ?? [];
 
         foreach ($items as $item) {
-            if ($item['ItemKey'] === $itemKey) {
-                $value = $item['TextValue'] ?? $item['HtmlValue'] ?? $default;
+            /** @var CmsItem $item */
+            if ($item->itemKey === $itemKey) {
+                $value = $item->textValue ?? $item->htmlValue ?? $default;
                 return is_string($value) ? $value : $default;
             }
         }
@@ -109,23 +136,22 @@ class JazzService
             return $defaultUrl;
         }
 
-        $sectionId = (int)$this->jazzSections[$sectionKey]['CmsSectionId'];
-        $items = $this->cmsRepository->getItemsBySectionId($sectionId);
+        $items = $this->jazzItemsBySection[$sectionKey] ?? [];
 
         foreach ($items as $item) {
-            if ($item['ItemKey'] !== $itemKey) {
+            /** @var CmsItem $item */
+            if ($item->itemKey !== $itemKey) {
                 continue;
             }
 
-            if (!empty($item['MediaAssetId'])) {
-                $media = $this->mediaAssetRepository->findById((int)$item['MediaAssetId']);
-                $filePath = is_array($media) ? ($media['FilePath'] ?? null) : null;
-                if (is_string($filePath) && $filePath !== '') {
-                    return $filePath;
+            if ($item->mediaAssetId !== null) {
+                $media = $this->mediaAssetRepository->findById($item->mediaAssetId);
+                if ($media !== null && $media->filePath !== '') {
+                    return $media->filePath;
                 }
             }
 
-            $textPath = $item['TextValue'] ?? null;
+            $textPath = $item->textValue ?? null;
             if (is_string($textPath) && $textPath !== '') {
                 return $textPath;
             }
@@ -161,6 +187,7 @@ class JazzService
             navRestaurant: 'Restaurant',
             navStorytelling: 'Storytelling',
             btnMyProgram: 'My Program',
+            isLoggedIn: $this->sessionService->isLoggedIn(),
         );
     }
 
@@ -187,111 +214,129 @@ class JazzService
 
     private function buildVenuesData(): VenuesData
     {
-        $patronaatHalls = [
-            new HallData(
-                name: $this->getCmsItem('venues_section', 'venue_patronaat_hall1_name', 'First Hall'),
-                description: $this->getCmsItem('venues_section', 'venue_patronaat_hall1_desc', 'Intimate performances'),
-                price: '€10.00',
-                capacity: $this->getCmsItem('venues_section', 'venue_patronaat_hall1_capacity', '150 seats'),
-            ),
-            new HallData(
-                name: $this->getCmsItem('venues_section', 'venue_patronaat_hall2_name', 'Second Hall'),
-                description: $this->getCmsItem('venues_section', 'venue_patronaat_hall2_desc', 'Intimate performances'),
-                price: '€10.00',
-                capacity: $this->getCmsItem('venues_section', 'venue_patronaat_hall2_capacity', '150 seats'),
-            ),
-            new HallData(
-                name: $this->getCmsItem('venues_section', 'venue_patronaat_hall3_name', 'Third Hall'),
-                description: $this->getCmsItem('venues_section', 'venue_patronaat_hall3_desc', 'Intimate performances'),
-                price: '€10.00',
-                capacity: $this->getCmsItem('venues_section', 'venue_patronaat_hall3_capacity', '150 seats'),
-            ),
-        ];
-
-        $groteMarktHalls = [
-            new HallData(
-                name: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_name', 'Open Air Stage'),
-                description: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_desc', 'Sunday performances are free') . ' ' . $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_info', ''),
-                price: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_price', 'FREE ENTRY'),
-                capacity: '',
-                isFree: true,
-            ),
-        ];
-
-        $venues = [
-            new VenueData(
-                name: $this->getCmsItem('venues_section', 'venue_patronaat_name', 'Patronaat'),
-                addressLine1: $this->getCmsItem('venues_section', 'venue_patronaat_address1', 'Zijlsingel 2'),
-                addressLine2: $this->getCmsItem('venues_section', 'venue_patronaat_address2', '2013 DN Haarlem'),
-                contactInfo: $this->getCmsItem('venues_section', 'venue_patronaat_contact', 'E-mail/reception available'),
-                halls: $patronaatHalls,
-            ),
-            new VenueData(
-                name: $this->getCmsItem('venues_section', 'venue_grotemarkt_name', 'Grote Markt'),
-                addressLine1: $this->getCmsItem('venues_section', 'venue_grotemarkt_location1', 'Historic Market Square'),
-                addressLine2: $this->getCmsItem('venues_section', 'venue_grotemarkt_location2', 'Haarlem City Center'),
-                contactInfo: '',
-                halls: $groteMarktHalls,
-            ),
-        ];
-
         return new VenuesData(
             headingText: $this->getCmsItem('venues_section', 'venues_heading', 'Festival venues'),
             subheadingText: $this->getCmsItem('venues_section', 'venues_subheading', 'Performance Locations'),
             descriptionText: $this->getCmsItem('venues_section', 'venues_description', 'Haarlem Jazz 2026 takes place at two main locations'),
-            venues: $venues,
+            venues: [$this->buildPatronaatVenue(), $this->buildGroteMarktVenue()],
+        );
+    }
+
+    private function buildPatronaatVenue(): VenueData
+    {
+        return new VenueData(
+            name: $this->getCmsItem('venues_section', 'venue_patronaat_name', 'Patronaat'),
+            addressLine1: $this->getCmsItem('venues_section', 'venue_patronaat_address1', 'Zijlsingel 2'),
+            addressLine2: $this->getCmsItem('venues_section', 'venue_patronaat_address2', '2013 DN Haarlem'),
+            contactInfo: $this->getCmsItem('venues_section', 'venue_patronaat_contact', 'E-mail/reception available'),
+            halls: $this->buildPatronaatHalls(),
+        );
+    }
+
+    private function buildPatronaatHalls(): array
+    {
+        return [
+            $this->buildHall('venue_patronaat_hall1', 'First Hall'),
+            $this->buildHall('venue_patronaat_hall2', 'Second Hall'),
+            $this->buildHall('venue_patronaat_hall3', 'Third Hall'),
+        ];
+    }
+
+    private function buildHall(string $prefix, string $defaultName): HallData
+    {
+        return new HallData(
+            name: $this->getCmsItem('venues_section', $prefix . '_name', $defaultName),
+            description: $this->getCmsItem('venues_section', $prefix . '_desc', 'Intimate performances'),
+            price: '€10.00',
+            capacity: $this->getCmsItem('venues_section', $prefix . '_capacity', '150 seats'),
+        );
+    }
+
+    private function buildGroteMarktVenue(): VenueData
+    {
+        $hall = new HallData(
+            name: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_name', 'Open Air Stage'),
+            description: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_desc', 'Sunday performances are free'),
+            price: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_price', 'FREE ENTRY'),
+            capacity: '',
+            isFree: true,
+        );
+
+        return new VenueData(
+            name: $this->getCmsItem('venues_section', 'venue_grotemarkt_name', 'Grote Markt'),
+            addressLine1: $this->getCmsItem('venues_section', 'venue_grotemarkt_location1', 'Historic Market Square'),
+            addressLine2: $this->getCmsItem('venues_section', 'venue_grotemarkt_location2', 'Haarlem City Center'),
+            contactInfo: '',
+            halls: [$hall],
         );
     }
 
     private function buildPricingData(): PricingData
     {
-        $cards = [
-            new PricingCardData(
-                title: $this->getCmsItem('pricing_section', 'pricing_individual_title', 'Individual Show Tickets'),
-                price: '',
-                priceDescription: '',
-                items: [
-                    $this->getCmsItem('pricing_section', 'pricing_individual_item1', 'Main Hall Shows'),
-                    $this->getCmsItem('pricing_section', 'pricing_individual_item2', 'Second Hall Shows'),
-                    $this->getCmsItem('pricing_section', 'pricing_individual_item3', 'Third Hall Shows'),
-                ],
-                includes: [],
-                additionalInfo: '',
-            ),
-            new PricingCardData(
-                title: $this->getCmsItem('pricing_section', 'pricing_daypass_title', 'All-Access Day Pass'),
-                price: $this->getCmsItem('pricing_section', 'pricing_daypass_price', '€35.00'),
-                priceDescription: $this->getCmsItem('pricing_section', 'pricing_daypass_desc', 'Per day'),
-                items: [],
-                includes: [
-                    $this->getCmsItem('pricing_section', 'pricing_daypass_include1', 'Unlimited access'),
-                    $this->getCmsItem('pricing_section', 'pricing_daypass_include2', 'All performances'),
-                    $this->getCmsItem('pricing_section', 'pricing_daypass_include3', 'Thu, Fri, or Sat'),
-                    $this->getCmsItem('pricing_section', 'pricing_daypass_include4', 'Best value'),
-                ],
-                additionalInfo: $this->getCmsItem('pricing_section', 'pricing_daypass_info', ''),
-            ),
-            new PricingCardData(
-                title: $this->getCmsItem('pricing_section', 'pricing_3day_title', 'All-Access Day Pass'),
-                price: $this->getCmsItem('pricing_section', 'pricing_3day_price', '€80.00'),
-                priceDescription: $this->getCmsItem('pricing_section', 'pricing_3day_desc', 'Thursday + Friday + Saturday'),
-                items: [],
-                includes: [
-                    $this->getCmsItem('pricing_section', 'pricing_3day_include1', 'Unlimited access all 3 days'),
-                    $this->getCmsItem('pricing_section', 'pricing_3day_include2', 'All venues'),
-                    $this->getCmsItem('pricing_section', 'pricing_3day_include3', '18+ performances'),
-                    $this->getCmsItem('pricing_section', 'pricing_3day_include4', 'Save €25'),
-                ],
-                additionalInfo: $this->getCmsItem('pricing_section', 'pricing_3day_info', ''),
-                isHighlighted: true,
-            ),
-        ];
-
         return new PricingData(
             headingText: $this->getCmsItem('pricing_section', 'pricing_heading', 'Pricing information'),
             subheadingText: $this->getCmsItem('pricing_section', 'pricing_subheading', 'Tickets & Passes'),
             descriptionText: $this->getCmsItem('pricing_section', 'pricing_description', 'We offer flexible ticketing options'),
-            pricingCards: $cards,
+            pricingCards: [
+                $this->buildIndividualTicketCard(),
+                $this->buildDayPassCard(),
+                $this->build3DayPassCard(),
+            ],
+        );
+    }
+
+    private function buildIndividualTicketCard(): PricingCardData
+    {
+        return new PricingCardData(
+            title: $this->getCmsItem('pricing_section', 'pricing_individual_title', 'Individual Show Tickets'),
+            price: '',
+            priceDescription: '',
+            items: [
+                $this->getCmsItem('pricing_section', 'pricing_individual_item1', 'Main Hall Shows'),
+                $this->getCmsItem('pricing_section', 'pricing_individual_item2', 'Second Hall Shows'),
+                $this->getCmsItem('pricing_section', 'pricing_individual_item3', 'Third Hall Shows'),
+            ],
+            includes: [],
+            additionalInfo: '',
+        );
+    }
+
+    private function buildDayPassCard(): PricingCardData
+    {
+        return new PricingCardData(
+            title: $this->getCmsItem('pricing_section', 'pricing_daypass_title', 'All-Access Day Pass'),
+            price: $this->getCmsItem('pricing_section', 'pricing_daypass_price', '€35.00'),
+            priceDescription: $this->getCmsItem('pricing_section', 'pricing_daypass_desc', 'Per day'),
+            items: [],
+            includes: [
+                $this->getCmsItem('pricing_section', 'pricing_daypass_include1', 'Unlimited access'),
+                $this->getCmsItem('pricing_section', 'pricing_daypass_include2', 'All performances'),
+                $this->getCmsItem('pricing_section', 'pricing_daypass_include3', 'Thu, Fri, or Sat'),
+                $this->getCmsItem('pricing_section', 'pricing_daypass_include4', 'Best value'),
+            ],
+            additionalInfo: $this->getCmsItem('pricing_section', 'pricing_daypass_info', ''),
+        );
+    }
+
+    private function build3DayPassCard(): PricingCardData
+    {
+        return new PricingCardData(
+            title: $this->getCmsItem('pricing_section', 'pricing_3day_title', 'All-Access Day Pass'),
+            price: $this->getCmsItem('pricing_section', 'pricing_3day_price', '€80.00'),
+            priceDescription: $this->getCmsItem('pricing_section', 'pricing_3day_desc', 'Thursday + Friday + Saturday'),
+            items: [],
+            includes: [
+                $this->getCmsItem('pricing_section', 'pricing_3day_include1', 'Unlimited access all 3 days'),
+                $this->getCmsItem('pricing_section', 'pricing_3day_include2', 'All venues'),
+                $this->getCmsItem(
+                    'pricing_section',
+                    'pricing_3day_include3',
+                    (AgeLabelFormatter::format(18, null) ?? '18+') . ' performances'
+                ),
+                $this->getCmsItem('pricing_section', 'pricing_3day_include4', 'Save €25'),
+            ],
+            additionalInfo: $this->getCmsItem('pricing_section', 'pricing_3day_info', ''),
+            isHighlighted: true,
         );
     }
 

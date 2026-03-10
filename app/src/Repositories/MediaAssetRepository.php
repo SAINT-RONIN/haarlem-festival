@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\MediaAsset;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 use PDO;
 
@@ -22,13 +23,16 @@ class MediaAssetRepository implements IMediaAssetRepository
 
     /**
      * Finds a media asset by ID.
+     *
+     * @param int $mediaAssetId
+     * @return MediaAsset|null
      */
-    public function findById(int $mediaAssetId): ?array
+    public function findById(int $mediaAssetId): ?MediaAsset
     {
         $stmt = $this->pdo->prepare('SELECT * FROM MediaAsset WHERE MediaAssetId = ?');
         $stmt->execute([$mediaAssetId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ?: null;
+        return $result ? MediaAsset::fromRow($result) : null;
     }
 
     /**
@@ -85,5 +89,17 @@ class MediaAssetRepository implements IMediaAssetRepository
         $stmt = $this->pdo->prepare('DELETE FROM MediaAsset WHERE MediaAssetId = ?');
         return $stmt->execute([$mediaAssetId]);
     }
-}
 
+    /**
+     * Links a media asset to a CMS item by updating the CmsItem's MediaAssetId.
+     *
+     * @param int $mediaAssetId Media asset ID
+     * @param int $cmsItemId CMS item ID
+     * @return bool Success status
+     */
+    public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = ? WHERE CmsItemId = ?');
+        return $stmt->execute([$mediaAssetId, $cmsItemId]);
+    }
+}

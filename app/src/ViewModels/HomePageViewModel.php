@@ -10,16 +10,21 @@ namespace App\ViewModels;
  * Contains all pre-formatted data needed by the home page view.
  * The service prepares this data so the view only needs to loop and print.
  */
-class HomePageViewModel
+final readonly class HomePageViewModel extends BaseViewModel
 {
     public function __construct(
-        public HeroData     $heroData,
-        public GlobalUiData $globalUi,
+        HeroData $heroData,
+        GlobalUiData $globalUi,
         public array        $eventTypes = [],
         public array        $locations = [],
         public array        $scheduleDays = [],
         public array        $cmsContent = [],
-    )
-    {
+    ) {
+        parent::__construct(
+            heroData: $heroData,
+            globalUi: $globalUi,
+            currentPage: $heroData->currentPage,
+            includeNav: false,
+        );
     }
 }

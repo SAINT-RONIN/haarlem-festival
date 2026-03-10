@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Services\Interfaces\ICaptchaService;
+
 /**
  * Service for Google reCAPTCHA v2 verification.
  *
@@ -14,7 +16,7 @@ namespace App\Services;
  *
  * Get your keys at: https://www.google.com/recaptcha/admin
  */
-class CaptchaService
+class CaptchaService implements ICaptchaService
 {
     private string $siteKey;
     private string $secretKey;

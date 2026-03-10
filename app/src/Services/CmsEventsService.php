@@ -4,30 +4,37 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\DayOfWeek;
+use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
-use App\Infrastructure\Database;
 use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
-use PDO;
+use App\Repositories\EventTypeRepository;
+use App\Repositories\PriceTierRepository;
+use App\Repositories\ScheduleDayConfigRepository;
+use App\Repositories\VenueRepository;
+use App\Services\Interfaces\ICmsEventsService;
+use App\Utils\CmsEventConstraints;
+use App\ViewModels\Cms\CmsEventEditViewModel;
+use App\ViewModels\Cms\CmsEventSessionViewModel;
 
 /**
  * Service for CMS Events management.
  *
  * Contains business logic and validation for event/session CRUD operations.
  */
-class CmsEventsService
+class CmsEventsService implements ICmsEventsService
 {
     private EventRepository $eventRepository;
     private EventSessionRepository $sessionRepository;
     private EventSessionLabelRepository $labelRepository;
     private EventSessionPriceRepository $priceRepository;
-    private PDO $pdo;
-
-    private const MAX_LABELS_PER_SESSION = 6;
-    private const MAX_LABEL_LENGTH = 60;
-    private const PRICE_TIER_PAY_WHAT_YOU_LIKE = 5;
+    private EventTypeRepository $eventTypeRepository;
+    private VenueRepository $venueRepository;
+    private PriceTierRepository $priceTierRepository;
+    private ScheduleDayConfigRepository $scheduleDayConfigRepository;
 
     public function __construct()
     {
@@ -35,7 +42,10 @@ class CmsEventsService
         $this->sessionRepository = new EventSessionRepository();
         $this->labelRepository = new EventSessionLabelRepository();
         $this->priceRepository = new EventSessionPriceRepository();
-        $this->pdo = Database::getConnection();
+        $this->eventTypeRepository = new EventTypeRepository();
+        $this->venueRepository = new VenueRepository();
+        $this->priceTierRepository = new PriceTierRepository();
+        $this->scheduleDayConfigRepository = new ScheduleDayConfigRepository();
     }
 
     /**
@@ -46,25 +56,40 @@ class CmsEventsService
      */
     public function getAllEventsWithDetails(?int $eventTypeId = null, ?string $dayOfWeek = null): array
     {
-        return $this->eventRepository->findAllWithDetailsFiltered($eventTypeId, $dayOfWeek);
+        $filters = [
+            'isActive' => true,
+            'includeSessionCount' => true,
+        ];
+
+        if ($eventTypeId !== null) {
+            $filters['eventTypeId'] = $eventTypeId;
+        }
+
+        if ($dayOfWeek !== null) {
+            $filters['dayOfWeek'] = $dayOfWeek;
+        }
+
+        return $this->eventRepository->findEvents($filters);
     }
 
     /**
      * Gets all event types for dropdown.
+     *
+     * @return \App\Models\EventType[]
      */
     public function getEventTypes(): array
     {
-        $stmt = $this->pdo->query('SELECT EventTypeId, Name, Slug FROM EventType ORDER BY Name ASC');
-        return $stmt->fetchAll();
+        return $this->eventTypeRepository->findEventTypes(['orderBy' => 'name']);
     }
 
     /**
      * Gets all venues for dropdown.
+     *
+     * @return \App\Models\Venue[]
      */
     public function getVenues(): array
     {
-        $stmt = $this->pdo->query('SELECT VenueId, Name, AddressLine FROM Venue WHERE IsActive = 1 ORDER BY Name ASC');
-        return $stmt->fetchAll();
+        return $this->venueRepository->findVenues(['isActive' => true]);
     }
 
     /**
@@ -74,31 +99,27 @@ class CmsEventsService
      */
     public function createVenue(string $name, string $addressLine): int
     {
-        $errors = [];
-
-        if (empty($name)) {
-            $errors[] = 'Venue name is required';
-        }
-
-        if (strlen($name) > 120) {
-            $errors[] = 'Venue name must be 120 characters or less';
-        }
-
+        $errors = $this->validateVenueName($name);
         if (!empty($errors)) {
             throw new ValidationException($errors);
         }
 
-        $stmt = $this->pdo->prepare('
-            INSERT INTO Venue (Name, AddressLine, City, IsActive)
-            VALUES (:name, :addressLine, :city, 1)
-        ');
-        $stmt->execute([
-            'name' => $name,
-            'addressLine' => $addressLine ?: '',
-            'city' => 'Haarlem',
-        ]);
+        return $this->venueRepository->create($name, $addressLine ?: '');
+    }
 
-        return (int)$this->pdo->lastInsertId();
+    /**
+     * Validates venue name.
+     */
+    private function validateVenueName(string $name): array
+    {
+        $errors = [];
+        if (empty($name)) {
+            $errors[] = 'Venue name is required';
+        }
+        if (strlen($name) > 120) {
+            $errors[] = 'Venue name must be 120 characters or less';
+        }
+        return $errors;
     }
 
     /**
@@ -106,67 +127,64 @@ class CmsEventsService
      */
     public function getPriceTiers(): array
     {
-        $stmt = $this->pdo->query('SELECT PriceTierId, Name FROM PriceTier ORDER BY PriceTierId ASC');
-        return $stmt->fetchAll();
+        return $this->priceTierRepository->findAll();
     }
 
     /**
      * Gets weekly schedule overview for CMS.
-     * Returns events grouped by day of week across all 7 days.
+     * Returns sessions as ViewModels grouped by day of week across all 7 days.
+     *
+     * @return array<string, CmsEventSessionViewModel[]>
      */
     public function getWeeklyScheduleOverview(?int $eventTypeId = null): array
     {
-        $weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        $schedule = [];
-
-        foreach ($weekDays as $day) {
-            $schedule[$day] = [];
+        $schedule = $this->initializeWeekSchedule();
+        $filters = [
+            'isActive' => true,
+            'eventIsActive' => true,
+            'includeCancelled' => false,
+            'orderBy' => 'es.StartDateTime ASC',
+        ];
+        if ($eventTypeId !== null) {
+            $filters['eventTypeId'] = $eventTypeId;
         }
+        $sessions = $this->sessionRepository->findSessions($filters)['sessions'] ?? [];
 
-        $typeFilter = $eventTypeId ? 'AND e.EventTypeId = :eventTypeId' : '';
+        return $this->groupSessionsByDayAsViewModels($sessions, $schedule);
+    }
 
-        $stmt = $this->pdo->prepare("
-            SELECT 
-                es.EventSessionId,
-                es.EventId,
-                es.StartDateTime,
-                es.EndDateTime,
-                es.CapacityTotal,
-                es.SoldSingleTickets,
-                es.SoldReservedSeats,
-                DAYNAME(es.StartDateTime) AS DayOfWeek,
-                DATE(es.StartDateTime) AS SessionDate,
-                e.Title AS EventTitle,
-                e.EventTypeId,
-                et.Name AS EventTypeName,
-                et.Slug AS EventTypeSlug,
-                v.Name AS VenueName
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
-            LEFT JOIN Venue v ON e.VenueId = v.VenueId
-            WHERE es.IsActive = 1
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-              {$typeFilter}
-            ORDER BY es.StartDateTime ASC
-        ");
+    /**
+     * Initializes empty schedule array for all week days.
+     *
+     * @return array<string, CmsEventSessionViewModel[]>
+     */
+    private function initializeWeekSchedule(): array
+    {
+        $weekDays = [
+            DayOfWeek::Monday->name,
+            DayOfWeek::Tuesday->name,
+            DayOfWeek::Wednesday->name,
+            DayOfWeek::Thursday->name,
+            DayOfWeek::Friday->name,
+            DayOfWeek::Saturday->name,
+            DayOfWeek::Sunday->name,
+        ];
+        return array_fill_keys($weekDays, []);
+    }
 
-        if ($eventTypeId) {
-            $stmt->execute(['eventTypeId' => $eventTypeId]);
-        } else {
-            $stmt->execute();
-        }
-
-        $sessions = $stmt->fetchAll();
-
+    /**
+     * Groups sessions by their day of week as ViewModels.
+     *
+     * @return array<string, CmsEventSessionViewModel[]>
+     */
+    private function groupSessionsByDayAsViewModels(array $sessions, array $schedule): array
+    {
         foreach ($sessions as $session) {
             $dayName = $session['DayOfWeek'];
             if (isset($schedule[$dayName])) {
-                $schedule[$dayName][] = $session;
+                $schedule[$dayName][] = CmsEventSessionViewModel::fromArray($session);
             }
         }
-
         return $schedule;
     }
 
@@ -187,35 +205,41 @@ class CmsEventsService
 
     /**
      * Gets a single event with all related data for editing.
+     *
+     * @return CmsEventEditViewModel|null
      */
-    public function getEventForEdit(int $eventId): ?array
+    public function getEventForEdit(int $eventId): ?CmsEventEditViewModel
     {
-        $event = $this->eventRepository->findByIdWithDetails($eventId);
+        $event = $this->eventRepository->findEvents([
+            'eventId' => $eventId,
+            'includeSessionCount' => true,
+        ])[0] ?? null;
         if (!$event) {
             return null;
         }
 
-        $sessions = $this->sessionRepository->findByEventId($eventId);
-        $sessionIds = array_column($sessions, 'EventSessionId');
+        $sessions = $this->sessionRepository->findSessions([
+            'eventId' => $eventId,
+            'includeCancelled' => true,
+            'orderBy' => 'es.StartDateTime ASC',
+        ])['sessions'] ?? [];
+        $sessionIds = array_map(static fn (array $session): int => (int)$session['EventSessionId'], $sessions);
 
-        $labelsMap = !empty($sessionIds)
-            ? $this->labelRepository->findBySessionIds($sessionIds)
-            : [];
-        $pricesMap = !empty($sessionIds)
-            ? $this->priceRepository->findBySessionIds($sessionIds)
-            : [];
+        $labelsMap = [];
+        $pricesMap = [];
 
-        // Attach labels and prices to each session
-        foreach ($sessions as &$session) {
-            $sid = (int)$session['EventSessionId'];
-            $session['labels'] = $labelsMap[$sid] ?? [];
-            $session['prices'] = $pricesMap[$sid] ?? [];
+        if (!empty($sessionIds)) {
+            $labelsMap = $this->labelRepository->findLabels([
+                'sessionIds' => $sessionIds,
+                'groupBySession' => true,
+            ]);
+            $pricesMap = $this->priceRepository->findPrices([
+                'sessionIds' => $sessionIds,
+                'groupBySession' => true,
+            ]);
         }
 
-        return [
-            'event' => $event,
-            'sessions' => $sessions,
-        ];
+        return CmsEventEditViewModel::fromData($event, $sessions, $pricesMap, $labelsMap);
     }
 
     /**
@@ -398,14 +422,14 @@ class CmsEventsService
             $errors[] = 'Label text cannot be empty';
         }
 
-        if (strlen($labelText) > self::MAX_LABEL_LENGTH) {
-            $errors[] = 'Label text must be ' . self::MAX_LABEL_LENGTH . ' characters or less';
+        if (strlen($labelText) > CmsEventConstraints::MAX_LABEL_LENGTH) {
+            $errors[] = 'Label text must be ' . CmsEventConstraints::MAX_LABEL_LENGTH . ' characters or less';
         }
 
         // Check max labels per session
         $currentCount = $this->labelRepository->countBySession($sessionId);
-        if ($currentCount >= self::MAX_LABELS_PER_SESSION) {
-            $errors[] = 'Maximum ' . self::MAX_LABELS_PER_SESSION . ' labels per session';
+        if ($currentCount >= CmsEventConstraints::MAX_LABELS_PER_SESSION) {
+            $errors[] = 'Maximum ' . CmsEventConstraints::MAX_LABELS_PER_SESSION . ' labels per session';
         }
 
         return $errors;
@@ -423,7 +447,7 @@ class CmsEventsService
         }
 
         // PayWhatYouLike must have price = 0
-        if ($priceTierId === self::PRICE_TIER_PAY_WHAT_YOU_LIKE && $price > 0) {
+        if ($priceTierId === PriceTierId::PayWhatYouLike->value && $price > 0) {
             $errors[] = 'Pay-what-you-like events must have price 0';
         }
 
@@ -437,20 +461,12 @@ class CmsEventsService
      */
     public function deleteEvent(int $eventId): void
     {
-        // Verify event exists
-        $stmt = $this->pdo->prepare('SELECT EventId FROM Event WHERE EventId = :eventId');
-        $stmt->execute(['eventId' => $eventId]);
-        if (!$stmt->fetch()) {
+        if (!$this->eventRepository->exists($eventId)) {
             throw new ValidationException(['Event not found']);
         }
 
-        // Soft delete the event
-        $stmt = $this->pdo->prepare('UPDATE Event SET IsActive = 0 WHERE EventId = :eventId');
-        $stmt->execute(['eventId' => $eventId]);
-
-        // Also deactivate all sessions for this event
-        $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
-        $stmt->execute(['eventId' => $eventId]);
+        $this->eventRepository->softDelete($eventId);
+        $this->eventRepository->deactivateSessions($eventId);
     }
 
     /**
@@ -458,18 +474,10 @@ class CmsEventsService
      */
     public function getScheduleDayConfigs(): array
     {
-        $stmt = $this->pdo->query('
-            SELECT 
-                sdc.ScheduleDayConfigId,
-                sdc.EventTypeId,
-                sdc.DayOfWeek,
-                sdc.IsVisible,
-                et.Name AS EventTypeName
-            FROM ScheduleDayConfig sdc
-            LEFT JOIN EventType et ON sdc.EventTypeId = et.EventTypeId AND sdc.EventTypeId > 0
-            ORDER BY sdc.EventTypeId = 0 DESC, sdc.EventTypeId, sdc.DayOfWeek
-        ');
-        return $stmt->fetchAll();
+        return $this->scheduleDayConfigRepository->findConfigs([
+            'includeEventTypeName' => true,
+            'orderBy' => 'scope',
+        ]);
     }
 
     /**
@@ -482,22 +490,12 @@ class CmsEventsService
      */
     public function setScheduleDayVisibility(int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {
-        if ($dayOfWeek < 0 || $dayOfWeek > 6) {
+        $dayValues = array_map(static fn (DayOfWeek $day): int => $day->value, DayOfWeek::cases());
+        if (!in_array($dayOfWeek, $dayValues, true)) {
             throw new ValidationException(['Invalid day of week']);
         }
 
-        // Upsert the visibility setting
-        $stmt = $this->pdo->prepare('
-            INSERT INTO ScheduleDayConfig (EventTypeId, DayOfWeek, IsVisible)
-            VALUES (:eventTypeId, :dayOfWeek, :isVisible)
-            ON DUPLICATE KEY UPDATE IsVisible = :isVisible2
-        ');
-        $stmt->execute([
-            'eventTypeId' => $eventTypeId,
-            'dayOfWeek' => $dayOfWeek,
-            'isVisible' => $isVisible ? 1 : 0,
-            'isVisible2' => $isVisible ? 1 : 0,
-        ]);
+        $this->scheduleDayConfigRepository->upsert($eventTypeId, $dayOfWeek, $isVisible);
     }
 
     /**
@@ -506,42 +504,60 @@ class CmsEventsService
      */
     public function getVisibleDays(?int $eventTypeId = null): array
     {
-        // Get global settings first (EventTypeId = 0 means global)
-        $stmt = $this->pdo->prepare('
-            SELECT DayOfWeek, IsVisible
-            FROM ScheduleDayConfig
-            WHERE EventTypeId = 0
-        ');
-        $stmt->execute();
-        $globalSettings = [];
-        foreach ($stmt->fetchAll() as $row) {
-            $globalSettings[$row['DayOfWeek']] = (bool)$row['IsVisible'];
+        $globalSettings = $this->loadGlobalDaySettings();
+        $typeSettings = $this->loadTypeDaySettings($eventTypeId);
+
+        return $this->mergeVisibilitySettings($globalSettings, $typeSettings);
+    }
+
+    /**
+     * Loads global day visibility settings.
+     */
+    private function loadGlobalDaySettings(): array
+    {
+        $settings = [];
+        foreach ($this->scheduleDayConfigRepository->findConfigs([
+                     'eventTypeId' => 0,
+                     'orderBy' => 'day',
+                 ]) as $row) {
+            $settings[$row['DayOfWeek']] = (bool)$row['IsVisible'];
+        }
+        return $settings;
+    }
+
+    /**
+     * Loads type-specific day visibility settings.
+     */
+    private function loadTypeDaySettings(?int $eventTypeId): array
+    {
+        if ($eventTypeId === null || $eventTypeId <= 0) {
+            return [];
         }
 
-        // If event type specified, get type-specific overrides
-        $typeSettings = [];
-        if ($eventTypeId !== null && $eventTypeId > 0) {
-            $stmt = $this->pdo->prepare('
-                SELECT DayOfWeek, IsVisible
-                FROM ScheduleDayConfig
-                WHERE EventTypeId = :eventTypeId
-            ');
-            $stmt->execute(['eventTypeId' => $eventTypeId]);
-            foreach ($stmt->fetchAll() as $row) {
-                $typeSettings[$row['DayOfWeek']] = (bool)$row['IsVisible'];
-            }
+        $settings = [];
+        foreach ($this->scheduleDayConfigRepository->findConfigs([
+                     'eventTypeId' => $eventTypeId,
+                     'orderBy' => 'day',
+                 ]) as $row) {
+            $settings[$row['DayOfWeek']] = (bool)$row['IsVisible'];
         }
+        return $settings;
+    }
 
-        // Merge: type-specific overrides global
+    /**
+     * Merges global and type settings to get visible days.
+     */
+    private function mergeVisibilitySettings(array $globalSettings, array $typeSettings): array
+    {
         $visibleDays = [];
-        for ($day = 0; $day <= 6; $day++) {
-            $isVisible = $typeSettings[$day] ?? $globalSettings[$day] ?? true;
+        foreach (DayOfWeek::cases() as $day) {
+            $dayValue = $day->value;
+            $isVisible = $typeSettings[$dayValue] ?? $globalSettings[$dayValue] ?? true;
             if ($isVisible) {
-                $visibleDays[] = $day;
+                $visibleDays[] = $dayValue;
             }
         }
 
         return $visibleDays;
     }
 }
-

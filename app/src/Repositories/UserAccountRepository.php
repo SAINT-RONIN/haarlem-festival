@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\UserAccount;
+use App\Repositories\Interfaces\IUserAccountRepository;
 use PDO;
 
 /**
@@ -14,7 +15,7 @@ use PDO;
  * Handles all SQL queries related to user accounts including
  * authentication lookups, registration, and password updates.
  */
-class UserAccountRepository
+class UserAccountRepository implements IUserAccountRepository
 {
     private PDO $pdo;
 

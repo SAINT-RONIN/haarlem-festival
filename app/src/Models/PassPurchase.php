@@ -18,13 +18,13 @@ class PassPurchase
      */
 
     public function __construct(
-        public int $passPurchaseId,
-        public int $passTypeId,
-        public int $userAccountId,
-        public ?\DateTimeImmutable $validDate,
-        public ?\DateTimeImmutable $validFromDate,
-        public ?\DateTimeImmutable $validToDate,
-        public \DateTimeImmutable $createdAtUtc,
+        public readonly int                 $passPurchaseId,
+        public readonly int                 $passTypeId,
+        public readonly int                 $userAccountId,
+        public readonly ?\DateTimeImmutable $validDate,
+        public readonly ?\DateTimeImmutable $validFromDate,
+        public readonly ?\DateTimeImmutable $validToDate,
+        public readonly \DateTimeImmutable  $createdAtUtc,
     ) {
     }
 
@@ -35,9 +35,9 @@ class PassPurchase
     public static function fromRow(array $row): self
     {
         return new self(
-            passPurchaseId: (int) $row['PassPurchaseId'],
-            passTypeId: (int) $row['PassTypeId'],
-            userAccountId: (int) $row['UserAccountId'],
+            passPurchaseId: (int)$row['PassPurchaseId'],
+            passTypeId: (int)$row['PassTypeId'],
+            userAccountId: (int)$row['UserAccountId'],
             validDate: isset($row['ValidDate']) ? new \DateTimeImmutable($row['ValidDate']) : null,
             validFromDate: isset($row['ValidFromDate']) ? new \DateTimeImmutable($row['ValidFromDate']) : null,
             validToDate: isset($row['ValidToDate']) ? new \DateTimeImmutable($row['ValidToDate']) : null,

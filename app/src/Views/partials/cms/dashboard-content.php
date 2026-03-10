@@ -2,77 +2,66 @@
 /**
  * CMS Dashboard Content partial - Main dashboard view with quick shortcuts, recent pages, and activity.
  *
- * @var array $recentPages Recently updated pages
- * @var array $activities Recent activity feed
+ * @var \App\ViewModels\Cms\RecentPageViewModel[] $recentPages Recently updated pages
+ * @var \App\ViewModels\Cms\ActivityViewModel[] $activities Recent activity feed
  */
 
-// Default data - ALL OF THIS WILL BE DELETED ONCE WE HAVE REAL DATA FROM THE DATABASE
-$recentPages = $recentPages ?? [
-    ['title' => 'Home', 'status' => 'Published', 'time' => '2h ago'],
-    ['title' => 'Jazz', 'status' => 'Published', 'time' => 'yesterday'],
-    ['title' => 'Dance', 'status' => 'Published', 'time' => '3d ago'],
-    ['title' => 'History', 'status' => 'Draft', 'time' => '6d ago'],
-];
-
-$activities = $activities ?? [
-    ['icon' => 'edit', 'text' => "You updated 'Home'", 'time' => '2h ago', 'color' => 'blue'],
-    ['icon' => 'file-text', 'text' => "Draft saved: 'History'", 'time' => 'yesterday', 'color' => 'amber'],
-    ['icon' => 'image', 'text' => 'Media uploaded: header.jpg', 'time' => '3d ago', 'color' => 'purple'],
-    ['icon' => 'user', 'text' => "User 'Editor' role updated", 'time' => '1w ago', 'color' => 'green'],
-];
+// Defaults for graceful degradation
+$recentPages = $recentPages ?? [];
+$activities = $activities ?? [];
 
 $shortcuts = [
-    [
-        'icon' => 'file-edit',
-        'title' => 'Edit pages',
-        'description' => 'Open the pages list and update content.',
-        'color' => 'blue',
-        'href' => '/cms/pages',
-    ],
-    [
-        'icon' => 'file-check',
-        'title' => 'Review drafts',
-        'description' => 'See pages not published yet.',
-        'color' => 'amber',
-        'href' => '/cms/pages?filter=draft',
-    ],
-    [
-        'icon' => 'image',
-        'title' => 'Manage media',
-        'description' => 'View and organize uploaded images/files.',
-        'color' => 'purple',
-        'href' => '/cms/media',
-    ],
-    [
-        'icon' => 'users',
-        'title' => 'User management',
-        'description' => 'Edit roles and access.',
-        'color' => 'green',
-        'href' => '/cms/users',
-    ],
+        [
+                'icon' => 'file-edit',
+                'title' => 'Edit pages',
+                'description' => 'Open the pages list and update content.',
+                'color' => 'blue',
+                'href' => '/cms/pages',
+        ],
+        [
+                'icon' => 'file-check',
+                'title' => 'Review drafts',
+                'description' => 'See pages not published yet.',
+                'color' => 'amber',
+                'href' => '/cms/pages?filter=draft',
+        ],
+        [
+                'icon' => 'image',
+                'title' => 'Manage media',
+                'description' => 'View and organize uploaded images/files.',
+                'color' => 'purple',
+                'href' => '/cms/media',
+        ],
+        [
+                'icon' => 'users',
+                'title' => 'User management',
+                'description' => 'Edit roles and access.',
+                'color' => 'green',
+                'href' => '/cms/users',
+        ],
 ];
 
 $colorClasses = [
-    'blue' => [
-        'gradient' => 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
-        'bg' => 'bg-blue-50',
-        'text' => 'text-blue-600',
-    ],
-    'amber' => [
-        'gradient' => 'from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
-        'bg' => 'bg-amber-50',
-        'text' => 'text-amber-600',
-    ],
-    'purple' => [
-        'gradient' => 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
-        'bg' => 'bg-purple-50',
-        'text' => 'text-purple-600',
-    ],
-    'green' => [
-        'gradient' => 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
-        'bg' => 'bg-green-50',
-        'text' => 'text-green-600',
-    ],
+        'blue' => [
+                'gradient' => 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+                'bg' => 'bg-blue-50',
+                'text' => 'text-blue-600',
+        ],
+        'amber' => [
+                'gradient' => 'from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
+                'bg' => 'bg-amber-50',
+                'text' => 'text-amber-600',
+        ],
+        'purple' => [
+                'gradient' => 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
+                'bg' => 'bg-purple-50',
+                'text' => 'text-purple-600',
+        ],
+        'green' => [
+                'gradient' => 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+                'bg' => 'bg-green-50',
+                'text' => 'text-green-600',
+        ],
 ];
 ?>
 
@@ -113,22 +102,22 @@ $colorClasses = [
                             class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors group">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-3 mb-1">
-                                <span class="text-sm font-medium text-gray-900"><?= htmlspecialchars($page['title']) ?></span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <?= $page['status'] === 'Published' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200' ?>">
-                                    <?= htmlspecialchars($page['status']) ?>
+                                <span class="text-sm font-medium text-gray-900"><?= htmlspecialchars($page->title) ?></span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <?= $page->status === 'Published' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200' ?>">
+                                    <?= htmlspecialchars($page->status) ?>
                                 </span>
                             </div>
-                            <span class="text-xs text-gray-500"><?= htmlspecialchars($page['time']) ?></span>
+                            <span class="text-xs text-gray-500"><?= htmlspecialchars($page->timeAgo) ?></span>
                         </div>
                         <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button type="button"
                                     class="p-1.5 hover:bg-white rounded-lg transition-colors text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                    aria-label="Edit <?= htmlspecialchars($page['title']) ?>">
+                                    aria-label="Edit <?= htmlspecialchars($page->title) ?>">
                                 <i data-lucide="edit" class="w-4 h-4" aria-hidden="true"></i>
                             </button>
                             <button type="button"
                                     class="p-1.5 hover:bg-white rounded-lg transition-colors text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                    aria-label="View <?= htmlspecialchars($page['title']) ?>">
+                                    aria-label="View <?= htmlspecialchars($page->title) ?>">
                                 <i data-lucide="eye" class="w-4 h-4" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -143,16 +132,16 @@ $colorClasses = [
 
         <ul class="space-y-4" role="list">
             <?php foreach ($activities as $activity): ?>
-                <?php $colors = $colorClasses[$activity['color']]; ?>
+                <?php $colors = $colorClasses[$activity->color]; ?>
                 <li class="flex gap-3">
                     <div class="w-10 h-10 rounded-lg <?= $colors['bg'] ?> <?= $colors['text'] ?> flex items-center justify-center flex-shrink-0"
                          aria-hidden="true">
-                        <i data-lucide="<?= htmlspecialchars($activity['icon']) ?>" class="w-5 h-5"
+                        <i data-lucide="<?= htmlspecialchars($activity->icon) ?>" class="w-5 h-5"
                            aria-hidden="true"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm text-gray-900"><?= htmlspecialchars($activity['text']) ?></p>
-                        <p class="text-xs text-gray-500 mt-0.5"><?= htmlspecialchars($activity['time']) ?></p>
+                        <p class="text-sm text-gray-900"><?= htmlspecialchars($activity->text) ?></p>
+                        <p class="text-xs text-gray-500 mt-0.5"><?= htmlspecialchars($activity->time) ?></p>
                     </div>
                 </li>
             <?php endforeach; ?>

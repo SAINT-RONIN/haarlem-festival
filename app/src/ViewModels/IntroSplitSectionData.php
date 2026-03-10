@@ -15,9 +15,9 @@ final readonly class IntroSplitSectionData
         public string $headingText,
         public string $bodyText,
         public string $imageUrl,
-        public string $imageAltText = 'Stories in Haarlem',
-    )
-    {
+        public string $imageAltText,
+        public ?array $subsections = null,
+        public ?string $closingLine = null,
+    ) {
     }
 }
-

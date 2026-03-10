@@ -22,7 +22,7 @@
     </button>
 
     <!-- Section Content -->
-    <div class="accordion-content p-6 border-t border-gray-200 space-y-6">
+    <div class="accordion-content hidden p-6 border-t border-gray-200 space-y-6">
         <?php foreach ($section['items'] as $item): ?>
             <?php
             $inputType = $item['inputType'];

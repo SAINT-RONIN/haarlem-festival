@@ -4,33 +4,25 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\MediaAssetRepository;
-use App\Utils\CmsContentLimits;
 use App\Exceptions\ValidationException;
+use App\Infrastructure\PathResolver;
+use App\Models\MediaAsset;
+use App\Repositories\MediaAssetRepository;
+use App\Services\Interfaces\IMediaAssetService;
+use App\Utils\CmsContentLimits;
 
 /**
  * Service for handling media asset operations.
  *
  * Manages image uploads, validation, and storage.
  */
-class MediaAssetService
+class MediaAssetService implements IMediaAssetService
 {
     private MediaAssetRepository $mediaAssetRepository;
-    private string $uploadBasePath;
 
     public function __construct()
     {
         $this->mediaAssetRepository = new MediaAssetRepository();
-        
-        // Determine the public directory path
-        // In Docker: /app/public, locally: use __DIR__ relative path
-        if (is_dir('/app/public')) {
-            $publicPath = '/app/public';
-        } else {
-            $publicPath = realpath(__DIR__ . '/../../public') ?: __DIR__ . '/../../public';
-        }
-        
-        $this->uploadBasePath = $publicPath . '/assets/Image';
     }
 
     /**
@@ -45,15 +37,15 @@ class MediaAssetService
     {
         $this->validateFile($file);
 
-        $targetDir = $this->uploadBasePath . '/' . $folder;
-        
+        $targetDir = PathResolver::getUploadPath($folder);
+
         // Create directory if it doesn't exist
         if (!is_dir($targetDir)) {
             if (!mkdir($targetDir, 0755, true)) {
                 throw new ValidationException('Failed to create upload directory');
             }
         }
-        
+
         // Check if directory is writable
         if (!is_writable($targetDir)) {
             throw new ValidationException('Upload directory is not writable');
@@ -89,14 +81,7 @@ class MediaAssetService
             return false;
         }
 
-        // Determine the public directory path
-        if (is_dir('/app/public')) {
-            $publicPath = '/app/public';
-        } else {
-            $publicPath = realpath(__DIR__ . '/../../public') ?: __DIR__ . '/../../public';
-        }
-        
-        $filePath = $publicPath . $asset['FilePath'];
+        $filePath = PathResolver::getPublicPath() . $asset->filePath;
         if (file_exists($filePath)) {
             unlink($filePath);
         }
@@ -107,7 +92,7 @@ class MediaAssetService
     /**
      * Gets a media asset by ID.
      */
-    public function getAssetById(int $mediaAssetId): ?array
+    public function getAssetById(int $mediaAssetId): ?MediaAsset
     {
         return $this->mediaAssetRepository->findById($mediaAssetId);
     }
@@ -141,7 +126,7 @@ class MediaAssetService
 
         if ($file['size'] > CmsContentLimits::IMAGE_MAX_FILE_SIZE) {
             throw new ValidationException(
-                'File too large. Maximum size: ' . 
+                'File too large. Maximum size: ' .
                 $this->formatFileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE)
             );
         }
@@ -153,14 +138,14 @@ class MediaAssetService
             [$width, $height] = $imageInfo;
             if ($width > CmsContentLimits::IMAGE_MAX_WIDTH) {
                 throw new ValidationException(
-                    "Image width ({$width}px) exceeds maximum of " . 
+                    "Image width ({$width}px) exceeds maximum of " .
                     CmsContentLimits::IMAGE_MAX_WIDTH . 'px'
                 );
             }
 
             if ($height > CmsContentLimits::IMAGE_MAX_HEIGHT) {
                 throw new ValidationException(
-                    "Image height ({$height}px) exceeds maximum of " . 
+                    "Image height ({$height}px) exceeds maximum of " .
                     CmsContentLimits::IMAGE_MAX_HEIGHT . 'px'
                 );
             }
@@ -215,5 +200,33 @@ class MediaAssetService
             default => 'Unknown upload error'
         };
     }
-}
 
+    /**
+     * Links an uploaded media asset to a CMS item.
+     *
+     * @param int $mediaAssetId Media asset ID
+     * @param int $cmsItemId CMS item ID
+     * @return bool Success status
+     */
+    public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
+    {
+        return $this->mediaAssetRepository->linkToCmsItem($mediaAssetId, $cmsItemId);
+    }
+
+    /**
+     * Gets the image validation limits for client-side validation.
+     *
+     * @return array Validation limits
+     */
+    public function getImageLimits(): array
+    {
+        return [
+            'maxFileSize' => CmsContentLimits::IMAGE_MAX_FILE_SIZE,
+            'maxFileSizeFormatted' => $this->formatFileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
+            'maxWidth' => CmsContentLimits::IMAGE_MAX_WIDTH,
+            'maxHeight' => CmsContentLimits::IMAGE_MAX_HEIGHT,
+            'allowedMimes' => CmsContentLimits::IMAGE_ALLOWED_MIMES,
+            'allowedExtensions' => ['jpg', 'jpeg', 'png', 'webp'],
+        ];
+    }
+}

@@ -3,17 +3,20 @@
  * CMS Events list page with weekly schedule overview.
  *
  * @var string $currentView
- * @var array $events
- * @var array $eventTypes
- * @var array $weeklySchedule
- * @var array $venues
- * @var string|null $successMessage
- * @var string|null $errorMessage
+ * @var \App\ViewModels\Cms\CmsEventsListViewModel $viewModel
  */
 
-$selectedType = $_GET['type'] ?? '';
-$selectedDay = $_GET['day'] ?? '';
 $weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+// Extract from ViewModel
+$events = $viewModel->events;
+$eventTypes = $viewModel->eventTypes;
+$weeklySchedule = $viewModel->weeklySchedule;
+$venues = $viewModel->venues;
+$selectedType = $viewModel->selectedType;
+$selectedDay = $viewModel->selectedDay;
+$successMessage = $viewModel->successMessage;
+$errorMessage = $viewModel->errorMessage;
 
 // Define type colors for badges
 $typeColors = [
@@ -75,9 +78,9 @@ $typeColors = [
                             class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                         <option value="">All Types</option>
                         <?php foreach ($eventTypes as $type): ?>
-                            <option value="<?= (int)$type['EventTypeId'] ?>"
-                                    <?= $selectedType == $type['EventTypeId'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($type['Name']) ?>
+                            <option value="<?= $type->eventTypeId ?>"
+                                    <?= $selectedType == $type->eventTypeId ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($type->name) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -135,28 +138,25 @@ $typeColors = [
                             <?php else: ?>
                                 <?php foreach ($daySessions as $session): ?>
                                     <?php
-                                    $typeSlug = $session['EventTypeSlug'] ?? 'default';
-                                    $colorClass = $typeColors[$typeSlug] ?? 'bg-gray-100 text-gray-800';
-                                    $startTime = date('H:i', strtotime($session['StartDateTime']));
-                                    $endTime = $session['EndDateTime'] ? date('H:i', strtotime($session['EndDateTime'])) : '';
-                                    $seatsAvailable = (int)$session['CapacityTotal'] - (int)$session['SoldSingleTickets'] - (int)$session['SoldReservedSeats'];
+                                    /** @var \App\ViewModels\Cms\CmsEventSessionViewModel $session */
+                                    $colorClass = $typeColors[$session->eventTypeSlug] ?? 'bg-gray-100 text-gray-800';
                                     ?>
-                                    <a href="/cms/events/<?= (int)$session['EventId'] ?>/edit"
+                                    <a href="/cms/events/<?= $session->eventId ?>/edit"
                                        class="block p-2 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all text-xs">
                                         <div class="flex justify-between items-start mb-1">
                                             <span class="font-medium text-gray-900 line-clamp-2">
-                                                <?= htmlspecialchars($session['EventTitle']) ?>
+                                                <?= htmlspecialchars($session->eventTitle) ?>
                                             </span>
                                         </div>
                                         <div class="text-gray-500 mb-1">
-                                            <?= $startTime ?><?= $endTime ? ' - ' . $endTime : '' ?>
+                                            <?= $session->formattedStartTime ?><?= $session->formattedEndTime ? ' - ' . $session->formattedEndTime : '' ?>
                                         </div>
                                         <span class="inline-block px-1.5 py-0.5 rounded text-[10px] <?= $colorClass ?>">
-                                            <?= htmlspecialchars($session['EventTypeName']) ?>
+                                            <?= htmlspecialchars($session->eventTypeSlug) ?>
                                         </span>
-                                        <?php if ($session['EventTypeSlug'] === 'jazz'): ?>
+                                        <?php if ($session->eventTypeSlug === 'jazz'): ?>
                                             <div class="text-[10px] text-gray-400 mt-1">
-                                                <?= $seatsAvailable ?> seats left
+                                                <?= $session->seatsAvailable ?> seats left
                                             </div>
                                         <?php endif; ?>
                                     </a>
@@ -214,38 +214,38 @@ $typeColors = [
                 <?php else: ?>
                     <?php foreach ($events as $event): ?>
                         <?php
-                        $typeSlug = $event['EventTypeSlug'] ?? 'default';
-                        $colorClass = $typeColors[$typeSlug] ?? 'bg-gray-100 text-gray-800';
+                        /** @var \App\ViewModels\Cms\CmsEventListItemViewModel $event */
+                        $colorClass = $typeColors[$event->eventTypeSlug] ?? 'bg-gray-100 text-gray-800';
                         ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">
-                                    <?= htmlspecialchars($event['Title']) ?>
+                                    <?= htmlspecialchars($event->title) ?>
                                 </div>
-                                <?php if (!empty($event['ShortDescription'])): ?>
+                                <?php if (!empty($event->shortDescription)): ?>
                                     <div class="text-xs text-gray-500 truncate max-w-xs">
-                                        <?= htmlspecialchars($event['ShortDescription']) ?>
+                                        <?= htmlspecialchars($event->shortDescription) ?>
                                     </div>
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $colorClass ?>">
-                                    <?= htmlspecialchars($event['EventTypeName']) ?>
+                                    <?= htmlspecialchars($event->eventTypeName) ?>
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= htmlspecialchars($event['VenueName'] ?? 'Not set') ?>
+                                <?= htmlspecialchars($event->venueName ?? 'Not set') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= (int)$event['SessionCount'] ?> session(s)
+                                <?= $event->sessionCount ?> session(s)
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="/cms/events/<?= (int)$event['EventId'] ?>/edit"
+                                <a href="/cms/events/<?= $event->eventId ?>/edit"
                                    class="text-blue-600 hover:text-blue-900 inline-flex items-center mr-3">
                                     <i data-lucide="edit" class="w-4 h-4 mr-1"></i>
                                     Edit
                                 </a>
-                                <form method="POST" action="/cms/events/<?= (int)$event['EventId'] ?>/delete"
+                                <form method="POST" action="/cms/events/<?= $event->eventId ?>/delete"
                                       class="inline"
                                       onsubmit="return confirm('Are you sure you want to delete this event? This will also deactivate all its sessions.');">
                                     <button type="submit"
@@ -264,9 +264,7 @@ $typeColors = [
     </main>
 </div>
 
-<script>
-    lucide.createIcons();
-</script>
+<script src="/assets/js/cms/cms-common.js"></script>
 </body>
 </html>
 

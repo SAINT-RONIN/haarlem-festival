@@ -23,6 +23,9 @@
     "friendsofphp/php-cs-fixer": "^3.93",
     "squizlabs/php_codesniffer": "^4.0"
   },
+  "scripts": {
+    "architecture:check": "php scripts/architecture-check.php"
+  },
   "config": {
     "optimize-autoloader": true,
     "sort-packages": true

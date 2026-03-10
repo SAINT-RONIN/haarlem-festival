@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\CmsItem;
+use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
+use App\Services\Interfaces\ICmsService;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 
-class CmsService
+class CmsService implements ICmsService
 {
     private CmsRepository $cmsRepository;
     private MediaAssetRepository $mediaAssetRepository;
+    private SessionService $sessionService;
 
     // Default values for Global UI
     private const DEFAULT_SITE_NAME = 'Haarlem Festivals';
@@ -37,27 +41,31 @@ class CmsService
     {
         $this->cmsRepository = new CmsRepository();
         $this->mediaAssetRepository = new MediaAssetRepository();
+        $this->sessionService = new SessionService();
     }
 
     public function getHomePageContent(): array
     {
-        $page = $this->cmsRepository->getPageBySlug('home');
-        if (!$page) {
+        $pageId = $this->getPageIdBySlug('home');
+        if ($pageId === null) {
             return [];
         }
 
-        $sections = $this->cmsRepository->getSectionsByPageId((int)$page['CmsPageId']);
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $itemsBySection = $this->indexItemsBySectionId($items);
         $content = [];
 
         foreach ($sections as $section) {
-            $items = $this->cmsRepository->getItemsBySectionId((int)$section['CmsSectionId']);
+            /** @var CmsSection $section */
             $sectionData = [];
 
-            foreach ($items as $item) {
-                $sectionData[$item['ItemKey']] = $this->resolveItemValue($item);
+            foreach ($itemsBySection[$section->cmsSectionId] ?? [] as $item) {
+                /** @var CmsItem $item */
+                $sectionData[$item->itemKey] = $this->resolveItemValue($item);
             }
 
-            $content[$section['SectionKey']] = $sectionData;
+            $content[$section->sectionKey] = $sectionData;
         }
 
         return $content;
@@ -65,16 +73,20 @@ class CmsService
 
     public function getSectionContent(string $pageSlug, string $sectionKey): array
     {
-        $page = $this->cmsRepository->getPageBySlug($pageSlug);
-        if (!$page) {
+        $pageId = $this->getPageIdBySlug($pageSlug);
+        if ($pageId === null) {
             return [];
         }
 
-        $items = $this->cmsRepository->getItemsBySectionKey((int)$page['CmsPageId'], $sectionKey);
+        $items = $this->cmsRepository->findItems([
+            'cmsPageId' => $pageId,
+            'sectionKey' => $sectionKey,
+        ]);
         $content = [];
 
         foreach ($items as $item) {
-            $content[$item['ItemKey']] = $this->resolveItemValue($item);
+            /** @var CmsItem $item */
+            $content[$item->itemKey] = $this->resolveItemValue($item);
         }
 
         return $content;
@@ -86,19 +98,42 @@ class CmsService
      * - If the item references a MediaAsset, returns its FilePath.
      * - Otherwise returns TextValue or HtmlValue.
      */
-    private function resolveItemValue(array $item): ?string
+    private function resolveItemValue(CmsItem $item): ?string
     {
-        $mediaAssetId = $item['MediaAssetId'] ?? null;
-        if (is_numeric($mediaAssetId) && (int)$mediaAssetId > 0) {
-            $asset = $this->mediaAssetRepository->findById((int)$mediaAssetId);
-            $filePath = is_array($asset) ? ($asset['FilePath'] ?? null) : null;
-            if (is_string($filePath) && $filePath !== '') {
-                return $filePath;
+        $mediaAssetId = $item->mediaAssetId;
+        if ($mediaAssetId !== null && $mediaAssetId > 0) {
+            $asset = $this->mediaAssetRepository->findById($mediaAssetId);
+            if ($asset !== null && $asset->filePath !== '') {
+                return $asset->filePath;
             }
         }
 
-        $value = $item['TextValue'] ?? $item['HtmlValue'] ?? null;
+        $value = $item->textValue ?? $item->htmlValue ?? null;
         return is_string($value) ? $value : null;
+    }
+
+    private function getPageIdBySlug(string $slug): ?int
+    {
+        $rows = $this->cmsRepository->findPages(['slug' => $slug]);
+        if ($rows === []) {
+            return null;
+        }
+
+        return (int)$rows[0]['CmsPageId'];
+    }
+
+    /**
+     * @param CmsItem[] $items
+     * @return array<int, list<CmsItem>>
+     */
+    private function indexItemsBySectionId(array $items): array
+    {
+        $indexed = [];
+        foreach ($items as $item) {
+            $indexed[$item->cmsSectionId][] = $item;
+        }
+
+        return $indexed;
     }
 
     /**
@@ -159,6 +194,7 @@ class CmsService
             navRestaurant: $globalContent['nav_restaurant'] ?? self::DEFAULT_NAV_RESTAURANT,
             navStorytelling: $globalContent['nav_storytelling'] ?? self::DEFAULT_NAV_STORYTELLING,
             btnMyProgram: $globalContent['btn_my_program'] ?? self::DEFAULT_BTN_MY_PROGRAM,
+            isLoggedIn: $this->sessionService->isLoggedIn(),
         );
     }
 }

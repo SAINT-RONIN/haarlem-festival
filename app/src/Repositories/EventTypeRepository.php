@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\EventType;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use PDO;
 
@@ -20,39 +21,31 @@ class EventTypeRepository implements IEventTypeRepository
         $this->pdo = Database::getConnection();
     }
 
-    /**
-     * Returns all event types.
-     *
-     * @return array Array of EventType rows
-     */
-    public function findAll(): array
+    public function findEventTypes(array $filters = []): array
     {
-        $stmt = $this->pdo->prepare('
+        $sql = '
             SELECT EventTypeId, Name, Slug
             FROM EventType
-            ORDER BY EventTypeId ASC
-        ');
-        $stmt->execute();
+            WHERE 1 = 1
+        ';
+        $params = [];
 
-        return $stmt->fetchAll();
-    }
+        if (isset($filters['eventTypeId'])) {
+            $sql .= ' AND EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = (int)$filters['eventTypeId'];
+        }
 
-    /**
-     * Returns a single event type by ID.
-     *
-     * @param int $eventTypeId
-     * @return array|null EventType row or null if not found
-     */
-    public function findById(int $eventTypeId): ?array
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT EventTypeId, Name, Slug
-            FROM EventType
-            WHERE EventTypeId = :eventTypeId
-        ');
-        $stmt->execute(['eventTypeId' => $eventTypeId]);
+        $orderByFilter = is_string($filters['orderBy'] ?? null)
+            ? strtolower((string)$filters['orderBy'])
+            : 'id';
+        $sql .= $orderByFilter === 'name'
+            ? ' ORDER BY Name ASC'
+            : ' ORDER BY EventTypeId ASC';
 
-        $result = $stmt->fetch();
-        return $result !== false ? $result : null;
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map([EventType::class, 'fromRow'], $rows);
     }
 }

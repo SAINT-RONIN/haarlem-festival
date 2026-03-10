@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Jazz;
 
+use App\ViewModels\BaseViewModel;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -13,11 +14,11 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
 /**
  * ViewModel for the Jazz page.
  */
-final readonly class JazzPageViewModel
+final readonly class JazzPageViewModel extends BaseViewModel
 {
     public function __construct(
-        public HeroData                  $heroData,
-        public GlobalUiData              $globalUi,
+        HeroData $heroData,
+        GlobalUiData $globalUi,
         public GradientSectionData       $gradientSection,
         public IntroSplitSectionData     $introSplitSection,
         public VenuesData                $venuesData,
@@ -27,7 +28,12 @@ final readonly class JazzPageViewModel
         public ScheduleData              $scheduleData,
         public BookingCallToActionData   $bookingCtaData,
         public ?ScheduleSectionViewModel $scheduleSection = null,
-    )
-    {
+    ) {
+        parent::__construct(
+            heroData: $heroData,
+            globalUi: $globalUi,
+            currentPage: $heroData->currentPage,
+            includeNav: false,
+        );
     }
 }

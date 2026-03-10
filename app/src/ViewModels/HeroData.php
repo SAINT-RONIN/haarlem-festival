@@ -21,8 +21,6 @@ final readonly class HeroData
         public string $secondaryButtonLink,
         public string $backgroundImageUrl,
         public string $currentPage,
-    )
-    {
+    ) {
     }
 }
-

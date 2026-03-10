@@ -4,6 +4,14 @@
  *
  * @var \App\ViewModels\PricingData $pricingData
  */
+
+if (!isset($pricingData) && isset($viewModel) && property_exists($viewModel, 'pricingData')) {
+    $pricingData = $viewModel->pricingData;
+}
+
+if (!isset($pricingData)) {
+    return;
+}
 ?>
 
 <!-- Pricing Section -->
@@ -33,4 +41,3 @@
         <?php endforeach; ?>
     </div>
 </section>
-

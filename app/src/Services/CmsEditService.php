@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventTypeId;
+use App\Models\CmsItem;
+use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
+use App\Repositories\EventRepository;
 use App\Repositories\MediaAssetRepository;
+use App\Services\Interfaces\ICmsEditService;
 use App\Utils\CmsContentLimits;
 
 /**
@@ -14,15 +19,17 @@ use App\Utils\CmsContentLimits;
  * Handles business logic for loading, validating, and saving
  * CMS page content.
  */
-class CmsEditService
+class CmsEditService implements ICmsEditService
 {
     private CmsRepository $cmsRepository;
     private MediaAssetRepository $mediaAssetRepository;
+    private EventRepository $eventRepository;
 
     public function __construct()
     {
         $this->cmsRepository = new CmsRepository();
         $this->mediaAssetRepository = new MediaAssetRepository();
+        $this->eventRepository = new EventRepository();
     }
 
     /**
@@ -32,22 +39,31 @@ class CmsEditService
      */
     public function getPageForEditing(int $pageId): ?array
     {
-        $page = $this->cmsRepository->getPageById($pageId);
-        if (!$page) {
+        $pages = $this->cmsRepository->findPages(['cmsPageId' => $pageId]);
+        $page = $pages[0] ?? null;
+        if ($page === null) {
             return null;
         }
 
-        $sections = $this->cmsRepository->getSectionsByPageId($pageId);
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $itemsBySection = $this->groupItemsBySection($items);
         $sectionsWithItems = [];
 
+        $eventNameMap = [];
+        if (($page['Slug'] ?? '') === 'storytelling-detail') {
+            $eventNameMap = $this->buildEventNameMap();
+        }
+
         foreach ($sections as $section) {
-            $items = $this->cmsRepository->getItemsBySectionId($section['CmsSectionId']);
-            $enrichedItems = $this->enrichItemsWithMetadata($items);
+            /** @var CmsSection $section */
+            $sectionItems = $itemsBySection[$section->cmsSectionId] ?? [];
+            $enrichedItems = $this->enrichItemsWithMetadata($sectionItems);
 
             $sectionsWithItems[] = [
-                'sectionId' => $section['CmsSectionId'],
-                'sectionKey' => $section['SectionKey'],
-                'displayName' => $this->formatSectionName($section['SectionKey']),
+                'sectionId' => $section->cmsSectionId,
+                'sectionKey' => $section->sectionKey,
+                'displayName' => $this->resolveDisplayName($section->sectionKey, $eventNameMap),
                 'items' => $enrichedItems
             ];
         }
@@ -69,25 +85,25 @@ class CmsEditService
     {
         $errors = [];
         $updatedCount = 0;
+        $pageItems = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $pageItemsById = [];
+        foreach ($pageItems as $pageItem) {
+            $pageItemsById[$pageItem->cmsItemId] = $pageItem;
+        }
 
         foreach ($items as $itemId => $itemData) {
             $itemId = (int)$itemId;
-            $item = $this->cmsRepository->getItemById($itemId);
+            $item = $pageItemsById[$itemId] ?? null;
 
             if (!$item) {
                 $errors[] = "Item ID {$itemId} not found";
                 continue;
             }
 
-            if (!$this->itemBelongsToPage($item, $pageId)) {
-                $errors[] = "Item ID {$itemId} does not belong to this page";
-                continue;
-            }
-
-            $type = $item['ItemType'];
+            $type = $item->itemType->value;
             $value = $itemData['value'] ?? '';
 
-            $validationError = $this->validateItemValue($value, $type, $item['ItemKey']);
+            $validationError = $this->validateItemValue($value, $type, $item->itemKey);
             if ($validationError) {
                 $errors[] = $validationError;
                 continue;
@@ -153,57 +169,71 @@ class CmsEditService
     }
 
     /**
-     * Checks if an item belongs to the given page.
+     * @param CmsItem[] $items
+     * @return array<int, list<CmsItem>>
      */
-    private function itemBelongsToPage(array $item, int $pageId): bool
+    private function groupItemsBySection(array $items): array
     {
-        $sections = $this->cmsRepository->getSectionsByPageId($pageId);
-        $sectionIds = array_column($sections, 'CmsSectionId');
-        return in_array($item['CmsSectionId'], $sectionIds, true);
+        $grouped = [];
+        foreach ($items as $item) {
+            $grouped[$item->cmsSectionId][] = $item;
+        }
+
+        return $grouped;
     }
 
     /**
      * Enriches items with display metadata.
+     *
+     * @param CmsItem[] $items
      */
     private function enrichItemsWithMetadata(array $items): array
     {
         $enriched = [];
 
         foreach ($items as $item) {
-            $type = $item['ItemType'];
-            $mediaAsset = $this->getMediaAssetInfo($item['MediaAssetId']);
+            /** @var CmsItem $item */
+            $type = $item->itemType->value;
+            $mediaAsset = $this->getMediaAssetInfo($item->mediaAssetId);
 
             $resolvedFilePath = null;
-            if (is_array($mediaAsset) && !empty($mediaAsset['FilePath'])) {
-                $resolvedFilePath = (string)$mediaAsset['FilePath'];
-            } elseif (!empty($item['TextValue'])) {
-                $resolvedFilePath = (string)$item['TextValue'];
+            if ($mediaAsset !== null && $mediaAsset->filePath !== '') {
+                $resolvedFilePath = $mediaAsset->filePath;
+            } elseif (!empty($item->textValue)) {
+                $resolvedFilePath = (string)$item->textValue;
             }
 
-            if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH' && !$mediaAsset) {
-                $mediaAsset = [
+            // Convert model to array for view consumption
+            $mediaAssetArray = $mediaAsset ? [
+                'FilePath' => $mediaAsset->filePath,
+                'OriginalFileName' => $mediaAsset->originalFileName,
+                'AltText' => $mediaAsset->altText
+            ] : null;
+
+            if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH' && !$mediaAssetArray) {
+                $mediaAssetArray = [
                     'FilePath' => $resolvedFilePath,
                     'OriginalFileName' => basename($resolvedFilePath),
-                    'AltText' => $this->formatItemKeyName($item['ItemKey'])
+                    'AltText' => $this->formatItemKeyName($item->itemKey)
                 ];
             }
 
             $inputType = CmsContentLimits::getInputType($type);
-            if (strtoupper((string)$type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce((string)$item['ItemKey'])) {
+            if (strtoupper((string)$type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce((string)$item->itemKey)) {
                 $inputType = 'tinymce';
             }
 
             $enriched[] = [
-                'itemId' => $item['CmsItemId'],
-                'itemKey' => $item['ItemKey'],
-                'displayName' => $this->formatItemKeyName($item['ItemKey']),
+                'itemId' => $item->cmsItemId,
+                'itemKey' => $item->itemKey,
+                'displayName' => $this->formatItemKeyName($item->itemKey),
                 'type' => $type,
                 'typeLabel' => CmsContentLimits::getLabelForType($type),
                 'inputType' => $inputType,
                 'maxChars' => CmsContentLimits::getCharLimitForType($type),
                 'value' => $this->getItemValue($item),
-                'mediaAssetId' => $item['MediaAssetId'],
-                'mediaAsset' => $mediaAsset,
+                'mediaAssetId' => $item->mediaAssetId,
+                'mediaAsset' => $mediaAssetArray,
             ];
         }
 
@@ -213,15 +243,15 @@ class CmsEditService
     /**
      * Gets the appropriate value from an item.
      */
-    private function getItemValue(array $item): string
+    private function getItemValue(CmsItem $item): string
     {
-        $type = strtoupper((string)($item['ItemType'] ?? ''));
+        $type = strtoupper($item->itemType->value);
 
         if ($type === 'HTML') {
-            return (string)($item['HtmlValue'] ?? '');
+            return (string)($item->htmlValue ?? '');
         }
 
-        $value = (string)($item['TextValue'] ?? '');
+        $value = (string)($item->textValue ?? '');
         if ($type === 'TEXT' && $value !== '' && preg_match('/<[^>]+>/', $value) === 1) {
             return trim(strip_tags(html_entity_decode($value)));
         }
@@ -232,12 +262,37 @@ class CmsEditService
     /**
      * Gets media asset info if exists.
      */
-    private function getMediaAssetInfo(?int $mediaAssetId): ?array
+    private function getMediaAssetInfo(?int $mediaAssetId): ?\App\Models\MediaAsset
     {
         if (!$mediaAssetId) {
             return null;
         }
         return $this->mediaAssetRepository->findById($mediaAssetId);
+    }
+
+    /**
+     * Builds a map of section key → event title for storytelling events.
+     * e.g., ['event_34' => 'Winnie de Poeh (4+)', ...]
+     */
+    private function buildEventNameMap(): array
+    {
+        $events = $this->eventRepository->findEvents(['eventTypeId' => EventTypeId::Storytelling->value]);
+        $map = [];
+        foreach ($events as $event) {
+            $map['event_' . $event['EventId']] = $event['Title'];
+        }
+        return $map;
+    }
+
+    /**
+     * Resolves a section display name, using the event name map when available.
+     */
+    private function resolveDisplayName(string $sectionKey, array $eventNameMap): string
+    {
+        if (!empty($eventNameMap) && isset($eventNameMap[$sectionKey])) {
+            return $eventNameMap[$sectionKey];
+        }
+        return $this->formatSectionName($sectionKey);
     }
 
     /**
@@ -268,4 +323,3 @@ class CmsEditService
         return strip_tags(html_entity_decode($value));
     }
 }
-

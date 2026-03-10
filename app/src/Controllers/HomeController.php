@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\HomeService;
 
 /**
@@ -11,7 +12,7 @@ use App\Services\HomeService;
  *
  * Handles HTTP requests for the main landing page.
  */
-class HomeController
+class HomeController extends BaseController
 {
     /**
      * Displays the homepage.
@@ -20,10 +21,12 @@ class HomeController
      */
     public function index(): void
     {
-        $homeService = new HomeService();
-        $viewModel = $homeService->getHomePageData();
-
-        // Pass viewModel to the view
-        require __DIR__ . '/../Views/pages/home.php';
+        try {
+            $homeService = new HomeService();
+            $viewModel = $homeService->getHomePageData();
+            $this->renderPage(__DIR__ . '/../Views/pages/home.php', $viewModel);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 }

@@ -18,19 +18,19 @@ class UserAccount
      */
 
     public function __construct(
-        public int                $userAccountId,
-        public int                $userRoleId,
-        public string             $username,
-        public string             $email,
-        public string             $passwordHash,
-        public ?string            $passwordSalt, // Nullable for Argon2id (salt embedded in hash)
-        public string             $firstName,
-        public string             $lastName,
-        public ?int               $profilePictureAssetId,
-        public bool               $isEmailConfirmed,
-        public bool               $isActive,
-        public \DateTimeImmutable $registeredAtUtc,
-        public \DateTimeImmutable $updatedAtUtc,
+        public readonly int                $userAccountId,
+        public readonly int                $userRoleId,
+        public readonly string             $username,
+        public readonly string             $email,
+        public readonly string             $passwordHash,
+        public readonly ?string            $passwordSalt, // Nullable for Argon2id (salt embedded in hash)
+        public readonly string             $firstName,
+        public readonly string             $lastName,
+        public readonly ?int               $profilePictureAssetId,
+        public readonly bool               $isEmailConfirmed,
+        public readonly bool               $isActive,
+        public readonly \DateTimeImmutable $registeredAtUtc,
+        public readonly \DateTimeImmutable $updatedAtUtc,
     ) {
     }
 

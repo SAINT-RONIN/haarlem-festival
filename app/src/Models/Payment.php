@@ -21,13 +21,13 @@ class Payment
      */
 
     public function __construct(
-        public int $paymentId,
-        public int $orderId,
-        public PaymentMethod $method,
-        public PaymentStatus $status,
-        public ?string $providerRef,
-        public \DateTimeImmutable $createdAtUtc,
-        public ?\DateTimeImmutable $paidAtUtc,
+        public readonly int                 $paymentId,
+        public readonly int                 $orderId,
+        public readonly PaymentMethod       $method,
+        public readonly PaymentStatus       $status,
+        public readonly ?string             $providerRef,
+        public readonly \DateTimeImmutable  $createdAtUtc,
+        public readonly ?\DateTimeImmutable $paidAtUtc,
     ) {
     }
 
@@ -38,8 +38,8 @@ class Payment
     public static function fromRow(array $row): self
     {
         return new self(
-            paymentId: (int) $row['PaymentId'],
-            orderId: (int) $row['OrderId'],
+            paymentId: (int)$row['PaymentId'],
+            orderId: (int)$row['OrderId'],
             method: PaymentMethod::from($row['Method']),
             status: PaymentStatus::from($row['Status']),
             providerRef: $row['ProviderRef'] ?? null,

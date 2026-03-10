@@ -4,14 +4,33 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\MediaAsset;
+
 /**
  * Interface for MediaAsset repository operations.
  */
 interface IMediaAssetRepository
 {
-    public function findById(int $mediaAssetId): ?array;
-    public function create(array $data): int;
-    public function update(int $mediaAssetId, array $data): bool;
-    public function delete(int $mediaAssetId): bool;
-}
+    /**
+     * Finds a media asset by ID.
+     *
+     * @param int $mediaAssetId
+     * @return MediaAsset|null
+     */
+    public function findById(int $mediaAssetId): ?MediaAsset;
 
+    public function create(array $data): int;
+
+    public function update(int $mediaAssetId, array $data): bool;
+
+    public function delete(int $mediaAssetId): bool;
+
+    /**
+     * Links a media asset to a CMS item.
+     *
+     * @param int $mediaAssetId Media asset ID
+     * @param int $cmsItemId CMS item ID
+     * @return bool Success status
+     */
+    public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool;
+}

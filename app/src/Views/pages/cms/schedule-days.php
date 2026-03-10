@@ -81,11 +81,11 @@ foreach ($dayConfigs as $config) {
 
         <!-- Per Event Type Settings -->
         <?php foreach ($eventTypes as $eventType): ?>
-            <?php $etId = (int)$eventType['EventTypeId']; ?>
+            <?php $etId = $eventType->eventTypeId; ?>
             <div class="bg-white rounded-lg shadow mb-6">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900">
-                        <?= htmlspecialchars($eventType['Name']) ?>
+                        <?= htmlspecialchars($eventType->name) ?>
                     </h2>
                     <p class="text-sm text-gray-500">Override global settings for this event type only.</p>
                 </div>
@@ -136,9 +136,7 @@ foreach ($dayConfigs as $config) {
     </main>
 </div>
 
-<script>
-    lucide.createIcons();
-</script>
+<script src="/assets/js/cms/cms-common.js"></script>
 </body>
 </html>
 

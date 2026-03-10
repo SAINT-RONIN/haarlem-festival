@@ -3,9 +3,8 @@
  * CMS Event edit page.
  *
  * @var string $currentView
- * @var array $event
- * @var array $sessions
- * @var array $priceTiers
+ * @var \App\ViewModels\Cms\CmsEventEditViewModel $viewModel
+ * @var \App\Models\PriceTier[] $priceTiers
  * @var string|null $successMessage
  * @var string|null $errorMessage
  */
@@ -29,7 +28,7 @@
             <nav class="flex items-center gap-2 text-sm text-gray-500 mb-2">
                 <a href="/cms/events" class="hover:text-blue-600">Events</a>
                 <span>/</span>
-                <span class="text-gray-900"><?= htmlspecialchars($event['Title']) ?></span>
+                <span class="text-gray-900"><?= htmlspecialchars($viewModel->title) ?></span>
             </nav>
             <h1 class="text-2xl font-bold text-gray-900">Edit Event</h1>
         </header>
@@ -52,25 +51,25 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-900">Event Details</h2>
             </div>
-            <form action="/cms/events/<?= (int)$event['EventId'] ?>/edit" method="POST" class="p-6">
+            <form action="/cms/events/<?= $viewModel->eventId ?>/edit" method="POST" class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="Title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
                         <input type="text" name="Title" id="Title"
-                               value="<?= htmlspecialchars($event['Title']) ?>"
+                               value="<?= htmlspecialchars($viewModel->title) ?>"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
                         <p class="px-3 py-2 bg-gray-100 rounded-lg text-gray-600">
-                            <?= htmlspecialchars($event['EventTypeName']) ?>
+                            <?= htmlspecialchars($viewModel->eventTypeName) ?>
                         </p>
                     </div>
                     <div class="md:col-span-2">
                         <label for="ShortDescription" class="block text-sm font-medium text-gray-700 mb-1">Short
                             Description</label>
                         <textarea name="ShortDescription" id="ShortDescription" rows="2"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><?= htmlspecialchars($event['ShortDescription']) ?></textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><?= htmlspecialchars($viewModel->shortDescription) ?></textarea>
                     </div>
                 </div>
                 <div class="mt-6">
@@ -91,7 +90,7 @@
                         ✅ Sessions automatically appear on the public page (up to 4 days shown).
                     </p>
                 </div>
-                <button type="button" onclick="toggleAddSession()"
+                <button type="button" data-toggle="addSessionForm"
                         class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">
                     + Add Session
                 </button>
@@ -100,7 +99,7 @@
             <!-- Add Session Form (hidden by default) -->
             <div id="addSessionForm" class="hidden p-6 bg-gray-50 border-b border-gray-200">
                 <h3 class="text-md font-medium text-gray-900 mb-4">New Session</h3>
-                <form action="/cms/events/<?= (int)$event['EventId'] ?>/sessions" method="POST">
+                <form action="/cms/events/<?= $viewModel->eventId ?>/sessions" method="POST">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Start Date/Time</label>
@@ -112,7 +111,7 @@
                             <input type="datetime-local" name="EndDateTime" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         </div>
-                        <?php if (($event['EventTypeSlug'] ?? '') === 'jazz'): ?>
+                        <?php if ($viewModel->eventTypeSlug === 'jazz'): ?>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     <span class="text-purple-600">🎷</span> Seats Available
@@ -137,7 +136,7 @@
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             </div>
                         <?php endif; ?>
-                        <?php if (($event['EventTypeSlug'] ?? '') === 'history'): ?>
+                        <?php if ($viewModel->eventTypeSlug === 'history'): ?>
                             <div class="md:col-span-2 lg:col-span-3">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     <span class="text-amber-600">🏛️</span> Ticket Type Label
@@ -173,7 +172,7 @@
                         <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                             Create Session
                         </button>
-                        <button type="button" onclick="toggleAddSession()"
+                        <button type="button" data-toggle="addSessionForm"
                                 class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
                             Cancel
                         </button>
@@ -183,26 +182,31 @@
 
             <!-- Sessions List -->
             <div class="divide-y divide-gray-200">
-                <?php if (empty($sessions)): ?>
+                <?php if (empty($viewModel->sessions)): ?>
                     <div class="p-6 text-center text-gray-500">
                         No sessions yet. Click "Add Session" to create one.
                     </div>
                 <?php else: ?>
-                    <?php foreach ($sessions as $session): ?>
+                    <?php foreach ($viewModel->sessions as $session): ?>
+                        <?php
+                        /** @var \App\ViewModels\Cms\CmsEventSessionViewModel $session */
+                        $sessionLabels = $viewModel->getLabelsForSession($session->eventSessionId);
+                        $sessionPrices = $viewModel->getPricesForSession($session->eventSessionId);
+                        ?>
                         <div class="p-6">
                             <div class="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 class="font-medium text-gray-900">
-                                        <?= date('l, F j, Y', strtotime($session['StartDateTime'])) ?>
+                                        <?= $session->formattedDateLong ?>
                                     </h3>
                                     <p class="text-sm text-gray-500">
-                                        <?= date('H:i', strtotime($session['StartDateTime'])) ?> -
-                                        <?= $session['EndDateTime'] ? date('H:i', strtotime($session['EndDateTime'])) : 'TBD' ?>
+                                        <?= $session->formattedStartTime ?> -
+                                        <?= $session->formattedEndTime ?: 'TBD' ?>
                                     </p>
                                 </div>
-                                <form action="/cms/sessions/<?= (int)$session['EventSessionId'] ?>/delete" method="POST"
+                                <form action="/cms/sessions/<?= $session->eventSessionId ?>/delete" method="POST"
                                       onsubmit="return confirm('Delete this session?')">
-                                    <input type="hidden" name="EventId" value="<?= (int)$event['EventId'] ?>">
+                                    <input type="hidden" name="EventId" value="<?= $viewModel->eventId ?>">
                                     <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
                                         Delete
                                     </button>
@@ -210,48 +214,48 @@
                             </div>
 
                             <!-- Session Details Form -->
-                            <form action="/cms/sessions/<?= (int)$session['EventSessionId'] ?>" method="POST"
+                            <form action="/cms/sessions/<?= $session->eventSessionId ?>" method="POST"
                                   class="mb-4">
-                                <input type="hidden" name="EventId" value="<?= (int)$event['EventId'] ?>">
+                                <input type="hidden" name="EventId" value="<?= $viewModel->eventId ?>">
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Start</label>
                                         <input type="datetime-local" name="StartDateTime"
-                                               value="<?= date('Y-m-d\TH:i', strtotime($session['StartDateTime'])) ?>"
+                                               value="<?= $session->formattedDateTimeLocal ?>"
                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-1">End</label>
                                         <input type="datetime-local" name="EndDateTime"
-                                               value="<?= $session['EndDateTime'] ? date('Y-m-d\TH:i', strtotime($session['EndDateTime'])) : '' ?>"
+                                               value="<?= $session->formattedEndDateTimeLocal ?>"
                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                                     </div>
-                                    <?php if (($event['EventTypeSlug'] ?? '') === 'jazz'): ?>
+                                    <?php if ($viewModel->eventTypeSlug === 'jazz'): ?>
                                         <div>
                                             <label class="block text-xs font-medium text-purple-600 mb-1">🎷 Seats
                                                 Available</label>
                                             <input type="number" name="CapacityTotal" min="0"
-                                                   value="<?= (int)($session['CapacityTotal'] ?? 100) ?>"
+                                                   value="<?= $session->capacityTotal ?>"
                                                    class="w-full px-2 py-1 text-sm border border-purple-300 rounded focus:ring-1 focus:ring-purple-500 bg-purple-50">
                                             <p class="text-[10px] text-gray-500 mt-0.5">
-                                                Sold: <?= (int)($session['SoldSingleTickets'] ?? 0) + (int)($session['SoldReservedSeats'] ?? 0) ?>
+                                                Sold: <?= $session->soldTicketsTotal ?>
                                             </p>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-purple-600 mb-1">🎷
                                                 Hall/Stage</label>
                                             <input type="text" name="HallName"
-                                                   value="<?= htmlspecialchars($session['HallName'] ?? '') ?>"
+                                                   value="<?= htmlspecialchars($session->hallName ?? '') ?>"
                                                    placeholder="Main Hall, Outdoor Stage..."
                                                    class="w-full px-2 py-1 text-sm border border-purple-300 rounded focus:ring-1 focus:ring-purple-500 bg-purple-50">
                                         </div>
                                     <?php endif; ?>
-                                    <?php if (($event['EventTypeSlug'] ?? '') === 'history'): ?>
+                                    <?php if ($viewModel->eventTypeSlug === 'history'): ?>
                                         <div>
                                             <label class="block text-xs font-medium text-amber-600 mb-1">🏛️ Ticket
                                                 Label</label>
                                             <input type="text" name="HistoryTicketLabel"
-                                                   value="<?= htmlspecialchars($session['HistoryTicketLabel'] ?? '') ?>"
+                                                   value=""
                                                    placeholder="Group ticket - best value..."
                                                    class="w-full px-2 py-1 text-sm border border-amber-300 rounded focus:ring-1 focus:ring-amber-500 bg-amber-50">
                                         </div>
@@ -259,14 +263,14 @@
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-1">CTA Label</label>
                                         <input type="text" name="CtaLabel"
-                                               value="<?= htmlspecialchars($session['CtaLabel'] ?? '') ?>"
+                                               value=""
                                                placeholder="Discover"
                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-1">CTA URL</label>
                                         <input type="text" name="CtaUrl"
-                                               value="<?= htmlspecialchars($session['CtaUrl'] ?? '') ?>"
+                                               value=""
                                                placeholder="/event/..."
                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                                     </div>
@@ -283,13 +287,13 @@
                             <div class="mt-4 pt-4 border-t border-gray-100">
                                 <h4 class="text-sm font-medium text-gray-700 mb-2">Labels</h4>
                                 <div class="flex flex-wrap gap-2 mb-2">
-                                    <?php foreach ($session['labels'] as $label): ?>
+                                    <?php foreach ($sessionLabels as $label): ?>
                                         <span class="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 text-pink-800 rounded text-sm">
                                                 <?= htmlspecialchars($label['LabelText']) ?>
                                                 <form action="/cms/labels/<?= (int)$label['EventSessionLabelId'] ?>/delete"
                                                       method="POST" class="inline">
                                                     <input type="hidden" name="EventId"
-                                                           value="<?= (int)$event['EventId'] ?>">
+                                                           value="<?= $viewModel->eventId ?>">
                                                     <button type="submit" class="text-pink-600 hover:text-pink-800"
                                                             title="Remove label">
                                                         &times;
@@ -298,9 +302,9 @@
                                             </span>
                                     <?php endforeach; ?>
                                 </div>
-                                <form action="/cms/sessions/<?= (int)$session['EventSessionId'] ?>/labels" method="POST"
+                                <form action="/cms/sessions/<?= $session->eventSessionId ?>/labels" method="POST"
                                       class="flex gap-2">
-                                    <input type="hidden" name="EventId" value="<?= (int)$event['EventId'] ?>">
+                                    <input type="hidden" name="EventId" value="<?= $viewModel->eventId ?>">
                                     <input type="text" name="LabelText"
                                            placeholder="New label (e.g., In Dutch, Age 16+)"
                                            class="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
@@ -315,27 +319,27 @@
                             <div class="mt-4 pt-4 border-t border-gray-100">
                                 <h4 class="text-sm font-medium text-gray-700 mb-2">Prices</h4>
                                 <div class="flex flex-wrap gap-2 mb-3">
-                                    <?php foreach ($session['prices'] as $price): ?>
+                                    <?php foreach ($sessionPrices as $price): ?>
                                         <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
                                             <?= htmlspecialchars($price['PriceTierName'] ?? 'Unknown') ?>:
                                             <?= $price['CurrencyCode'] ?? 'EUR' ?> <?= number_format((float)$price['Price'], 2) ?>
                                         </span>
                                     <?php endforeach; ?>
-                                    <?php if (empty($session['prices'])): ?>
+                                    <?php if (empty($sessionPrices)): ?>
                                         <span class="text-sm text-gray-500">No prices set</span>
                                     <?php endif; ?>
                                 </div>
                                 <!-- Add/Update Price Form -->
-                                <form action="/cms/sessions/<?= (int)$session['EventSessionId'] ?>/price" method="POST"
+                                <form action="/cms/sessions/<?= $session->eventSessionId ?>/price" method="POST"
                                       class="flex flex-wrap gap-2 items-end">
-                                    <input type="hidden" name="EventId" value="<?= (int)$event['EventId'] ?>">
+                                    <input type="hidden" name="EventId" value="<?= $viewModel->eventId ?>">
                                     <div>
                                         <label class="block text-xs text-gray-500 mb-1">Price Tier</label>
                                         <select name="PriceTierId"
                                                 class="px-2 py-1 text-sm border border-gray-300 rounded">
                                             <?php foreach ($priceTiers as $tier): ?>
-                                                <option value="<?= (int)$tier['PriceTierId'] ?>">
-                                                    <?= htmlspecialchars($tier['Name']) ?>
+                                                <option value="<?= $tier->priceTierId ?>">
+                                                    <?= htmlspecialchars($tier->name) ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
@@ -361,14 +365,8 @@
     </main>
 </div>
 
-<script>
-    lucide.createIcons();
-
-    function toggleAddSession() {
-        const form = document.getElementById('addSessionForm');
-        form.classList.toggle('hidden');
-    }
-</script>
+<script src="/assets/js/cms/cms-common.js"></script>
+<script src="/assets/js/cms/event-edit.js"></script>
 </body>
 </html>
 

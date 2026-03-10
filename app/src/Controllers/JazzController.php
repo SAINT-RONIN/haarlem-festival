@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Services\GumboKingsDetailService;
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\JazzService;
 
 /**
  * Controller for Jazz page.
  */
-class JazzController
+class JazzController extends BaseController
 {
     private JazzService $jazzService;
-    private GumboKingsDetailService $gumboKingsDetailService;
 
     public function __construct()
     {
         $this->jazzService = new JazzService();
-        $this->gumboKingsDetailService = new GumboKingsDetailService();
     }
 
     /**
@@ -26,16 +24,11 @@ class JazzController
      */
     public function index(): void
     {
-        $viewModel = $this->jazzService->getJazzPageData();
-        require __DIR__ . '/../Views/pages/jazz.php';
-    }
-
-    /**
-     * Display Gumbo Kings artist detail page.
-     */
-    public function gumboKings(): void
-    {
-        $viewModel = $this->gumboKingsDetailService->getPageData();
-        require __DIR__ . '/../Views/pages/jazz-gumbo-kings.php';
+        try {
+            $viewModel = $this->jazzService->getJazzPageData();
+            $this->renderPage(__DIR__ . '/../Views/pages/jazz.php', $viewModel);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 }

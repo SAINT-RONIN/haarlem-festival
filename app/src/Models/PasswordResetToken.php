@@ -18,11 +18,11 @@ class PasswordResetToken
      */
 
     public function __construct(
-        public int $passwordResetTokenId,
-        public int $userAccountId,
-        public string $token,
-        public \DateTimeImmutable $expiresAtUtc,
-        public ?\DateTimeImmutable $usedAtUtc,
+        public readonly int                 $passwordResetTokenId,
+        public readonly int                 $userAccountId,
+        public readonly string              $token,
+        public readonly \DateTimeImmutable  $expiresAtUtc,
+        public readonly ?\DateTimeImmutable $usedAtUtc,
     ) {
     }
 
@@ -33,9 +33,9 @@ class PasswordResetToken
     public static function fromRow(array $row): self
     {
         return new self(
-            passwordResetTokenId: (int) $row['PasswordResetTokenId'],
-            userAccountId: (int) $row['UserAccountId'],
-            token: (string) $row['Token'],
+            passwordResetTokenId: (int)$row['PasswordResetTokenId'],
+            userAccountId: (int)$row['UserAccountId'],
+            token: (string)$row['Token'],
             expiresAtUtc: new \DateTimeImmutable($row['ExpiresAtUtc']),
             usedAtUtc: isset($row['UsedAtUtc']) ? new \DateTimeImmutable($row['UsedAtUtc']) : null,
         );

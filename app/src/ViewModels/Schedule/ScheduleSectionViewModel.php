@@ -48,8 +48,6 @@ final readonly class ScheduleSectionViewModel
         public string $currencySymbol,
         public string $noEventsText,
         public array  $days,
-    )
-    {
+    ) {
     }
 }
-
