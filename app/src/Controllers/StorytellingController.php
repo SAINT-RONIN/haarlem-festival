@@ -44,18 +44,12 @@ class StorytellingController extends BaseController
      */
     public function detail(string $id): void
     {
-        $eventId = (int)$id;
-
-        $storytellingService = new StorytellingService();
-
         try {
-            $viewModel = $storytellingService->getStorytellingDetailPageData($eventId);
-        } catch (\RuntimeException) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
-            return;
+            $eventId = (int)$id;
+            $viewModel = $this->storytellingService->getStorytellingDetailPageData($eventId);
+            $this->renderView(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
-
-        require __DIR__ . '/../Views/pages/storytelling-detail.php';
     }
 }

@@ -9,13 +9,7 @@
  * @var \App\ViewModels\Storytelling\MasonrySectionData $masonrySection
  */
 
-if (!isset($masonrySection) && isset($viewModel) && property_exists($viewModel, 'masonrySection')) {
-    $masonrySection = $viewModel->masonrySection;
-}
-
-if (!isset($masonrySection)) {
-    return;
-}
+$masonrySection = $viewModel->masonrySection;
 ?>
 
 <!-- Masonry Grid Section -->

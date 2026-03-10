@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventTypeId;
 use App\Models\CmsItem;
 use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
@@ -13,6 +14,7 @@ use App\Repositories\Interfaces\IVenueRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Repositories\VenueRepository;
 use App\Services\Interfaces\IHistoryService;
+use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Age\AgeLabelFormatter;
 use App\ViewModels\GlobalUiData;
@@ -30,6 +32,7 @@ use App\ViewModels\History\TicketOptions;
 use App\ViewModels\History\VenueCardData;
 use App\ViewModels\History\VenuesData;
 use App\ViewModels\IntroSplitSectionData;
+use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
  * Service for preparing history page data.
@@ -49,6 +52,7 @@ class HistoryService implements IHistoryService
     /** @var array<string, list<CmsItem>>|null */
     private ?array $historyItemsBySection = null;
     private IVenueRepository $venueRepository;
+    private IScheduleService $scheduleService;
 
     public function __construct()
     {
@@ -56,6 +60,7 @@ class HistoryService implements IHistoryService
         $this->mediaAssetRepository = new MediaAssetRepository();
         $this->sessionService = new SessionService();
         $this->venueRepository = new VenueRepository();
+        $this->scheduleService = new ScheduleService();
     }
 
     /**
@@ -75,7 +80,7 @@ class HistoryService implements IHistoryService
             venuesData: $this->buildVenuesData(),
             ticketOptionsData: $this->buildTicketOptionsData(),
             infoAboutTourData: $this->buildInfoAboutTourData(),
-            scheduleData: $this->buildScheduleData(),
+            scheduleSection: $this->buildScheduleSection(),
         );
     }
 
@@ -216,6 +221,8 @@ class HistoryService implements IHistoryService
             navRestaurant: 'Restaurant',
             navStorytelling: 'Storytelling',
             btnMyProgram: 'My Program',
+            loginLabel: 'Login',
+            logoutLabel: 'Logout',
             isLoggedIn: $this->sessionService->isLoggedIn(),
         );
     }
@@ -678,6 +685,18 @@ class HistoryService implements IHistoryService
             headingText: 'Tour schedule',
             filterLabel: 'Filters',
             days: [$thursday, $friday, $saturday, $sunday],
+        );
+    }
+
+    /**
+     * Builds the shared schedule section for storytelling events.
+     */
+    private function buildScheduleSection(): ScheduleSectionViewModel
+    {
+        return $this->scheduleService->buildScheduleSection(
+            pageSlug: 'history',
+            eventTypeId: EventTypeId::History->value,
+            maxDays: 7,
         );
     }
 }

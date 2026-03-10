@@ -187,6 +187,8 @@ class JazzService implements IJazzService
             navRestaurant: 'Restaurant',
             navStorytelling: 'Storytelling',
             btnMyProgram: 'My Program',
+            loginLabel: 'Login',
+            logoutLabel: 'Logout',
             isLoggedIn: $this->sessionService->isLoggedIn(),
         );
     }
@@ -365,6 +367,7 @@ class JazzService implements IJazzService
                 performanceCount: (int)$this->getCmsItem('artists_section', 'artists_gumbokings_performance_count', '2'),
                 firstPerformance: $this->getCmsItem('artists_section', 'artists_gumbokings_first_performance', 'Thu 18:00 - Patronaat Main Hall'),
                 morePerformancesText: $this->getCmsItem('artists_section', 'artists_gumbokings_more_performances_text', '+1 more'),
+                profileUrl: '/jazz/gumbo-kings',
             ),
             new ArtistCardData(
                 name: $this->getCmsItem('artists_section', 'artists_evolve_name', 'Evolve'),
@@ -391,6 +394,7 @@ class JazzService implements IJazzService
                 performanceCount: (int)$this->getCmsItem('artists_section', 'artists_ntjam_performance_count', '2'),
                 firstPerformance: $this->getCmsItem('artists_section', 'artists_ntjam_first_performance', 'Thu 21:00 - Patronaat Main Hall'),
                 morePerformancesText: $this->getCmsItem('artists_section', 'artists_ntjam_more_performances_text', ''),
+                profileUrl: '/jazz/ntjam-rosie',
             ),
         ];
 
