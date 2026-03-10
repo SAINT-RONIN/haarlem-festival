@@ -75,13 +75,25 @@ class StorytellingService implements IStorytellingService
         ];
     }
 
+    /**
+     * Returns the "about" body text for a detail page.
+     * Prefers CMS content, falls back to the event's own description.
+     */
     private function resolveAboutBody(array $cms, array $event): string
     {
         if (!empty($cms['about_body'])) {
             return $cms['about_body'];
         }
 
-        return $event['LongDescriptionHtml'] ?? $event['ShortDescription'] ?? '';
+        if (!empty($event['LongDescriptionHtml'])) {
+            return $event['LongDescriptionHtml'];
+        }
+
+        if (!empty($event['ShortDescription'])) {
+            return $event['ShortDescription'];
+        }
+
+        return '';
     }
 
     /**
@@ -107,10 +119,16 @@ class StorytellingService implements IStorytellingService
 
         $asset = $this->mediaAssetRepository->findById((int)$event['FeaturedImageAssetId']);
 
-        return $asset?->filePath;
+        if ($asset === null) {
+            return null;
+        }
+
+        return $asset->filePath;
     }
 
     /**
+     * Fetches label texts (e.g. "English", "Beginner") for the first active session of an event.
+     *
      * @return string[]
      */
     private function fetchEventLabels(int $eventId): array
@@ -125,12 +143,22 @@ class StorytellingService implements IStorytellingService
             return [];
         }
 
-        $sessionId = (int)$sessionList[0]['EventSessionId'];
+        // Use the first session to get representative labels for this event
+        $firstSessionId = (int)$sessionList[0]['EventSessionId'];
+
         $labelsMap = $this->labelRepository->findLabels([
-            'sessionIds' => [$sessionId],
+            'sessionIds' => [$firstSessionId],
             'groupBySession' => true,
         ]);
 
-        return array_map(fn($label) => $label->labelText, $labelsMap[$sessionId] ?? []);
+        $labels = $labelsMap[$firstSessionId] ?? [];
+
+        // Extract just the label text from each label object
+        $labelTexts = [];
+        foreach ($labels as $label) {
+            $labelTexts[] = $label->labelText;
+        }
+
+        return $labelTexts;
     }
 }

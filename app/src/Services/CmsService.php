@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\CmsItem;
 use App\Models\CmsSection;
+use App\Models\MediaAsset;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\ICmsService;
@@ -17,6 +18,9 @@ class CmsService implements ICmsService
     private CmsRepository $cmsRepository;
     private MediaAssetRepository $mediaAssetRepository;
     private SessionService $sessionService;
+
+    /** @var array<string, int|null> In-memory cache for page slug → ID lookups */
+    private array $pageIdCache = [];
 
     public function __construct()
     {
@@ -34,6 +38,8 @@ class CmsService implements ICmsService
 
         $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
         $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+
+        $assetMap = $this->batchFetchMediaAssets($items);
         $itemsBySection = $this->indexItemsBySectionId($items);
         $content = [];
 
@@ -43,7 +49,7 @@ class CmsService implements ICmsService
 
             foreach ($itemsBySection[$section->cmsSectionId] ?? [] as $item) {
                 /** @var CmsItem $item */
-                $sectionData[$item->itemKey] = $this->resolveItemValue($item);
+                $sectionData[$item->itemKey] = $this->resolveItemValue($item, $assetMap);
             }
 
             $content[$section->sectionKey] = $sectionData;
@@ -63,11 +69,13 @@ class CmsService implements ICmsService
             'cmsPageId' => $pageId,
             'sectionKey' => $sectionKey,
         ]);
+
+        $assetMap = $this->batchFetchMediaAssets($items);
         $content = [];
 
         foreach ($items as $item) {
             /** @var CmsItem $item */
-            $content[$item->itemKey] = $this->resolveItemValue($item);
+            $content[$item->itemKey] = $this->resolveItemValue($item, $assetMap);
         }
 
         return $content;
@@ -102,13 +110,37 @@ class CmsService implements ICmsService
     }
 
     /**
-     * Resolves the value to expose to views for a CMS item.
+     * Batch-fetches all MediaAssets referenced by the given CMS items in one query.
+     *
+     * @param CmsItem[] $items
+     * @return array<int, MediaAsset> Keyed by MediaAssetId
      */
-    private function resolveItemValue(CmsItem $item): ?string
+    private function batchFetchMediaAssets(array $items): array
+    {
+        $assetIds = [];
+        foreach ($items as $item) {
+            if ($item->mediaAssetId !== null && $item->mediaAssetId > 0) {
+                $assetIds[] = $item->mediaAssetId;
+            }
+        }
+
+        if ($assetIds === []) {
+            return [];
+        }
+
+        return $this->mediaAssetRepository->findByIds($assetIds);
+    }
+
+    /**
+     * Resolves the value to expose to views for a CMS item.
+     *
+     * @param array<int, MediaAsset> $assetMap Pre-fetched media assets keyed by ID
+     */
+    private function resolveItemValue(CmsItem $item, array $assetMap): ?string
     {
         $mediaAssetId = $item->mediaAssetId;
         if ($mediaAssetId !== null && $mediaAssetId > 0) {
-            $asset = $this->mediaAssetRepository->findById($mediaAssetId);
+            $asset = $assetMap[$mediaAssetId] ?? null;
             if ($asset !== null && $asset->filePath !== '') {
                 return $asset->filePath;
             }
@@ -120,12 +152,15 @@ class CmsService implements ICmsService
 
     private function getPageIdBySlug(string $slug): ?int
     {
-        $rows = $this->cmsRepository->findPages(['slug' => $slug]);
-        if ($rows === []) {
-            return null;
+        if (array_key_exists($slug, $this->pageIdCache)) {
+            return $this->pageIdCache[$slug];
         }
 
-        return (int)$rows[0]['CmsPageId'];
+        $rows = $this->cmsRepository->findPages(['slug' => $slug]);
+        $pageId = $rows !== [] ? (int)$rows[0]['CmsPageId'] : null;
+
+        $this->pageIdCache[$slug] = $pageId;
+        return $pageId;
     }
 
     /**
