@@ -17,4 +17,9 @@ interface IRestaurantRepository
      * @return Restaurant[]
      */
     public function findAllActive(): array;
+
+    /**
+     * Returns a single restaurant by ID, or null if not found.
+     */
+    public function findById(int $id): ?Restaurant;
 }
