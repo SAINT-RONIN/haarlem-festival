@@ -58,6 +58,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
+    $r->addRoute('GET', '/restaurant/{id:\d+}', [RestaurantController::class, 'detail']);
 
 
     // Website Authentication Routes
