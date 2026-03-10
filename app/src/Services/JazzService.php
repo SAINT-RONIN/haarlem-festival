@@ -16,6 +16,7 @@ use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\Jazz\ArtistCardData;
+use App\ViewModels\Schedule\ScheduleSectionViewModel;
 use App\ViewModels\Jazz\ArtistsData;
 use App\ViewModels\Jazz\BookingCallToActionData;
 use App\ViewModels\Jazz\HallData;
@@ -69,7 +70,9 @@ class JazzService implements IJazzService
             artistsData: $this->buildArtistsData(),
             scheduleData: $this->buildScheduleData(),
             bookingCtaData: $this->buildBookingCtaData(),
-            scheduleSection: $this->scheduleService->buildScheduleSection('jazz', EventTypeId::Jazz->value, 7),
+            scheduleSection: ScheduleSectionViewModel::fromData(
+                $this->scheduleService->getScheduleData('jazz', EventTypeId::Jazz->value, 7)
+            ),
         );
     }
 
