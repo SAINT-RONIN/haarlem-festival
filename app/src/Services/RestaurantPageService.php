@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\RestaurantPageViewModel;
@@ -145,7 +146,7 @@ class RestaurantPageService
 
         return new RestaurantPageViewModel(
             heroData: $heroData,
-            globalUi: $this->cmsService->buildGlobalUiData(),
+            globalUi: $this->buildGlobalUi(),
             gradientSection: $gradientSection,
             introSplitSection: $introSplitSection,
             introSplit2Section: $introSplit2Section,
@@ -410,6 +411,13 @@ class RestaurantPageService
     /**
      * Gets a string value from content array with default fallback.
      */
+    private function buildGlobalUi(): GlobalUiData
+    {
+        $globalUiContent = $this->cmsService->getGlobalUiContent();
+
+        return GlobalUiData::fromCms($globalUiContent['content'], $globalUiContent['isLoggedIn']);
+    }
+
     private function getStringValue(array $content, string $key, string $default): string
     {
         $value = $content[$key] ?? null;

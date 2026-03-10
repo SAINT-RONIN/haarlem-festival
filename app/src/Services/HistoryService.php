@@ -693,10 +693,8 @@ class HistoryService implements IHistoryService
      */
     private function buildScheduleSection(): ScheduleSectionViewModel
     {
-        return $this->scheduleService->buildScheduleSection(
-            pageSlug: 'history',
-            eventTypeId: EventTypeId::History->value,
-            maxDays: 7,
+        return ScheduleSectionViewModel::fromData(
+            $this->scheduleService->getScheduleData('history', EventTypeId::History->value, 7)
         );
     }
 }
