@@ -21,17 +21,7 @@ $masonrySection = $viewModel->masonrySection;
 
     <!-- Masonry Grid: CSS multi-column layout -->
     <div class="columns-1 md:columns-2 xl:columns-4 gap-4 [column-fill:balance]">
-        <?php
-        // Flatten all column groups so CSS multi-column controls visual flow.
-        $allImages = [];
-        foreach ($masonrySection->columns as $columnImages) {
-            foreach ($columnImages as $image) {
-                $allImages[] = $image;
-            }
-        }
-        ?>
-
-        <?php foreach ($allImages as $image): ?>
+        <?php foreach ($masonrySection->images as $image): ?>
             <figure class="break-inside-avoid mb-4 overflow-hidden rounded-2xl">
                 <img
                     class="w-full h-auto object-cover align-top <?= htmlspecialchars($image->sizeClass) ?>"

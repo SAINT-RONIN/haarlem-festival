@@ -59,11 +59,14 @@ class StorytellingService implements IStorytellingService
         $cms = $this->cmsService->getSectionContent(self::DETAIL_PAGE_SLUG, 'event_' . $eventId);
         $globalUiContent = $this->cmsService->getGlobalUiContent();
 
+        $eventTitle = (string)($event['Title'] ?? '');
+        $eventSubtitle = (string)($event['ShortDescription'] ?? '');
+
         return [
             'globalUiContent' => $globalUiContent['content'],
             'isLoggedIn' => $globalUiContent['isLoggedIn'],
-            'eventId' => $eventId,
-            'event' => $event,
+            'eventTitle' => $eventTitle,
+            'eventSubtitle' => $eventSubtitle,
             'featuredImagePath' => $this->fetchFeaturedImagePath($event),
             'labels' => $this->fetchEventLabels($eventId),
             'aboutBodyHtml' => $this->resolveAboutBody($cms, $event),
@@ -78,7 +81,7 @@ class StorytellingService implements IStorytellingService
             return $cms['about_body'];
         }
 
-        return $event['LongDescriptionHtml'] ?? ($event['ShortDescription'] ?? '');
+        return $event['LongDescriptionHtml'] ?? $event['ShortDescription'] ?? '';
     }
 
     /**
@@ -128,6 +131,6 @@ class StorytellingService implements IStorytellingService
             'groupBySession' => true,
         ]);
 
-        return array_map(fn($l) => $l->labelText, $labelsMap[$sessionId] ?? []);
+        return array_map(fn($label) => $label->labelText, $labelsMap[$sessionId] ?? []);
     }
 }
