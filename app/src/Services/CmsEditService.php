@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\CmsItem;
 use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
+use App\Repositories\EventRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\ICmsEditService;
 use App\Utils\CmsContentLimits;
@@ -21,11 +22,13 @@ class CmsEditService implements ICmsEditService
 {
     private CmsRepository $cmsRepository;
     private MediaAssetRepository $mediaAssetRepository;
+    private EventRepository $eventRepository;
 
     public function __construct()
     {
         $this->cmsRepository = new CmsRepository();
         $this->mediaAssetRepository = new MediaAssetRepository();
+        $this->eventRepository = new EventRepository();
     }
 
     /**
@@ -46,6 +49,11 @@ class CmsEditService implements ICmsEditService
         $itemsBySection = $this->groupItemsBySection($items);
         $sectionsWithItems = [];
 
+        $eventNameMap = [];
+        if ($page->slug === 'storytelling-detail') {
+            $eventNameMap = $this->buildEventNameMap();
+        }
+
         foreach ($sections as $section) {
             /** @var CmsSection $section */
             $sectionItems = $itemsBySection[$section->cmsSectionId] ?? [];
@@ -54,7 +62,7 @@ class CmsEditService implements ICmsEditService
             $sectionsWithItems[] = [
                 'sectionId' => $section->cmsSectionId,
                 'sectionKey' => $section->sectionKey,
-                'displayName' => $this->formatSectionName($section->sectionKey),
+                'displayName' => $this->resolveDisplayName($section->sectionKey, $eventNameMap),
                 'items' => $enrichedItems
             ];
         }
@@ -259,6 +267,31 @@ class CmsEditService implements ICmsEditService
             return null;
         }
         return $this->mediaAssetRepository->findById($mediaAssetId);
+    }
+
+    /**
+     * Builds a map of section key → event title for storytelling events.
+     * e.g., ['event_34' => 'Winnie de Poeh (4+)', ...]
+     */
+    private function buildEventNameMap(): array
+    {
+        $events = $this->eventRepository->findAllByType(4);
+        $map = [];
+        foreach ($events as $event) {
+            $map['event_' . $event['EventId']] = $event['Title'];
+        }
+        return $map;
+    }
+
+    /**
+     * Resolves a section display name, using the event name map when available.
+     */
+    private function resolveDisplayName(string $sectionKey, array $eventNameMap): string
+    {
+        if (!empty($eventNameMap) && isset($eventNameMap[$sectionKey])) {
+            return $eventNameMap[$sectionKey];
+        }
+        return $this->formatSectionName($sectionKey);
     }
 
     /**

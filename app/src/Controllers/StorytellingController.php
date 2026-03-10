@@ -36,4 +36,26 @@ class StorytellingController extends BaseController
             ControllerErrorResponder::respond($error);
         }
     }
+
+    /**
+     * Displays the storytelling detail page for a single event.
+     *
+     * GET /storytelling/{id}
+     */
+    public function detail(string $id): void
+    {
+        $eventId = (int)$id;
+
+        $storytellingService = new StorytellingService();
+
+        try {
+            $viewModel = $storytellingService->getStorytellingDetailPageData($eventId);
+        } catch (\RuntimeException) {
+            http_response_code(404);
+            require __DIR__ . '/../Views/pages/errors/404.php';
+            return;
+        }
+
+        require __DIR__ . '/../Views/pages/storytelling-detail.php';
+    }
 }
