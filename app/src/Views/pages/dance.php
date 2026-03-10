@@ -11,7 +11,7 @@ $introSplitSection = $viewModel->introSplitSection;
 $experienceData = $viewModel->experienceData;
 
 $currentPage = 'dance';
-$includeNav = true;
+$includeNav = false;
 
 $cms = [
     'hero_section' => [
@@ -38,7 +38,7 @@ $cms = [
 require __DIR__ . '/../partials/header.php';
 ?>
 
-<main class="w-full bg-sand flex flex-col">
+<main class="w-full bg-sand flex flex-col items-stretch">
 
     <?php require __DIR__ . '/../partials/hero.php'; ?>
 

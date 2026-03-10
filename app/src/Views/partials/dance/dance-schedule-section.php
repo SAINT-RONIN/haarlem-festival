@@ -5,7 +5,7 @@
 ?>
 
 <section id="dance-schedule" class="w-full bg-sand py-12">
-    <div class="hf-container">
+    <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24">
         <div class="flex items-start justify-between mb-8">
             <div>
                 <h2 class="text-[64px] leading-none font-extrabold text-[#16233B]">

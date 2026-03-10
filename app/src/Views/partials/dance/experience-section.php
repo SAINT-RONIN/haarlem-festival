@@ -5,7 +5,7 @@
 ?>
 
 <section class="w-full bg-sand py-14">
-    <div class="hf-container">
+    <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24">
         <div class="text-center mb-8">
             <p class="text-[14px] uppercase tracking-[0.35em] text-black mb-3">
                 BEYOND THE STAGE
@@ -21,7 +21,7 @@
             </p>
         </div>
 
-        <div class="relative max-w-[1560px] mx-auto overflow-hidden rounded-[28px]">
+        <div class="relative w-full overflow-hidden rounded-[28px]">
             <div id="dance-experience-slider" class="flex transition-transform duration-700 ease-in-out">
                 <img
                         src="/assets/Image/dance/black.jpg"

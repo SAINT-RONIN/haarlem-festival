@@ -1,5 +1,5 @@
 <section class="w-full bg-sand py-10">
-    <div class="hf-container">
+    <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24">
         <h2 class="text-[40px] font-extrabold text-black mb-8">
             Supporting Artists
         </h2>
