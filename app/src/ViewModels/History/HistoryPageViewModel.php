@@ -9,6 +9,7 @@ use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
+use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
  * Aggregates all data required to render the History landing page.
@@ -27,7 +28,7 @@ final readonly class HistoryPageViewModel extends BaseViewModel
         public VenuesData $venuesData,
         public TicketOptions $ticketOptionsData,
         public ImportantInfoAboutTour $infoAboutTourData,
-        public ScheduleData $scheduleData,
+        public ?ScheduleSectionViewModel $scheduleSection = null,
     ) {
         parent::__construct(
             heroData: $heroData,

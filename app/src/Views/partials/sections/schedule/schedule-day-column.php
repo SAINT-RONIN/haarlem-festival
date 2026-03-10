@@ -5,7 +5,7 @@
  * @var \App\ViewModels\Schedule\ScheduleDayViewModel $day
  * @var int $dayIndex
  * @var string $dayItemClasses Dynamic classes for responsive layout
- * @var \App\ViewModels\Schedule\ScheduleSectionViewModel $schedule
+ * @var \App\ViewModels\Schedule\ $schedule
  */
 
 use App\Helpers\CmsOutputHelper;
