@@ -34,6 +34,7 @@ use App\Controllers\CmsDashboardController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\StorytellingController;
+use App\Controllers\DanceController;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -47,6 +48,10 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
+
+    // Dance page
+    $r->addRoute('GET', '/dance', [DanceController::class, 'index']);
+
 
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
