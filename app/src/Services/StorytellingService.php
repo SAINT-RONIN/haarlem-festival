@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\EventTypeId;
+use App\Repositories\EventRepository;
+use App\Repositories\EventSessionLabelRepository;
+use App\Repositories\EventSessionRepository;
+use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\IStorytellingService;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 use App\ViewModels\Storytelling\MasonryImageData;
 use App\ViewModels\Storytelling\MasonrySectionData;
+use App\ViewModels\Storytelling\StoryHighlightData;
+use App\ViewModels\Storytelling\StorytellingDetailPageViewModel;
 use App\ViewModels\Storytelling\StorytellingPageViewModel;
 
 /**
@@ -58,14 +64,19 @@ class StorytellingService implements IStorytellingService
 
     private CmsService $cmsService;
     private ScheduleService $scheduleService;
+    private EventRepository $eventRepository;
+    private EventSessionRepository $sessionRepository;
+    private EventSessionLabelRepository $labelRepository;
+    private MediaAssetRepository $mediaAssetRepository;
 
-    /**
-     * Creates dependencies used to assemble the storytelling page data.
-     */
     public function __construct()
     {
         $this->cmsService = new CmsService();
         $this->scheduleService = new ScheduleService();
+        $this->eventRepository = new EventRepository();
+        $this->sessionRepository = new EventSessionRepository();
+        $this->labelRepository = new EventSessionLabelRepository();
+        $this->mediaAssetRepository = new MediaAssetRepository();
     }
 
     /**
@@ -81,6 +92,116 @@ class StorytellingService implements IStorytellingService
             masonrySection: $this->buildMasonrySection(),
             scheduleSection: $this->buildScheduleSection(),
         );
+    }
+
+    /**
+     * Builds the detail page ViewModel for a single storytelling event.
+     *
+     * @throws \RuntimeException if the event is not found or not a storytelling event
+     */
+    public function getStorytellingDetailPageData(int $eventId): StorytellingDetailPageViewModel
+    {
+        $events = $this->eventRepository->findEvents(['eventId' => $eventId]);
+        $event = $events[0] ?? null;
+
+        if (!$event || (int)$event['EventTypeId'] !== EventTypeId::Storytelling->value) {
+            throw new \RuntimeException("Storytelling event {$eventId} not found.");
+        }
+
+        $heroImageUrl = $this->resolveHeroImage($event);
+        $cms = $this->cmsService->getSectionContent('storytelling-detail', 'event_' . $eventId);
+
+        return new StorytellingDetailPageViewModel(
+            globalUi: $this->cmsService->buildGlobalUiData(),
+            eventId: $eventId,
+            title: $event['Title'],
+            subtitle: $event['ShortDescription'] ?? '',
+            heroImageUrl: $heroImageUrl,
+            labels: $this->buildEventLabels($eventId),
+            aboutHeading: $this->getStringValue($cms, 'about_heading', $event['Title']),
+            aboutBodyHtml: $this->resolveAboutBody($cms, $event),
+            aboutImage1Url: $this->validateImagePath((string)($cms['about_image_1'] ?? '')),
+            aboutImage2Url: $this->validateImagePath((string)($cms['about_image_2'] ?? '')),
+            highlights: $this->buildHighlights($cms),
+            galleryImages: $this->buildGalleryImages($cms),
+            videoUrl: $cms['video_url'] ?? '',
+            scheduleSection: $this->buildScheduleSection(),
+        );
+    }
+
+    private function resolveHeroImage(array $event): string
+    {
+        if (!empty($event['FeaturedImageAssetId'])) {
+            $asset = $this->mediaAssetRepository->findById((int)$event['FeaturedImageAssetId']);
+            if ($asset) {
+                return $this->validateImagePath($asset->filePath);
+            }
+        }
+        return self::DEFAULT_IMAGE_PATH;
+    }
+
+    private function resolveAboutBody(array $cms, array $event): string
+    {
+        if (!empty($cms['about_body'])) {
+            return $cms['about_body'];
+        }
+        return $event['LongDescriptionHtml'] ?? htmlspecialchars($event['ShortDescription'] ?? '');
+    }
+
+    /**
+     * @return StoryHighlightData[]
+     */
+    private function buildHighlights(array $cms): array
+    {
+        $highlights = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $title = $cms["highlight_{$i}_title"] ?? '';
+            if (empty($title)) {
+                continue;
+            }
+            $highlights[] = new StoryHighlightData(
+                imageUrl: $this->validateImagePath((string)($cms["highlight_{$i}_image"] ?? '')),
+                title: $title,
+                description: $cms["highlight_{$i}_description"] ?? '',
+            );
+        }
+        return $highlights;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function buildGalleryImages(array $cms): array
+    {
+        $images = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $images[] = $this->validateImagePath((string)($cms["gallery_image_{$i}"] ?? ''));
+        }
+        return $images;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function buildEventLabels(int $eventId): array
+    {
+        $sessions = $this->sessionRepository->findSessions([
+            'eventId' => $eventId,
+            'isActive' => true,
+        ]);
+        $sessionList = $sessions['sessions'] ?? [];
+
+        if (empty($sessionList)) {
+            return [];
+        }
+
+        $sessionId = (int)$sessionList[0]['EventSessionId'];
+        $labelsMap = $this->labelRepository->findLabels([
+            'sessionIds' => [$sessionId],
+            'groupBySession' => true,
+        ]);
+
+        return array_map(fn ($l) => $l->labelText, $labelsMap[$sessionId] ?? []);
     }
 
     /**

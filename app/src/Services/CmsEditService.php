@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventTypeId;
 use App\Models\CmsItem;
 use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
@@ -50,7 +51,7 @@ class CmsEditService implements ICmsEditService
         $sectionsWithItems = [];
 
         $eventNameMap = [];
-        if ($page->slug === 'storytelling-detail') {
+        if (($page['Slug'] ?? '') === 'storytelling-detail') {
             $eventNameMap = $this->buildEventNameMap();
         }
 
@@ -275,7 +276,7 @@ class CmsEditService implements ICmsEditService
      */
     private function buildEventNameMap(): array
     {
-        $events = $this->eventRepository->findAllByType(4);
+        $events = $this->eventRepository->findEvents(['eventTypeId' => EventTypeId::Storytelling->value]);
         $map = [];
         foreach ($events as $event) {
             $map['event_' . $event['EventId']] = $event['Title'];

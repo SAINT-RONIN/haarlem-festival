@@ -232,11 +232,12 @@ class ScheduleService implements IScheduleService
 
         // CTA label: use session-specific if set, otherwise default
         $ctaLabel = !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText;
-        $ctaUrl = !empty($session['CtaUrl']) ? $session['CtaUrl'] : '#';
+        $eventId = (int)$session['EventId'];
+        $ctaUrl = !empty($session['CtaUrl']) ? $session['CtaUrl'] : '/' . $eventTypeSlug . '/' . $eventId;
 
         return new ScheduleEventCardViewModel(
             eventSessionId: $sessionId,
-            eventId: (int)$session['EventId'],
+            eventId: $eventId,
             eventTypeSlug: $eventTypeSlug,
             eventTypeId: $eventTypeId,
             title: $session['EventTitle'] ?? '',
