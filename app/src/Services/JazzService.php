@@ -187,6 +187,8 @@ class JazzService implements IJazzService
             navRestaurant: 'Restaurant',
             navStorytelling: 'Storytelling',
             btnMyProgram: 'My Program',
+            loginLabel: 'Login',
+            logoutLabel: 'Logout',
             isLoggedIn: $this->sessionService->isLoggedIn(),
         );
     }
