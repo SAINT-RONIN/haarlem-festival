@@ -392,6 +392,7 @@ class JazzService implements IJazzService
                 performanceCount: (int)$this->getCmsItem('artists_section', 'artists_ntjam_performance_count', '2'),
                 firstPerformance: $this->getCmsItem('artists_section', 'artists_ntjam_first_performance', 'Thu 21:00 - Patronaat Main Hall'),
                 morePerformancesText: $this->getCmsItem('artists_section', 'artists_ntjam_more_performances_text', ''),
+                profileUrl: '/jazz/ntjam-rosie',
             ),
         ];
 

@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for a Gumbo Kings track card.
+ * DTO for a Jazz artist featured album card.
  */
-final readonly class GumboKingsTrackData
+final readonly class JazzArtistAlbumData
 {
     public function __construct(
         public string $title,
-        public string $album,
         public string $description,
-        public string $duration,
+        public string $year,
+        public string $tag,
         public string $imageUrl,
-        public string $progressClass,
     ) {
     }
 }

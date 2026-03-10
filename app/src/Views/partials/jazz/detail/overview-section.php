@@ -1,8 +1,8 @@
 <?php
 /**
- * Gumbo Kings overview section with lineup and highlights.
+ * Jazz artist overview section with lineup and highlights.
  *
- * @var \App\ViewModels\Jazz\GumboKingsDetailPageViewModel $viewModel
+ * @var \App\ViewModels\Jazz\JazzArtistDetailPageViewModel $viewModel
  */
 ?>
 
@@ -24,7 +24,7 @@
 
             <aside class="p-5 sm:p-6 md:p-8 bg-white rounded-2xl shadow-[0px_4px_10px_-6px_rgba(0,0,0,0.10)] shadow-[0px_10px_25px_-5px_rgba(0,0,0,0.10)] border border-slate-200/60">
                 <h3 class="text-royal-blue text-2xl sm:text-3xl font-normal font-['Montserrat'] mb-4 sm:mb-5">
-                    Band Lineup
+                    <?= htmlspecialchars($viewModel->lineupHeading) ?>
                 </h3>
                 <ul class="space-y-2">
                     <?php foreach ($viewModel->lineup as $member): ?>
@@ -48,7 +48,7 @@
                     <path d="M8 4h8v2a4 4 0 0 1-8 0V4z"></path>
                 </svg>
                 <h3 class="text-slate-800 text-xl sm:text-2xl font-normal font-['Montserrat'] leading-7">
-                    Career Highlights
+                    <?= htmlspecialchars($viewModel->highlightsHeading) ?>
                 </h3>
             </div>
 

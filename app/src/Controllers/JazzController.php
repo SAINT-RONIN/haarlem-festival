@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\GumboKingsDetailService;
+use App\Services\JazzArtistDetailService;
 use App\Services\JazzService;
 
 /**
@@ -14,12 +14,12 @@ use App\Services\JazzService;
 class JazzController extends BaseController
 {
     private JazzService $jazzService;
-    private GumboKingsDetailService $gumboKingsDetailService;
+    private JazzArtistDetailService $jazzArtistDetailService;
 
     public function __construct()
     {
         $this->jazzService = new JazzService();
-        $this->gumboKingsDetailService = new GumboKingsDetailService();
+        $this->jazzArtistDetailService = new JazzArtistDetailService();
     }
 
     /**
@@ -41,8 +41,21 @@ class JazzController extends BaseController
     public function gumboKings(): void
     {
         try {
-            $viewModel = $this->gumboKingsDetailService->getPageData();
-            require __DIR__ . '/../Views/pages/jazz-gumbo-kings.php';
+            $viewModel = $this->jazzArtistDetailService->getGumboKingsPageData();
+            require __DIR__ . '/../Views/pages/jazz-artist-detail.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
+
+    /**
+     * Display Ntjam Rosie artist detail page.
+     */
+    public function ntjamRosie(): void
+    {
+        try {
+            $viewModel = $this->jazzArtistDetailService->getNtjamRosiePageData();
+            require __DIR__ . '/../Views/pages/jazz-artist-detail.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }

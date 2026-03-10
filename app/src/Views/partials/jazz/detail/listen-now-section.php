@@ -1,8 +1,8 @@
 <?php
 /**
- * Gumbo Kings listen-now section.
+ * Jazz artist listen-now section.
  *
- * @var \App\ViewModels\Jazz\GumboKingsDetailPageViewModel $viewModel
+ * @var \App\ViewModels\Jazz\JazzArtistDetailPageViewModel $viewModel
  */
 ?>
 

@@ -7,16 +7,16 @@ namespace App\ViewModels\Jazz;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 
 /**
- * ViewModel for the Gumbo Kings detail page.
+ * ViewModel for a Jazz artist detail page.
  */
-final readonly class GumboKingsDetailPageViewModel
+final readonly class JazzArtistDetailPageViewModel
 {
     /**
      * @param array<string> $lineup
      * @param array<string> $highlights
      * @param array<string> $galleryImages
-     * @param array<GumboKingsAlbumData> $albums
-     * @param array<GumboKingsTrackData> $tracks
+     * @param array<JazzArtistAlbumData> $albums
+     * @param array<JazzArtistTrackData> $tracks
      * @param array<ScheduleEventCardViewModel> $performances
      */
     public function __construct(
@@ -30,17 +30,23 @@ final readonly class GumboKingsDetailPageViewModel
         public string $overviewLead,
         public string $overviewBodyPrimary,
         public string $overviewBodySecondary,
+        public string $lineupHeading,
         public array $lineup,
+        public string $highlightsHeading,
         public array $highlights,
+        public string $photoGalleryHeading,
+        public string $photoGalleryDescription,
         public array $galleryImages,
-        public array $albums,
+        public string $albumsHeading,
         public string $albumsDescription,
-        public array $tracks,
+        public array $albums,
         public string $listenHeading,
         public string $listenSubheading,
         public string $listenDescription,
+        public array $tracks,
         public string $liveCtaHeading,
         public string $liveCtaDescription,
+        public string $performancesSectionId,
         public string $performancesHeading,
         public string $performancesDescription,
         public array $performances,

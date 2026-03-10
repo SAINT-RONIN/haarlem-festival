@@ -1,12 +1,12 @@
 <?php
 /**
- * Gumbo Kings performances section.
+ * Jazz artist performances section.
  *
- * @var \App\ViewModels\Jazz\GumboKingsDetailPageViewModel $viewModel
+ * @var \App\ViewModels\Jazz\JazzArtistDetailPageViewModel $viewModel
  */
 ?>
 
-<section id="gumbo-performances" class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-10 sm:py-12 md:py-14">
+<section id="<?= htmlspecialchars($viewModel->performancesSectionId) ?>" class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-10 sm:py-12 md:py-14">
     <div class="flex flex-col gap-6 sm:gap-7">
         <header class="max-w-4xl flex flex-col gap-3 sm:gap-4">
             <h2 class="text-royal-blue text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-['Montserrat'] leading-tight">
@@ -17,7 +17,7 @@
             </p>
         </header>
 
-        <ul class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6" role="list" aria-label="Gumbo Kings performances">
+        <ul class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6" role="list" aria-label="<?= htmlspecialchars($viewModel->heroTitle) ?> performances">
             <?php foreach ($viewModel->performances as $eventIndex => $event): ?>
                 <?php $dayIndex = 0; ?>
                 <?php require __DIR__ . '/../../sections/schedule/schedule-event-card.php'; ?>
