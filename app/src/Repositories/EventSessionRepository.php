@@ -14,6 +14,8 @@ use PDO;
 class EventSessionRepository implements IEventSessionRepository
 {
     private PDO $pdo;
+    /** @var array<string>|null */
+    private ?array $eventSessionColumns = null;
 
     public function __construct()
     {
@@ -70,6 +72,16 @@ class EventSessionRepository implements IEventSessionRepository
         ?array  $visibleDays = null
     ): array
     {
+        $hasCtaLabel = $this->hasEventSessionColumn('CtaLabel');
+        $hasCtaUrl = $this->hasEventSessionColumn('CtaUrl');
+        $hasHistoryTicketLabel = $this->hasEventSessionColumn('HistoryTicketLabel');
+
+        $ctaLabelSelect = $hasCtaLabel ? 'es.CtaLabel AS CtaLabel' : 'NULL AS CtaLabel';
+        $ctaUrlSelect = $hasCtaUrl ? 'es.CtaUrl AS CtaUrl' : 'NULL AS CtaUrl';
+        $historyTicketLabelSelect = $hasHistoryTicketLabel
+            ? 'es.HistoryTicketLabel AS HistoryTicketLabel'
+            : 'NULL AS HistoryTicketLabel';
+
         // Build date filter clause
         $dateFilter = '';
         $dateParams = [];
@@ -127,13 +139,13 @@ class EventSessionRepository implements IEventSessionRepository
                 es.EventId,
                 es.StartDateTime,
                 es.EndDateTime,
-                es.CtaLabel,
-                es.CtaUrl,
+                {$ctaLabelSelect},
+                {$ctaUrlSelect},
                 es.CapacityTotal,
                 es.SoldSingleTickets,
                 es.SoldReservedSeats,
                 es.HallName,
-                es.HistoryTicketLabel,
+                {$historyTicketLabelSelect},
                 DATE(es.StartDateTime) AS SessionDate,
                 e.Title AS EventTitle,
                 e.EventTypeId,
@@ -237,23 +249,41 @@ class EventSessionRepository implements IEventSessionRepository
      */
     public function create(array $data): int
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO EventSession (
-                EventId, StartDateTime, EndDateTime, CapacityTotal,
-                CapacitySingleTicketLimit, HallName, SessionType,
-                DurationMinutes, LanguageCode, MinAge, MaxAge,
-                ReservationRequired, IsFree, Notes, HistoryTicketLabel, CtaLabel, CtaUrl,
-                IsCancelled, IsActive
-            ) VALUES (
-                :eventId, :startDateTime, :endDateTime, :capacityTotal,
-                :capacitySingleTicketLimit, :hallName, :sessionType,
-                :durationMinutes, :languageCode, :minAge, :maxAge,
-                :reservationRequired, :isFree, :notes, :historyTicketLabel, :ctaLabel, :ctaUrl,
-                0, 1
-            )
-        ');
+        $columns = [
+            'EventId',
+            'StartDateTime',
+            'EndDateTime',
+            'CapacityTotal',
+            'CapacitySingleTicketLimit',
+            'HallName',
+            'SessionType',
+            'DurationMinutes',
+            'LanguageCode',
+            'MinAge',
+            'MaxAge',
+            'ReservationRequired',
+            'IsFree',
+            'Notes',
+        ];
 
-        $stmt->execute([
+        $placeholders = [
+            ':eventId',
+            ':startDateTime',
+            ':endDateTime',
+            ':capacityTotal',
+            ':capacitySingleTicketLimit',
+            ':hallName',
+            ':sessionType',
+            ':durationMinutes',
+            ':languageCode',
+            ':minAge',
+            ':maxAge',
+            ':reservationRequired',
+            ':isFree',
+            ':notes',
+        ];
+
+        $params = [
             'eventId' => $data['EventId'],
             'startDateTime' => $data['StartDateTime'],
             'endDateTime' => $data['EndDateTime'],
@@ -268,10 +298,28 @@ class EventSessionRepository implements IEventSessionRepository
             'reservationRequired' => $data['ReservationRequired'] ?? 0,
             'isFree' => $data['IsFree'] ?? 0,
             'notes' => $data['Notes'] ?? '',
-            'historyTicketLabel' => $data['HistoryTicketLabel'] ?? null,
-            'ctaLabel' => $data['CtaLabel'] ?? null,
-            'ctaUrl' => $data['CtaUrl'] ?? null,
-        ]);
+        ];
+
+        if ($this->hasEventSessionColumn('HistoryTicketLabel')) {
+            $columns[] = 'HistoryTicketLabel';
+            $placeholders[] = ':historyTicketLabel';
+            $params['historyTicketLabel'] = $data['HistoryTicketLabel'] ?? null;
+        }
+        if ($this->hasEventSessionColumn('CtaLabel')) {
+            $columns[] = 'CtaLabel';
+            $placeholders[] = ':ctaLabel';
+            $params['ctaLabel'] = $data['CtaLabel'] ?? null;
+        }
+        if ($this->hasEventSessionColumn('CtaUrl')) {
+            $columns[] = 'CtaUrl';
+            $placeholders[] = ':ctaUrl';
+            $params['ctaUrl'] = $data['CtaUrl'] ?? null;
+        }
+
+        $columnsList = implode(', ', array_merge($columns, ['IsCancelled', 'IsActive']));
+        $placeholdersList = implode(', ', array_merge($placeholders, ['0', '1']));
+        $stmt = $this->pdo->prepare("INSERT INTO EventSession ({$columnsList}) VALUES ({$placeholdersList})");
+        $stmt->execute($params);
 
         return (int)$this->pdo->lastInsertId();
     }
@@ -285,22 +333,17 @@ class EventSessionRepository implements IEventSessionRepository
      */
     public function update(int $sessionId, array $data): bool
     {
-        $stmt = $this->pdo->prepare('
-            UPDATE EventSession SET
-                StartDateTime = :startDateTime,
-                EndDateTime = :endDateTime,
-                CapacityTotal = :capacityTotal,
-                HallName = :hallName,
-                LanguageCode = :languageCode,
-                MinAge = :minAge,
-                Notes = :notes,
-                HistoryTicketLabel = :historyTicketLabel,
-                CtaLabel = :ctaLabel,
-                CtaUrl = :ctaUrl
-            WHERE EventSessionId = :sessionId
-        ');
+        $setParts = [
+            'StartDateTime = :startDateTime',
+            'EndDateTime = :endDateTime',
+            'CapacityTotal = :capacityTotal',
+            'HallName = :hallName',
+            'LanguageCode = :languageCode',
+            'MinAge = :minAge',
+            'Notes = :notes',
+        ];
 
-        return $stmt->execute([
+        $params = [
             'sessionId' => $sessionId,
             'startDateTime' => $data['StartDateTime'],
             'endDateTime' => $data['EndDateTime'],
@@ -309,10 +352,24 @@ class EventSessionRepository implements IEventSessionRepository
             'languageCode' => $data['LanguageCode'] ?? null,
             'minAge' => $data['MinAge'] ?? null,
             'notes' => $data['Notes'] ?? '',
-            'historyTicketLabel' => $data['HistoryTicketLabel'] ?? null,
-            'ctaLabel' => $data['CtaLabel'] ?? null,
-            'ctaUrl' => $data['CtaUrl'] ?? null,
-        ]);
+        ];
+
+        if ($this->hasEventSessionColumn('HistoryTicketLabel')) {
+            $setParts[] = 'HistoryTicketLabel = :historyTicketLabel';
+            $params['historyTicketLabel'] = $data['HistoryTicketLabel'] ?? null;
+        }
+        if ($this->hasEventSessionColumn('CtaLabel')) {
+            $setParts[] = 'CtaLabel = :ctaLabel';
+            $params['ctaLabel'] = $data['CtaLabel'] ?? null;
+        }
+        if ($this->hasEventSessionColumn('CtaUrl')) {
+            $setParts[] = 'CtaUrl = :ctaUrl';
+            $params['ctaUrl'] = $data['CtaUrl'] ?? null;
+        }
+
+        $setClause = implode(', ', $setParts);
+        $stmt = $this->pdo->prepare("UPDATE EventSession SET {$setClause} WHERE EventSessionId = :sessionId");
+        return $stmt->execute($params);
     }
 
     /**
@@ -329,5 +386,19 @@ class EventSessionRepository implements IEventSessionRepository
         ');
 
         return $stmt->execute(['sessionId' => $sessionId]);
+    }
+
+    private function hasEventSessionColumn(string $column): bool
+    {
+        if ($this->eventSessionColumns === null) {
+            $stmt = $this->pdo->query('SHOW COLUMNS FROM EventSession');
+            $columnNames = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+            $this->eventSessionColumns = array_map(
+                static fn($name): string => strtolower((string)$name),
+                is_array($columnNames) ? $columnNames : []
+            );
+        }
+
+        return in_array(strtolower($column), $this->eventSessionColumns, true);
     }
 }

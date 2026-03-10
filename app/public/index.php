@@ -45,6 +45,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Jazz page
     $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
+    $r->addRoute('GET', '/jazz/gumbo-kings', [JazzController::class, 'gumboKings']);
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);

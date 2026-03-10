@@ -2,7 +2,7 @@
 /**
  * Single artist card partial.
  *
- * @var \App\ViewModels\ArtistCardData $artist
+ * @var \App\ViewModels\Jazz\ArtistCardData $artist
  */
 ?>
 
@@ -23,9 +23,17 @@
                 <?php endif; ?>
             </div>
         </div>
-        <button class="self-stretch h-11 px-4 bg-royal-blue hover:bg-royal-blue-dark rounded-md flex justify-between items-center transition-colors duration-200">
-            <span class="flex-1 text-left text-white text-lg sm:text-xl font-normal font-['Montserrat'] leading-5">View full profile</span>
-            <span class="text-center text-white text-xl sm:text-2xl font-normal font-['Montserrat'] leading-7">+</span>
-        </button>
+        <?php if ($artist->profileUrl !== null && $artist->profileUrl !== ''): ?>
+            <a href="<?= htmlspecialchars($artist->profileUrl) ?>"
+               class="self-stretch h-11 px-4 bg-royal-blue hover:bg-red rounded-md flex justify-between items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                <span class="flex-1 text-left text-white text-lg sm:text-xl font-normal font-['Montserrat'] leading-5">View full profile</span>
+                <span class="text-center text-white text-xl sm:text-2xl font-normal font-['Montserrat'] leading-7">+</span>
+            </a>
+        <?php else: ?>
+            <button type="button" class="self-stretch h-11 px-4 bg-royal-blue hover:bg-royal-blue-dark rounded-md flex justify-between items-center transition-colors duration-200">
+                <span class="flex-1 text-left text-white text-lg sm:text-xl font-normal font-['Montserrat'] leading-5">View full profile</span>
+                <span class="text-center text-white text-xl sm:text-2xl font-normal font-['Montserrat'] leading-7">+</span>
+            </button>
+        <?php endif; ?>
     </div>
 </div>
