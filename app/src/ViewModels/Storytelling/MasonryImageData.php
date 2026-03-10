@@ -35,19 +35,14 @@ final readonly class MasonryImageData
 
     public static function fromPath(string $path, int $index): self
     {
+        $hasImage = $path !== '';
+
         return new self(
             imageUrl: ImageHelper::validatePath($path),
-            altText: ImageHelper::altTextFromFilename(basename($path), self::DEFAULT_ALT_SUFFIX),
+            altText: $hasImage
+                ? ImageHelper::altTextFromFilename(basename($path), self::DEFAULT_ALT_SUFFIX)
+                : self::DEFAULT_ALT_SUFFIX,
             sizeClass: self::SIZE_CLASSES[$index] ?? self::DEFAULT_SIZE_CLASS,
-        );
-    }
-
-    public static function placeholder(): self
-    {
-        return new self(
-            imageUrl: ImageHelper::validatePath(''),
-            altText: self::DEFAULT_ALT_SUFFIX,
-            sizeClass: self::DEFAULT_SIZE_CLASS,
         );
     }
 }

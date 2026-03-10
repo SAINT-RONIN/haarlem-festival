@@ -14,9 +14,9 @@ class StorytellingController extends BaseController
 {
     private IStorytellingService $storytellingService;
 
-    public function __construct()
+    public function __construct(?IStorytellingService $storytellingService = null)
     {
-        $this->storytellingService = new StorytellingService();
+        $this->storytellingService = $storytellingService ?? new StorytellingService();
     }
 
     /**
@@ -42,7 +42,7 @@ class StorytellingController extends BaseController
             $eventId = (int)$id;
             $data = $this->storytellingService->getStorytellingDetailPageData($eventId);
             $viewModel = StorytellingDetailPageViewModel::fromEventData(...$data);
-            $this->renderView(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
+            $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
