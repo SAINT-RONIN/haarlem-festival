@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Exceptions\ValidationException;
 use App\Repositories\CmsRepository;
+use App\Services\CmsDashboardService;
 use App\Services\CmsEditService;
 use App\Services\MediaAssetService;
 use App\Services\SessionService;
@@ -21,6 +22,7 @@ class CmsDashboardController
 {
     private SessionService $sessionService;
     private CmsRepository $cmsRepository;
+    private CmsDashboardService $cmsDashboardService;
     private CmsEditService $cmsEditService;
     private MediaAssetService $mediaAssetService;
 
@@ -28,6 +30,7 @@ class CmsDashboardController
     {
         $this->sessionService = new SessionService();
         $this->cmsRepository = new CmsRepository();
+        $this->cmsDashboardService = new CmsDashboardService();
         $this->cmsEditService = new CmsEditService();
         $this->mediaAssetService = new MediaAssetService();
     }
@@ -41,9 +44,7 @@ class CmsDashboardController
         CmsAuthController::requireAdmin();
 
         $currentView = 'dashboard';
-        $recentPages = $this->getRecentPages();
-        $activities = $this->getRecentActivities();
-        $userName = $this->getUserDisplayName();
+        $viewModel = $this->cmsDashboardService->getDashboardData($this->getUserDisplayName());
 
         require __DIR__ . '/../Views/pages/cms/dashboard.php';
     }
@@ -58,8 +59,7 @@ class CmsDashboardController
 
         $currentView = 'pages';
         $searchQuery = $_GET['search'] ?? '';
-        $pages = $this->getAllPages();
-        $userName = $this->getUserDisplayName();
+        $viewModel = $this->cmsDashboardService->getPagesListData($searchQuery, $this->getUserDisplayName());
 
         require __DIR__ . '/../Views/pages/cms/dashboard.php';
     }
@@ -79,7 +79,7 @@ class CmsDashboardController
     private function getRecentPages(): array
     {
         try {
-            $cmsPages = $this->cmsRepository->findAllPages();
+            $cmsPages = $this->cmsRepository->findPages(['includeLastUpdated' => true]);
             $pages = $this->mapPagesToRecentFormat(array_slice($cmsPages, 0, 4));
 
             return !empty($pages) ? $pages : $this->getDefaultRecentPages();
@@ -123,7 +123,7 @@ class CmsDashboardController
     private function getAllPages(): array
     {
         try {
-            $cmsPages = $this->cmsRepository->findAllPages();
+            $cmsPages = $this->cmsRepository->findPages(['includeLastUpdated' => true]);
             $pages = $this->mapPagesToListFormat($cmsPages);
 
             return !empty($pages) ? $pages : $this->getDefaultAllPages();
