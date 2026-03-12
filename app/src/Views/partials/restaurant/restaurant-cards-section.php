@@ -3,9 +3,16 @@
  * Restaurant Cards section partial.
  * Displays participating restaurants with filters and card grid.
  *
+ * Expects a \App\ViewModels\Restaurant\RestaurantPageViewModel as $viewModel
+ * and uses its restaurantCardsSection property.
+ *
  * @var \App\ViewModels\Restaurant\RestaurantCardsSectionData $restaurantCardsSection
  */
 
+use App\ViewModels\Restaurant\RestaurantCardsSectionData;
+use App\ViewModels\Restaurant\RestaurantCardData;
+
+/** @var RestaurantCardsSectionData $restaurantCardsSection */
 $title = $restaurantCardsSection->title;
 $subtitle = $restaurantCardsSection->subtitle;
 $filters = $restaurantCardsSection->filters;
@@ -54,6 +61,7 @@ $cards = $restaurantCardsSection->cards;
         <!-- Restaurant Cards Grid -->
         <div class="self-stretch grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php foreach ($cards as $card): ?>
+                <?php /** @var RestaurantCardData $card */ ?>
                 <?php $isNewVegas = (stripos($card->name, 'new vegas') !== false); ?>
 
                 <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">

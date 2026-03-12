@@ -7,14 +7,25 @@ namespace App\ViewModels\Restaurant;
 use App\ViewModels\BaseViewModel;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
+use App\ViewModels\Restaurant\Detail\AboutSectionData;
+use App\ViewModels\Restaurant\Detail\ChefSectionData;
+use App\ViewModels\Restaurant\Detail\ContactSectionData;
+use App\ViewModels\Restaurant\Detail\GallerySectionData;
+use App\ViewModels\Restaurant\Detail\LocationSectionData;
+use App\ViewModels\Restaurant\Detail\MenuSectionData;
+use App\ViewModels\Restaurant\Detail\PracticalInfoSectionData;
+use App\ViewModels\Restaurant\Detail\ReservationSectionData;
 
 /**
  * ViewModel for the Restaurant Detail page (/restaurant/{id}).
  *
- * Contains TWO kinds of data:
- * 1. Domain data (from Restaurant table): name, address, about text, chef, images, etc.
- * 2. CMS labels (from CmsItem table): section titles, labels, button texts
- *    → admin can edit these via the CMS dashboard.
+ * Follows the same pattern as HistoryPageViewModel:
+ * the main ViewModel holds small section ViewModels as properties,
+ * each one grouping related data for one section of the page.
+ *
+ * Data sources:
+ *  - Domain data (Restaurant table): name, address, images, etc.
+ *  - CMS labels (CmsItem table): section titles that admin can edit.
  */
 final readonly class RestaurantDetailViewModel extends BaseViewModel
 {
@@ -22,84 +33,19 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
         HeroData $heroData,
         GlobalUiData $globalUi,
 
-        // Basic restaurant info (domain)
+        // Restaurant identity (used across sections for alt texts, page title, etc.)
         public int    $id,
         public string $name,
-        public string $cuisine,
-        public string $address,
-        public string $description,
-        public int    $rating,
-        public string $image,
 
-        // Contact info (domain)
-        public string $phone,
-        public string $email,
-        public string $website,
-
-        // About section (domain)
-        public string $aboutText,
-        public string $aboutImage,
-
-        // Chef section (domain)
-        public string $chefName,
-        public string $chefText,
-        public string $chefImage,
-
-        // Menu section (domain)
-        public string $menuDescription,
-        /** @var string[] cuisine type tags */
-        public array  $cuisineTags,
-        public string $menuImage1,
-        public string $menuImage2,
-
-        // Location section (domain)
-        public string $locationDescription,
-        public string $mapEmbedUrl,
-
-        // Practical info (domain)
-        public int    $michelinStars,
-        public int    $seatsPerSession,
-        public int    $durationMinutes,
-        public string $specialRequestsNote,
-
-        // Gallery images (domain)
-        public string $galleryImage1,
-        public string $galleryImage2,
-        public string $galleryImage3,
-
-        // Reservation section (domain + hardcoded for now)
-        public string $reservationImage,
-        /** @var string[] available time slots */
-        public array  $timeSlots,
-        /** @var array{label: string, price: string}[] price cards */
-        public array  $priceCards,
-
-        // ── CMS labels (admin-editable section titles & labels) ──
-        public string $labelContactTitle       = '',
-        public string $labelAddress             = '',
-        public string $labelContact             = '',
-        public string $labelOpenHours           = '',
-        public string $labelPracticalTitle      = '',
-        public string $labelPriceFood           = '',
-        public string $labelRating              = '',
-        public string $labelSpecialRequests     = '',
-        public string $labelGalleryTitle        = '',
-        public string $labelAboutPrefix         = '',
-        public string $labelChefTitle           = '',
-        public string $labelMenuTitle           = '',
-        public string $labelCuisineType         = '',
-        public string $labelLocationTitle       = '',
-        public string $labelLocationAddress     = '',
-        public string $labelReservationTitle    = '',
-        public string $labelReservationDesc     = '',
-        public string $labelSlotsLabel          = '',
-        public string $labelReservationNote     = '',
-        public string $labelReservationBtn      = '',
-        public string $labelDuration            = '',
-        public string $labelSeats               = '',
-        public string $labelFestivalRated       = '',
-        public string $labelMichelin            = '',
-        public string $labelMapFallback         = '',
+        // Section-specific ViewModels (like History uses RouteData, VenuesData, etc.)
+        public ContactSectionData       $contactSection,
+        public PracticalInfoSectionData  $practicalInfoSection,
+        public GallerySectionData        $gallerySection,
+        public AboutSectionData          $aboutSection,
+        public ChefSectionData           $chefSection,
+        public MenuSectionData           $menuSection,
+        public LocationSectionData       $locationSection,
+        public ReservationSectionData    $reservationSection,
     ) {
         parent::__construct(
             heroData: $heroData,

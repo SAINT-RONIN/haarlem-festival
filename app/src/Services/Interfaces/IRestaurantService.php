@@ -4,22 +4,35 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\Restaurant\RestaurantDetailViewModel;
-use App\ViewModels\Restaurant\RestaurantPageViewModel;
-
 /**
  * Interface for Restaurant page service.
+ *
+ * The service returns plain arrays with business data.
+ * The mapper (RestaurantViewModelMapper) converts this data into ViewModels.
  */
 interface IRestaurantService
 {
     /**
-     * Builds the restaurant listing page view model.
+     * Returns all data needed by the restaurant listing page.
+     *
+     * @return array{
+     *     gradientCms: array,
+     *     introCms: array,
+     *     intro2Cms: array,
+     *     instructionsCms: array,
+     *     cardsCms: array,
+     *     restaurants: \App\Models\Restaurant[],
+     *     cuisineFilters: string[],
+     *     cards: array
+     * }
      */
-    public function getRestaurantPageData(): RestaurantPageViewModel;
+    public function getRestaurantPageData(): array;
 
     /**
-     * Builds the restaurant detail page view model.
+     * Returns all data needed by a single restaurant detail page.
      * Returns null if the restaurant is not found.
+     *
+     * @return array|null
      */
-    public function getRestaurantDetailData(int $id): ?RestaurantDetailViewModel;
+    public function getRestaurantDetailData(int $id): ?array;
 }
