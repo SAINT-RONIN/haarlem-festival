@@ -71,7 +71,7 @@ class StorytellingService implements IStorytellingService
             'labels' => $this->fetchEventLabels($eventId),
             'aboutBodyHtml' => $this->resolveAboutBody($cms, $event),
             'cms' => $cms,
-            'scheduleData' => $this->scheduleService->getScheduleData(self::PAGE_SLUG, EventTypeId::Storytelling->value, self::SCHEDULE_MAX_DAYS),
+            'scheduleData' => $this->scheduleService->getScheduleData(self::PAGE_SLUG, EventTypeId::Storytelling->value, self::SCHEDULE_MAX_DAYS, $eventId),
         ];
     }
 

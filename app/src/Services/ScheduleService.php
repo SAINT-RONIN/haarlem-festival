@@ -33,7 +33,7 @@ class ScheduleService implements IScheduleService
         $this->eventTypeRepository = new EventTypeRepository();
     }
 
-    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4): array
+    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null): array
     {
         $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
@@ -41,7 +41,7 @@ class ScheduleService implements IScheduleService
         $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
         $visibleDays = $this->cmsEventsService->getVisibleDays($eventTypeId);
 
-        $scheduleData = $this->sessionRepository->findSessions([
+        $filters = [
             'eventTypeId' => $eventTypeId,
             'isActive' => true,
             'eventIsActive' => true,
@@ -50,7 +50,13 @@ class ScheduleService implements IScheduleService
             'maxDays' => $maxDays,
             'visibleDays' => $visibleDays,
             'orderBy' => 'es.StartDateTime ASC',
-        ]);
+        ];
+
+        if ($eventId !== null) {
+            $filters['eventId'] = $eventId;
+        }
+
+        $scheduleData = $this->sessionRepository->findSessions($filters);
 
         $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
         $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');

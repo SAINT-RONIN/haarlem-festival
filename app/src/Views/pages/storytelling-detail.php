@@ -9,7 +9,7 @@ $includeHero = false;
 $pageContentPartials = [
     __DIR__ . '/../partials/storytelling/detail-hero.php',
     __DIR__ . '/../partials/storytelling/detail-content.php',
-    __DIR__ . '/../partials/sections/schedule/schedule-section.php',
+    __DIR__ . '/../partials/storytelling/detail-schedule.php',
 ];
 ?>
 <?php require __DIR__ . '/../partials/_shell.php'; ?>
