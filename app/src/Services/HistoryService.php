@@ -223,6 +223,9 @@ class HistoryService implements IHistoryService
             btnMyProgram: 'My Program',
             loginLabel: 'Login',
             logoutLabel: 'Logout',
+            labelEventsCount: 'events',
+            labelNoEvents: 'No events scheduled',
+            btnExploreTemplate: 'Explore {title} Events',
             isLoggedIn: $this->sessionService->isLoggedIn(),
         );
     }
