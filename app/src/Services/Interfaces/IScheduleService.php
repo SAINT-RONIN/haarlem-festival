@@ -12,5 +12,5 @@ interface IScheduleService
      *
      * @return array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array}
      */
-    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4): array;
+    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null): array;
 }

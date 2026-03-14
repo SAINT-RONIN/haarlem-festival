@@ -41,17 +41,17 @@ $video = $viewModel->videoSection;
             class="text-royal-blue text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold">
             <?= htmlspecialchars($highlights->heading) ?>
         </h2>
-        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
+        <div class="w-full flex flex-col lg:flex-row justify-center items-stretch gap-6 md:gap-8 lg:gap-12">
             <?php foreach ($highlights->items as $highlight): ?>
-                <article class="bg-white rounded-2xl shadow-[0px_0px_24px_-2px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden">
+                <article class="flex-1 bg-white rounded-2xl shadow-[0px_0px_24px_-2px_rgba(0,0,0,0.25)] inline-flex flex-col justify-start items-start overflow-hidden">
                     <img src="<?= htmlspecialchars($highlight->imageUrl) ?>"
                          alt="<?= htmlspecialchars($highlight->title) ?>"
-                         class="w-full h-56 sm:h-64 md:h-72 lg:h-96 object-cover">
-                    <div class="flex-1 p-3.5 flex flex-col gap-3 sm:gap-5">
+                         class="w-full h-64 sm:h-72 md:h-80 lg:h-96 object-cover">
+                    <div class="flex-1 w-full p-3.5 flex flex-col justify-start items-start gap-5 overflow-hidden">
                         <h3 class="text-royal-blue text-lg sm:text-xl md:text-2xl font-semibold">
                             <?= htmlspecialchars($highlight->title) ?>
                         </h3>
-                        <p class="text-royal-blue text-base sm:text-lg md:text-xl font-normal leading-7">
+                        <p class="text-royal-blue text-base sm:text-lg md:text-xl font-normal">
                             <?= htmlspecialchars($highlight->description) ?>
                         </p>
                     </div>
