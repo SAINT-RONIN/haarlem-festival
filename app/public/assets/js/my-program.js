@@ -215,6 +215,7 @@ function updatePaymentOverview(data) {
     if (checkoutBtn && data.canCheckout !== undefined) {
         checkoutBtn.disabled = !data.canCheckout;
         var span = checkoutBtn.querySelector('span');
+        var icon = checkoutBtn.querySelector('svg');
         if (data.canCheckout) {
             checkoutBtn.className = checkoutBtn.className
                 .replace('bg-gray-400', 'bg-green-600')
@@ -223,12 +224,14 @@ function updatePaymentOverview(data) {
                 checkoutBtn.className += ' hover:bg-green-700';
             }
             if (span) span.className = span.className.replace('text-gray-500', 'text-white');
+            if (icon) icon.className = icon.className.replace('text-gray-500', 'text-white');
         } else {
             checkoutBtn.className = checkoutBtn.className
                 .replace('bg-green-600', 'bg-gray-400')
                 .replace('hover:bg-green-700', '')
                 .replace('cursor-pointer', 'cursor-not-allowed');
             if (span) span.className = span.className.replace('text-white', 'text-gray-500');
+            if (icon) icon.className = icon.className.replace('text-white', 'text-gray-500');
         }
     }
 }

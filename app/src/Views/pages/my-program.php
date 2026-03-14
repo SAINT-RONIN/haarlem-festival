@@ -448,14 +448,21 @@ $isLoggedIn = $viewModel->isLoggedIn;
                     <button type="button"
                             id="js-checkout-btn"
                             <?= $viewModel->canCheckout ? '' : 'disabled' ?>
-                            class="w-full h-12 sm:h-14 bg-gray-400 rounded-[10px] inline-flex justify-center items-center gap-2.5
+                            class="w-full h-12 sm:h-14 rounded-[10px] inline-flex justify-center items-center gap-2
                                    transition-colors duration-200
                                    <?= $viewModel->canCheckout
                                        ? 'bg-green-600 hover:bg-green-700 cursor-pointer'
                                        : 'bg-gray-400 cursor-not-allowed' ?>">
-                        <span class="text-center text-gray-500 text-sm sm:text-base font-normal font-['Arial'] uppercase leading-6 tracking-wide">
+                        <span class="text-center text-sm sm:text-base font-normal font-['Arial'] uppercase leading-6 tracking-wide
+                                     <?= $viewModel->canCheckout ? 'text-white' : 'text-gray-500' ?>">
                             <?= htmlspecialchars($viewModel->checkoutButtonText) ?>
                         </span>
+                        <svg class="w-5 h-5 <?= $viewModel->canCheckout ? 'text-white' : 'text-gray-500' ?>"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
                     </button>
                 </div>
             </div>
