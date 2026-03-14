@@ -4,6 +4,9 @@
  * - Donation input (pay-what-you-like)
  * - Remove item
  * - Clear all items
+ *
+ * Each program item has TWO DOM elements (desktop grid + mobile card),
+ * both share the same data-program-item-id. All mutations sync both.
  */
 document.addEventListener('DOMContentLoaded', function () {
     initQuantityButtons();
@@ -11,6 +14,10 @@ document.addEventListener('DOMContentLoaded', function () {
     initRemoveButtons();
     initClearButton();
 });
+
+function getItemRows(programItemId) {
+    return document.querySelectorAll('[data-program-item-id="' + programItemId + '"]');
+}
 
 function initQuantityButtons() {
     document.querySelectorAll('.js-qty-decrease').forEach(function (btn) {
@@ -34,19 +41,21 @@ function initQuantityButtons() {
     });
 }
 
-function updateQuantity(row, newQuantity) {
-    var programItemId = parseInt(row.getAttribute('data-program-item-id'), 10);
+function updateQuantity(sourceRow, newQuantity) {
+    var programItemId = sourceRow.getAttribute('data-program-item-id');
 
     fetch('/api/program/update-quantity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ programItemId: programItemId, quantity: newQuantity })
+        body: JSON.stringify({ programItemId: parseInt(programItemId, 10), quantity: newQuantity })
     })
         .then(function (response) { return response.json(); })
         .then(function (data) {
             if (data.success) {
-                row.querySelector('.js-qty-value').textContent = newQuantity;
-                recalculateRowSum(row, newQuantity);
+                getItemRows(programItemId).forEach(function (row) {
+                    row.querySelector('.js-qty-value').textContent = newQuantity;
+                    recalculateRowSum(row, newQuantity);
+                });
                 updatePaymentOverview(data);
             }
         })
@@ -69,14 +78,21 @@ function initDonationInputs() {
                 input.value = '0.00';
             }
 
-            recalculateRowSumWithDonation(row, donationAmount);
+            // Sync donation value to sibling row(s) and recalculate
+            getItemRows(programItemId).forEach(function (r) {
+                var otherInput = r.querySelector('.js-donation-input');
+                if (otherInput && otherInput !== input) {
+                    otherInput.value = input.value;
+                }
+                recalculateRowSumWithDonation(r, donationAmount);
+            });
 
             if (debounceTimers[programItemId]) {
                 clearTimeout(debounceTimers[programItemId]);
             }
 
             debounceTimers[programItemId] = setTimeout(function () {
-                saveDonation(row, programItemId, donationAmount);
+                saveDonation(programItemId, donationAmount);
             }, 500);
         });
 
@@ -87,7 +103,7 @@ function initDonationInputs() {
     });
 }
 
-function saveDonation(row, programItemId, donationAmount) {
+function saveDonation(programItemId, donationAmount) {
     fetch('/api/program/update-donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,17 +151,20 @@ function initRemoveButtons() {
     document.querySelectorAll('.js-remove-item').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var row = btn.closest('[data-program-item-id]');
-            var programItemId = parseInt(row.getAttribute('data-program-item-id'), 10);
+            var programItemId = row.getAttribute('data-program-item-id');
 
             fetch('/api/program/remove', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ programItemId: programItemId })
+                body: JSON.stringify({ programItemId: parseInt(programItemId, 10) })
             })
                 .then(function (response) { return response.json(); })
                 .then(function (data) {
                     if (data.success) {
-                        row.remove();
+                        // Remove both desktop and mobile rows
+                        getItemRows(programItemId).forEach(function (r) {
+                            r.remove();
+                        });
                         updatePaymentOverview(data);
                         checkEmptyState();
                     }
