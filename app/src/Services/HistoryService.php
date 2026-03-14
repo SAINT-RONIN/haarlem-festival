@@ -85,6 +85,19 @@ class HistoryService implements IHistoryService
     }
 
     /**
+     * Builds the detail page ViewModel for a historical location.
+     * Returns null if the location is not found.
+     *
+     * ?????All detail content comes from the Restaurant domain table columns.
+     * Images come from MediaAsset JOINs in the repository.
+     */
+    public function getHistoralLocationData(int $id): ?HistoricalLocationViewModel
+    {
+        // Load page and sections once
+        $this->loadPageData();
+    }
+
+    /**
      * Loads and caches CMS page and sections for the history page.
      */
     private function loadPageData(): void
