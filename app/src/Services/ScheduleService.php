@@ -103,6 +103,8 @@ class ScheduleService implements IScheduleService
             ? $this->priceRepository->findPrices(['sessionIds' => $sessionIds, 'groupBySession' => true])
             : [];
 
+        $historyStartPoint = $this->fetchHistoryStartPoint($eventTypeSlug);
+
         $sessionsByDate = [];
         foreach ($sessions as $session) {
             $sessionsByDate[$session['SessionDate']][] = $session;
@@ -120,6 +122,7 @@ class ScheduleService implements IScheduleService
                     $session, $eventTypeSlug, $eventTypeId,
                     $labelsMap, $pricesMap,
                     $defaultCtaText, $payWhatYouLikeText, $currencySymbol,
+                    $historyStartPoint,
                 );
             }
 
@@ -137,72 +140,56 @@ class ScheduleService implements IScheduleService
         return $dayArrays;
     }
 
+    private function fetchHistoryStartPoint(string $eventTypeSlug): ?string
+    {
+        if ($eventTypeSlug !== 'history') {
+            return null;
+        }
+
+        $cmsContent = $this->cmsService->getSectionContent('history', 'schedule_section');
+        return $this->getStringValue($cmsContent, 'schedule_start_point', 'A giant flag near Church of St. Bavo at Grote Markt');
+    }
+
     private function buildEventCard(
-        array  $session,
-        string $eventTypeSlug,
-        int    $eventTypeId,
-        array  $labelsMap,
-        array  $pricesMap,
-        string $defaultCtaText,
-        string $payWhatYouLikeText,
-        string $currencySymbol,
+        array   $session,
+        string  $eventTypeSlug,
+        int     $eventTypeId,
+        array   $labelsMap,
+        array   $pricesMap,
+        string  $defaultCtaText,
+        string  $payWhatYouLikeText,
+        string  $currencySymbol,
+        ?string $historyStartPoint,
     ): array {
         $sessionId = (int)$session['EventSessionId'];
         $startDateTime = new \DateTimeImmutable($session['StartDateTime']);
         $endDateTime = $session['EndDateTime'] ? new \DateTimeImmutable($session['EndDateTime']) : null;
 
-        $sessionLabels = $labelsMap[$sessionId] ?? [];
-        $labels = array_map(fn(EventSessionLabel $l) => $l->labelText, $sessionLabels);
-        $minAge = isset($session['MinAge']) && (int)$session['MinAge'] > 0 ? (int)$session['MinAge'] : null;
-        $maxAge = isset($session['MaxAge']) && (int)$session['MaxAge'] > 0 ? (int)$session['MaxAge'] : null;
+        [$labels, $minAge, $maxAge, $ageLabel] = $this->extractLabels(
+            $session, $labelsMap[$sessionId] ?? [], $eventTypeSlug
+        );
 
-        if ($minAge !== null && $maxAge !== null && $minAge > $maxAge) {
-            [$minAge, $maxAge] = [$maxAge, $minAge];
-        }
-
-        $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
-
-        if ($eventTypeSlug !== 'history') {
-            $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
-        }
-
-        $sessionPrices = $pricesMap[$sessionId] ?? [];
-        $priceResult = $this->getPriceDisplay($sessionPrices, $payWhatYouLikeText, $currencySymbol);
-
-        $ctaLabel = !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText;
-        $eventId = (int)$session['EventId'];
-        $ctaUrl = !empty($session['CtaUrl']) ? $session['CtaUrl'] : '/' . $eventTypeSlug . '/' . $eventId;
-
+        $priceResult = $this->extractPriceDisplay($pricesMap[$sessionId] ?? [], $payWhatYouLikeText, $currencySymbol);
+        $ctaInfo = $this->buildCtaInfo($session, $eventTypeSlug, $defaultCtaText);
+        $locationName = $this->buildLocationName($session, $eventTypeSlug, $historyStartPoint);
+        $timeDisplay = $this->buildTimeDisplay($startDateTime, $endDateTime);
         $eventTitle = $eventTypeSlug === 'history' ? $startDateTime->format('H:i') : ($session['EventTitle'] ?? '');
-
-        $historyStartPoint = null;
-        if ($eventTypeSlug === 'history') {
-            $cmsContent = $this->cmsService->getSectionContent('history', 'schedule_section');
-            $historyStartPoint = $this->getStringValue($cmsContent, 'schedule_start_point', 'A giant flag near Church of St. Bavo at Grote Markt');
-        }
-
-        $locationName = $session['VenueName'] ?? '';
-        if ($eventTypeSlug === 'history' && $historyStartPoint !== null && $historyStartPoint !== '') {
-            $locationName = $historyStartPoint;
-        }
 
         return [
             'eventSessionId' => $sessionId,
-            'eventId' => $eventId,
+            'eventId' => (int)$session['EventId'],
             'eventTypeSlug' => $eventTypeSlug,
             'eventTypeId' => $eventTypeId,
             'title' => $eventTitle,
             'priceDisplay' => $priceResult['display'],
             'isPayWhatYouLike' => $priceResult['isPayWhatYouLike'],
-            'ctaLabel' => $ctaLabel,
-            'ctaUrl' => $ctaUrl,
+            'ctaLabel' => $ctaInfo['label'],
+            'ctaUrl' => $ctaInfo['url'],
             'locationName' => $locationName,
             'hallName' => $session['HallName'] ?? '',
             'dateDisplay' => $startDateTime->format('l, F j'),
             'isoDate' => $startDateTime->format('Y-m-d'),
-            'timeDisplay' => $endDateTime
-                ? $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i')
-                : $startDateTime->format('H:i'),
+            'timeDisplay' => $timeDisplay,
             'startTimeIso' => $startDateTime->format('H:i'),
             'endTimeIso' => $endDateTime ? $endDateTime->format('H:i') : '',
             'labels' => $labels,
@@ -217,6 +204,55 @@ class ScheduleService implements IScheduleService
             'historyVenue' => $session['HistoryVenue'] ?? null,
             'groupTicketInfo' => $session['GroupTicketInfo'] ?? null,
         ];
+    }
+
+    private function extractLabels(array $session, array $sessionLabels, string $eventTypeSlug): array
+    {
+        $labels = array_map(fn(EventSessionLabel $l) => $l->labelText, $sessionLabels);
+        $minAge = isset($session['MinAge']) && (int)$session['MinAge'] > 0 ? (int)$session['MinAge'] : null;
+        $maxAge = isset($session['MaxAge']) && (int)$session['MaxAge'] > 0 ? (int)$session['MaxAge'] : null;
+
+        if ($minAge !== null && $maxAge !== null && $minAge > $maxAge) {
+            [$minAge, $maxAge] = [$maxAge, $minAge];
+        }
+
+        if ($eventTypeSlug !== 'history') {
+            $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
+        }
+
+        return [$labels, $minAge, $maxAge, AgeLabelFormatter::format($minAge, $maxAge)];
+    }
+
+    private function extractPriceDisplay(array $sessionPrices, string $payWhatYouLikeText, string $currencySymbol): array
+    {
+        return $this->getPriceDisplay($sessionPrices, $payWhatYouLikeText, $currencySymbol);
+    }
+
+    private function buildCtaInfo(array $session, string $eventTypeSlug, string $defaultCtaText): array
+    {
+        $eventId = (int)$session['EventId'];
+        return [
+            'label' => !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText,
+            'url' => !empty($session['CtaUrl']) ? $session['CtaUrl'] : '/' . $eventTypeSlug . '/' . $eventId,
+        ];
+    }
+
+    private function buildLocationName(array $session, string $eventTypeSlug, ?string $historyStartPoint): string
+    {
+        if ($eventTypeSlug === 'history' && $historyStartPoint !== null && $historyStartPoint !== '') {
+            return $historyStartPoint;
+        }
+
+        return $session['VenueName'] ?? '';
+    }
+
+    private function buildTimeDisplay(\DateTimeImmutable $startDateTime, ?\DateTimeImmutable $endDateTime): string
+    {
+        if ($endDateTime === null) {
+            return $startDateTime->format('H:i');
+        }
+
+        return $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i');
     }
 
     /**

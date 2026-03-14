@@ -11,6 +11,7 @@ interface IEventSessionRepository
      *   eventId?: int,
      *   eventTypeId?: int,
      *   sessionId?: int,
+     *   sessionIds?: int[],
      *   isActive?: bool,
      *   includeCancelled?: bool,
      *   orderBy?: string,

@@ -35,6 +35,7 @@ use App\Controllers\CmsEventsController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
+use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
 use FastRoute\Dispatcher;
@@ -61,6 +62,14 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
     $r->addRoute('GET', '/restaurant/{id:\d+}', [RestaurantController::class, 'detail']);
+
+    // My Program (cart) Routes
+    $r->addRoute('GET', '/my-program', [ProgramController::class, 'index']);
+    $r->addRoute('POST', '/api/program/add', [ProgramController::class, 'add']);
+    $r->addRoute('POST', '/api/program/update-quantity', [ProgramController::class, 'updateQuantity']);
+    $r->addRoute('POST', '/api/program/update-donation', [ProgramController::class, 'updateDonation']);
+    $r->addRoute('POST', '/api/program/remove', [ProgramController::class, 'remove']);
+    $r->addRoute('POST', '/api/program/clear', [ProgramController::class, 'clear']);
 
 
     // Website Authentication Routes
