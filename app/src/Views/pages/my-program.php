@@ -25,7 +25,7 @@ $isLoggedIn = $viewModel->isLoggedIn;
         <div class="w-full lg:flex-1 p-3 sm:p-5 bg-[#ECE6DD] rounded-3xl flex flex-col gap-5">
 
             <!-- Header Bar -->
-            <div class="px-4 pt-4 bg-white/60 rounded-2xl">
+            <div class="px-4 pt-4 pb-4 bg-white/60 rounded-2xl">
                 <div class="flex items-center gap-3">
                     <svg class="w-6 h-6 sm:w-7 sm:h-7 text-pink-700 flex-shrink-0" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
