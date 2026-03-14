@@ -16,6 +16,9 @@ final readonly class GlobalUiData
     private const DEFAULT_BTN_MY_PROGRAM = 'My Program';
     private const DEFAULT_LOGIN_LABEL = 'Login';
     private const DEFAULT_LOGOUT_LABEL = 'Logout';
+    private const DEFAULT_LABEL_EVENTS_COUNT = 'events';
+    private const DEFAULT_LABEL_NO_EVENTS = 'No events scheduled';
+    private const DEFAULT_BTN_EXPLORE_TEMPLATE = 'Explore {title} Events';
 
     public function __construct(
         public string $siteName,
@@ -28,6 +31,9 @@ final readonly class GlobalUiData
         public string $btnMyProgram,
         public string $loginLabel,
         public string $logoutLabel,
+        public string $labelEventsCount,
+        public string $labelNoEvents,
+        public string $btnExploreTemplate,
         public bool   $isLoggedIn = false,
     ) {
     }
@@ -45,6 +51,9 @@ final readonly class GlobalUiData
             btnMyProgram: $content['btn_my_program'] ?? self::DEFAULT_BTN_MY_PROGRAM,
             loginLabel: $content['login_label'] ?? self::DEFAULT_LOGIN_LABEL,
             logoutLabel: $content['logout_label'] ?? self::DEFAULT_LOGOUT_LABEL,
+            labelEventsCount: $content['label_events_count'] ?? self::DEFAULT_LABEL_EVENTS_COUNT,
+            labelNoEvents: $content['label_no_events'] ?? self::DEFAULT_LABEL_NO_EVENTS,
+            btnExploreTemplate: $content['btn_explore_template'] ?? self::DEFAULT_BTN_EXPLORE_TEMPLATE,
             isLoggedIn: $isLoggedIn,
         );
     }
