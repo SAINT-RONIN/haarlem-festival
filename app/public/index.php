@@ -29,6 +29,7 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
 }
 
 use App\Controllers\AuthController;
+use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
@@ -70,6 +71,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/api/program/update-donation', [ProgramController::class, 'updateDonation']);
     $r->addRoute('POST', '/api/program/remove', [ProgramController::class, 'remove']);
     $r->addRoute('POST', '/api/program/clear', [ProgramController::class, 'clear']);
+
+    // Checkout Routes
+    $r->addRoute('GET', '/checkout', [CheckoutController::class, 'index']);
 
 
     // Website Authentication Routes

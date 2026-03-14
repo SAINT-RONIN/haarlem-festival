@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initDonationInputs();
     initRemoveButtons();
     initClearButton();
+    initCheckoutButton();
 });
 
 function getItemRows(programItemId) {
@@ -234,6 +235,17 @@ function updatePaymentOverview(data) {
             if (icon) icon.className = icon.className.replace('text-white', 'text-gray-500');
         }
     }
+}
+
+function initCheckoutButton() {
+    var checkoutBtn = document.getElementById('js-checkout-btn');
+    if (!checkoutBtn) return;
+
+    checkoutBtn.addEventListener('click', function () {
+        if (!checkoutBtn.disabled) {
+            window.location.href = '/checkout';
+        }
+    });
 }
 
 function checkEmptyState() {
