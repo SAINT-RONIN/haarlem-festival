@@ -37,6 +37,12 @@ use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
+use App\Services\CmsDashboardService;
+use App\Services\CmsEditService;
+use App\Services\JazzArtistDetailService;
+use App\Services\JazzService;
+use App\Services\MediaAssetService;
+use App\Services\SessionService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -152,7 +158,19 @@ switch ($routeInfo[0]) {
 
         // Handle controller routes
         [$controllerClass, $method] = $handler;
-        $controller = new $controllerClass();
+        $controller = match ($controllerClass) {
+            JazzController::class => new JazzController(
+                new JazzService(),
+                new JazzArtistDetailService(),
+            ),
+            CmsDashboardController::class => new CmsDashboardController(
+                new SessionService(),
+                new CmsDashboardService(),
+                new CmsEditService(),
+                new MediaAssetService(),
+            ),
+            default => new $controllerClass(),
+        };
         $controller->$method(...array_values($vars));
         break;
 }

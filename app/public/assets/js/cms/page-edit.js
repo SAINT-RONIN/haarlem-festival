@@ -1,19 +1,3 @@
-/**
- * CMS Page Edit JavaScript.
- *
- * Handles page content editing functionality including:
- * - TinyMCE initialization
- * - Character counters
- * - Accordion toggles
- * - Image uploads
- */
-
-// Configuration passed from PHP (must be set before this script loads)
-// Expected globals: contentLimits, imageLimits, pageId, pageSlug
-
-/**
- * Initialize TinyMCE for HTML editor fields.
- */
 function initTinyMCE() {
     if (typeof tinymce === 'undefined') {
         console.warn('TinyMCE not loaded');
@@ -105,7 +89,7 @@ function initAccordionToggles() {
  * @param {HTMLInputElement} fileInput - The file input element
  */
 function uploadImage(itemId, fileInput) {
-    if (typeof imageLimits === 'undefined' || typeof pageId === 'undefined' || typeof pageSlug === 'undefined') {
+    if (typeof imageLimits === 'undefined' || typeof pageId === 'undefined' || typeof pageSlug === 'undefined' || typeof csrfToken === 'undefined') {
         console.error('Required configuration not set');
         return;
     }
@@ -127,6 +111,7 @@ function uploadImage(itemId, fileInput) {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('item_id', itemId);
+    formData.append('csrf_token', csrfToken);
 
     const previewContainer = document.getElementById('preview-' + itemId);
     previewContainer.innerHTML = '<div class="text-gray-500">Uploading...</div>';

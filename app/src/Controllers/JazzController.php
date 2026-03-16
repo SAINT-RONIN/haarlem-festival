@@ -15,13 +15,10 @@ use App\ViewModels\Jazz\JazzPageViewModel;
  */
 class JazzController extends BaseController
 {
-    private JazzService $jazzService;
-    private JazzArtistDetailService $jazzArtistDetailService;
-
-    public function __construct()
-    {
-        $this->jazzService = new JazzService();
-        $this->jazzArtistDetailService = new JazzArtistDetailService();
+    public function __construct(
+        private readonly JazzService $jazzService,
+        private readonly JazzArtistDetailService $jazzArtistDetailService,
+    ) {
     }
 
     /**
@@ -46,7 +43,7 @@ class JazzController extends BaseController
         try {
             $data = $this->jazzArtistDetailService->getArtistPageDataBySlug($slug);
             $viewModel = JazzArtistDetailPageViewModel::fromData($data);
-            require __DIR__ . '/../Views/pages/jazz-artist-detail.php';
+            $this->renderView(__DIR__ . '/../Views/pages/jazz-artist-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error, 404);
         }
