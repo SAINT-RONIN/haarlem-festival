@@ -42,6 +42,69 @@ class ScheduleService implements IScheduleService
         $this->eventTypeRepository = new EventTypeRepository();
     }
 
+    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null): array
+    {
+        $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
+        $eventTypeSlug = $eventType?->slug ?? $pageSlug;
+
+        $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
+        $visibleDays = $this->cmsEventsService->getVisibleDays($eventTypeId);
+
+        $filters = [
+            'eventTypeId' => $eventTypeId,
+            'isActive' => true,
+            'eventIsActive' => true,
+            'includeCancelled' => false,
+            'groupByDay' => true,
+            'maxDays' => $maxDays,
+            'visibleDays' => $visibleDays,
+            'orderBy' => 'es.StartDateTime ASC',
+        ];
+
+        if ($eventId !== null) {
+            $filters['eventId'] = $eventId;
+        }
+
+        $scheduleData = $this->sessionRepository->findSessions($filters);
+
+        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
+        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
+        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
+
+        $dayViewModels = $this->buildScheduleDays(
+            $scheduleData,
+            $eventTypeSlug,
+            $eventTypeId,
+            $ctaButtonText,
+            $payWhatYouLikeText,
+            $currencySymbol
+        );
+
+        $days = [];
+        foreach ($dayViewModels as $day) {
+            $events = [];
+            foreach ($day->events as $event) {
+                $events[] = get_object_vars($event);
+            }
+
+            $days[] = [
+                'dayName' => $day->dayName,
+                'dateFormatted' => $day->dateFormatted,
+                'isoDate' => $day->isoDate,
+                'events' => $events,
+                'isEmpty' => $day->isEmpty,
+            ];
+        }
+
+        return [
+            'cmsContent' => $cmsContent,
+            'pageSlug' => $pageSlug,
+            'eventTypeSlug' => $eventTypeSlug,
+            'eventTypeId' => $eventTypeId,
+            'days' => $days,
+        ];
+    }
+
     /**
      * Builds a schedule section ViewModel for any event type.
      *
@@ -52,77 +115,8 @@ class ScheduleService implements IScheduleService
      */
     public function buildScheduleSection(string $pageSlug, int $eventTypeId, int $maxDays = 4): ScheduleSectionViewModel
     {
-        // Get event type info
-        $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
-        $eventTypeSlug = $eventType?->slug ?? $pageSlug;
-
-        // Get CMS content for this page's schedule section
-        $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
-        $visibleDays = $this->cmsEventsService->getVisibleDays($eventTypeId);
-
-        $scheduleData = $this->sessionRepository->findSessions([
-            'eventTypeId' => $eventTypeId,
-            'isActive' => true,
-            'eventIsActive' => true,
-            'includeCancelled' => false,
-            'groupByDay' => true,
-            'maxDays' => $maxDays,
-            'visibleDays' => $visibleDays,
-            'orderBy' => 'es.StartDateTime ASC',
-        ]);
-
-        // Extract CMS values with defaults
-        $title = $this->getStringValue($cmsContent, 'schedule_title', ucfirst($pageSlug) . ' schedule');
-        $year = $this->getStringValue($cmsContent, 'schedule_year', '2026');
-        $filtersButtonText = $this->getStringValue($cmsContent, 'schedule_filters_button_text', 'Filters');
-        $showFilters = ($cmsContent['schedule_show_filters'] ?? '1') === '1';
-        $additionalInfoTitle = $this->getStringValue($cmsContent, 'schedule_additional_info_title', 'Additional Information:');
-        $additionalInfoBody = $cmsContent['schedule_additional_info_body'] ?? '';
-        $showAdditionalInfo = ($cmsContent['schedule_show_additional_info'] ?? '0') === '1';
-        $eventCountLabel = $this->getStringValue(
-            $cmsContent,
-            'schedule_event_count_label',
-            $this->getStringValue($cmsContent, 'schedule_story_count_label', 'Events')
-        );
-        $showEventCount = ($cmsContent['schedule_show_event_count'] ??
-                $cmsContent['schedule_show_story_count'] ?? '1') === '1';
-        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
-        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
-        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
-        $noEventsText = $this->getStringValue($cmsContent, 'schedule_no_events_text', 'No events scheduled');
-
-        // Build day ViewModels
-        $days = $this->buildScheduleDays(
-            $scheduleData,
-            $eventTypeSlug,
-            $eventTypeId,
-            $ctaButtonText,
-            $payWhatYouLikeText,
-            $currencySymbol
-        );
-
-        // Count total events
-        $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
-
-        return new ScheduleSectionViewModel(
-            sectionId: $pageSlug . '-schedule',
-            title: $title,
-            year: $year,
-            eventTypeSlug: $eventTypeSlug,
-            eventTypeId: $eventTypeId,
-            filtersButtonText: $filtersButtonText,
-            showFilters: $showFilters,
-            additionalInfoTitle: $additionalInfoTitle,
-            additionalInfoBody: $additionalInfoBody,
-            showAdditionalInfo: $showAdditionalInfo,
-            eventCountLabel: $eventCountLabel,
-            eventCount: $eventCount,
-            showEventCount: $showEventCount,
-            ctaButtonText: $ctaButtonText,
-            payWhatYouLikeText: $payWhatYouLikeText,
-            currencySymbol: $currencySymbol,
-            noEventsText: $noEventsText,
-            days: $days,
+        return ScheduleSectionViewModel::fromData(
+            $this->getScheduleData($pageSlug, $eventTypeId, $maxDays)
         );
     }
 

@@ -10,29 +10,10 @@ use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Services\Interfaces\IJazzService;
-use App\ViewModels\Age\AgeLabelFormatter;
-use App\ViewModels\GlobalUiData;
-use App\ViewModels\GradientSectionData;
-use App\ViewModels\HeroData;
-use App\ViewModels\IntroSplitSectionData;
-use App\ViewModels\Jazz\ArtistCardData;
-use App\ViewModels\Schedule\ScheduleSectionViewModel;
-use App\ViewModels\Jazz\ArtistsData;
-use App\ViewModels\Jazz\BookingCallToActionData;
-use App\ViewModels\Jazz\HallData;
-use App\ViewModels\Jazz\JazzPageViewModel;
-use App\ViewModels\Jazz\PricingCardData;
-use App\ViewModels\Jazz\PricingData;
-use App\ViewModels\Jazz\ScheduleCallToActionData;
-use App\ViewModels\Jazz\ScheduleData;
-use App\ViewModels\Jazz\ScheduleDayData;
-use App\ViewModels\Jazz\ScheduleEventData;
-use App\ViewModels\Jazz\VenueData;
-use App\ViewModels\Jazz\VenuesData;
 
 /**
- * Service for Jazz page data.
- * Fetches content from CMS database.
+ * Service for Jazz page data payload.
+ * Returns plain arrays; mapping to ViewModels is done outside the service.
  */
 class JazzService implements IJazzService
 {
@@ -54,26 +35,23 @@ class JazzService implements IJazzService
         $this->sessionService = new SessionService();
     }
 
-    public function getJazzPageData(): JazzPageViewModel
+    public function getJazzPageData(): array
     {
-        // Load page and sections once
         $this->loadPageData();
 
-        return new JazzPageViewModel(
-            heroData: $this->buildHeroData(),
-            globalUi: $this->buildGlobalUi(),
-            gradientSection: $this->buildGradientSection(),
-            introSplitSection: $this->buildIntroSplitSection(),
-            venuesData: $this->buildVenuesData(),
-            pricingData: $this->buildPricingData(),
-            scheduleCtaData: $this->buildScheduleCtaData(),
-            artistsData: $this->buildArtistsData(),
-            scheduleData: $this->buildScheduleData(),
-            bookingCtaData: $this->buildBookingCtaData(),
-            scheduleSection: ScheduleSectionViewModel::fromData(
-                $this->scheduleService->getScheduleData('jazz', EventTypeId::Jazz->value, 7)
-            ),
-        );
+        return [
+            'heroData' => $this->buildHeroData(),
+            'globalUi' => $this->buildGlobalUi(),
+            'gradientSection' => $this->buildGradientSection(),
+            'introSplitSection' => $this->buildIntroSplitSection(),
+            'venuesData' => $this->buildVenuesData(),
+            'pricingData' => $this->buildPricingData(),
+            'scheduleCtaData' => $this->buildScheduleCtaData(),
+            'artistsData' => $this->buildArtistsData(),
+            'scheduleData' => $this->buildScheduleData(),
+            'bookingCtaData' => $this->buildBookingCtaData(),
+            'scheduleSectionData' => $this->scheduleService->getScheduleData('jazz', EventTypeId::Jazz->value, 7),
+        ];
     }
 
     private function loadPageData(): void
@@ -165,323 +143,285 @@ class JazzService implements IJazzService
         return $defaultUrl;
     }
 
-    private function buildHeroData(): HeroData
-    {
-        return new HeroData(
-            mainTitle: $this->getCmsItem('hero_section', 'hero_main_title', 'HAARLEM JAZZ'),
-            subtitle: $this->getCmsItem('hero_section', 'hero_subtitle', 'Experience world-class jazz performances'),
-            primaryButtonText: $this->getCmsItem('hero_section', 'hero_button_primary', 'Discover all performances'),
-            primaryButtonLink: $this->getCmsItem('hero_section', 'hero_button_primary_link', '#artists'),
-            secondaryButtonText: $this->getCmsItem('hero_section', 'hero_button_secondary', 'What is Haarlem Jazz?'),
-            secondaryButtonLink: $this->getCmsItem('hero_section', 'hero_button_secondary_link', '#intro'),
-            backgroundImageUrl: '/assets/Image/Jazz/Jazz-hero.png',
-            currentPage: 'jazz',
-        );
-    }
-
-    private function buildGlobalUi(): GlobalUiData
-    {
-        return new GlobalUiData(
-            siteName: 'Haarlem Festival',
-            navHome: 'Home',
-            navJazz: 'Jazz',
-            navDance: 'Dance',
-            navHistory: 'History',
-            navRestaurant: 'Restaurant',
-            navStorytelling: 'Storytelling',
-            btnMyProgram: 'My Program',
-            loginLabel: 'Login',
-            logoutLabel: 'Logout',
-            labelEventsCount: 'events',
-            labelNoEvents: 'No events scheduled',
-            btnExploreTemplate: 'Explore {title} Events',
-            isLoggedIn: $this->sessionService->isLoggedIn(),
-        );
-    }
-
-    private function buildGradientSection(): GradientSectionData
-    {
-        return new GradientSectionData(
-            headingText: $this->getCmsItem('gradient_section', 'gradient_heading', 'Every note carries emotion'),
-            subheadingText: $this->getCmsItem('gradient_section', 'gradient_subheading', 'A place where jazz is experienced'),
-            backgroundImageUrl: '/assets/Image/Jazz/Jazz-second-section.png',
-        );
-    }
-
-    private function buildIntroSplitSection(): IntroSplitSectionData
-    {
-        $bodyText = $this->getCmsItem('intro_section', 'intro_body', 'Welcome to Haarlem Jazz 2026');
-
-        return new IntroSplitSectionData(
-            headingText: $this->getCmsItem('intro_section', 'intro_heading', 'Haarlem moves to the rhythm of jazz'),
-            bodyText: $bodyText,
-            imageUrl: '/assets/Image/Jazz/Jazz-third-section.png',
-            imageAltText: 'Jazz musicians performing at Haarlem Festival',
-        );
-    }
-
-    private function buildVenuesData(): VenuesData
-    {
-        return new VenuesData(
-            headingText: $this->getCmsItem('venues_section', 'venues_heading', 'Festival venues'),
-            subheadingText: $this->getCmsItem('venues_section', 'venues_subheading', 'Performance Locations'),
-            descriptionText: $this->getCmsItem('venues_section', 'venues_description', 'Haarlem Jazz 2026 takes place at two main locations'),
-            venues: [$this->buildPatronaatVenue(), $this->buildGroteMarktVenue()],
-        );
-    }
-
-    private function buildPatronaatVenue(): VenueData
-    {
-        return new VenueData(
-            name: $this->getCmsItem('venues_section', 'venue_patronaat_name', 'Patronaat'),
-            addressLine1: $this->getCmsItem('venues_section', 'venue_patronaat_address1', 'Zijlsingel 2'),
-            addressLine2: $this->getCmsItem('venues_section', 'venue_patronaat_address2', '2013 DN Haarlem'),
-            contactInfo: $this->getCmsItem('venues_section', 'venue_patronaat_contact', 'E-mail/reception available'),
-            halls: $this->buildPatronaatHalls(),
-        );
-    }
-
-    private function buildPatronaatHalls(): array
+    private function buildHeroData(): array
     {
         return [
-            $this->buildHall('venue_patronaat_hall1', 'First Hall'),
-            $this->buildHall('venue_patronaat_hall2', 'Second Hall'),
-            $this->buildHall('venue_patronaat_hall3', 'Third Hall'),
+            'mainTitle' => $this->getCmsItem('hero_section', 'hero_main_title', 'HAARLEM JAZZ'),
+            'subtitle' => $this->getCmsItem('hero_section', 'hero_subtitle', 'Experience world-class jazz performances'),
+            'primaryButtonText' => $this->getCmsItem('hero_section', 'hero_button_primary', 'Discover all performances'),
+            'primaryButtonLink' => $this->getCmsItem('hero_section', 'hero_button_primary_link', '#artists'),
+            'secondaryButtonText' => $this->getCmsItem('hero_section', 'hero_button_secondary', 'What is Haarlem Jazz?'),
+            'secondaryButtonLink' => $this->getCmsItem('hero_section', 'hero_button_secondary_link', '#intro'),
+            'backgroundImageUrl' => '/assets/Image/Jazz/Jazz-hero.png',
+            'currentPage' => 'jazz',
         ];
     }
 
-    private function buildHall(string $prefix, string $defaultName): HallData
+    private function buildGlobalUi(): array
     {
-        return new HallData(
-            name: $this->getCmsItem('venues_section', $prefix . '_name', $defaultName),
-            description: $this->getCmsItem('venues_section', $prefix . '_desc', 'Intimate performances'),
-            price: '€10.00',
-            capacity: $this->getCmsItem('venues_section', $prefix . '_capacity', '150 seats'),
-        );
-    }
-
-    private function buildGroteMarktVenue(): VenueData
-    {
-        $hall = new HallData(
-            name: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_name', 'Open Air Stage'),
-            description: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_desc', 'Sunday performances are free'),
-            price: $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_price', 'FREE ENTRY'),
-            capacity: '',
-            isFree: true,
-        );
-
-        return new VenueData(
-            name: $this->getCmsItem('venues_section', 'venue_grotemarkt_name', 'Grote Markt'),
-            addressLine1: $this->getCmsItem('venues_section', 'venue_grotemarkt_location1', 'Historic Market Square'),
-            addressLine2: $this->getCmsItem('venues_section', 'venue_grotemarkt_location2', 'Haarlem City Center'),
-            contactInfo: '',
-            halls: [$hall],
-        );
-    }
-
-    private function buildPricingData(): PricingData
-    {
-        return new PricingData(
-            headingText: $this->getCmsItem('pricing_section', 'pricing_heading', 'Pricing information'),
-            subheadingText: $this->getCmsItem('pricing_section', 'pricing_subheading', 'Tickets & Passes'),
-            descriptionText: $this->getCmsItem('pricing_section', 'pricing_description', 'We offer flexible ticketing options'),
-            pricingCards: [
-                $this->buildIndividualTicketCard(),
-                $this->buildDayPassCard(),
-                $this->build3DayPassCard(),
-            ],
-        );
-    }
-
-    private function buildIndividualTicketCard(): PricingCardData
-    {
-        return new PricingCardData(
-            title: $this->getCmsItem('pricing_section', 'pricing_individual_title', 'Individual Show Tickets'),
-            price: '',
-            priceDescription: '',
-            items: [
-                $this->getCmsItem('pricing_section', 'pricing_individual_item1', 'Main Hall Shows'),
-                $this->getCmsItem('pricing_section', 'pricing_individual_item2', 'Second Hall Shows'),
-                $this->getCmsItem('pricing_section', 'pricing_individual_item3', 'Third Hall Shows'),
-            ],
-            includes: [],
-            additionalInfo: '',
-        );
-    }
-
-    private function buildDayPassCard(): PricingCardData
-    {
-        return new PricingCardData(
-            title: $this->getCmsItem('pricing_section', 'pricing_daypass_title', 'All-Access Day Pass'),
-            price: $this->getCmsItem('pricing_section', 'pricing_daypass_price', '€35.00'),
-            priceDescription: $this->getCmsItem('pricing_section', 'pricing_daypass_desc', 'Per day'),
-            items: [],
-            includes: [
-                $this->getCmsItem('pricing_section', 'pricing_daypass_include1', 'Unlimited access'),
-                $this->getCmsItem('pricing_section', 'pricing_daypass_include2', 'All performances'),
-                $this->getCmsItem('pricing_section', 'pricing_daypass_include3', 'Thu, Fri, or Sat'),
-                $this->getCmsItem('pricing_section', 'pricing_daypass_include4', 'Best value'),
-            ],
-            additionalInfo: $this->getCmsItem('pricing_section', 'pricing_daypass_info', ''),
-        );
-    }
-
-    private function build3DayPassCard(): PricingCardData
-    {
-        return new PricingCardData(
-            title: $this->getCmsItem('pricing_section', 'pricing_3day_title', 'All-Access Day Pass'),
-            price: $this->getCmsItem('pricing_section', 'pricing_3day_price', '€80.00'),
-            priceDescription: $this->getCmsItem('pricing_section', 'pricing_3day_desc', 'Thursday + Friday + Saturday'),
-            items: [],
-            includes: [
-                $this->getCmsItem('pricing_section', 'pricing_3day_include1', 'Unlimited access all 3 days'),
-                $this->getCmsItem('pricing_section', 'pricing_3day_include2', 'All venues'),
-                $this->getCmsItem(
-                    'pricing_section',
-                    'pricing_3day_include3',
-                    (AgeLabelFormatter::format(18, null) ?? '18+') . ' performances'
-                ),
-                $this->getCmsItem('pricing_section', 'pricing_3day_include4', 'Save €25'),
-            ],
-            additionalInfo: $this->getCmsItem('pricing_section', 'pricing_3day_info', ''),
-            isHighlighted: true,
-        );
-    }
-
-    private function buildScheduleCtaData(): ScheduleCallToActionData
-    {
-        return new ScheduleCallToActionData(
-            headingText: $this->getCmsItem('schedule_cta_section', 'schedule_cta_heading', 'Ready to Plan Your Festival Experience?'),
-            descriptionText: $this->getCmsItem('schedule_cta_section', 'schedule_cta_description', 'Check out the complete schedule'),
-            buttonText: $this->getCmsItem('schedule_cta_section', 'schedule_cta_button', 'View complete schedule'),
-            buttonLink: $this->getCmsItem('schedule_cta_section', 'schedule_cta_button_link', '#schedule'),
-        );
-    }
-
-    private function buildArtistsData(): ArtistsData
-    {
-        $artists = [
-            new ArtistCardData(
-                name: $this->getCmsItem('artists_section', 'artists_gumbokings_name', 'Gumbo Kings'),
-                genre: $this->getCmsItem('artists_section', 'artists_gumbokings_genre', 'New Orleans Jazz'),
-                description: $this->getCmsItem(
-                    'artists_section',
-                    'artists_gumbokings_description',
-                    'High-energy New Orleans style jazz band bringing authentic Big Easy sound to Haarlem. Known for infectious rhythms.'
-                ),
-                imageUrl: $this->getCmsImage('artists_section', 'artists_gumbokings_image', '/assets/Image/Jazz/Jazz-Gumbokings.png'),
-                performanceCount: (int)$this->getCmsItem('artists_section', 'artists_gumbokings_performance_count', '2'),
-                firstPerformance: $this->getCmsItem('artists_section', 'artists_gumbokings_first_performance', 'Thu 18:00 - Patronaat Main Hall'),
-                morePerformancesText: $this->getCmsItem('artists_section', 'artists_gumbokings_more_performances_text', '+1 more'),
-                profileUrl: '/jazz/gumbo-kings',
-            ),
-            new ArtistCardData(
-                name: $this->getCmsItem('artists_section', 'artists_evolve_name', 'Evolve'),
-                genre: $this->getCmsItem('artists_section', 'artists_evolve_genre', 'Contemporary Jazz'),
-                description: $this->getCmsItem(
-                    'artists_section',
-                    'artists_evolve_description',
-                    'Progressive jazz ensemble pushing boundaries with innovative compositions. A fresh take on modern jazz traditions.'
-                ),
-                imageUrl: $this->getCmsImage('artists_section', 'artists_evolve_image', '/assets/Image/Jazz/Jazz-evolve.png'),
-                performanceCount: (int)$this->getCmsItem('artists_section', 'artists_evolve_performance_count', '2'),
-                firstPerformance: $this->getCmsItem('artists_section', 'artists_evolve_first_performance', 'Thu 18:00 - Patronaat Main Hall'),
-                morePerformancesText: $this->getCmsItem('artists_section', 'artists_evolve_more_performances_text', '+1 more'),
-            ),
-            new ArtistCardData(
-                name: $this->getCmsItem('artists_section', 'artists_ntjam_name', 'Ntjam Rosie'),
-                genre: $this->getCmsItem('artists_section', 'artists_ntjam_genre', 'Vocal Jazz'),
-                description: $this->getCmsItem(
-                    'artists_section',
-                    'artists_ntjam_description',
-                    'Sultry vocals meet classic jazz standards. Rosie brings timeless elegance and powerful vocal performances to every show.'
-                ),
-                imageUrl: $this->getCmsImage('artists_section', 'artists_ntjam_image', '/assets/Image/Jazz/Jazz-Ntjam.png'),
-                performanceCount: (int)$this->getCmsItem('artists_section', 'artists_ntjam_performance_count', '2'),
-                firstPerformance: $this->getCmsItem('artists_section', 'artists_ntjam_first_performance', 'Thu 21:00 - Patronaat Main Hall'),
-                morePerformancesText: $this->getCmsItem('artists_section', 'artists_ntjam_more_performances_text', ''),
-                profileUrl: '/jazz/ntjam-rosie',
-            ),
+        return [
+            'siteName' => 'Haarlem Festival',
+            'navHome' => 'Home',
+            'navJazz' => 'Jazz',
+            'navDance' => 'Dance',
+            'navHistory' => 'History',
+            'navRestaurant' => 'Restaurant',
+            'navStorytelling' => 'Storytelling',
+            'btnMyProgram' => 'My Program',
+            'loginLabel' => 'Login',
+            'logoutLabel' => 'Logout',
+            'labelEventsCount' => 'events',
+            'labelNoEvents' => 'No events scheduled',
+            'btnExploreTemplate' => 'Explore {title} Events',
+            'isLoggedIn' => $this->sessionService->isLoggedIn(),
         ];
-
-        return new ArtistsData(
-            headingText: $this->getCmsItem('artists_section', 'artists_heading', 'Discover our lineup'),
-            artists: $artists,
-            currentPage: 1,
-            totalPages: 4,
-            totalArtists: 12,
-        );
     }
 
-    private function buildScheduleData(): ScheduleData
+    private function buildGradientSection(): array
     {
-        // Schedule data remains hardcoded for now (as per requirements)
-        $thursday = new ScheduleDayData(
-            dayName: 'Thursday',
-            fullDate: 'Thursday, July 25',
-            events: [
-                new ScheduleEventData('Gumbo Kings', 'Jazz', 'Patronaat • Main Hall • 300 seats', 'Thursday, July 25', '18:00 - 19:00', '€15.00'),
-                new ScheduleEventData('Evolve', 'Electronic', 'Patronaat • Main Hall • 300 seats', 'Thursday, July 25', '19:30 - 20:30', '€15.00'),
-                new ScheduleEventData('Ntjam Rosie', 'Soul', 'Patronaat • Main Hall • 300 seats', 'Thursday, July 25', '21:00 - 22:00', '€15.00'),
-                new ScheduleEventData('Wicked Jazz Sounds', 'Jazz', 'Patronaat • Main Hall • 200 seats', 'Thursday, July 25', '18:00 - 19:00', '€10.00'),
-                new ScheduleEventData('Wouter Hamel', 'Jazz', 'Patronaat • Main Hall • 200 seats', 'Thursday, July 25', '19:30 - 20:30', '€10.00'),
-                new ScheduleEventData('Joram Frazer', 'Soul', 'Patronaat • Main Hall • 200 seats', 'Thursday, July 25', '21:00 - 22:00', '€10.00'),
-            ],
-        );
-
-        $friday = new ScheduleDayData(
-            dayName: 'Friday',
-            fullDate: 'Friday, July 26',
-            events: [
-                new ScheduleEventData('Karsu', 'Jazz', 'Patronaat • Main Hall • 300 seats', 'Friday, July 26', '18:00 - 19:00', '€15.00'),
-                new ScheduleEventData('New Cool Collective', 'Jazz', 'Patronaat • Main Hall • 300 seats', 'Friday, July 26', '19:30 - 20:30', '€15.00'),
-                new ScheduleEventData('Chris Allen', 'Rock', 'Patronaat • Main Hall • 300 seats', 'Friday, July 26', '21:00 - 22:00', '€15.00'),
-                new ScheduleEventData('Eric Sanko', 'Alternative', 'Patronaat • Main Hall • 200 seats', 'Friday, July 26', '18:00 - 19:00', '€10.00'),
-                new ScheduleEventData('Ilse Huizinga', 'Jazz', 'Patronaat • Main Hall • 200 seats', 'Friday, July 26', '19:30 - 20:30', '€10.00'),
-                new ScheduleEventData('Eric Vloeimans and Hotspot', 'Jazz', 'Patronaat • Main Hall • 200 seats', 'Friday, July 26', '21:00 - 22:00', '€10.00'),
-            ],
-        );
-
-        $saturday = new ScheduleDayData(
-            dayName: 'Saturday',
-            fullDate: 'Saturday, July 27',
-            events: [
-                new ScheduleEventData('Gare du Nord', 'Jazz', 'Patronaat • Main Hall • 300 seats', 'Saturday, July 27', '18:00 - 19:00', '€15.00'),
-                new ScheduleEventData('Rilan & The Bombardiers', 'Soul', 'Patronaat • Main Hall • 300 seats', 'Saturday, July 27', '19:30 - 20:30', '€15.00'),
-                new ScheduleEventData('Soul Six', 'Soul', 'Patronaat • Main Hall • 300 seats', 'Saturday, July 27', '21:00 - 22:00', '€15.00'),
-                new ScheduleEventData('Han Bennink', 'Jazz', 'Patronaat • Main Hall • 150 seats', 'Saturday, July 27', '18:00 - 19:00', '€10.00'),
-                new ScheduleEventData('The Nordanians', 'Folk', 'Patronaat • Main Hall • 150 seats', 'Saturday, July 27', '19:30 - 20:30', '€10.00'),
-                new ScheduleEventData('Lilith Merlot', 'Alternative', 'Patronaat • Main Hall • 150 seats', 'Saturday, July 27', '21:00 - 22:00', '€10.00'),
-            ],
-        );
-
-        $sunday = new ScheduleDayData(
-            dayName: 'Sunday',
-            fullDate: 'Sunday, July 28',
-            events: [
-                new ScheduleEventData('Husk Soundsystem', 'In Dutch', 'Grote Markt • Outdoor Stage • Open Air', 'Sunday, July 28', '15:00 - 16:00', 'Free', true),
-                new ScheduleEventData('Dolvee', 'Pop', 'Grote Markt • Outdoor Stage • Open Air', 'Sunday, July 28', '17:00 - 18:00', 'Free', true),
-                new ScheduleEventData('Wicked Jazz Sounds', 'Jazz', 'Grote Markt • Outdoor Stage • Open Air', 'Sunday, July 28', '16:00 - 17:00', 'Free', true),
-                new ScheduleEventData('The Nordanians', 'Folk', 'Grote Markt • Outdoor Stage • Open Air', 'Sunday, July 28', '18:00 - 19:00', 'Free', true),
-                new ScheduleEventData('Gumbo Kings', 'Jazz', 'Grote Markt • Outdoor Stage • Open Air', 'Sunday, July 28', '19:00 - 20:00', 'Free', true),
-                new ScheduleEventData('Gare du Nord', 'Jazz', 'Grote Markt • Outdoor Stage • Open Air', 'Sunday, July 28', '20:00 - 21:00', 'Free', true),
-            ],
-        );
-
-        return new ScheduleData(
-            headingText: 'Performance schedule',
-            year: '2026',
-            filterLabel: 'Filters',
-            totalEventsText: '24 Events',
-            days: [$thursday, $friday, $saturday, $sunday],
-        );
+        return [
+            'headingText' => $this->getCmsItem('gradient_section', 'gradient_heading', 'Every note carries emotion'),
+            'subheadingText' => $this->getCmsItem('gradient_section', 'gradient_subheading', 'A place where jazz is experienced'),
+            'backgroundImageUrl' => '/assets/Image/Jazz/Jazz-second-section.png',
+        ];
     }
 
-    private function buildBookingCtaData(): BookingCallToActionData
+    private function buildIntroSplitSection(): array
     {
-        return new BookingCallToActionData(
-            headingText: $this->getCmsItem('booking_cta_section', 'booking_cta_heading', 'Book Your Experience'),
-            descriptionText: $this->getCmsItem('booking_cta_section', 'booking_cta_description', 'Secure your tickets now'),
-        );
+        return [
+            'headingText' => $this->getCmsItem('intro_section', 'intro_heading', 'Haarlem moves to the rhythm of jazz'),
+            'bodyText' => $this->getCmsItem('intro_section', 'intro_body', 'Welcome to Haarlem Jazz 2026'),
+            'imageUrl' => '/assets/Image/Jazz/Jazz-third-section.png',
+            'imageAltText' => 'Jazz musicians performing at Haarlem Festival',
+            'subsections' => null,
+            'closingLine' => null,
+        ];
+    }
+
+    private function buildVenuesData(): array
+    {
+        return [
+            'headingText' => $this->getCmsItem('venues_section', 'venues_heading', 'Festival venues'),
+            'subheadingText' => $this->getCmsItem('venues_section', 'venues_subheading', 'Performance Locations'),
+            'descriptionText' => $this->getCmsItem('venues_section', 'venues_description', 'Haarlem Jazz 2026 takes place at two main locations'),
+            'venues' => [$this->buildPatronaatVenue(), $this->buildGroteMarktVenue()],
+        ];
+    }
+
+    private function buildPatronaatVenue(): array
+    {
+        return [
+            'name' => $this->getCmsItem('venues_section', 'venue_patronaat_name', 'Patronaat'),
+            'addressLine1' => $this->getCmsItem('venues_section', 'venue_patronaat_address1', 'Zijlsingel 2'),
+            'addressLine2' => $this->getCmsItem('venues_section', 'venue_patronaat_address2', '2013 DN Haarlem'),
+            'contactInfo' => $this->getCmsItem('venues_section', 'venue_patronaat_contact', 'E-mail/reception available'),
+            'halls' => [
+                $this->buildHall('venue_patronaat_hall1', 'First Hall'),
+                $this->buildHall('venue_patronaat_hall2', 'Second Hall'),
+                $this->buildHall('venue_patronaat_hall3', 'Third Hall'),
+            ],
+            'isDark' => false,
+        ];
+    }
+
+    private function buildHall(string $prefix, string $defaultName): array
+    {
+        return [
+            'name' => $this->getCmsItem('venues_section', $prefix . '_name', $defaultName),
+            'description' => $this->getCmsItem('venues_section', $prefix . '_desc', 'Intimate performances'),
+            'price' => '€10.00',
+            'capacity' => $this->getCmsItem('venues_section', $prefix . '_capacity', '150 seats'),
+            'isFree' => false,
+        ];
+    }
+
+    private function buildGroteMarktVenue(): array
+    {
+        return [
+            'name' => $this->getCmsItem('venues_section', 'venue_grotemarkt_name', 'Grote Markt'),
+            'addressLine1' => $this->getCmsItem('venues_section', 'venue_grotemarkt_location1', 'Historic Market Square'),
+            'addressLine2' => $this->getCmsItem('venues_section', 'venue_grotemarkt_location2', 'Haarlem City Center'),
+            'contactInfo' => '',
+            'halls' => [[
+                'name' => $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_name', 'Open Air Stage'),
+                'description' => $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_desc', 'Sunday performances are free'),
+                'price' => $this->getCmsItem('venues_section', 'venue_grotemarkt_hall_price', 'FREE ENTRY'),
+                'capacity' => '',
+                'isFree' => true,
+            ]],
+            'isDark' => false,
+        ];
+    }
+
+    private function buildPricingData(): array
+    {
+        return [
+            'headingText' => $this->getCmsItem('pricing_section', 'pricing_heading', 'Pricing information'),
+            'subheadingText' => $this->getCmsItem('pricing_section', 'pricing_subheading', 'Tickets & Passes'),
+            'descriptionText' => $this->getCmsItem('pricing_section', 'pricing_description', 'We offer flexible ticketing options'),
+            'pricingCards' => [
+                [
+                    'title' => $this->getCmsItem('pricing_section', 'pricing_individual_title', 'Individual Show Tickets'),
+                    'price' => '',
+                    'priceDescription' => '',
+                    'items' => [
+                        $this->getCmsItem('pricing_section', 'pricing_individual_item1', 'Main Hall Shows'),
+                        $this->getCmsItem('pricing_section', 'pricing_individual_item2', 'Second Hall Shows'),
+                        $this->getCmsItem('pricing_section', 'pricing_individual_item3', 'Third Hall Shows'),
+                    ],
+                    'includes' => [],
+                    'additionalInfo' => '',
+                    'isHighlighted' => false,
+                ],
+                [
+                    'title' => $this->getCmsItem('pricing_section', 'pricing_daypass_title', 'All-Access Day Pass'),
+                    'price' => $this->getCmsItem('pricing_section', 'pricing_daypass_price', '€35.00'),
+                    'priceDescription' => $this->getCmsItem('pricing_section', 'pricing_daypass_desc', 'Per day'),
+                    'items' => [],
+                    'includes' => [
+                        $this->getCmsItem('pricing_section', 'pricing_daypass_include1', 'Unlimited access'),
+                        $this->getCmsItem('pricing_section', 'pricing_daypass_include2', 'All performances'),
+                        $this->getCmsItem('pricing_section', 'pricing_daypass_include3', 'Thu, Fri, or Sat'),
+                        $this->getCmsItem('pricing_section', 'pricing_daypass_include4', 'Best value'),
+                    ],
+                    'additionalInfo' => $this->getCmsItem('pricing_section', 'pricing_daypass_info', ''),
+                    'isHighlighted' => false,
+                ],
+                [
+                    'title' => $this->getCmsItem('pricing_section', 'pricing_3day_title', 'All-Access Day Pass'),
+                    'price' => $this->getCmsItem('pricing_section', 'pricing_3day_price', '€80.00'),
+                    'priceDescription' => $this->getCmsItem('pricing_section', 'pricing_3day_desc', 'Thursday + Friday + Saturday'),
+                    'items' => [],
+                    'includes' => [
+                        $this->getCmsItem('pricing_section', 'pricing_3day_include1', 'Unlimited access all 3 days'),
+                        $this->getCmsItem('pricing_section', 'pricing_3day_include2', 'All venues'),
+                        $this->getCmsItem('pricing_section', 'pricing_3day_include3', '18+ performances'),
+                        $this->getCmsItem('pricing_section', 'pricing_3day_include4', 'Save €25'),
+                    ],
+                    'additionalInfo' => $this->getCmsItem('pricing_section', 'pricing_3day_info', ''),
+                    'isHighlighted' => true,
+                ],
+            ],
+        ];
+    }
+
+    private function buildScheduleCtaData(): array
+    {
+        return [
+            'headingText' => $this->getCmsItem('schedule_cta_section', 'schedule_cta_heading', 'Ready to Plan Your Festival Experience?'),
+            'descriptionText' => $this->getCmsItem('schedule_cta_section', 'schedule_cta_description', 'Check out the complete schedule'),
+            'buttonText' => $this->getCmsItem('schedule_cta_section', 'schedule_cta_button', 'View complete schedule'),
+            'buttonLink' => $this->getCmsItem('schedule_cta_section', 'schedule_cta_button_link', '#schedule'),
+        ];
+    }
+
+    private function buildArtistsData(): array
+    {
+        return [
+            'headingText' => $this->getCmsItem('artists_section', 'artists_heading', 'Discover our lineup'),
+            'artists' => [
+                [
+                    'name' => $this->getCmsItem('artists_section', 'artists_gumbokings_name', 'Gumbo Kings'),
+                    'genre' => $this->getCmsItem('artists_section', 'artists_gumbokings_genre', 'New Orleans Jazz'),
+                    'description' => $this->getCmsItem('artists_section', 'artists_gumbokings_description', 'High-energy New Orleans style jazz band bringing authentic Big Easy sound to Haarlem. Known for infectious rhythms.'),
+                    'imageUrl' => $this->getCmsImage('artists_section', 'artists_gumbokings_image', '/assets/Image/Jazz/Jazz-Gumbokings.png'),
+                    'performanceCount' => (int)$this->getCmsItem('artists_section', 'artists_gumbokings_performance_count', '2'),
+                    'firstPerformance' => $this->getCmsItem('artists_section', 'artists_gumbokings_first_performance', 'Thu 18:00 - Patronaat Main Hall'),
+                    'morePerformancesText' => $this->getCmsItem('artists_section', 'artists_gumbokings_more_performances_text', '+1 more'),
+                    'profileUrl' => '/jazz/gumbo-kings',
+                ],
+                [
+                    'name' => $this->getCmsItem('artists_section', 'artists_evolve_name', 'Evolve'),
+                    'genre' => $this->getCmsItem('artists_section', 'artists_evolve_genre', 'Contemporary Jazz'),
+                    'description' => $this->getCmsItem('artists_section', 'artists_evolve_description', 'Progressive jazz ensemble pushing boundaries with innovative compositions. A fresh take on modern jazz traditions.'),
+                    'imageUrl' => $this->getCmsImage('artists_section', 'artists_evolve_image', '/assets/Image/Jazz/Jazz-evolve.png'),
+                    'performanceCount' => (int)$this->getCmsItem('artists_section', 'artists_evolve_performance_count', '2'),
+                    'firstPerformance' => $this->getCmsItem('artists_section', 'artists_evolve_first_performance', 'Thu 18:00 - Patronaat Main Hall'),
+                    'morePerformancesText' => $this->getCmsItem('artists_section', 'artists_evolve_more_performances_text', '+1 more'),
+                    'profileUrl' => null,
+                ],
+                [
+                    'name' => $this->getCmsItem('artists_section', 'artists_ntjam_name', 'Ntjam Rosie'),
+                    'genre' => $this->getCmsItem('artists_section', 'artists_ntjam_genre', 'Vocal Jazz'),
+                    'description' => $this->getCmsItem('artists_section', 'artists_ntjam_description', 'Sultry vocals meet classic jazz standards. Rosie brings timeless elegance and powerful vocal performances to every show.'),
+                    'imageUrl' => $this->getCmsImage('artists_section', 'artists_ntjam_image', '/assets/Image/Jazz/Jazz-Ntjam.png'),
+                    'performanceCount' => (int)$this->getCmsItem('artists_section', 'artists_ntjam_performance_count', '2'),
+                    'firstPerformance' => $this->getCmsItem('artists_section', 'artists_ntjam_first_performance', 'Thu 21:00 - Patronaat Main Hall'),
+                    'morePerformancesText' => $this->getCmsItem('artists_section', 'artists_ntjam_more_performances_text', ''),
+                    'profileUrl' => '/jazz/ntjam-rosie',
+                ],
+            ],
+            'currentPage' => 1,
+            'totalPages' => 4,
+            'totalArtists' => 12,
+        ];
+    }
+
+    private function buildScheduleData(): array
+    {
+        return [
+            'headingText' => 'Performance schedule',
+            'year' => '2026',
+            'filterLabel' => 'Filters',
+            'totalEventsText' => '24 Events',
+            'days' => [
+                [
+                    'dayName' => 'Thursday',
+                    'fullDate' => 'Thursday, July 25',
+                    'events' => [
+                        ['artistName' => 'Gumbo Kings', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Thursday, July 25', 'time' => '18:00 - 19:00', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'Evolve', 'genre' => 'Electronic', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Thursday, July 25', 'time' => '19:30 - 20:30', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'Ntjam Rosie', 'genre' => 'Soul', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Thursday, July 25', 'time' => '21:00 - 22:00', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'Wicked Jazz Sounds', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 200 seats', 'date' => 'Thursday, July 25', 'time' => '18:00 - 19:00', 'price' => '€10.00', 'isFree' => false],
+                        ['artistName' => 'Wouter Hamel', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 200 seats', 'date' => 'Thursday, July 25', 'time' => '19:30 - 20:30', 'price' => '€10.00', 'isFree' => false],
+                        ['artistName' => 'Joram Frazer', 'genre' => 'Soul', 'venue' => 'Patronaat • Main Hall • 200 seats', 'date' => 'Thursday, July 25', 'time' => '21:00 - 22:00', 'price' => '€10.00', 'isFree' => false],
+                    ],
+                ],
+                [
+                    'dayName' => 'Friday',
+                    'fullDate' => 'Friday, July 26',
+                    'events' => [
+                        ['artistName' => 'Karsu', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Friday, July 26', 'time' => '18:00 - 19:00', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'New Cool Collective', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Friday, July 26', 'time' => '19:30 - 20:30', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'Chris Allen', 'genre' => 'Rock', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Friday, July 26', 'time' => '21:00 - 22:00', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'Eric Sanko', 'genre' => 'Alternative', 'venue' => 'Patronaat • Main Hall • 200 seats', 'date' => 'Friday, July 26', 'time' => '18:00 - 19:00', 'price' => '€10.00', 'isFree' => false],
+                        ['artistName' => 'Ilse Huizinga', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 200 seats', 'date' => 'Friday, July 26', 'time' => '19:30 - 20:30', 'price' => '€10.00', 'isFree' => false],
+                        ['artistName' => 'Eric Vloeimans and Hotspot', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 200 seats', 'date' => 'Friday, July 26', 'time' => '21:00 - 22:00', 'price' => '€10.00', 'isFree' => false],
+                    ],
+                ],
+                [
+                    'dayName' => 'Saturday',
+                    'fullDate' => 'Saturday, July 27',
+                    'events' => [
+                        ['artistName' => 'Gare du Nord', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Saturday, July 27', 'time' => '18:00 - 19:00', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'Rilan & The Bombardiers', 'genre' => 'Soul', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Saturday, July 27', 'time' => '19:30 - 20:30', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'Soul Six', 'genre' => 'Soul', 'venue' => 'Patronaat • Main Hall • 300 seats', 'date' => 'Saturday, July 27', 'time' => '21:00 - 22:00', 'price' => '€15.00', 'isFree' => false],
+                        ['artistName' => 'Han Bennink', 'genre' => 'Jazz', 'venue' => 'Patronaat • Main Hall • 150 seats', 'date' => 'Saturday, July 27', 'time' => '18:00 - 19:00', 'price' => '€10.00', 'isFree' => false],
+                        ['artistName' => 'The Nordanians', 'genre' => 'Folk', 'venue' => 'Patronaat • Main Hall • 150 seats', 'date' => 'Saturday, July 27', 'time' => '19:30 - 20:30', 'price' => '€10.00', 'isFree' => false],
+                        ['artistName' => 'Lilith Merlot', 'genre' => 'Alternative', 'venue' => 'Patronaat • Main Hall • 150 seats', 'date' => 'Saturday, July 27', 'time' => '21:00 - 22:00', 'price' => '€10.00', 'isFree' => false],
+                    ],
+                ],
+                [
+                    'dayName' => 'Sunday',
+                    'fullDate' => 'Sunday, July 28',
+                    'events' => [
+                        ['artistName' => 'Husk Soundsystem', 'genre' => 'In Dutch', 'venue' => 'Grote Markt • Outdoor Stage • Open Air', 'date' => 'Sunday, July 28', 'time' => '15:00 - 16:00', 'price' => 'Free', 'isFree' => true],
+                        ['artistName' => 'Dolvee', 'genre' => 'Pop', 'venue' => 'Grote Markt • Outdoor Stage • Open Air', 'date' => 'Sunday, July 28', 'time' => '17:00 - 18:00', 'price' => 'Free', 'isFree' => true],
+                        ['artistName' => 'Wicked Jazz Sounds', 'genre' => 'Jazz', 'venue' => 'Grote Markt • Outdoor Stage • Open Air', 'date' => 'Sunday, July 28', 'time' => '16:00 - 17:00', 'price' => 'Free', 'isFree' => true],
+                        ['artistName' => 'The Nordanians', 'genre' => 'Folk', 'venue' => 'Grote Markt • Outdoor Stage • Open Air', 'date' => 'Sunday, July 28', 'time' => '18:00 - 19:00', 'price' => 'Free', 'isFree' => true],
+                        ['artistName' => 'Gumbo Kings', 'genre' => 'Jazz', 'venue' => 'Grote Markt • Outdoor Stage • Open Air', 'date' => 'Sunday, July 28', 'time' => '19:00 - 20:00', 'price' => 'Free', 'isFree' => true],
+                        ['artistName' => 'Gare du Nord', 'genre' => 'Jazz', 'venue' => 'Grote Markt • Outdoor Stage • Open Air', 'date' => 'Sunday, July 28', 'time' => '20:00 - 21:00', 'price' => 'Free', 'isFree' => true],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function buildBookingCtaData(): array
+    {
+        return [
+            'headingText' => $this->getCmsItem('booking_cta_section', 'booking_cta_heading', 'Book Your Experience'),
+            'descriptionText' => $this->getCmsItem('booking_cta_section', 'booking_cta_description', 'Secure your tickets now'),
+        ];
     }
 }

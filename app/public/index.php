@@ -51,8 +51,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Jazz page
     $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
-    $r->addRoute('GET', '/jazz/gumbo-kings', [JazzController::class, 'gumboKings']);
-    $r->addRoute('GET', '/jazz/ntjam-rosie', [JazzController::class, 'ntjamRosie']);
+    $r->addRoute('GET', '/jazz/{slug:[a-z0-9-]+}', [JazzController::class, 'detail']);
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
@@ -121,6 +120,11 @@ if (false !== $pos = strpos($uri, '?')) {
     $uri = substr($uri, 0, $pos);
 }
 $uri = rawurldecode($uri);
+
+// Normalize trailing slashes so "/jazz/" resolves to the same route as "/jazz".
+if ($uri !== '/' && str_ends_with($uri, '/')) {
+    $uri = rtrim($uri, '/');
+}
 
 // Dispatch the route
 $routeInfo = $dispatcher->dispatch($httpMethod, $uri);

@@ -26,6 +26,8 @@ final readonly class JazzArtistDetailPageViewModel
         public string $originText,
         public string $formedText,
         public string $performancesText,
+        public string $heroBackButtonText,
+        public string $heroReserveButtonText,
         public string $overviewHeading,
         public string $overviewLead,
         public string $overviewBodyPrimary,
@@ -43,13 +45,44 @@ final readonly class JazzArtistDetailPageViewModel
         public string $listenHeading,
         public string $listenSubheading,
         public string $listenDescription,
+        public string $listenPlayButtonLabel,
+        public string $listenPlayExcerptText,
         public array $tracks,
         public string $liveCtaHeading,
         public string $liveCtaDescription,
+        public string $liveCtaBookButtonText,
+        public string $liveCtaScheduleButtonText,
         public string $performancesSectionId,
         public string $performancesHeading,
         public string $performancesDescription,
         public array $performances,
     ) {
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function fromData(array $data): self
+    {
+        $albums = [];
+        foreach (($data['albums'] ?? []) as $album) {
+            $albums[] = new JazzArtistAlbumData(...$album);
+        }
+
+        $tracks = [];
+        foreach (($data['tracks'] ?? []) as $track) {
+            $tracks[] = new JazzArtistTrackData(...$track);
+        }
+
+        $performances = [];
+        foreach (($data['performances'] ?? []) as $performance) {
+            $performances[] = new ScheduleEventCardViewModel(...$performance);
+        }
+
+        $data['albums'] = $albums;
+        $data['tracks'] = $tracks;
+        $data['performances'] = $performances;
+
+        return new self(...$data);
     }
 }

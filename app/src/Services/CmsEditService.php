@@ -51,8 +51,13 @@ class CmsEditService implements ICmsEditService
         $sectionsWithItems = [];
 
         $eventNameMap = [];
-        if (($page['Slug'] ?? '') === 'storytelling-detail') {
-            $eventNameMap = $this->buildEventNameMap();
+        $pageSlug = (string)($page['Slug'] ?? '');
+        if ($pageSlug === 'storytelling-detail') {
+            $eventNameMap = $this->buildEventNameMap(EventTypeId::Storytelling->value);
+        }
+
+        if ($pageSlug === 'jazz-artist-detail') {
+            $eventNameMap = $this->buildEventNameMap(EventTypeId::Jazz->value);
         }
 
         foreach ($sections as $section) {
@@ -274,9 +279,9 @@ class CmsEditService implements ICmsEditService
      * Builds a map of section key → event title for storytelling events.
      * e.g., ['event_34' => 'Winnie de Poeh (4+)', ...]
      */
-    private function buildEventNameMap(): array
+    private function buildEventNameMap(int $eventTypeId): array
     {
-        $events = $this->eventRepository->findEvents(['eventTypeId' => EventTypeId::Storytelling->value]);
+        $events = $this->eventRepository->findEvents(['eventTypeId' => $eventTypeId]);
         $map = [];
         foreach ($events as $event) {
             $map['event_' . $event['EventId']] = $event['Title'];
