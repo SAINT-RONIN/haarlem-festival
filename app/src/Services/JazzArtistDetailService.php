@@ -5,35 +5,83 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\EventTypeId;
+use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Repositories\EventRepository;
 
 class JazzArtistDetailService
 {
     private const DETAIL_PAGE_SLUG = 'jazz-artist-detail';
+    private const SCHEDULE_MAX_DAYS = 7;
+    private const MAX_ALBUMS = 8;
+    private const MAX_TRACKS = 12;
+    private const MAX_LIST_ITEMS = 24;
+    private const SLUG_PATTERN = '/^[a-z0-9-]+$/';
 
-    private CmsService $cmsService;
-    private ScheduleService $scheduleService;
-    private EventRepository $eventRepository;
-
-    public function __construct()
-    {
-        $this->cmsService = new CmsService();
-        $this->scheduleService = new ScheduleService();
-        $this->eventRepository = new EventRepository();
+    public function __construct(
+        private readonly CmsService $cmsService,
+        private readonly ScheduleService $scheduleService,
+        private readonly EventRepository $eventRepository,
+    ) {
     }
 
     /**
-     * @throws \RuntimeException when no active jazz event exists for the slug.
+     * @throws JazzArtistDetailNotFoundException
      */
     public function getArtistPageDataBySlug(string $slug): array
     {
-        $event = $this->findJazzEventBySlug($slug);
+        $normalizedSlug = $this->normalizeAndValidateSlug($slug);
+        $event = $this->findJazzEventBySlug($normalizedSlug);
         $eventId = (int)$event['EventId'];
         $cms = $this->cmsService->getSectionContent(self::DETAIL_PAGE_SLUG, 'event_' . $eventId);
+
+        return [
+            ...$this->buildHeroData($event, $cms),
+            ...$this->buildOverviewData($event, $cms),
+            ...$this->buildSectionsData($cms),
+            'performances' => $this->buildPerformances($eventId),
+        ];
+    }
+
+    /**
+     * @throws JazzArtistDetailNotFoundException
+     */
+    private function normalizeAndValidateSlug(string $slug): string
+    {
+        $normalizedSlug = trim(strtolower($slug));
+
+        if ($normalizedSlug === '' || preg_match(self::SLUG_PATTERN, $normalizedSlug) !== 1) {
+            throw new JazzArtistDetailNotFoundException($slug);
+        }
+
+        return $normalizedSlug;
+    }
+
+    /**
+     * @throws JazzArtistDetailNotFoundException
+     */
+    private function findJazzEventBySlug(string $slug): array
+    {
+        $events = $this->eventRepository->findEvents([
+            'eventTypeId' => EventTypeId::Jazz->value,
+            'isActive' => true,
+        ]);
+
+        foreach ($events as $event) {
+            $eventTitle = (string)($event['Title'] ?? '');
+            if ($this->toSlug($eventTitle) === $slug) {
+                return $event;
+            }
+        }
+
+        throw new JazzArtistDetailNotFoundException($slug);
+    }
+
+    private function buildHeroData(array $event, array $cms): array
+    {
         $eventTitle = (string)($event['Title'] ?? '');
 
         return [
-            'heroTitle' => (string)($event['Title'] ?? $eventTitle),
+            'heroTitle' => $eventTitle,
             'heroSubtitle' => $this->coalesce($this->cmsValue($cms, 'hero_subtitle'), (string)($event['ShortDescription'] ?? '')),
             'heroBackgroundImageUrl' => $this->cmsValue($cms, 'hero_background_image'),
             'originText' => $this->cmsValue($cms, 'origin_text'),
@@ -42,17 +90,29 @@ class JazzArtistDetailService
             'heroBackButtonText' => $this->cmsValue($cms, 'hero_back_button_text'),
             'heroBackButtonUrl' => $this->cmsValue($cms, 'hero_back_button_url'),
             'heroReserveButtonText' => $this->cmsValue($cms, 'hero_reserve_button_text'),
+        ];
+    }
+
+    private function buildOverviewData(array $event, array $cms): array
+    {
+        return [
             'overviewHeading' => $this->coalesce($this->cmsValue($cms, 'overview_heading'), (string)($event['Title'] ?? '')),
             'overviewLead' => $this->coalesce($this->cmsValue($cms, 'overview_lead'), (string)($event['ShortDescription'] ?? '')),
             'overviewBodyPrimary' => $this->coalesce($this->cmsValue($cms, 'overview_body_primary'), $this->buildPrimaryOverviewFallback($event)),
             'overviewBodySecondary' => $this->cmsValue($cms, 'overview_body_secondary'),
+        ];
+    }
+
+    private function buildSectionsData(array $cms): array
+    {
+        return [
             'lineupHeading' => $this->cmsValue($cms, 'lineup_heading'),
-            'lineup' => $this->collectTextList($cms, 'lineup_'),
+            'lineup' => $this->collectTextList($cms, 'lineup_', self::MAX_LIST_ITEMS),
             'highlightsHeading' => $this->cmsValue($cms, 'highlights_heading'),
-            'highlights' => $this->collectTextList($cms, 'highlight_'),
+            'highlights' => $this->collectTextList($cms, 'highlight_', self::MAX_LIST_ITEMS),
             'photoGalleryHeading' => $this->cmsValue($cms, 'photo_gallery_heading'),
             'photoGalleryDescription' => $this->cmsValue($cms, 'photo_gallery_description'),
-            'galleryImages' => $this->collectTextList($cms, 'gallery_image_'),
+            'galleryImages' => $this->collectTextList($cms, 'gallery_image_', self::MAX_LIST_ITEMS),
             'albumsHeading' => $this->cmsValue($cms, 'albums_heading'),
             'albumsDescription' => $this->cmsValue($cms, 'albums_description'),
             'albums' => $this->buildAlbums($cms),
@@ -69,34 +129,14 @@ class JazzArtistDetailService
             'liveCtaScheduleButtonText' => $this->cmsValue($cms, 'live_cta_schedule_button_text'),
             'liveCtaScheduleButtonUrl' => $this->cmsValue($cms, 'live_cta_schedule_button_url'),
             'performancesSectionId' => $this->cmsValue($cms, 'performances_section_id'),
-            'performancesHeading' => $this->coalesce($this->cmsValue($cms, 'performances_heading'), (string)($event['Title'] ?? '')),
+            'performancesHeading' => $this->cmsValue($cms, 'performances_heading'),
             'performancesDescription' => $this->cmsValue($cms, 'performances_description'),
-            'performances' => $this->buildPerformances($eventId),
         ];
-    }
-
-    private function findJazzEventBySlug(string $slug): array
-    {
-        $normalizedSlug = trim(strtolower($slug));
-
-        $events = $this->eventRepository->findEvents([
-            'eventTypeId' => EventTypeId::Jazz->value,
-            'isActive' => true,
-        ]);
-
-        foreach ($events as $event) {
-            $eventTitle = (string)($event['Title'] ?? '');
-            if ($this->toSlug($eventTitle) === $normalizedSlug) {
-                return $event;
-            }
-        }
-
-        throw new \RuntimeException("Jazz event slug {$slug} not found.");
     }
 
     private function buildPerformances(int $eventId): array
     {
-        $scheduleData = $this->scheduleService->getScheduleData('jazz', EventTypeId::Jazz->value, 7, $eventId);
+        $scheduleData = $this->scheduleService->getScheduleData('jazz', EventTypeId::Jazz->value, self::SCHEDULE_MAX_DAYS, $eventId);
         $performances = [];
 
         foreach ($scheduleData['days'] ?? [] as $day) {
@@ -112,7 +152,7 @@ class JazzArtistDetailService
     {
         $albums = [];
 
-        for ($index = 1; $index <= 8; $index++) {
+        for ($index = 1; $index <= self::MAX_ALBUMS; $index++) {
             $title = $this->cmsValue($cms, 'album_' . $index . '_title');
             if ($title === '') {
                 continue;
@@ -134,7 +174,7 @@ class JazzArtistDetailService
     {
         $tracks = [];
 
-        for ($index = 1; $index <= 12; $index++) {
+        for ($index = 1; $index <= self::MAX_TRACKS; $index++) {
             $title = $this->cmsValue($cms, 'track_' . $index . '_title');
             if ($title === '') {
                 continue;
@@ -153,11 +193,11 @@ class JazzArtistDetailService
         return $tracks;
     }
 
-    private function collectTextList(array $cms, string $prefix): array
+    private function collectTextList(array $cms, string $prefix, int $maxItems): array
     {
         $values = [];
 
-        for ($index = 1; $index <= 24; $index++) {
+        for ($index = 1; $index <= $maxItems; $index++) {
             $value = $this->cmsValue($cms, $prefix . $index);
             if ($value !== '') {
                 $values[] = $value;
@@ -177,7 +217,6 @@ class JazzArtistDetailService
         return trim(strip_tags($descriptionHtml));
     }
 
-
     private function cmsValue(array $content, string $key): string
     {
         $value = $content[$key] ?? null;
@@ -186,11 +225,7 @@ class JazzArtistDetailService
 
     private function coalesce(string $value, string $fallback): string
     {
-        if ($value !== '') {
-            return $value;
-        }
-
-        return $fallback;
+        return $value !== '' ? $value : $fallback;
     }
 
     private function toSlug(string $value): string

@@ -39,9 +39,12 @@ use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
 use App\Services\CmsDashboardService;
 use App\Services\CmsEditService;
+use App\Services\CmsService;
 use App\Services\JazzArtistDetailService;
 use App\Services\JazzService;
 use App\Services\MediaAssetService;
+use App\Repositories\EventRepository;
+use App\Services\ScheduleService;
 use App\Services\SessionService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -161,7 +164,11 @@ switch ($routeInfo[0]) {
         $controller = match ($controllerClass) {
             JazzController::class => new JazzController(
                 new JazzService(),
-                new JazzArtistDetailService(),
+                new JazzArtistDetailService(
+                    new CmsService(),
+                    new ScheduleService(),
+                    new EventRepository(),
+                ),
             ),
             CmsDashboardController::class => new CmsDashboardController(
                 new SessionService(),
