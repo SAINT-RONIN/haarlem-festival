@@ -9,6 +9,7 @@
 
 $eventId = 'event-' . $dayIndex . '-' . $eventIndex;
 $isHistoryEvent = $event->eventTypeSlug === 'history';
+$isJazzEvent = $event->eventTypeSlug === 'jazz';
 ?>
 
 <li class="w-full">
@@ -154,12 +155,29 @@ $isHistoryEvent = $event->eventTypeSlug === 'history';
                             <?php endif; ?>
                             <?= htmlspecialchars($event->priceDisplay) ?>
                         </span>
-                        <a href="<?= htmlspecialchars($event->ctaUrl) ?>"
-                           class="px-2.5 py-[5px] bg-slate-800 hover:bg-red rounded-[10px] border border-slate-800 hover:border-red flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2">
-                            <span class="text-center text-stone-100 text-lg sm:text-xl font-normal font-['Montserrat']">
-                                <?= htmlspecialchars($event->ctaLabel) ?>
-                            </span>
-                        </a>
+                        <?php if ($isJazzEvent): ?>
+                            <button
+                                type="button"
+                                data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
+                                data-price="<?= htmlspecialchars($event->priceDisplay) ?>"
+                                data-is-pay-what-you-like="<?= $event->isPayWhatYouLike ? '1' : '0' ?>"
+                                data-confirm-text="Confirm selection"
+                                data-adding-text="Adding..."
+                                data-success-text="Added to program"
+                                class="px-2.5 py-[5px] bg-slate-800 hover:bg-red rounded-[10px] border border-slate-800 hover:border-red flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2"
+                            >
+                                <span class="text-center text-stone-100 text-lg sm:text-xl font-normal font-['Montserrat']">
+                                    <?= htmlspecialchars($event->ctaLabel) ?>
+                                </span>
+                            </button>
+                        <?php else: ?>
+                            <a href="<?= htmlspecialchars($event->ctaUrl) ?>"
+                               class="px-2.5 py-[5px] bg-slate-800 hover:bg-red rounded-[10px] border border-slate-800 hover:border-red flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2">
+                                <span class="text-center text-stone-100 text-lg sm:text-xl font-normal font-['Montserrat']">
+                                    <?= htmlspecialchars($event->ctaLabel) ?>
+                                </span>
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
