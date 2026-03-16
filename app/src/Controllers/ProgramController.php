@@ -166,7 +166,7 @@ class ProgramController extends BaseController
         return $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
     }
 
-    private function readJsonBody(): array
+    protected function readJsonBody(): array
     {
         $raw = file_get_contents('php://input');
         $body = json_decode($raw ?: '', true);

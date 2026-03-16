@@ -5,52 +5,150 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\CmsService;
+use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
+use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICmsService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
-use App\Services\ProgramService;
-use App\Services\SessionService;
+use App\ViewModels\Program\CheckoutCancelPageViewModel;
 use App\ViewModels\Program\CheckoutPageViewModel;
+use App\ViewModels\Program\CheckoutSuccessPageViewModel;
 
 class CheckoutController extends BaseController
 {
     private IProgramService $programService;
     private ICmsService $cmsService;
     private ISessionService $sessionService;
+    private ICheckoutService $checkoutService;
+    private IStripeWebhookRequestFactory $stripeWebhookRequestFactory;
 
     public function __construct(
-        ?IProgramService $programService = null,
-        ?ICmsService $cmsService = null,
-        ?ISessionService $sessionService = null,
+        IProgramService $programService,
+        ICmsService $cmsService,
+        ISessionService $sessionService,
+        ICheckoutService $checkoutService,
+        IStripeWebhookRequestFactory $stripeWebhookRequestFactory,
     ) {
-        $this->programService = $programService ?? new ProgramService();
-        $this->cmsService = $cmsService ?? new CmsService();
-        $this->sessionService = $sessionService ?? new SessionService();
+        $this->programService = $programService;
+        $this->cmsService = $cmsService;
+        $this->sessionService = $sessionService;
+        $this->checkoutService = $checkoutService;
+        $this->stripeWebhookRequestFactory = $stripeWebhookRequestFactory;
     }
 
     public function index(): void
     {
         try {
-            $this->sessionService->start();
-            $sessionKey = session_id();
-            $isLoggedIn = $this->sessionService->isLoggedIn();
-            $userId = $isLoggedIn ? $this->sessionService->getUserId() : null;
+            $sessionKey = $this->getSessionKey();
+            $userId = $this->getLoggedInUserId();
+            $isLoggedIn = $userId !== null;
 
             $programData = $this->programService->getProgramData($sessionKey, $userId);
 
             if ($programData['items'] === []) {
-                header('Location: /my-program');
+                $this->redirect('/my-program');
                 return;
             }
 
             $cmsContent = $this->cmsService->getSectionContent('checkout', 'main');
-
             $viewModel = CheckoutPageViewModel::fromServiceData($programData, $cmsContent, $isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    public function createSession(): void
+    {
+        try {
+            $sessionKey = $this->getSessionKey();
+            $userId = $this->requireAuthenticatedUserId();
+
+            $payload = $this->readJsonBody();
+            $result = $this->checkoutService->createCheckoutSession($sessionKey, $userId, $payload);
+
+            $this->json([
+                'success' => true,
+                'redirectUrl' => $result['redirectUrl'],
+            ], 200);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error, 400);
+        }
+    }
+
+    public function success(): void
+    {
+        try {
+            $sessionId = $this->readStringQueryParam('session_id', 255);
+            $sessionSummary = $sessionId !== null ? $this->checkoutService->getSessionSummary($sessionId) : null;
+            $viewModel = new CheckoutSuccessPageViewModel(
+                $sessionSummary,
+                $this->getLoggedInUserId() !== null,
+            );
+
+            $this->renderView(__DIR__ . '/../Views/pages/checkout-success.php', $viewModel);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
+
+    public function cancel(): void
+    {
+        try {
+            $orderId = $this->readPositiveIntQueryParam('order_id');
+            $paymentId = $this->readPositiveIntQueryParam('payment_id');
+
+            $cancelResult = $this->checkoutService->handleCancel($orderId, $paymentId);
+            $viewModel = new CheckoutCancelPageViewModel(
+                $cancelResult,
+                $this->getLoggedInUserId() !== null,
+            );
+
+            $this->renderView(__DIR__ . '/../Views/pages/checkout-cancel.php', $viewModel);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
+
+    public function webhook(): void
+    {
+        try {
+            $webhookRequest = $this->stripeWebhookRequestFactory->createFromGlobals();
+
+            $result = $this->checkoutService->handleWebhook(
+                $webhookRequest->payload,
+                $webhookRequest->signatureHeader,
+            );
+
+            $this->json([
+                'received' => true,
+                'processed' => $result['processed'],
+                'eventId' => $result['eventId'],
+                'eventType' => $result['eventType'],
+            ], 200);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error, 400);
+        }
+    }
+
+    private function getSessionKey(): string
+    {
+        return $this->sessionService->getSessionId();
+    }
+
+    private function getLoggedInUserId(): ?int
+    {
+        return $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
+    }
+
+    private function requireAuthenticatedUserId(): int
+    {
+        $userId = $this->getLoggedInUserId();
+        if ($userId === null) {
+            throw new \RuntimeException('Please log in to continue checkout.');
+        }
+
+        return $userId;
     }
 }

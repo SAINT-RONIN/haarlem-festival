@@ -41,4 +41,6 @@ interface IProgramRepository
     public function removeItem(int $programItemId): void;
 
     public function clearProgram(int $programId): void;
+
+    public function markCheckedOut(int $programId): void;
 }

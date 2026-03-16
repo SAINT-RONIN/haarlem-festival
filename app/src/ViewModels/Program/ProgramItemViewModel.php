@@ -50,7 +50,7 @@ final readonly class ProgramItemViewModel
         $isPayWhatYouLike = (bool)$item['isPayWhatYouLike'];
 
         $lineTotal = ($basePrice * $quantity) + $donationAmount;
-        $priceDisplay = $isPayWhatYouLike ? 'Free' : self::formatPrice($basePrice);
+        $priceDisplay = ($isPayWhatYouLike && $basePrice <= 0.0) ? 'Free' : self::formatPrice($basePrice);
 
         return new self(
             programItemId: (int)$item['programItemId'],

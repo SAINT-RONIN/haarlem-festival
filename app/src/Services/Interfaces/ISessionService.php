@@ -73,4 +73,11 @@ interface ISessionService
      * Validates a CSRF token for a form scope.
      */
     public function isValidCsrfToken(string $scope, ?string $token): bool;
+
+    /**
+     * Returns the active session ID.
+     *
+     * @throws \RuntimeException when session has not been started
+     */
+    public function getSessionId(): string;
 }

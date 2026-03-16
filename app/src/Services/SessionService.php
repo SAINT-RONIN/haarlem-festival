@@ -169,4 +169,16 @@ class SessionService implements ISessionService
         $expected = $_SESSION[self::CSRF_KEY][$scope] ?? null;
         return is_string($expected) && hash_equals($expected, $token);
     }
+
+    public function getSessionId(): string
+    {
+        $this->start();
+
+        $sessionId = session_id();
+        if ($sessionId === '') {
+            throw new \RuntimeException('Session has not been initialized for this request.');
+        }
+
+        return $sessionId;
+    }
 }

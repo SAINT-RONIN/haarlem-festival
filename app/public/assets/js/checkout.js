@@ -2,7 +2,7 @@
  * Checkout page interactions:
  * - Payment method selection (radio highlight)
  * - Form validation
- * - Pay button triggers Stripe (placeholder for now)
+ * - Pay button creates Stripe Checkout Session and redirects
  */
 document.addEventListener('DOMContentLoaded', function () {
     initPaymentMethodHighlight();
@@ -42,9 +42,14 @@ function initPayButton() {
     var payBtn = document.getElementById('js-pay-btn');
     if (!payBtn) return;
 
+    var isDisabledByServer = payBtn.hasAttribute('disabled');
+    if (isDisabledByServer) return;
+
     payBtn.addEventListener('click', function () {
         var form = document.getElementById('js-checkout-form');
         if (!form) return;
+
+        clearErrorMessage();
 
         // Validate required fields
         var inputs = form.querySelectorAll('input[required]');
@@ -61,7 +66,10 @@ function initPayButton() {
             }
         });
 
-        if (!isValid) return;
+        if (!isValid) {
+            showErrorMessage('Please complete all required fields.');
+            return;
+        }
 
         var selectedMethod = document.querySelector('input[name="paymentMethod"]:checked');
         var saveDetails = document.querySelector('input[name="saveDetails"]');
@@ -74,27 +82,84 @@ function initPayButton() {
             saveDetails: saveDetails ? saveDetails.checked : false
         };
 
-        payBtn.disabled = true;
         var span = payBtn.querySelector('span');
+        var originalLabel = span ? span.textContent : 'Pay';
+
+        payBtn.disabled = true;
         if (span) span.textContent = 'Processing...';
 
         fetch('/api/checkout/create-session', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify(payload)
         })
-            .then(function (response) { return response.json(); })
-            .then(function (data) {
-                if (data.success && data.redirectUrl) {
-                    window.location.href = data.redirectUrl;
-                } else {
-                    payBtn.disabled = false;
-                    if (span) span.textContent = 'Pay';
-                }
+            .then(function (response) {
+                return response.text().then(function (rawBody) {
+                    var data = parseApiJson(rawBody);
+
+                    if (!data) {
+                        data = {
+                            success: false,
+                            error: 'Unexpected server response: ' + rawBody.substring(0, 300)
+                        };
+                    }
+
+                    return { ok: response.ok, data: data };
+                });
             })
-            .catch(function () {
+            .then(function (result) {
+                if (result.ok && result.data.success && result.data.redirectUrl) {
+                    window.location.href = result.data.redirectUrl;
+                    return;
+                }
+
+                var message = result.data && result.data.error ? result.data.error : 'Checkout failed. Please try again.';
+                throw new Error(message);
+            })
+            .catch(function (error) {
+                showErrorMessage(error.message || 'Checkout failed. Please try again.');
                 payBtn.disabled = false;
-                if (span) span.textContent = 'Pay';
+                if (span) span.textContent = originalLabel;
             });
     });
+}
+
+function parseApiJson(rawBody) {
+    try {
+        return JSON.parse(rawBody);
+    } catch (e) {
+        // Recover when server output has extra bytes before/after the JSON payload.
+        var trimmed = rawBody.trim();
+        var start = trimmed.indexOf('{');
+        var end = trimmed.lastIndexOf('}');
+
+        if (start === -1 || end === -1 || end <= start) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(trimmed.substring(start, end + 1));
+        } catch (innerError) {
+            return null;
+        }
+    }
+}
+
+function showErrorMessage(message) {
+    var errorEl = document.getElementById('js-checkout-error');
+    if (!errorEl) return;
+
+    errorEl.textContent = message;
+    errorEl.classList.remove('hidden');
+}
+
+function clearErrorMessage() {
+    var errorEl = document.getElementById('js-checkout-error');
+    if (!errorEl) return;
+
+    errorEl.textContent = '';
+    errorEl.classList.add('hidden');
 }

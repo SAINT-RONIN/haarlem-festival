@@ -21,12 +21,24 @@ final class ControllerErrorResponder
 
     public static function respondJson(\Throwable $error, int $statusCode = 500): void
     {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         http_response_code($statusCode);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'error' => $error->getMessage(),
-        ]);
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            echo json_encode([
+                'success' => false,
+                'error' => $error->getMessage(),
+            ], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            http_response_code(500);
+            echo '{"success":false,"error":"Unexpected server error."}';
+        }
+
+        exit;
     }
 
     private static function expectsJson(): bool
