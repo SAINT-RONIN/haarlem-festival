@@ -20,4 +20,6 @@ $includeNav = false;
     <?php require __DIR__ . '/../partials/jazz/detail/performances-section.php'; ?>
 </main>
 
+<script src="/assets/js/add-to-program.js"></script>
+
 <?php require __DIR__ . '/../partials/footer.php'; ?>
