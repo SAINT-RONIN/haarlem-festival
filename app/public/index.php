@@ -29,23 +29,16 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
 }
 
 use App\Controllers\AuthController;
+use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
+use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
-use App\Services\CmsDashboardService;
-use App\Services\CmsEditService;
-use App\Services\CmsService;
-use App\Services\JazzArtistDetailService;
-use App\Services\JazzService;
-use App\Services\MediaAssetService;
-use App\Repositories\EventRepository;
-use App\Services\ScheduleService;
-use App\Services\SessionService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -60,7 +53,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Jazz page
     $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
-    $r->addRoute('GET', '/jazz/{slug:[a-z0-9-]+}', [JazzController::class, 'detail']);
+    $r->addRoute('GET', '/jazz/gumbo-kings', [JazzController::class, 'gumboKings']);
+    $r->addRoute('GET', '/jazz/ntjam-rosie', [JazzController::class, 'ntjamRosie']);
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
@@ -68,6 +62,21 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
+    $r->addRoute('GET', '/restaurant/{id:\d+}', [RestaurantController::class, 'detail']);
+
+    // My Program (cart) Routes
+    $r->addRoute('GET', '/my-program', [ProgramController::class, 'index']);
+    // Route aliases to prevent user-facing 404s from variant links.
+    $r->addRoute('GET', '/my program', [ProgramController::class, 'index']);
+    $r->addRoute('GET', '/program', [ProgramController::class, 'index']);
+    $r->addRoute('POST', '/api/program/add', [ProgramController::class, 'add']);
+    $r->addRoute('POST', '/api/program/update-quantity', [ProgramController::class, 'updateQuantity']);
+    $r->addRoute('POST', '/api/program/update-donation', [ProgramController::class, 'updateDonation']);
+    $r->addRoute('POST', '/api/program/remove', [ProgramController::class, 'remove']);
+    $r->addRoute('POST', '/api/program/clear', [ProgramController::class, 'clear']);
+
+    // Checkout Routes
+    $r->addRoute('GET', '/checkout', [CheckoutController::class, 'index']);
 
 
     // Website Authentication Routes
@@ -130,7 +139,7 @@ if (false !== $pos = strpos($uri, '?')) {
 }
 $uri = rawurldecode($uri);
 
-// Normalize trailing slashes so "/jazz/" resolves to the same route as "/jazz".
+// Normalize trailing slashes so /my-program/ matches /my-program.
 if ($uri !== '/' && str_ends_with($uri, '/')) {
     $uri = rtrim($uri, '/');
 }
@@ -161,23 +170,7 @@ switch ($routeInfo[0]) {
 
         // Handle controller routes
         [$controllerClass, $method] = $handler;
-        $controller = match ($controllerClass) {
-            JazzController::class => new JazzController(
-                new JazzService(),
-                new JazzArtistDetailService(
-                    new CmsService(),
-                    new ScheduleService(),
-                    new EventRepository(),
-                ),
-            ),
-            CmsDashboardController::class => new CmsDashboardController(
-                new SessionService(),
-                new CmsDashboardService(),
-                new CmsEditService(),
-                new MediaAssetService(),
-            ),
-            default => new $controllerClass(),
-        };
+        $controller = new $controllerClass();
         $controller->$method(...array_values($vars));
         break;
 }
