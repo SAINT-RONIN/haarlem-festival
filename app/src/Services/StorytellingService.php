@@ -9,6 +9,7 @@ use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionRepository;
 use App\Repositories\MediaAssetRepository;
+use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\IStorytellingService;
 
 class StorytellingService implements IStorytellingService
@@ -18,7 +19,7 @@ class StorytellingService implements IStorytellingService
     private const SCHEDULE_MAX_DAYS = 7;
 
     private CmsService $cmsService;
-    private ScheduleService $scheduleService;
+    private IScheduleService $scheduleService;
     private EventRepository $eventRepository;
     private EventSessionRepository $sessionRepository;
     private EventSessionLabelRepository $labelRepository;
