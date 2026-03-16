@@ -39,6 +39,15 @@ use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
+use App\Repositories\EventRepository;
+use App\Services\CmsDashboardService;
+use App\Services\CmsEditService;
+use App\Services\CmsService;
+use App\Services\JazzArtistDetailService;
+use App\Services\JazzService;
+use App\Services\MediaAssetService;
+use App\Services\ScheduleService;
+use App\Services\SessionService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -53,8 +62,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Jazz page
     $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
-    $r->addRoute('GET', '/jazz/gumbo-kings', [JazzController::class, 'gumboKings']);
-    $r->addRoute('GET', '/jazz/ntjam-rosie', [JazzController::class, 'ntjamRosie']);
+    $r->addRoute('GET', '/jazz/{slug:[a-z0-9-]+}', [JazzController::class, 'detail']);
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
@@ -170,7 +178,23 @@ switch ($routeInfo[0]) {
 
         // Handle controller routes
         [$controllerClass, $method] = $handler;
-        $controller = new $controllerClass();
+        $controller = match ($controllerClass) {
+            JazzController::class => new JazzController(
+                new JazzService(),
+                new JazzArtistDetailService(
+                    new CmsService(),
+                    new ScheduleService(),
+                    new EventRepository(),
+                ),
+            ),
+            CmsDashboardController::class => new CmsDashboardController(
+                new SessionService(),
+                new CmsDashboardService(),
+                new CmsEditService(),
+                new MediaAssetService(),
+            ),
+            default => new $controllerClass(),
+        };
         $controller->$method(...array_values($vars));
         break;
 }
