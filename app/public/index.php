@@ -180,12 +180,17 @@ switch ($routeInfo[0]) {
         [$controllerClass, $method] = $handler;
         $controller = match ($controllerClass) {
             JazzController::class => new JazzController(
-                new JazzService(),
+                new JazzService(
+                    new CmsService(),
+                    new ScheduleService(),
+                ),
                 new JazzArtistDetailService(
                     new CmsService(),
                     new ScheduleService(),
                     new EventRepository(),
                 ),
+                new CmsService(),
+                new SessionService(),
             ),
             CmsDashboardController::class => new CmsDashboardController(
                 new SessionService(),

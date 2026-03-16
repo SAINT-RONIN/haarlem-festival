@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Event;
+use App\Models\JazzArtistDetailEvent;
 
 interface IEventRepository
 {
@@ -19,6 +20,8 @@ interface IEventRepository
      * @return array<int, array<string, mixed>>
      */
     public function findEvents(array $filters = []): array;
+
+    public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent;
 
     public function findById(int $eventId): ?Event;
 

@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Enums\EventTypeId;
 use App\Infrastructure\Database;
 use App\Models\Event;
+use App\Models\JazzArtistDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
 
 class EventRepository implements IEventRepository
 {
     private PDO $pdo;
+    private ?bool $hasSlugColumn = null;
 
     public function __construct()
     {
@@ -83,6 +86,104 @@ class EventRepository implements IEventRepository
         $stmt->execute($params);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent
+    {
+        if (!$this->eventTableHasSlugColumn()) {
+            return $this->findActiveJazzByDerivedSlug($slug);
+        }
+
+        $stmt = $this->pdo->prepare('
+            SELECT
+                e.EventId,
+                e.Title,
+                e.ShortDescription,
+                e.LongDescriptionHtml,
+                e.Slug
+            FROM Event e
+            WHERE e.EventTypeId = :eventTypeId
+              AND e.IsActive = 1
+              AND e.Slug = :slug
+            LIMIT 1
+        ');
+
+        $stmt->execute([
+            'eventTypeId' => EventTypeId::Jazz->value,
+            'slug' => $slug,
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (is_array($row)) {
+            return JazzArtistDetailEvent::fromRow($row);
+        }
+
+        // Backward compatibility for environments where the Slug column exists but is not fully backfilled yet.
+        return $this->findActiveJazzByDerivedSlug($slug);
+    }
+
+    private function eventTableHasSlugColumn(): bool
+    {
+        if ($this->hasSlugColumn !== null) {
+            return $this->hasSlugColumn;
+        }
+
+        $stmt = $this->pdo->prepare('
+            SELECT COUNT(*)
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = :tableName
+              AND COLUMN_NAME = :columnName
+        ');
+        $stmt->execute([
+            'tableName' => 'Event',
+            'columnName' => 'Slug',
+        ]);
+
+        $this->hasSlugColumn = ((int)$stmt->fetchColumn()) > 0;
+        return $this->hasSlugColumn;
+    }
+
+    private function findActiveJazzByDerivedSlug(string $slug): ?JazzArtistDetailEvent
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT
+                e.EventId,
+                e.Title,
+                e.ShortDescription,
+                e.LongDescriptionHtml,
+                \'\' AS Slug
+            FROM Event e
+            WHERE e.EventTypeId = :eventTypeId
+              AND e.IsActive = 1
+            ORDER BY e.EventId ASC
+        ');
+        $stmt->execute(['eventTypeId' => EventTypeId::Jazz->value]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $title = (string)($row['Title'] ?? '');
+            if ($this->toSlug($title) !== $slug) {
+                continue;
+            }
+
+            $row['Slug'] = $slug;
+            return JazzArtistDetailEvent::fromRow($row);
+        }
+
+        return null;
+    }
+
+    private function toSlug(string $value): string
+    {
+        $lower = strtolower(trim($value));
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $lower);
+
+        return trim((string)$slug, '-');
     }
 
     public function findById(int $eventId): ?Event

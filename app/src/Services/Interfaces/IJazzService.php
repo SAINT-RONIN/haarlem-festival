@@ -10,9 +10,9 @@ namespace App\Services\Interfaces;
 interface IJazzService
 {
     /**
-     * Builds the Jazz page payload with all required data.
+     * Builds the Jazz page domain payload.
      *
-     * @return array<string, mixed> Prepared data for Jazz view-model mapping
+     * @return array<string, mixed> Raw Jazz section content and schedule data
      */
     public function getJazzPageData(): array;
 }

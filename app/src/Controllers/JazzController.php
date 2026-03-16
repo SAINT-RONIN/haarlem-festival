@@ -6,7 +6,9 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\JazzArtistDetailService;
-use App\Services\JazzService;
+use App\Services\Interfaces\ICmsService;
+use App\Services\Interfaces\IJazzService;
+use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Jazz\JazzArtistDetailPageViewModel;
 use App\ViewModels\Jazz\JazzPageViewModel;
 
@@ -16,8 +18,10 @@ use App\ViewModels\Jazz\JazzPageViewModel;
 class JazzController extends BaseController
 {
     public function __construct(
-        private readonly JazzService $jazzService,
+        private readonly IJazzService $jazzService,
         private readonly JazzArtistDetailService $jazzArtistDetailService,
+        private readonly ICmsService $cmsService,
+        private readonly ISessionService $sessionService,
     ) {
     }
 
@@ -28,7 +32,7 @@ class JazzController extends BaseController
     {
         try {
             $data = $this->jazzService->getJazzPageData();
-            $viewModel = JazzPageViewModel::fromData($data);
+            $viewModel = JazzPageViewModel::fromDomainData($this->enrichWithSharedData($data));
             $this->renderPage(__DIR__ . '/../Views/pages/jazz.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -42,10 +46,26 @@ class JazzController extends BaseController
     {
         try {
             $data = $this->jazzArtistDetailService->getArtistPageDataBySlug($slug);
-            $viewModel = JazzArtistDetailPageViewModel::fromData($data);
+            $viewModel = JazzArtistDetailPageViewModel::fromDomainData($data);
+            // Detail page uses a dedicated view model and does not rely on BaseViewModel globals.
             $this->renderView(__DIR__ . '/../Views/pages/jazz-artist-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error, 404);
         }
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private function enrichWithSharedData(array $data): array
+    {
+        $globalUiResult = $this->cmsService->getGlobalUiContent();
+        $data['globalUiContent'] = is_array($globalUiResult['content'] ?? null)
+            ? $globalUiResult['content']
+            : [];
+        $data['isLoggedIn'] = $this->sessionService->isLoggedIn();
+
+        return $data;
     }
 }
