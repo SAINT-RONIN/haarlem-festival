@@ -52,6 +52,14 @@ interface IUserAccountRepository
     public function create(array $data): int;
 
     /**
+     * Finds a user by ID.
+     *
+     * @param int $id User ID
+     * @return UserAccount|null User model or null if not found
+     */
+    public function findById(int $id): ?UserAccount;
+
+    /**
      * Updates a user's password hash.
      *
      * @param int $userId User ID
