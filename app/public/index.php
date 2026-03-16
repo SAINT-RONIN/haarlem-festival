@@ -66,6 +66,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // My Program (cart) Routes
     $r->addRoute('GET', '/my-program', [ProgramController::class, 'index']);
+    // Route aliases to prevent user-facing 404s from variant links.
+    $r->addRoute('GET', '/my program', [ProgramController::class, 'index']);
+    $r->addRoute('GET', '/program', [ProgramController::class, 'index']);
     $r->addRoute('POST', '/api/program/add', [ProgramController::class, 'add']);
     $r->addRoute('POST', '/api/program/update-quantity', [ProgramController::class, 'updateQuantity']);
     $r->addRoute('POST', '/api/program/update-donation', [ProgramController::class, 'updateDonation']);
@@ -135,6 +138,11 @@ if (false !== $pos = strpos($uri, '?')) {
     $uri = substr($uri, 0, $pos);
 }
 $uri = rawurldecode($uri);
+
+// Normalize trailing slashes so /my-program/ matches /my-program.
+if ($uri !== '/' && str_ends_with($uri, '/')) {
+    $uri = rtrim($uri, '/');
+}
 
 // Dispatch the route
 $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
