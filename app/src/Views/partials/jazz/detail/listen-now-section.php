@@ -24,7 +24,7 @@
             <?php foreach ($viewModel->tracks as $track): ?>
                 <article class="bg-white rounded-xl shadow-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-4 sm:gap-5">
                     <img src="<?= htmlspecialchars($track->imageUrl) ?>"
-                         alt="<?= htmlspecialchars($track->title) ?> track artwork"
+                         alt="<?= htmlspecialchars(trim($track->title . ' ' . $viewModel->listenTrackArtworkAltSuffix)) ?>"
                          class="w-full sm:w-28 md:w-36 lg:w-40 aspect-square rounded-lg object-cover">
 
                     <div class="flex-1 flex flex-col gap-2">
