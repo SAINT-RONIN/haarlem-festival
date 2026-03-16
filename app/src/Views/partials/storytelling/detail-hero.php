@@ -53,7 +53,7 @@ $isLoggedIn = $globalUi->isLoggedIn;
 
                     <span class="hidden xl:block w-px h-6 bg-sand/30 mx-1 2xl:mx-2" aria-hidden="true"></span>
 
-                    <a href="/program"
+                    <a href="/my-program"
                        class="w-full xl:w-auto px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         <i data-lucide="shopping-cart" class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200" aria-hidden="true"></i>
                         <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200"><?= htmlspecialchars($globalUi->btnMyProgram) ?></span>
