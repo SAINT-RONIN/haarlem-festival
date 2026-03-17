@@ -260,6 +260,18 @@ class CmsEventsController
             $currentView = 'schedule-days';
             $eventTypes = $this->eventsService->getEventTypes();
             $dayConfigs = $this->eventsService->getScheduleDayConfigs();
+
+            $globalConfigs = [];
+            $typeConfigs = [];
+            foreach ($dayConfigs as $config) {
+                $eventTypeId = $config['EventTypeId'];
+                if ($eventTypeId === null) {
+                    $globalConfigs[(int)$config['DayOfWeek']] = $config;
+                } else {
+                    $typeConfigs[(int)$eventTypeId][(int)$config['DayOfWeek']] = $config;
+                }
+            }
+
             $successMessage = $_GET['success'] ?? null;
             $errorMessage = $_GET['error'] ?? null;
             require __DIR__ . '/../Views/pages/cms/schedule-days.php';
@@ -272,7 +284,10 @@ class CmsEventsController
     {
         try {
             CmsAuthController::requireAdmin();
-            $eventTypeId = (int)($_POST['EventTypeId'] ?? 0);
+            $rawEventTypeId = $_POST['EventTypeId'] ?? null;
+            $eventTypeId = ($rawEventTypeId !== null && $rawEventTypeId !== '' && $rawEventTypeId !== '0')
+                ? (int)$rawEventTypeId
+                : null;
             $dayOfWeek = (int)($_POST['DayOfWeek'] ?? 0);
             $isVisible = (int)($_POST['IsVisible'] ?? 1);
             $this->eventsService->setScheduleDayVisibility($eventTypeId, $dayOfWeek, $isVisible === 1);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
 use App\ViewModels\GradientSectionData;
@@ -46,13 +47,16 @@ class RestaurantService implements IRestaurantService
 
     private CmsService $cmsService;
     private RestaurantRepository $restaurantRepository;
+    private RestaurantImageRepository $restaurantImageRepository;
 
     public function __construct(
         ?CmsService $cmsService = null,
-        ?RestaurantRepository $restaurantRepository = null
+        ?RestaurantRepository $restaurantRepository = null,
+        ?RestaurantImageRepository $restaurantImageRepository = null,
     ) {
         $this->cmsService = $cmsService ?? new CmsService();
         $this->restaurantRepository = $restaurantRepository ?? new RestaurantRepository();
+        $this->restaurantImageRepository = $restaurantImageRepository ?? new RestaurantImageRepository();
     }
 
     // =====================================================================
@@ -89,6 +93,9 @@ class RestaurantService implements IRestaurantService
         if ($restaurant === null) {
             return null;
         }
+
+        $images = $this->restaurantImageRepository->findByRestaurantId($restaurant->restaurantId);
+        $imagesByType = $this->groupImagesByType($images);
 
         // Read CMS labels for the detail page (admin-editable section titles).
         $cms = $this->getCmsSection(self::SECTION_DETAIL);
@@ -139,16 +146,15 @@ class RestaurantService implements IRestaurantService
             website: $restaurant->website ?? '',
 
             aboutText:  str_replace('\n', "\n", $restaurant->aboutText ?? ''),
-            aboutImage: $restaurant->aboutImagePath ?? self::DEFAULT_IMAGE,
+            aboutImage: ($imagesByType['about'] ?? [])[0] ?? self::DEFAULT_IMAGE,
 
             chefName:  $restaurant->chefName ?? '',
             chefText:  str_replace('\n', "\n", $restaurant->chefText ?? ''),
-            chefImage: $restaurant->chefImagePath ?? self::DEFAULT_IMAGE,
+            chefImage: ($imagesByType['chef'] ?? [])[0] ?? self::DEFAULT_IMAGE,
 
             menuDescription: $restaurant->menuDescription ?? '',
             cuisineTags:     array_values($cuisineTags),
-            menuImage1:      $restaurant->menuImage1Path ?? self::DEFAULT_IMAGE,
-            menuImage2:      $restaurant->menuImage2Path ?? self::DEFAULT_IMAGE,
+            menuImages:      $imagesByType['menu'] ?? [self::DEFAULT_IMAGE, self::DEFAULT_IMAGE],
 
             locationDescription: str_replace('\n', "\n", $restaurant->locationDescription ?? ''),
             mapEmbedUrl:         $restaurant->mapEmbedUrl ?? '',
@@ -158,11 +164,9 @@ class RestaurantService implements IRestaurantService
             durationMinutes:     $restaurant->durationMinutes ?? 0,
             specialRequestsNote: $restaurant->specialRequestsNote ?? '',
 
-            galleryImage1: $restaurant->galleryImage1Path ?? self::DEFAULT_IMAGE,
-            galleryImage2: $restaurant->galleryImage2Path ?? self::DEFAULT_IMAGE,
-            galleryImage3: $restaurant->galleryImage3Path ?? self::DEFAULT_IMAGE,
+            galleryImages: $imagesByType['gallery'] ?? [self::DEFAULT_IMAGE],
 
-            reservationImage: $restaurant->reservationImagePath ?? self::DEFAULT_IMAGE,
+            reservationImage: ($imagesByType['reservation'] ?? [])[0] ?? self::DEFAULT_IMAGE,
             timeSlots:        $timeSlots,
             priceCards:       $priceCards,
 
@@ -400,6 +404,21 @@ class RestaurantService implements IRestaurantService
     private function getCmsSection(string $sectionKey): array
     {
         return $this->cmsService->getSectionContent(self::PAGE_SLUG, $sectionKey);
+    }
+
+    /**
+     * Groups restaurant images by type and returns file paths.
+     *
+     * @param \App\Models\RestaurantImage[] $images
+     * @return array<string, string[]> image type => file paths
+     */
+    private function groupImagesByType(array $images): array
+    {
+        $grouped = [];
+        foreach ($images as $image) {
+            $grouped[$image->imageType][] = $image->filePath ?? self::DEFAULT_IMAGE;
+        }
+        return $grouped;
     }
 
     /**

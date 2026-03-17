@@ -217,7 +217,7 @@ class ProgramService implements IProgramService
                 'hallName' => $session['HallName'] ?? null,
                 'startDateTime' => $session['StartDateTime'] ?? '',
                 'endDateTime' => $session['EndDateTime'] ?? null,
-                'eventTypeId' => (int)($session['EventTypeId'] ?? 0),
+                'eventTypeId' => isset($session['EventTypeId']) ? (int)$session['EventTypeId'] : null,
                 'eventTypeName' => $session['EventTypeName'] ?? '',
                 'eventTypeSlug' => $session['EventTypeSlug'] ?? '',
                 'languageCode' => $session['LanguageCode'] ?? null,

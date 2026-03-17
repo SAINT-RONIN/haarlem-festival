@@ -483,12 +483,12 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Sets the visibility of a schedule day.
      *
-     * @param int $eventTypeId 0 for global setting, >0 for specific event type
+     * @param ?int $eventTypeId null for global setting, >0 for specific event type
      * @param int $dayOfWeek 0=Sunday, 1=Monday, ..., 6=Saturday
      * @param bool $isVisible
      * @throws ValidationException
      */
-    public function setScheduleDayVisibility(int $eventTypeId, int $dayOfWeek, bool $isVisible): void
+    public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {
         $dayValues = array_map(static fn (DayOfWeek $day): int => $day->value, DayOfWeek::cases());
         if (!in_array($dayOfWeek, $dayValues, true)) {
@@ -517,7 +517,7 @@ class CmsEventsService implements ICmsEventsService
     {
         $settings = [];
         foreach ($this->scheduleDayConfigRepository->findConfigs([
-                     'eventTypeId' => 0,
+                     'eventTypeId' => null,
                      'orderBy' => 'day',
                  ]) as $row) {
             $settings[$row['DayOfWeek']] = (bool)$row['IsVisible'];
@@ -530,7 +530,7 @@ class CmsEventsService implements ICmsEventsService
      */
     private function loadTypeDaySettings(?int $eventTypeId): array
     {
-        if ($eventTypeId === null || $eventTypeId <= 0) {
+        if ($eventTypeId === null) {
             return [];
         }
 

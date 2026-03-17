@@ -19,7 +19,7 @@ class StripeWebhookEventRepository implements IStripeWebhookEventRepository
 
     public function hasProcessed(string $eventId): bool
     {
-        $stmt = $this->pdo->prepare('SELECT 1 FROM StripeWebhookEvent WHERE EventId = :eventId LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT 1 FROM StripeWebhookEvent WHERE StripeEventId = :eventId LIMIT 1');
         $stmt->execute(['eventId' => $eventId]);
 
         return (bool)$stmt->fetchColumn();
@@ -28,7 +28,7 @@ class StripeWebhookEventRepository implements IStripeWebhookEventRepository
     public function markProcessed(string $eventId, string $eventType): void
     {
         $stmt = $this->pdo->prepare('
-            INSERT INTO StripeWebhookEvent (EventId, EventType)
+            INSERT INTO StripeWebhookEvent (StripeEventId, EventType)
             VALUES (:eventId, :eventType)
         ');
 

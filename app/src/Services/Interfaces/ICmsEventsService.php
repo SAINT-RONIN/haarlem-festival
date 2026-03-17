@@ -103,7 +103,7 @@ interface ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function setScheduleDayVisibility(int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
+    public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
 
     /**
      * Gets visible days for an event type.

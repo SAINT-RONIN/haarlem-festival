@@ -52,24 +52,6 @@ class Restaurant
         public readonly ?int    $seatsPerSession = null,
         public readonly ?int    $durationMinutes = null,
         public readonly ?string $specialRequestsNote = null,
-        // Gallery & section image asset IDs
-        public readonly ?int    $galleryImage1AssetId = null,
-        public readonly ?int    $galleryImage2AssetId = null,
-        public readonly ?int    $galleryImage3AssetId = null,
-        public readonly ?int    $aboutImageAssetId = null,
-        public readonly ?int    $chefImageAssetId = null,
-        public readonly ?int    $menuImage1AssetId = null,
-        public readonly ?int    $menuImage2AssetId = null,
-        public readonly ?int    $reservationImageAssetId = null,
-        // Image paths resolved from MediaAsset JOINs (detail page only)
-        public readonly ?string $galleryImage1Path = null,
-        public readonly ?string $galleryImage2Path = null,
-        public readonly ?string $galleryImage3Path = null,
-        public readonly ?string $aboutImagePath = null,
-        public readonly ?string $chefImagePath = null,
-        public readonly ?string $menuImage1Path = null,
-        public readonly ?string $menuImage2Path = null,
-        public readonly ?string $reservationImagePath = null,
     ) {
     }
 
@@ -107,23 +89,6 @@ class Restaurant
             seatsPerSession: isset($row['SeatsPerSession']) ? (int)$row['SeatsPerSession'] : null,
             durationMinutes: isset($row['DurationMinutes']) ? (int)$row['DurationMinutes'] : null,
             specialRequestsNote: $row['SpecialRequestsNote'] ?? null,
-            galleryImage1AssetId: isset($row['GalleryImage1AssetId']) ? (int)$row['GalleryImage1AssetId'] : null,
-            galleryImage2AssetId: isset($row['GalleryImage2AssetId']) ? (int)$row['GalleryImage2AssetId'] : null,
-            galleryImage3AssetId: isset($row['GalleryImage3AssetId']) ? (int)$row['GalleryImage3AssetId'] : null,
-            aboutImageAssetId: isset($row['AboutImageAssetId']) ? (int)$row['AboutImageAssetId'] : null,
-            chefImageAssetId: isset($row['ChefImageAssetId']) ? (int)$row['ChefImageAssetId'] : null,
-            menuImage1AssetId: isset($row['MenuImage1AssetId']) ? (int)$row['MenuImage1AssetId'] : null,
-            menuImage2AssetId: isset($row['MenuImage2AssetId']) ? (int)$row['MenuImage2AssetId'] : null,
-            reservationImageAssetId: isset($row['ReservationImageAssetId']) ? (int)$row['ReservationImageAssetId'] : null,
-            // Image paths from JOINs (only present in detail queries)
-            galleryImage1Path: $row['GalleryImage1Path'] ?? null,
-            galleryImage2Path: $row['GalleryImage2Path'] ?? null,
-            galleryImage3Path: $row['GalleryImage3Path'] ?? null,
-            aboutImagePath: $row['AboutImagePath'] ?? null,
-            chefImagePath: $row['ChefImagePath'] ?? null,
-            menuImage1Path: $row['MenuImage1Path'] ?? null,
-            menuImage2Path: $row['MenuImage2Path'] ?? null,
-            reservationImagePath: $row['ReservationImagePath'] ?? null,
         );
     }
 
