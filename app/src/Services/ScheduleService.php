@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
@@ -165,6 +166,12 @@ class ScheduleService implements IScheduleService
             $daySessions = $sessionsByDate[$date] ?? [];
 
             $events = [];
+
+            // For History, group sessions by time slot and merge language labels
+            if ($eventTypeId === EventTypeId::History->value) {
+                $daySessions = $this->groupSessionsByTimeSlot($daySessions, $labelsMap);
+            }
+
             foreach ($daySessions as $session) {
                 $events[] = $this->buildEventCard(
                     $session,
@@ -188,6 +195,46 @@ class ScheduleService implements IScheduleService
         }
 
         return $dayViewModels;
+    }
+
+    /**
+     * Groups History tour sessions by StartDateTime, merging language labels.
+     *
+     * Multiple sessions at the same time slot (one per language) are merged
+     * into a single session with combined labels for the schedule card.
+     *
+     * @param array $sessions Sessions for a single day
+     * @param array $labelsMap Pre-loaded labels indexed by session ID
+     * @return array Merged sessions (one per time slot)
+     */
+    private function groupSessionsByTimeSlot(array $sessions, array &$labelsMap): array
+    {
+        $grouped = [];
+        foreach ($sessions as $session) {
+            $timeKey = $session['StartDateTime'];
+            if (!isset($grouped[$timeKey])) {
+                $grouped[$timeKey] = $session;
+            } else {
+                // Merge labels from this session into the primary session's labels
+                $primaryId = (int)$grouped[$timeKey]['EventSessionId'];
+                $currentId = (int)$session['EventSessionId'];
+                $currentLabels = $labelsMap[$currentId] ?? [];
+                if (!isset($labelsMap[$primaryId])) {
+                    $labelsMap[$primaryId] = [];
+                }
+                $existingTexts = array_map(
+                    fn(EventSessionLabel $l) => $l->labelText,
+                    $labelsMap[$primaryId]
+                );
+                foreach ($currentLabels as $label) {
+                    if (!in_array($label->labelText, $existingTexts, true)) {
+                        $labelsMap[$primaryId][] = $label;
+                        $existingTexts[] = $label->labelText;
+                    }
+                }
+            }
+        }
+        return array_values($grouped);
     }
 
     /**

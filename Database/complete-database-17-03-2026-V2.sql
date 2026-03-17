@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Generation Time: Mar 17, 2026 at 04:27 PM
+-- Generation Time: Mar 17, 2026 at 04:48 PM
 -- Server version: 12.0.2-MariaDB-ubu2404
 -- PHP Version: 8.3.27
 
@@ -1661,18 +1661,18 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `StartDateTime`, `EndDa
 (35, 30, '2026-07-26 19:00:00', '2026-07-26 20:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (36, 31, '2026-07-26 21:00:00', '2026-07-26 22:30:00', 1500, 1350, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (37, 32, '2026-07-26 18:00:00', '2026-07-26 19:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(38, 33, '2026-07-23 10:00:00', '2026-07-23 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, 'Due to the nature of this walk participants must be a minimum of 12 years old and no strollers are allowed. Groups will consist of 12 participants + 1 guide.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(39, 33, '2026-07-23 13:00:00', '2026-07-23 15:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(40, 33, '2026-07-23 16:00:00', '2026-07-23 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(41, 33, '2026-07-24 10:00:00', '2026-07-24 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(42, 33, '2026-07-24 13:00:00', '2026-07-24 15:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(43, 33, '2026-07-24 16:00:00', '2026-07-24 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(44, 33, '2026-07-25 10:00:00', '2026-07-25 12:00:00', 48, 43, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(45, 33, '2026-07-25 13:00:00', '2026-07-25 15:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(46, 33, '2026-07-25 16:00:00', '2026-07-25 18:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(47, 33, '2026-07-26 10:00:00', '2026-07-26 12:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(48, 33, '2026-07-26 13:00:00', '2026-07-26 15:00:00', 96, 86, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(49, 33, '2026-07-26 16:00:00', '2026-07-26 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(38, 33, '2026-07-23 10:00:00', '2026-07-23 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, 'Due to the nature of this walk participants must be a minimum of 12 years old and no strollers are allowed. Groups will consist of 12 participants + 1 guide.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(39, 33, '2026-07-23 13:00:00', '2026-07-23 15:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(40, 33, '2026-07-23 16:00:00', '2026-07-23 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(41, 33, '2026-07-24 10:00:00', '2026-07-24 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(42, 33, '2026-07-24 13:00:00', '2026-07-24 15:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(43, 33, '2026-07-24 16:00:00', '2026-07-24 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(44, 33, '2026-07-25 10:00:00', '2026-07-25 12:00:00', 48, 43, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(45, 33, '2026-07-25 13:00:00', '2026-07-25 15:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(46, 33, '2026-07-25 16:00:00', '2026-07-25 18:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(47, 33, '2026-07-26 10:00:00', '2026-07-26 12:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(48, 33, '2026-07-26 13:00:00', '2026-07-26 15:00:00', 96, 86, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
+(49, 33, '2026-07-26 16:00:00', '2026-07-26 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 0),
 (50, 34, '2026-07-23 16:00:00', '2026-07-23 17:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 4, NULL, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (51, 35, '2026-07-23 19:00:00', '2026-07-23 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (52, 36, '2026-07-23 20:30:00', '2026-07-23 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'ENG', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
@@ -2614,7 +2614,7 @@ CREATE TABLE `ProgramItem` (
 --
 
 INSERT INTO `ProgramItem` (`ProgramItemId`, `ProgramId`, `EventSessionId`, `HistoryTourId`, `PassTypeId`, `PassValidDate`, `Quantity`, `DonationAmount`) VALUES
-(3, 1, 4, NULL, NULL, NULL, 3, 0.00),
+(3, 1, 4, NULL, NULL, NULL, 4, 0.00),
 (4, 1, 8, NULL, NULL, NULL, 2, 0.00),
 (5, 1, 1, NULL, NULL, NULL, 2, 0.00),
 (6, 2, 1, NULL, NULL, NULL, 2, 0.00),
@@ -2652,29 +2652,57 @@ CREATE TABLE `Restaurant` (
   `MichelinStars` int(11) DEFAULT NULL,
   `SeatsPerSession` int(11) DEFAULT NULL,
   `DurationMinutes` int(11) DEFAULT NULL,
-  `SpecialRequestsNote` varchar(500) DEFAULT NULL,
-  `GalleryImage1AssetId` int(11) DEFAULT NULL,
-  `GalleryImage2AssetId` int(11) DEFAULT NULL,
-  `GalleryImage3AssetId` int(11) DEFAULT NULL,
-  `AboutImageAssetId` int(11) DEFAULT NULL,
-  `ChefImageAssetId` int(11) DEFAULT NULL,
-  `MenuImage1AssetId` int(11) DEFAULT NULL,
-  `MenuImage2AssetId` int(11) DEFAULT NULL,
-  `ReservationImageAssetId` int(11) DEFAULT NULL
+  `SpecialRequestsNote` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
 -- Dumping data for table `Restaurant`
 --
 
-INSERT INTO `Restaurant` (`RestaurantId`, `Name`, `AddressLine`, `City`, `Stars`, `CuisineType`, `DescriptionHtml`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`, `Phone`, `Email`, `Website`, `AboutText`, `ChefName`, `ChefText`, `MenuDescription`, `LocationDescription`, `MapEmbedUrl`, `MichelinStars`, `SeatsPerSession`, `DurationMinutes`, `SpecialRequestsNote`, `GalleryImage1AssetId`, `GalleryImage2AssetId`, `GalleryImage3AssetId`, `AboutImageAssetId`, `ChefImageAssetId`, `MenuImage1AssetId`, `MenuImage2AssetId`, `ReservationImageAssetId`) VALUES
-(1, 'Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem', 4, 'French, fish and seafood, European', 'Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.', 76, 1, '2026-02-06 15:30:32', '+31 (0)23 123 4567', 'info@ratatouille.nl', 'ratatouillefoodandwine.nl', 'Welcome to <strong>Ratatouille</strong>, a Michelin-starred French restaurant on the Spaarne, known for turning fine dining into something <strong>warm, creative, and surprisingly accessible</strong>.\n\nEvery dish is prepared with <strong>seasonal ingredients, bright flavors,</strong> and a touch of <strong>French elegance.</strong> For the Yummy! festival, Ratatouille offers one special menu.\n\n<strong>Expect plates that feel refined,</strong> crafted with the same <strong>creativity</strong> that makes Ratatouille so loved.', 'Jozua Jaring', '<strong>Jozua Jaring</strong> leads the kitchen at Ratatouille. Under his leadership, the restaurant earned a <strong>Michelin star</strong>.\n\nHis cooking style is simple at its core. He starts with good ingredients and then adds creativity.\n\nFor the <strong>Yummy! festival</strong>, Chef Jaring designed a special menu.', 'For the Yummy! festival, guests enjoy a set menu specially created by Ratatouille.', 'Ratatouille is located by the river Spaarne, right in the center of Haarlem.\n\nThe <strong>Patronaat</strong> is just a 5-minute walk away.\n\nWhether you want to explore the city, enjoy a show, or continue your festival evening, Ratatouille is in a perfect location.', 'https://maps.google.com/maps?q=Spaarne+96,+2011+CL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 1, 35, 120, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 82, 83, 84, 85, 86, 87, 88, 89),
-(2, 'Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem', 3, 'Dutch, fish and seafood, European', 'A cozy city bistro focused on seafood and comforting dishes in a lively central setting.', 81, 1, '2026-02-06 15:30:32', '+31 023 532 1699', 'info@toujours.nl', 'restauranttoujours.nl', '<strong>Urban Frenchy Bistro Toujours </strong>is a stylish and welcoming spot in the heart of Haarlem. The restaurant is known for its <strong>cozy boudoir-style interior, warm lighting, and relaxed atmosphere</strong> that makes every visit feel special. Toujours brings together Dutch freshness, European comfort, and a strong focus on seafood, creating a menu that feels both modern and approachable.\n\nFor the Yummy! festival, Toujours offers a special menu built around the dishes they do best: <strong>bright seafood plates, familiar European flavors, </strong>and<strong> ingredients that celebrate local Dutch products</strong>. It\'s a perfect stop for anyone who wants a relaxed, flavorful meal before exploring the rest of the festival.\n\nWhether you\'re visiting with friends, family, or enjoying the evening on your own, Toujours brings together great food and a warm setting to make your festival night feel complete.', 'Georgiana Viou', 'Chef <strong>Georgiana Viou </strong>guides the Toujours kitchen with a focus on fresh seafood, seasonal produce, and relaxed European flavors. His cooking is warm, welcoming, and built around good ingredients.\n\n<strong>For Yummy!, the chef created a menu</strong> that reflects what Toujours is known for. Every dish is prepared with care, keeping the <strong>experience warm, relaxed, and enjoyable for everyone.</strong>', 'Toujours focuses on fresh seafood, Dutch ingredients, and European bistro-style cooking. Their plates often feature fish, seasonal produce, and comforting flavors that feel both elevated and easy to enjoy.\n\nExpect dishes that highlight seafood, local produce, and warm European influences. It\'s perfect for a relaxed and tasty festival dinner.', 'Toujours is located at <strong>Oude Groenmarkt 10-12</strong>, a lively square in the center of Haarlem and only steps away from the <strong>Grote Markt</strong>, one of the festival\'s busiest spots. Its central location makes it an easy stop before or after concerts, events, and evening activities.\n\nThe <strong>Jopenkerk</strong> is only 2 minutes walk away and the area is full of energy, history, and festival life. A great combination for anyone wanting to combine great food with a memorable night out.\n\n<strong>Address: </strong> Oude Groenmarkt 10-12, 2011 HL Haarlem, Nederland', 'https://maps.google.com/maps?q=Oude+Groenmarkt+10,+2011+HL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 0, 48, 90, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 90, 91, 92, 93, 98, 95, 96, 89),
-(3, 'Café de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A cozy neighborhood café serving honest food and classic flavors in a relaxed and friendly setting.', 75, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 'Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem', 3, 'Dutch, European, Modern', 'A classic grand café on Haarlem\'s main square, serving familiar European dishes in the heart of the festival buzz.', 80, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(5, 'New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem', 3, 'Vegan', 'A casual spot with an international feel, offering familiar dishes and vegetarian options right in the city center.', 79, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(6, 'Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem', 4, 'Dutch, French, European', 'A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.', 78, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 'Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A modern fine-dining restaurant known for a refined yet welcoming atmosphere.', 77, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `Restaurant` (`RestaurantId`, `Name`, `AddressLine`, `City`, `Stars`, `CuisineType`, `DescriptionHtml`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`, `Phone`, `Email`, `Website`, `AboutText`, `ChefName`, `ChefText`, `MenuDescription`, `LocationDescription`, `MapEmbedUrl`, `MichelinStars`, `SeatsPerSession`, `DurationMinutes`, `SpecialRequestsNote`) VALUES
+(1, 'Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem', 4, 'French, fish and seafood, European', 'Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.', 76, 1, '2026-02-06 15:30:32', '+31 (0)23 123 4567', 'info@ratatouille.nl', 'ratatouillefoodandwine.nl', 'Welcome to <strong>Ratatouille</strong>, a Michelin-starred French restaurant on the Spaarne, known for turning fine dining into something <strong>warm, creative, and surprisingly accessible</strong>.\n\nEvery dish is prepared with <strong>seasonal ingredients, bright flavors,</strong> and a touch of <strong>French elegance.</strong> For the Yummy! festival, Ratatouille offers one special menu.\n\n<strong>Expect plates that feel refined,</strong> crafted with the same <strong>creativity</strong> that makes Ratatouille so loved.', 'Jozua Jaring', '<strong>Jozua Jaring</strong> leads the kitchen at Ratatouille. Under his leadership, the restaurant earned a <strong>Michelin star</strong>.\n\nHis cooking style is simple at its core. He starts with good ingredients and then adds creativity.\n\nFor the <strong>Yummy! festival</strong>, Chef Jaring designed a special menu.', 'For the Yummy! festival, guests enjoy a set menu specially created by Ratatouille.', 'Ratatouille is located by the river Spaarne, right in the center of Haarlem.\n\nThe <strong>Patronaat</strong> is just a 5-minute walk away.\n\nWhether you want to explore the city, enjoy a show, or continue your festival evening, Ratatouille is in a perfect location.', 'https://maps.google.com/maps?q=Spaarne+96,+2011+CL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 1, 35, 120, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.'),
+(2, 'Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem', 3, 'Dutch, fish and seafood, European', 'A cozy city bistro focused on seafood and comforting dishes in a lively central setting.', 81, 1, '2026-02-06 15:30:32', '+31 023 532 1699', 'info@toujours.nl', 'restauranttoujours.nl', '<strong>Urban Frenchy Bistro Toujours </strong>is a stylish and welcoming spot in the heart of Haarlem. The restaurant is known for its <strong>cozy boudoir-style interior, warm lighting, and relaxed atmosphere</strong> that makes every visit feel special. Toujours brings together Dutch freshness, European comfort, and a strong focus on seafood, creating a menu that feels both modern and approachable.\n\nFor the Yummy! festival, Toujours offers a special menu built around the dishes they do best: <strong>bright seafood plates, familiar European flavors, </strong>and<strong> ingredients that celebrate local Dutch products</strong>. It\'s a perfect stop for anyone who wants a relaxed, flavorful meal before exploring the rest of the festival.\n\nWhether you\'re visiting with friends, family, or enjoying the evening on your own, Toujours brings together great food and a warm setting to make your festival night feel complete.', 'Georgiana Viou', 'Chef <strong>Georgiana Viou </strong>guides the Toujours kitchen with a focus on fresh seafood, seasonal produce, and relaxed European flavors. His cooking is warm, welcoming, and built around good ingredients.\n\n<strong>For Yummy!, the chef created a menu</strong> that reflects what Toujours is known for. Every dish is prepared with care, keeping the <strong>experience warm, relaxed, and enjoyable for everyone.</strong>', 'Toujours focuses on fresh seafood, Dutch ingredients, and European bistro-style cooking. Their plates often feature fish, seasonal produce, and comforting flavors that feel both elevated and easy to enjoy.\n\nExpect dishes that highlight seafood, local produce, and warm European influences. It\'s perfect for a relaxed and tasty festival dinner.', 'Toujours is located at <strong>Oude Groenmarkt 10-12</strong>, a lively square in the center of Haarlem and only steps away from the <strong>Grote Markt</strong>, one of the festival\'s busiest spots. Its central location makes it an easy stop before or after concerts, events, and evening activities.\n\nThe <strong>Jopenkerk</strong> is only 2 minutes walk away and the area is full of energy, history, and festival life. A great combination for anyone wanting to combine great food with a memorable night out.\n\n<strong>Address: </strong> Oude Groenmarkt 10-12, 2011 HL Haarlem, Nederland', 'https://maps.google.com/maps?q=Oude+Groenmarkt+10,+2011+HL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 0, 48, 90, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.'),
+(3, 'Café de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A cozy neighborhood café serving honest food and classic flavors in a relaxed and friendly setting.', 75, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(4, 'Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem', 3, 'Dutch, European, Modern', 'A classic grand café on Haarlem\'s main square, serving familiar European dishes in the heart of the festival buzz.', 80, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(5, 'New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem', 3, 'Vegan', 'A casual spot with an international feel, offering familiar dishes and vegetarian options right in the city center.', 79, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 'Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem', 4, 'Dutch, French, European', 'A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.', 78, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(7, 'Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A modern fine-dining restaurant known for a refined yet welcoming atmosphere.', 77, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `RestaurantImage`
+--
+
+CREATE TABLE `RestaurantImage` (
+  `RestaurantImageId` int(11) NOT NULL,
+  `RestaurantId` int(11) NOT NULL,
+  `MediaAssetId` int(11) NOT NULL,
+  `ImageType` varchar(30) NOT NULL,
+  `SortOrder` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+--
+-- Dumping data for table `RestaurantImage`
+--
+
+INSERT INTO `RestaurantImage` (`RestaurantImageId`, `RestaurantId`, `MediaAssetId`, `ImageType`, `SortOrder`) VALUES
+(1, 1, 82, 'gallery', 0),
+(2, 2, 90, 'gallery', 0),
+(4, 1, 83, 'gallery', 1),
+(5, 2, 91, 'gallery', 1),
+(7, 1, 84, 'gallery', 2),
+(8, 2, 92, 'gallery', 2),
+(10, 1, 85, 'about', 0),
+(11, 2, 93, 'about', 0),
+(13, 1, 86, 'chef', 0),
+(14, 2, 98, 'chef', 0),
+(16, 1, 87, 'menu', 0),
+(17, 2, 95, 'menu', 0),
+(19, 1, 88, 'menu', 1),
+(20, 2, 96, 'menu', 1),
+(22, 1, 89, 'reservation', 0),
+(23, 2, 89, 'reservation', 0);
 
 -- --------------------------------------------------------
 
@@ -3171,15 +3199,15 @@ ALTER TABLE `ProgramItem`
 --
 ALTER TABLE `Restaurant`
   ADD PRIMARY KEY (`RestaurantId`),
-  ADD KEY `FK_Restaurant_Image` (`ImageAssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage1` (`GalleryImage1AssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage2` (`GalleryImage2AssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage3` (`GalleryImage3AssetId`),
-  ADD KEY `FK_Restaurant_AboutImage` (`AboutImageAssetId`),
-  ADD KEY `FK_Restaurant_ChefImage` (`ChefImageAssetId`),
-  ADD KEY `FK_Restaurant_MenuImage1` (`MenuImage1AssetId`),
-  ADD KEY `FK_Restaurant_MenuImage2` (`MenuImage2AssetId`),
-  ADD KEY `FK_Restaurant_ReservationImage` (`ReservationImageAssetId`);
+  ADD KEY `FK_Restaurant_Image` (`ImageAssetId`);
+
+--
+-- Indexes for table `RestaurantImage`
+--
+ALTER TABLE `RestaurantImage`
+  ADD PRIMARY KEY (`RestaurantImageId`),
+  ADD KEY `FK_RestaurantImage_Restaurant` (`RestaurantId`),
+  ADD KEY `FK_RestaurantImage_MediaAsset` (`MediaAssetId`);
 
 --
 -- Indexes for table `ScheduleDay`
@@ -3406,6 +3434,12 @@ ALTER TABLE `Restaurant`
   MODIFY `RestaurantId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT for table `RestaurantImage`
+--
+ALTER TABLE `RestaurantImage`
+  MODIFY `RestaurantImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
 -- AUTO_INCREMENT for table `ScheduleDay`
 --
 ALTER TABLE `ScheduleDay`
@@ -3610,15 +3644,14 @@ ALTER TABLE `ProgramItem`
 -- Constraints for table `Restaurant`
 --
 ALTER TABLE `Restaurant`
-  ADD CONSTRAINT `FK_Restaurant_AboutImage` FOREIGN KEY (`AboutImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_ChefImage` FOREIGN KEY (`ChefImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage1` FOREIGN KEY (`GalleryImage1AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage2` FOREIGN KEY (`GalleryImage2AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage3` FOREIGN KEY (`GalleryImage3AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_Image` FOREIGN KEY (`ImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_MenuImage1` FOREIGN KEY (`MenuImage1AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_MenuImage2` FOREIGN KEY (`MenuImage2AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_ReservationImage` FOREIGN KEY (`ReservationImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`);
+  ADD CONSTRAINT `FK_Restaurant_Image` FOREIGN KEY (`ImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`);
+
+--
+-- Constraints for table `RestaurantImage`
+--
+ALTER TABLE `RestaurantImage`
+  ADD CONSTRAINT `FK_RestaurantImage_MediaAsset` FOREIGN KEY (`MediaAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
+  ADD CONSTRAINT `FK_RestaurantImage_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`);
 
 --
 -- Constraints for table `ScheduleDay`
