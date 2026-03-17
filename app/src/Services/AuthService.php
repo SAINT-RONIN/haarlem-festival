@@ -18,20 +18,16 @@ use App\Utils\PasswordHasher;
  */
 class AuthService implements IAuthService
 {
-    private UserAccountRepository $userRepository;
-    private PasswordResetTokenRepository $resetTokenRepository;
-    private EmailService $emailService;
-
     private const PASSWORD_MIN_LENGTH = 8;
     private const USERNAME_MIN_LENGTH = 3;
     private const USERNAME_MAX_LENGTH = 60;
     private const RESET_TOKEN_EXPIRY_HOURS = 1;
 
-    public function __construct()
-    {
-        $this->userRepository = new UserAccountRepository();
-        $this->resetTokenRepository = new PasswordResetTokenRepository();
-        $this->emailService = new EmailService();
+    public function __construct(
+        private readonly UserAccountRepository $userRepository,
+        private readonly PasswordResetTokenRepository $resetTokenRepository,
+        private readonly EmailService $emailService,
+    ) {
     }
 
     /**

@@ -40,9 +40,9 @@ class CmsPageEditViewModel
     {
         $page = $this->pageData['page'];
         return [
-            'id' => $page['CmsPageId'],
-            'title' => $page['Title'],
-            'slug' => $page['Slug']
+            'id' => $page->cmsPageId,
+            'title' => $page->title,
+            'slug' => $page->slug,
         ];
     }
 

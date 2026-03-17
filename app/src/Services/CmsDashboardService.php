@@ -21,11 +21,9 @@ use App\ViewModels\Cms\RecentPageViewModel;
  */
 class CmsDashboardService implements ICmsDashboardService
 {
-    private CmsRepository $cmsRepository;
-
-    public function __construct()
-    {
-        $this->cmsRepository = new CmsRepository();
+    public function __construct(
+        private CmsRepository $cmsRepository,
+    ) {
     }
 
     /**
@@ -71,19 +69,20 @@ class CmsDashboardService implements ICmsDashboardService
     }
 
     /**
-     * Maps CMS page arrays to RecentPageViewModel instances.
+     * Maps CmsPage models to RecentPageViewModel instances.
      *
-     * @param array<int, array{Title: string, UpdatedAtUtc: ?string}> $cmsPages
+     * @param \App\Models\CmsPage[] $cmsPages
      * @return RecentPageViewModel[]
      */
     private function mapPagesToRecentViewModels(array $cmsPages): array
     {
         $viewModels = [];
         foreach ($cmsPages as $page) {
+            $updatedAt = $page->updatedAtUtc?->format('Y-m-d H:i:s');
             $viewModels[] = new RecentPageViewModel(
-                title: $page['Title'],
+                title: $page->title,
                 status: 'Published',
-                timeAgo: TimeFormatter::formatTimeAgo($page['UpdatedAtUtc'] ?? null),
+                timeAgo: TimeFormatter::formatTimeAgo($updatedAt),
             );
         }
         return $viewModels;
@@ -123,21 +122,22 @@ class CmsDashboardService implements ICmsDashboardService
     }
 
     /**
-     * Maps CMS page arrays to PageListItemViewModel instances.
+     * Maps CmsPage models to PageListItemViewModel instances.
      *
-     * @param array<int, array{CmsPageId: int, Title: string, Slug: string, UpdatedAtUtc: ?string}> $cmsPages
+     * @param \App\Models\CmsPage[] $cmsPages
      * @return PageListItemViewModel[]
      */
     private function mapPagesToListViewModels(array $cmsPages): array
     {
         $viewModels = [];
         foreach ($cmsPages as $page) {
+            $updatedAt = $page->updatedAtUtc?->format('Y-m-d H:i:s');
             $viewModels[] = new PageListItemViewModel(
-                id: (int)$page['CmsPageId'],
-                title: $page['Title'],
-                slug: $page['Slug'],
+                id: $page->cmsPageId,
+                title: $page->title,
+                slug: $page->slug,
                 status: 'Published',
-                updatedAt: TimeFormatter::formatTimeAgo($page['UpdatedAtUtc'] ?? null),
+                updatedAt: TimeFormatter::formatTimeAgo($updatedAt),
             );
         }
         return $viewModels;

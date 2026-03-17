@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Mappers\CmsMapper;
 use App\Services\JazzArtistDetailService;
 use App\Services\Interfaces\ICmsService;
 use App\Services\Interfaces\IJazzService;
@@ -32,7 +33,11 @@ class JazzController extends BaseController
     {
         try {
             $data = $this->jazzService->getJazzPageData();
-            $viewModel = JazzPageViewModel::fromDomainData($this->enrichWithSharedData($data));
+            $globalUi = CmsMapper::toGlobalUiData(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+                $this->sessionService->isLoggedIn(),
+            );
+            $viewModel = JazzPageViewModel::fromDomainData($data, $globalUi);
             $this->renderPage(__DIR__ . '/../Views/pages/jazz.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -54,18 +59,4 @@ class JazzController extends BaseController
         }
     }
 
-    /**
-     * @param array<string, mixed> $data
-     * @return array<string, mixed>
-     */
-    private function enrichWithSharedData(array $data): array
-    {
-        $globalUiResult = $this->cmsService->getGlobalUiContent();
-        $data['globalUiContent'] = is_array($globalUiResult['content'] ?? null)
-            ? $globalUiResult['content']
-            : [];
-        $data['isLoggedIn'] = $this->sessionService->isLoggedIn();
-
-        return $data;
-    }
 }

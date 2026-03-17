@@ -16,5 +16,5 @@ interface IHomeService
      *
      * @return HomePageViewModel Prepared data for the home view
      */
-    public function getHomePageData(): HomePageViewModel;
+    public function getHomePageData(bool $isLoggedIn): HomePageViewModel;
 }

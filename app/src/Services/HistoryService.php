@@ -7,15 +7,11 @@ namespace App\Services;
 use App\Enums\EventTypeId;
 use App\Models\CmsItem;
 use App\Models\CmsSection;
+use App\Mappers\CmsMapper;
 use App\Repositories\CmsRepository;
-use App\Repositories\Interfaces\ICmsRepository;
-use App\Repositories\Interfaces\IMediaAssetRepository;
-use App\Repositories\Interfaces\IVenueRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Repositories\VenueRepository;
 use App\Services\Interfaces\IHistoryService;
-use App\Services\Interfaces\IScheduleService;
-use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Age\AgeLabelFormatter;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
@@ -42,38 +38,32 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
  */
 class HistoryService implements IHistoryService
 {
-    private ICmsRepository $cmsRepository;
-    private IMediaAssetRepository $mediaAssetRepository;
-
-    private ISessionService $sessionService;
     private ?int $historyPageId = null;
     /** @var array<string, CmsSection>|null */
     private ?array $historySections = null;
     /** @var array<string, list<CmsItem>>|null */
     private ?array $historyItemsBySection = null;
-    private IVenueRepository $venueRepository;
-    private IScheduleService $scheduleService;
 
-    public function __construct()
-    {
-        $this->cmsRepository = new CmsRepository();
-        $this->mediaAssetRepository = new MediaAssetRepository();
-        $this->sessionService = new SessionService();
-        $this->venueRepository = new VenueRepository();
-        $this->scheduleService = new ScheduleService();
+    public function __construct(
+        private CmsRepository $cmsRepository,
+        private MediaAssetRepository $mediaAssetRepository,
+        private CmsService $cmsService,
+        private VenueRepository $venueRepository,
+        private ScheduleService $scheduleService,
+    ) {
     }
 
     /**
      * Builds the history page view model with all required data.
      */
-    public function getHistoryPageData(): HistoryPageViewModel
+    public function getHistoryPageData(bool $isLoggedIn): HistoryPageViewModel
     {
         // Load page and sections once
         $this->loadPageData();
 
         return new HistoryPageViewModel(
             heroData: $this->buildHeroData(),
-            globalUi: $this->buildGlobalUi(),
+            globalUi: $this->buildGlobalUi($isLoggedIn),
             gradientSection: $this->buildGradientSection(),
             introSplitSection: $this->buildIntroSplitSection(),
             routeData: $this->buildRouteData(),
@@ -98,7 +88,7 @@ class HistoryService implements IHistoryService
             return;
         }
 
-        $this->historyPageId = (int)$pages[0]['CmsPageId'];
+        $this->historyPageId = $pages[0]->cmsPageId;
         $sections = $this->cmsRepository->findSections(['cmsPageId' => $this->historyPageId]);
         $this->historySections = [];
         foreach ($sections as $section) {
@@ -210,24 +200,11 @@ class HistoryService implements IHistoryService
     /**
      * Builds global UI navigation and button labels.
      */
-    private function buildGlobalUi(): GlobalUiData
+    private function buildGlobalUi(bool $isLoggedIn): GlobalUiData
     {
-        return new GlobalUiData(
-            siteName: 'Haarlem Festival',
-            navHome: 'Home',
-            navJazz: 'Jazz',
-            navDance: 'Dance',
-            navHistory: 'History',
-            navRestaurant: 'Restaurant',
-            navStorytelling: 'Storytelling',
-            btnMyProgram: 'My Program',
-            loginLabel: 'Login',
-            logoutLabel: 'Logout',
-            labelEventsCount: 'events',
-            labelNoEvents: 'No events scheduled',
-            btnExploreTemplate: 'Explore {title} Events',
-            isLoggedIn: $this->sessionService->isLoggedIn(),
-        );
+        $globalUiContent = $this->cmsService->getSectionContent('home', 'global_ui');
+
+        return CmsMapper::toGlobalUiData($globalUiContent, $isLoggedIn);
     }
 
     /**

@@ -6,18 +6,17 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\Interfaces\IRestaurantService;
-use App\Services\RestaurantService;
+use App\Services\SessionService;
 
 /**
  * Controller for Restaurant page.
  */
 class RestaurantController extends BaseController
 {
-    private IRestaurantService $restaurantService;
-
-    public function __construct()
-    {
-        $this->restaurantService = new RestaurantService();
+    public function __construct(
+        private IRestaurantService $restaurantService,
+        private SessionService $sessionService,
+    ) {
     }
 
     /**
@@ -28,7 +27,7 @@ class RestaurantController extends BaseController
     public function index(): void
     {
         try {
-            $viewModel = $this->restaurantService->getRestaurantPageData();
+            $viewModel = $this->restaurantService->getRestaurantPageData($this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -43,7 +42,7 @@ class RestaurantController extends BaseController
     public function detail(string $id): void
     {
         try {
-            $viewModel = $this->restaurantService->getRestaurantDetailData((int) $id);
+            $viewModel = $this->restaurantService->getRestaurantDetailData((int) $id, $this->sessionService->isLoggedIn());
 
             if ($viewModel === null) {
                 http_response_code(404);

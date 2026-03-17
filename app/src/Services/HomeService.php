@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Mappers\CmsMapper;
 use App\Models\EventType;
 use App\Models\Restaurant;
 use App\Models\Venue;
@@ -12,8 +13,6 @@ use App\Repositories\EventTypeRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\VenueRepository;
 use App\Services\Interfaces\IHomeService;
-use App\ViewModels\GlobalUiData;
-use App\ViewModels\HeroData;
 use App\ViewModels\Home\HomeUiConfig;
 use App\ViewModels\HomePageViewModel;
 
@@ -25,33 +24,25 @@ use App\ViewModels\HomePageViewModel;
  */
 class HomeService implements IHomeService
 {
-    private EventTypeRepository $eventTypeRepository;
-    private VenueRepository $venueRepository;
-    private RestaurantRepository $restaurantRepository;
-    private EventSessionRepository $eventSessionRepository;
-    private CmsService $cmsService;
-
-    public function __construct()
-    {
-        $this->eventTypeRepository = new EventTypeRepository();
-        $this->venueRepository = new VenueRepository();
-        $this->restaurantRepository = new RestaurantRepository();
-        $this->eventSessionRepository = new EventSessionRepository();
-        $this->cmsService = new CmsService();
+    public function __construct(
+        private EventTypeRepository $eventTypeRepository,
+        private VenueRepository $venueRepository,
+        private RestaurantRepository $restaurantRepository,
+        private EventSessionRepository $eventSessionRepository,
+        private CmsService $cmsService,
+    ) {
     }
 
     /**
      * Builds the homepage view model with all required data.
      */
-    public function getHomePageData(): HomePageViewModel
+    public function getHomePageData(bool $isLoggedIn): HomePageViewModel
     {
         $cmsContent = $this->cmsService->getHomePageContent();
 
-        $globalUiContent = $this->cmsService->getGlobalUiContent();
-
         return new HomePageViewModel(
-            heroData: HeroData::fromCms($this->cmsService->getHeroSectionContent('home'), 'home'),
-            globalUi: GlobalUiData::fromCms($globalUiContent['content'], $globalUiContent['isLoggedIn']),
+            heroData: CmsMapper::toHeroData($this->cmsService->getHeroSectionContent('home'), 'home'),
+            globalUi: CmsMapper::toGlobalUiData($this->cmsService->getSectionContent('home', 'global_ui'), $isLoggedIn),
             eventTypes: $this->buildEventTypes($cmsContent),
             locations: $this->buildLocations(),
             scheduleDays: $this->buildScheduleDays(),

@@ -41,10 +41,9 @@ final readonly class JazzPageViewModel extends BaseViewModel
     /**
      * @param array<string, mixed> $data
      */
-    public static function fromData(array $data): self
+    public static function fromData(array $data, GlobalUiData $globalUi): self
     {
         $hero = $data['heroData'] ?? [];
-        $globalUi = $data['globalUi'] ?? [];
         $gradient = $data['gradientSection'] ?? [];
         $intro = $data['introSplitSection'] ?? [];
         $venues = $data['venuesData'] ?? [];
@@ -57,7 +56,7 @@ final readonly class JazzPageViewModel extends BaseViewModel
 
         return new self(
             heroData: new HeroData(...$hero),
-            globalUi: new GlobalUiData(...$globalUi),
+            globalUi: $globalUi,
             gradientSection: new GradientSectionData(...$gradient),
             introSplitSection: new IntroSplitSectionData(...$intro),
             venuesData: self::mapVenuesData($venues),
@@ -75,7 +74,7 @@ final readonly class JazzPageViewModel extends BaseViewModel
     /**
      * @param array<string, mixed> $domain
      */
-    public static function fromDomainData(array $domain): self
+    public static function fromDomainData(array $domain, GlobalUiData $globalUi): self
     {
         $sections = is_array($domain['sections'] ?? null) ? $domain['sections'] : [];
         $scheduleSectionData = is_array($domain['scheduleSectionData'] ?? null)
@@ -84,7 +83,6 @@ final readonly class JazzPageViewModel extends BaseViewModel
 
         $mapped = [
             'heroData' => self::buildHeroData($sections),
-            'globalUi' => self::buildGlobalUiData($domain),
             'gradientSection' => self::buildGradientSectionData($sections),
             'introSplitSection' => self::buildIntroData($sections),
             'venuesData' => self::buildVenuesData($sections),
@@ -96,7 +94,7 @@ final readonly class JazzPageViewModel extends BaseViewModel
             'scheduleSectionData' => $scheduleSectionData,
         ];
 
-        return self::fromData($mapped);
+        return self::fromData($mapped, $globalUi);
     }
 
     /** @param array<string, mixed> $sections */
@@ -118,15 +116,6 @@ final readonly class JazzPageViewModel extends BaseViewModel
             ),
             'currentPage' => JazzPageConstants::CURRENT_PAGE,
         ];
-    }
-
-    /** @param array<string, mixed> $domain */
-    private static function buildGlobalUiData(array $domain): array
-    {
-        $globalUi = is_array($domain['globalUiContent'] ?? null) ? $domain['globalUiContent'] : [];
-        $isLoggedIn = (bool)($domain['isLoggedIn'] ?? false);
-
-        return get_object_vars(GlobalUiData::fromCms($globalUi, $isLoggedIn));
     }
 
     /** @param array<string, mixed> $sections */

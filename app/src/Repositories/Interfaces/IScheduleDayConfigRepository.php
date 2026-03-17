@@ -18,7 +18,7 @@ interface IScheduleDayConfigRepository
      *   includeGlobal?: bool,
      *   orderBy?: string
      * } $filters
-     * @return array List of matching configurations
+     * @return \App\Models\ScheduleDayConfig[] List of matching configurations
      */
     public function findConfigs(array $filters = []): array;
 

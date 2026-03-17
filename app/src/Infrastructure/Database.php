@@ -62,6 +62,8 @@ class Database
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 // Use native prepared statements
                 PDO::ATTR_EMULATE_PREPARES => false,
+                // Reuse existing connection across PHP-FPM requests
+                PDO::ATTR_PERSISTENT => true,
             ]);
 
             return self::$pdo;

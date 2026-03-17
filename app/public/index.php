@@ -42,36 +42,15 @@ use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
-use App\Http\Requests\StripeWebhookRequestFactory;
-use App\Infrastructure\CheckoutRuntimeConfig;
-use App\Infrastructure\Database;
-use App\Repositories\EventRepository;
-use App\Repositories\OrderItemRepository;
-use App\Repositories\OrderRepository;
-use App\Repositories\PaymentRepository;
-use App\Repositories\ProgramRepository;
-use App\Repositories\StripeWebhookEventRepository;
-use App\Repositories\EventSessionLabelRepository;
-use App\Repositories\EventSessionRepository;
-use App\Repositories\MediaAssetRepository;
-use App\Services\CmsDashboardService;
-use App\Services\CmsEditService;
-use App\Services\CmsService;
-use App\Services\CheckoutService;
-use App\Services\JazzArtistDetailService;
-use App\Services\JazzService;
-use App\Services\MediaAssetService;
-use App\Services\ProgramService;
-use App\Services\ScheduleService;
 use App\Services\SessionService;
-use App\Services\StorytellingDetailService;
-use App\Services\StorytellingService;
-use App\Services\StripeService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
 // Start session once per request during bootstrap.
 (new SessionService())->start();
+
+// Load controller factory — returns a closure keyed by controller class name.
+$container = require __DIR__ . '/../bootstrap/container.php';
 
 // Define routes
 $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
@@ -216,67 +195,7 @@ switch ($routeInfo[0]) {
 
         // Handle controller routes
         [$controllerClass, $method] = $handler;
-        $controller = match ($controllerClass) {
-            StorytellingController::class => new StorytellingController(
-                new StorytellingService(
-                    new CmsService(),
-                    new ScheduleService(),
-                ),
-                new StorytellingDetailService(
-                    new CmsService(),
-                    new ScheduleService(),
-                    new EventRepository(),
-                    new EventSessionRepository(),
-                    new EventSessionLabelRepository(),
-                    new MediaAssetRepository(),
-                ),
-                new CmsService(),
-                new SessionService(),
-            ),
-            JazzController::class => new JazzController(
-                new JazzService(
-                    new CmsService(),
-                    new ScheduleService(),
-                ),
-                new JazzArtistDetailService(
-                    new CmsService(),
-                    new ScheduleService(),
-                    new EventRepository(),
-                ),
-                new CmsService(),
-                new SessionService(),
-            ),
-            CmsDashboardController::class => new CmsDashboardController(
-                new SessionService(),
-                new CmsDashboardService(),
-                new CmsEditService(),
-                new MediaAssetService(),
-            ),
-            CheckoutController::class => new CheckoutController(
-                new ProgramService(),
-                new CmsService(),
-                new SessionService(),
-                new CheckoutService(
-                    new ProgramService(),
-                    new ProgramRepository(),
-                    new OrderRepository(),
-                    new OrderItemRepository(),
-                    new PaymentRepository(),
-                    new StripeWebhookEventRepository(),
-                    new StripeService(
-                        (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
-                        (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
-                    ),
-                    new CheckoutRuntimeConfig(
-                        (string)getenv('APP_URL'),
-                        (float)(getenv('VAT_RATE') !== false ? getenv('VAT_RATE') : 0.21),
-                    ),
-                    Database::getConnection(),
-                ),
-                new StripeWebhookRequestFactory(),
-            ),
-            default => new $controllerClass(),
-        };
+        $controller = $container($controllerClass);
         $controller->$method(...array_values($vars));
         break;
 }

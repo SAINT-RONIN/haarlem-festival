@@ -15,11 +15,11 @@ interface IRestaurantService
     /**
      * Builds the restaurant listing page view model.
      */
-    public function getRestaurantPageData(): RestaurantPageViewModel;
+    public function getRestaurantPageData(bool $isLoggedIn): RestaurantPageViewModel;
 
     /**
      * Builds the restaurant detail page view model.
      * Returns null if the restaurant is not found.
      */
-    public function getRestaurantDetailData(int $id): ?RestaurantDetailViewModel;
+    public function getRestaurantDetailData(int $id, bool $isLoggedIn = false): ?RestaurantDetailViewModel;
 }

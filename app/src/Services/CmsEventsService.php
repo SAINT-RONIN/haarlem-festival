@@ -27,25 +27,16 @@ use App\ViewModels\Cms\CmsEventSessionViewModel;
  */
 class CmsEventsService implements ICmsEventsService
 {
-    private EventRepository $eventRepository;
-    private EventSessionRepository $sessionRepository;
-    private EventSessionLabelRepository $labelRepository;
-    private EventSessionPriceRepository $priceRepository;
-    private EventTypeRepository $eventTypeRepository;
-    private VenueRepository $venueRepository;
-    private PriceTierRepository $priceTierRepository;
-    private ScheduleDayConfigRepository $scheduleDayConfigRepository;
-
-    public function __construct()
-    {
-        $this->eventRepository = new EventRepository();
-        $this->sessionRepository = new EventSessionRepository();
-        $this->labelRepository = new EventSessionLabelRepository();
-        $this->priceRepository = new EventSessionPriceRepository();
-        $this->eventTypeRepository = new EventTypeRepository();
-        $this->venueRepository = new VenueRepository();
-        $this->priceTierRepository = new PriceTierRepository();
-        $this->scheduleDayConfigRepository = new ScheduleDayConfigRepository();
+    public function __construct(
+        private EventRepository $eventRepository,
+        private EventSessionRepository $sessionRepository,
+        private EventSessionLabelRepository $labelRepository,
+        private EventSessionPriceRepository $priceRepository,
+        private EventTypeRepository $eventTypeRepository,
+        private VenueRepository $venueRepository,
+        private PriceTierRepository $priceTierRepository,
+        private ScheduleDayConfigRepository $scheduleDayConfigRepository,
+    ) {
     }
 
     /**
@@ -520,7 +511,7 @@ class CmsEventsService implements ICmsEventsService
                      'eventTypeId' => null,
                      'orderBy' => 'day',
                  ]) as $row) {
-            $settings[$row['DayOfWeek']] = (bool)$row['IsVisible'];
+            $settings[$row->dayOfWeek] = $row->isVisible;
         }
         return $settings;
     }
@@ -539,7 +530,7 @@ class CmsEventsService implements ICmsEventsService
                      'eventTypeId' => $eventTypeId,
                      'orderBy' => 'day',
                  ]) as $row) {
-            $settings[$row['DayOfWeek']] = (bool)$row['IsVisible'];
+            $settings[$row->dayOfWeek] = $row->isVisible;
         }
         return $settings;
     }

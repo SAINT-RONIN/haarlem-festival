@@ -73,8 +73,11 @@ class EventSessionRepository implements IEventSessionRepository
         }
 
         if (isset($filters['dayOfWeek']) && is_string($filters['dayOfWeek']) && $filters['dayOfWeek'] !== '') {
-            $conditions[] = 'DAYNAME(es.StartDateTime) = :dayOfWeek';
-            $params['dayOfWeek'] = $filters['dayOfWeek'];
+            $dayNumber = $this->dayNameToNumber($filters['dayOfWeek']);
+            if ($dayNumber !== null) {
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
+                $params['dayOfWeekNum'] = $dayNumber;
+            }
         }
 
         $visibleDays = $filters['visibleDays'] ?? null;
@@ -270,5 +273,14 @@ class EventSessionRepository implements IEventSessionRepository
     {
         $stmt = $this->pdo->prepare('DELETE FROM EventSession WHERE EventSessionId = :sessionId');
         return $stmt->execute(['sessionId' => $sessionId]);
+    }
+
+    private function dayNameToNumber(string $dayName): ?int
+    {
+        $map = [
+            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
+            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
+        ];
+        return $map[strtolower($dayName)] ?? null;
     }
 }

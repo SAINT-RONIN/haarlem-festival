@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\CmsService;
 use App\Services\Interfaces\ICmsService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
-use App\Services\ProgramService;
-use App\Services\SessionService;
 use App\ViewModels\Program\MyProgramPageViewModel;
 use App\ViewModels\Program\ProgramItemViewModel;
 
@@ -21,13 +18,13 @@ class ProgramController extends BaseController
     private ISessionService $sessionService;
 
     public function __construct(
-        ?IProgramService $programService = null,
-        ?ICmsService $cmsService = null,
-        ?ISessionService $sessionService = null,
+        IProgramService $programService,
+        ICmsService $cmsService,
+        ISessionService $sessionService,
     ) {
-        $this->programService = $programService ?? new ProgramService();
-        $this->cmsService = $cmsService ?? new CmsService();
-        $this->sessionService = $sessionService ?? new SessionService();
+        $this->programService = $programService;
+        $this->cmsService = $cmsService;
+        $this->sessionService = $sessionService;
     }
 
     public function index(): void

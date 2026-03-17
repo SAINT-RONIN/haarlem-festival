@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Mappers\CmsMapper;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
-use App\ViewModels\RestaurantPageViewModel;
+use App\ViewModels\Restaurant\RestaurantPageViewModel;
 
 /**
  * Service for preparing restaurant page data.
@@ -16,14 +17,12 @@ use App\ViewModels\RestaurantPageViewModel;
  */
 class RestaurantPageService
 {
-    private CmsService $cmsService;
-
     private const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 
-    public function __construct()
-    {
-        $this->cmsService = new CmsService();
+    public function __construct(
+        private CmsService $cmsService,
+    ) {
     }
 
     private function isDbOnly(): bool
@@ -120,7 +119,7 @@ class RestaurantPageService
      * Dev safety fallback: only when APP_ENV=dev and NOT ?source=db.
      * Verification: ?source=db forces DB-only (no fallback).
      */
-    public function getRestaurantPageData(): RestaurantPageViewModel
+    public function getRestaurantPageData(bool $isLoggedIn): RestaurantPageViewModel
     {
         $dbOnly = $this->isDbOnly();
         $fallback = $this->getHardcodedFallback();
@@ -144,9 +143,11 @@ class RestaurantPageService
         $instructionsSection = $this->buildInstructionsSection($fallback, $dbOnly);
         $restaurantCardsSection = $this->buildRestaurantCardsSection($fallback, $dbOnly);
 
+        $globalUiContent = $this->cmsService->getSectionContent('home', 'global_ui');
+
         return new RestaurantPageViewModel(
             heroData: $heroData,
-            globalUi: $this->buildGlobalUi(),
+            globalUi: CmsMapper::toGlobalUiData($globalUiContent, $isLoggedIn),
             gradientSection: $gradientSection,
             introSplitSection: $introSplitSection,
             introSplit2Section: $introSplit2Section,
@@ -406,16 +407,6 @@ class RestaurantPageService
         }
 
         return $path;
-    }
-
-    /**
-     * Gets a string value from content array with default fallback.
-     */
-    private function buildGlobalUi(): GlobalUiData
-    {
-        $globalUiContent = $this->cmsService->getGlobalUiContent();
-
-        return GlobalUiData::fromCms($globalUiContent['content'], $globalUiContent['isLoggedIn']);
     }
 
     private function getStringValue(array $content, string $key, string $default): string

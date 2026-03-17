@@ -13,11 +13,9 @@ use App\ViewModels\Cms\CmsEventsListViewModel;
 
 class CmsEventsController
 {
-    private CmsEventsService $eventsService;
-
-    public function __construct()
-    {
-        $this->eventsService = new CmsEventsService();
+    public function __construct(
+        private CmsEventsService $eventsService,
+    ) {
     }
 
     public function index(): void
@@ -35,7 +33,7 @@ class CmsEventsController
             $venues = $this->eventsService->getVenues();
 
             $events = array_map(
-                static fn (array $event): CmsEventListItemViewModel => CmsEventListItemViewModel::fromArray($event),
+                static fn ($event): CmsEventListItemViewModel => CmsEventListItemViewModel::fromEventWithDetails($event),
                 $eventsData
             );
 
@@ -264,11 +262,11 @@ class CmsEventsController
             $globalConfigs = [];
             $typeConfigs = [];
             foreach ($dayConfigs as $config) {
-                $eventTypeId = $config['EventTypeId'];
+                $eventTypeId = $config->eventTypeId;
                 if ($eventTypeId === null) {
-                    $globalConfigs[(int)$config['DayOfWeek']] = $config;
+                    $globalConfigs[(int)$config->dayOfWeek] = $config;
                 } else {
-                    $typeConfigs[(int)$eventTypeId][(int)$config['DayOfWeek']] = $config;
+                    $typeConfigs[(int)$eventTypeId][(int)$config->dayOfWeek] = $config;
                 }
             }
 

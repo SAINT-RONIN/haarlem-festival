@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\EventTypeId;
 use App\Models\CmsItem;
+use App\Models\CmsPage;
 use App\Models\CmsSection;
 use App\Repositories\CmsRepository;
 use App\Repositories\EventRepository;
@@ -21,15 +22,11 @@ use App\Utils\CmsContentLimits;
  */
 class CmsEditService implements ICmsEditService
 {
-    private CmsRepository $cmsRepository;
-    private MediaAssetRepository $mediaAssetRepository;
-    private EventRepository $eventRepository;
-
-    public function __construct()
-    {
-        $this->cmsRepository = new CmsRepository();
-        $this->mediaAssetRepository = new MediaAssetRepository();
-        $this->eventRepository = new EventRepository();
+    public function __construct(
+        private CmsRepository $cmsRepository,
+        private MediaAssetRepository $mediaAssetRepository,
+        private EventRepository $eventRepository,
+    ) {
     }
 
     /**
@@ -51,7 +48,7 @@ class CmsEditService implements ICmsEditService
         $sectionsWithItems = [];
 
         $eventNameMap = [];
-        $pageSlug = (string)($page['Slug'] ?? '');
+        $pageSlug = $page->slug;
         if ($pageSlug === 'storytelling-detail') {
             $eventNameMap = $this->buildEventNameMap(EventTypeId::Storytelling->value);
         }
@@ -138,12 +135,11 @@ class CmsEditService implements ICmsEditService
     /**
      * Builds a route-aware preview URL for CMS page edit screens.
      *
-     * @param array<string, mixed> $page
      * @param array<int, array<string, mixed>> $sections
      */
-    public function resolvePreviewUrl(array $page, array $sections): string
+    public function resolvePreviewUrl(CmsPage $page, array $sections): string
     {
-        $slug = (string)($page['slug'] ?? '');
+        $slug = $page->slug;
 
         if ($slug === 'home') {
             return '/';
@@ -316,7 +312,7 @@ class CmsEditService implements ICmsEditService
         $events = $this->eventRepository->findEvents(['eventTypeId' => $eventTypeId]);
         $map = [];
         foreach ($events as $event) {
-            $map['event_' . $event['EventId']] = $event['Title'];
+            $map['event_' . $event->eventId] = $event->title;
         }
         return $map;
     }

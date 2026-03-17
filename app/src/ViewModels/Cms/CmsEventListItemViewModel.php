@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+use App\Models\EventWithDetails;
+
 /**
  * ViewModel for a single event item in the CMS events list.
  *
@@ -24,33 +26,18 @@ final readonly class CmsEventListItemViewModel
     ) {
     }
 
-    /**
-     * Creates a ViewModel from a joined query result array.
-     *
-     * @param array{
-     *     EventId: int,
-     *     Title: string,
-     *     ShortDescription?: string,
-     *     EventTypeId: int,
-     *     EventTypeName: string,
-     *     EventTypeSlug: string,
-     *     VenueName: ?string,
-     *     SessionCount: int,
-     *     IsActive: int|bool
-     * } $data
-     */
-    public static function fromArray(array $data): self
+    public static function fromEventWithDetails(EventWithDetails $event): self
     {
         return new self(
-            eventId: (int)$data['EventId'],
-            title: (string)$data['Title'],
-            shortDescription: (string)($data['ShortDescription'] ?? ''),
-            eventTypeId: (int)$data['EventTypeId'],
-            eventTypeName: (string)$data['EventTypeName'],
-            eventTypeSlug: (string)$data['EventTypeSlug'],
-            venueName: $data['VenueName'] ?? null,
-            sessionCount: (int)$data['SessionCount'],
-            isActive: (bool)$data['IsActive'],
+            eventId: $event->eventId,
+            title: $event->title,
+            shortDescription: $event->shortDescription,
+            eventTypeId: $event->eventTypeId,
+            eventTypeName: $event->eventTypeName,
+            eventTypeSlug: $event->eventTypeSlug,
+            venueName: $event->venueName,
+            sessionCount: $event->sessionCount,
+            isActive: $event->isActive,
         );
     }
 

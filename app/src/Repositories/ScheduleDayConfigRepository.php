@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\ScheduleDayConfig;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use PDO;
 
@@ -20,6 +21,9 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * @return ScheduleDayConfig[]
+     */
     public function findConfigs(array $filters = []): array
     {
         $includeEventTypeName = (bool)($filters['includeEventTypeName'] ?? false);
@@ -69,7 +73,7 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([ScheduleDayConfig::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**

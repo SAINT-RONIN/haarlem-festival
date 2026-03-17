@@ -32,30 +32,18 @@ final readonly class StorytellingPageViewModel extends BaseViewModel
         );
     }
 
-    /**
-     * @param array{globalUiContent: array<string, mixed>, isLoggedIn: bool} $sharedData
-     */
-    public static function fromDomainData(StorytellingPageData $pageData, array $sharedData): self
+    public static function fromDomainData(StorytellingPageData $pageData, HeroData $heroData, GlobalUiData $globalUi): self
     {
         $sections = $pageData->sections;
-        $globalUiContent = $sharedData['globalUiContent'] ?? [];
-        $isLoggedIn = (bool)($sharedData['isLoggedIn'] ?? false);
 
         return new self(
-            heroData: self::buildHeroData($sections),
-            globalUi: GlobalUiData::fromCms($globalUiContent, $isLoggedIn),
+            heroData: $heroData,
+            globalUi: $globalUi,
             gradientSection: self::buildGradientSection($sections),
             introSplitSection: self::buildIntroSplitSection($sections),
             masonrySection: MasonrySectionData::fromCms($sections[StorytellingPageConstants::SECTION_MASONRY] ?? []),
             scheduleSection: ScheduleSectionViewModel::fromData($pageData->scheduleSectionData),
         );
-    }
-
-    /** @param array<string, mixed> $sections */
-    private static function buildHeroData(array $sections): HeroData
-    {
-        $section = $sections[StorytellingPageConstants::SECTION_HERO] ?? [];
-        return HeroData::fromCms($section, StorytellingPageConstants::CURRENT_PAGE);
     }
 
     /** @param array<string, mixed> $sections */

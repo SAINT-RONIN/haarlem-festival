@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Mappers\CmsMapper;
 use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
@@ -45,18 +46,11 @@ class RestaurantService implements IRestaurantService
     private const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 
-    private CmsService $cmsService;
-    private RestaurantRepository $restaurantRepository;
-    private RestaurantImageRepository $restaurantImageRepository;
-
     public function __construct(
-        ?CmsService $cmsService = null,
-        ?RestaurantRepository $restaurantRepository = null,
-        ?RestaurantImageRepository $restaurantImageRepository = null,
+        private CmsService $cmsService,
+        private RestaurantRepository $restaurantRepository,
+        private RestaurantImageRepository $restaurantImageRepository,
     ) {
-        $this->cmsService = $cmsService ?? new CmsService();
-        $this->restaurantRepository = $restaurantRepository ?? new RestaurantRepository();
-        $this->restaurantImageRepository = $restaurantImageRepository ?? new RestaurantImageRepository();
     }
 
     // =====================================================================
@@ -66,11 +60,11 @@ class RestaurantService implements IRestaurantService
     /**
      * Builds the complete page ViewModel consumed by the restaurant view.
      */
-    public function getRestaurantPageData(): RestaurantPageViewModel
+    public function getRestaurantPageData(bool $isLoggedIn): RestaurantPageViewModel
     {
         return new RestaurantPageViewModel(
-            heroData:              $this->cmsService->buildHeroData(self::PAGE_SLUG, self::PAGE_SLUG),
-            globalUi:              $this->cmsService->buildGlobalUiData(),
+            heroData:              CmsMapper::toHeroData($this->cmsService->getHeroSectionContent(self::PAGE_SLUG), self::PAGE_SLUG),
+            globalUi:              CmsMapper::toGlobalUiData($this->cmsService->getSectionContent('home', 'global_ui'), $isLoggedIn),
             gradientSection:       $this->buildGradientSection(),
             introSplitSection:     $this->buildIntroSplitSection(),
             introSplit2Section:    $this->buildIntroSplit2Section(),
@@ -86,7 +80,7 @@ class RestaurantService implements IRestaurantService
      * All detail content comes from the Restaurant domain table columns.
      * Images come from MediaAsset JOINs in the repository.
      */
-    public function getRestaurantDetailData(int $id): ?RestaurantDetailViewModel
+    public function getRestaurantDetailData(int $id, bool $isLoggedIn = false): ?RestaurantDetailViewModel
     {
         $restaurant = $this->restaurantRepository->findById($id);
 
@@ -131,7 +125,7 @@ class RestaurantService implements IRestaurantService
 
         return new RestaurantDetailViewModel(
             heroData: $heroData,
-            globalUi: $this->cmsService->buildGlobalUiData(),
+            globalUi: CmsMapper::toGlobalUiData($this->cmsService->getSectionContent('home', 'global_ui'), $isLoggedIn),
 
             id:          $restaurant->restaurantId,
             name:        $restaurant->name,

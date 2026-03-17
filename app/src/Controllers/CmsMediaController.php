@@ -7,7 +7,6 @@ namespace App\Controllers;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\ValidationException;
 use App\Models\MediaAsset;
-use App\Repositories\MediaAssetRepository;
 use App\Services\MediaAssetService;
 use App\Services\SessionService;
 use App\ViewModels\Cms\CmsMediaLibraryViewModel;
@@ -15,13 +14,10 @@ use App\ViewModels\Cms\CmsMediaListItemViewModel;
 
 class CmsMediaController
 {
-    private MediaAssetService $mediaAssetService;
-    private SessionService $sessionService;
-
-    public function __construct()
-    {
-        $this->mediaAssetService = new MediaAssetService();
-        $this->sessionService = new SessionService();
+    public function __construct(
+        private readonly MediaAssetService $mediaAssetService,
+        private readonly SessionService $sessionService,
+    ) {
     }
 
     public function index(): void
@@ -30,7 +26,7 @@ class CmsMediaController
             CmsAuthController::requireAdmin();
 
             $currentView = 'media';
-            $allAssets = (new MediaAssetRepository())->findAll();
+            $allAssets = $this->mediaAssetService->getAllAssets();
 
             $assets = array_map(
                 static fn(MediaAsset $asset): CmsMediaListItemViewModel => CmsMediaListItemViewModel::fromModel($asset),
@@ -119,7 +115,7 @@ class CmsMediaController
         try {
             CmsAuthController::requireAdmin();
 
-            $allAssets = (new MediaAssetRepository())->findAll();
+            $allAssets = $this->mediaAssetService->getAllAssets();
 
             $data = array_map(static fn(MediaAsset $asset): array => [
                 'mediaAssetId' => $asset->mediaAssetId,

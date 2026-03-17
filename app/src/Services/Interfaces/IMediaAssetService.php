@@ -37,4 +37,11 @@ interface IMediaAssetService
      * @return array Validation limits
      */
     public function getImageLimits(): array;
+
+    /**
+     * Returns all media assets.
+     *
+     * @return MediaAsset[]
+     */
+    public function getAllAssets(): array;
 }

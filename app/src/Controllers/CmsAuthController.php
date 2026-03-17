@@ -11,13 +11,10 @@ use App\Services\SessionService;
 
 class CmsAuthController
 {
-    private AuthService $authService;
-    private SessionService $sessionService;
-
-    public function __construct()
-    {
-        $this->authService = new AuthService();
-        $this->sessionService = new SessionService();
+    public function __construct(
+        private readonly AuthService $authService,
+        private readonly SessionService $sessionService,
+    ) {
     }
 
     public function showLogin(): void

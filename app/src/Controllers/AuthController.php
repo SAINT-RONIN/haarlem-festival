@@ -11,15 +11,11 @@ use App\Services\SessionService;
 
 class AuthController
 {
-    private AuthService $authService;
-    private SessionService $sessionService;
-    private CaptchaService $captchaService;
-
-    public function __construct()
-    {
-        $this->authService = new AuthService();
-        $this->sessionService = new SessionService();
-        $this->captchaService = new CaptchaService();
+    public function __construct(
+        private readonly AuthService $authService,
+        private readonly SessionService $sessionService,
+        private readonly CaptchaService $captchaService,
+    ) {
     }
 
     public function showLogin(): void

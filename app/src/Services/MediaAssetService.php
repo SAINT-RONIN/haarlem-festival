@@ -18,11 +18,9 @@ use App\Utils\CmsContentLimits;
  */
 class MediaAssetService implements IMediaAssetService
 {
-    private MediaAssetRepository $mediaAssetRepository;
-
-    public function __construct()
-    {
-        $this->mediaAssetRepository = new MediaAssetRepository();
+    public function __construct(
+        private readonly MediaAssetRepository $mediaAssetRepository,
+    ) {
     }
 
     /**
@@ -211,6 +209,16 @@ class MediaAssetService implements IMediaAssetService
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
     {
         return $this->mediaAssetRepository->linkToCmsItem($mediaAssetId, $cmsItemId);
+    }
+
+    /**
+     * Returns all media assets.
+     *
+     * @return MediaAsset[]
+     */
+    public function getAllAssets(): array
+    {
+        return $this->mediaAssetRepository->findAll();
     }
 
     /**

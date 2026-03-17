@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+use App\Models\EventWithDetails;
+
 /**
  * ViewModel for the CMS event edit page.
  *
@@ -45,21 +47,21 @@ class CmsEventEditViewModel
     }
 
     /**
-     * Creates a ViewModel from event data array and sessions.
+     * Creates a ViewModel from an EventWithDetails model and sessions.
      *
-     * @param array $eventData Event data from repository
+     * @param EventWithDetails $event Event model from repository
      * @param array<int, array<string, mixed>> $sessions Session rows from repository
      * @param array<int, array> $pricesData Prices keyed by session ID
      * @param array<int, array> $labelsData Labels keyed by session ID
      */
     public static function fromData(
-        array $eventData,
+        EventWithDetails $event,
         array $sessions,
         array $pricesData = [],
         array $labelsData = []
     ): self {
-        $eventTitle = (string)($eventData['Title'] ?? '');
-        $eventTypeSlug = (string)($eventData['EventTypeSlug'] ?? 'default');
+        $eventTitle = $event->title;
+        $eventTypeSlug = $event->eventTypeSlug;
 
         $sessionViewModels = array_map(static function (mixed $session) use ($eventTitle, $eventTypeSlug): CmsEventSessionViewModel {
             if (is_array($session)) {
@@ -72,16 +74,16 @@ class CmsEventEditViewModel
         }, $sessions);
 
         return new self(
-            eventId: (int)$eventData['EventId'],
-            title: (string)$eventData['Title'],
-            shortDescription: (string)($eventData['ShortDescription'] ?? ''),
-            longDescriptionHtml: (string)($eventData['LongDescriptionHtml'] ?? '<p></p>'),
-            eventTypeId: (int)$eventData['EventTypeId'],
-            eventTypeName: (string)($eventData['EventTypeName'] ?? ''),
-            eventTypeSlug: (string)($eventData['EventTypeSlug'] ?? ''),
-            venueId: isset($eventData['VenueId']) ? (int)$eventData['VenueId'] : null,
-            venueName: $eventData['VenueName'] ?? null,
-            isActive: (bool)($eventData['IsActive'] ?? true),
+            eventId: $event->eventId,
+            title: $event->title,
+            shortDescription: $event->shortDescription,
+            longDescriptionHtml: $event->longDescriptionHtml !== '' ? $event->longDescriptionHtml : '<p></p>',
+            eventTypeId: $event->eventTypeId,
+            eventTypeName: $event->eventTypeName,
+            eventTypeSlug: $event->eventTypeSlug,
+            venueId: $event->venueId,
+            venueName: $event->venueName,
+            isActive: $event->isActive,
             sessions: $sessionViewModels,
             sessionPrices: $pricesData,
             sessionLabels: $labelsData,

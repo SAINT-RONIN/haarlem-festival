@@ -61,11 +61,17 @@ class StorytellingDetailService
         $events = $this->eventRepository->findEvents(['eventId' => $eventId]);
         $event = $events[0] ?? null;
 
-        if (!$event || (int)$event['EventTypeId'] !== EventTypeId::Storytelling->value) {
+        if (!$event || $event->eventTypeId !== EventTypeId::Storytelling->value) {
             throw new \RuntimeException("Storytelling event {$eventId} not found.");
         }
 
-        return StorytellingDetailEvent::fromRow($event);
+        return new StorytellingDetailEvent(
+            eventId: $event->eventId,
+            title: $event->title,
+            shortDescription: $event->shortDescription,
+            longDescriptionHtml: $event->longDescriptionHtml,
+            featuredImageAssetId: $event->featuredImageAssetId,
+        );
     }
 
     private function fetchFeaturedImagePath(StorytellingDetailEvent $event): ?string

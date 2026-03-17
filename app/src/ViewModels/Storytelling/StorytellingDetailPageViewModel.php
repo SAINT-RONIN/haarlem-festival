@@ -32,16 +32,9 @@ final readonly class StorytellingDetailPageViewModel extends BaseViewModel
         );
     }
 
-    /**
-     * @param array{globalUiContent: array<string, mixed>, isLoggedIn: bool} $sharedData
-     */
-    public static function fromDomainData(StorytellingDetailPageData $pageData, array $sharedData): self
+    public static function fromDomainData(StorytellingDetailPageData $pageData, GlobalUiData $globalUi): self
     {
-        $globalUiContent = $sharedData['globalUiContent'] ?? [];
-        $isLoggedIn = (bool)($sharedData['isLoggedIn'] ?? false);
-
         $scheduleSection = ScheduleSectionViewModel::fromData($pageData->scheduleSectionData);
-        $globalUi = GlobalUiData::fromCms($globalUiContent, $isLoggedIn);
 
         $detailHero = StorytellingDetailHeroData::fromData(
             title: $pageData->event->title,

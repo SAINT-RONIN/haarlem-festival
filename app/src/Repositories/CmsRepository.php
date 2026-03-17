@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\CmsItem;
+use App\Models\CmsPage;
 use App\Models\CmsSection;
 use App\Repositories\Interfaces\ICmsRepository;
 use PDO;
@@ -19,6 +20,9 @@ class CmsRepository implements ICmsRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * @return CmsPage[]
+     */
     public function findPages(array $filters = []): array
     {
         $includeLastUpdated = (bool)($filters['includeLastUpdated'] ?? false);
@@ -57,7 +61,7 @@ class CmsRepository implements ICmsRepository
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([CmsPage::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     public function findSections(array $filters = []): array
@@ -127,31 +131,31 @@ class CmsRepository implements ICmsRepository
     public function updateItem(int $cmsItemId, array $data): bool
     {
         $fields = [];
-        $values = [];
+        $params = [];
 
         if (array_key_exists('TextValue', $data)) {
-            $fields[] = 'TextValue = ?';
-            $values[] = $data['TextValue'];
+            $fields[] = 'TextValue = :textValue';
+            $params['textValue'] = $data['TextValue'];
         }
 
         if (array_key_exists('HtmlValue', $data)) {
-            $fields[] = 'HtmlValue = ?';
-            $values[] = $data['HtmlValue'];
+            $fields[] = 'HtmlValue = :htmlValue';
+            $params['htmlValue'] = $data['HtmlValue'];
         }
 
         if ($fields === []) {
             return false;
         }
 
-        $values[] = $cmsItemId;
-        $sql = 'UPDATE CmsItem SET ' . implode(', ', $fields) . ' WHERE CmsItemId = ?';
+        $params['cmsItemId'] = $cmsItemId;
+        $sql = 'UPDATE CmsItem SET ' . implode(', ', $fields) . ' WHERE CmsItemId = :cmsItemId';
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($values);
+        return $stmt->execute($params);
     }
 
     public function updateItemMediaAsset(int $cmsItemId, ?int $mediaAssetId): bool
     {
-        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = ? WHERE CmsItemId = ?');
-        return $stmt->execute([$mediaAssetId, $cmsItemId]);
+        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = :mediaAssetId WHERE CmsItemId = :cmsItemId');
+        return $stmt->execute(['mediaAssetId' => $mediaAssetId, 'cmsItemId' => $cmsItemId]);
     }
 }

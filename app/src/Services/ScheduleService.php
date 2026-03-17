@@ -25,22 +25,14 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
  */
 class ScheduleService implements IScheduleService
 {
-    private CmsService $cmsService;
-    private CmsEventsService $cmsEventsService;
-    private EventSessionRepository $sessionRepository;
-    private EventSessionLabelRepository $labelRepository;
-    private EventSessionPriceRepository $priceRepository;
-    private EventTypeRepository $eventTypeRepository;
-
-
-    public function __construct()
-    {
-        $this->cmsService = new CmsService();
-        $this->cmsEventsService = new CmsEventsService();
-        $this->sessionRepository = new EventSessionRepository();
-        $this->labelRepository = new EventSessionLabelRepository();
-        $this->priceRepository = new EventSessionPriceRepository();
-        $this->eventTypeRepository = new EventTypeRepository();
+    public function __construct(
+        private CmsService $cmsService,
+        private CmsEventsService $cmsEventsService,
+        private EventSessionRepository $sessionRepository,
+        private EventSessionLabelRepository $labelRepository,
+        private EventSessionPriceRepository $priceRepository,
+        private EventTypeRepository $eventTypeRepository,
+    ) {
     }
 
     public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null): array
