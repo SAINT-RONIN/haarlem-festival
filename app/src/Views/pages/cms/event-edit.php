@@ -289,8 +289,8 @@
                                 <div class="flex flex-wrap gap-2 mb-2">
                                     <?php foreach ($sessionLabels as $label): ?>
                                         <span class="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 text-pink-800 rounded text-sm">
-                                                <?= htmlspecialchars($label['LabelText']) ?>
-                                                <form action="/cms/labels/<?= (int)$label['EventSessionLabelId'] ?>/delete"
+                                                <?= htmlspecialchars($label->labelText) ?>
+                                                <form action="/cms/labels/<?= $label->eventSessionLabelId ?>/delete"
                                                       method="POST" class="inline">
                                                     <input type="hidden" name="EventId"
                                                            value="<?= $viewModel->eventId ?>">
@@ -321,8 +321,17 @@
                                 <div class="flex flex-wrap gap-2 mb-3">
                                     <?php foreach ($sessionPrices as $price): ?>
                                         <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
-                                            <?= htmlspecialchars($price['PriceTierName'] ?? 'Unknown') ?>:
-                                            <?= $price['CurrencyCode'] ?? 'EUR' ?> <?= number_format((float)$price['Price'], 2) ?>
+                                            <?php
+                                                $tierName = 'Unknown';
+                                                foreach ($priceTiers as $tier) {
+                                                    if ($tier->priceTierId === $price->priceTierId) {
+                                                        $tierName = $tier->name;
+                                                        break;
+                                                    }
+                                                }
+                                            ?>
+                                            <?= htmlspecialchars($tierName) ?>:
+                                            <?= htmlspecialchars($price->currencyCode) ?> <?= number_format((float)$price->price, 2) ?>
                                         </span>
                                     <?php endforeach; ?>
                                     <?php if (empty($sessionPrices)): ?>
