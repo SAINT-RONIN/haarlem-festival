@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Exceptions\ValidationException;
-use App\Repositories\CmsRepository;
+use App\Services\CmsDashboardService;
 use App\Services\CmsEditService;
 use App\Services\MediaAssetService;
 use App\Services\SessionService;
@@ -14,22 +14,22 @@ use App\ViewModels\CmsPageEditViewModel;
 /**
  * Controller for the CMS Dashboard.
  *
- * Handles the main CMS admin panel views including
- * dashboard overview and pages management.
+ * HTTP orchestration only:
+ * - auth checks
+ * - service calls
+ * - selecting views / redirects / response codes
  */
 class CmsDashboardController
 {
-    private SessionService $sessionService;
-    private CmsRepository $cmsRepository;
-    private CmsEditService $cmsEditService;
-    private MediaAssetService $mediaAssetService;
+    private const MEDIA_CONTEXT_CMS = 'cms';
+    private const CSRF_SCOPE_PAGE_EDIT = 'cms_page_edit';
 
-    public function __construct()
-    {
-        $this->sessionService = new SessionService();
-        $this->cmsRepository = new CmsRepository();
-        $this->cmsEditService = new CmsEditService();
-        $this->mediaAssetService = new MediaAssetService();
+    public function __construct(
+        private readonly SessionService $sessionService,
+        private readonly CmsDashboardService $cmsDashboardService,
+        private readonly CmsEditService $cmsEditService,
+        private readonly MediaAssetService $mediaAssetService,
+    ) {
     }
 
     /**
@@ -41,11 +41,12 @@ class CmsDashboardController
         CmsAuthController::requireAdmin();
 
         $currentView = 'dashboard';
-        $recentPages = $this->getRecentPages();
-        $activities = $this->getRecentActivities();
-        $userName = $this->getUserDisplayName();
+        $viewModel = $this->cmsDashboardService->getDashboardData($this->getUserDisplayName());
 
-        require __DIR__ . '/../Views/pages/cms/dashboard.php';
+        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+            'currentView' => $currentView,
+            'viewModel' => $viewModel,
+        ]);
     }
 
     /**
@@ -57,167 +58,14 @@ class CmsDashboardController
         CmsAuthController::requireAdmin();
 
         $currentView = 'pages';
-        $searchQuery = $_GET['search'] ?? '';
-        $pages = $this->getAllPages();
-        $userName = $this->getUserDisplayName();
+        $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
+        $viewModel = $this->cmsDashboardService->getPagesListData($searchQuery, $this->getUserDisplayName());
 
-        require __DIR__ . '/../Views/pages/cms/dashboard.php';
-    }
-
-    /**
-     * Gets the current user's display name from session.
-     */
-    private function getUserDisplayName(): string
-    {
-        $this->sessionService->start();
-        return $_SESSION['user_display_name'] ?? 'Administrator';
-    }
-
-    /**
-     * Gets recently updated pages for the dashboard.
-     */
-    private function getRecentPages(): array
-    {
-        try {
-            $cmsPages = $this->cmsRepository->findAllPages();
-            $pages = $this->mapPagesToRecentFormat(array_slice($cmsPages, 0, 4));
-
-            return !empty($pages) ? $pages : $this->getDefaultRecentPages();
-        } catch (\Exception $e) {
-            return $this->getDefaultRecentPages();
-        }
-    }
-
-    /**
-     * Maps CMS pages to recent pages format.
-     */
-    private function mapPagesToRecentFormat(array $cmsPages): array
-    {
-        $pages = [];
-        foreach ($cmsPages as $page) {
-            $pages[] = [
-                'title' => $page['Title'],
-                'status' => 'Published',
-                'time' => $this->formatTimeAgo($page['UpdatedAtUtc'] ?? null),
-            ];
-        }
-        return $pages;
-    }
-
-    /**
-     * Returns fallback data when database is unavailable.
-     */
-    private function getDefaultRecentPages(): array
-    {
-        return [
-            ['title' => 'Home', 'status' => 'Published', 'time' => '2h ago'],
-            ['title' => 'Jazz', 'status' => 'Published', 'time' => 'yesterday'],
-            ['title' => 'Dance', 'status' => 'Published', 'time' => '3d ago'],
-            ['title' => 'History', 'status' => 'Draft', 'time' => '6d ago'],
-        ];
-    }
-
-    /**
-     * Gets all pages for the pages list view.
-     */
-    private function getAllPages(): array
-    {
-        try {
-            $cmsPages = $this->cmsRepository->findAllPages();
-            $pages = $this->mapPagesToListFormat($cmsPages);
-
-            return !empty($pages) ? $pages : $this->getDefaultAllPages();
-        } catch (\Exception $e) {
-            return $this->getDefaultAllPages();
-        }
-    }
-
-    /**
-     * Maps CMS pages to pages list format.
-     */
-    private function mapPagesToListFormat(array $cmsPages): array
-    {
-        $pages = [];
-        foreach ($cmsPages as $page) {
-            $pages[] = [
-                'id' => $page['CmsPageId'],
-                'title' => $page['Title'],
-                'slug' => $page['Slug'],
-                'status' => 'Published',
-                'updatedAt' => $this->formatTimeAgo($page['UpdatedAtUtc'] ?? null),
-            ];
-        }
-        return $pages;
-    }
-
-    /**
-     * Returns fallback pages list.
-     */
-    private function getDefaultAllPages(): array
-    {
-        return [
-            ['id' => 1, 'title' => 'Home', 'slug' => 'home', 'status' => 'Published', 'updatedAt' => '2h ago'],
-            ['id' => 2, 'title' => 'Jazz', 'slug' => 'jazz', 'status' => 'Published', 'updatedAt' => 'yesterday'],
-            ['id' => 3, 'title' => 'Dance', 'slug' => 'dance', 'status' => 'Published', 'updatedAt' => '3d ago'],
-            ['id' => 4, 'title' => 'History', 'slug' => 'history', 'status' => 'Draft', 'updatedAt' => '6d ago'],
-            ['id' => 5, 'title' => 'Restaurant', 'slug' => 'restaurant', 'status' => 'Published', 'updatedAt' => '1w ago'],
-            ['id' => 6, 'title' => 'Storytelling', 'slug' => 'storytelling', 'status' => 'Published', 'updatedAt' => '1w ago'],
-        ];
-    }
-
-    /**
-     * Gets recent activity feed for the dashboard.
-     *
-     * @return array Array of activities with icon, text, time, and color
-     */
-    private function getRecentActivities(): array
-    {
-        // For now, return static activities
-        // This could be enhanced to pull from an activity log table
-        return [
-            ['icon' => 'edit', 'text' => "You updated 'Home'", 'time' => '2h ago', 'color' => 'blue'],
-            ['icon' => 'file-text', 'text' => "Draft saved: 'History'", 'time' => 'yesterday', 'color' => 'amber'],
-            ['icon' => 'image', 'text' => 'Media uploaded: header.jpg', 'time' => '3d ago', 'color' => 'purple'],
-            ['icon' => 'user', 'text' => "User 'Editor' role updated", 'time' => '1w ago', 'color' => 'green'],
-        ];
-    }
-
-    /**
-     * Formats a timestamp as a human-readable "time ago" string.
-     *
-     * @param string|null $timestamp The UTC timestamp
-     * @return string Human-readable time string
-     */
-    private function formatTimeAgo(?string $timestamp): string
-    {
-        if ($timestamp === null) {
-            return 'recently';
-        }
-
-        try {
-            $time = new \DateTime($timestamp, new \DateTimeZone('UTC'));
-            $now = new \DateTime('now', new \DateTimeZone('UTC'));
-            $diff = $now->diff($time);
-
-            if ($diff->days === 0) {
-                if ($diff->h === 0) {
-                    return $diff->i . 'm ago';
-                }
-                return $diff->h . 'h ago';
-            } elseif ($diff->days === 1) {
-                return 'yesterday';
-            } elseif ($diff->days < 7) {
-                return $diff->days . 'd ago';
-            } elseif ($diff->days < 30) {
-                $weeks = floor($diff->days / 7);
-                return $weeks . 'w ago';
-            } else {
-                $months = floor($diff->days / 30);
-                return $months . 'mo ago';
-            }
-        } catch (\Exception $e) {
-            return 'recently';
-        }
+        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+            'currentView' => $currentView,
+            'searchQuery' => $searchQuery,
+            'viewModel' => $viewModel,
+        ]);
     }
 
     /**
@@ -228,29 +76,38 @@ class CmsDashboardController
     {
         CmsAuthController::requireAdmin();
 
-        $pageId = (int)$id;
-        $pageData = $this->cmsEditService->getPageForEditing($pageId);
+        $pageId = $this->parsePositiveIntId($id);
+        if ($pageId === null) {
+            http_response_code(400);
+            echo 'Invalid page ID';
+            return;
+        }
 
-        if (!$pageData) {
+        $pageData = $this->cmsEditService->getPageForEditing($pageId);
+        if ($pageData === null) {
             http_response_code(404);
             echo 'Page not found';
             return;
         }
 
-        $viewModel = new CmsPageEditViewModel($pageData);
-        $viewData = $viewModel->getViewData();
-
+        $viewData = (new CmsPageEditViewModel($pageData))->getViewData();
         $page = $viewData['page'];
         $sections = $viewData['sections'];
-        $contentLimits = $viewData['contentLimits'];
-        $imageLimits = $viewData['imageLimits'];
-        $userName = $this->getUserDisplayName();
 
-        $successMessage = $_SESSION['cms_success'] ?? null;
-        $errorMessage = $_SESSION['cms_error'] ?? null;
-        unset($_SESSION['cms_success'], $_SESSION['cms_error']);
+        $this->sessionService->start();
+        $csrfToken = $this->sessionService->getCsrfToken(self::CSRF_SCOPE_PAGE_EDIT);
 
-        require __DIR__ . '/../Views/pages/cms/page-edit.php';
+        $this->render(__DIR__ . '/../Views/pages/cms/page-edit.php', [
+            'page' => $page,
+            'sections' => $sections,
+            'previewUrl' => $this->cmsEditService->resolvePreviewUrl($page, $sections),
+            'contentLimits' => $viewData['contentLimits'],
+            'imageLimits' => $viewData['imageLimits'],
+            'userName' => $this->getUserDisplayName(),
+            'successMessage' => $this->sessionService->consumeFlash('cms_success'),
+            'errorMessage' => $this->sessionService->consumeFlash('cms_error'),
+            'csrfToken' => $csrfToken,
+        ]);
     }
 
     /**
@@ -261,11 +118,23 @@ class CmsDashboardController
     {
         CmsAuthController::requireAdmin();
 
-        $pageId = (int)$id;
-        $items = $_POST['items'] ?? [];
+        $pageId = $this->parsePositiveIntId($id);
+        if ($pageId === null) {
+            http_response_code(400);
+            echo 'Invalid page ID';
+            return;
+        }
 
-        if (empty($items)) {
-            $_SESSION['cms_error'] = 'No changes submitted';
+        $csrfToken = $_POST['csrf_token'] ?? null;
+        if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, is_string($csrfToken) ? $csrfToken : null)) {
+            $this->sessionService->setFlash('cms_error', 'Invalid request token. Please refresh and try again.');
+            header("Location: /cms/pages/{$pageId}/edit");
+            exit;
+        }
+
+        $items = $_POST['items'] ?? [];
+        if (!is_array($items) || $items === []) {
+            $this->sessionService->setFlash('cms_error', 'No changes submitted');
             header("Location: /cms/pages/{$pageId}/edit");
             exit;
         }
@@ -277,10 +146,12 @@ class CmsDashboardController
 
         $result = $this->cmsEditService->updatePageItems($pageId, $formattedItems);
 
-        if ($result['success']) {
-            $_SESSION['cms_success'] = "Updated {$result['updatedCount']} item(s) successfully";
+        if (($result['success'] ?? false) === true) {
+            $updatedCount = (int)($result['updatedCount'] ?? 0);
+            $this->sessionService->setFlash('cms_success', "Updated {$updatedCount} item(s) successfully");
         } else {
-            $_SESSION['cms_error'] = implode(', ', $result['errors']);
+            $errors = $result['errors'] ?? [];
+            $this->sessionService->setFlash('cms_error', is_array($errors) ? implode(', ', $errors) : 'Failed to update content');
         }
 
         header("Location: /cms/pages/{$pageId}/edit");
@@ -297,10 +168,20 @@ class CmsDashboardController
 
         header('Content-Type: application/json');
 
-        $pageId = (int)$id;
-        $itemId = (int)($_POST['item_id'] ?? 0);
+        $pageId = $this->parsePositiveIntId($id);
+        if ($pageId === null) {
+            echo json_encode(['success' => false, 'error' => 'Invalid page ID']);
+            return;
+        }
 
-        if (!$itemId) {
+        $csrfToken = $_POST['csrf_token'] ?? null;
+        if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, is_string($csrfToken) ? $csrfToken : null)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid request token']);
+            return;
+        }
+
+        $itemId = (int)($_POST['item_id'] ?? 0);
+        if ($itemId <= 0) {
             echo json_encode(['success' => false, 'error' => 'Missing item ID']);
             return;
         }
@@ -311,19 +192,44 @@ class CmsDashboardController
         }
 
         try {
-            $mediaAsset = $this->mediaAssetService->uploadImage($_FILES['image'], 'cms');
-            $this->cmsEditService->updateItemImage($itemId, $mediaAsset['MediaAssetId']);
+            $mediaAsset = $this->mediaAssetService->uploadImage($_FILES['image'], self::MEDIA_CONTEXT_CMS);
+            $this->cmsEditService->updateItemImage($itemId, (int)$mediaAsset['MediaAssetId']);
 
             echo json_encode([
                 'success' => true,
                 'mediaAssetId' => $mediaAsset['MediaAssetId'],
                 'filePath' => $mediaAsset['FilePath'],
-                'message' => 'Image uploaded successfully'
+                'message' => 'Image uploaded successfully',
             ]);
         } catch (ValidationException $e) {
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             echo json_encode(['success' => false, 'error' => 'Upload failed: ' . $e->getMessage()]);
         }
+    }
+
+    private function getUserDisplayName(): string
+    {
+        $name = $this->sessionService->get('user_display_name', 'Administrator');
+        return is_string($name) && $name !== '' ? $name : 'Administrator';
+    }
+
+    private function parsePositiveIntId(string $id): ?int
+    {
+        if ($id === '' || ctype_digit($id) === false) {
+            return null;
+        }
+
+        $value = (int)$id;
+        return $value > 0 ? $value : null;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function render(string $viewPath, array $data = []): void
+    {
+        extract($data, EXTR_SKIP);
+        require $viewPath;
     }
 }

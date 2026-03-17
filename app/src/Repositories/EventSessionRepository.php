@@ -37,6 +37,16 @@ class EventSessionRepository implements IEventSessionRepository
             $params['sessionId'] = (int)$filters['sessionId'];
         }
 
+        if (isset($filters['sessionIds']) && is_array($filters['sessionIds']) && $filters['sessionIds'] !== []) {
+            $sessionIdPlaceholders = [];
+            foreach ($filters['sessionIds'] as $index => $sid) {
+                $key = 'sessionId_' . $index;
+                $sessionIdPlaceholders[] = ':' . $key;
+                $params[$key] = (int)$sid;
+            }
+            $conditions[] = 'es.EventSessionId IN (' . implode(',', $sessionIdPlaceholders) . ')';
+        }
+
         if (array_key_exists('isActive', $filters)) {
             $conditions[] = 'es.IsActive = :isActive';
             $params['isActive'] = ((bool)$filters['isActive']) ? 1 : 0;

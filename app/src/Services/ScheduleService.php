@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\PriceTierId;
-use App\Models\CmsItem;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
 use App\Repositories\EventSessionLabelRepository;
@@ -43,6 +42,69 @@ class ScheduleService implements IScheduleService
         $this->eventTypeRepository = new EventTypeRepository();
     }
 
+    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null): array
+    {
+        $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
+        $eventTypeSlug = $eventType?->slug ?? $pageSlug;
+
+        $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
+        $visibleDays = $this->cmsEventsService->getVisibleDays($eventTypeId);
+
+        $filters = [
+            'eventTypeId' => $eventTypeId,
+            'isActive' => true,
+            'eventIsActive' => true,
+            'includeCancelled' => false,
+            'groupByDay' => true,
+            'maxDays' => $maxDays,
+            'visibleDays' => $visibleDays,
+            'orderBy' => 'es.StartDateTime ASC',
+        ];
+
+        if ($eventId !== null) {
+            $filters['eventId'] = $eventId;
+        }
+
+        $scheduleData = $this->sessionRepository->findSessions($filters);
+
+        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
+        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
+        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
+
+        $dayViewModels = $this->buildScheduleDays(
+            $scheduleData,
+            $eventTypeSlug,
+            $eventTypeId,
+            $ctaButtonText,
+            $payWhatYouLikeText,
+            $currencySymbol
+        );
+
+        $days = [];
+        foreach ($dayViewModels as $day) {
+            $events = [];
+            foreach ($day->events as $event) {
+                $events[] = get_object_vars($event);
+            }
+
+            $days[] = [
+                'dayName' => $day->dayName,
+                'dateFormatted' => $day->dateFormatted,
+                'isoDate' => $day->isoDate,
+                'events' => $events,
+                'isEmpty' => $day->isEmpty,
+            ];
+        }
+
+        return [
+            'cmsContent' => $cmsContent,
+            'pageSlug' => $pageSlug,
+            'eventTypeSlug' => $eventTypeSlug,
+            'eventTypeId' => $eventTypeId,
+            'days' => $days,
+        ];
+    }
+
     /**
      * Builds a schedule section ViewModel for any event type.
      *
@@ -53,84 +115,8 @@ class ScheduleService implements IScheduleService
      */
     public function buildScheduleSection(string $pageSlug, int $eventTypeId, int $maxDays = 4): ScheduleSectionViewModel
     {
-        // Get event type info
-        $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
-        $eventTypeSlug = $eventType?->slug ?? $pageSlug;
-
-        // Get CMS content for this page's schedule section
-        $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
-        $visibleDays = $this->cmsEventsService->getVisibleDays($eventTypeId);
-
-        $scheduleData = $this->sessionRepository->findSessions([
-            'eventTypeId' => $eventTypeId,
-            'isActive' => true,
-            'eventIsActive' => true,
-            'includeCancelled' => false,
-            'groupByDay' => true,
-            'maxDays' => $maxDays,
-            'visibleDays' => $visibleDays,
-            'orderBy' => 'es.StartDateTime ASC',
-        ]);
-
-        // Extract CMS values with defaults
-        $title = $this->getStringValue($cmsContent, 'schedule_title', ucfirst($pageSlug) . ' schedule');
-        $year = $this->getStringValue($cmsContent, 'schedule_year', '2026');
-        $filtersButtonText = $this->getStringValue($cmsContent, 'schedule_filters_button_text', 'Filters');
-        $showFilters = ($cmsContent['schedule_show_filters'] ?? '1') === '1';
-        $additionalInfoTitle = $this->getStringValue($cmsContent, 'schedule_additional_info_title', 'Additional Information:');
-        $additionalInfoBody = $cmsContent['schedule_additional_info_body'] ?? '';
-        $showAdditionalInfo = ($cmsContent['schedule_show_additional_info'] ?? '0') === '1';
-        $eventCountLabel = $this->getStringValue(
-            $cmsContent,
-            'schedule_event_count_label',
-            $this->getStringValue($cmsContent, 'schedule_story_count_label', 'Events')
-        );
-        $showEventCount = ($cmsContent['schedule_show_event_count'] ??
-                $cmsContent['schedule_show_story_count'] ?? '1') === '1';
-        if ($pageSlug === 'history') {
-            $year = null; // History tours don't have a year display, so we set it to null to hide it in the view
-            $eventCountLabel = null; // History tours don't show event count, so we set it to null to hide it in the view
-            $showEventCount = false;
-        }
-        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
-        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
-        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
-        $noEventsText = $this->getStringValue($cmsContent, 'schedule_no_events_text', 'No events scheduled');
-
-
-
-        // Build day ViewModels
-        $days = $this->buildScheduleDays(
-            $scheduleData,
-            $eventTypeSlug,
-            $eventTypeId,
-            $ctaButtonText,
-            $payWhatYouLikeText,
-            $currencySymbol
-        );
-
-        // Count total events
-        $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
-
-        return new ScheduleSectionViewModel(
-            sectionId: $pageSlug . '-schedule',
-            title: $title,
-            year: $year,
-            eventTypeSlug: $eventTypeSlug,
-            eventTypeId: $eventTypeId,
-            filtersButtonText: $filtersButtonText,
-            showFilters: $showFilters,
-            additionalInfoTitle: $additionalInfoTitle,
-            additionalInfoBody: $additionalInfoBody,
-            showAdditionalInfo: $showAdditionalInfo,
-            eventCountLabel: $eventCountLabel,
-            eventCount: $eventCount,
-            showEventCount: $showEventCount,
-            ctaButtonText: $ctaButtonText,
-            payWhatYouLikeText: $payWhatYouLikeText,
-            currencySymbol: $currencySymbol,
-            noEventsText: $noEventsText,
-            days: $days,
+        return ScheduleSectionViewModel::fromData(
+            $this->getScheduleData($pageSlug, $eventTypeId, $maxDays)
         );
     }
 
@@ -192,9 +178,6 @@ class ScheduleService implements IScheduleService
                 );
             }
 
-            // Merge history events with same time/title into one card with combined labels
-            $events = $this->mergeHistoryEventsByTimeAndTitle($events, $eventTypeSlug);
-
             $dayViewModels[] = new ScheduleDayViewModel(
                 dayName: $dateObj->format('l'),
                 dateFormatted: $dateObj->format('l, F j'),
@@ -205,78 +188,6 @@ class ScheduleService implements IScheduleService
         }
 
         return $dayViewModels;
-    }
-
-    /**
-     * For history schedules, merge events that share the same start time and title into a single card
-     * with combined, de-duplicated labels. Other event types are returned unchanged.
-     *
-     * @param ScheduleEventCardViewModel[] $events
-     * @return ScheduleEventCardViewModel[]
-     */
-    private function mergeHistoryEventsByTimeAndTitle(array $events, string $eventTypeSlug): array
-    {
-        if ($eventTypeSlug !== 'history' || empty($events)) {
-            return $events;
-        }
-
-        $grouped = [];
-
-        foreach ($events as $event) {
-            if (!$event instanceof ScheduleEventCardViewModel) {
-                // Safety: if something unexpected is in the array, keep it as-is using a unique key
-                $grouped[spl_object_hash($event)] = $event;
-                continue;
-            }
-
-            // Use start time + title as a stable grouping key
-            $key = $event->startTimeIso . '|' . $event->title;
-
-            if (!isset($grouped[$key])) {
-                $grouped[$key] = $event;
-                continue;
-            }
-
-            /** @var ScheduleEventCardViewModel $existing */
-            $existing = $grouped[$key];
-
-            // Merge and de-duplicate labels
-            $mergedLabels = array_values(array_unique(array_merge($existing->labels, $event->labels)));
-
-            // Create a new immutable view model instance with merged labels, preserving other fields
-            $grouped[$key] = new ScheduleEventCardViewModel(
-                eventSessionId: $existing->eventSessionId,
-                eventId: $existing->eventId,
-                eventTypeSlug: $existing->eventTypeSlug,
-                eventTypeId: $existing->eventTypeId,
-                title: $existing->title,
-                priceDisplay: $existing->priceDisplay,
-                isPayWhatYouLike: $existing->isPayWhatYouLike,
-                ctaLabel: $existing->ctaLabel,
-                ctaUrl: $existing->ctaUrl,
-                locationName: $existing->locationName,
-                hallName: $existing->hallName,
-                dateDisplay: $existing->dateDisplay,
-                isoDate: $existing->isoDate,
-                timeDisplay: $existing->timeDisplay,
-                startTimeIso: $existing->startTimeIso,
-                endTimeIso: $existing->endTimeIso,
-                labels: $mergedLabels,
-                capacityTotal: $existing->capacityTotal,
-                seatsAvailable: $existing->seatsAvailable,
-                minAge: $existing->minAge,
-                maxAge: $existing->maxAge,
-                ageLabel: $existing->ageLabel,
-                historyTicketLabel: $existing->historyTicketLabel,
-                artistName: $existing->artistName,
-                artistImageUrl: $existing->artistImageUrl,
-                historyVenue: $existing->historyVenue,
-                groupTicketInfo: $existing->groupTicketInfo,
-            );
-        }
-
-        // Re-index to get a clean numeric array
-        return array_values($grouped);
     }
 
     /**
@@ -307,11 +218,7 @@ class ScheduleService implements IScheduleService
         }
 
         $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
-
-        if ($eventTypeSlug !== 'history'){
-            $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
-        }
-
+        $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
 
         // Get price display
         $sessionPrices = $pricesMap[$sessionId] ?? [];
@@ -322,35 +229,17 @@ class ScheduleService implements IScheduleService
         $eventId = (int)$session['EventId'];
         $ctaUrl = !empty($session['CtaUrl']) ? $session['CtaUrl'] : '/' . $eventTypeSlug . '/' . $eventId;
 
-        // For History, the card title should be the start time (e.g., "10:00") instead of the generic event title.
-        $eventTitle = $eventTypeSlug === 'history' ? $startDateTime->format('H:i') : ($session['EventTitle'] ?? '');
-
-        //for history, get schedule_start_point from CMS so it can be used as the location name
-        $historyStartPoint = null;
-        if ($eventTypeSlug === 'history') {
-            $cmsContent = $this->cmsService->getSectionContent("history", 'schedule_section');
-            $historyStartPoint = $this->getStringValue($cmsContent, 'schedule_start_point', 'A giant flag near Church of St. Bavo at Grote Markt');
-        }
-
-        // Determine location name:
-        // - For history: CMS schedule_start_point
-        // - For other event types: keep using VenueName from the session.
-        $locationName = $session['VenueName'] ?? '';
-        if ($eventTypeSlug === 'history' && $historyStartPoint !== null && $historyStartPoint !== '') {
-            $locationName = $historyStartPoint;
-        }
-
         return new ScheduleEventCardViewModel(
             eventSessionId: $sessionId,
             eventId: $eventId,
             eventTypeSlug: $eventTypeSlug,
             eventTypeId: $eventTypeId,
-            title: $eventTitle,
+            title: $session['EventTitle'] ?? '',
             priceDisplay: $priceResult['display'],
             isPayWhatYouLike: $priceResult['isPayWhatYouLike'],
             ctaLabel: $ctaLabel,
             ctaUrl: $ctaUrl,
-            locationName: $locationName,
+            locationName: $session['VenueName'] ?? '',
             hallName: $session['HallName'] ?? '',
             dateDisplay: $startDateTime->format('l, F j'),
             isoDate: $startDateTime->format('Y-m-d'),
@@ -368,8 +257,6 @@ class ScheduleService implements IScheduleService
             historyTicketLabel: $session['HistoryTicketLabel'] ?? null,
             artistName: $session['ArtistName'] ?? null,
             artistImageUrl: $session['ArtistImageUrl'] ?? null,
-            historyVenue: $session['HistoryVenue'] ?? null,
-            groupTicketInfo: $session['GroupTicketInfo'] ?? null,
         );
     }
 

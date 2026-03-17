@@ -27,6 +27,12 @@ $sectionId = $sectionId ?? 'intro';
 $introSplitImageClass = $introSplitImageClass ?? 'w-full h-auto rounded-2xl object-cover';
 $introSplitReversed = $introSplitReversed ?? false;
 $flexDirection = $introSplitReversed ? 'lg:flex-row-reverse' : 'lg:flex-row';
+
+// Allow basic formatting from CMS while stripping unsupported tags.
+$introBodyHtml = trim(strip_tags((string)$introSplitSection->bodyText, '<p><br><strong><em><ul><ol><li>'));
+if ($introBodyHtml === '') {
+    $introBodyHtml = nl2br(htmlspecialchars($introSplitSection->bodyText));
+}
 ?>
 
 <section id="<?= htmlspecialchars($sectionId) ?>"
@@ -35,13 +41,13 @@ $flexDirection = $introSplitReversed ? 'lg:flex-row-reverse' : 'lg:flex-row';
         <h2 class="text-gray-900 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
             <?= htmlspecialchars($introSplitSection->headingText) ?>
         </h2>
-        <p class="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed">
-            <?= nl2br(htmlspecialchars($introSplitSection->bodyText)) ?>
-        </p>
+        <div class="w-full text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed [&>p]:m-0 [&>p+p]:mt-4 [&>ul]:my-4 [&>ol]:my-4 [&_li]:ml-6 [&_li]:list-disc">
+            <?= $introBodyHtml ?>
+        </div>
 
-        <?php if (!empty($introSplitSection->subsections)): ?>
+        <?php if (!empty($introSplitSection->subsections)) : ?>
             <div class="w-full flex flex-col gap-4 mt-2">
-                <?php foreach ($introSplitSection->subsections as $subsection): ?>
+                <?php foreach ($introSplitSection->subsections as $subsection) : ?>
                     <div class="flex flex-col gap-1">
                         <p class="text-gray-700 text-base sm:text-lg leading-relaxed font-bold">
                             <?= htmlspecialchars((string)($subsection['heading'] ?? '')) ?>
@@ -54,7 +60,7 @@ $flexDirection = $introSplitReversed ? 'lg:flex-row-reverse' : 'lg:flex-row';
             </div>
         <?php endif; ?>
 
-        <?php if (!empty($introSplitSection->closingLine)): ?>
+        <?php if (!empty($introSplitSection->closingLine)) : ?>
             <p class="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed mt-2">
                 <?= htmlspecialchars($introSplitSection->closingLine) ?>
             </p>

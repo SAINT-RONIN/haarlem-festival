@@ -7,30 +7,26 @@ namespace App\Controllers;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\Interfaces\IStorytellingService;
 use App\Services\StorytellingService;
+use App\ViewModels\Storytelling\StorytellingDetailPageViewModel;
+use App\ViewModels\Storytelling\StorytellingPageViewModel;
 
-/**
- * Controller for the storytelling page.
- *
- * Handles HTTP requests for the storytelling landing page.
- */
 class StorytellingController extends BaseController
 {
     private IStorytellingService $storytellingService;
 
-    public function __construct()
+    public function __construct(?IStorytellingService $storytellingService = null)
     {
-        $this->storytellingService = new StorytellingService();
+        $this->storytellingService = $storytellingService ?? new StorytellingService();
     }
 
     /**
-     * Displays the storytelling page.
-     *
      * GET /storytelling
      */
     public function index(): void
     {
         try {
-            $viewModel = $this->storytellingService->getStorytellingPageData();
+            $data = $this->storytellingService->getStorytellingPageData();
+            $viewModel = StorytellingPageViewModel::fromData(...$data);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -38,16 +34,15 @@ class StorytellingController extends BaseController
     }
 
     /**
-     * Displays the storytelling detail page for a single event.
-     *
      * GET /storytelling/{id}
      */
     public function detail(string $id): void
     {
         try {
             $eventId = (int)$id;
-            $viewModel = $this->storytellingService->getStorytellingDetailPageData($eventId);
-            $this->renderView(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
+            $data = $this->storytellingService->getStorytellingDetailPageData($eventId);
+            $viewModel = StorytellingDetailPageViewModel::fromEventData(...$data);
+            $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }

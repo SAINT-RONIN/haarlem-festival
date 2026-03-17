@@ -118,3 +118,6 @@ $itemClasses = $dayCount <= 4
         </ul>
     </div>
 </section>
+
+<script src="/assets/js/add-to-program.js"></script>
+

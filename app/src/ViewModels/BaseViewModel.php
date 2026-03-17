@@ -85,6 +85,11 @@ abstract readonly class BaseViewModel
                 'nav_restaurant' => $globalUi->navRestaurant,
                 'nav_storytelling' => $globalUi->navStorytelling,
                 'btn_my_program' => $globalUi->btnMyProgram,
+                'login_label' => $globalUi->loginLabel,
+                'logout_label' => $globalUi->logoutLabel,
+                'label_events_count' => $globalUi->labelEventsCount,
+                'label_no_events' => $globalUi->labelNoEvents,
+                'btn_explore_template' => $globalUi->btnExploreTemplate,
                 'is_logged_in' => $globalUi->isLoggedIn,
             ],
         ];

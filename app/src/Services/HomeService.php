@@ -12,6 +12,8 @@ use App\Repositories\EventTypeRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\VenueRepository;
 use App\Services\Interfaces\IHomeService;
+use App\ViewModels\GlobalUiData;
+use App\ViewModels\HeroData;
 use App\ViewModels\Home\HomeUiConfig;
 use App\ViewModels\HomePageViewModel;
 
@@ -45,9 +47,11 @@ class HomeService implements IHomeService
     {
         $cmsContent = $this->cmsService->getHomePageContent();
 
+        $globalUiContent = $this->cmsService->getGlobalUiContent();
+
         return new HomePageViewModel(
-            heroData: $this->cmsService->buildHeroData('home', 'home'),
-            globalUi: $this->cmsService->buildGlobalUiData(),
+            heroData: HeroData::fromCms($this->cmsService->getHeroSectionContent('home'), 'home'),
+            globalUi: GlobalUiData::fromCms($globalUiContent['content'], $globalUiContent['isLoggedIn']),
             eventTypes: $this->buildEventTypes($cmsContent),
             locations: $this->buildLocations(),
             scheduleDays: $this->buildScheduleDays(),

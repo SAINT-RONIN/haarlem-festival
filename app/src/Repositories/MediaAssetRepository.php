@@ -36,6 +36,31 @@ class MediaAssetRepository implements IMediaAssetRepository
     }
 
     /**
+     * @param int[] $ids
+     * @return array<int, MediaAsset> Keyed by MediaAssetId
+     */
+    public function findByIds(array $ids): array
+    {
+        $ids = array_filter($ids, fn(int $id) => $id > 0);
+        if ($ids === []) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->pdo->prepare("SELECT * FROM MediaAsset WHERE MediaAssetId IN ({$placeholders})");
+        $stmt->execute(array_values($ids));
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $assets = [];
+        foreach ($rows as $row) {
+            $asset = MediaAsset::fromRow($row);
+            $assets[$asset->mediaAssetId] = $asset;
+        }
+
+        return $assets;
+    }
+
+    /**
      * Creates a new media asset record.
      *
      * @param array $data Keys: FilePath, OriginalFileName, MimeType, FileSizeBytes, AltText

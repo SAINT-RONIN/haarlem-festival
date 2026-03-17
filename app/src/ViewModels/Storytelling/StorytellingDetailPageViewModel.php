@@ -4,40 +4,86 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Storytelling;
 
+use App\ViewModels\BaseViewModel;
 use App\ViewModels\GlobalUiData;
+use App\ViewModels\HeroData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
-/**
- * ViewModel for the Storytelling Detail page (single story/event).
- */
-final readonly class StorytellingDetailPageViewModel
+final readonly class StorytellingDetailPageViewModel extends BaseViewModel
 {
-    /**
-     * @param StoryHighlightData[] $highlights
-     * @param string[]             $galleryImages  Web-safe URL paths
-     * @param string[]             $labels         E.g. ['In English', 'For ages 16+']
-     */
+    private const CURRENT_PAGE = 'storytelling';
+
     public function __construct(
-        public GlobalUiData             $globalUi,
-        public int                      $eventId,
-        public string                   $title,
-        public string                   $subtitle,
-        public string                   $heroImageUrl,
-        public array                    $labels,
-        public string                   $backButtonLabel,
-        public string                   $reserveButtonLabel,
-        public string                   $aboutHeading,
-        public string                   $aboutBodyHtml,
-        public string                   $aboutImage1Url,
-        public string                   $aboutImage2Url,
-        public array                    $highlights,
-        public string                   $highlightsSectionHeading,
-        public array                    $galleryImages,
-        public string                   $gallerySectionHeading,
-        public string                   $videoSectionHeading,
-        public string                   $videoUrl,
-        public string                   $videoPlaceholderText,
+        HeroData $heroData,
+        GlobalUiData $globalUi,
+        public StorytellingDetailHeroData $detailHero,
+        public StorytellingAboutSectionData $aboutSection,
+        public StoryHighlightsSectionData $highlightsSection,
+        public StoryGallerySectionData $gallerySection,
+        public StoryVideoSectionData $videoSection,
         public ScheduleSectionViewModel $scheduleSection,
     ) {
+        parent::__construct(
+            heroData: $heroData,
+            globalUi: $globalUi,
+            currentPage: self::CURRENT_PAGE,
+            includeNav: false,
+        );
+    }
+
+    /**
+     * @param string[] $labels
+     */
+    public static function fromEventData(
+        array $globalUiContent,
+        bool $isLoggedIn,
+        string $eventTitle,
+        string $eventSubtitle,
+        ?string $featuredImagePath,
+        array $labels,
+        string $aboutBodyHtml,
+        array $cms,
+        array $scheduleData,
+    ): self {
+        $globalUi = GlobalUiData::fromCms($globalUiContent, $isLoggedIn);
+        $scheduleSection = ScheduleSectionViewModel::fromData($scheduleData);
+
+        $detailHero = StorytellingDetailHeroData::fromData(
+            title: $eventTitle,
+            subtitle: $eventSubtitle,
+            featuredImagePath: $featuredImagePath,
+            labels: $labels,
+            cms: $cms,
+            globalUi: $globalUi,
+            currentPage: self::CURRENT_PAGE,
+            reserveButtonUrl: '#' . $scheduleSection->sectionId,
+        );
+
+        return new self(
+            heroData: self::shellHeroFrom($detailHero),
+            globalUi: $globalUi,
+            detailHero: $detailHero,
+            aboutSection: StorytellingAboutSectionData::fromData($eventTitle, $aboutBodyHtml, $cms),
+            highlightsSection: StoryHighlightsSectionData::fromCms($cms),
+            gallerySection: StoryGallerySectionData::fromCms($cms),
+            videoSection: StoryVideoSectionData::fromCms($cms),
+            scheduleSection: $scheduleSection,
+        );
+    }
+
+    // BaseViewModel requires a HeroData, but the detail page renders its own custom hero.
+    // Derives shell metadata from the already-built detailHero to avoid duplicating validation.
+    private static function shellHeroFrom(StorytellingDetailHeroData $detailHero): HeroData
+    {
+        return new HeroData(
+            mainTitle: $detailHero->title,
+            subtitle: $detailHero->subtitle,
+            primaryButtonText: '',
+            primaryButtonLink: '#',
+            secondaryButtonText: '',
+            secondaryButtonLink: '#',
+            backgroundImageUrl: $detailHero->heroImageUrl,
+            currentPage: self::CURRENT_PAGE,
+        );
     }
 }

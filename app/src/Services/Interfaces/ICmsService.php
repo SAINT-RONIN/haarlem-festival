@@ -7,40 +7,20 @@ namespace App\Services\Interfaces;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 
-/**
- * Interface for CMS content service.
- */
 interface ICmsService
 {
-    /**
-     * Gets home page CMS content.
-     *
-     * @return array Structured content by section
-     */
     public function getHomePageContent(): array;
 
-    /**
-     * Gets content for a specific section on a page.
-     *
-     * @param string $pageSlug Page slug
-     * @param string $sectionKey Section key
-     * @return array Section content
-     */
     public function getSectionContent(string $pageSlug, string $sectionKey): array;
 
-    /**
-     * Builds hero section data from CMS content.
-     *
-     * @param string $pageSlug Page slug
-     * @param string $currentPage Current page identifier
-     * @return HeroData Hero section data
-     */
+    public function getHeroSectionContent(string $pageSlug): array;
+
     public function buildHeroData(string $pageSlug, string $currentPage): HeroData;
 
     /**
-     * Builds global UI data from CMS content.
-     *
-     * @return GlobalUiData Global UI data
+     * @return array{content: array, isLoggedIn: bool}
      */
+    public function getGlobalUiContent(): array;
+
     public function buildGlobalUiData(): GlobalUiData;
 }
