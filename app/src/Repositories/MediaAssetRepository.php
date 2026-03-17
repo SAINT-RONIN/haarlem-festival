@@ -127,4 +127,16 @@ class MediaAssetRepository implements IMediaAssetRepository
         $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = ? WHERE CmsItemId = ?');
         return $stmt->execute([$mediaAssetId, $cmsItemId]);
     }
+
+    /**
+     * Returns all media assets ordered by newest first.
+     *
+     * @return MediaAsset[]
+     */
+    public function findAll(): array
+    {
+        $stmt = $this->pdo->query('SELECT * FROM MediaAsset ORDER BY CreatedAtUtc DESC');
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([MediaAsset::class, 'fromRow'], $rows);
+    }
 }

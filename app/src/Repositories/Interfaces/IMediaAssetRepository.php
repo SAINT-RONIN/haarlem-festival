@@ -39,4 +39,11 @@ interface IMediaAssetRepository
      * @return bool Success status
      */
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool;
+
+    /**
+     * Returns all media assets ordered by newest first.
+     *
+     * @return MediaAsset[]
+     */
+    public function findAll(): array;
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Exceptions\ValidationException;
+use App\Models\MediaAsset;
 
 /**
  * Interface for Media asset service.
@@ -16,10 +17,10 @@ interface IMediaAssetService
      *
      * @param array $file The $_FILES array element
      * @param string $folder Subfolder within Image directory
-     * @return array The created MediaAsset record
+     * @return MediaAsset The created MediaAsset record
      * @throws ValidationException If validation fails
      */
-    public function uploadImage(array $file, string $folder = 'cms'): array;
+    public function uploadImage(array $file, string $folder = 'cms'): MediaAsset;
 
     /**
      * Links an uploaded media asset to a CMS item.

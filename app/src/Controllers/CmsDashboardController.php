@@ -186,6 +186,24 @@ class CmsDashboardController
             return;
         }
 
+        $mediaAssetId = (int)($_POST['media_asset_id'] ?? 0);
+        if ($mediaAssetId > 0) {
+            try {
+                $this->cmsEditService->updateItemImage($itemId, $mediaAssetId);
+                $asset = $this->mediaAssetService->getAssetById($mediaAssetId);
+
+                echo json_encode([
+                    'success' => true,
+                    'mediaAssetId' => $mediaAssetId,
+                    'filePath' => $asset ? $asset->filePath : '',
+                    'message' => 'Image linked successfully',
+                ]);
+            } catch (\Throwable $e) {
+                echo json_encode(['success' => false, 'error' => 'Failed to link image']);
+            }
+            return;
+        }
+
         if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
             echo json_encode(['success' => false, 'error' => 'No file uploaded']);
             return;
@@ -193,18 +211,18 @@ class CmsDashboardController
 
         try {
             $mediaAsset = $this->mediaAssetService->uploadImage($_FILES['image'], self::MEDIA_CONTEXT_CMS);
-            $this->cmsEditService->updateItemImage($itemId, (int)$mediaAsset['MediaAssetId']);
+            $this->cmsEditService->updateItemImage($itemId, $mediaAsset->mediaAssetId);
 
             echo json_encode([
                 'success' => true,
-                'mediaAssetId' => $mediaAsset['MediaAssetId'],
-                'filePath' => $mediaAsset['FilePath'],
+                'mediaAssetId' => $mediaAsset->mediaAssetId,
+                'filePath' => $mediaAsset->filePath,
                 'message' => 'Image uploaded successfully',
             ]);
         } catch (ValidationException $e) {
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
         } catch (\Throwable $e) {
-            echo json_encode(['success' => false, 'error' => 'Upload failed: ' . $e->getMessage()]);
+            echo json_encode(['success' => false, 'error' => 'Upload failed']);
         }
     }
 

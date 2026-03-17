@@ -59,7 +59,8 @@ $currentView = $currentView ?? 'dashboard';
             </li>
             <li>
                 <a href="/cms/media"
-                   class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'media' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
+                        <?= $currentView === 'media' ? 'aria-current="page"' : '' ?>>
                     <i data-lucide="image" class="w-5 h-5" aria-hidden="true"></i>
                     <span class="font-medium">Media</span>
                 </a>

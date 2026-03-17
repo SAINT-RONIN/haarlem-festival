@@ -33,6 +33,7 @@ use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
+use App\Controllers\CmsMediaController;
 use App\Controllers\CmsOrdersController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
@@ -149,6 +150,12 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/venues', [CmsEventsController::class, 'createVenue']);
     $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
     $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
+
+    // CMS Media Routes
+    $r->addRoute('GET', '/cms/media', [CmsMediaController::class, 'index']);
+    $r->addRoute('POST', '/cms/media/upload', [CmsMediaController::class, 'upload']);
+    $r->addRoute('POST', '/cms/media/delete', [CmsMediaController::class, 'delete']);
+    $r->addRoute('GET', '/api/cms/media', [CmsMediaController::class, 'list']);
 
     // CMS Orders Routes
     $r->addRoute('GET', '/cms/orders', [CmsOrdersController::class, 'index']);
