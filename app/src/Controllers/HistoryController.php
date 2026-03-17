@@ -45,10 +45,10 @@ class HistoryController extends BaseController
      *
      * GET /history/{id}
      */
-    public function location(string $id): void
+    public function location(string $name): void
     {
         try {
-            $viewModel = $this->historyService->getHistoralLocationData((int) $id);
+            $viewModel = $this->historyService->getHistoralLocationData($name);
 
             if ($viewModel === null) {
                 http_response_code(404);

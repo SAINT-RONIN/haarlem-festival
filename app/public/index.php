@@ -50,7 +50,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // History pages
     $r->addRoute('GET', '/history', [HistoryController::class, 'index']);
-    $r->addRoute('GET', '/history/{id:\d+}', [HistoryController::class, 'location']);
+    $r->addRoute('GET', '/history/{name}', [HistoryController::class, 'location']);
 
     // Jazz page
     $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
