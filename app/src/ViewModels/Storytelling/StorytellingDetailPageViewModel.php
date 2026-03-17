@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Storytelling;
 
+use App\Constants\StorytellingDetailConstants;
+use App\Constants\StorytellingPageConstants;
+use App\Models\StorytellingDetailPageData;
 use App\ViewModels\BaseViewModel;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
@@ -11,8 +14,6 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 final readonly class StorytellingDetailPageViewModel extends BaseViewModel
 {
-    private const CURRENT_PAGE = 'storytelling';
-
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
@@ -26,54 +27,50 @@ final readonly class StorytellingDetailPageViewModel extends BaseViewModel
         parent::__construct(
             heroData: $heroData,
             globalUi: $globalUi,
-            currentPage: self::CURRENT_PAGE,
+            currentPage: StorytellingPageConstants::CURRENT_PAGE,
             includeNav: false,
         );
     }
 
     /**
-     * @param string[] $labels
+     * @param array{globalUiContent: array<string, mixed>, isLoggedIn: bool} $sharedData
      */
-    public static function fromEventData(
-        array $globalUiContent,
-        bool $isLoggedIn,
-        string $eventTitle,
-        string $eventSubtitle,
-        ?string $featuredImagePath,
-        array $labels,
-        string $aboutBodyHtml,
-        array $cms,
-        array $scheduleData,
-    ): self {
+    public static function fromDomainData(StorytellingDetailPageData $pageData, array $sharedData): self
+    {
+        $globalUiContent = $sharedData['globalUiContent'] ?? [];
+        $isLoggedIn = (bool)($sharedData['isLoggedIn'] ?? false);
+
+        $scheduleSection = ScheduleSectionViewModel::fromData($pageData->scheduleSectionData);
         $globalUi = GlobalUiData::fromCms($globalUiContent, $isLoggedIn);
-        $scheduleSection = ScheduleSectionViewModel::fromData($scheduleData);
 
         $detailHero = StorytellingDetailHeroData::fromData(
-            title: $eventTitle,
-            subtitle: $eventSubtitle,
-            featuredImagePath: $featuredImagePath,
-            labels: $labels,
-            cms: $cms,
+            title: $pageData->event->title,
+            subtitle: $pageData->event->shortDescription,
+            featuredImagePath: $pageData->featuredImagePath,
+            labels: $pageData->labels,
+            cms: $pageData->cms,
             globalUi: $globalUi,
-            currentPage: self::CURRENT_PAGE,
+            currentPage: StorytellingPageConstants::CURRENT_PAGE,
             reserveButtonUrl: '#' . $scheduleSection->sectionId,
         );
 
         return new self(
-            heroData: self::shellHeroFrom($detailHero),
+            heroData: self::buildShellHero($detailHero),
             globalUi: $globalUi,
             detailHero: $detailHero,
-            aboutSection: StorytellingAboutSectionData::fromData($eventTitle, $aboutBodyHtml, $cms),
-            highlightsSection: StoryHighlightsSectionData::fromCms($cms),
-            gallerySection: StoryGallerySectionData::fromCms($cms),
-            videoSection: StoryVideoSectionData::fromCms($cms),
+            aboutSection: StorytellingAboutSectionData::fromData(
+                fallbackHeading: $pageData->event->title,
+                aboutBodyHtml: $pageData->aboutBody,
+                cms: $pageData->cms,
+            ),
+            highlightsSection: StoryHighlightsSectionData::fromCms($pageData->cms),
+            gallerySection: StoryGallerySectionData::fromCms($pageData->cms),
+            videoSection: StoryVideoSectionData::fromCms($pageData->cms),
             scheduleSection: $scheduleSection,
         );
     }
 
-    // BaseViewModel requires a HeroData, but the detail page renders its own custom hero.
-    // Derives shell metadata from the already-built detailHero to avoid duplicating validation.
-    private static function shellHeroFrom(StorytellingDetailHeroData $detailHero): HeroData
+    private static function buildShellHero(StorytellingDetailHeroData $detailHero): HeroData
     {
         return new HeroData(
             mainTitle: $detailHero->title,
@@ -83,7 +80,7 @@ final readonly class StorytellingDetailPageViewModel extends BaseViewModel
             secondaryButtonText: '',
             secondaryButtonLink: '#',
             backgroundImageUrl: $detailHero->heroImageUrl,
-            currentPage: self::CURRENT_PAGE,
+            currentPage: StorytellingPageConstants::CURRENT_PAGE,
         );
     }
 }

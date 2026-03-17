@@ -48,6 +48,9 @@ use App\Repositories\OrderRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\ProgramRepository;
 use App\Repositories\StripeWebhookEventRepository;
+use App\Repositories\EventSessionLabelRepository;
+use App\Repositories\EventSessionRepository;
+use App\Repositories\MediaAssetRepository;
 use App\Services\CmsDashboardService;
 use App\Services\CmsEditService;
 use App\Services\CmsService;
@@ -58,6 +61,8 @@ use App\Services\MediaAssetService;
 use App\Services\ProgramService;
 use App\Services\ScheduleService;
 use App\Services\SessionService;
+use App\Services\StorytellingDetailService;
+use App\Services\StorytellingService;
 use App\Services\StripeService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -197,6 +202,22 @@ switch ($routeInfo[0]) {
         // Handle controller routes
         [$controllerClass, $method] = $handler;
         $controller = match ($controllerClass) {
+            StorytellingController::class => new StorytellingController(
+                new StorytellingService(
+                    new CmsService(),
+                    new ScheduleService(),
+                ),
+                new StorytellingDetailService(
+                    new CmsService(),
+                    new ScheduleService(),
+                    new EventRepository(),
+                    new EventSessionRepository(),
+                    new EventSessionLabelRepository(),
+                    new MediaAssetRepository(),
+                ),
+                new CmsService(),
+                new SessionService(),
+            ),
             JazzController::class => new JazzController(
                 new JazzService(
                     new CmsService(),

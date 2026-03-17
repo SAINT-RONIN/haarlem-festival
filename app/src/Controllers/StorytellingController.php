@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Services\StorytellingDetailService;
+use App\Services\Interfaces\ICmsService;
+use App\Services\Interfaces\ISessionService;
 use App\Services\Interfaces\IStorytellingService;
-use App\Services\StorytellingService;
 use App\ViewModels\Storytelling\StorytellingDetailPageViewModel;
 use App\ViewModels\Storytelling\StorytellingPageViewModel;
 
 class StorytellingController extends BaseController
 {
-    private IStorytellingService $storytellingService;
-
-    public function __construct(?IStorytellingService $storytellingService = null)
-    {
-        $this->storytellingService = $storytellingService ?? new StorytellingService();
+    public function __construct(
+        private readonly IStorytellingService $storytellingService,
+        private readonly StorytellingDetailService $storytellingDetailService,
+        private readonly ICmsService $cmsService,
+        private readonly ISessionService $sessionService,
+    ) {
     }
 
     /**
@@ -25,8 +28,9 @@ class StorytellingController extends BaseController
     public function index(): void
     {
         try {
-            $data = $this->storytellingService->getStorytellingPageData();
-            $viewModel = StorytellingPageViewModel::fromData(...$data);
+            $pageData = $this->storytellingService->getStorytellingPageData();
+            $sharedData = $this->getSharedData();
+            $viewModel = StorytellingPageViewModel::fromDomainData($pageData, $sharedData);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -40,11 +44,26 @@ class StorytellingController extends BaseController
     {
         try {
             $eventId = (int)$id;
-            $data = $this->storytellingService->getStorytellingDetailPageData($eventId);
-            $viewModel = StorytellingDetailPageViewModel::fromEventData(...$data);
+            $pageData = $this->storytellingDetailService->getDetailPageData($eventId);
+            $sharedData = $this->getSharedData();
+            $viewModel = StorytellingDetailPageViewModel::fromDomainData($pageData, $sharedData);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /**
+     * @return array{globalUiContent: array<string, mixed>, isLoggedIn: bool}
+     */
+    private function getSharedData(): array
+    {
+        $globalUiResult = $this->cmsService->getGlobalUiContent();
+        return [
+            'globalUiContent' => is_array($globalUiResult['content'] ?? null)
+                ? $globalUiResult['content']
+                : [],
+            'isLoggedIn' => $this->sessionService->isLoggedIn(),
+        ];
     }
 }

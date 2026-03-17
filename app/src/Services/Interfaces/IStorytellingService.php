@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
+use App\Models\StorytellingPageData;
+
 interface IStorytellingService
 {
-    public function getStorytellingPageData(): array;
-
     /**
-     * @throws \RuntimeException if the event is not found or not a storytelling event
+     * Builds the Storytelling page domain payload.
      */
-    public function getStorytellingDetailPageData(int $eventId): array;
+    public function getStorytellingPageData(): StorytellingPageData;
 }
