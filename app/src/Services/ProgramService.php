@@ -321,15 +321,23 @@ class ProgramService implements IProgramService
      */
     private function getBasePrice(array $prices): float
     {
+        // Prefer fixed adult pricing when available; fall back to pay-what-you-like only if needed.
         foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
-                return 0.0;
+            if ($price->priceTierId === PriceTierId::Adult->value) {
+                return (float)$price->price;
+            }
+        }
+
+        // If there's any non-PWYL tier (e.g. reservation fee), use it as the base ticket price.
+        foreach ($prices as $price) {
+            if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
+                return (float)$price->price;
             }
         }
 
         foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::Adult->value) {
-                return (float)$price->price;
+            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
+                return 0.0;
             }
         }
 

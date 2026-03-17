@@ -37,13 +37,13 @@
 
         <div class="self-stretch flex flex-col justify-start items-start">
             <div class="pl-2 sm:pl-3 md:pl-4 lg:pl-16 xl:pl-24 pr-2 sm:pr-3 md:pr-4 py-2 sm:py-3 md:py-4 bg-sand rounded-tr-[12px] sm:rounded-tr-[15px] md:rounded-tr-[25px] lg:rounded-tr-[35px] flex flex-wrap justify-start items-center gap-2.5 sm:gap-4">
-                <a href="/jazz"
+                <a href="<?= htmlspecialchars($viewModel->heroBackButtonUrl) ?>"
                    class="px-4 sm:px-5 py-2.5 sm:py-3 bg-royal-blue hover:bg-red rounded-xl sm:rounded-2xl text-sand text-base sm:text-lg font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                    Back to Jazz
+                    <?= htmlspecialchars($viewModel->heroBackButtonText) ?>
                 </a>
                 <a href="#<?= htmlspecialchars($viewModel->performancesSectionId) ?>"
                    class="px-4 sm:px-6 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-xl sm:rounded-2xl text-white text-base sm:text-lg font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                    Reserve your spot
+                    <?= htmlspecialchars($viewModel->heroReserveButtonText) ?>
                 </a>
             </div>
         </div>

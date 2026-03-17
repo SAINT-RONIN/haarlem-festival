@@ -63,10 +63,10 @@ $isLoggedIn = $viewModel->isLoggedIn;
                     </span>
                     <button type="button"
                             id="js-clear-program"
-                            class="w-7 h-7 p-2.5 bg-rose-50 rounded-[10px] outline outline-2 outline-offset-[-2px] outline-red-200
+                            class="w-10 h-10 p-2.5 bg-rose-50 rounded-[10px] outline outline-2 outline-offset-[-2px] outline-red-200
                                    flex items-center justify-center hover:bg-rose-100 transition-colors overflow-hidden"
                             aria-label="Clear program">
-                        <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none"
+                        <svg class="w-6 h-6 text-red-400" viewBox="0 0 24 24" fill="none"
                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                              aria-hidden="true">
                             <polyline points="3 6 5 6 21 6"></polyline>

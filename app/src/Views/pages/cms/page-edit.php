@@ -53,7 +53,7 @@ $userName = $userName ?? 'Administrator';
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <a href="/<?= htmlspecialchars($page['slug'] === 'home' ? '' : $page['slug']) ?>"
+                <a href="<?= htmlspecialchars($previewUrl ?? ('/' . ($page['slug'] === 'home' ? '' : $page['slug']))) ?>"
                    target="_blank"
                    class="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                     <i data-lucide="external-link" class="w-4 h-4"></i>
@@ -85,6 +85,7 @@ $userName = $userName ?? 'Administrator';
 
             <form id="page-edit-form" action="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit"
                   method="POST" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                 <?php foreach ($sections as $section): ?>
                     <?php if ($section['isEditable']): ?>
                         <?php require __DIR__ . '/../../partials/cms/edit-section-accordion.php'; ?>
@@ -101,6 +102,7 @@ $userName = $userName ?? 'Administrator';
     const imageLimits = <?= json_encode($imageLimits) ?>;
     const pageId = <?= $page['id'] ?>;
     const pageSlug = <?= json_encode($page['slug']) ?>;
+    const csrfToken = <?= json_encode($csrfToken ?? '') ?>;
 </script>
 <script src="/assets/js/cms/cms-common.js"></script>
 <script src="/assets/js/cms/page-edit.js"></script>

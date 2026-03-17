@@ -43,4 +43,41 @@ interface ISessionService
      * Gets the current user's role ID.
      */
     public function getRoleId(): ?int;
+
+    /**
+     * Sets a session key to a scalar/array value.
+     */
+    public function set(string $key, mixed $value): void;
+
+    /**
+     * Gets a session value by key.
+     */
+    public function get(string $key, mixed $default = null): mixed;
+
+    /**
+     * Stores a flash message available for the next request.
+     */
+    public function setFlash(string $key, string $message): void;
+
+    /**
+     * Retrieves and removes a flash message.
+     */
+    public function consumeFlash(string $key): ?string;
+
+    /**
+     * Generates (or returns existing) CSRF token for a form scope.
+     */
+    public function getCsrfToken(string $scope): string;
+
+    /**
+     * Validates a CSRF token for a form scope.
+     */
+    public function isValidCsrfToken(string $scope, ?string $token): bool;
+
+    /**
+     * Returns the active session ID.
+     *
+     * @throws \RuntimeException when session has not been started
+     */
+    public function getSessionId(): string;
 }

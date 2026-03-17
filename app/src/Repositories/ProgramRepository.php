@@ -163,4 +163,10 @@ class ProgramRepository implements IProgramRepository
         $stmt = $this->pdo->prepare('DELETE FROM ProgramItem WHERE ProgramId = :programId');
         $stmt->execute(['programId' => $programId]);
     }
+
+    public function markCheckedOut(int $programId): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE Program SET IsCheckedOut = 1 WHERE ProgramId = :programId');
+        $stmt->execute(['programId' => $programId]);
+    }
 }

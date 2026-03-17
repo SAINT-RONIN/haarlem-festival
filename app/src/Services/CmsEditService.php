@@ -51,8 +51,13 @@ class CmsEditService implements ICmsEditService
         $sectionsWithItems = [];
 
         $eventNameMap = [];
-        if (($page['Slug'] ?? '') === 'storytelling-detail') {
-            $eventNameMap = $this->buildEventNameMap();
+        $pageSlug = (string)($page['Slug'] ?? '');
+        if ($pageSlug === 'storytelling-detail') {
+            $eventNameMap = $this->buildEventNameMap(EventTypeId::Storytelling->value);
+        }
+
+        if ($pageSlug === 'jazz-artist-detail') {
+            $eventNameMap = $this->buildEventNameMap(EventTypeId::Jazz->value);
         }
 
         foreach ($sections as $section) {
@@ -128,6 +133,38 @@ class CmsEditService implements ICmsEditService
     public function updateItemImage(int $itemId, int $mediaAssetId): bool
     {
         return $this->cmsRepository->updateItemMediaAsset($itemId, $mediaAssetId);
+    }
+
+    /**
+     * Builds a route-aware preview URL for CMS page edit screens.
+     *
+     * @param array<string, mixed> $page
+     * @param array<int, array<string, mixed>> $sections
+     */
+    public function resolvePreviewUrl(array $page, array $sections): string
+    {
+        $slug = (string)($page['slug'] ?? '');
+
+        if ($slug === 'home') {
+            return '/';
+        }
+
+        if ($slug === 'storytelling-detail') {
+            $eventId = $this->extractFirstEventId($sections);
+            return $eventId !== null ? '/storytelling/' . $eventId : '/storytelling';
+        }
+
+        if ($slug === 'jazz-artist-detail') {
+            $eventName = $this->extractFirstEventDisplayName($sections);
+            return $eventName !== null ? '/jazz/' . $this->toSlug($eventName) : '/jazz';
+        }
+
+        if ($slug === 'restaurant-detail') {
+            $eventId = $this->extractFirstEventId($sections);
+            return $eventId !== null ? '/restaurant/' . $eventId : '/restaurant';
+        }
+
+        return '/' . $slug;
     }
 
     /**
@@ -274,9 +311,9 @@ class CmsEditService implements ICmsEditService
      * Builds a map of section key → event title for storytelling events.
      * e.g., ['event_34' => 'Winnie de Poeh (4+)', ...]
      */
-    private function buildEventNameMap(): array
+    private function buildEventNameMap(int $eventTypeId): array
     {
-        $events = $this->eventRepository->findEvents(['eventTypeId' => EventTypeId::Storytelling->value]);
+        $events = $this->eventRepository->findEvents(['eventTypeId' => $eventTypeId]);
         $map = [];
         foreach ($events as $event) {
             $map['event_' . $event['EventId']] = $event['Title'];
@@ -313,6 +350,48 @@ class CmsEditService implements ICmsEditService
     {
         $name = str_replace('_', ' ', $itemKey);
         return ucwords($name);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $sections
+     */
+    private function extractFirstEventId(array $sections): ?int
+    {
+        foreach ($sections as $section) {
+            $sectionKey = (string)($section['sectionKey'] ?? '');
+            if (preg_match('/^event_(\d+)$/', $sectionKey, $matches) === 1) {
+                return (int)$matches[1];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $sections
+     */
+    private function extractFirstEventDisplayName(array $sections): ?string
+    {
+        foreach ($sections as $section) {
+            $sectionKey = (string)($section['sectionKey'] ?? '');
+            if (!str_starts_with($sectionKey, 'event_')) {
+                continue;
+            }
+
+            $displayName = trim((string)($section['displayName'] ?? ''));
+            if ($displayName !== '') {
+                return $displayName;
+            }
+        }
+
+        return null;
+    }
+
+    private function toSlug(string $value): string
+    {
+        $lower = strtolower(trim($value));
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $lower);
+        return trim((string)$slug, '-');
     }
 
     /**

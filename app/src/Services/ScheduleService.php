@@ -13,7 +13,15 @@ use App\Repositories\EventSessionRepository;
 use App\Repositories\EventTypeRepository;
 use App\Services\Interfaces\IScheduleService;
 use App\ViewModels\Age\AgeLabelFormatter;
+use App\ViewModels\Schedule\ScheduleDayViewModel;
+use App\ViewModels\Schedule\ScheduleEventCardViewModel;
+use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
+/**
+ * Service for building schedule sections for any event type.
+ *
+ * This is a global service - not tied to any specific event type.
+ */
 class ScheduleService implements IScheduleService
 {
     private CmsService $cmsService;
@@ -22,6 +30,7 @@ class ScheduleService implements IScheduleService
     private EventSessionLabelRepository $labelRepository;
     private EventSessionPriceRepository $priceRepository;
     private EventTypeRepository $eventTypeRepository;
+
 
     public function __construct()
     {
@@ -62,14 +71,30 @@ class ScheduleService implements IScheduleService
         $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
         $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
 
-        $days = $this->buildDays(
+        $dayViewModels = $this->buildScheduleDays(
             $scheduleData,
             $eventTypeSlug,
             $eventTypeId,
             $ctaButtonText,
             $payWhatYouLikeText,
-            $currencySymbol,
+            $currencySymbol
         );
+
+        $days = [];
+        foreach ($dayViewModels as $day) {
+            $events = [];
+            foreach ($day->events as $event) {
+                $events[] = get_object_vars($event);
+            }
+
+            $days[] = [
+                'dayName' => $day->dayName,
+                'dateFormatted' => $day->dateFormatted,
+                'isoDate' => $day->isoDate,
+                'events' => $events,
+                'isEmpty' => $day->isEmpty,
+            ];
+        }
 
         return [
             'cmsContent' => $cmsContent,
@@ -80,13 +105,31 @@ class ScheduleService implements IScheduleService
         ];
     }
 
-    private function buildDays(
+    /**
+     * Builds a schedule section ViewModel for any event type.
+     *
+     * @param string $pageSlug Page slug for CMS content (e.g., 'storytelling', 'jazz')
+     * @param int $eventTypeId Event type ID to filter sessions
+     * @param int $maxDays Maximum number of days to show (default 4)
+     * @return ScheduleSectionViewModel
+     */
+    public function buildScheduleSection(string $pageSlug, int $eventTypeId, int $maxDays = 4): ScheduleSectionViewModel
+    {
+        return ScheduleSectionViewModel::fromData(
+            $this->getScheduleData($pageSlug, $eventTypeId, $maxDays)
+        );
+    }
+
+    /**
+     * Builds day ViewModels from schedule data.
+     */
+    private function buildScheduleDays(
         array  $scheduleData,
         string $eventTypeSlug,
         int    $eventTypeId,
         string $defaultCtaText,
         string $payWhatYouLikeText,
-        string $currencySymbol,
+        string $currencySymbol
     ): array {
         $days = $scheduleData['days'] ?? [];
         $sessions = $scheduleData['sessions'] ?? [];
@@ -95,6 +138,7 @@ class ScheduleService implements IScheduleService
             return [];
         }
 
+        // Get session IDs for batch loading labels and prices
         $sessionIds = array_column($sessions, 'EventSessionId');
         $labelsMap = !empty($sessionIds)
             ? $this->labelRepository->findLabels(['sessionIds' => $sessionIds, 'groupBySession' => true])
@@ -103,14 +147,18 @@ class ScheduleService implements IScheduleService
             ? $this->priceRepository->findPrices(['sessionIds' => $sessionIds, 'groupBySession' => true])
             : [];
 
-        $historyStartPoint = $this->fetchHistoryStartPoint($eventTypeSlug);
-
+        // Group sessions by date
         $sessionsByDate = [];
         foreach ($sessions as $session) {
-            $sessionsByDate[$session['SessionDate']][] = $session;
+            $date = $session['SessionDate'];
+            if (!isset($sessionsByDate[$date])) {
+                $sessionsByDate[$date] = [];
+            }
+            $sessionsByDate[$date][] = $session;
         }
 
-        $dayArrays = [];
+        // Build day ViewModels
+        $dayViewModels = [];
         foreach ($days as $day) {
             $date = $day['Date'];
             $dateObj = new \DateTimeImmutable($date);
@@ -119,96 +167,49 @@ class ScheduleService implements IScheduleService
             $events = [];
             foreach ($daySessions as $session) {
                 $events[] = $this->buildEventCard(
-                    $session, $eventTypeSlug, $eventTypeId,
-                    $labelsMap, $pricesMap,
-                    $defaultCtaText, $payWhatYouLikeText, $currencySymbol,
-                    $historyStartPoint,
+                    $session,
+                    $eventTypeSlug,
+                    $eventTypeId,
+                    $labelsMap,
+                    $pricesMap,
+                    $defaultCtaText,
+                    $payWhatYouLikeText,
+                    $currencySymbol
                 );
             }
 
-            $events = $this->mergeHistoryEvents($events, $eventTypeSlug);
-
-            $dayArrays[] = [
-                'dayName' => $dateObj->format('l'),
-                'dateFormatted' => $dateObj->format('l, F j'),
-                'isoDate' => $date,
-                'events' => $events,
-                'isEmpty' => empty($events),
-            ];
+            $dayViewModels[] = new ScheduleDayViewModel(
+                dayName: $dateObj->format('l'),
+                dateFormatted: $dateObj->format('l, F j'),
+                isoDate: $date,
+                events: $events,
+                isEmpty: empty($events),
+            );
         }
 
-        return $dayArrays;
+        return $dayViewModels;
     }
 
-    private function fetchHistoryStartPoint(string $eventTypeSlug): ?string
-    {
-        if ($eventTypeSlug !== 'history') {
-            return null;
-        }
-
-        $cmsContent = $this->cmsService->getSectionContent('history', 'schedule_section');
-        return $this->getStringValue($cmsContent, 'schedule_start_point', 'A giant flag near Church of St. Bavo at Grote Markt');
-    }
-
+    /**
+     * Builds an event card ViewModel from session data.
+     */
     private function buildEventCard(
-        array   $session,
-        string  $eventTypeSlug,
-        int     $eventTypeId,
-        array   $labelsMap,
-        array   $pricesMap,
-        string  $defaultCtaText,
-        string  $payWhatYouLikeText,
-        string  $currencySymbol,
-        ?string $historyStartPoint,
-    ): array {
+        array  $session,
+        string $eventTypeSlug,
+        int    $eventTypeId,
+        array  $labelsMap,
+        array  $pricesMap,
+        string $defaultCtaText,
+        string $payWhatYouLikeText,
+        string $currencySymbol
+    ): ScheduleEventCardViewModel {
         $sessionId = (int)$session['EventSessionId'];
         $startDateTime = new \DateTimeImmutable($session['StartDateTime']);
         $endDateTime = $session['EndDateTime'] ? new \DateTimeImmutable($session['EndDateTime']) : null;
 
-        [$labels, $minAge, $maxAge, $ageLabel] = $this->extractLabels(
-            $session, $labelsMap[$sessionId] ?? [], $eventTypeSlug
-        );
-
-        $priceResult = $this->extractPriceDisplay($pricesMap[$sessionId] ?? [], $payWhatYouLikeText, $currencySymbol);
-        $ctaInfo = $this->buildCtaInfo($session, $eventTypeSlug, $defaultCtaText);
-        $locationName = $this->buildLocationName($session, $eventTypeSlug, $historyStartPoint);
-        $timeDisplay = $this->buildTimeDisplay($startDateTime, $endDateTime);
-        $eventTitle = $eventTypeSlug === 'history' ? $startDateTime->format('H:i') : ($session['EventTitle'] ?? '');
-
-        return [
-            'eventSessionId' => $sessionId,
-            'eventId' => (int)$session['EventId'],
-            'eventTypeSlug' => $eventTypeSlug,
-            'eventTypeId' => $eventTypeId,
-            'title' => $eventTitle,
-            'priceDisplay' => $priceResult['display'],
-            'isPayWhatYouLike' => $priceResult['isPayWhatYouLike'],
-            'ctaLabel' => $ctaInfo['label'],
-            'ctaUrl' => $ctaInfo['url'],
-            'locationName' => $locationName,
-            'hallName' => $session['HallName'] ?? '',
-            'dateDisplay' => $startDateTime->format('l, F j'),
-            'isoDate' => $startDateTime->format('Y-m-d'),
-            'timeDisplay' => $timeDisplay,
-            'startTimeIso' => $startDateTime->format('H:i'),
-            'endTimeIso' => $endDateTime ? $endDateTime->format('H:i') : '',
-            'labels' => $labels,
-            'capacityTotal' => isset($session['CapacityTotal']) ? (int)$session['CapacityTotal'] : null,
-            'seatsAvailable' => isset($session['SeatsAvailable']) ? (int)$session['SeatsAvailable'] : null,
-            'minAge' => $minAge,
-            'maxAge' => $maxAge,
-            'ageLabel' => $ageLabel,
-            'historyTicketLabel' => $session['HistoryTicketLabel'] ?? null,
-            'artistName' => $session['ArtistName'] ?? null,
-            'artistImageUrl' => $session['ArtistImageUrl'] ?? null,
-            'historyVenue' => $session['HistoryVenue'] ?? null,
-            'groupTicketInfo' => $session['GroupTicketInfo'] ?? null,
-        ];
-    }
-
-    private function extractLabels(array $session, array $sessionLabels, string $eventTypeSlug): array
-    {
-        $labels = array_map(fn(EventSessionLabel $l) => $l->labelText, $sessionLabels);
+        // Get labels for this session
+        $sessionLabels = $labelsMap[$sessionId] ?? [];
+        $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
         $minAge = isset($session['MinAge']) && (int)$session['MinAge'] > 0 ? (int)$session['MinAge'] : null;
         $maxAge = isset($session['MaxAge']) && (int)$session['MaxAge'] > 0 ? (int)$session['MaxAge'] : null;
 
@@ -216,83 +217,64 @@ class ScheduleService implements IScheduleService
             [$minAge, $maxAge] = [$maxAge, $minAge];
         }
 
-        if ($eventTypeSlug !== 'history') {
-            $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
-        }
+        $ageLabel = AgeLabelFormatter::format($minAge, $maxAge);
+        $labels = AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
 
-        return [$labels, $minAge, $maxAge, AgeLabelFormatter::format($minAge, $maxAge)];
-    }
+        // Get price display
+        $sessionPrices = $pricesMap[$sessionId] ?? [];
+        $priceResult = $this->getPriceDisplay($sessionPrices, $payWhatYouLikeText, $currencySymbol);
 
-    private function extractPriceDisplay(array $sessionPrices, string $payWhatYouLikeText, string $currencySymbol): array
-    {
-        return $this->getPriceDisplay($sessionPrices, $payWhatYouLikeText, $currencySymbol);
-    }
-
-    private function buildCtaInfo(array $session, string $eventTypeSlug, string $defaultCtaText): array
-    {
+        // CTA label: use session-specific if set, otherwise default
+        $ctaLabel = !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText;
         $eventId = (int)$session['EventId'];
-        return [
-            'label' => !empty($session['CtaLabel']) ? $session['CtaLabel'] : $defaultCtaText,
-            'url' => !empty($session['CtaUrl']) ? $session['CtaUrl'] : '/' . $eventTypeSlug . '/' . $eventId,
-        ];
-    }
+        $ctaUrl = !empty($session['CtaUrl']) ? $session['CtaUrl'] : '/' . $eventTypeSlug . '/' . $eventId;
 
-    private function buildLocationName(array $session, string $eventTypeSlug, ?string $historyStartPoint): string
-    {
-        if ($eventTypeSlug === 'history' && $historyStartPoint !== null && $historyStartPoint !== '') {
-            return $historyStartPoint;
-        }
-
-        return $session['VenueName'] ?? '';
-    }
-
-    private function buildTimeDisplay(\DateTimeImmutable $startDateTime, ?\DateTimeImmutable $endDateTime): string
-    {
-        if ($endDateTime === null) {
-            return $startDateTime->format('H:i');
-        }
-
-        return $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i');
-    }
-
-    /**
-     * For history schedules, merge events with same start time and title.
-     */
-    private function mergeHistoryEvents(array $events, string $eventTypeSlug): array
-    {
-        if ($eventTypeSlug !== 'history' || empty($events)) {
-            return $events;
-        }
-
-        $grouped = [];
-
-        foreach ($events as $event) {
-            $key = $event['startTimeIso'] . '|' . $event['title'];
-
-            if (!isset($grouped[$key])) {
-                $grouped[$key] = $event;
-                continue;
-            }
-
-            $grouped[$key]['labels'] = array_values(
-                array_unique(array_merge($grouped[$key]['labels'], $event['labels']))
-            );
-        }
-
-        return array_values($grouped);
+        return new ScheduleEventCardViewModel(
+            eventSessionId: $sessionId,
+            eventId: $eventId,
+            eventTypeSlug: $eventTypeSlug,
+            eventTypeId: $eventTypeId,
+            title: $session['EventTitle'] ?? '',
+            priceDisplay: $priceResult['display'],
+            isPayWhatYouLike: $priceResult['isPayWhatYouLike'],
+            ctaLabel: $ctaLabel,
+            ctaUrl: $ctaUrl,
+            locationName: $session['VenueName'] ?? '',
+            hallName: $session['HallName'] ?? '',
+            dateDisplay: $startDateTime->format('l, F j'),
+            isoDate: $startDateTime->format('Y-m-d'),
+            timeDisplay: $endDateTime
+                ? $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i')
+                : $startDateTime->format('H:i'),
+            startTimeIso: $startDateTime->format('H:i'),
+            endTimeIso: $endDateTime ? $endDateTime->format('H:i') : '',
+            labels: $labels,
+            capacityTotal: isset($session['CapacityTotal']) ? (int)$session['CapacityTotal'] : null,
+            seatsAvailable: isset($session['SeatsAvailable']) ? (int)$session['SeatsAvailable'] : null,
+            minAge: $minAge,
+            maxAge: $maxAge,
+            ageLabel: $ageLabel,
+            historyTicketLabel: $session['HistoryTicketLabel'] ?? null,
+            artistName: $session['ArtistName'] ?? null,
+            artistImageUrl: $session['ArtistImageUrl'] ?? null,
+        );
     }
 
     /**
+     * Determines price display text.
+     *
      * @param EventSessionPrice[] $prices
      */
     private function getPriceDisplay(array $prices, string $payWhatYouLikeText, string $currencySymbol): array
     {
+        // Check for PayWhatYouLike tier first
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
                 return ['display' => $payWhatYouLikeText, 'isPayWhatYouLike' => true];
             }
         }
 
+        // Check for Adult tier
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::Adult->value) {
                 return [
@@ -302,6 +284,7 @@ class ScheduleService implements IScheduleService
             }
         }
 
+        // Fallback to first available price
         if (!empty($prices)) {
             $price = $prices[0];
             return [
@@ -313,6 +296,9 @@ class ScheduleService implements IScheduleService
         return ['display' => '', 'isPayWhatYouLike' => false];
     }
 
+    /**
+     * Gets a string value from content array with default fallback.
+     */
     private function getStringValue(array $content, string $key, string $default): string
     {
         $value = $content[$key] ?? null;

@@ -17,11 +17,11 @@
         <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
             <a href="#<?= htmlspecialchars($viewModel->performancesSectionId) ?>"
                class="px-6 sm:px-8 py-3 sm:py-4 bg-white hover:bg-red rounded-[10px] shadow-xl text-black hover:text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                Book Tickets
+                <?= htmlspecialchars($viewModel->liveCtaBookButtonText) ?>
             </a>
-            <a href="/jazz#jazz-schedule"
+            <a href="<?= htmlspecialchars($viewModel->liveCtaScheduleButtonUrl) ?>"
                class="px-6 sm:px-8 py-3 sm:py-4 rounded-[10px] border-2 border-white text-white hover:bg-white hover:text-royal-blue text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2">
-                View Full Schedule
+                <?= htmlspecialchars($viewModel->liveCtaScheduleButtonText) ?>
             </a>
         </div>
     </div>
