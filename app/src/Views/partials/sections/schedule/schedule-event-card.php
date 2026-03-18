@@ -30,9 +30,8 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                             class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
                             loading="lazy"
                         >
-                        <span><?= htmlspecialchars($event->title) ?></span>
+                        <span><?= htmlspecialchars($event->startTimeIso) ?></span>
                     </h4>
-
                     <?php if (!empty($event->labels)): ?>
                         <!-- History: language labels under the title in a single row, smaller -->
                         <div class="w-full inline-flex justify-start items-center gap-1">
@@ -121,7 +120,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                 loading="lazy"
                             >
                             <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4">
-                                <?= htmlspecialchars($event->groupTicketInfo ?? '') ?>
+                                <?= htmlspecialchars($event->historyTicketLabel) ?>
                             </span>
                         </dd>
                     </div>
@@ -150,6 +149,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                     <div class="w-full h-px bg-gray-200" aria-hidden="true"></div>
                     <div class="w-full inline-flex justify-between items-center">
                         <span class="text-center text-slate-800 text-base sm:text-lg font-normal font-['Montserrat']">
+
                             <?= htmlspecialchars($event->priceDisplay) ?>
                         </span>
                         <?php if ($isJazzEvent): ?>

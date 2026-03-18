@@ -166,7 +166,7 @@ class ScheduleService implements IScheduleService
      * @param array $labelsMap Pre-loaded labels indexed by session ID
      * @return array Merged sessions (one per time slot)
      */
-    private function groupSessionsByTimeSlot(array $sessions, array &$labelsMap): array
+    private function groupSessionsByTimeSlot(array $sessions, array $labelsMap): array
     {
         $grouped = [];
         foreach ($sessions as $session) {
@@ -300,9 +300,9 @@ class ScheduleService implements IScheduleService
             'minAge' => $minAge,
             'maxAge' => $maxAge,
             'ageLabel' => AgeLabelFormatter::format($minAge, $maxAge),
-            'historyTicketLabel' => $session->historyTicketLabel,
             'artistName' => $session->artistName,
             'artistImageUrl' => $session->artistImageUrl,
+            'historyTicketLabel' => $session->historyTicketLabel,
         ];
     }
 
