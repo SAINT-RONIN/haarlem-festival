@@ -49,6 +49,7 @@ use App\Services\CmsEditService;
 use App\Services\CmsOrdersService;
 use App\Services\CmsUsersService;
 use App\Services\CheckoutService;
+use App\Services\HistoricalLocationService;
 use App\Services\HistoryService;
 use App\Services\HomeService;
 use App\Services\JazzArtistDetailService;
@@ -212,13 +213,14 @@ return static function (string $controllerClass): object {
         HistoryController::class => new HistoryController(
             new HistoryService(
                 $cmsRepository,
-                $mediaAssetRepository,
                 $cmsPageContentService,
-                $venueRepository,
                 $scheduleService,
             ),
+            new HistoricalLocationService(),
+            $cmsPageContentService,
             $sessionService,
-            $scheduleService,
+            $scheduleService
+
         ),
         CmsAuthController::class => new CmsAuthController(
             new AuthService(

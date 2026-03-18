@@ -16,5 +16,5 @@ interface IHistoryService
      *
      * @return HistoryPageViewModel Prepared data for the history view
      */
-    public function getHistoryPageData(bool $isLoggedIn): HistoryPageViewModel;
+    public function getHistoryPageData(): array;
 }
