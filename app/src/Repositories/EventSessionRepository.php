@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\ScheduleDayData;
+use App\Models\SessionWithEvent;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
@@ -73,8 +75,11 @@ class EventSessionRepository implements IEventSessionRepository
         }
 
         if (isset($filters['dayOfWeek']) && is_string($filters['dayOfWeek']) && $filters['dayOfWeek'] !== '') {
-            $conditions[] = 'DAYNAME(es.StartDateTime) = :dayOfWeek';
-            $params['dayOfWeek'] = $filters['dayOfWeek'];
+            $dayNumber = $this->dayNameToNumber($filters['dayOfWeek']);
+            if ($dayNumber !== null) {
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
+                $params['dayOfWeekNum'] = $dayNumber;
+            }
         }
 
         $visibleDays = $filters['visibleDays'] ?? null;
@@ -83,11 +88,13 @@ class EventSessionRepository implements IEventSessionRepository
                 // Explicitly no visible days configured: force an empty result set.
                 $conditions[] = '1 = 0';
             } elseif (count($visibleDays) < 7) {
-                $dayLiterals = array_map(
-                    static fn (mixed $day): int => (int)$day,
-                    array_values($visibleDays)
-                );
-                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayLiterals) . ')';
+                $dayParams = [];
+                foreach (array_values($visibleDays) as $index => $day) {
+                    $key = 'visibleDay' . $index;
+                    $dayParams[] = ':' . $key;
+                    $params[$key] = (int)$day;
+                }
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
             }
         }
 
@@ -167,9 +174,12 @@ class EventSessionRepository implements IEventSessionRepository
 
             $prepared = $this->pdo->prepare($sessionsSql);
             $prepared->execute(array_merge($params, $dateBindings));
-            $sessions = $prepared->fetchAll(PDO::FETCH_ASSOC);
+            $sessionRows = $prepared->fetchAll(PDO::FETCH_ASSOC);
 
-            return ['days' => $days, 'sessions' => $sessions];
+            return [
+                'days'     => array_map([ScheduleDayData::class, 'fromRow'], $days),
+                'sessions' => array_map([SessionWithEvent::class, 'fromRow'], $sessionRows),
+            ];
         }
 
         $sessionsSql = '
@@ -190,7 +200,7 @@ class EventSessionRepository implements IEventSessionRepository
 
         $stmt = $this->pdo->prepare($sessionsSql);
         $stmt->execute($params);
-        return ['sessions' => $stmt->fetchAll(PDO::FETCH_ASSOC)];
+        return ['sessions' => array_map([SessionWithEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC))];
     }
 
     public function create(array $data): int
@@ -270,5 +280,14 @@ class EventSessionRepository implements IEventSessionRepository
     {
         $stmt = $this->pdo->prepare('DELETE FROM EventSession WHERE EventSessionId = :sessionId');
         return $stmt->execute(['sessionId' => $sessionId]);
+    }
+
+    private function dayNameToNumber(string $dayName): ?int
+    {
+        $map = [
+            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
+            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
+        ];
+        return $map[strtolower($dayName)] ?? null;
     }
 }

@@ -20,16 +20,15 @@ if (!isset($viewModel) || !$viewModel instanceof BaseViewModel) {
     throw new \InvalidArgumentException('The shared shell expects $viewModel to be an instance of BaseViewModel.');
 }
 
-$globalData = $viewModel->getGlobalData();
-$cms = $globalData['cms'];
+$cms = $viewModel->cms;
 
 // Keep compatibility with pages that still provide extra CMS blocks (for example HomePageViewModel::$cmsContent).
 if (property_exists($viewModel, 'cmsContent') && is_array($viewModel->cmsContent) && $viewModel->cmsContent !== []) {
     $cms = array_merge($viewModel->cmsContent, $cms);
 }
 
-$currentPage = $globalData['currentPage'];
-$includeNav = $globalData['includeNav'];
+$currentPage = $viewModel->currentPage;
+$includeNav = $viewModel->includeNav;
 $isLoggedIn = $viewModel->globalUi->isLoggedIn;
 $includeHero = $includeHero ?? true;
 $includeEventSections = $includeEventSections ?? false;

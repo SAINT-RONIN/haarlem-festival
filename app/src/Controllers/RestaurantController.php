@@ -5,51 +5,31 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Mappers\Restaurant\RestaurantViewModelMapper;
+use App\Mappers\RestaurantMapper;
 use App\Services\Interfaces\IRestaurantService;
-use App\Services\RestaurantService;
+use App\Services\Interfaces\ISessionService;
 
 /**
- * Controller for Restaurant pages.
- *
- * Thin controller — only orchestrates:
- *   1. Calls the SERVICE for plain business data.
- *   2. Calls the MAPPER to convert data into ViewModels.
- *   3. Renders the view.
- *   4. Handles errors / 404.
- *
- * Dependencies are received through the constructor.
- * When called with no arguments (as the router does: new RestaurantController()),
- * sensible defaults are created automatically.
+ * Controller for Restaurant page.
  */
 class RestaurantController extends BaseController
 {
-    private IRestaurantService $restaurantService;
-    private RestaurantViewModelMapper $mapper;
-
-    /**
-     * @param IRestaurantService|null        $restaurantService  Defaults to RestaurantService.
-     * @param RestaurantViewModelMapper|null  $mapper             Defaults to a new mapper instance.
-     */
     public function __construct(
-        ?IRestaurantService $restaurantService = null,
-        ?RestaurantViewModelMapper $mapper = null
+        private IRestaurantService $restaurantService,
+        private ISessionService $sessionService,
     ) {
-        $this->restaurantService = $restaurantService ?? new RestaurantService();
-        $this->mapper            = $mapper ?? new RestaurantViewModelMapper();
     }
 
     /**
-     * Displays the restaurant listing page.
+     * Displays the restaurant page.
      *
      * GET /restaurant
      */
     public function index(): void
     {
         try {
-            $data      = $this->restaurantService->getRestaurantPageData();
-            $viewModel = $this->mapper->toPageViewModel($data);
-
+            $data = $this->restaurantService->getRestaurantPageData();
+            $viewModel = RestaurantMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -72,8 +52,7 @@ class RestaurantController extends BaseController
                 return;
             }
 
-            $viewModel = $this->mapper->toDetailViewModel($data);
-
+            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

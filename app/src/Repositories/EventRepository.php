@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Enums\EventTypeId;
 use App\Infrastructure\Database;
 use App\Models\Event;
+use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
@@ -14,7 +15,6 @@ use PDO;
 class EventRepository implements IEventRepository
 {
     private PDO $pdo;
-    private ?bool $hasSlugColumn = null;
 
     public function __construct()
     {
@@ -38,9 +38,7 @@ class EventRepository implements IEventRepository
         ';
 
         if ($includeSessionCount) {
-            $select .= ',
-                (SELECT COUNT(*) FROM EventSession es_count WHERE es_count.EventId = e.EventId) AS SessionCount
-            ';
+            $select .= ', COALESCE(es_count.SessionCount, 0) AS SessionCount';
         }
 
         $sql = $select . '
@@ -49,16 +47,26 @@ class EventRepository implements IEventRepository
             INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
         ';
 
+        if ($includeSessionCount) {
+            $sql .= '
+            LEFT JOIN (SELECT EventId, COUNT(*) AS SessionCount FROM EventSession GROUP BY EventId) es_count
+                ON es_count.EventId = e.EventId
+            ';
+        }
+
         $conditions = [];
         $params = [];
 
         if ($dayOfWeek !== null && $dayOfWeek !== '') {
-            $sql .= '
-                INNER JOIN EventSession es_day
-                    ON es_day.EventId = e.EventId
-                    AND DAYNAME(es_day.StartDateTime) = :dayOfWeek
-            ';
-            $params['dayOfWeek'] = $dayOfWeek;
+            $dayNumber = $this->dayNameToNumber($dayOfWeek);
+            if ($dayNumber !== null) {
+                $sql .= '
+                    INNER JOIN EventSession es_day
+                        ON es_day.EventId = e.EventId
+                        AND DAYOFWEEK(es_day.StartDateTime) = :dayOfWeekNum
+                ';
+                $params['dayOfWeekNum'] = $dayNumber;
+            }
         }
 
         if ($isActive !== null) {
@@ -85,15 +93,11 @@ class EventRepository implements IEventRepository
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([EventWithDetails::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent
     {
-        if (!$this->eventTableHasSlugColumn()) {
-            return $this->findActiveJazzByDerivedSlug($slug);
-        }
-
         $stmt = $this->pdo->prepare('
             SELECT
                 e.EventId,
@@ -114,76 +118,16 @@ class EventRepository implements IEventRepository
         ]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (is_array($row)) {
-            return JazzArtistDetailEvent::fromRow($row);
-        }
-
-        // Backward compatibility for environments where the Slug column exists but is not fully backfilled yet.
-        return $this->findActiveJazzByDerivedSlug($slug);
+        return is_array($row) ? JazzArtistDetailEvent::fromRow($row) : null;
     }
 
-    private function eventTableHasSlugColumn(): bool
+    private function dayNameToNumber(string $dayName): ?int
     {
-        if ($this->hasSlugColumn !== null) {
-            return $this->hasSlugColumn;
-        }
-
-        $stmt = $this->pdo->prepare('
-            SELECT COUNT(*)
-            FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = :tableName
-              AND COLUMN_NAME = :columnName
-        ');
-        $stmt->execute([
-            'tableName' => 'Event',
-            'columnName' => 'Slug',
-        ]);
-
-        $this->hasSlugColumn = ((int)$stmt->fetchColumn()) > 0;
-        return $this->hasSlugColumn;
-    }
-
-    private function findActiveJazzByDerivedSlug(string $slug): ?JazzArtistDetailEvent
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT
-                e.EventId,
-                e.Title,
-                e.ShortDescription,
-                e.LongDescriptionHtml,
-                \'\' AS Slug
-            FROM Event e
-            WHERE e.EventTypeId = :eventTypeId
-              AND e.IsActive = 1
-            ORDER BY e.EventId ASC
-        ');
-        $stmt->execute(['eventTypeId' => EventTypeId::Jazz->value]);
-
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($rows as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
-
-            $title = (string)($row['Title'] ?? '');
-            if ($this->toSlug($title) !== $slug) {
-                continue;
-            }
-
-            $row['Slug'] = $slug;
-            return JazzArtistDetailEvent::fromRow($row);
-        }
-
-        return null;
-    }
-
-    private function toSlug(string $value): string
-    {
-        $lower = strtolower(trim($value));
-        $slug = preg_replace('/[^a-z0-9]+/', '-', $lower);
-
-        return trim((string)$slug, '-');
+        $map = [
+            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
+            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
+        ];
+        return $map[strtolower($dayName)] ?? null;
     }
 
     public function findById(int $eventId): ?Event

@@ -46,12 +46,20 @@ if ($rawFilePath !== '') {
             <?php endif; ?>
         </div>
         <div class="flex-1 space-y-3">
-            <div class="relative">
-                <input type="file" id="<?= $inputId ?>" accept="image/jpeg,image/png,image/webp" onchange="uploadImage(<?= $itemId ?>, this)" class="hidden">
-                <label for="<?= $inputId ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
-                    <i data-lucide="upload" class="w-4 h-4"></i>
-                    Choose Image
-                </label>
+            <div class="flex items-center gap-3 flex-wrap">
+                <div class="relative">
+                    <input type="file" id="<?= $inputId ?>" accept="image/jpeg,image/png,image/webp" onchange="uploadImage(<?= $itemId ?>, this)" class="hidden">
+                    <label for="<?= $inputId ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        Choose Image
+                    </label>
+                </div>
+
+                <!-- Media library button -->
+                <button type="button" onclick="openMediaLibrary(<?= $itemId ?>)" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+                    <i data-lucide="image" class="w-4 h-4"></i>
+                    Media Library
+                </button>
             </div>
             <div class="text-xs text-gray-500 space-y-1">
                 <p><strong>Allowed types:</strong> JPG, PNG, WebP</p>

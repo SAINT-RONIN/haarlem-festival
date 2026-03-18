@@ -15,15 +15,17 @@ final readonly class HomePageViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
-        public array        $eventTypes = [],
-        public array        $locations = [],
-        public array        $scheduleDays = [],
-        public array        $cmsContent = [],
+        array $cms,
+        public array $eventTypes = [],
+        public array $locations = [],
+        public array $scheduleDays = [],
+        public array $cmsContent = [],
     ) {
         parent::__construct(
             heroData: $heroData,
             globalUi: $globalUi,
             currentPage: $heroData->currentPage,
+            cms: $cms,
             includeNav: false,
         );
     }

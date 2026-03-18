@@ -122,11 +122,13 @@ if ($schedule === null || empty($schedule->days)) {
                                         <?= htmlspecialchars($event->priceDisplay) ?>
                                     </span>
                                     <button type="button"
+                                            data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
+                                            data-price="<?= htmlspecialchars($event->priceDisplay) ?>"
                                             class="px-3.5 py-2.5 rounded-[10px] outline outline-2 outline-offset-[-2px] outline-royal-blue
                                                    inline-flex justify-center items-center gap-2.5
                                                    hover:bg-royal-blue hover:text-stone-100 transition-colors duration-200">
                                         <span class="text-royal-blue text-base sm:text-lg font-normal leading-4">
-                                            Add to program
+                                            <?= htmlspecialchars($event->ctaLabel) ?>
                                         </span>
                                     </button>
                                 </div>

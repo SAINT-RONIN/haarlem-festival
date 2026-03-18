@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\ScheduleDayConfig;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use PDO;
 
@@ -20,6 +21,9 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * @return ScheduleDayConfig[]
+     */
     public function findConfigs(array $filters = []): array
     {
         $includeEventTypeName = (bool)($filters['includeEventTypeName'] ?? false);
@@ -33,7 +37,7 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
                     sdc.IsVisible,
                     et.Name AS EventTypeName
                 FROM ScheduleDayConfig sdc
-                LEFT JOIN EventType et ON sdc.EventTypeId = et.EventTypeId AND sdc.EventTypeId > 0
+                LEFT JOIN EventType et ON sdc.EventTypeId = et.EventTypeId AND sdc.EventTypeId IS NOT NULL
                 WHERE 1 = 1
             '
             : '
@@ -48,16 +52,20 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
 
         $params = [];
 
-        if (isset($filters['eventTypeId'])) {
-            $sql .= ' AND sdc.EventTypeId = :eventTypeId';
-            $params['eventTypeId'] = (int)$filters['eventTypeId'];
+        if (array_key_exists('eventTypeId', $filters)) {
+            if ($filters['eventTypeId'] === null) {
+                $sql .= ' AND sdc.EventTypeId IS NULL';
+            } else {
+                $sql .= ' AND sdc.EventTypeId = :eventTypeId';
+                $params['eventTypeId'] = (int)$filters['eventTypeId'];
+            }
         } elseif (($filters['includeGlobal'] ?? true) === false) {
-            $sql .= ' AND sdc.EventTypeId > 0';
+            $sql .= ' AND sdc.EventTypeId IS NOT NULL';
         }
 
         $requestedOrder = is_string($filters['orderBy'] ?? null) ? (string)$filters['orderBy'] : 'scope';
         $allowedOrders = [
-            'scope' => ' ORDER BY sdc.EventTypeId = 0 DESC, sdc.EventTypeId ASC, sdc.DayOfWeek ASC',
+            'scope' => ' ORDER BY sdc.EventTypeId IS NULL DESC, sdc.EventTypeId ASC, sdc.DayOfWeek ASC',
             'day' => ' ORDER BY sdc.DayOfWeek ASC',
         ];
         $sql .= $allowedOrders[$requestedOrder] ?? $allowedOrders['scope'];
@@ -65,13 +73,13 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([ScheduleDayConfig::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**
      * Upserts a visibility setting.
      */
-    public function upsert(int $eventTypeId, int $dayOfWeek, bool $isVisible): void
+    public function upsert(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {
         $stmt = $this->pdo->prepare('
             INSERT INTO ScheduleDayConfig (EventTypeId, DayOfWeek, IsVisible)

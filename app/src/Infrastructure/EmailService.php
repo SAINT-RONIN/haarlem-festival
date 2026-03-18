@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Infrastructure;
 
-use App\Services\Interfaces\IEmailService;
+use App\Infrastructure\Interfaces\IEmailService;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 

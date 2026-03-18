@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\CmsItem;
+use App\Models\CmsPage;
 use App\Models\CmsSection;
 
 interface ICmsRepository
 {
     /**
      * @param array{cmsPageId?: int, slug?: string, includeLastUpdated?: bool} $filters
-     * @return array<int, array<string, mixed>>
+     * @return CmsPage[]
      */
     public function findPages(array $filters = []): array;
 

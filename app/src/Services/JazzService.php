@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\JazzPageConstants;
-use App\Enums\EventTypeId;
-use App\Services\Interfaces\ICmsService;
+use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IJazzService;
-use App\Services\Interfaces\IScheduleService;
 
 /**
  * Service for Jazz page domain payload.
@@ -19,8 +17,7 @@ use App\Services\Interfaces\IScheduleService;
 class JazzService implements IJazzService
 {
     public function __construct(
-        private readonly ICmsService $cmsService,
-        private readonly IScheduleService $scheduleService,
+        private readonly ICmsContentRepository $cmsService,
     ) {
     }
 
@@ -63,11 +60,6 @@ class JazzService implements IJazzService
                     JazzPageConstants::SECTION_BOOKING_CTA,
                 ),
             ],
-            'scheduleSectionData' => $this->scheduleService->getScheduleData(
-                JazzPageConstants::PAGE_SLUG,
-                EventTypeId::Jazz->value,
-                JazzPageConstants::SCHEDULE_MAX_DAYS,
-            ),
         ];
     }
 }

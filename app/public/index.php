@@ -33,23 +33,24 @@ use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
+use App\Controllers\CmsMediaController;
+use App\Controllers\CmsOrdersController;
+use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
-use App\Repositories\EventRepository;
-use App\Services\CmsDashboardService;
-use App\Services\CmsEditService;
-use App\Services\CmsService;
-use App\Services\JazzArtistDetailService;
-use App\Services\JazzService;
-use App\Services\MediaAssetService;
-use App\Services\ScheduleService;
 use App\Services\SessionService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+
+// Start session once per request during bootstrap.
+(new SessionService())->start();
+
+// Load controller factory — returns a closure keyed by controller class name.
+$container = require __DIR__ . '/../bootstrap/container.php';
 
 // Define routes
 $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
@@ -85,6 +86,10 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Checkout Routes
     $r->addRoute('GET', '/checkout', [CheckoutController::class, 'index']);
+    $r->addRoute('POST', '/api/checkout/create-session', [CheckoutController::class, 'createSession']);
+    $r->addRoute('GET', '/checkout/success', [CheckoutController::class, 'success']);
+    $r->addRoute('GET', '/checkout/cancel', [CheckoutController::class, 'cancel']);
+    $r->addRoute('POST', '/api/stripe/webhook', [CheckoutController::class, 'webhook']);
 
 
     // Website Authentication Routes
@@ -124,6 +129,18 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/venues', [CmsEventsController::class, 'createVenue']);
     $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
     $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
+
+    // CMS Media Routes
+    $r->addRoute('GET', '/cms/media', [CmsMediaController::class, 'index']);
+    $r->addRoute('POST', '/cms/media/upload', [CmsMediaController::class, 'upload']);
+    $r->addRoute('POST', '/cms/media/delete', [CmsMediaController::class, 'delete']);
+    $r->addRoute('GET', '/api/cms/media', [CmsMediaController::class, 'list']);
+
+    // CMS Orders Routes
+    $r->addRoute('GET', '/cms/orders', [CmsOrdersController::class, 'index']);
+
+    // CMS Users Routes
+    $r->addRoute('GET', '/cms/users', [CmsUsersController::class, 'index']);
 
     // Slug-aware routes (preferred)
     $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);
@@ -178,28 +195,7 @@ switch ($routeInfo[0]) {
 
         // Handle controller routes
         [$controllerClass, $method] = $handler;
-        $controller = match ($controllerClass) {
-            JazzController::class => new JazzController(
-                new JazzService(
-                    new CmsService(),
-                    new ScheduleService(),
-                ),
-                new JazzArtistDetailService(
-                    new CmsService(),
-                    new ScheduleService(),
-                    new EventRepository(),
-                ),
-                new CmsService(),
-                new SessionService(),
-            ),
-            CmsDashboardController::class => new CmsDashboardController(
-                new SessionService(),
-                new CmsDashboardService(),
-                new CmsEditService(),
-                new MediaAssetService(),
-            ),
-            default => new $controllerClass(),
-        };
+        $controller = $container($controllerClass);
         $controller->$method(...array_values($vars));
         break;
 }

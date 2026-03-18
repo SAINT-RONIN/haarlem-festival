@@ -33,7 +33,7 @@ $video = $viewModel->videoSection;
     </div>
 </section>
 
-<?php if ($highlights->hasItems()): ?>
+<?php if ($highlights->items !== []): ?>
     <section class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-10 md:py-12
                     flex flex-col gap-5 sm:gap-6 md:gap-8"
              aria-labelledby="highlights-heading">
@@ -98,7 +98,7 @@ $video = $viewModel->videoSection;
         <?= htmlspecialchars($video->heading) ?>
     </h2>
     <div class="w-full rounded-2xl overflow-hidden bg-royal-blue/10 aspect-video flex items-center justify-center">
-        <?php if ($video->hasVideo()): ?>
+        <?php if ($video->url !== ''): ?>
             <iframe
                 src="<?= htmlspecialchars($video->url) ?>"
                 class="w-full h-full"
