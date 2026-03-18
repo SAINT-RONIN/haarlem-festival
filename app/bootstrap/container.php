@@ -149,7 +149,6 @@ return static function (string $controllerClass): object {
                 $eventSessionLabelRepository,
                 $mediaAssetRepository,
             ),
-            $cmsPageContentService,
             $sessionService,
             $scheduleService,
         ),

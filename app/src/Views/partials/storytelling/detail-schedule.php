@@ -1,7 +1,9 @@
 <?php
 /**
- * Storytelling detail page schedule section.
- * Simplified layout: no filters, no event count — just day groups with event cards.
+ * Renders the session schedule for a single storytelling event detail page.
+ * The reason for this is because the detail page shows only the sessions belonging
+ * to one specific event, using a simplified layout (no filters, no event count)
+ * that differs from the shared schedule partial used on the overview page.
  *
  * @var \App\ViewModels\Storytelling\StorytellingDetailPageViewModel $viewModel
  */
@@ -25,11 +27,11 @@ if ($schedule === null || empty($schedule->days)) {
         <div class="w-full flex flex-col sm:flex-row justify-start items-start sm:items-baseline gap-2.5 overflow-hidden">
             <h2 id="<?= htmlspecialchars($schedule->sectionId) ?>-heading"
                 class="text-royal-blue text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold">
-                <?= CmsOutputHelper::text($schedule->title) ?>
+                <?= htmlspecialchars(CmsOutputHelper::text($schedule->title), ENT_QUOTES, 'UTF-8') ?>
             </h2>
             <?php if ($schedule->year): ?>
                 <span class="text-royal-blue text-xl sm:text-2xl md:text-3xl font-bold">
-                    <?= CmsOutputHelper::text($schedule->year) ?>
+                    <?= htmlspecialchars(CmsOutputHelper::text($schedule->year), ENT_QUOTES, 'UTF-8') ?>
                 </span>
             <?php endif; ?>
         </div>

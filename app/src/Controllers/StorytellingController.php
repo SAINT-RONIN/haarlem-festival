@@ -8,10 +8,8 @@ use App\Constants\StorytellingDetailConstants;
 use App\Constants\StorytellingPageConstants;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\EventTypeId;
-use App\Mappers\CmsMapper;
 use App\Mappers\ScheduleMapper;
 use App\Mappers\StorytellingMapper;
-use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
 use App\Services\Interfaces\IStorytellingDetailService;
@@ -22,32 +20,27 @@ class StorytellingController extends BaseController
     public function __construct(
         private readonly IStorytellingService $storytellingService,
         private readonly IStorytellingDetailService $storytellingDetailService,
-        private readonly ICmsPageContentService $cmsService,
         private readonly ISessionService $sessionService,
         private readonly IScheduleService $scheduleService,
     ) {
     }
 
     /**
-     * GET /storytelling
+     * Renders the storytelling listing page.
+     * The reason for this is because all page entry points live in the controller — it coordinates the service call, mapping, and view render without owning any logic.
      */
     public function index(): void
     {
         try {
             $pageData = $this->storytellingService->getStorytellingPageData();
-            $heroContent = $pageData->sections[StorytellingPageConstants::SECTION_HERO] ?? [];
-            $heroData = CmsMapper::toHeroData($heroContent, StorytellingPageConstants::CURRENT_PAGE);
-            $globalUi = CmsMapper::toGlobalUiData(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
-                $this->sessionService->isLoggedIn(),
-            );
             $scheduleData = $this->scheduleService->getScheduleData(
                 StorytellingPageConstants::PAGE_SLUG,
                 EventTypeId::Storytelling->value,
                 StorytellingPageConstants::SCHEDULE_MAX_DAYS,
             );
             $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
-            $viewModel = StorytellingMapper::toPageViewModel($pageData, $heroData, $globalUi, $scheduleSection);
+            $isLoggedIn = $this->sessionService->isLoggedIn();
+            $viewModel = StorytellingMapper::toPageViewModel($pageData, $scheduleSection, $isLoggedIn);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -55,17 +48,14 @@ class StorytellingController extends BaseController
     }
 
     /**
-     * GET /storytelling/{id}
+     * Renders the detail page for a single storytelling event.
+     * The reason for this is because each event has its own CMS-driven detail page that requires fetching both event data and a filtered schedule.
      */
     public function detail(string $id): void
     {
         try {
             $eventId = (int)$id;
             $pageData = $this->storytellingDetailService->getDetailPageData($eventId);
-            $globalUi = CmsMapper::toGlobalUiData(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
-                $this->sessionService->isLoggedIn(),
-            );
             $scheduleData = $this->scheduleService->getScheduleData(
                 StorytellingDetailConstants::SCHEDULE_PAGE_SLUG,
                 EventTypeId::Storytelling->value,
@@ -73,7 +63,8 @@ class StorytellingController extends BaseController
                 $eventId,
             );
             $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
-            $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $globalUi, $scheduleSection);
+            $isLoggedIn = $this->sessionService->isLoggedIn();
+            $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

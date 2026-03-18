@@ -16,6 +16,10 @@ class StorytellingService implements IStorytellingService
     ) {
     }
 
+    /**
+     * Fetches all CMS sections needed to render the storytelling overview page.
+     * The reason for this is because the service is the only layer allowed to call repositories and assemble the raw domain payload the mapper will later format.
+     */
     public function getStorytellingPageData(): StorytellingPageData
     {
         $pageSlug = StorytellingPageConstants::PAGE_SLUG;
@@ -36,6 +40,8 @@ class StorytellingService implements IStorytellingService
                     StorytellingPageConstants::SECTION_MASONRY,
                 ),
             ],
+            // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
+            globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
         );
     }
 }
