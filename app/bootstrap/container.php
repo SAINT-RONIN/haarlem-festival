@@ -212,9 +212,7 @@ return static function (string $controllerClass): object {
         ),
         HistoryController::class => new HistoryController(
             new HistoryService(
-                $cmsRepository,
                 $cmsPageContentService,
-                $scheduleService,
             ),
             new HistoricalLocationService(),
             $cmsPageContentService,
