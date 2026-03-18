@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\HistoryPageConstants;
 use App\Enums\EventTypeId;
 use App\Models\CmsItem;
 use App\Models\CmsSection;
@@ -13,6 +14,7 @@ use App\Repositories\Interfaces\ICmsRepository;
 use App\Services\Interfaces\IHistoryService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ICmsPageContentService;
+use App\Helpers\AgeLabelFormatter;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -42,35 +44,69 @@ class HistoryService implements IHistoryService
     private ?array $historyItemsBySection = null;
 
     public function __construct(
-        private ICmsRepository $cmsRepository,
-        private ICmsPageContentService $cmsService,
-        private IScheduleService $scheduleService,
+        private readonly ICmsRepository         $cmsRepository,
+        private readonly ICmsPageContentService $cmsService,
+        private readonly IScheduleService       $scheduleService,
     ) {
     }
 
     /**
      * Builds the history page view model with all required data.
      */
-    public function getHistoryPageData(bool $isLoggedIn): HistoryPageViewModel
+    public function getHistoryPageData(): array
     {
-        // Load page and sections once
-        $this->loadPageData('history');
+        $pageSlug = HistoryPageConstants::PAGE_SLUG;
 
-        $heroData = $this->buildHeroData();
-        $globalUi = $this->buildGlobalUi($isLoggedIn);
-
-        return new HistoryPageViewModel(
-            heroData: $heroData,
-            globalUi: $globalUi,
-            cms: CmsMapper::toCmsData($heroData, $globalUi),
-            gradientSection: $this->buildGradientSection(),
-            introSplitSection: $this->buildIntroSplitSection(),
-            routeData: $this->buildRouteData(),
-            venuesData: $this->buildVenuesData(),
-            ticketOptionsData: $this->buildTicketOptionsData(),
-            infoAboutTourData: $this->buildInfoAboutTourData(),
-            scheduleSection: $this->buildScheduleSection(),
-        );
+        return [
+            'sections' => [
+                HistoryPageConstants::SECTION_HERO => $this->cmsService->getSectionContent(
+                    $pageSlug,
+                    HistoryPageConstants::SECTION_HERO,
+                ),
+                HistoryPageConstants::SECTION_GRADIENT => $this->cmsService->getSectionContent(
+                    $pageSlug,
+                    HistoryPageConstants::SECTION_GRADIENT,
+                ),
+                HistoryPageConstants::SECTION_INTRO => $this->cmsService->getSectionContent(
+                    $pageSlug,
+                    HistoryPageConstants::SECTION_INTRO,
+                ),
+                HistoryPageConstants::SECTION_ROUTE => $this->cmsService->getSectionContent(
+                    $pageSlug,
+                    HistoryPageConstants::SECTION_ROUTE,
+                ),
+                HistoryPageConstants::SECTION_VENUES => $this->cmsService->getSectionContent(
+                    $pageSlug,
+                    HistoryPageConstants::SECTION_VENUES,
+                ),
+                HistoryPageConstants::SECTION_TICKET_OPTIONS => $this->cmsService->getSectionContent(
+                    $pageSlug,
+                    HistoryPageConstants::SECTION_TICKET_OPTIONS,
+                ),
+                HistoryPageConstants::SECTION_TOUR_INFO => $this->cmsService->getSectionContent(
+                    $pageSlug,
+                    HistoryPageConstants::SECTION_TOUR_INFO,
+                ),
+            ],
+        ];
+//        // Load page and sections once
+//        $this->loadPageData('history');
+//
+//        $heroData = $this->buildHeroData();
+//        $globalUi = $this->buildGlobalUi($isLoggedIn);
+//
+//        return new HistoryPageViewModel(
+//            heroData: $heroData,
+//            globalUi: $globalUi,
+//            cms: CmsMapper::toCmsData($heroData, $globalUi),
+//            gradientSection: $this->buildGradientSection(),
+//            introSplitSection: $this->buildIntroSplitSection(),
+//            routeData: $this->buildRouteData(),
+//            venuesData: $this->buildVenuesData(),
+//            ticketOptionsData: $this->buildTicketOptionsData(),
+//            infoAboutTourData: $this->buildInfoAboutTourData(),
+//            scheduleSection: $this->buildScheduleSection(),
+//        );
     }
 
     /**
@@ -183,64 +219,64 @@ class HistoryService implements IHistoryService
      *
      * @return RouteData Contains route heading, ordered venues and map image.
      */
-    private function buildRouteData(): RouteData
-    {
-        // retrieve route section content
-        $sectionData = $this->cmsService->getSectionContent('history', 'route_section');
-        $locations = [
-            new RouteVenue(
-                venueName: $sectionData['route_location1_name'] ?? 'Church of St.Bavo',
-                venueBadgeColor: 'bg-sky-600/80',
-                venueDescription: $sectionData['route_location1_description'] ?? 'A monumental Gothic church famed for its towering nave and historic Müller organ once played by Mozart.',
-            ),
-            new RouteVenue(
-                venueName: $sectionData['route_location2_name'] ?? 'Grote Markt',
-                venueBadgeColor: 'bg-orange-800/80',
-                venueDescription: $sectionData['route_location2_description'] ?? 'A vibrant central square surrounded by landmark buildings and lively cafés;  the city’s cultural heart.',
-            ),
-            new RouteVenue(
-                venueName: $sectionData['route_location3_name'] ?? 'De Hallen',
-                venueBadgeColor: 'bg-amber-400/80',
-                venueDescription: $sectionData['route_location3_description'] ?? 'A former meat hall turned into an art and photography museum space that hosts exhibitions as part of the Frans Hals Museum.',
-            ),
-            new RouteVenue(
-                venueName: $sectionData['route_location4_name'] ?? 'Proveniershof',
-                venueBadgeColor: 'bg-lime-700/80',
-                venueDescription: $sectionData['route_location4_description'] ?? 'A peaceful 18th-century hofje (courtyard community) offering a quiet oasis with historic almshouses.',
-            ),
-            new RouteVenue(
-                venueName: $sectionData['route_location5_name'] ?? 'Jopenkerk',
-                venueBadgeColor: 'bg-violet-800/80',
-                venueDescription: $sectionData['route_location5_description'] ?? 'A former church transformed into Haarlem’s iconic craft brewery and restaurant, blending tradition with modern beer culture.',
-            ),
-            new RouteVenue(
-                venueName: $sectionData['route_location6_name'] ?? 'Waalse Kerk',
-                venueBadgeColor: 'bg-rose-500/80',
-                venueDescription: $sectionData['route_location6_description'] ?? 'An intimate 17th-century Walloon church known for its serene atmosphere and historic interior.',
-            ),
-            new RouteVenue(
-                venueName: $sectionData['route_location7_name'] ?? 'Molen de Adriaan',
-                venueBadgeColor: 'bg-lime-500/80',
-                venueDescription: $sectionData['route_location7_description'] ?? 'A reconstructed 18th-century riverside windmill offering tours and panoramic views over the Spaarne.',
-            ),
-            new RouteVenue(
-                venueName: $sectionData['route_location8_name'] ?? 'Amsterdamse Poort',
-                venueBadgeColor: 'bg-stone-700/80',
-                venueDescription: $sectionData['route_location8_description'] ?? 'Haarlem’s last surviving medieval city gate, showcasing impressive brickwork and centuries of history.',
-            ),
-            new RouteVenue(
-                venueName: $sectionData['route_location9_name'] ?? 'Hof van Bakenes',
-                venueBadgeColor: 'bg-orange-500/80',
-                venueDescription: $sectionData['route_location9_description'] ?? 'The oldest hofje in the Netherlands, featuring charming gardens and classic courtyard architecture dating back to 1395.',
-            ),
-        ];
-
-        return new RouteData(
-            headingText: $sectionData['route_heading'] ?? 'The Route',
-            venues: $locations,
-            mapImagePath: $sectionData['route_map_image'] ?? '/assets/Image/History/History-RouteMap.png'
-        );
-    }
+//    private function buildRouteData(): RouteData
+//    {
+//        // retrieve route section content
+//        $sectionData = $this->cmsService->getSectionContent('history', 'route_section');
+//        $locations = [
+//            new RouteVenue(
+//                venueName: $sectionData['route_location1_name'] ?? 'Church of St.Bavo',
+//                venueBadgeColor: 'bg-sky-600/80',
+//                venueDescription: $sectionData['route_location1_description'] ?? 'A monumental Gothic church famed for its towering nave and historic Müller organ once played by Mozart.',
+//            ),
+//            new RouteVenue(
+//                venueName: $sectionData['route_location2_name'] ?? 'Grote Markt',
+//                venueBadgeColor: 'bg-orange-800/80',
+//                venueDescription: $sectionData['route_location2_description'] ?? 'A vibrant central square surrounded by landmark buildings and lively cafés;  the city’s cultural heart.',
+//            ),
+//            new RouteVenue(
+//                venueName: $sectionData['route_location3_name'] ?? 'De Hallen',
+//                venueBadgeColor: 'bg-amber-400/80',
+//                venueDescription: $sectionData['route_location3_description'] ?? 'A former meat hall turned into an art and photography museum space that hosts exhibitions as part of the Frans Hals Museum.',
+//            ),
+//            new RouteVenue(
+//                venueName: $sectionData['route_location4_name'] ?? 'Proveniershof',
+//                venueBadgeColor: 'bg-lime-700/80',
+//                venueDescription: $sectionData['route_location4_description'] ?? 'A peaceful 18th-century hofje (courtyard community) offering a quiet oasis with historic almshouses.',
+//            ),
+//            new RouteVenue(
+//                venueName: $sectionData['route_location5_name'] ?? 'Jopenkerk',
+//                venueBadgeColor: 'bg-violet-800/80',
+//                venueDescription: $sectionData['route_location5_description'] ?? 'A former church transformed into Haarlem’s iconic craft brewery and restaurant, blending tradition with modern beer culture.',
+//            ),
+//            new RouteVenue(
+//                venueName: $sectionData['route_location6_name'] ?? 'Waalse Kerk',
+//                venueBadgeColor: 'bg-rose-500/80',
+//                venueDescription: $sectionData['route_location6_description'] ?? 'An intimate 17th-century Walloon church known for its serene atmosphere and historic interior.',
+//            ),
+//            new RouteVenue(
+//                venueName: $sectionData['route_location7_name'] ?? 'Molen de Adriaan',
+//                venueBadgeColor: 'bg-lime-500/80',
+//                venueDescription: $sectionData['route_location7_description'] ?? 'A reconstructed 18th-century riverside windmill offering tours and panoramic views over the Spaarne.',
+//            ),
+//            new RouteVenue(
+//                venueName: $sectionData['route_location8_name'] ?? 'Amsterdamse Poort',
+//                venueBadgeColor: 'bg-stone-700/80',
+//                venueDescription: $sectionData['route_location8_description'] ?? 'Haarlem’s last surviving medieval city gate, showcasing impressive brickwork and centuries of history.',
+//            ),
+//            new RouteVenue(
+//                venueName: $sectionData['route_location9_name'] ?? 'Hof van Bakenes',
+//                venueBadgeColor: 'bg-orange-500/80',
+//                venueDescription: $sectionData['route_location9_description'] ?? 'The oldest hofje in the Netherlands, featuring charming gardens and classic courtyard architecture dating back to 1395.',
+//            ),
+//        ];
+//
+//        return new RouteData(
+//            headingText: $sectionData['route_heading'] ?? 'The Route',
+//            venues: $locations,
+//            mapImagePath: $sectionData['route_map_image'] ?? '/assets/Image/History/History-RouteMap.png'
+//        );
+//    }
 
     /**
      * Builds the "Read more about these locations" venues section.
