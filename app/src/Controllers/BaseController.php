@@ -13,10 +13,9 @@ abstract class BaseController
 {
     protected function renderPage(string $viewPath, BaseViewModel $viewModel): void
     {
-        $globalData = $viewModel->getGlobalData();
-        $cms = $globalData['cms'];
-        $currentPage = $globalData['currentPage'];
-        $includeNav = $globalData['includeNav'];
+        $cms = $viewModel->cms;
+        $currentPage = $viewModel->currentPage;
+        $includeNav = $viewModel->includeNav;
         $isLoggedIn = $viewModel->globalUi->isLoggedIn;
 
         require $viewPath;

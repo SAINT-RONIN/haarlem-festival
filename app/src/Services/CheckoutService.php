@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Infrastructure\Interfaces\IStripeService;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
@@ -14,13 +15,10 @@ use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
-use App\Services\Interfaces\IProgramService;
-use App\Services\Interfaces\IStripeService;
 use PDO;
 
 class CheckoutService implements ICheckoutService
 {
-    private IProgramService $programService;
     private IProgramRepository $programRepository;
     private IOrderRepository $orderRepository;
     private IOrderItemRepository $orderItemRepository;
@@ -31,7 +29,6 @@ class CheckoutService implements ICheckoutService
     private PDO $pdo;
 
     public function __construct(
-        IProgramService $programService,
         IProgramRepository $programRepository,
         IOrderRepository $orderRepository,
         IOrderItemRepository $orderItemRepository,
@@ -41,7 +38,6 @@ class CheckoutService implements ICheckoutService
         ICheckoutRuntimeConfig $runtimeConfig,
         PDO $pdo,
     ) {
-        $this->programService = $programService;
         $this->programRepository = $programRepository;
         $this->orderRepository = $orderRepository;
         $this->orderItemRepository = $orderItemRepository;
@@ -52,11 +48,10 @@ class CheckoutService implements ICheckoutService
         $this->pdo = $pdo;
     }
 
-    public function createCheckoutSession(string $sessionKey, int $userId, array $payload): array
+    public function createCheckoutSession(array $programData, int $userId, array $payload): array
     {
         $this->validatePayload($payload);
 
-        $programData = $this->programService->getProgramData($sessionKey, $userId);
         $program = $programData['program'] ?? null;
         $items = $programData['items'] ?? [];
 

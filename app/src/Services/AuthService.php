@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\UserRoleId;
+use App\Infrastructure\Interfaces\IEmailService;
 use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\UserAccountRepository;
 use App\Services\Interfaces\IAuthService;
@@ -26,7 +27,7 @@ class AuthService implements IAuthService
     public function __construct(
         private readonly UserAccountRepository $userRepository,
         private readonly PasswordResetTokenRepository $resetTokenRepository,
-        private readonly EmailService $emailService,
+        private readonly IEmailService $emailService,
     ) {
     }
 
@@ -50,6 +51,28 @@ class AuthService implements IAuthService
         }
 
         return ['success' => true, 'user' => $user];
+    }
+
+    /**
+     * Attempts login and additionally checks that the user has Administrator role.
+     *
+     * @param string $login Username or email
+     * @param string $password Plain text password
+     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     */
+    public function attemptAdminLogin(string $login, string $password): array
+    {
+        $result = $this->attemptLogin($login, $password);
+
+        if (!$result['success']) {
+            return $result;
+        }
+
+        if ($result['user']->userRoleId !== UserRoleId::Administrator->value) {
+            return $this->loginFailure();
+        }
+
+        return $result;
     }
 
     /**

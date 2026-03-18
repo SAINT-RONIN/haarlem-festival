@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Mappers\CmsMapper;
 use App\Models\EventType;
 use App\Models\Restaurant;
 use App\Models\Venue;
+use App\Repositories\CmsContentRepository;
 use App\Repositories\EventSessionRepository;
 use App\Repositories\EventTypeRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\VenueRepository;
 use App\Services\Interfaces\IHomeService;
-use App\ViewModels\Home\HomeUiConfig;
-use App\ViewModels\HomePageViewModel;
+use App\Utils\HomeUiConfig;
 
 /**
  * Service for preparing homepage data.
  *
- * Assembles all data needed for the homepage view, including
- * event types, locations, and schedule information.
+ * Returns plain arrays with raw data.
+ * Mapping to ViewModels happens in HomeMapper.
  */
 class HomeService implements IHomeService
 {
@@ -29,25 +28,25 @@ class HomeService implements IHomeService
         private VenueRepository $venueRepository,
         private RestaurantRepository $restaurantRepository,
         private EventSessionRepository $eventSessionRepository,
-        private CmsService $cmsService,
+        private CmsContentRepository $cmsService,
     ) {
     }
 
     /**
-     * Builds the homepage view model with all required data.
+     * Returns all raw data needed to render the home page.
      */
-    public function getHomePageData(bool $isLoggedIn): HomePageViewModel
+    public function getHomePageData(): array
     {
         $cmsContent = $this->cmsService->getHomePageContent();
 
-        return new HomePageViewModel(
-            heroData: CmsMapper::toHeroData($this->cmsService->getHeroSectionContent('home'), 'home'),
-            globalUi: CmsMapper::toGlobalUiData($this->cmsService->getSectionContent('home', 'global_ui'), $isLoggedIn),
-            eventTypes: $this->buildEventTypes($cmsContent),
-            locations: $this->buildLocations(),
-            scheduleDays: $this->buildScheduleDays(),
-            cmsContent: $cmsContent,
-        );
+        return [
+            'cmsContent'      => $cmsContent,
+            'heroContent'     => $this->cmsService->getHeroSectionContent('home'),
+            'globalUiContent' => $this->cmsService->getSectionContent('home', 'global_ui'),
+            'eventTypes'      => $this->buildEventTypes($cmsContent),
+            'locations'       => $this->buildLocations(),
+            'scheduleDays'    => $this->buildScheduleDays(),
+        ];
     }
 
     /**
@@ -101,16 +100,15 @@ class HomeService implements IHomeService
         $section = $cmsContent[$sectionKey];
 
         return [
-            'slug' => $slug,
-            'title' => $section[$slug . '_title'] ?? ucfirst($slug),
+            'slug'       => $slug,
+            'title'      => $section[$slug . '_title'] ?? ucfirst($slug),
             'description' => $section[$slug . '_description'] ?? '',
-            'button' => $section[$slug . '_button'] ?? 'Explore Events',
-            'image' => $section[$slug . '_image'] ?? null,
-            'darkBg' => HomeUiConfig::DARK_BG_MAP[$slug] ?? false,
+            'button'     => $section[$slug . '_button'] ?? 'Explore Events',
+            'image'      => $section[$slug . '_image'] ?? null,
+            'darkBg'     => HomeUiConfig::DARK_BG_MAP[$slug] ?? false,
             'badgeClass' => HomeUiConfig::BADGE_COLORS[$slug] ?? 'bg-gray-500',
         ];
     }
-
 
     /**
      * Builds locations list from venues and restaurants.
@@ -138,9 +136,9 @@ class HomeService implements IHomeService
         $category = $this->determineVenueCategory($venue->name);
 
         return [
-            'name' => $venue->name,
-            'address' => $venue->addressLine,
-            'category' => $category,
+            'name'       => $venue->name,
+            'address'    => $venue->addressLine,
+            'category'   => $category,
             'badgeClass' => HomeUiConfig::BADGE_COLORS[$category] ?? 'bg-gray-500',
         ];
     }
@@ -151,13 +149,12 @@ class HomeService implements IHomeService
     private function buildRestaurantLocation(Restaurant $restaurant): array
     {
         return [
-            'name' => $restaurant->name,
-            'address' => $restaurant->addressLine,
-            'category' => 'restaurant',
+            'name'       => $restaurant->name,
+            'address'    => $restaurant->addressLine,
+            'category'   => 'restaurant',
             'badgeClass' => HomeUiConfig::BADGE_COLORS['restaurant'],
         ];
     }
-
 
     /**
      * Determines venue category based on venue name/type.
@@ -192,10 +189,10 @@ class HomeService implements IHomeService
     private function buildScheduleDays(): array
     {
         $sessions = $this->eventSessionRepository->findSessions([
-            'isActive' => true,
-            'eventIsActive' => true,
+            'isActive'        => true,
+            'eventIsActive'   => true,
             'includeCancelled' => false,
-            'orderBy' => 'es.StartDateTime ASC',
+            'orderBy'         => 'es.StartDateTime ASC',
         ])['sessions'] ?? [];
         $grouped = $this->groupSessionsByDate($sessions);
 
@@ -213,7 +210,7 @@ class HomeService implements IHomeService
     {
         $grouped = [];
         foreach ($sessions as $session) {
-            $date = (new \DateTime($session['StartDateTime']))->format('Y-m-d');
+            $date = $session->startDateTime->format('Y-m-d');
             $grouped[$date][] = $session;
         }
         return $grouped;
@@ -241,19 +238,12 @@ class HomeService implements IHomeService
      */
     private function buildDayData(string $date, array $sessions): array
     {
-        $dateObj = new \DateTime($date);
-
-        // Group sessions by event type for summary display
         $byType = $this->groupSessionsByType($sessions);
 
         return [
-            'date' => $date,
-            'dayName' => $dateObj->format('l'),
-            'dayNumber' => $dateObj->format('j'),
-            'monthShort' => strtoupper($dateObj->format('M')),
-            'isoDate' => $dateObj->format('Y-m-d'), // Pre-formatted for datetime attribute
+            'date'       => $date,
             'eventCount' => count($byType),
-            'sessions' => $this->formatSessionsForDisplay($byType),
+            'sessions'   => $this->collectSessionsForDisplay($byType),
         ];
     }
 
@@ -264,10 +254,10 @@ class HomeService implements IHomeService
     {
         $byType = [];
         foreach ($sessions as $session) {
-            $slug = $session['EventTypeSlug'];
+            $slug = $session->eventTypeSlug;
             if (!isset($byType[$slug])) {
                 $byType[$slug] = [
-                    'typeName' => $session['EventTypeName'],
+                    'typeName' => $session->eventTypeName,
                     'typeSlug' => $slug,
                     'sessions' => [],
                 ];
@@ -279,21 +269,23 @@ class HomeService implements IHomeService
     }
 
     /**
-     * Formats grouped sessions for display in schedule.
+     * Collects raw session data grouped by type for mapper formatting.
      */
-    private function formatSessionsForDisplay(array $byType): array
+    private function collectSessionsForDisplay(array $byType): array
     {
         $result = [];
 
         foreach ($byType as $slug => $typeData) {
             $sessions = $typeData['sessions'];
-            $timeRange = $this->calculateTimeRange($sessions);
+            $starts   = array_map(fn ($s) => $s->startDateTime->getTimestamp(), $sessions);
+            $ends     = array_map(fn ($s) => $s->endDateTime ? $s->endDateTime->getTimestamp() : $s->startDateTime->getTimestamp(), $sessions);
 
             $result[] = [
-                'timeLabel' => $timeRange,
-                'title' => $this->getEventSummaryTitle($slug, $sessions),
-                'categoryLabel' => $typeData['typeName'],
-                'borderClass' => HomeUiConfig::SCHEDULE_COLORS[$slug] ?? 'bg-gray-500',
+                'earliestStart'  => min($starts),
+                'latestEnd'      => max($ends),
+                'eventTypeSlug'  => $slug,
+                'typeName'       => $typeData['typeName'],
+                'firstEventTitle' => $sessions[0]->eventTitle ?? '',
             ];
         }
 
@@ -301,31 +293,11 @@ class HomeService implements IHomeService
     }
 
     /**
-     * Calculates time range string from sessions.
-     */
-    private function calculateTimeRange(array $sessions): string
-    {
-        $starts = array_map(fn ($s) => strtotime($s['StartDateTime']), $sessions);
-        $ends = array_map(fn ($s) => strtotime($s['EndDateTime']), $sessions);
-
-        $minStart = min($starts);
-        $maxEnd = max($ends);
-
-        $startTime = date('H:i', $minStart);
-        $endTime = date('H:i', $maxEnd);
-
-        return "{$startTime} – {$endTime}";
-    }
-
-    /**
      * Gets summary title for event type sessions.
-     *
-     * TODO: These titles should be retrieved from the database (e.g., EventType.DisplayTitle)
      */
     private function getEventSummaryTitle(string $slug, array $sessions): string
     {
-        // TODO: Hardcoded display titles - should be stored in database
-        return HomeUiConfig::EVENT_SUMMARY_TITLES[$slug] ?? ($sessions[0]['EventTitle'] ?? 'Event');
+        return HomeUiConfig::EVENT_SUMMARY_TITLES[$slug] ?? ($sessions[0]->eventTitle ?? '');
     }
 
     /**
@@ -345,15 +317,10 @@ class HomeService implements IHomeService
      */
     private function buildSinglePlaceholderDay(string $date): array
     {
-        $dateObj = new \DateTime($date);
-
         return [
-            'date' => $date,
-            'dayName' => $dateObj->format('l'),
-            'dayNumber' => $dateObj->format('j'),
-            'monthShort' => strtoupper($dateObj->format('M')),
+            'date'       => $date,
             'eventCount' => 0,
-            'sessions' => [],
+            'sessions'   => [],
         ];
     }
 }

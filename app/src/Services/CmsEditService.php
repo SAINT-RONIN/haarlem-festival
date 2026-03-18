@@ -80,7 +80,7 @@ class CmsEditService implements ICmsEditService
      * Updates multiple CMS items from form submission.
      *
      * @param int $pageId The page ID for validation
-     * @param array $items Array of item updates: [itemId => ['value' => '', 'type' => '']]
+     * @param array $items Array of item updates: [itemId => value_string]
      * @return array ['success' => bool, 'errors' => array]
      */
     public function updatePageItems(int $pageId, array $items): array
@@ -93,7 +93,7 @@ class CmsEditService implements ICmsEditService
             $pageItemsById[$pageItem->cmsItemId] = $pageItem;
         }
 
-        foreach ($items as $itemId => $itemData) {
+        foreach ($items as $itemId => $rawValue) {
             $itemId = (int)$itemId;
             $item = $pageItemsById[$itemId] ?? null;
 
@@ -103,6 +103,7 @@ class CmsEditService implements ICmsEditService
             }
 
             $type = $item->itemType->value;
+            $itemData = ['value' => $rawValue];
             $value = $itemData['value'] ?? '';
 
             $validationError = $this->validateItemValue($value, $type, $item->itemKey);
@@ -222,55 +223,102 @@ class CmsEditService implements ICmsEditService
      */
     private function enrichItemsWithMetadata(array $items): array
     {
+        $mediaAssets = $this->loadMediaAssetsForItems($items);
         $enriched = [];
 
         foreach ($items as $item) {
-            /** @var CmsItem $item */
-            $type = $item->itemType->value;
-            $mediaAsset = $this->getMediaAssetInfo($item->mediaAssetId);
-
-            $resolvedFilePath = null;
-            if ($mediaAsset !== null && $mediaAsset->filePath !== '') {
-                $resolvedFilePath = $mediaAsset->filePath;
-            } elseif (!empty($item->textValue)) {
-                $resolvedFilePath = (string)$item->textValue;
-            }
-
-            // Convert model to array for view consumption
-            $mediaAssetArray = $mediaAsset ? [
-                'FilePath' => $mediaAsset->filePath,
-                'OriginalFileName' => $mediaAsset->originalFileName,
-                'AltText' => $mediaAsset->altText
-            ] : null;
-
-            if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH' && !$mediaAssetArray) {
-                $mediaAssetArray = [
-                    'FilePath' => $resolvedFilePath,
-                    'OriginalFileName' => basename($resolvedFilePath),
-                    'AltText' => $this->formatItemKeyName($item->itemKey)
-                ];
-            }
-
-            $inputType = CmsContentLimits::getInputType($type);
-            if (strtoupper((string)$type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce((string)$item->itemKey)) {
-                $inputType = 'tinymce';
-            }
-
-            $enriched[] = [
-                'itemId' => $item->cmsItemId,
-                'itemKey' => $item->itemKey,
-                'displayName' => $this->formatItemKeyName($item->itemKey),
-                'type' => $type,
-                'typeLabel' => CmsContentLimits::getLabelForType($type),
-                'inputType' => $inputType,
-                'maxChars' => CmsContentLimits::getCharLimitForType($type),
-                'value' => $this->getItemValue($item),
-                'mediaAssetId' => $item->mediaAssetId,
-                'mediaAsset' => $mediaAssetArray,
-            ];
+            $mediaAsset = $this->resolveMediaAsset($item, $mediaAssets);
+            $resolvedFilePath = $this->resolveFilePath($item, $mediaAsset);
+            $inputType = $this->resolveInputType($item);
+            $enriched[] = $this->buildEnrichedItem($item, $mediaAsset, $resolvedFilePath, $inputType);
         }
 
         return $enriched;
+    }
+
+    /**
+     * Batch-loads media assets for all items that reference one.
+     *
+     * @param CmsItem[] $items
+     * @return array<int, \App\Models\MediaAsset>
+     */
+    private function loadMediaAssetsForItems(array $items): array
+    {
+        $mediaAssetIds = array_values(array_filter(
+            array_map(fn(CmsItem $item) => $item->mediaAssetId, $items)
+        ));
+
+        return $mediaAssetIds !== [] ? $this->mediaAssetRepository->findByIds($mediaAssetIds) : [];
+    }
+
+    private function resolveMediaAsset(CmsItem $item, array $mediaAssets): ?\App\Models\MediaAsset
+    {
+        return $item->mediaAssetId !== null ? ($mediaAssets[$item->mediaAssetId] ?? null) : null;
+    }
+
+    private function resolveFilePath(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset): ?string
+    {
+        if ($mediaAsset !== null && $mediaAsset->filePath !== '') {
+            return $mediaAsset->filePath;
+        }
+
+        if (!empty($item->textValue)) {
+            return (string)$item->textValue;
+        }
+
+        return null;
+    }
+
+    private function resolveInputType(CmsItem $item): string
+    {
+        $type = $item->itemType->value;
+        $inputType = CmsContentLimits::getInputType($type);
+
+        if (strtoupper($type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce($item->itemKey)) {
+            return 'tinymce';
+        }
+
+        return $inputType;
+    }
+
+    private function buildEnrichedItem(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset, ?string $resolvedFilePath, string $inputType): array
+    {
+        $type = $item->itemType->value;
+        $mediaAssetArray = $this->buildMediaAssetArray($item, $mediaAsset, $resolvedFilePath, $type);
+
+        return [
+            'itemId' => $item->cmsItemId,
+            'itemKey' => $item->itemKey,
+            'displayName' => $this->formatItemKeyName($item->itemKey),
+            'type' => $type,
+            'typeLabel' => CmsContentLimits::getLabelForType($type),
+            'inputType' => $inputType,
+            'maxChars' => CmsContentLimits::getCharLimitForType($type),
+            'value' => $this->getItemValue($item),
+            'mediaAssetId' => $item->mediaAssetId,
+            'mediaAsset' => $mediaAssetArray,
+        ];
+    }
+
+    private function buildMediaAssetArray(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset, ?string $resolvedFilePath, string $type): ?array
+    {
+        if ($mediaAsset !== null) {
+            return [
+                'FilePath' => $mediaAsset->filePath,
+                'OriginalFileName' => $mediaAsset->originalFileName,
+                'AltText' => $mediaAsset->altText,
+            ];
+        }
+
+        if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH') {
+            return [
+                'FilePath' => $resolvedFilePath,
+                'OriginalFileName' => basename($resolvedFilePath),
+                'AltText' => $this->formatItemKeyName($item->itemKey),
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -290,17 +338,6 @@ class CmsEditService implements ICmsEditService
         }
 
         return $value;
-    }
-
-    /**
-     * Gets media asset info if exists.
-     */
-    private function getMediaAssetInfo(?int $mediaAssetId): ?\App\Models\MediaAsset
-    {
-        if (!$mediaAssetId) {
-            return null;
-        }
-        return $this->mediaAssetRepository->findById($mediaAssetId);
     }
 
     /**

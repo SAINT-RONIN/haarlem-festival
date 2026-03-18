@@ -5,39 +5,33 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\CmsUsersService;
-use App\ViewModels\Cms\CmsUserListItemViewModel;
-use App\ViewModels\Cms\CmsUsersListViewModel;
+use App\Mappers\CmsUsersMapper;
+use App\Services\Interfaces\ICmsUsersService;
+use App\Services\Interfaces\ISessionService;
 
 class CmsUsersController
 {
-    private CmsUsersService $usersService;
-
-    public function __construct()
-    {
-        $this->usersService = new CmsUsersService();
+    public function __construct(
+        private readonly ICmsUsersService $usersService,
+        private readonly ISessionService $sessionService,
+    ) {
     }
 
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
 
             $currentView = 'users';
             $roleFilter  = isset($_GET['role']) && is_numeric($_GET['role']) ? (int)$_GET['role'] : null;
 
             $usersData = $this->usersService->getUsersWithRoles($roleFilter);
 
-            $users = array_map(
-                static fn(array $row): CmsUserListItemViewModel => CmsUserListItemViewModel::fromRow($row),
-                $usersData
-            );
-
-            $viewModel = new CmsUsersListViewModel(
-                users:          $users,
-                selectedRole:   $_GET['role'] ?? '',
-                successMessage: $_GET['success'] ?? null,
-                errorMessage:   $_GET['error'] ?? null,
+            $viewModel = CmsUsersMapper::toListViewModel(
+                $usersData,
+                $_GET['role'] ?? '',
+                $_GET['success'] ?? null,
+                $_GET['error'] ?? null,
             );
 
             require __DIR__ . '/../Views/pages/cms/users.php';

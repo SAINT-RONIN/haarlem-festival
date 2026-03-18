@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Repositories;
 
 use App\Models\CmsItem;
 use App\Models\CmsSection;
 use App\Models\MediaAsset;
-use App\Repositories\CmsRepository;
-use App\Repositories\MediaAssetRepository;
-use App\Services\Interfaces\ICmsService;
+use App\Repositories\Interfaces\ICmsContentRepository;
 
-class CmsService implements ICmsService
+class CmsContentRepository implements ICmsContentRepository
 {
     /** @var array<string, int|null> In-memory cache for page slug → ID lookups */
     private array $pageIdCache = [];

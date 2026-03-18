@@ -21,6 +21,7 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
+        array $cms,
 
         // Basic restaurant info (domain)
         public int    $id,
@@ -104,6 +105,7 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
             heroData: $heroData,
             globalUi: $globalUi,
             currentPage: 'restaurant',
+            cms: $cms,
             includeNav: false,
         );
     }

@@ -7,21 +7,22 @@ namespace App\Controllers;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
-use App\Services\CmsEventsService;
-use App\ViewModels\Cms\CmsEventListItemViewModel;
-use App\ViewModels\Cms\CmsEventsListViewModel;
+use App\Mappers\CmsEventsMapper;
+use App\Services\Interfaces\ICmsEventsService;
+use App\Services\Interfaces\ISessionService;
 
 class CmsEventsController
 {
     public function __construct(
-        private CmsEventsService $eventsService,
+        private ICmsEventsService $eventsService,
+        private readonly ISessionService $sessionService,
     ) {
     }
 
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
 
             $currentView = 'events';
             $eventTypeId = isset($_GET['type']) && is_numeric($_GET['type']) ? (int)$_GET['type'] : null;
@@ -29,23 +30,18 @@ class CmsEventsController
 
             $eventsData = $this->eventsService->getAllEventsWithDetails($eventTypeId, $dayOfWeek);
             $eventTypes = $this->eventsService->getEventTypes();
-            $weeklySchedule = $this->eventsService->getWeeklyScheduleOverview($eventTypeId);
+            $weeklyScheduleDomain = $this->eventsService->getWeeklyScheduleOverview($eventTypeId);
             $venues = $this->eventsService->getVenues();
 
-            $events = array_map(
-                static fn ($event): CmsEventListItemViewModel => CmsEventListItemViewModel::fromEventWithDetails($event),
-                $eventsData
-            );
-
-            $viewModel = new CmsEventsListViewModel(
-                events: $events,
-                eventTypes: $eventTypes,
-                venues: $venues,
-                weeklySchedule: $weeklySchedule,
-                selectedType: $_GET['type'] ?? '',
-                selectedDay: $_GET['day'] ?? '',
-                successMessage: $_GET['success'] ?? null,
-                errorMessage: $_GET['error'] ?? null,
+            $viewModel = CmsEventsMapper::toEventsListViewModel(
+                $eventsData,
+                $eventTypes,
+                $venues,
+                $weeklyScheduleDomain,
+                $_GET['type'] ?? '',
+                $_GET['day'] ?? '',
+                $_GET['success'] ?? null,
+                $_GET['error'] ?? null,
             );
 
             require __DIR__ . '/../Views/pages/cms/events.php';
@@ -57,7 +53,7 @@ class CmsEventsController
     public function create(): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
 
             $currentView = 'events';
             $eventTypes = $this->eventsService->getEventTypes();
@@ -74,7 +70,7 @@ class CmsEventsController
     public function store(): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = $this->eventsService->createEvent($_POST);
             $this->redirect("/cms/events/{$eventId}/edit?success=Event+created+successfully");
         } catch (ValidationException $error) {
@@ -87,17 +83,24 @@ class CmsEventsController
     public function edit(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
 
             $eventId = (int)$id;
             $currentView = 'events';
-            $viewModel = $this->eventsService->getEventForEdit($eventId);
+            $editData = $this->eventsService->getEventForEdit($eventId);
 
-            if ($viewModel === null) {
+            if ($editData === null) {
                 http_response_code(404);
                 require __DIR__ . '/../Views/pages/errors/404.php';
                 return;
             }
+
+            $viewModel = CmsEventsMapper::toEventEditViewModel(
+                $editData['event'],
+                $editData['sessions'],
+                $editData['pricesMap'],
+                $editData['labelsMap'],
+            );
 
             $priceTiers = $this->eventsService->getPriceTiers();
             $successMessage = $_GET['success'] ?? null;
@@ -112,7 +115,7 @@ class CmsEventsController
     public function update(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = (int)$id;
             $this->eventsService->updateEvent($eventId, $_POST);
             $this->redirect("/cms/events/{$eventId}/edit?success=Event+updated+successfully");
@@ -127,7 +130,7 @@ class CmsEventsController
     public function createSession(string $eventId): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $eventIdInt = (int)$eventId;
             $this->eventsService->createSession($eventIdInt, $_POST);
             $this->redirect("/cms/events/{$eventIdInt}/edit?success=Session+created+successfully");
@@ -142,7 +145,7 @@ class CmsEventsController
     public function updateSession(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $sessionId = (int)$id;
             $eventId = (int)($_POST['EventId'] ?? 0);
             $this->eventsService->updateSession($sessionId, $_POST);
@@ -158,7 +161,7 @@ class CmsEventsController
     public function deleteSession(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $sessionId = (int)$id;
             $eventId = (int)($_POST['EventId'] ?? 0);
             $this->eventsService->deleteSession($sessionId);
@@ -171,7 +174,7 @@ class CmsEventsController
     public function addLabel(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $sessionId = (int)$id;
             $eventId = (int)($_POST['EventId'] ?? 0);
             $labelText = trim($_POST['LabelText'] ?? '');
@@ -188,7 +191,7 @@ class CmsEventsController
     public function deleteLabel(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $labelId = (int)$id;
             $eventId = (int)($_POST['EventId'] ?? 0);
             $this->eventsService->deleteLabel($labelId);
@@ -201,7 +204,7 @@ class CmsEventsController
     public function setPrice(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $sessionId = (int)$id;
             $eventId = (int)($_POST['EventId'] ?? 0);
             $priceTierId = (int)($_POST['PriceTierId'] ?? PriceTierId::Adult->value);
@@ -220,7 +223,7 @@ class CmsEventsController
     public function createVenue(): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $name = trim($_POST['VenueName'] ?? '');
             $addressLine = trim($_POST['AddressLine'] ?? '');
             $venueId = $this->eventsService->createVenue($name, $addressLine);
@@ -240,7 +243,7 @@ class CmsEventsController
     public function delete(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = (int)$id;
             $this->eventsService->deleteEvent($eventId);
             $this->redirect('/cms/events?success=Event+deleted+successfully');
@@ -254,21 +257,12 @@ class CmsEventsController
     public function scheduleDays(): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'schedule-days';
             $eventTypes = $this->eventsService->getEventTypes();
-            $dayConfigs = $this->eventsService->getScheduleDayConfigs();
-
-            $globalConfigs = [];
-            $typeConfigs = [];
-            foreach ($dayConfigs as $config) {
-                $eventTypeId = $config->eventTypeId;
-                if ($eventTypeId === null) {
-                    $globalConfigs[(int)$config->dayOfWeek] = $config;
-                } else {
-                    $typeConfigs[(int)$eventTypeId][(int)$config->dayOfWeek] = $config;
-                }
-            }
+            $grouped      = $this->eventsService->getGroupedScheduleDayConfigs();
+            $globalConfigs = $grouped['global'];
+            $typeConfigs   = $grouped['byType'];
 
             $successMessage = $_GET['success'] ?? null;
             $errorMessage = $_GET['error'] ?? null;
@@ -281,7 +275,7 @@ class CmsEventsController
     public function toggleScheduleDay(): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
             $rawEventTypeId = $_POST['EventTypeId'] ?? null;
             $eventTypeId = ($rawEventTypeId !== null && $rawEventTypeId !== '' && $rawEventTypeId !== '0')
                 ? (int)$rawEventTypeId

@@ -46,9 +46,16 @@ class MediaAssetRepository implements IMediaAssetRepository
             return [];
         }
 
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $stmt = $this->pdo->prepare("SELECT * FROM MediaAsset WHERE MediaAssetId IN ({$placeholders})");
-        $stmt->execute(array_values($ids));
+        $paramKeys = [];
+        $paramValues = [];
+        foreach (array_values($ids) as $index => $id) {
+            $key = ':id' . $index;
+            $paramKeys[] = $key;
+            $paramValues[$key] = $id;
+        }
+        $sql = "SELECT * FROM MediaAsset WHERE MediaAssetId IN (" . implode(',', $paramKeys) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($paramValues);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $assets = [];
@@ -135,7 +142,8 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function findAll(): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM MediaAsset ORDER BY CreatedAtUtc DESC');
+        $stmt = $this->pdo->prepare('SELECT * FROM MediaAsset ORDER BY CreatedAtUtc DESC');
+        $stmt->execute([]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return array_map([MediaAsset::class, 'fromRow'], $rows);
     }

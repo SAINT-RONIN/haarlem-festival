@@ -6,39 +6,35 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\ValidationException;
+use App\Mappers\CmsEventsMapper;
 use App\Models\MediaAsset;
-use App\Services\MediaAssetService;
-use App\Services\SessionService;
-use App\ViewModels\Cms\CmsMediaLibraryViewModel;
+use App\Services\Interfaces\IMediaAssetService;
+use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsMediaListItemViewModel;
 
 class CmsMediaController
 {
     public function __construct(
-        private readonly MediaAssetService $mediaAssetService,
-        private readonly SessionService $sessionService,
+        private readonly IMediaAssetService $mediaAssetService,
+        private readonly ISessionService $sessionService,
     ) {
     }
 
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
 
             $currentView = 'media';
             $allAssets = $this->mediaAssetService->getAllAssets();
 
-            $assets = array_map(
-                static fn(MediaAsset $asset): CmsMediaListItemViewModel => CmsMediaListItemViewModel::fromModel($asset),
-                $allAssets
-            );
-
-            $viewModel = new CmsMediaLibraryViewModel(
-                assets: $assets,
-                imageLimits: $this->mediaAssetService->getImageLimits(),
-                csrfToken: $this->sessionService->getCsrfToken('cms_media'),
-                successMessage: $_GET['success'] ?? null,
-                errorMessage: $_GET['error'] ?? null,
+            $assets = array_map([CmsEventsMapper::class, 'toMediaListItemViewModel'], $allAssets);
+            $viewModel = CmsEventsMapper::toMediaLibraryViewModel(
+                $assets,
+                $this->mediaAssetService->getImageLimits(),
+                $this->sessionService->getCsrfToken('cms_media'),
+                $_GET['success'] ?? null,
+                $_GET['error'] ?? null,
             );
 
             require __DIR__ . '/../Views/pages/cms/media.php';
@@ -52,7 +48,7 @@ class CmsMediaController
         header('Content-Type: application/json');
 
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
 
             $csrfToken = $_POST['csrf_token'] ?? '';
             if (!$this->sessionService->isValidCsrfToken('cms_media', $csrfToken)) {
@@ -86,7 +82,7 @@ class CmsMediaController
         header('Content-Type: application/json');
 
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
 
             $csrfToken = $_POST['csrf_token'] ?? '';
             if (!$this->sessionService->isValidCsrfToken('cms_media', $csrfToken)) {
@@ -113,16 +109,11 @@ class CmsMediaController
         header('Content-Type: application/json');
 
         try {
-            CmsAuthController::requireAdmin();
+            CmsAuthController::requireAdmin($this->sessionService);
 
             $allAssets = $this->mediaAssetService->getAllAssets();
 
-            $data = array_map(static fn(MediaAsset $asset): array => [
-                'mediaAssetId' => $asset->mediaAssetId,
-                'filePath' => $asset->filePath,
-                'originalFileName' => $asset->originalFileName,
-                'mimeType' => $asset->mimeType,
-            ], $allAssets);
+            $data = array_map([CmsEventsMapper::class, 'toMediaJsonData'], $allAssets);
 
             echo json_encode(['success' => true, 'assets' => $data]);
         } catch (\Throwable $e) {

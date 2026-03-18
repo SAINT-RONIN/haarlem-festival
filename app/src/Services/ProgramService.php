@@ -212,17 +212,17 @@ class ProgramService implements IProgramService
                 'eventSessionId' => $item->eventSessionId,
                 'quantity' => $item->quantity,
                 'donationAmount' => (float)($item->donationAmount ?? '0.00'),
-                'eventTitle' => $session['EventTitle'] ?? '',
-                'venueName' => $session['VenueName'] ?? '',
-                'hallName' => $session['HallName'] ?? null,
-                'startDateTime' => $session['StartDateTime'] ?? '',
-                'endDateTime' => $session['EndDateTime'] ?? null,
-                'eventTypeId' => isset($session['EventTypeId']) ? (int)$session['EventTypeId'] : null,
-                'eventTypeName' => $session['EventTypeName'] ?? '',
-                'eventTypeSlug' => $session['EventTypeSlug'] ?? '',
-                'languageCode' => $session['LanguageCode'] ?? null,
-                'minAge' => isset($session['MinAge']) ? (int)$session['MinAge'] : null,
-                'maxAge' => isset($session['MaxAge']) ? (int)$session['MaxAge'] : null,
+                'eventTitle' => $session->eventTitle,
+                'venueName' => $session->venueName,
+                'hallName' => $session->hallName,
+                'startDateTime' => $session->startDateTime->format('Y-m-d H:i:s'),
+                'endDateTime' => $session->endDateTime?->format('Y-m-d H:i:s'),
+                'eventTypeId' => $session->eventTypeId,
+                'eventTypeName' => $session->eventTypeName,
+                'eventTypeSlug' => $session->eventTypeSlug,
+                'languageCode' => $session->languageCode,
+                'minAge' => $session->minAge,
+                'maxAge' => $session->maxAge,
                 'isPayWhatYouLike' => $isPayWhatYouLike,
                 'basePrice' => $basePrice,
             ];
@@ -262,7 +262,7 @@ class ProgramService implements IProgramService
 
         $sessionsById = [];
         foreach ($sessions as $session) {
-            $id = (int)($session['EventSessionId'] ?? 0);
+            $id = $session->eventSessionId;
             $sessionsById[$id] = $session;
         }
 

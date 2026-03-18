@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Interfaces;
+namespace App\Repositories\Interfaces;
 
-interface ICmsService
+interface ICmsContentRepository
 {
     public function getHomePageContent(): array;
 

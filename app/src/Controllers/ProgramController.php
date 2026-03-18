@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\Interfaces\ICmsService;
+use App\Mappers\ProgramMapper;
+use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
-use App\ViewModels\Program\MyProgramPageViewModel;
-use App\ViewModels\Program\ProgramItemViewModel;
 
 class ProgramController extends BaseController
 {
     private IProgramService $programService;
-    private ICmsService $cmsService;
+    private ICmsPageContentService $cmsService;
     private ISessionService $sessionService;
 
     public function __construct(
         IProgramService $programService,
-        ICmsService $cmsService,
+        ICmsPageContentService $cmsService,
         ISessionService $sessionService,
     ) {
         $this->programService = $programService;
@@ -36,7 +35,7 @@ class ProgramController extends BaseController
 
             $programData = $this->programService->getProgramData($sessionKey, $userId);
             $cmsContent = $this->cmsService->getSectionContent('my-program', 'main');
-            $viewModel = MyProgramPageViewModel::fromServiceData($programData, $cmsContent, $isLoggedIn);
+            $viewModel = ProgramMapper::toMyProgramViewModel($programData, $cmsContent, $isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);
         } catch (\Throwable $error) {
@@ -59,7 +58,7 @@ class ProgramController extends BaseController
 
             $item = $this->programService->addToProgram($sessionKey, $userId, $eventSessionId, $quantity, $donationAmount);
 
-            $this->respondJson(['success' => true, 'programItemId' => $item->programItemId]);
+            $this->json(['success' => true, 'programItemId' => $item->programItemId]);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
@@ -132,7 +131,7 @@ class ProgramController extends BaseController
 
             $this->programService->clearProgram($sessionKey, $userId);
 
-            $this->respondJson(['success' => true]);
+            $this->json(['success' => true]);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
@@ -141,9 +140,9 @@ class ProgramController extends BaseController
     private function respondJsonWithTotals(string $sessionKey, ?int $userId): void
     {
         $programData = $this->programService->getProgramData($sessionKey, $userId);
-        $totals = ProgramItemViewModel::formatTotals($programData);
+        $totals = ProgramMapper::formatTotals($programData);
 
-        $this->respondJson([
+        $this->json([
             'success' => true,
             'subtotal' => $totals['subtotal'],
             'taxAmount' => $totals['taxAmount'],
@@ -161,18 +160,6 @@ class ProgramController extends BaseController
     private function getLoggedInUserId(): ?int
     {
         return $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
-    }
-
-    protected function readJsonBody(): array
-    {
-        $raw = file_get_contents('php://input');
-        $body = json_decode($raw ?: '', true);
-
-        if (!is_array($body)) {
-            throw new \InvalidArgumentException('Invalid JSON body');
-        }
-
-        return $body;
     }
 
     private function validateAddInput(int $eventSessionId, int $quantity): void
@@ -193,9 +180,4 @@ class ProgramController extends BaseController
         }
     }
 
-    private function respondJson(array $data): void
-    {
-        header('Content-Type: application/json');
-        echo json_encode($data);
-    }
 }

@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\AuthService;
-use App\Services\CaptchaService;
-use App\Services\SessionService;
+use App\Services\Interfaces\IAuthService;
+use App\Services\Interfaces\ICaptchaService;
+use App\Services\Interfaces\ISessionService;
 
 class AuthController
 {
     public function __construct(
-        private readonly AuthService $authService,
-        private readonly SessionService $sessionService,
-        private readonly CaptchaService $captchaService,
+        private readonly IAuthService $authService,
+        private readonly ISessionService $sessionService,
+        private readonly ICaptchaService $captchaService,
     ) {
     }
 
@@ -101,7 +101,7 @@ class AuthController
                 'lastName' => $_POST['last_name'] ?? '',
             ];
 
-            if (!$this->captchaService->verify($_POST['g-recaptcha-response'] ?? null)) {
+            if (!$this->captchaService->verify($_POST['g-recaptcha-response'] ?? null, $_SERVER['REMOTE_ADDR'] ?? null)) {
                 $this->redirectWithErrors('/register', ['captcha' => 'Please complete the CAPTCHA verification.'], $data);
                 return;
             }

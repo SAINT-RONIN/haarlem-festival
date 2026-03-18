@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\StorytellingPageConstants;
-use App\Enums\EventTypeId;
 use App\Models\StorytellingPageData;
-use App\Services\Interfaces\ICmsService;
-use App\Services\Interfaces\IScheduleService;
+use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IStorytellingService;
 
 class StorytellingService implements IStorytellingService
 {
     public function __construct(
-        private readonly ICmsService $cmsService,
-        private readonly IScheduleService $scheduleService,
+        private readonly ICmsContentRepository $cmsService,
     ) {
     }
 
@@ -39,11 +36,6 @@ class StorytellingService implements IStorytellingService
                     StorytellingPageConstants::SECTION_MASONRY,
                 ),
             ],
-            scheduleSectionData: $this->scheduleService->getScheduleData(
-                StorytellingPageConstants::PAGE_SLUG,
-                EventTypeId::Storytelling->value,
-                StorytellingPageConstants::SCHEDULE_MAX_DAYS,
-            ),
         );
     }
 }

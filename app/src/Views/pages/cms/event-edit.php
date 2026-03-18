@@ -190,8 +190,8 @@
                     <?php foreach ($viewModel->sessions as $session): ?>
                         <?php
                         /** @var \App\ViewModels\Cms\CmsEventSessionViewModel $session */
-                        $sessionLabels = $viewModel->getLabelsForSession($session->eventSessionId);
-                        $sessionPrices = $viewModel->getPricesForSession($session->eventSessionId);
+                        $sessionLabels = $viewModel->sessionLabels[$session->eventSessionId] ?? [];
+                        $sessionPrices = $viewModel->sessionPrices[$session->eventSessionId] ?? [];
                         ?>
                         <div class="p-6">
                             <div class="flex justify-between items-start mb-4">

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\HomeService;
-use App\Services\SessionService;
+use App\Mappers\HomeMapper;
+use App\Services\Interfaces\IHomeService;
+use App\Services\Interfaces\ISessionService;
 
 /**
  * Controller for the homepage.
@@ -16,8 +17,8 @@ use App\Services\SessionService;
 class HomeController extends BaseController
 {
     public function __construct(
-        private HomeService $homeService,
-        private SessionService $sessionService,
+        private IHomeService $homeService,
+        private ISessionService $sessionService,
     ) {
     }
 
@@ -29,7 +30,8 @@ class HomeController extends BaseController
     public function index(): void
     {
         try {
-            $viewModel = $this->homeService->getHomePageData($this->sessionService->isLoggedIn());
+            $data = $this->homeService->getHomePageData();
+            $viewModel = HomeMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/home.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

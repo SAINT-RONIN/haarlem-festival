@@ -28,6 +28,7 @@ final readonly class ScheduleEventCardViewModel
      * @param string $startTimeIso ISO time for <time> element
      * @param string $endTimeIso ISO time for <time> element
      * @param array<string> $labels Array of label texts
+     * @param string $locationDisplay Pre-formatted location display string
      * @param int|null $capacityTotal Total venue capacity (for Jazz: displayed as "X seats")
      * @param int|null $seatsAvailable Available seats (Jazz specific)
      * @param int|null $minAge Minimum age restriction for this session
@@ -57,6 +58,7 @@ final readonly class ScheduleEventCardViewModel
         public string  $startTimeIso,
         public string  $endTimeIso,
         public array   $labels,
+        public string  $locationDisplay = '',
         public ?int    $capacityTotal = null,
         public ?int    $seatsAvailable = null,
         public ?int    $minAge = null,
@@ -67,27 +69,9 @@ final readonly class ScheduleEventCardViewModel
         public ?string $artistImageUrl = null,
         public ?string $historyVenue = null,
         public ?string $groupTicketInfo = null,
+        public string  $confirmText = '',
+        public string  $addingText = '',
+        public string  $successText = '',
     ) {
-    }
-
-    /**
-     * Gets the full location display string.
-     * For Jazz: "Venue • Hall • X seats"
-     * For others: Just the venue name
-     */
-    public function getLocationDisplay(): string
-    {
-        if ($this->eventTypeSlug === 'jazz' && !empty($this->hallName)) {
-            $parts = [$this->locationName];
-            if (!empty($this->hallName)) {
-                $parts[] = $this->hallName;
-            }
-            if ($this->capacityTotal !== null && $this->capacityTotal > 0) {
-                $parts[] = $this->capacityTotal . ' seats';
-            }
-            return implode(' • ', $parts);
-        }
-
-        return $this->locationName;
     }
 }

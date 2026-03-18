@@ -86,7 +86,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
-                            <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4"><?= htmlspecialchars($event->getLocationDisplay()) ?></span>
+                            <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4"><?= htmlspecialchars($event->locationDisplay) ?></span>
                         </dd>
                     </div>
                 <?php endif; ?>
@@ -121,7 +121,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                 loading="lazy"
                             >
                             <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4">
-                                Group ticket - best value for family
+                                <?= htmlspecialchars($event->groupTicketInfo ?? '') ?>
                             </span>
                         </dd>
                     </div>
@@ -150,9 +150,6 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                     <div class="w-full h-px bg-gray-200" aria-hidden="true"></div>
                     <div class="w-full inline-flex justify-between items-center">
                         <span class="text-center text-slate-800 text-base sm:text-lg font-normal font-['Montserrat']">
-                            <?php if ($isHistoryEvent): ?>
-                                from
-                            <?php endif; ?>
                             <?= htmlspecialchars($event->priceDisplay) ?>
                         </span>
                         <?php if ($isJazzEvent): ?>
@@ -161,9 +158,9 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                 data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
                                 data-price="<?= htmlspecialchars($event->priceDisplay) ?>"
                                 data-is-pay-what-you-like="<?= $event->isPayWhatYouLike ? '1' : '0' ?>"
-                                data-confirm-text="Confirm selection"
-                                data-adding-text="Adding..."
-                                data-success-text="Added to program"
+                                data-confirm-text="<?= htmlspecialchars($event->confirmText) ?>"
+                                data-adding-text="<?= htmlspecialchars($event->addingText) ?>"
+                                data-success-text="<?= htmlspecialchars($event->successText) ?>"
                                 class="px-2.5 py-[5px] bg-slate-800 hover:bg-red rounded-[10px] border border-slate-800 hover:border-red flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2"
                             >
                                 <span class="text-center text-stone-100 text-lg sm:text-xl font-normal font-['Montserrat']">

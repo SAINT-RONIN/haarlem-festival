@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Constants\JazzArtistDetailConstants;
+use App\Constants\JazzPageConstants;
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Enums\EventTypeId;
 use App\Mappers\CmsMapper;
-use App\Services\JazzArtistDetailService;
-use App\Services\Interfaces\ICmsService;
+use App\Mappers\JazzMapper;
+use App\Mappers\ScheduleMapper;
+use App\Services\Interfaces\ICmsPageContentService;
+use App\Services\Interfaces\IJazzArtistDetailService;
 use App\Services\Interfaces\IJazzService;
+use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
-use App\ViewModels\Jazz\JazzArtistDetailPageViewModel;
-use App\ViewModels\Jazz\JazzPageViewModel;
 
 /**
  * Controller for Jazz page.
@@ -20,9 +24,10 @@ class JazzController extends BaseController
 {
     public function __construct(
         private readonly IJazzService $jazzService,
-        private readonly JazzArtistDetailService $jazzArtistDetailService,
-        private readonly ICmsService $cmsService,
+        private readonly IJazzArtistDetailService $jazzArtistDetailService,
+        private readonly ICmsPageContentService $cmsService,
         private readonly ISessionService $sessionService,
+        private readonly IScheduleService $scheduleService,
     ) {
     }
 
@@ -37,7 +42,13 @@ class JazzController extends BaseController
                 $this->cmsService->getSectionContent('home', 'global_ui'),
                 $this->sessionService->isLoggedIn(),
             );
-            $viewModel = JazzPageViewModel::fromDomainData($data, $globalUi);
+            $scheduleData = $this->scheduleService->getScheduleData(
+                JazzPageConstants::PAGE_SLUG,
+                EventTypeId::Jazz->value,
+                JazzPageConstants::SCHEDULE_MAX_DAYS,
+            );
+            $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
+            $viewModel = JazzMapper::toPageViewModel($data, $globalUi, $scheduleSection);
             $this->renderPage(__DIR__ . '/../Views/pages/jazz.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -51,8 +62,16 @@ class JazzController extends BaseController
     {
         try {
             $data = $this->jazzArtistDetailService->getArtistPageDataBySlug($slug);
-            $viewModel = JazzArtistDetailPageViewModel::fromDomainData($data);
-            // Detail page uses a dedicated view model and does not rely on BaseViewModel globals.
+            $eventId = (int)($data['eventId'] ?? 0);
+            $scheduleData = $this->scheduleService->getScheduleData(
+                JazzArtistDetailConstants::SCHEDULE_PAGE_SLUG,
+                EventTypeId::Jazz->value,
+                JazzArtistDetailConstants::SCHEDULE_MAX_DAYS,
+                $eventId,
+            );
+            $performances = ScheduleMapper::flattenEvents($scheduleData);
+            $data['performances'] = $performances;
+            $viewModel = JazzMapper::toArtistDetailViewModel($data);
             $this->renderView(__DIR__ . '/../Views/pages/jazz-artist-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error, 404);

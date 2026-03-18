@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Infrastructure;
 
-use App\Services\Interfaces\IStripeService;
+use App\Infrastructure\Interfaces\IStripeService;
 use Stripe\Checkout\Session;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\SignatureVerificationException;

@@ -6,25 +6,25 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
+use App\Mappers\ProgramMapper;
 use App\Services\Interfaces\ICheckoutService;
-use App\Services\Interfaces\ICmsService;
+use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Program\CheckoutCancelPageViewModel;
-use App\ViewModels\Program\CheckoutPageViewModel;
 use App\ViewModels\Program\CheckoutSuccessPageViewModel;
 
 class CheckoutController extends BaseController
 {
     private IProgramService $programService;
-    private ICmsService $cmsService;
+    private ICmsPageContentService $cmsService;
     private ISessionService $sessionService;
     private ICheckoutService $checkoutService;
     private IStripeWebhookRequestFactory $stripeWebhookRequestFactory;
 
     public function __construct(
         IProgramService $programService,
-        ICmsService $cmsService,
+        ICmsPageContentService $cmsService,
         ISessionService $sessionService,
         ICheckoutService $checkoutService,
         IStripeWebhookRequestFactory $stripeWebhookRequestFactory,
@@ -51,7 +51,7 @@ class CheckoutController extends BaseController
             }
 
             $cmsContent = $this->cmsService->getSectionContent('checkout', 'main');
-            $viewModel = CheckoutPageViewModel::fromServiceData($programData, $cmsContent, $isLoggedIn);
+            $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);
         } catch (\Throwable $error) {
@@ -66,7 +66,8 @@ class CheckoutController extends BaseController
             $userId = $this->requireAuthenticatedUserId();
 
             $payload = $this->readJsonBody();
-            $result = $this->checkoutService->createCheckoutSession($sessionKey, $userId, $payload);
+            $programData = $this->programService->getProgramData($sessionKey, $userId);
+            $result = $this->checkoutService->createCheckoutSession($programData, $userId, $payload);
 
             $this->json([
                 'success' => true,

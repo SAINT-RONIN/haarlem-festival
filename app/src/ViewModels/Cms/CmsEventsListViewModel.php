@@ -12,7 +12,7 @@ use App\Models\Venue;
  *
  * Contains all data needed to render the events list with weekly schedule.
  */
-class CmsEventsListViewModel
+final readonly class CmsEventsListViewModel
 {
     /**
      * @param CmsEventListItemViewModel[] $events Event items as ViewModels

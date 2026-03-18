@@ -19,7 +19,12 @@ use App\Controllers\StorytellingController;
 use App\Http\Requests\StripeWebhookRequestFactory;
 use App\Infrastructure\CheckoutRuntimeConfig;
 use App\Infrastructure\Database;
+use App\Infrastructure\EmailService;
+use App\Infrastructure\StripeService;
+use App\Repositories\CmsContentRepository;
+use App\Repositories\CmsOrdersRepository;
 use App\Repositories\CmsRepository;
+use App\Repositories\CmsUsersRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionRepository;
@@ -41,7 +46,8 @@ use App\Repositories\VenueRepository;
 use App\Services\CmsDashboardService;
 use App\Services\CmsEventsService;
 use App\Services\CmsEditService;
-use App\Services\CmsService;
+use App\Services\CmsOrdersService;
+use App\Services\CmsUsersService;
 use App\Services\CheckoutService;
 use App\Services\HistoryService;
 use App\Services\HomeService;
@@ -53,11 +59,10 @@ use App\Services\RestaurantService;
 use App\Services\ScheduleService;
 use App\Services\AuthService;
 use App\Services\CaptchaService;
-use App\Services\EmailService;
 use App\Services\SessionService;
+use App\Services\CmsPageContentService;
 use App\Services\StorytellingDetailService;
 use App\Services\StorytellingService;
-use App\Services\StripeService;
 
 return static function (string $controllerClass): object {
 
@@ -86,7 +91,8 @@ return static function (string $controllerClass): object {
     // ── Services (built from shared repositories) ──
 
     $sessionService = new SessionService();
-    $cmsService = new CmsService($cmsRepository, $mediaAssetRepository);
+    $cmsContent = new CmsContentRepository($cmsRepository, $mediaAssetRepository);
+    $cmsPageContentService = new CmsPageContentService($cmsContent);
 
     $cmsEventsService = new CmsEventsService(
         $eventRepository,
@@ -100,12 +106,12 @@ return static function (string $controllerClass): object {
     );
 
     $scheduleService = new ScheduleService(
-        $cmsService,
-        $cmsEventsService,
+        $cmsContent,
         $eventSessionRepository,
         $eventSessionLabelRepository,
         $eventSessionPriceRepository,
         $eventTypeRepository,
+        $scheduleDayConfigRepository,
     );
 
     $programService = new ProgramService();
@@ -119,13 +125,13 @@ return static function (string $controllerClass): object {
                 $venueRepository,
                 $restaurantRepository,
                 $eventSessionRepository,
-                $cmsService,
+                $cmsContent,
             ),
             $sessionService,
         ),
         RestaurantController::class => new RestaurantController(
             new RestaurantService(
-                $cmsService,
+                $cmsContent,
                 $restaurantRepository,
                 $restaurantImageRepository,
             ),
@@ -133,35 +139,34 @@ return static function (string $controllerClass): object {
         ),
         StorytellingController::class => new StorytellingController(
             new StorytellingService(
-                $cmsService,
-                $scheduleService,
+                $cmsContent,
             ),
             new StorytellingDetailService(
-                $cmsService,
-                $scheduleService,
+                $cmsContent,
                 $eventRepository,
                 $eventSessionRepository,
                 $eventSessionLabelRepository,
                 $mediaAssetRepository,
             ),
-            $cmsService,
+            $cmsPageContentService,
             $sessionService,
+            $scheduleService,
         ),
         JazzController::class => new JazzController(
             new JazzService(
-                $cmsService,
-                $scheduleService,
+                $cmsContent,
             ),
             new JazzArtistDetailService(
-                $cmsService,
-                $scheduleService,
+                $cmsContent,
                 $eventRepository,
             ),
-            $cmsService,
+            $cmsPageContentService,
             $sessionService,
+            $scheduleService,
         ),
         CmsEventsController::class => new CmsEventsController(
             $cmsEventsService,
+            $sessionService,
         ),
         AuthController::class => new AuthController(
             new AuthService(
@@ -184,10 +189,9 @@ return static function (string $controllerClass): object {
         ),
         CheckoutController::class => new CheckoutController(
             $programService,
-            $cmsService,
+            $cmsPageContentService,
             $sessionService,
             new CheckoutService(
-                $programService,
                 $programRepository,
                 $orderRepository,
                 $orderItemRepository,
@@ -209,11 +213,12 @@ return static function (string $controllerClass): object {
             new HistoryService(
                 $cmsRepository,
                 $mediaAssetRepository,
-                $cmsService,
+                $cmsPageContentService,
                 $venueRepository,
                 $scheduleService,
             ),
             $sessionService,
+            $scheduleService,
         ),
         CmsAuthController::class => new CmsAuthController(
             new AuthService(
@@ -229,7 +234,15 @@ return static function (string $controllerClass): object {
         ),
         ProgramController::class => new ProgramController(
             $programService,
-            $cmsService,
+            $cmsPageContentService,
+            $sessionService,
+        ),
+        CmsOrdersController::class => new CmsOrdersController(
+            new CmsOrdersService(new CmsOrdersRepository(Database::getConnection())),
+            $sessionService,
+        ),
+        CmsUsersController::class => new CmsUsersController(
+            new CmsUsersService(new CmsUsersRepository(Database::getConnection())),
             $sessionService,
         ),
         default => new $controllerClass(),

@@ -18,16 +18,18 @@ final readonly class RestaurantPageViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
-        public GradientSectionData        $gradientSection,
-        public IntroSplitSectionData      $introSplitSection,
-        public ?IntroSplitSectionData     $introSplit2Section = null,
-        public ?InstructionsSectionData   $instructionsSection = null,
+        array $cms,
+        public GradientSectionData $gradientSection,
+        public IntroSplitSectionData $introSplitSection,
+        public ?IntroSplitSectionData $introSplit2Section = null,
+        public ?InstructionsSectionData $instructionsSection = null,
         public ?RestaurantCardsSectionData $restaurantCardsSection = null,
     ) {
         parent::__construct(
             heroData: $heroData,
             globalUi: $globalUi,
             currentPage: $heroData->currentPage,
+            cms: $cms,
             includeNav: false,
         );
     }

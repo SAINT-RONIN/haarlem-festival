@@ -8,11 +8,13 @@ use App\Enums\EventTypeId;
 use App\Models\CmsItem;
 use App\Models\CmsSection;
 use App\Mappers\CmsMapper;
+use App\Mappers\ScheduleMapper;
 use App\Repositories\CmsRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Repositories\VenueRepository;
+use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IHistoryService;
-use App\ViewModels\Age\AgeLabelFormatter;
+use App\Helpers\AgeLabelFormatter;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -47,7 +49,7 @@ class HistoryService implements IHistoryService
     public function __construct(
         private CmsRepository $cmsRepository,
         private MediaAssetRepository $mediaAssetRepository,
-        private CmsService $cmsService,
+        private ICmsPageContentService $cmsService,
         private VenueRepository $venueRepository,
         private ScheduleService $scheduleService,
     ) {
@@ -61,9 +63,13 @@ class HistoryService implements IHistoryService
         // Load page and sections once
         $this->loadPageData();
 
+        $heroData = $this->buildHeroData();
+        $globalUi = $this->buildGlobalUi($isLoggedIn);
+
         return new HistoryPageViewModel(
-            heroData: $this->buildHeroData(),
-            globalUi: $this->buildGlobalUi($isLoggedIn),
+            heroData: $heroData,
+            globalUi: $globalUi,
+            cms: CmsMapper::toCmsData($heroData, $globalUi),
             gradientSection: $this->buildGradientSection(),
             introSplitSection: $this->buildIntroSplitSection(),
             routeData: $this->buildRouteData(),
@@ -673,7 +679,7 @@ class HistoryService implements IHistoryService
      */
     private function buildScheduleSection(): ScheduleSectionViewModel
     {
-        return ScheduleSectionViewModel::fromData(
+        return ScheduleMapper::toScheduleSection(
             $this->scheduleService->getScheduleData('history', EventTypeId::History->value, 7)
         );
     }
