@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Interfaces;
+
+use App\Models\StorytellingDetailPageData;
+
+interface IStorytellingDetailService
+{
+    /**
+     * @throws \RuntimeException if the event is not found or not a storytelling event
+     */
+    public function getDetailPageData(int $eventId): StorytellingDetailPageData;
+}

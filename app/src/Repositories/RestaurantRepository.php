@@ -45,34 +45,16 @@ class RestaurantRepository implements IRestaurantRepository
     }
 
     /**
-     * Returns a single restaurant by ID with all detail page images, or null if not found.
+     * Returns a single restaurant by ID with its card image path, or null if not found.
      *
-     * Joins MediaAsset multiple times to resolve image paths for:
-     * card image, gallery (3), about, chef, menu (2), reservation.
+     * Detail section images are now stored in RestaurantImage and fetched separately.
      */
     public function findById(int $id): ?Restaurant
     {
         $stmt = $this->pdo->prepare('
-            SELECT r.*,
-                   ma.FilePath     AS ImagePath,
-                   g1.FilePath     AS GalleryImage1Path,
-                   g2.FilePath     AS GalleryImage2Path,
-                   g3.FilePath     AS GalleryImage3Path,
-                   ab.FilePath     AS AboutImagePath,
-                   ch.FilePath     AS ChefImagePath,
-                   m1.FilePath     AS MenuImage1Path,
-                   m2.FilePath     AS MenuImage2Path,
-                   rv.FilePath     AS ReservationImagePath
+            SELECT r.*, ma.FilePath AS ImagePath
             FROM Restaurant r
-            LEFT JOIN MediaAsset ma ON r.ImageAssetId            = ma.MediaAssetId
-            LEFT JOIN MediaAsset g1 ON r.GalleryImage1AssetId    = g1.MediaAssetId
-            LEFT JOIN MediaAsset g2 ON r.GalleryImage2AssetId    = g2.MediaAssetId
-            LEFT JOIN MediaAsset g3 ON r.GalleryImage3AssetId    = g3.MediaAssetId
-            LEFT JOIN MediaAsset ab ON r.AboutImageAssetId       = ab.MediaAssetId
-            LEFT JOIN MediaAsset ch ON r.ChefImageAssetId        = ch.MediaAssetId
-            LEFT JOIN MediaAsset m1 ON r.MenuImage1AssetId       = m1.MediaAssetId
-            LEFT JOIN MediaAsset m2 ON r.MenuImage2AssetId       = m2.MediaAssetId
-            LEFT JOIN MediaAsset rv ON r.ReservationImageAssetId = rv.MediaAssetId
+            LEFT JOIN MediaAsset ma ON r.ImageAssetId = ma.MediaAssetId
             WHERE r.RestaurantId = :id
             LIMIT 1
         ');

@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\Restaurant\RestaurantDetailViewModel;
-use App\ViewModels\Restaurant\RestaurantPageViewModel;
-
 /**
  * Interface for Restaurant page service.
  */
 interface IRestaurantService
 {
     /**
-     * Builds the restaurant listing page view model.
+     * Returns raw data arrays needed to build the restaurant listing page.
      */
-    public function getRestaurantPageData(): RestaurantPageViewModel;
+    public function getRestaurantPageData(): array;
 
     /**
-     * Builds the restaurant detail page view model.
+     * Returns raw data arrays needed to build the restaurant detail page.
      * Returns null if the restaurant is not found.
      */
-    public function getRestaurantDetailData(int $id): ?RestaurantDetailViewModel;
+    public function getRestaurantDetailData(int $id): ?array;
 }

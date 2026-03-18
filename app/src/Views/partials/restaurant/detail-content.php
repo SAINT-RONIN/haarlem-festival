@@ -146,9 +146,9 @@ $e = function (string $text): string {
     <div class="max-w-7xl mx-auto flex flex-col items-center gap-6">
         <h2 class="self-stretch text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']"><?= $e($viewModel->labelGalleryTitle) ?></h2>
         <div class="w-full flex flex-col md:flex-row justify-center items-center gap-8 lg:gap-12">
-            <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $img($viewModel->galleryImage1) ?>" alt="<?= $e($viewModel->name) ?> gallery photo 1"/>
-            <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $img($viewModel->galleryImage2) ?>" alt="<?= $e($viewModel->name) ?> gallery photo 2"/>
-            <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $img($viewModel->galleryImage3) ?>" alt="<?= $e($viewModel->name) ?> gallery photo 3"/>
+            <?php foreach ($viewModel->galleryImages as $index => $galleryImage): ?>
+                <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $img($galleryImage) ?>" alt="<?= $e($viewModel->name) ?> gallery photo <?= $index + 1 ?>"/>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -216,8 +216,9 @@ $e = function (string $text): string {
             <?php endif; ?>
         </div>
         <div class="flex-1 flex items-center justify-center gap-4 sm:gap-6 max-w-[45%]">
-            <img class="flex-1 min-w-0 h-48 sm:h-56 lg:h-64 rounded-2xl object-cover" src="<?= $img($viewModel->menuImage1) ?>" alt="Menu dish 1"/>
-            <img class="flex-1 min-w-0 h-48 sm:h-56 lg:h-64 rounded-2xl object-cover" src="<?= $img($viewModel->menuImage2) ?>" alt="Menu dish 2"/>
+            <?php foreach ($viewModel->menuImages as $index => $menuImage): ?>
+                <img class="flex-1 min-w-0 h-48 sm:h-56 lg:h-64 rounded-2xl object-cover" src="<?= $img($menuImage) ?>" alt="Menu dish <?= $index + 1 ?>"/>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>

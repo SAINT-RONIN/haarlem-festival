@@ -12,14 +12,13 @@ use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
-use App\Services\Interfaces\ICmsService;
-use App\Services\Interfaces\IScheduleService;
+use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Services\Interfaces\IStorytellingDetailService;
 
-class StorytellingDetailService
+class StorytellingDetailService implements IStorytellingDetailService
 {
     public function __construct(
-        private readonly ICmsService $cmsService,
-        private readonly IScheduleService $scheduleService,
+        private readonly ICmsContentRepository $cmsService,
         private readonly IEventRepository $eventRepository,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
@@ -44,12 +43,6 @@ class StorytellingDetailService
             featuredImagePath: $this->fetchFeaturedImagePath($event),
             labels: $this->fetchEventLabels($event->eventId),
             aboutBody: $this->resolveAboutBody($cms, $event),
-            scheduleSectionData: $this->scheduleService->getScheduleData(
-                StorytellingDetailConstants::SCHEDULE_PAGE_SLUG,
-                EventTypeId::Storytelling->value,
-                StorytellingDetailConstants::SCHEDULE_MAX_DAYS,
-                $eventId,
-            ),
         );
     }
 
@@ -61,11 +54,17 @@ class StorytellingDetailService
         $events = $this->eventRepository->findEvents(['eventId' => $eventId]);
         $event = $events[0] ?? null;
 
-        if (!$event || (int)$event['EventTypeId'] !== EventTypeId::Storytelling->value) {
+        if (!$event || $event->eventTypeId !== EventTypeId::Storytelling->value) {
             throw new \RuntimeException("Storytelling event {$eventId} not found.");
         }
 
-        return StorytellingDetailEvent::fromRow($event);
+        return new StorytellingDetailEvent(
+            eventId: $event->eventId,
+            title: $event->title,
+            shortDescription: $event->shortDescription,
+            longDescriptionHtml: $event->longDescriptionHtml,
+            featuredImageAssetId: $event->featuredImageAssetId,
+        );
     }
 
     private function fetchFeaturedImagePath(StorytellingDetailEvent $event): ?string
@@ -113,7 +112,7 @@ class StorytellingDetailService
             return [];
         }
 
-        $firstSessionId = (int)$sessionList[0]['EventSessionId'];
+        $firstSessionId = $sessionList[0]->eventSessionId;
         $labelsMap = $this->labelRepository->findLabels([
             'sessionIds' => [$firstSessionId],
             'groupBySession' => true,

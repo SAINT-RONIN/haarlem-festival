@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Enums\UserRoleId;
-use App\Services\AuthService;
-use App\Services\SessionService;
+use App\Services\Interfaces\IAuthService;
+use App\Services\Interfaces\ISessionService;
 
 class CmsAuthController
 {
-    private AuthService $authService;
-    private SessionService $sessionService;
-
-    public function __construct()
-    {
-        $this->authService = new AuthService();
-        $this->sessionService = new SessionService();
+    public function __construct(
+        private readonly IAuthService $authService,
+        private readonly ISessionService $sessionService,
+    ) {
     }
 
     public function showLogin(): void
@@ -42,7 +38,7 @@ class CmsAuthController
         try {
             $login = trim($_POST['login'] ?? '');
             $password = $_POST['password'] ?? '';
-            $result = $this->authService->attemptLogin($login, $password);
+            $result = $this->authService->attemptAdminLogin($login, $password);
 
             if (!$result['success']) {
                 $this->redirectWithError($result['error']);
@@ -50,11 +46,6 @@ class CmsAuthController
             }
 
             $user = $result['user'];
-            if ($user->userRoleId !== UserRoleId::Administrator->value) {
-                $this->redirectWithError('Invalid username/email or password.');
-                return;
-            }
-
             $this->sessionService->login($user->userAccountId, $user->userRoleId);
             header('Location: /cms');
             exit;
@@ -82,10 +73,9 @@ class CmsAuthController
         exit;
     }
 
-    public static function requireAdmin(): void
+    public static function requireAdmin(ISessionService $sessionService): void
     {
         try {
-            $sessionService = new SessionService();
             $sessionService->start();
 
             if (!$sessionService->isLoggedIn() || !$sessionService->isAdmin()) {

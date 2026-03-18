@@ -48,9 +48,10 @@ class CaptchaService implements ICaptchaService
      * Verifies the reCAPTCHA response from the form submission.
      *
      * @param string|null $recaptchaResponse The g-recaptcha-response from POST
+     * @param string|null $remoteAddr The client IP address from $_SERVER['REMOTE_ADDR']
      * @return bool True if verification passed, false otherwise
      */
-    public function verify(?string $recaptchaResponse): bool
+    public function verify(?string $recaptchaResponse, ?string $remoteAddr): bool
     {
         // If reCAPTCHA is not configured, skip verification (dev mode)
         if (!$this->isEnabled()) {
@@ -65,7 +66,7 @@ class CaptchaService implements ICaptchaService
         $data = [
             'secret' => $this->secretKey,
             'response' => $recaptchaResponse,
-            'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '',
+            'remoteip' => $remoteAddr ?? '',
         ];
 
         $options = [

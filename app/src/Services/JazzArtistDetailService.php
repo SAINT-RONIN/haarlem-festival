@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\JazzArtistDetailConstants;
-use App\Enums\EventTypeId;
 use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Models\JazzArtistDetailEvent;
+use App\Repositories\CmsContentRepository;
 use App\Repositories\Interfaces\IEventRepository;
+use App\Services\Interfaces\IJazzArtistDetailService;
 
-class JazzArtistDetailService
+class JazzArtistDetailService implements IJazzArtistDetailService
 {
     /**
      * @var array<string, array{expiresAt:int, data:array<string, mixed>}>
@@ -18,8 +19,7 @@ class JazzArtistDetailService
     private static array $pageCache = [];
 
     public function __construct(
-        private readonly CmsService $cmsService,
-        private readonly ScheduleService $scheduleService,
+        private readonly CmsContentRepository $cmsService,
         private readonly IEventRepository $eventRepository,
     ) {
     }
@@ -44,7 +44,7 @@ class JazzArtistDetailService
                 JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
                 JazzArtistDetailConstants::eventSectionKey($eventId),
             ),
-            'performances' => $this->buildPerformances($eventId),
+            'eventId' => $eventId,
         ];
 
         $this->setCachedPageData($normalizedSlug, $payload);
@@ -121,24 +121,5 @@ class JazzArtistDetailService
         }
 
         return $event;
-    }
-
-    private function buildPerformances(int $eventId): array
-    {
-        $scheduleData = $this->scheduleService->getScheduleData(
-            JazzArtistDetailConstants::SCHEDULE_PAGE_SLUG,
-            EventTypeId::Jazz->value,
-            JazzArtistDetailConstants::SCHEDULE_MAX_DAYS,
-            $eventId,
-        );
-        $performances = [];
-
-        foreach ($scheduleData['days'] ?? [] as $day) {
-            foreach ($day['events'] ?? [] as $event) {
-                $performances[] = $event;
-            }
-        }
-
-        return $performances;
     }
 }

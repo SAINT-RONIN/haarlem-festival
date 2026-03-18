@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\ViewModels\Home;
+namespace App\Utils;
 
 final class HomeUiConfig
 {

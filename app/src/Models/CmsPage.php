@@ -18,9 +18,10 @@ class CmsPage
      */
 
     public function __construct(
-        public readonly int    $cmsPageId,
-        public readonly string $slug,
-        public readonly string $title,
+        public readonly int                   $cmsPageId,
+        public readonly string                $slug,
+        public readonly string                $title,
+        public readonly ?\DateTimeImmutable   $updatedAtUtc = null,
     ) {
     }
 
@@ -30,10 +31,16 @@ class CmsPage
      */
     public static function fromRow(array $row): self
     {
+        $rawUpdatedAt = $row['UpdatedAtUtc'] ?? null;
+        $updatedAtUtc = (is_string($rawUpdatedAt) && $rawUpdatedAt !== '')
+            ? new \DateTimeImmutable($rawUpdatedAt)
+            : null;
+
         return new self(
             cmsPageId: (int)$row['CmsPageId'],
             slug: (string)$row['Slug'],
             title: (string)$row['Title'],
+            updatedAtUtc: $updatedAtUtc,
         );
     }
 

@@ -7,10 +7,11 @@ namespace App\Services\Interfaces;
 interface ICheckoutService
 {
     /**
+     * @param array{program: mixed, items: array, subtotal: float, taxAmount: float, total: float} $programData
      * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails:bool} $payload
      * @return array{redirectUrl:string,orderId:int,paymentId:int}
      */
-    public function createCheckoutSession(string $sessionKey, int $userId, array $payload): array;
+    public function createCheckoutSession(array $programData, int $userId, array $payload): array;
 
     /**
      * @return array{status:string,orderId:?int,paymentId:?int}

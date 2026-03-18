@@ -7,13 +7,15 @@ namespace App\Services;
 use App\Enums\EventTypeId;
 use App\Models\CmsItem;
 use App\Models\CmsSection;
-use App\Repositories\CmsRepository;
+use App\Mappers\CmsMapper;
+use App\Mappers\ScheduleMapper;
 use App\Repositories\Interfaces\ICmsRepository;
-use App\Services\Interfaces\ICmsService;
 use App\Services\Interfaces\IHistoryService;
 use App\Services\Interfaces\IScheduleService;
-use App\ViewModels\Age\AgeLabelFormatter;
+use App\Services\Interfaces\ICmsPageContentService;
+use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
+use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoryPageViewModel;
 use App\ViewModels\History\ImportantInfoAboutTour;
 use App\ViewModels\History\PricingCard;
@@ -33,34 +35,34 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
  */
 class HistoryService implements IHistoryService
 {
-    private ICmsRepository $cmsRepository;
-    private ICmsService $cmsService;
     private ?int $historyPageId = null;
     /** @var array<string, CmsSection>|null */
     private ?array $historySections = null;
     /** @var array<string, list<CmsItem>>|null */
     private ?array $historyItemsBySection = null;
-    private IScheduleService $scheduleService;
 
-    public function __construct()
-    {
-        $this->cmsService = new CmsService();
-        $this->cmsRepository = new CmsRepository();
-        $this->scheduleService = new ScheduleService();
+    public function __construct(
+        private ICmsRepository $cmsRepository,
+        private ICmsPageContentService $cmsService,
+        private IScheduleService $scheduleService,
+    ) {
     }
 
     /**
      * Builds the history page view model with all required data.
      */
-    public function getHistoryPageData(): HistoryPageViewModel
+    public function getHistoryPageData(bool $isLoggedIn): HistoryPageViewModel
     {
         // Load page and sections once
         $this->loadPageData('history');
 
+        $heroData = $this->buildHeroData();
+        $globalUi = $this->buildGlobalUi($isLoggedIn);
+
         return new HistoryPageViewModel(
-            //add isloggedin data
-            heroData: $this->cmsService->buildHeroData('history', 'history'),
-            globalUi: $this->cmsService->buildGlobalUiData(),
+            heroData: $heroData,
+            globalUi: $globalUi,
+            cms: CmsMapper::toCmsData($heroData, $globalUi),
             gradientSection: $this->buildGradientSection(),
             introSplitSection: $this->buildIntroSplitSection(),
             routeData: $this->buildRouteData(),
@@ -85,7 +87,7 @@ class HistoryService implements IHistoryService
             return;
         }
 
-        $this->historyPageId = (int)$pages[0]['CmsPageId'];
+        $this->historyPageId = $pages[0]->cmsPageId;
         $sections = $this->cmsRepository->findSections(['cmsPageId' => $this->historyPageId]);
         $this->historySections = [];
         foreach ($sections as $section) {
@@ -105,6 +107,44 @@ class HistoryService implements IHistoryService
         }
     }
 
+    /**
+     * Gets a CMS-managed image URL for the History page.
+     *
+     * Supports both MEDIA items (MediaAssetId) and legacy IMAGE_PATH items (TextValue).
+     *
+     * @param string $sectionKey
+     * @param string $itemKey
+     * @param string $defaultUrl
+     * @return string
+     */
+
+    /**
+     * Builds hero section data for the history page.
+     */
+    private function buildHeroData(): HeroData
+    {
+        $sectionData = $this->cmsService->getSectionContent('history', 'hero_section');
+        return new HeroData(
+            mainTitle: $sectionData['hero_main_title'] ?? 'A STROLL THROUGH HISTORY',
+            subtitle: $sectionData['hero_subtitle'] ?? 'Explore nine centuries of turbulent history, magnificent architecture, and cultural treasures',
+            primaryButtonText: $sectionData['hero_button_primary'] ?? 'Explore the tour',
+            primaryButtonLink: $sectionData['hero_button_primary_link'] ?? '#route',
+            secondaryButtonText: $sectionData['hero_button_secondary'] ?? 'Get tickets',
+            secondaryButtonLink: $sectionData['hero_button_secondary_link'] ??  '#tickets',
+            backgroundImageUrl: '/assets/Image/History/History-hero.png',
+            currentPage: 'history',
+        );
+    }
+
+    /**
+     * Builds global UI navigation and button labels.
+     */
+    private function buildGlobalUi(bool $isLoggedIn): GlobalUiData
+    {
+        $globalUiContent = $this->cmsService->getSectionContent('home', 'global_ui');
+
+        return CmsMapper::toGlobalUiData($globalUiContent, $isLoggedIn);
+    }
 
 
     /**
@@ -297,7 +337,7 @@ class HistoryService implements IHistoryService
      */
     private function buildScheduleSection(): ScheduleSectionViewModel
     {
-        return ScheduleSectionViewModel::fromData(
+        return ScheduleMapper::toScheduleSection(
             $this->scheduleService->getScheduleData('history', EventTypeId::History->value, 7)
         );
     }

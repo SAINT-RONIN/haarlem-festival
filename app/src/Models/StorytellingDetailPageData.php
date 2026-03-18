@@ -15,7 +15,6 @@ final readonly class StorytellingDetailPageData
      * @param ?string $featuredImagePath Resolved file path for the featured image
      * @param string[] $labels Session label texts (e.g. "English", "Beginner")
      * @param string $aboutBody Resolved about section body text
-     * @param array<string, mixed> $scheduleSectionData Raw schedule data
      */
     public function __construct(
         public StorytellingDetailEvent $event,
@@ -23,7 +22,6 @@ final readonly class StorytellingDetailPageData
         public ?string $featuredImagePath,
         public array $labels,
         public string $aboutBody,
-        public array $scheduleSectionData,
     ) {
     }
 }

@@ -2,13 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\ViewModels\Age;
+namespace App\Helpers;
 
-/**
- * Centralized age label and age requirement formatting.
- *
- * Keeps age copy consistent across all pages and schedule card variants.
- */
 final class AgeLabelFormatter
 {
     public static function format(?int $minAge, ?int $maxAge): ?string

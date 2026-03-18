@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Event;
+use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
 
 interface IEventRepository
@@ -17,7 +18,7 @@ interface IEventRepository
      *   includeSessionCount?: bool,
      *   eventId?: int
      * } $filters
-     * @return array<int, array<string, mixed>>
+     * @return EventWithDetails[]
      */
     public function findEvents(array $filters = []): array;
 

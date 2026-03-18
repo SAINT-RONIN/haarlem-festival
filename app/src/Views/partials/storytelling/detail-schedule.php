@@ -128,7 +128,7 @@ if ($schedule === null || empty($schedule->days)) {
                                                    inline-flex justify-center items-center gap-2.5
                                                    hover:bg-royal-blue hover:text-stone-100 transition-colors duration-200">
                                         <span class="text-royal-blue text-base sm:text-lg font-normal leading-4">
-                                            Add to program
+                                            <?= htmlspecialchars($event->ctaLabel) ?>
                                         </span>
                                     </button>
                                 </div>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\UserRoleId;
+use App\Infrastructure\Interfaces\IEmailService;
 use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\UserAccountRepository;
 use App\Services\Interfaces\IAuthService;
@@ -18,20 +19,16 @@ use App\Utils\PasswordHasher;
  */
 class AuthService implements IAuthService
 {
-    private UserAccountRepository $userRepository;
-    private PasswordResetTokenRepository $resetTokenRepository;
-    private EmailService $emailService;
-
     private const PASSWORD_MIN_LENGTH = 8;
     private const USERNAME_MIN_LENGTH = 3;
     private const USERNAME_MAX_LENGTH = 60;
     private const RESET_TOKEN_EXPIRY_HOURS = 1;
 
-    public function __construct()
-    {
-        $this->userRepository = new UserAccountRepository();
-        $this->resetTokenRepository = new PasswordResetTokenRepository();
-        $this->emailService = new EmailService();
+    public function __construct(
+        private readonly UserAccountRepository $userRepository,
+        private readonly PasswordResetTokenRepository $resetTokenRepository,
+        private readonly IEmailService $emailService,
+    ) {
     }
 
     /**
@@ -54,6 +51,28 @@ class AuthService implements IAuthService
         }
 
         return ['success' => true, 'user' => $user];
+    }
+
+    /**
+     * Attempts login and additionally checks that the user has Administrator role.
+     *
+     * @param string $login Username or email
+     * @param string $password Plain text password
+     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     */
+    public function attemptAdminLogin(string $login, string $password): array
+    {
+        $result = $this->attemptLogin($login, $password);
+
+        if (!$result['success']) {
+            return $result;
+        }
+
+        if ($result['user']->userRoleId !== UserRoleId::Administrator->value) {
+            return $this->loginFailure();
+        }
+
+        return $result;
     }
 
     /**

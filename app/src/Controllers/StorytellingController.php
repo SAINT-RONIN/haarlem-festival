@@ -4,21 +4,27 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Constants\StorytellingDetailConstants;
+use App\Constants\StorytellingPageConstants;
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Services\StorytellingDetailService;
-use App\Services\Interfaces\ICmsService;
+use App\Enums\EventTypeId;
+use App\Mappers\CmsMapper;
+use App\Mappers\ScheduleMapper;
+use App\Mappers\StorytellingMapper;
+use App\Services\Interfaces\ICmsPageContentService;
+use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
+use App\Services\Interfaces\IStorytellingDetailService;
 use App\Services\Interfaces\IStorytellingService;
-use App\ViewModels\Storytelling\StorytellingDetailPageViewModel;
-use App\ViewModels\Storytelling\StorytellingPageViewModel;
 
 class StorytellingController extends BaseController
 {
     public function __construct(
         private readonly IStorytellingService $storytellingService,
-        private readonly StorytellingDetailService $storytellingDetailService,
-        private readonly ICmsService $cmsService,
+        private readonly IStorytellingDetailService $storytellingDetailService,
+        private readonly ICmsPageContentService $cmsService,
         private readonly ISessionService $sessionService,
+        private readonly IScheduleService $scheduleService,
     ) {
     }
 
@@ -29,8 +35,19 @@ class StorytellingController extends BaseController
     {
         try {
             $pageData = $this->storytellingService->getStorytellingPageData();
-            $sharedData = $this->getSharedData();
-            $viewModel = StorytellingPageViewModel::fromDomainData($pageData, $sharedData);
+            $heroContent = $pageData->sections[StorytellingPageConstants::SECTION_HERO] ?? [];
+            $heroData = CmsMapper::toHeroData($heroContent, StorytellingPageConstants::CURRENT_PAGE);
+            $globalUi = CmsMapper::toGlobalUiData(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+                $this->sessionService->isLoggedIn(),
+            );
+            $scheduleData = $this->scheduleService->getScheduleData(
+                StorytellingPageConstants::PAGE_SLUG,
+                EventTypeId::Storytelling->value,
+                StorytellingPageConstants::SCHEDULE_MAX_DAYS,
+            );
+            $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
+            $viewModel = StorytellingMapper::toPageViewModel($pageData, $heroData, $globalUi, $scheduleSection);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -45,25 +62,21 @@ class StorytellingController extends BaseController
         try {
             $eventId = (int)$id;
             $pageData = $this->storytellingDetailService->getDetailPageData($eventId);
-            $sharedData = $this->getSharedData();
-            $viewModel = StorytellingDetailPageViewModel::fromDomainData($pageData, $sharedData);
+            $globalUi = CmsMapper::toGlobalUiData(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+                $this->sessionService->isLoggedIn(),
+            );
+            $scheduleData = $this->scheduleService->getScheduleData(
+                StorytellingDetailConstants::SCHEDULE_PAGE_SLUG,
+                EventTypeId::Storytelling->value,
+                StorytellingDetailConstants::SCHEDULE_MAX_DAYS,
+                $eventId,
+            );
+            $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
+            $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $globalUi, $scheduleSection);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
-    }
-
-    /**
-     * @return array{globalUiContent: array<string, mixed>, isLoggedIn: bool}
-     */
-    private function getSharedData(): array
-    {
-        $globalUiResult = $this->cmsService->getGlobalUiContent();
-        return [
-            'globalUiContent' => is_array($globalUiResult['content'] ?? null)
-                ? $globalUiResult['content']
-                : [],
-            'isLoggedIn' => $this->sessionService->isLoggedIn(),
-        ];
     }
 }

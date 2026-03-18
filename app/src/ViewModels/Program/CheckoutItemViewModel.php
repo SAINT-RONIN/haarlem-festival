@@ -12,21 +12,4 @@ final readonly class CheckoutItemViewModel
         public string $priceDisplay,
     ) {
     }
-
-    /**
-     * @param array<string, mixed> $item
-     */
-    public static function fromItemData(array $item): self
-    {
-        $quantity = (int)$item['quantity'];
-        $basePrice = (float)$item['basePrice'];
-        $donationAmount = (float)$item['donationAmount'];
-        $lineTotal = ($basePrice * $quantity) + $donationAmount;
-
-        return new self(
-            quantityDisplay: $quantity . '×',
-            eventTitle: (string)$item['eventTitle'],
-            priceDisplay: ProgramItemViewModel::formatPrice($lineTotal),
-        );
-    }
 }

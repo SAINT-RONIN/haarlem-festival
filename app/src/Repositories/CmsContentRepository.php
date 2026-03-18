@@ -2,31 +2,28 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Repositories;
 
 use App\Models\CmsItem;
 use App\Models\CmsSection;
 use App\Models\MediaAsset;
-use App\Repositories\CmsRepository;
-use App\Repositories\MediaAssetRepository;
-use App\Services\Interfaces\ICmsService;
-use App\ViewModels\GlobalUiData;
-use App\ViewModels\HeroData;
+use App\Repositories\Interfaces\ICmsContentRepository;
 
-class CmsService implements ICmsService
+class CmsContentRepository implements ICmsContentRepository
 {
-    private CmsRepository $cmsRepository;
-    private MediaAssetRepository $mediaAssetRepository;
-    private SessionService $sessionService;
-
     /** @var array<string, int|null> In-memory cache for page slug → ID lookups */
     private array $pageIdCache = [];
 
-    public function __construct()
-    {
-        $this->cmsRepository = new CmsRepository();
-        $this->mediaAssetRepository = new MediaAssetRepository();
-        $this->sessionService = new SessionService();
+    /** @var array<int, array<string, array<string, ?string>>> In-memory cache: pageId → sectionKey → itemKey → value */
+    private array $pageContentCache = [];
+
+    /** @var array<int, CmsSection[]> In-memory cache: pageId → sections (for ordered iteration) */
+    private array $pageSectionsCache = [];
+
+    public function __construct(
+        private CmsRepository $cmsRepository,
+        private MediaAssetRepository $mediaAssetRepository,
+    ) {
     }
 
     public function getHomePageContent(): array
@@ -36,23 +33,12 @@ class CmsService implements ICmsService
             return [];
         }
 
-        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
-        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
-
-        $assetMap = $this->batchFetchMediaAssets($items);
-        $itemsBySection = $this->indexItemsBySectionId($items);
+        $sections = $this->loadPageContent($pageId);
         $content = [];
 
         foreach ($sections as $section) {
             /** @var CmsSection $section */
-            $sectionData = [];
-
-            foreach ($itemsBySection[$section->cmsSectionId] ?? [] as $item) {
-                /** @var CmsItem $item */
-                $sectionData[$item->itemKey] = $this->resolveItemValue($item, $assetMap);
-            }
-
-            $content[$section->sectionKey] = $sectionData;
+            $content[$section->sectionKey] = $this->pageContentCache[$pageId][$section->sectionKey] ?? [];
         }
 
         return $content;
@@ -65,20 +51,8 @@ class CmsService implements ICmsService
             return [];
         }
 
-        $items = $this->cmsRepository->findItems([
-            'cmsPageId' => $pageId,
-            'sectionKey' => $sectionKey,
-        ]);
-
-        $assetMap = $this->batchFetchMediaAssets($items);
-        $content = [];
-
-        foreach ($items as $item) {
-            /** @var CmsItem $item */
-            $content[$item->itemKey] = $this->resolveItemValue($item, $assetMap);
-        }
-
-        return $content;
+        $this->loadPageContent($pageId);
+        return $this->pageContentCache[$pageId][$sectionKey] ?? [];
     }
 
     public function getHeroSectionContent(string $pageSlug): array
@@ -86,27 +60,36 @@ class CmsService implements ICmsService
         return $this->getSectionContent($pageSlug, 'hero_section');
     }
 
-    public function buildHeroData(string $pageSlug, string $currentPage): HeroData
-    {
-        return HeroData::fromCms($this->getHeroSectionContent($pageSlug), $currentPage);
-    }
-
     /**
-     * @return array{content: array, isLoggedIn: bool}
+     * Loads all CMS items for a page in one query, groups them by sectionKey, and caches the result.
+     * Returns the sections array so callers that need section order don't have to re-query.
+     *
+     * @return CmsSection[]
      */
-    public function getGlobalUiContent(): array
+    private function loadPageContent(int $pageId): array
     {
-        return [
-            'content' => $this->getSectionContent('home', 'global_ui'),
-            'isLoggedIn' => $this->sessionService->isLoggedIn(),
-        ];
-    }
+        if (isset($this->pageContentCache[$pageId])) {
+            return $this->pageSectionsCache[$pageId];
+        }
 
-    public function buildGlobalUiData(): GlobalUiData
-    {
-        $globalUiContent = $this->getGlobalUiContent();
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
+        $sectionKeyById = $this->indexSectionKeysById($sections);
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $assetMap = $this->batchFetchMediaAssets($items);
+        $grouped = [];
 
-        return GlobalUiData::fromCms($globalUiContent['content'], $globalUiContent['isLoggedIn']);
+        foreach ($items as $item) {
+            /** @var CmsItem $item */
+            $sectionKey = $sectionKeyById[$item->cmsSectionId] ?? null;
+            if ($sectionKey === null) {
+                continue;
+            }
+            $grouped[$sectionKey][$item->itemKey] = $this->resolveItemValue($item, $assetMap);
+        }
+
+        $this->pageContentCache[$pageId] = $grouped;
+        $this->pageSectionsCache[$pageId] = $sections;
+        return $sections;
     }
 
     /**
@@ -157,21 +140,21 @@ class CmsService implements ICmsService
         }
 
         $rows = $this->cmsRepository->findPages(['slug' => $slug]);
-        $pageId = $rows !== [] ? (int)$rows[0]['CmsPageId'] : null;
+        $pageId = $rows !== [] ? $rows[0]->cmsPageId : null;
 
         $this->pageIdCache[$slug] = $pageId;
         return $pageId;
     }
 
     /**
-     * @param CmsItem[] $items
-     * @return array<int, list<CmsItem>>
+     * @param CmsSection[] $sections
+     * @return array<int, string> Keyed by cmsSectionId, value is sectionKey
      */
-    private function indexItemsBySectionId(array $items): array
+    private function indexSectionKeysById(array $sections): array
     {
         $indexed = [];
-        foreach ($items as $item) {
-            $indexed[$item->cmsSectionId][] = $item;
+        foreach ($sections as $section) {
+            $indexed[$section->cmsSectionId] = $section->sectionKey;
         }
 
         return $indexed;

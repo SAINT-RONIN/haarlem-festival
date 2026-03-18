@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Mappers\RestaurantMapper;
 use App\Services\Interfaces\IRestaurantService;
-use App\Services\RestaurantService;
+use App\Services\Interfaces\ISessionService;
 
 /**
  * Controller for Restaurant page.
  */
 class RestaurantController extends BaseController
 {
-    private IRestaurantService $restaurantService;
-
-    public function __construct()
-    {
-        $this->restaurantService = new RestaurantService();
+    public function __construct(
+        private IRestaurantService $restaurantService,
+        private ISessionService $sessionService,
+    ) {
     }
 
     /**
@@ -28,7 +28,8 @@ class RestaurantController extends BaseController
     public function index(): void
     {
         try {
-            $viewModel = $this->restaurantService->getRestaurantPageData();
+            $data = $this->restaurantService->getRestaurantPageData();
+            $viewModel = RestaurantMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -43,14 +44,15 @@ class RestaurantController extends BaseController
     public function detail(string $id): void
     {
         try {
-            $viewModel = $this->restaurantService->getRestaurantDetailData((int) $id);
+            $data = $this->restaurantService->getRestaurantDetailData((int) $id);
 
-            if ($viewModel === null) {
+            if ($data === null) {
                 http_response_code(404);
                 require __DIR__ . '/../Views/pages/errors/404.php';
                 return;
             }
 
+            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

@@ -19,6 +19,15 @@ interface IAuthService
     public function attemptLogin(string $login, string $password): array;
 
     /**
+     * Attempts to authenticate and verifies the user has Administrator role.
+     *
+     * @param string $login Username or email
+     * @param string $password Plain text password
+     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     */
+    public function attemptAdminLogin(string $login, string $password): array;
+
+    /**
      * Validates registration data and returns any errors.
      *
      * @param array $data Registration data

@@ -21,6 +21,7 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
+        array $cms,
 
         // Basic restaurant info (domain)
         public int    $id,
@@ -49,8 +50,8 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
         public string $menuDescription,
         /** @var string[] cuisine type tags */
         public array  $cuisineTags,
-        public string $menuImage1,
-        public string $menuImage2,
+        /** @var string[] menu image paths */
+        public array  $menuImages,
 
         // Location section (domain)
         public string $locationDescription,
@@ -63,9 +64,8 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
         public string $specialRequestsNote,
 
         // Gallery images (domain)
-        public string $galleryImage1,
-        public string $galleryImage2,
-        public string $galleryImage3,
+        /** @var string[] gallery image paths */
+        public array  $galleryImages,
 
         // Reservation section (domain + hardcoded for now)
         public string $reservationImage,
@@ -105,6 +105,7 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
             heroData: $heroData,
             globalUi: $globalUi,
             currentPage: 'restaurant',
+            cms: $cms,
             includeNav: false,
         );
     }
