@@ -28,20 +28,24 @@ class EventGalleryImageRepository implements IEventGalleryImageRepository
      */
     public function findByEventId(int $eventId, ?string $imageType = null): array
     {
-        $sql = 'SELECT * FROM EventGalleryImage WHERE EventId = :eventId';
-        $params = ['eventId' => $eventId];
+        try {
+            $sql = 'SELECT * FROM EventGalleryImage WHERE EventId = :eventId';
+            $params = ['eventId' => $eventId];
 
-        if ($imageType !== null) {
-            $sql .= ' AND ImageType = :imageType';
-            $params['imageType'] = $imageType;
+            if ($imageType !== null) {
+                $sql .= ' AND ImageType = :imageType';
+                $params['imageType'] = $imageType;
+            }
+
+            $sql .= ' ORDER BY SortOrder ASC';
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return array_map([EventGalleryImage::class, 'fromRow'], $rows);
+        } catch (\PDOException) {
+            return [];
         }
-
-        $sql .= ' ORDER BY SortOrder ASC';
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([EventGalleryImage::class, 'fromRow'], $rows);
     }
 }

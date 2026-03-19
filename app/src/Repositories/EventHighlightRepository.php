@@ -28,14 +28,18 @@ class EventHighlightRepository implements IEventHighlightRepository
      */
     public function findByEventId(int $eventId): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT * FROM EventHighlight
-            WHERE EventId = :eventId
-            ORDER BY SortOrder ASC
-        ');
-        $stmt->execute(['eventId' => $eventId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT * FROM EventHighlight
+                WHERE EventId = :eventId
+                ORDER BY SortOrder ASC
+            ');
+            $stmt->execute(['eventId' => $eventId]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return array_map([EventHighlight::class, 'fromRow'], $rows);
+            return array_map([EventHighlight::class, 'fromRow'], $rows);
+        } catch (\PDOException) {
+            return [];
+        }
     }
 }

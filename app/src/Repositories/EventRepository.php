@@ -9,6 +9,7 @@ use App\Infrastructure\Database;
 use App\Models\Event;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
+use App\Models\StorytellingDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
 
@@ -119,6 +120,32 @@ class EventRepository implements IEventRepository
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return is_array($row) ? JazzArtistDetailEvent::fromRow($row) : null;
+    }
+
+    public function findActiveStorytellingBySlug(string $slug): ?StorytellingDetailEvent
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT
+                e.EventId,
+                e.Title,
+                e.ShortDescription,
+                e.LongDescriptionHtml,
+                e.FeaturedImageAssetId,
+                e.Slug
+            FROM Event e
+            WHERE e.EventTypeId = :eventTypeId
+              AND e.IsActive = 1
+              AND e.Slug = :slug
+            LIMIT 1
+        ');
+
+        $stmt->execute([
+            'eventTypeId' => EventTypeId::Storytelling->value,
+            'slug' => $slug,
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return is_array($row) ? StorytellingDetailEvent::fromRow($row) : null;
     }
 
     private function dayNameToNumber(string $dayName): ?int

@@ -60,6 +60,7 @@ class CmsEditService implements ICmsEditService
         foreach ($sections as $section) {
             /** @var CmsSection $section */
             $sectionItems = $itemsBySection[$section->cmsSectionId] ?? [];
+            $sectionItems = $this->sortHeroImageFirst($sectionItems);
             $enrichedItems = $this->enrichItemsWithMetadata($sectionItems);
 
             $sectionsWithItems[] = [
@@ -147,8 +148,8 @@ class CmsEditService implements ICmsEditService
         }
 
         if ($slug === 'storytelling-detail') {
-            $eventId = $this->extractFirstEventId($sections);
-            return $eventId !== null ? '/storytelling/' . $eventId : '/storytelling';
+            $eventName = $this->extractFirstEventDisplayName($sections);
+            return $eventName !== null ? '/storytelling/' . $this->toSlug($eventName) : '/storytelling';
         }
 
         if ($slug === 'jazz-artist-detail') {
@@ -214,6 +215,18 @@ class CmsEditService implements ICmsEditService
         }
 
         return $grouped;
+    }
+
+    /**
+     * Moves the hero_image item to the front so it appears first in the CMS editor.
+     *
+     * @param CmsItem[] $items
+     * @return CmsItem[]
+     */
+    private function sortHeroImageFirst(array $items): array
+    {
+        usort($items, fn(CmsItem $a, CmsItem $b) => ($b->itemKey === 'hero_image') <=> ($a->itemKey === 'hero_image'));
+        return $items;
     }
 
     /**

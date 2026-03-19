@@ -68,7 +68,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
-    $r->addRoute('GET', '/storytelling/{id:\d+}', [StorytellingController::class, 'detail']);
+    $r->addRoute('GET', '/storytelling/{slug:[a-z0-9-]+}', [StorytellingController::class, 'detail']);
 
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);

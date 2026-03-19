@@ -203,12 +203,11 @@ class ProgramMapper
         }
 
         $labels = [
-            'nl' => '',
-            'en' => '',
-            'de' => '',
-            'fr' => '',
+            'NL' => 'Dutch',
+            'ENG' => 'English',
+            'ZH' => 'Chinese',
         ];
 
-        return $labels[$languageCode] ?? $languageCode;
+        return $labels[strtoupper($languageCode)] ?? $languageCode;
     }
 }

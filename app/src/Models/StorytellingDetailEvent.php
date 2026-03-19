@@ -16,6 +16,7 @@ final readonly class StorytellingDetailEvent
         public string $shortDescription,
         public string $longDescriptionHtml,
         public ?int $featuredImageAssetId,
+        public string $slug,
     ) {
     }
 
@@ -30,6 +31,7 @@ final readonly class StorytellingDetailEvent
             shortDescription: (string)($row['ShortDescription'] ?? ''),
             longDescriptionHtml: (string)($row['LongDescriptionHtml'] ?? ''),
             featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int)$row['FeaturedImageAssetId'] : null,
+            slug: (string)($row['Slug'] ?? ''),
         );
     }
 }

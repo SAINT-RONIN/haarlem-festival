@@ -129,8 +129,15 @@ class CmsContentRepository implements ICmsContentRepository
             }
         }
 
-        $value = $item->textValue ?? $item->htmlValue ?? null;
-        return is_string($value) ? $value : null;
+        if ($item->textValue !== null && $item->textValue !== '') {
+            return $item->textValue;
+        }
+
+        if ($item->htmlValue !== null && $item->htmlValue !== '') {
+            return $item->htmlValue;
+        }
+
+        return null;
     }
 
     private function getPageIdBySlug(string $slug): ?int

@@ -51,16 +51,18 @@ class StorytellingController extends BaseController
      * Renders the detail page for a single storytelling event.
      * The reason for this is because each event has its own CMS-driven detail page that requires fetching both event data and a filtered schedule.
      */
-    public function detail(string $id): void
+    public function detail(string $slug): void
     {
         try {
-            $eventId = (int)$id;
-            $pageData = $this->storytellingDetailService->getDetailPageData($eventId);
+            $pageData = $this->storytellingDetailService->getDetailPageData($slug);
+            $eventId = $pageData->event->eventId;
+            $detailCtaText = $pageData->cms['schedule_cta_button_text'] ?? null;
             $scheduleData = $this->scheduleService->getScheduleData(
                 StorytellingDetailConstants::SCHEDULE_PAGE_SLUG,
                 EventTypeId::Storytelling->value,
                 StorytellingDetailConstants::SCHEDULE_MAX_DAYS,
                 $eventId,
+                $detailCtaText,
             );
             $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
             $isLoggedIn = $this->sessionService->isLoggedIn();

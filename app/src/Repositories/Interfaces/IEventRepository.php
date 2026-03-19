@@ -7,6 +7,7 @@ namespace App\Repositories\Interfaces;
 use App\Models\Event;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
+use App\Models\StorytellingDetailEvent;
 
 interface IEventRepository
 {
@@ -23,6 +24,8 @@ interface IEventRepository
     public function findEvents(array $filters = []): array;
 
     public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent;
+
+    public function findActiveStorytellingBySlug(string $slug): ?StorytellingDetailEvent;
 
     public function findById(int $eventId): ?Event;
 

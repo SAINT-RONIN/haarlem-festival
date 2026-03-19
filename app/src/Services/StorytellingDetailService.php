@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\StorytellingDetailConstants;
-use App\Enums\EventTypeId;
 use App\Models\StorytellingDetailEvent;
 use App\Models\StorytellingDetailPageData;
 use App\Repositories\Interfaces\IEventRepository;
@@ -13,8 +12,6 @@ use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
-use App\Repositories\Interfaces\IEventHighlightRepository;
-use App\Repositories\Interfaces\IEventGalleryImageRepository;
 use App\Services\Interfaces\IStorytellingDetailService;
 
 class StorytellingDetailService implements IStorytellingDetailService
@@ -25,8 +22,6 @@ class StorytellingDetailService implements IStorytellingDetailService
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IMediaAssetRepository $mediaAssetRepository,
-        private readonly IEventHighlightRepository $highlightRepository,
-        private readonly IEventGalleryImageRepository $galleryImageRepository,
     ) {
     }
 
@@ -34,11 +29,13 @@ class StorytellingDetailService implements IStorytellingDetailService
      * Assembles the full domain payload for a storytelling event detail page.
      * The reason for this is because all repository calls and resolution logic must stay in the service so the controller stays thin and the mapper receives a ready-to-use model.
      *
-     * @throws \RuntimeException if the event is not found or not a storytelling event
+     * @throws \RuntimeException if the event is not found or slug is invalid
      */
-    public function getDetailPageData(int $eventId): StorytellingDetailPageData
+    public function getDetailPageData(string $slug): StorytellingDetailPageData
     {
-        $event = $this->findStorytellingEvent($eventId);
+        $normalizedSlug = $this->normalizeSlug($slug);
+        $event = $this->findStorytellingEventBySlug($normalizedSlug);
+        $eventId = $event->eventId;
         $cms = $this->cmsService->getSectionContent(
             StorytellingDetailConstants::DETAIL_PAGE_SLUG,
             StorytellingDetailConstants::eventSectionKey($eventId),
@@ -48,38 +45,39 @@ class StorytellingDetailService implements IStorytellingDetailService
             event: $event,
             cms: $cms,
             featuredImagePath: $this->fetchFeaturedImagePath($event),
-            labels: $this->fetchEventLabels($event->eventId),
+            labels: $this->fetchEventLabels($eventId),
             aboutBody: $this->resolveAboutBody($cms, $event),
             // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
             globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
-            highlights: $this->highlightRepository->findByEventId($eventId),
-            galleryImages: $this->galleryImageRepository->findByEventId($eventId, 'gallery'),
-            aboutImages: $this->galleryImageRepository->findByEventId($eventId, 'about'),
         );
     }
 
     /**
-     * Fetches the event from the repository and verifies it belongs to the Storytelling event type.
-     * The reason for this is because the guard must live in the service — the controller has no knowledge of event types.
+     * Normalizes the slug to lowercase with no leading/trailing dashes.
      *
-     * @throws \RuntimeException if the event does not exist or is not a storytelling event
+     * @throws \RuntimeException if the slug is empty or contains a path separator
      */
-    private function findStorytellingEvent(int $eventId): StorytellingDetailEvent
+    private function normalizeSlug(string $slug): string
     {
-        $events = $this->eventRepository->findEvents(['eventId' => $eventId]);
-        $event = $events[0] ?? null;
-
-        if (!$event || $event->eventTypeId !== EventTypeId::Storytelling->value) {
-            throw new \RuntimeException("Storytelling event {$eventId} not found.");
+        $normalized = trim(strtolower(rawurldecode($slug)));
+        if ($normalized === '' || str_contains($normalized, '/')) {
+            throw new \RuntimeException("Invalid storytelling event slug.");
         }
+        return trim($normalized, '-');
+    }
 
-        return new StorytellingDetailEvent(
-            eventId: $event->eventId,
-            title: $event->title,
-            shortDescription: $event->shortDescription,
-            longDescriptionHtml: $event->longDescriptionHtml,
-            featuredImageAssetId: $event->featuredImageAssetId,
-        );
+    /**
+     * Fetches the storytelling event by slug, throwing if not found.
+     *
+     * @throws \RuntimeException if no active storytelling event matches the slug
+     */
+    private function findStorytellingEventBySlug(string $slug): StorytellingDetailEvent
+    {
+        $event = $this->eventRepository->findActiveStorytellingBySlug($slug);
+        if ($event === null) {
+            throw new \RuntimeException("Storytelling event not found: {$slug}");
+        }
+        return $event;
     }
 
     /**

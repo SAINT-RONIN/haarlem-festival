@@ -160,7 +160,6 @@ return static function (string $controllerClass): object {
         StorytellingController::class => new StorytellingController(
             new StorytellingService(
                 $cmsContent,
-                $pageGalleryImageRepository,
             ),
             new StorytellingDetailService(
                 $cmsContent,
@@ -168,8 +167,6 @@ return static function (string $controllerClass): object {
                 $eventSessionRepository,
                 $eventSessionLabelRepository,
                 $mediaAssetRepository,
-                $eventHighlightRepository,
-                $eventGalleryImageRepository,
             ),
             $sessionService,
             $scheduleService,

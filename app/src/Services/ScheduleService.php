@@ -35,7 +35,7 @@ class ScheduleService implements IScheduleService
     ) {
     }
 
-    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null): array
+    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null, ?string $ctaTextOverride = null): array
     {
         $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
@@ -60,7 +60,7 @@ class ScheduleService implements IScheduleService
 
         $scheduleData = $this->sessionRepository->findSessions($filters);
 
-        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
+        $ctaButtonText = $ctaTextOverride ?? $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
         $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
         $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
 
@@ -251,7 +251,7 @@ class ScheduleService implements IScheduleService
     private function resolveCta(\App\Models\SessionWithEvent $session, string $eventTypeSlug, string $defaultCtaText): array
     {
         $label = !empty($session->ctaLabel) ? $session->ctaLabel : $defaultCtaText;
-        $url = !empty($session->ctaUrl) ? $session->ctaUrl : '/' . $eventTypeSlug . '/' . $session->eventId;
+        $url = !empty($session->ctaUrl) ? $session->ctaUrl : '/' . $eventTypeSlug . '/' . $session->eventSlug;
         return ['label' => $label, 'url' => $url];
     }
 

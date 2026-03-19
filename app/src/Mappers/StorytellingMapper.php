@@ -38,6 +38,8 @@ class StorytellingMapper
     private const ROUTE_RESTAURANT = '/restaurant';
     private const ROUTE_STORYTELLING = '/storytelling';
 
+    private const MASONRY_IMAGE_COUNT = 12;
+
     private const MASONRY_SIZE_CLASSES = [
         'masonry-tall',
         'masonry-short',
@@ -146,13 +148,26 @@ class StorytellingMapper
     private static function buildMasonrySection(array $content, array $masonryImages): MasonrySectionData
     {
         $images = [];
-        foreach ($masonryImages as $index => $img) {
-            $path = $img->imagePath;
-            $validPath = ImageHelper::validatePath($path);
-            $altText = ImageHelper::altTextFromFilename(basename($path), 'Storytelling moment');
-            $sizeClass = self::MASONRY_SIZE_CLASSES[$index] ?? 'masonry-medium';
-            $images[] = new MasonryImageData(imageUrl: $validPath, altText: $altText, sizeClass: $sizeClass);
+
+        if ($masonryImages !== []) {
+            foreach ($masonryImages as $index => $img) {
+                $path = $img->imagePath;
+                $validPath = ImageHelper::validatePath($path);
+                $altText = ImageHelper::altTextFromFilename(basename($path), 'Storytelling moment');
+                $sizeClass = self::MASONRY_SIZE_CLASSES[$index] ?? 'masonry-medium';
+                $images[] = new MasonryImageData(imageUrl: $validPath, altText: $altText, sizeClass: $sizeClass);
+            }
+        } else {
+            for ($i = 1; $i <= self::MASONRY_IMAGE_COUNT; $i++) {
+                $key = sprintf('masonry_image_%02d', $i);
+                $path = (string)($content[$key] ?? '');
+                $validPath = ImageHelper::validatePath($path);
+                $altText = ImageHelper::altTextFromFilename(basename($path), 'Storytelling moment');
+                $sizeClass = self::MASONRY_SIZE_CLASSES[$i - 1] ?? 'masonry-medium';
+                $images[] = new MasonryImageData(imageUrl: $validPath, altText: $altText, sizeClass: $sizeClass);
+            }
         }
+
         return new MasonrySectionData(
             headingText: ImageHelper::getStringValue($content, 'masonry_heading', ''),
             images: $images,
@@ -186,7 +201,7 @@ class StorytellingMapper
         return new StorytellingDetailHeroData(
             title: $pageData->event->title,
             subtitle: $pageData->event->shortDescription,
-            heroImageUrl: ImageHelper::validatePath($pageData->featuredImagePath ?? ''),
+            heroImageUrl: self::resolveDetailHeroImage($pageData),
             labels: $pageData->labels,
             navLinks: self::buildDetailNavLinks($globalUi),
             backButtonLabel: $buttons['backButtonLabel'],
@@ -211,16 +226,38 @@ class StorytellingMapper
     }
 
     /**
+     * Returns the hero image URL, preferring the CMS hero_image over the event's featured image.
+     * The reason for this is because editors must be able to override the hero per event without changing the event record itself.
+     */
+    private static function resolveDetailHeroImage(StorytellingDetailPageData $pageData): string
+    {
+        $cmsHeroImage = (string)($pageData->cms['hero_image'] ?? '');
+        if ($cmsHeroImage !== '') {
+            return ImageHelper::validatePath($cmsHeroImage);
+        }
+
+        return ImageHelper::validatePath($pageData->featuredImagePath ?? '');
+    }
+
+    /**
      * Builds the about section ViewModel combining the CMS heading and the pre-resolved body text.
      * The reason for this is because the body text fallback logic runs in the service, so by mapping time the aboutBody field is already the correct string to display.
      */
     private static function buildAboutSection(StorytellingDetailPageData $pageData): StorytellingAboutSectionData
     {
+        if ($pageData->aboutImages !== []) {
+            $image1 = ($pageData->aboutImages[0] ?? null)?->imagePath ?? '';
+            $image2 = ($pageData->aboutImages[1] ?? null)?->imagePath ?? '';
+        } else {
+            $image1 = (string)($pageData->cms['about_image_1'] ?? '');
+            $image2 = (string)($pageData->cms['about_image_2'] ?? '');
+        }
+
         return new StorytellingAboutSectionData(
             heading: ImageHelper::getStringValue($pageData->cms, 'about_heading', $pageData->event->title),
             bodyHtml: CmsOutputHelper::html($pageData->aboutBody),
-            image1Url: ImageHelper::validatePath(($pageData->aboutImages[0] ?? null)?->imagePath ?? ''),
-            image2Url: ImageHelper::validatePath(($pageData->aboutImages[1] ?? null)?->imagePath ?? ''),
+            image1Url: ImageHelper::validatePath($image1),
+            image2Url: ImageHelper::validatePath($image2),
         );
     }
 
@@ -233,16 +270,32 @@ class StorytellingMapper
     private static function buildHighlightsSection(array $cms, array $highlights): StoryHighlightsSectionData
     {
         $items = [];
-        foreach ($highlights as $highlight) {
-            if ($highlight->title === '') {
-                continue;
+
+        if ($highlights !== []) {
+            foreach ($highlights as $highlight) {
+                if ($highlight->title === '') {
+                    continue;
+                }
+                $items[] = new StoryHighlightData(
+                    imageUrl: ImageHelper::validatePath($highlight->imagePath),
+                    title: $highlight->title,
+                    description: $highlight->description,
+                );
             }
-            $items[] = new StoryHighlightData(
-                imageUrl: ImageHelper::validatePath($highlight->imagePath),
-                title: $highlight->title,
-                description: $highlight->description,
-            );
+        } else {
+            for ($i = 1; $i <= 3; $i++) {
+                $title = $cms["highlight_{$i}_title"] ?? '';
+                if (empty($title)) {
+                    continue;
+                }
+                $items[] = new StoryHighlightData(
+                    imageUrl: ImageHelper::validatePath((string)($cms["highlight_{$i}_image"] ?? '')),
+                    title: $title,
+                    description: $cms["highlight_{$i}_description"] ?? '',
+                );
+            }
         }
+
         return new StoryHighlightsSectionData(
             heading: ImageHelper::getStringValue($cms, 'highlights_heading', ''),
             items: $items,
@@ -257,10 +310,18 @@ class StorytellingMapper
      */
     private static function buildGallerySection(array $cms, array $galleryImages): StoryGallerySectionData
     {
-        $images = array_map(
-            fn(EventGalleryImage $g) => ImageHelper::validatePath($g->imagePath),
-            $galleryImages,
-        );
+        if ($galleryImages !== []) {
+            $images = array_map(
+                fn(EventGalleryImage $g) => ImageHelper::validatePath($g->imagePath),
+                $galleryImages,
+            );
+        } else {
+            $images = [];
+            for ($i = 1; $i <= 5; $i++) {
+                $images[] = ImageHelper::validatePath((string)($cms["gallery_image_{$i}"] ?? ''));
+            }
+        }
+
         return new StoryGallerySectionData(
             heading: ImageHelper::getStringValue($cms, 'gallery_heading', ''),
             topRowImages: array_slice($images, 0, 3),

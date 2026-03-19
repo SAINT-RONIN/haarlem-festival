@@ -14,5 +14,5 @@ interface IStorytellingDetailService
      *
      * @throws \RuntimeException if the event is not found or not a storytelling event
      */
-    public function getDetailPageData(int $eventId): StorytellingDetailPageData;
+    public function getDetailPageData(string $slug): StorytellingDetailPageData;
 }
