@@ -6,8 +6,8 @@ namespace App\Controllers;
 
 use App\Constants\StorytellingDetailConstants;
 use App\Constants\StorytellingPageConstants;
-use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\EventTypeId;
+use App\Exceptions\StorytellingEventNotFoundException;
 use App\Mappers\ScheduleMapper;
 use App\Mappers\StorytellingMapper;
 use App\Services\Interfaces\IScheduleService;
@@ -31,20 +31,16 @@ class StorytellingController extends BaseController
      */
     public function index(): void
     {
-        try {
-            $pageData = $this->storytellingService->getStorytellingPageData();
-            $scheduleData = $this->scheduleService->getScheduleData(
-                StorytellingPageConstants::PAGE_SLUG,
-                EventTypeId::Storytelling->value,
-                StorytellingPageConstants::SCHEDULE_MAX_DAYS,
-            );
-            $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
-            $isLoggedIn = $this->sessionService->isLoggedIn();
-            $viewModel = StorytellingMapper::toPageViewModel($pageData, $scheduleSection, $isLoggedIn);
-            $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        $pageData = $this->storytellingService->getStorytellingPageData();
+        $scheduleData = $this->scheduleService->getScheduleData(
+            StorytellingPageConstants::PAGE_SLUG,
+            EventTypeId::Storytelling->value,
+            StorytellingPageConstants::SCHEDULE_MAX_DAYS,
+        );
+        $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
+        $isLoggedIn = $this->sessionService->isLoggedIn();
+        $viewModel = StorytellingMapper::toPageViewModel($pageData, $scheduleSection, $isLoggedIn);
+        $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
     }
 
     /**
@@ -66,8 +62,9 @@ class StorytellingController extends BaseController
             $isLoggedIn = $this->sessionService->isLoggedIn();
             $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
+        } catch (StorytellingEventNotFoundException) {
+            http_response_code(404);
+            require __DIR__ . '/../Views/pages/errors/404.php';
         }
     }
 }

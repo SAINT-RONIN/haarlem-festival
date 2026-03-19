@@ -20,11 +20,11 @@ class EventGalleryImage
     public static function fromRow(array $row): self
     {
         return new self(
-            eventGalleryImageId: (int)$row['EventGalleryImageId'],
-            eventId:             (int)$row['EventId'],
-            imagePath:           (string)$row['ImagePath'],
-            imageType:           (string)$row['ImageType'],
-            sortOrder:           (int)$row['SortOrder'],
+            eventGalleryImageId: (int)($row['EventGalleryImageId'] ?? throw new \InvalidArgumentException('Missing required field: EventGalleryImageId')),
+            eventId:             (int)($row['EventId'] ?? throw new \InvalidArgumentException('Missing required field: EventId')),
+            imagePath:           (string)($row['ImagePath'] ?? throw new \InvalidArgumentException('Missing required field: ImagePath')),
+            imageType:           (string)($row['ImageType'] ?? throw new \InvalidArgumentException('Missing required field: ImageType')),
+            sortOrder:           (int)($row['SortOrder'] ?? throw new \InvalidArgumentException('Missing required field: SortOrder')),
         );
     }
 }

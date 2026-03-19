@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\EventGalleryImage;
+use App\Models\EventHighlight;
+use App\Models\StorytellingDetailEvent;
+
 /**
  * Carries the event, CMS content, and pre-resolved fields needed to render a single Storytelling detail page.
  * The reason for this is because the service resolves fallback logic (about body, image path, labels) before packing everything here so the mapper can do pure formatting with no decisions.

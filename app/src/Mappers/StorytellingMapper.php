@@ -209,6 +209,9 @@ class StorytellingMapper
      * Builds the ordered list of nav links for the detail page hero overlay.
      * The reason for this is because the detail hero renders its own inline nav that must mark the current page as active, which requires the mapper to set the active flag rather than the view.
      */
+    /**
+     * @return StorytellingDetailNavLinkData[]
+     */
     private static function buildDetailNavLinks(GlobalUiData $globalUi): array
     {
         return [
