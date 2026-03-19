@@ -89,6 +89,8 @@ $itemClasses = $dayCount <= 4
     </div>
 </section>
 
+<?php if (!($scheduleAjaxRender ?? false)): ?>
 <script src="/assets/js/add-to-program.js"></script>
 <script src="/assets/js/schedule-filters.js"></script>
+<?php endif; ?>
 
