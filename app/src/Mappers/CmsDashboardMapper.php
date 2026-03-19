@@ -109,6 +109,7 @@ class CmsDashboardMapper
                 'displayName' => $section['displayName'],
                 'isEditable' => self::isSectionEditable($section['sectionKey']),
                 'items' => self::groupItemsByType($section['items']),
+                'subGroups' => self::buildSubGroups($section['sectionKey'], $section['items']),
             ];
         }
         return $sections;
@@ -135,9 +136,56 @@ class CmsDashboardMapper
         return $result;
     }
 
+    /**
+     * Groups schedule_section items into logical sub-categories for a cleaner CMS editor.
+     * Returns null for non-schedule sections (they use the flat items list).
+     *
+     * @return array<array{label: string, icon: string, color: string, columns: int, items: array}>|null
+     */
+    private static function buildSubGroups(string $sectionKey, array $items): ?array
+    {
+        if ($sectionKey !== 'schedule_section') {
+            return null;
+        }
+
+        $groups = [
+            'general' => ['label' => 'General Settings', 'icon' => 'settings', 'color' => 'blue', 'columns' => 2, 'items' => []],
+            'display' => ['label' => 'Display Options', 'icon' => 'eye', 'color' => 'amber', 'columns' => 3, 'items' => []],
+            'buttons' => ['label' => 'Button & Label Text', 'icon' => 'type', 'color' => 'emerald', 'columns' => 2, 'items' => []],
+            'info' => ['label' => 'Additional Information', 'icon' => 'info', 'color' => 'purple', 'columns' => 1, 'items' => []],
+            'filters' => ['label' => 'Filter Labels', 'icon' => 'filter', 'color' => 'rose', 'columns' => 3, 'items' => []],
+        ];
+
+        foreach ($items as $item) {
+            $key = $item['itemKey'];
+            $group = self::resolveItemGroup($key);
+            $groups[$group]['items'][] = $item;
+        }
+
+        // Remove empty groups and re-index
+        return array_values(array_filter($groups, fn(array $g) => $g['items'] !== []));
+    }
+
+    private static function resolveItemGroup(string $itemKey): string
+    {
+        if (str_starts_with($itemKey, 'schedule_filter_')) {
+            return 'filters';
+        }
+        if (str_starts_with($itemKey, 'schedule_additional_info_')) {
+            return 'info';
+        }
+        if (str_starts_with($itemKey, 'schedule_show_')) {
+            return 'display';
+        }
+        if (in_array($itemKey, ['schedule_title', 'schedule_year'], true)) {
+            return 'general';
+        }
+        return 'buttons';
+    }
+
     private static function isSectionEditable(string $sectionKey): bool
     {
-        $nonEditableSections = ['global_ui', 'schedule_section'];
+        $nonEditableSections = ['global_ui'];
         return !in_array($sectionKey, $nonEditableSections, true);
     }
 

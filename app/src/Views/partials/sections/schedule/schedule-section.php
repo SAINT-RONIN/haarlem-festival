@@ -42,27 +42,7 @@ $sectionId = $schedule->sectionId ?? 'schedule';
         </header>
 
         <!-- Filters Row -->
-        <?php if ($schedule->showFilters): ?>
-            <div class="w-full flex flex-col justify-start items-start gap-2.5">
-                <div class="w-full flex justify-between items-end">
-                    <div class="flex-1 flex justify-start items-center gap-2.5">
-                        <button type="button"
-                                class="px-4 sm:px-6 py-2 sm:py-3 bg-slate-800 rounded-2xl border border-slate-800 flex justify-center items-center gap-6 sm:gap-9 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2">
-                        <span class="flex justify-start items-center gap-2.5">
-                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                 aria-hidden="true" focusable="false">
-                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                            </svg>
-                            <span class="text-center text-white text-lg sm:text-xl font-medium font-['Montserrat'] leading-7">
-                                <?= CmsOutputHelper::text($schedule->filtersButtonText) ?>
-                            </span>
-                        </span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
+        <?php require __DIR__ . '/schedule-filters.php'; ?>
 
         <!-- Additional Info Box -->
         <?php if ($schedule->showAdditionalInfo && !empty($schedule->additionalInfoBody)): ?>
@@ -85,16 +65,6 @@ $sectionId = $schedule->sectionId ?? 'schedule';
             </aside>
         <?php endif; ?>
     </div>
-
-    <!-- Event Count -->
-    <?php if ($schedule->showEventCount): ?>
-        <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 flex justify-center items-center gap-2.5">
-            <p class="flex-1 text-right text-slate-800 text-base sm:text-lg font-medium font-['Montserrat'] leading-7"
-               aria-live="polite">
-                <?= (int)$schedule->eventCount ?> <?= CmsOutputHelper::text($schedule->eventCountLabel) ?>
-            </p>
-        </div>
-    <?php endif; ?>
 
     <!-- Schedule Days Grid -->
     <?php
@@ -120,4 +90,5 @@ $itemClasses = $dayCount <= 4
 </section>
 
 <script src="/assets/js/add-to-program.js"></script>
+<script src="/assets/js/schedule-filters.js"></script>
 

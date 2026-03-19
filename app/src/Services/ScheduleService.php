@@ -303,7 +303,18 @@ class ScheduleService implements IScheduleService
             'artistName' => $session->artistName,
             'artistImageUrl' => $session->artistImageUrl,
             'historyTicketLabel' => $session->historyTicketLabel,
+            'timeRange' => $this->computeTimeRange($startDateTime),
+            'priceType' => $priceData['isPayWhatYouLike'] ? 'pay-what-you-like' : ($priceData['amount'] === null || $priceData['amount'] == 0 ? 'free' : 'fixed'),
         ];
+    }
+
+    private function computeTimeRange(\DateTimeInterface $startDateTime): string
+    {
+        $hour = (int) $startDateTime->format('G');
+        if ($hour < 12) {
+            return 'morning';
+        }
+        return $hour < 17 ? 'afternoon' : 'evening';
     }
 
     /**

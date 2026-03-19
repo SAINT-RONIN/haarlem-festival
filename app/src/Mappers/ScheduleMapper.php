@@ -6,9 +6,11 @@ namespace App\Mappers;
 
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
+use App\ViewModels\Schedule\ScheduleFilterGroupData;
+use App\ViewModels\Schedule\ScheduleFilterOptionData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
-class ScheduleMapper
+final class ScheduleMapper
 {
     private const HISTORY_PAGE_SLUG = 'history';
 
@@ -78,11 +80,13 @@ class ScheduleMapper
         array $days,
         array $buttonTexts,
     ): ScheduleSectionViewModel {
-        $eventTypeSlug = $scheduleData['eventTypeSlug'];
-        $eventTypeId   = $scheduleData['eventTypeId'];
-        $eventCount    = array_sum(array_map(fn ($day) => count($day->events), $days));
-        $headerTexts   = self::resolveHeaderTexts($cmsContent, $pageSlug);
-        $cmsSettings   = self::extractCmsSettings($cmsContent);
+        $eventTypeSlug  = $scheduleData['eventTypeSlug'];
+        $eventTypeId    = $scheduleData['eventTypeId'];
+        $eventCount     = array_sum(array_map(fn ($day) => count($day->events), $days));
+        $headerTexts    = self::resolveHeaderTexts($cmsContent, $pageSlug);
+        $cmsSettings    = self::extractCmsSettings($cmsContent);
+        $filterGroups   = self::buildFilterGroups($cmsContent, $eventTypeSlug, $days);
+        $resetButtonText = self::str($cmsContent, 'schedule_filter_reset_text', 'Reset all filters');
 
         return new ScheduleSectionViewModel(
             sectionId: $pageSlug . '-schedule',
@@ -106,6 +110,8 @@ class ScheduleMapper
             confirmText: $buttonTexts['confirm'],
             addingText: $buttonTexts['adding'],
             successText: $buttonTexts['success'],
+            filterGroups: $filterGroups,
+            resetButtonText: $resetButtonText,
         );
     }
 
@@ -126,6 +132,177 @@ class ScheduleMapper
             'currencySymbol'     => self::str($cmsContent, 'schedule_currency_symbol', '€'),
             'noEventsText'       => self::str($cmsContent, 'schedule_no_events_text', 'No events scheduled'),
         ];
+    }
+
+    /**
+     * @param ScheduleDayViewModel[] $days
+     * @return ScheduleFilterGroupData[]
+     */
+    private static function buildFilterGroups(
+        array $cmsContent,
+        string $eventTypeSlug,
+        array $days,
+    ): array {
+        $allLabel = self::str($cmsContent, 'schedule_filter_all_label', 'All');
+        $groups   = [];
+
+        $groups[] = self::buildDayFilterGroup($cmsContent, $days, $allLabel);
+
+        if ($eventTypeSlug === 'storytelling') {
+            $groups[] = self::buildTimeRangeFilterGroup($cmsContent, $allLabel);
+            $groups[] = self::buildPriceTypeFilterGroup($cmsContent, $allLabel, $eventTypeSlug);
+            $groups[] = self::buildLanguageFilterGroup($cmsContent, $allLabel);
+            $groups[] = self::buildAgeGroupFilterGroup($cmsContent);
+        } elseif ($eventTypeSlug === 'jazz') {
+            $groups[] = self::buildVenueFilterGroup($cmsContent, $allLabel, $days);
+            $groups[] = self::buildPriceTypeFilterGroup($cmsContent, $allLabel, $eventTypeSlug);
+        }
+
+        return $groups;
+    }
+
+    /**
+     * @param ScheduleDayViewModel[] $days
+     */
+    private static function buildDayFilterGroup(array $cmsContent, array $days, string $allLabel): ScheduleFilterGroupData
+    {
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true)];
+        foreach ($days as $day) {
+            $options[] = new ScheduleFilterOptionData(
+                label: $day->dayName,
+                value: strtolower($day->dayName),
+            );
+        }
+
+        return new ScheduleFilterGroupData(
+            label: self::str($cmsContent, 'schedule_filter_day_label', 'Day'),
+            key: 'day',
+            options: $options,
+        );
+    }
+
+    private static function buildTimeRangeFilterGroup(array $cmsContent, string $allLabel): ScheduleFilterGroupData
+    {
+        return new ScheduleFilterGroupData(
+            label: self::str($cmsContent, 'schedule_filter_time_range_label', 'Time Range'),
+            key: 'timeRange',
+            options: [
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true),
+                new ScheduleFilterOptionData(
+                    label: self::str($cmsContent, 'schedule_filter_morning_label', 'Morning (before 12:00)'),
+                    value: 'morning',
+                ),
+                new ScheduleFilterOptionData(
+                    label: self::str($cmsContent, 'schedule_filter_afternoon_label', 'Afternoon (12:00 to 17:00)'),
+                    value: 'afternoon',
+                ),
+                new ScheduleFilterOptionData(
+                    label: self::str($cmsContent, 'schedule_filter_evening_label', 'Evening (after 17:00)'),
+                    value: 'evening',
+                ),
+            ],
+        );
+    }
+
+    private static function buildPriceTypeFilterGroup(array $cmsContent, string $allLabel, string $eventTypeSlug): ScheduleFilterGroupData
+    {
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true)];
+
+        if ($eventTypeSlug === 'jazz') {
+            $options[] = new ScheduleFilterOptionData(
+                label: self::str($cmsContent, 'schedule_filter_free_label', 'Free'),
+                value: 'free',
+            );
+            $options[] = new ScheduleFilterOptionData(
+                label: self::str($cmsContent, 'schedule_filter_paid_label', 'Paid'),
+                value: 'fixed',
+            );
+        } else {
+            $options[] = new ScheduleFilterOptionData(
+                label: self::str($cmsContent, 'schedule_filter_pay_as_you_like_label', 'Pay as you like'),
+                value: 'pay-what-you-like',
+            );
+            $options[] = new ScheduleFilterOptionData(
+                label: self::str($cmsContent, 'schedule_filter_fixed_price_label', 'Fixed Price'),
+                value: 'fixed',
+            );
+        }
+
+        return new ScheduleFilterGroupData(
+            label: self::str($cmsContent, 'schedule_filter_price_type_label', 'Price Type'),
+            key: 'priceType',
+            options: $options,
+        );
+    }
+
+    private static function buildLanguageFilterGroup(array $cmsContent, string $allLabel): ScheduleFilterGroupData
+    {
+        return new ScheduleFilterGroupData(
+            label: self::str($cmsContent, 'schedule_filter_language_label', 'Language'),
+            key: 'language',
+            options: [
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true),
+                new ScheduleFilterOptionData(
+                    label: self::str($cmsContent, 'schedule_filter_english_label', 'English'),
+                    value: 'english',
+                ),
+                new ScheduleFilterOptionData(
+                    label: self::str($cmsContent, 'schedule_filter_dutch_label', 'Dutch'),
+                    value: 'dutch',
+                ),
+            ],
+        );
+    }
+
+    private static function buildAgeGroupFilterGroup(array $cmsContent): ScheduleFilterGroupData
+    {
+        return new ScheduleFilterGroupData(
+            label: self::str($cmsContent, 'schedule_filter_age_group_label', 'Age Group'),
+            key: 'age',
+            options: [
+                new ScheduleFilterOptionData(
+                    label: self::str($cmsContent, 'schedule_filter_all_ages_label', 'All ages'),
+                    value: 'all',
+                    isDefault: true,
+                ),
+                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_4_label', '4+'), value: '4'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_10_label', '10+'), value: '10'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_12_label', '12+'), value: '12'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_16_label', '16+'), value: '16'),
+            ],
+        );
+    }
+
+    /**
+     * Extracts unique venue names from schedule days for the venue filter.
+     *
+     * @param ScheduleDayViewModel[] $days
+     */
+    private static function buildVenueFilterGroup(array $cmsContent, string $allLabel, array $days): ScheduleFilterGroupData
+    {
+        $venues = [];
+        foreach ($days as $day) {
+            foreach ($day->events as $event) {
+                $name = $event->locationName;
+                if ($name !== '' && !isset($venues[$name])) {
+                    $venues[$name] = true;
+                }
+            }
+        }
+
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true)];
+        foreach (array_keys($venues) as $venue) {
+            $options[] = new ScheduleFilterOptionData(
+                label: $venue,
+                value: strtolower($venue),
+            );
+        }
+
+        return new ScheduleFilterGroupData(
+            label: self::str($cmsContent, 'schedule_filter_venue_label', 'Venue'),
+            key: 'venue',
+            options: $options,
+        );
     }
 
     /**
