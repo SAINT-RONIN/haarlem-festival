@@ -30,6 +30,12 @@ final readonly class EventSessionFilter
         public ?bool $groupByDay = null,
         public ?int $maxDays = null,
         public ?string $orderBy = null,
+        public ?string $timeRange = null,
+        public ?string $priceType = null,
+        public ?string $venueName = null,
+        public ?string $languageCode = null,
+        public ?int $filterMinAge = null,
+        public ?int $limit = null,
     ) {
     }
 
@@ -55,6 +61,12 @@ final readonly class EventSessionFilter
             groupByDay: isset($filters['groupByDay']) ? (bool) $filters['groupByDay'] : null,
             maxDays: isset($filters['maxDays']) ? (int) $filters['maxDays'] : null,
             orderBy: isset($filters['orderBy']) && is_string($filters['orderBy']) ? $filters['orderBy'] : null,
+            timeRange: isset($filters['timeRange']) && is_string($filters['timeRange']) ? $filters['timeRange'] : null,
+            priceType: isset($filters['priceType']) && is_string($filters['priceType']) ? $filters['priceType'] : null,
+            venueName: isset($filters['venueName']) && is_string($filters['venueName']) ? $filters['venueName'] : null,
+            languageCode: isset($filters['languageCode']) && is_string($filters['languageCode']) ? $filters['languageCode'] : null,
+            filterMinAge: isset($filters['filterMinAge']) ? (int) $filters['filterMinAge'] : null,
+            limit: isset($filters['limit']) ? (int) $filters['limit'] : null,
         );
     }
 }

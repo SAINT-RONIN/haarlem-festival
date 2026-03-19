@@ -14,8 +14,7 @@ $dayId = 'schedule-day-' . $dayIndex;
 $itemClasses = $dayItemClasses ?? 'lg:flex-1';
 ?>
 
-<li class="w-full <?= $itemClasses ?>"
-    data-filter-day="<?= htmlspecialchars(strtolower($day->dayName)) ?>">
+<li class="w-full <?= $itemClasses ?>">
     <article
             class="w-full px-4 sm:px-5 py-3.5 bg-[#ECE6DD] rounded-2xl sm:rounded-3xl flex flex-col justify-start items-center gap-3.5"
             aria-labelledby="<?= $dayId ?>-heading">

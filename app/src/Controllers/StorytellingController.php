@@ -31,11 +31,13 @@ class StorytellingController extends BaseController
      */
     public function index(): void
     {
+        $filterParams = $this->readScheduleFilterParams();
         $pageData = $this->storytellingService->getStorytellingPageData();
         $scheduleData = $this->scheduleService->getScheduleData(
             StorytellingPageConstants::PAGE_SLUG,
             EventTypeId::Storytelling->value,
             StorytellingPageConstants::SCHEDULE_MAX_DAYS,
+            filterParams: $filterParams,
         );
         $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
         $isLoggedIn = $this->sessionService->isLoggedIn();

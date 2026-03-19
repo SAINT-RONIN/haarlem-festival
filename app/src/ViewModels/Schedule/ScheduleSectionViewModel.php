@@ -34,6 +34,7 @@ final readonly class ScheduleSectionViewModel
         public string  $successText = 'Added to program',
         public array   $filterGroups = [],
         public string  $resetButtonText = '',
+        public bool    $hasActiveFilters = false,
     ) {
     }
 }

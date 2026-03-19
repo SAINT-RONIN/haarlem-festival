@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\EventSessionFilter;
+use App\Models\ScheduleDayData;
 
 interface IEventSessionRepository
 {
@@ -13,6 +14,13 @@ interface IEventSessionRepository
      * @return array{days?: \App\Models\ScheduleDayData[], sessions: \App\Models\SessionWithEvent[]}
      */
     public function findSessions(EventSessionFilter|array $filters = new EventSessionFilter()): array;
+
+    /**
+     * Returns distinct session dates for building filter UI.
+     *
+     * @return ScheduleDayData[]
+     */
+    public function findDistinctDays(EventSessionFilter $filter): array;
 
     public function create(array $data): int;
 

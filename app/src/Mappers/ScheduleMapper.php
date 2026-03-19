@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Models\ScheduleFilterParams;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleFilterGroupData;
@@ -21,12 +22,14 @@ final class ScheduleMapper
      */
     public static function toScheduleSection(array $scheduleData): ScheduleSectionViewModel
     {
-        $cmsContent  = $scheduleData['cmsContent'];
-        $pageSlug    = $scheduleData['pageSlug'];
-        $buttonTexts = self::extractButtonTexts($cmsContent);
-        $days        = self::mapDays($scheduleData['days'], $buttonTexts['confirm'], $buttonTexts['adding'], $buttonTexts['success']);
+        $cmsContent    = $scheduleData['cmsContent'];
+        $pageSlug      = $scheduleData['pageSlug'];
+        $activeFilters = $scheduleData['activeFilters'] ?? null;
+        $availableDays = $scheduleData['availableDays'] ?? [];
+        $buttonTexts   = self::extractButtonTexts($cmsContent);
+        $days          = self::mapDays($scheduleData['days'], $buttonTexts['confirm'], $buttonTexts['adding'], $buttonTexts['success']);
 
-        return self::buildSectionViewModel($scheduleData, $cmsContent, $pageSlug, $days, $buttonTexts);
+        return self::buildSectionViewModel($scheduleData, $cmsContent, $pageSlug, $days, $buttonTexts, $activeFilters, $availableDays);
     }
 
     /**
@@ -68,10 +71,11 @@ final class ScheduleMapper
     }
 
     /**
-     * @param array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array} $scheduleData
+     * @param array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: \App\Models\ScheduleDayData[]} $scheduleData
      * @param array<string, mixed> $cmsContent
      * @param ScheduleDayViewModel[] $days
      * @param array{confirm: string, adding: string, success: string} $buttonTexts
+     * @param \App\Models\ScheduleDayData[] $availableDays
      */
     private static function buildSectionViewModel(
         array $scheduleData,
@@ -79,13 +83,15 @@ final class ScheduleMapper
         string $pageSlug,
         array $days,
         array $buttonTexts,
+        ?ScheduleFilterParams $activeFilters = null,
+        array $availableDays = [],
     ): ScheduleSectionViewModel {
-        $eventTypeSlug  = $scheduleData['eventTypeSlug'];
-        $eventTypeId    = $scheduleData['eventTypeId'];
-        $eventCount     = array_sum(array_map(fn ($day) => count($day->events), $days));
-        $headerTexts    = self::resolveHeaderTexts($cmsContent, $pageSlug);
-        $cmsSettings    = self::extractCmsSettings($cmsContent);
-        $filterGroups   = self::buildFilterGroups($cmsContent, $eventTypeSlug, $days);
+        $eventTypeSlug   = $scheduleData['eventTypeSlug'];
+        $eventTypeId     = $scheduleData['eventTypeId'];
+        $eventCount      = array_sum(array_map(fn ($day) => count($day->events), $days));
+        $headerTexts     = self::resolveHeaderTexts($cmsContent, $pageSlug);
+        $cmsSettings     = self::extractCmsSettings($cmsContent);
+        $filterGroups    = self::buildFilterGroups($cmsContent, $eventTypeSlug, $days, $activeFilters, $availableDays);
         $resetButtonText = self::str($cmsContent, 'schedule_filter_reset_text', 'Reset all filters');
 
         return new ScheduleSectionViewModel(
@@ -112,6 +118,7 @@ final class ScheduleMapper
             successText: $buttonTexts['success'],
             filterGroups: $filterGroups,
             resetButtonText: $resetButtonText,
+            hasActiveFilters: $activeFilters !== null && $activeFilters->hasAnyFilter(),
         );
     }
 
@@ -136,41 +143,52 @@ final class ScheduleMapper
 
     /**
      * @param ScheduleDayViewModel[] $days
+     * @param \App\Models\ScheduleDayData[] $availableDays
      * @return ScheduleFilterGroupData[]
      */
     private static function buildFilterGroups(
         array $cmsContent,
         string $eventTypeSlug,
         array $days,
+        ?ScheduleFilterParams $activeFilters = null,
+        array $availableDays = [],
     ): array {
         $allLabel = self::str($cmsContent, 'schedule_filter_all_label', 'All');
         $groups   = [];
 
-        $groups[] = self::buildDayFilterGroup($cmsContent, $days, $allLabel);
+        $groups[] = self::buildDayFilterGroup($cmsContent, $availableDays, $allLabel, $activeFilters);
 
         if ($eventTypeSlug === 'storytelling') {
-            $groups[] = self::buildTimeRangeFilterGroup($cmsContent, $allLabel);
-            $groups[] = self::buildPriceTypeFilterGroup($cmsContent, $allLabel, $eventTypeSlug);
-            $groups[] = self::buildLanguageFilterGroup($cmsContent, $allLabel);
-            $groups[] = self::buildAgeGroupFilterGroup($cmsContent);
+            $groups[] = self::buildTimeRangeFilterGroup($cmsContent, $allLabel, $activeFilters);
+            $groups[] = self::buildPriceTypeFilterGroup($cmsContent, $allLabel, $eventTypeSlug, $activeFilters);
+            $groups[] = self::buildLanguageFilterGroup($cmsContent, $allLabel, $activeFilters);
+            $groups[] = self::buildAgeGroupFilterGroup($cmsContent, $activeFilters);
         } elseif ($eventTypeSlug === 'jazz') {
-            $groups[] = self::buildVenueFilterGroup($cmsContent, $allLabel, $days);
-            $groups[] = self::buildPriceTypeFilterGroup($cmsContent, $allLabel, $eventTypeSlug);
+            $groups[] = self::buildVenueFilterGroup($cmsContent, $allLabel, $days, $activeFilters);
+            $groups[] = self::buildPriceTypeFilterGroup($cmsContent, $allLabel, $eventTypeSlug, $activeFilters);
         }
 
         return $groups;
     }
 
     /**
-     * @param ScheduleDayViewModel[] $days
+     * @param \App\Models\ScheduleDayData[] $availableDays
      */
-    private static function buildDayFilterGroup(array $cmsContent, array $days, string $allLabel): ScheduleFilterGroupData
-    {
-        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true)];
-        foreach ($days as $day) {
+    private static function buildDayFilterGroup(
+        array $cmsContent,
+        array $availableDays,
+        string $allLabel,
+        ?ScheduleFilterParams $activeFilters,
+    ): ScheduleFilterGroupData {
+        $activeDay = $activeFilters?->day;
+        $options   = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $activeDay === null)];
+        foreach ($availableDays as $dayData) {
+            $dayName   = $dayData->dayOfWeek;
+            $dayValue  = strtolower($dayName);
             $options[] = new ScheduleFilterOptionData(
-                label: $day->dayName,
-                value: strtolower($day->dayName),
+                label: $dayName,
+                value: $dayValue,
+                isActive: $activeDay === $dayValue,
             );
         }
 
@@ -181,50 +199,66 @@ final class ScheduleMapper
         );
     }
 
-    private static function buildTimeRangeFilterGroup(array $cmsContent, string $allLabel): ScheduleFilterGroupData
-    {
+    private static function buildTimeRangeFilterGroup(
+        array $cmsContent,
+        string $allLabel,
+        ?ScheduleFilterParams $activeFilters,
+    ): ScheduleFilterGroupData {
+        $active = $activeFilters?->timeRange;
         return new ScheduleFilterGroupData(
             label: self::str($cmsContent, 'schedule_filter_time_range_label', 'Time Range'),
             key: 'timeRange',
             options: [
-                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true),
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_morning_label', 'Morning (before 12:00)'),
                     value: 'morning',
+                    isActive: $active === 'morning',
                 ),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_afternoon_label', 'Afternoon (12:00 to 17:00)'),
                     value: 'afternoon',
+                    isActive: $active === 'afternoon',
                 ),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_evening_label', 'Evening (after 17:00)'),
                     value: 'evening',
+                    isActive: $active === 'evening',
                 ),
             ],
         );
     }
 
-    private static function buildPriceTypeFilterGroup(array $cmsContent, string $allLabel, string $eventTypeSlug): ScheduleFilterGroupData
-    {
-        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true)];
+    private static function buildPriceTypeFilterGroup(
+        array $cmsContent,
+        string $allLabel,
+        string $eventTypeSlug,
+        ?ScheduleFilterParams $activeFilters,
+    ): ScheduleFilterGroupData {
+        $active  = $activeFilters?->priceType;
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null)];
 
         if ($eventTypeSlug === 'jazz') {
             $options[] = new ScheduleFilterOptionData(
                 label: self::str($cmsContent, 'schedule_filter_free_label', 'Free'),
                 value: 'free',
+                isActive: $active === 'free',
             );
             $options[] = new ScheduleFilterOptionData(
                 label: self::str($cmsContent, 'schedule_filter_paid_label', 'Paid'),
                 value: 'fixed',
+                isActive: $active === 'fixed',
             );
         } else {
             $options[] = new ScheduleFilterOptionData(
                 label: self::str($cmsContent, 'schedule_filter_pay_as_you_like_label', 'Pay as you like'),
                 value: 'pay-what-you-like',
+                isActive: $active === 'pay-what-you-like',
             );
             $options[] = new ScheduleFilterOptionData(
                 label: self::str($cmsContent, 'schedule_filter_fixed_price_label', 'Fixed Price'),
                 value: 'fixed',
+                isActive: $active === 'fixed',
             );
         }
 
@@ -235,27 +269,36 @@ final class ScheduleMapper
         );
     }
 
-    private static function buildLanguageFilterGroup(array $cmsContent, string $allLabel): ScheduleFilterGroupData
-    {
+    private static function buildLanguageFilterGroup(
+        array $cmsContent,
+        string $allLabel,
+        ?ScheduleFilterParams $activeFilters,
+    ): ScheduleFilterGroupData {
+        $active = $activeFilters?->language;
         return new ScheduleFilterGroupData(
             label: self::str($cmsContent, 'schedule_filter_language_label', 'Language'),
             key: 'language',
             options: [
-                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true),
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_english_label', 'English'),
                     value: 'english',
+                    isActive: $active === 'english',
                 ),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_dutch_label', 'Dutch'),
                     value: 'dutch',
+                    isActive: $active === 'dutch',
                 ),
             ],
         );
     }
 
-    private static function buildAgeGroupFilterGroup(array $cmsContent): ScheduleFilterGroupData
-    {
+    private static function buildAgeGroupFilterGroup(
+        array $cmsContent,
+        ?ScheduleFilterParams $activeFilters,
+    ): ScheduleFilterGroupData {
+        $active = $activeFilters?->age !== null ? (string) $activeFilters->age : null;
         return new ScheduleFilterGroupData(
             label: self::str($cmsContent, 'schedule_filter_age_group_label', 'Age Group'),
             key: 'age',
@@ -264,11 +307,12 @@ final class ScheduleMapper
                     label: self::str($cmsContent, 'schedule_filter_all_ages_label', 'All ages'),
                     value: 'all',
                     isDefault: true,
+                    isActive: $active === null,
                 ),
-                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_4_label', '4+'), value: '4'),
-                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_10_label', '10+'), value: '10'),
-                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_12_label', '12+'), value: '12'),
-                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_16_label', '16+'), value: '16'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_4_label', '4+'), value: '4', isActive: $active === '4'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_10_label', '10+'), value: '10', isActive: $active === '10'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_12_label', '12+'), value: '12', isActive: $active === '12'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_16_label', '16+'), value: '16', isActive: $active === '16'),
             ],
         );
     }
@@ -278,8 +322,13 @@ final class ScheduleMapper
      *
      * @param ScheduleDayViewModel[] $days
      */
-    private static function buildVenueFilterGroup(array $cmsContent, string $allLabel, array $days): ScheduleFilterGroupData
-    {
+    private static function buildVenueFilterGroup(
+        array $cmsContent,
+        string $allLabel,
+        array $days,
+        ?ScheduleFilterParams $activeFilters,
+    ): ScheduleFilterGroupData {
+        $active = $activeFilters?->venue;
         $venues = [];
         foreach ($days as $day) {
             foreach ($day->events as $event) {
@@ -290,11 +339,12 @@ final class ScheduleMapper
             }
         }
 
-        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true)];
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null)];
         foreach (array_keys($venues) as $venue) {
             $options[] = new ScheduleFilterOptionData(
                 label: $venue,
                 value: strtolower($venue),
+                isActive: $active === strtolower($venue),
             );
         }
 

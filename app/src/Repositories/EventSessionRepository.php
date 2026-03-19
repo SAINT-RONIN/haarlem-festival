@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Enums\PriceTierId;
 use App\Infrastructure\Database;
 use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
@@ -103,6 +104,37 @@ class EventSessionRepository implements IEventSessionRepository
             }
         }
 
+        if ($filters->timeRange !== null) {
+            match ($filters->timeRange) {
+                'morning'   => $conditions[] = 'HOUR(es.StartDateTime) < 12',
+                'afternoon' => $conditions[] = '(HOUR(es.StartDateTime) >= 12 AND HOUR(es.StartDateTime) < 17)',
+                'evening'   => $conditions[] = 'HOUR(es.StartDateTime) >= 17',
+            };
+        }
+
+        if ($filters->priceType !== null) {
+            match ($filters->priceType) {
+                'pay-what-you-like' => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = ' . PriceTierId::PayWhatYouLike->value . ')',
+                'free'              => $conditions[] = '(es.IsFree = 1 OR NOT EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0))',
+                'fixed'             => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != ' . PriceTierId::PayWhatYouLike->value . ')',
+            };
+        }
+
+        if ($filters->venueName !== null && $filters->venueName !== '') {
+            $conditions[] = 'LOWER(v.Name) = :venueName';
+            $params['venueName'] = strtolower($filters->venueName);
+        }
+
+        if ($filters->languageCode !== null && $filters->languageCode !== '') {
+            $conditions[] = 'LOWER(es.LanguageCode) = :languageCode';
+            $params['languageCode'] = strtolower($filters->languageCode);
+        }
+
+        if ($filters->filterMinAge !== null && $filters->filterMinAge > 0) {
+            $conditions[] = '(es.MinAge IS NOT NULL AND es.MinAge >= :filterMinAge)';
+            $params['filterMinAge'] = $filters->filterMinAge;
+        }
+
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
         $requestedOrderBy = is_string($filters->orderBy) ? $filters->orderBy : '';
         $allowedOrderBy = [
@@ -178,6 +210,10 @@ class EventSessionRepository implements IEventSessionRepository
                 ' . $sessionsWhereClause . '
                 ORDER BY ' . $orderBy;
 
+            if ($filters->limit !== null && $filters->limit > 0) {
+                $sessionsSql .= ' LIMIT ' . (int) $filters->limit;
+            }
+
             $prepared = $this->pdo->prepare($sessionsSql);
             $prepared->execute(array_merge($params, $dateBindings));
             $sessionRows = $prepared->fetchAll(PDO::FETCH_ASSOC);
@@ -204,6 +240,10 @@ class EventSessionRepository implements IEventSessionRepository
             ' . $baseFrom . '
             ' . $whereClause . '
             ORDER BY ' . $orderBy;
+
+        if ($filters->limit !== null && $filters->limit > 0) {
+            $sessionsSql .= ' LIMIT ' . (int) $filters->limit;
+        }
 
         $stmt = $this->pdo->prepare($sessionsSql);
         $stmt->execute($params);
@@ -287,6 +327,70 @@ class EventSessionRepository implements IEventSessionRepository
     {
         $stmt = $this->pdo->prepare('DELETE FROM EventSession WHERE EventSessionId = :sessionId');
         return $stmt->execute(['sessionId' => $sessionId]);
+    }
+
+    /**
+     * Returns distinct session dates matching the base filters (ignoring user-facing schedule filters).
+     * Used to build the day filter UI with all available days, even when other filters narrow results.
+     *
+     * @return ScheduleDayData[]
+     */
+    public function findDistinctDays(EventSessionFilter $filter): array
+    {
+        $conditions = [];
+        $params = [];
+
+        if ($filter->eventTypeId !== null) {
+            $conditions[] = 'e.EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = $filter->eventTypeId;
+        }
+
+        if ($filter->isActive !== null) {
+            $conditions[] = 'es.IsActive = :isActive';
+            $params['isActive'] = $filter->isActive ? 1 : 0;
+        }
+
+        if ($filter->eventIsActive !== null) {
+            $conditions[] = 'e.IsActive = :eventIsActive';
+            $params['eventIsActive'] = $filter->eventIsActive ? 1 : 0;
+        }
+
+        $conditions[] = 'es.IsCancelled = 0';
+
+        if ($filter->eventId !== null) {
+            $conditions[] = 'es.EventId = :eventId';
+            $params['eventId'] = $filter->eventId;
+        }
+
+        if ($filter->visibleDays !== null && $filter->visibleDays !== []) {
+            if (count($filter->visibleDays) < 7) {
+                $dayParams = [];
+                foreach (array_values($filter->visibleDays) as $index => $day) {
+                    $key = 'visDay' . $index;
+                    $dayParams[] = ':' . $key;
+                    $params[$key] = (int) $day;
+                }
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
+            }
+        }
+
+        $whereClause = $conditions !== [] ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+        $sql = "
+            SELECT DISTINCT DATE(es.StartDateTime) AS date, DAYNAME(es.StartDateTime) AS dayName
+            FROM EventSession es
+            INNER JOIN Event e ON es.EventId = e.EventId
+            {$whereClause}
+            ORDER BY date ASC
+        ";
+
+        $maxDays = $filter->maxDays ?? 7;
+        $sql .= ' LIMIT ' . (int) $maxDays;
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     private function dayNameToNumber(string $dayName): ?int

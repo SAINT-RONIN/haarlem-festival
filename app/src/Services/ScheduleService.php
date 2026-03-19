@@ -7,8 +7,12 @@ namespace App\Services;
 use App\Enums\DayOfWeek;
 use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
+use App\Models\EventSessionFilter;
 use App\Models\EventSessionLabel;
+use App\Models\EventSessionLabelFilter;
 use App\Models\EventSessionPrice;
+use App\Models\EventSessionPriceFilter;
+use App\Models\ScheduleFilterParams;
 use App\Repositories\CmsContentRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
@@ -35,30 +39,52 @@ class ScheduleService implements IScheduleService
     ) {
     }
 
-    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null, ?string $ctaTextOverride = null): array
-    {
+    public function getScheduleData(
+        string $pageSlug,
+        int $eventTypeId,
+        int $maxDays = 4,
+        ?int $eventId = null,
+        ?string $ctaTextOverride = null,
+        ?ScheduleFilterParams $filterParams = null,
+    ): array {
         $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
 
         $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
         $visibleDays = $this->getVisibleDays($eventTypeId);
 
-        $filters = [
-            'eventTypeId' => $eventTypeId,
-            'isActive' => true,
-            'eventIsActive' => true,
-            'includeCancelled' => false,
-            'groupByDay' => true,
-            'maxDays' => $maxDays,
-            'visibleDays' => $visibleDays,
-            'orderBy' => 'es.StartDateTime ASC',
-        ];
+        $availableDays = $this->sessionRepository->findDistinctDays(
+            new EventSessionFilter(
+                eventTypeId: $eventTypeId,
+                isActive: true,
+                eventIsActive: true,
+                includeCancelled: false,
+                visibleDays: $visibleDays,
+                eventId: $eventId,
+                maxDays: $maxDays,
+            ),
+        );
 
-        if ($eventId !== null) {
-            $filters['eventId'] = $eventId;
-        }
-
-        $scheduleData = $this->sessionRepository->findSessions($filters);
+        $scheduleData = $this->sessionRepository->findSessions(
+            new EventSessionFilter(
+                eventTypeId: $eventTypeId,
+                isActive: true,
+                eventIsActive: true,
+                includeCancelled: false,
+                groupByDay: true,
+                maxDays: $maxDays,
+                visibleDays: $visibleDays,
+                orderBy: 'es.StartDateTime ASC',
+                eventId: $eventId,
+                dayOfWeek: $filterParams?->day,
+                timeRange: $filterParams?->timeRange,
+                priceType: $filterParams?->priceType,
+                venueName: $filterParams?->venue,
+                languageCode: $filterParams?->language,
+                filterMinAge: $filterParams?->age,
+                limit: 50,
+            ),
+        );
 
         $ctaButtonText = $ctaTextOverride ?? $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
         $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
@@ -79,6 +105,8 @@ class ScheduleService implements IScheduleService
             'eventTypeSlug' => $eventTypeSlug,
             'eventTypeId' => $eventTypeId,
             'days' => $days,
+            'activeFilters' => $filterParams,
+            'availableDays' => $availableDays,
         ];
     }
 
@@ -103,10 +131,10 @@ class ScheduleService implements IScheduleService
         // Get session IDs for batch loading labels and prices
         $sessionIds = array_map(static fn ($s) => $s->eventSessionId, $sessions);
         $labelsMap = !empty($sessionIds)
-            ? $this->labelRepository->findLabels(['sessionIds' => $sessionIds, 'groupBySession' => true])
+            ? $this->labelRepository->findLabels(new EventSessionLabelFilter(sessionIds: $sessionIds, groupBySession: true))
             : [];
         $pricesMap = !empty($sessionIds)
-            ? $this->priceRepository->findPrices(['sessionIds' => $sessionIds, 'groupBySession' => true])
+            ? $this->priceRepository->findPrices(new EventSessionPriceFilter(sessionIds: $sessionIds, groupBySession: true))
             : [];
 
         // Group sessions by date

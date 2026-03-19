@@ -15,11 +15,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
 <li class="w-full">
     <article
         class="w-full p-4 sm:p-5 bg-white rounded-2xl sm:rounded-3xl inline-flex flex-col justify-start items-start overflow-hidden gap-2"
-        aria-labelledby="<?= $eventId ?>-title"
-        data-filter-time-range="<?= htmlspecialchars($event->timeRange) ?>"
-        data-filter-price-type="<?= htmlspecialchars($event->priceType) ?>"
-        data-filter-venue="<?= htmlspecialchars(strtolower($event->locationName)) ?>"
-        data-filter-age="<?= $event->minAge !== null ? (int)$event->minAge : '0' ?>">
+        aria-labelledby="<?= $eventId ?>-title">
 
         <!-- Title & Labels Row -->
         <div class="w-full inline-flex justify-start items-start gap-[5px]">
@@ -41,8 +37,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                         <div class="w-full inline-flex justify-start items-center gap-1">
                             <?php foreach ($event->labels as $label): ?>
                                 <div class="flex justify-start items-start gap-1.5">
-                                    <span class="px-1 py-1 bg-pink-700/90 rounded-[4px] flex justify-start items-center gap-1.5 schedule-label-badge"
-                                          data-label-text="<?= htmlspecialchars(strtolower($label)) ?>">
+                                    <span class="px-1 py-1 bg-pink-700/90 rounded-[4px] flex justify-start items-center gap-1.5">
                                         <span class="text-white text-[12px] sm:text-[11px] font-normal font-['Montserrat'] leading-3 tracking-tight">
                                             <?= htmlspecialchars($label) ?>
                                         </span>
@@ -65,8 +60,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                 <ul class="inline-flex flex-col justify-center items-end gap-1" aria-label="Event labels">
                     <?php foreach ($event->labels as $label): ?>
                         <li class="inline-flex justify-start items-start gap-2.5">
-                            <span class="px-2.5 py-[5px] bg-pink-700 rounded-[10px] flex justify-start items-center gap-2 schedule-label-badge"
-                                  data-label-text="<?= htmlspecialchars(strtolower($label)) ?>">
+                            <span class="px-2.5 py-[5px] bg-pink-700 rounded-[10px] flex justify-start items-center gap-2">
                                 <span class="text-white text-base font-normal font-['Montserrat'] leading-6">
                                     <?= htmlspecialchars($label) ?>
                                 </span>

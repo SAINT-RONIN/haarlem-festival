@@ -24,7 +24,7 @@ $filterPanelId = $sectionId . '-filters';
             <!-- Toggle Filters Button -->
             <button type="button"
                     data-filter-toggle="<?= htmlspecialchars($filterPanelId) ?>"
-                    aria-expanded="false"
+                    aria-expanded="<?= $schedule->hasActiveFilters ? 'true' : 'false' ?>"
                     aria-controls="<?= htmlspecialchars($filterPanelId) ?>"
                     class="px-4 sm:px-6 py-2 sm:py-3 bg-slate-800 rounded-2xl border border-slate-800 flex justify-center items-center gap-6 sm:gap-9 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2">
                 <span class="flex justify-start items-center gap-2.5">
@@ -38,7 +38,7 @@ $filterPanelId = $sectionId . '-filters';
                     </span>
                 </span>
                 <!-- Close X icon (visible when open) -->
-                <span class="filter-close-icon hidden" aria-hidden="true">
+                <span class="filter-close-icon <?= $schedule->hasActiveFilters ? '' : 'hidden' ?>" aria-hidden="true">
                     <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -50,7 +50,7 @@ $filterPanelId = $sectionId . '-filters';
             <!-- Reset Button (hidden by default, shown when filters are open) -->
             <button type="button"
                     data-filter-reset="<?= htmlspecialchars($sectionId) ?>"
-                    class="hidden px-4 sm:px-6 py-2 sm:py-3 bg-red-500 hover:bg-red-600 rounded-2xl flex justify-center items-center gap-2.5 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2">
+                    class="<?= $schedule->hasActiveFilters ? '' : 'hidden' ?> px-4 sm:px-6 py-2 sm:py-3 bg-red-500 hover:bg-red-600 rounded-2xl flex justify-center items-center gap-2.5 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                      aria-hidden="true" focusable="false">
@@ -75,9 +75,9 @@ $filterPanelId = $sectionId . '-filters';
         <?php endif; ?>
     </div>
 
-    <!-- Filter Panel (hidden by default) -->
+    <!-- Filter Panel (hidden by default, open when filters are active) -->
     <div id="<?= htmlspecialchars($filterPanelId) ?>"
-         class="hidden w-full p-4 sm:p-6 bg-slate-800 rounded-3xl border border-slate-800 flex flex-col justify-start items-start gap-5"
+         class="<?= $schedule->hasActiveFilters ? '' : 'hidden' ?> w-full p-4 sm:p-6 bg-slate-800 rounded-3xl border border-slate-800 flex flex-col justify-start items-start gap-5"
          role="region"
          aria-label="Schedule filters">
 
@@ -96,8 +96,8 @@ $filterPanelId = $sectionId . '-filters';
                         <button type="button"
                                 data-filter-value="<?= htmlspecialchars($option->value) ?>"
                                 role="radio"
-                                aria-checked="<?= $option->isDefault ? 'true' : 'false' ?>"
-                                class="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 <?= $option->isDefault ? 'bg-pink-700 text-stone-100' : 'bg-stone-100 text-slate-800 hover:bg-stone-200' ?>">
+                                aria-checked="<?= $option->isActive ? 'true' : 'false' ?>"
+                                class="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 <?= $option->isActive ? 'bg-pink-700 text-stone-100' : 'bg-stone-100 text-slate-800 hover:bg-stone-200' ?>">
                             <span class="text-center text-lg font-normal leading-7">
                                 <?= htmlspecialchars($option->label) ?>
                             </span>
