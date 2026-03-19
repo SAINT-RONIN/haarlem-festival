@@ -175,13 +175,18 @@ class StorytellingMapper
      */
     private static function buildDetailHero(StorytellingDetailPageData $pageData, GlobalUiData $globalUi, ScheduleSectionViewModel $scheduleSection): StorytellingDetailHeroData
     {
+        $buttons = self::buildDetailHeroButtons($pageData->cms, $scheduleSection);
+
         return new StorytellingDetailHeroData(
             title: $pageData->event->title,
             subtitle: $pageData->event->shortDescription,
             heroImageUrl: ImageHelper::validatePath($pageData->featuredImagePath ?? ''),
             labels: $pageData->labels,
             navLinks: self::buildDetailNavLinks($globalUi),
-            ...self::buildDetailHeroButtons($pageData->cms, $scheduleSection),
+            backButtonLabel: $buttons['backButtonLabel'],
+            backButtonUrl: $buttons['backButtonUrl'],
+            reserveButtonLabel: $buttons['reserveButtonLabel'],
+            reserveButtonUrl: $buttons['reserveButtonUrl'],
         );
     }
 

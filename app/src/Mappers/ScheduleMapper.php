@@ -97,7 +97,7 @@ class ScheduleMapper
         return $days;
     }
 
-    private static function toEventCardViewModel(
+    public static function toEventCardViewModel(
         array $event,
         string $confirmText,
         string $addingText,

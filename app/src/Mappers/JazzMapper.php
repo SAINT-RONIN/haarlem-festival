@@ -26,6 +26,7 @@ use App\ViewModels\Jazz\ScheduleData;
 use App\ViewModels\Jazz\ScheduleEventData;
 use App\ViewModels\Jazz\VenueData;
 use App\ViewModels\Jazz\VenuesData;
+use App\Mappers\ScheduleMapper;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
@@ -596,7 +597,7 @@ class JazzMapper
 
         $performances = [];
         foreach (($data['performances'] ?? []) as $performance) {
-            $performances[] = new ScheduleEventCardViewModel(...$performance);
+            $performances[] = ScheduleMapper::toEventCardViewModel($performance, '', '', '');
         }
 
         $data['albums'] = $albums;
