@@ -226,4 +226,12 @@ class EventRepository implements IEventRepository
         $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
         return $stmt->execute(['eventId' => $eventId]);
     }
+
+    public function findActiveEventByRestaurantId(int $restaurantId): ?Event
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM Event WHERE RestaurantId = :restaurantId AND IsActive = 1 LIMIT 1');
+        $stmt->execute(['restaurantId' => $restaurantId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? Event::fromRow($row) : null;
+    }
 }

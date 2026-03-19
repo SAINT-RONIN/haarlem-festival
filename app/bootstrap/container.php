@@ -36,7 +36,6 @@ use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\UserAccountRepository;
 use App\Repositories\ProgramRepository;
-use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
@@ -80,7 +79,6 @@ return static function (string $controllerClass): object {
     $priceTierRepository = new PriceTierRepository();
     $scheduleDayConfigRepository = new ScheduleDayConfigRepository();
     $restaurantRepository = new RestaurantRepository();
-    $restaurantImageRepository = new RestaurantImageRepository();
     $userAccountRepository = new UserAccountRepository();
     $passwordResetTokenRepository = new PasswordResetTokenRepository();
     $programRepository = new ProgramRepository();
@@ -134,7 +132,6 @@ return static function (string $controllerClass): object {
             new RestaurantService(
                 $cmsContent,
                 $restaurantRepository,
-                $restaurantImageRepository,
             ),
             $sessionService,
         ),

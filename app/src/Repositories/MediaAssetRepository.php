@@ -147,4 +147,5 @@ class MediaAssetRepository implements IMediaAssetRepository
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return array_map([MediaAsset::class, 'fromRow'], $rows);
     }
+
 }

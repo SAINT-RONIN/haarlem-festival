@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Constants\RestaurantPageConstants;
 use App\Models\Restaurant;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -66,15 +67,15 @@ final class RestaurantMapper
             website: $restaurant->website ?? '',
 
             aboutText:  str_replace('\n', "\n", $restaurant->aboutText ?? ''),
-            aboutImage: ($imagesByType['about'] ?? [])[0] ?? self::DEFAULT_IMAGE,
+            aboutImage: ($imagesByType[RestaurantPageConstants::IMAGE_TYPE_ABOUT] ?? [])[0] ?? self::DEFAULT_IMAGE,
 
             chefName:  $restaurant->chefName ?? '',
             chefText:  str_replace('\n', "\n", $restaurant->chefText ?? ''),
-            chefImage: ($imagesByType['chef'] ?? [])[0] ?? self::DEFAULT_IMAGE,
+            chefImage: ($imagesByType[RestaurantPageConstants::IMAGE_TYPE_CHEF] ?? [])[0] ?? self::DEFAULT_IMAGE,
 
             menuDescription: $restaurant->menuDescription ?? '',
             cuisineTags:     $cuisineTags,
-            menuImages:      $imagesByType['menu'] ?? [self::DEFAULT_IMAGE, self::DEFAULT_IMAGE],
+            menuImages:      $imagesByType[RestaurantPageConstants::IMAGE_TYPE_MENU] ?? [self::DEFAULT_IMAGE, self::DEFAULT_IMAGE],
 
             locationDescription: str_replace('\n', "\n", $restaurant->locationDescription ?? ''),
             mapEmbedUrl:         $restaurant->mapEmbedUrl ?? '',
@@ -84,9 +85,9 @@ final class RestaurantMapper
             durationMinutes:     $restaurant->durationMinutes ?? 0,
             specialRequestsNote: $restaurant->specialRequestsNote ?? '',
 
-            galleryImages: $imagesByType['gallery'] ?? [self::DEFAULT_IMAGE],
+            galleryImages: $imagesByType[RestaurantPageConstants::IMAGE_TYPE_GALLERY] ?? [self::DEFAULT_IMAGE],
 
-            reservationImage: ($imagesByType['reservation'] ?? [])[0] ?? self::DEFAULT_IMAGE,
+            reservationImage: ($imagesByType[RestaurantPageConstants::IMAGE_TYPE_RESERVATION] ?? [])[0] ?? self::DEFAULT_IMAGE,
             timeSlots:        $data['timeSlots'],
             priceCards:       $data['priceCards'],
 
