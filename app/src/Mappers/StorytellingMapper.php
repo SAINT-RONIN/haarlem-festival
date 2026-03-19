@@ -181,7 +181,7 @@ class StorytellingMapper
             $path = $img->imagePath;
             $images[] = new MasonryImageData(
                 imageUrl: ImageHelper::validatePath($path),
-                altText: ImageHelper::altTextFromFilename(basename($path), 'Storytelling moment'),
+                altText: ImageHelper::altTextFromFilename(basename($path)),
                 sizeClass: self::MASONRY_SIZE_CLASSES[$index] ?? 'masonry-medium',
             );
         }
@@ -198,7 +198,7 @@ class StorytellingMapper
             $path = (string)($content[sprintf('masonry_image_%02d', $i)] ?? '');
             $images[] = new MasonryImageData(
                 imageUrl: ImageHelper::validatePath($path),
-                altText: ImageHelper::altTextFromFilename(basename($path), 'Storytelling moment'),
+                altText: ImageHelper::altTextFromFilename(basename($path)),
                 sizeClass: self::MASONRY_SIZE_CLASSES[$i - 1] ?? 'masonry-medium',
             );
         }
@@ -208,8 +208,7 @@ class StorytellingMapper
     /**
      * Builds the ordered list of nav links for the detail page hero overlay.
      * The reason for this is because the detail hero renders its own inline nav that must mark the current page as active, which requires the mapper to set the active flag rather than the view.
-     */
-    /**
+     *
      * @return StorytellingDetailNavLinkData[]
      */
     private static function buildDetailNavLinks(GlobalUiData $globalUi): array
