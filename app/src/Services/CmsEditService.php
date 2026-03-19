@@ -59,6 +59,10 @@ class CmsEditService implements ICmsEditService
 
         foreach ($sections as $section) {
             /** @var CmsSection $section */
+            if ($eventNameMap !== [] && str_starts_with($section->sectionKey, 'event_') && !isset($eventNameMap[$section->sectionKey])) {
+                continue;
+            }
+
             $sectionItems = $itemsBySection[$section->cmsSectionId] ?? [];
             $sectionItems = $this->sortHeroImageFirst($sectionItems);
             $enrichedItems = $this->enrichItemsWithMetadata($sectionItems);
@@ -359,7 +363,7 @@ class CmsEditService implements ICmsEditService
      */
     private function buildEventNameMap(int $eventTypeId): array
     {
-        $events = $this->eventRepository->findEvents(['eventTypeId' => $eventTypeId]);
+        $events = $this->eventRepository->findEvents(['eventTypeId' => $eventTypeId, 'isActive' => true]);
         $map = [];
         foreach ($events as $event) {
             $map['event_' . $event->eventId] = $event->title;

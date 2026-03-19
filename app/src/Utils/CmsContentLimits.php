@@ -20,8 +20,8 @@ class CmsContentLimits
     public const BUTTON_MAX_CHARS = 50;
 
     // Image limits
-    public const IMAGE_MAX_WIDTH = 3840;  // 4K width
-    public const IMAGE_MAX_HEIGHT = 2160; // 4K height
+    public const IMAGE_MAX_WIDTH = 10000;  // 4K width
+    public const IMAGE_MAX_HEIGHT = 10000; // Allow tall images
     public const IMAGE_MAX_FILE_SIZE = 5242880; // 5MB in bytes
     public const IMAGE_ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
 
