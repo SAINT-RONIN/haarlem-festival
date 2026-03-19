@@ -496,7 +496,7 @@ class CmsEventsService implements ICmsEventsService
         $globalConfigs = [];
         $typeConfigs   = [];
         foreach ($dayConfigs as $config) {
-            if ($config->eventTypeId === null) {
+            if (!$config->eventTypeId) {
                 $globalConfigs[(int)$config->dayOfWeek] = $config;
             } else {
                 $typeConfigs[(int)$config->eventTypeId][(int)$config->dayOfWeek] = $config;

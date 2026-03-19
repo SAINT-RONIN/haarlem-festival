@@ -54,7 +54,7 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
 
         if (array_key_exists('eventTypeId', $filters)) {
             if ($filters['eventTypeId'] === null) {
-                $sql .= ' AND sdc.EventTypeId IS NULL';
+                $sql .= ' AND sdc.EventTypeId = 0';
             } else {
                 $sql .= ' AND sdc.EventTypeId = :eventTypeId';
                 $params['eventTypeId'] = (int)$filters['eventTypeId'];
@@ -65,7 +65,7 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
 
         $requestedOrder = is_string($filters['orderBy'] ?? null) ? (string)$filters['orderBy'] : 'scope';
         $allowedOrders = [
-            'scope' => ' ORDER BY sdc.EventTypeId IS NULL DESC, sdc.EventTypeId ASC, sdc.DayOfWeek ASC',
+            'scope' => ' ORDER BY (sdc.EventTypeId = 0) DESC, sdc.EventTypeId ASC, sdc.DayOfWeek ASC',
             'day' => ' ORDER BY sdc.DayOfWeek ASC',
         ];
         $sql .= $allowedOrders[$requestedOrder] ?? $allowedOrders['scope'];
@@ -87,7 +87,7 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
             ON DUPLICATE KEY UPDATE IsVisible = :isVisible2
         ');
         $stmt->execute([
-            'eventTypeId' => $eventTypeId,
+            'eventTypeId' => $eventTypeId ?? 0,
             'dayOfWeek' => $dayOfWeek,
             'isVisible' => $isVisible ? 1 : 0,
             'isVisible2' => $isVisible ? 1 : 0,
