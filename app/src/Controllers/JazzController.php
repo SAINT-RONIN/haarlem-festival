@@ -61,17 +61,15 @@ class JazzController extends BaseController
     public function detail(string $slug): void
     {
         try {
-            $data = $this->jazzArtistDetailService->getArtistPageDataBySlug($slug);
-            $eventId = (int)($data['eventId'] ?? 0);
+            $pageData = $this->jazzArtistDetailService->getArtistPageDataBySlug($slug);
             $scheduleData = $this->scheduleService->getScheduleData(
                 JazzArtistDetailConstants::SCHEDULE_PAGE_SLUG,
                 EventTypeId::Jazz->value,
                 JazzArtistDetailConstants::SCHEDULE_MAX_DAYS,
-                $eventId,
+                $pageData->eventId,
             );
             $performances = ScheduleMapper::flattenEvents($scheduleData);
-            $data['performances'] = $performances;
-            $viewModel = JazzMapper::toArtistDetailViewModel($data);
+            $viewModel = JazzMapper::toArtistDetailViewModel($pageData, $performances);
             $this->renderView(__DIR__ . '/../Views/pages/jazz-artist-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error, 404);

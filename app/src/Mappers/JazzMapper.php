@@ -6,6 +6,8 @@ namespace App\Mappers;
 
 use App\Constants\JazzArtistDetailConstants;
 use App\Constants\JazzPageConstants;
+use App\Models\JazzArtistDetailEvent;
+use App\Models\JazzArtistDetailPageData;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -83,20 +85,18 @@ class JazzMapper
     }
 
     /**
-     * @param array<string, mixed> $domain
+     * @param array<array<string, mixed>> $performances
      */
-    public static function toArtistDetailViewModel(array $domain): JazzArtistDetailPageViewModel
+    public static function toArtistDetailViewModel(JazzArtistDetailPageData $pageData, array $performances): JazzArtistDetailPageViewModel
     {
-        $event = is_array($domain['event'] ?? null) ? $domain['event'] : [];
-        $cms = is_array($domain['cms'] ?? null) ? $domain['cms'] : [];
+        $event = $pageData->event;
+        $cms = $pageData->cms;
 
-        $eventTitle = self::eventString($event, 'title', 'Title');
-        $eventShortDescription = self::eventString($event, 'shortDescription', 'ShortDescription');
         $mappedData = [
-            'heroTitle' => $eventTitle,
+            'heroTitle' => $event->title,
             'heroSubtitle' => self::coalesce(
                 self::cmsValue($cms, 'hero_subtitle'),
-                $eventShortDescription,
+                $event->shortDescription,
             ),
             'heroBackgroundImageUrl' => self::cmsValue($cms, 'hero_background_image'),
             'originText' => self::cmsValue($cms, 'origin_text'),
@@ -105,14 +105,14 @@ class JazzMapper
             'heroBackButtonText' => self::cmsValue($cms, 'hero_back_button_text'),
             'heroBackButtonUrl' => self::cmsValue($cms, 'hero_back_button_url'),
             'heroReserveButtonText' => self::cmsValue($cms, 'hero_reserve_button_text'),
-            'overviewHeading' => self::coalesce(self::cmsValue($cms, 'overview_heading'), $eventTitle),
+            'overviewHeading' => self::coalesce(self::cmsValue($cms, 'overview_heading'), $event->title),
             'overviewLead' => self::coalesce(
                 self::cmsValue($cms, 'overview_lead'),
-                $eventShortDescription,
+                $event->shortDescription,
             ),
             'overviewBodyPrimary' => self::coalesce(
                 self::cmsValue($cms, 'overview_body_primary'),
-                self::buildPrimaryOverviewFallback($event),
+                self::buildPrimaryOverviewFallbackFromModel($event),
             ),
             'overviewBodySecondary' => self::cmsValue($cms, 'overview_body_secondary'),
             'lineupHeading' => self::cmsValue($cms, 'lineup_heading'),
@@ -155,7 +155,7 @@ class JazzMapper
             'performancesSectionId' => self::cmsValue($cms, 'performances_section_id'),
             'performancesHeading' => self::cmsValue($cms, 'performances_heading'),
             'performancesDescription' => self::cmsValue($cms, 'performances_description'),
-            'performances' => is_array($domain['performances'] ?? null) ? $domain['performances'] : [],
+            'performances' => $performances,
         ];
 
         return self::fromMappedArtistData($mappedData);
@@ -675,14 +675,13 @@ class JazzMapper
         return $values;
     }
 
-    private static function buildPrimaryOverviewFallback(array $event): string
+    private static function buildPrimaryOverviewFallbackFromModel(JazzArtistDetailEvent $event): string
     {
-        $descriptionHtml = self::eventString($event, 'longDescriptionHtml', 'LongDescriptionHtml');
-        if ($descriptionHtml === '') {
+        if ($event->longDescriptionHtml === '') {
             return '';
         }
 
-        return trim(strip_tags($descriptionHtml));
+        return trim(strip_tags($event->longDescriptionHtml));
     }
 
     private static function cmsValue(array $content, string $key): string
@@ -696,9 +695,4 @@ class JazzMapper
         return $value !== '' ? $value : $fallback;
     }
 
-    private static function eventString(array $event, string $camelCaseKey, string $legacyKey): string
-    {
-        $value = $event[$camelCaseKey] ?? $event[$legacyKey] ?? null;
-        return is_string($value) ? $value : '';
-    }
 }
