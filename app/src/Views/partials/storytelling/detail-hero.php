@@ -105,9 +105,9 @@ $isLoggedIn = $globalUi->isLoggedIn;
         </div>
 
         <div class="self-stretch flex flex-col justify-start items-start">
-            <div class="px-3 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-2 sm:py-3 md:py-4 lg:py-5
-                        bg-sand rounded-tr-[12px] sm:rounded-tr-[25px] md:rounded-tr-[35px]
-                        inline-flex flex-wrap justify-start items-center gap-2 sm:gap-3 md:gap-5">
+            <div class="pl-2 sm:pl-3 md:pl-4 lg:pl-16 xl:pl-24 pr-2 sm:pr-3 md:pr-4 py-2 sm:py-3 md:py-4
+                        bg-sand rounded-tr-[12px] sm:rounded-tr-[15px] md:rounded-tr-[25px] lg:rounded-tr-[35px]
+                        flex flex-wrap justify-start items-center gap-2.5 sm:gap-4">
                 <a href="<?= htmlspecialchars($hero->backButtonUrl) ?>"
                    class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3.5
                           bg-royal-blue hover:bg-red rounded-lg sm:rounded-xl md:rounded-2xl
