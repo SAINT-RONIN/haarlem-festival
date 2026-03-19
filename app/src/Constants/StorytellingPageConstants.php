@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Constants;
 
+/**
+ * Groups all magic values used across the Storytelling overview page feature.
+ * The reason for this is because scattering string literals like page slugs and section keys through services and mappers makes refactoring fragile, so one central constants class is the single source of truth.
+ */
 final class StorytellingPageConstants
 {
     public const PAGE_SLUG = 'storytelling';

@@ -129,7 +129,7 @@ class ScheduleService implements IScheduleService
 
             // For History, group sessions by time slot and merge language labels
             if ($eventTypeId === EventTypeId::History->value) {
-                $daySessions = $this->groupSessionsByTimeSlot($daySessions, $labelsMap);
+                [$daySessions, $labelsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap);
             }
 
             foreach ($daySessions as $session) {
@@ -164,7 +164,7 @@ class ScheduleService implements IScheduleService
      *
      * @param array $sessions Sessions for a single day
      * @param array $labelsMap Pre-loaded labels indexed by session ID
-     * @return array Merged sessions (one per time slot)
+     * @return array{0: array, 1: array} [groupedSessions, updatedLabelsMap]
      */
     private function groupSessionsByTimeSlot(array $sessions, array $labelsMap): array
     {
@@ -193,7 +193,7 @@ class ScheduleService implements IScheduleService
                 }
             }
         }
-        return array_values($grouped);
+        return [array_values($grouped), $labelsMap];
     }
 
     /**

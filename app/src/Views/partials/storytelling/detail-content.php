@@ -1,6 +1,10 @@
 <?php
 /**
- * Storytelling detail content sections.
+ * Renders the main content sections for a storytelling event detail page:
+ * about (text + images), highlights (feature cards), gallery, and video.
+ * The reason for this is because these four sections form the editorial body of the
+ * detail page and are kept together as one partial to separate content from
+ * the hero and schedule sections that surround them.
  *
  * @var \App\ViewModels\Storytelling\StorytellingDetailPageViewModel $viewModel
  */
@@ -28,7 +32,7 @@ $video = $viewModel->videoSection;
             <?= htmlspecialchars($about->heading) ?>
         </h2>
         <div class="text-royal-blue text-base sm:text-lg md:text-xl font-normal leading-7 sm:leading-8">
-            <?= $about->bodyHtml ?>
+            <?= $about->bodyHtml /* trusted CMS HTML — sanitised at input */ ?>
         </div>
     </div>
 </section>

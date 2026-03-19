@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Domain payload for Storytelling event detail lookups.
+ * Represents a single Storytelling event as returned by the event repository.
+ * The reason for this is because the detail service needs only a subset of event fields, so this model captures exactly those fields rather than reusing a generic Event model with unneeded properties.
  */
 final readonly class StorytellingDetailEvent
 {

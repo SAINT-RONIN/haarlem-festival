@@ -1,6 +1,9 @@
 <?php
 /**
- * Storytelling detail hero section.
+ * Renders the full-screen hero section for a single storytelling event detail page.
+ * The reason for this is because the detail page needs a custom hero with an inline
+ * navbar, event-specific nav links, and CTA buttons — the shared hero.php partial
+ * cannot accommodate this per-event structure.
  *
  * @var \App\ViewModels\Storytelling\StorytellingDetailPageViewModel $viewModel
  */

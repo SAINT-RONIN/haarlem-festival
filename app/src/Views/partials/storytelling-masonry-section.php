@@ -1,12 +1,11 @@
 <?php
 /**
- * Masonry section partial for storytelling page.
+ * Renders the masonry image grid section on the Storytelling overview page.
+ * The reason for this is because the masonry layout is a visually distinct,
+ * self-contained section that would make the overview page template harder to
+ * read if its column and image logic were inlined there.
  *
- * True masonry-style layout using CSS multi-column.
- * Responsive: 1 column mobile, 2 columns tablet, 4 columns desktop.
- *
- * Required variable (set before including this partial):
- * @var \App\ViewModels\Storytelling\MasonrySectionData $masonrySection
+ * @var \App\ViewModels\Storytelling\StorytellingPageViewModel $viewModel
  */
 
 $masonrySection = $viewModel->masonrySection;

@@ -27,6 +27,9 @@ class StorytellingDetailService implements IStorytellingDetailService
     }
 
     /**
+     * Assembles the full domain payload for a storytelling event detail page.
+     * The reason for this is because all repository calls and resolution logic must stay in the service so the controller stays thin and the mapper receives a ready-to-use model.
+     *
      * @throws \RuntimeException if the event is not found or not a storytelling event
      */
     public function getDetailPageData(int $eventId): StorytellingDetailPageData
@@ -43,10 +46,15 @@ class StorytellingDetailService implements IStorytellingDetailService
             featuredImagePath: $this->fetchFeaturedImagePath($event),
             labels: $this->fetchEventLabels($event->eventId),
             aboutBody: $this->resolveAboutBody($cms, $event),
+            // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
+            globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
         );
     }
 
     /**
+     * Fetches the event from the repository and verifies it belongs to the Storytelling event type.
+     * The reason for this is because the guard must live in the service — the controller has no knowledge of event types.
+     *
      * @throws \RuntimeException if the event does not exist or is not a storytelling event
      */
     private function findStorytellingEvent(int $eventId): StorytellingDetailEvent
@@ -67,6 +75,10 @@ class StorytellingDetailService implements IStorytellingDetailService
         );
     }
 
+    /**
+     * Resolves the file path for the event's featured image asset.
+     * The reason for this is because the image asset ID stored on the event must be converted to a path before the mapper can use it.
+     */
     private function fetchFeaturedImagePath(StorytellingDetailEvent $event): ?string
     {
         if ($event->featuredImageAssetId === null) {
@@ -78,6 +90,10 @@ class StorytellingDetailService implements IStorytellingDetailService
         return $asset?->filePath;
     }
 
+    /**
+     * Returns the best available about-section body text, falling back from CMS to event descriptions.
+     * The reason for this is because content editors may not always fill the CMS field, so the service provides a sensible fallback chain before the mapper receives the data.
+     */
     private function resolveAboutBody(array $cms, StorytellingDetailEvent $event): string
     {
         if (!empty($cms['about_body'])) {
@@ -97,6 +113,7 @@ class StorytellingDetailService implements IStorytellingDetailService
 
     /**
      * Fetches label texts for the first active session of an event.
+     * The reason for this is because labels (e.g. "English", "Beginner") live on sessions, not on the event itself, so they must be fetched separately and attached to the page payload.
      *
      * @return string[]
      */
