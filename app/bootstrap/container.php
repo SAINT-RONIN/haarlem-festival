@@ -15,6 +15,7 @@ use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
+use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
 use App\Http\Requests\StripeWebhookRequestFactory;
 use App\Infrastructure\CheckoutRuntimeConfig;
@@ -267,6 +268,9 @@ return static function (string $controllerClass): object {
         CmsUsersController::class => new CmsUsersController(
             new CmsUsersService(new CmsUsersRepository(Database::getConnection())),
             $sessionService,
+        ),
+        ScheduleApiController::class => new ScheduleApiController(
+            $scheduleService,
         ),
         default => new $controllerClass(),
     };

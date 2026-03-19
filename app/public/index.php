@@ -41,6 +41,7 @@ use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
+use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
 use App\Services\SessionService;
 use FastRoute\Dispatcher;
@@ -130,6 +131,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/venues', [CmsEventsController::class, 'createVenue']);
     $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
     $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
+
+    // Schedule API
+    $r->addRoute('GET', '/api/schedule/{pageSlug:[a-z]+}', [ScheduleApiController::class, 'getScheduleHtml']);
 
     // CMS Media Routes
     $r->addRoute('GET', '/cms/media', [CmsMediaController::class, 'index']);

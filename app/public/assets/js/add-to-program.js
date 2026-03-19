@@ -7,12 +7,15 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function initAddToProgramButtons() {
-    document.querySelectorAll('[data-event-session-id]').forEach(function (btn) {
+    document.querySelectorAll('[data-event-session-id]:not([data-atp-init])').forEach(function (btn) {
+        btn.setAttribute('data-atp-init', '1');
         btn.addEventListener('click', function () {
             showCounterWidget(btn);
         });
     });
 }
+
+window.initAddToProgramButtons = initAddToProgramButtons;
 
 function showCounterWidget(originalBtn) {
     var sessionId = parseInt(originalBtn.getAttribute('data-event-session-id'), 10);
