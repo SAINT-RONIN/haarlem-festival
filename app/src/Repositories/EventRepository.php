@@ -97,15 +97,10 @@ class EventRepository implements IEventRepository
         return array_map([EventWithDetails::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent
+    private function queryActiveEventBySlug(string $slug, EventTypeId $eventType): ?array
     {
         $stmt = $this->pdo->prepare('
-            SELECT
-                e.EventId,
-                e.Title,
-                e.ShortDescription,
-                e.LongDescriptionHtml,
-                e.Slug
+            SELECT *
             FROM Event e
             WHERE e.EventTypeId = :eventTypeId
               AND e.IsActive = 1
@@ -114,38 +109,24 @@ class EventRepository implements IEventRepository
         ');
 
         $stmt->execute([
-            'eventTypeId' => EventTypeId::Jazz->value,
+            'eventTypeId' => $eventType->value,
             'slug' => $slug,
         ]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return is_array($row) ? JazzArtistDetailEvent::fromRow($row) : null;
+        return is_array($row) ? $row : null;
+    }
+
+    public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent
+    {
+        $row = $this->queryActiveEventBySlug($slug, EventTypeId::Jazz);
+        return $row !== null ? JazzArtistDetailEvent::fromRow($row) : null;
     }
 
     public function findActiveStorytellingBySlug(string $slug): ?StorytellingDetailEvent
     {
-        $stmt = $this->pdo->prepare('
-            SELECT
-                e.EventId,
-                e.Title,
-                e.ShortDescription,
-                e.LongDescriptionHtml,
-                e.FeaturedImageAssetId,
-                e.Slug
-            FROM Event e
-            WHERE e.EventTypeId = :eventTypeId
-              AND e.IsActive = 1
-              AND e.Slug = :slug
-            LIMIT 1
-        ');
-
-        $stmt->execute([
-            'eventTypeId' => EventTypeId::Storytelling->value,
-            'slug' => $slug,
-        ]);
-
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return is_array($row) ? StorytellingDetailEvent::fromRow($row) : null;
+        $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
+        return $row !== null ? StorytellingDetailEvent::fromRow($row) : null;
     }
 
     private function dayNameToNumber(string $dayName): ?int

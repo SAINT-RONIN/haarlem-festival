@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\StorytellingDetailConstants;
+use App\Exceptions\StorytellingEventNotFoundException;
 use App\Models\StorytellingDetailEvent;
 use App\Models\StorytellingDetailPageData;
 use App\Repositories\Interfaces\IEventRepository;
@@ -29,39 +30,49 @@ class StorytellingDetailService implements IStorytellingDetailService
      * Assembles the full domain payload for a storytelling event detail page.
      * The reason for this is because all repository calls and resolution logic must stay in the service so the controller stays thin and the mapper receives a ready-to-use model.
      *
-     * @throws \RuntimeException if the event is not found or slug is invalid
+     * @throws StorytellingEventNotFoundException if the event is not found or slug is invalid
      */
     public function getDetailPageData(string $slug): StorytellingDetailPageData
     {
         $normalizedSlug = $this->normalizeSlug($slug);
         $event = $this->findStorytellingEventBySlug($normalizedSlug);
-        $eventId = $event->eventId;
-        $cms = $this->cmsService->getSectionContent(
+        $cms = $this->fetchCmsContent($event->eventId);
+
+        return $this->buildPageData($event, $cms);
+    }
+
+    private function fetchCmsContent(int $eventId): array
+    {
+        return $this->cmsService->getSectionContent(
             StorytellingDetailConstants::DETAIL_PAGE_SLUG,
             StorytellingDetailConstants::eventSectionKey($eventId),
         );
+    }
 
+    private function buildPageData(StorytellingDetailEvent $event, array $cms): StorytellingDetailPageData
+    {
         return new StorytellingDetailPageData(
             event: $event,
             cms: $cms,
             featuredImagePath: $this->fetchFeaturedImagePath($event),
-            labels: $this->fetchEventLabels($eventId),
+            labels: $this->fetchEventLabels($event->eventId),
             aboutBody: $this->resolveAboutBody($cms, $event),
             // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
             globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
+            scheduleCtaButtonText: (string)($cms['schedule_cta_button_text'] ?? ''),
         );
     }
 
     /**
      * Normalizes the slug to lowercase with no leading/trailing dashes.
      *
-     * @throws \RuntimeException if the slug is empty or contains a path separator
+     * @throws StorytellingEventNotFoundException if the slug is empty or contains a path separator
      */
     private function normalizeSlug(string $slug): string
     {
         $normalized = trim(strtolower(rawurldecode($slug)));
         if ($normalized === '' || str_contains($normalized, '/')) {
-            throw new \RuntimeException("Invalid storytelling event slug.");
+            throw new StorytellingEventNotFoundException($slug);
         }
         return trim($normalized, '-');
     }
@@ -69,13 +80,13 @@ class StorytellingDetailService implements IStorytellingDetailService
     /**
      * Fetches the storytelling event by slug, throwing if not found.
      *
-     * @throws \RuntimeException if no active storytelling event matches the slug
+     * @throws StorytellingEventNotFoundException if no active storytelling event matches the slug
      */
     private function findStorytellingEventBySlug(string $slug): StorytellingDetailEvent
     {
         $event = $this->eventRepository->findActiveStorytellingBySlug($slug);
         if ($event === null) {
-            throw new \RuntimeException("Storytelling event not found: {$slug}");
+            throw new StorytellingEventNotFoundException($slug);
         }
         return $event;
     }
@@ -101,19 +112,9 @@ class StorytellingDetailService implements IStorytellingDetailService
      */
     private function resolveAboutBody(array $cms, StorytellingDetailEvent $event): string
     {
-        if (!empty($cms['about_body'])) {
-            return $cms['about_body'];
-        }
-
-        if (!empty($event->longDescriptionHtml)) {
-            return $event->longDescriptionHtml;
-        }
-
-        if (!empty($event->shortDescription)) {
-            return $event->shortDescription;
-        }
-
-        return '';
+        return !empty($cms['about_body'])
+            ? $cms['about_body']
+            : ($event->longDescriptionHtml ?: $event->shortDescription ?: '');
     }
 
     /**
@@ -129,24 +130,24 @@ class StorytellingDetailService implements IStorytellingDetailService
             'isActive' => true,
         ]);
         $sessionList = $sessions['sessions'] ?? [];
-
         if (empty($sessionList)) {
             return [];
         }
+        return $this->fetchLabelTextsForSession($sessionList[0]->eventSessionId);
+    }
 
-        $firstSessionId = $sessionList[0]->eventSessionId;
+    /**
+     * @return string[]
+     */
+    private function fetchLabelTextsForSession(int $sessionId): array
+    {
         $labelsMap = $this->labelRepository->findLabels([
-            'sessionIds' => [$firstSessionId],
+            'sessionIds' => [$sessionId],
             'groupBySession' => true,
         ]);
-
-        $labels = $labelsMap[$firstSessionId] ?? [];
-        $labelTexts = [];
-
-        foreach ($labels as $label) {
-            $labelTexts[] = $label->labelText;
-        }
-
-        return $labelTexts;
+        return array_map(
+            fn($label) => $label->labelText,
+            $labelsMap[$sessionId] ?? [],
+        );
     }
 }

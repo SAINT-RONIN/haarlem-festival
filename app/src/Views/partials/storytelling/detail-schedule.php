@@ -142,3 +142,4 @@ if ($schedule === null || empty($schedule->days)) {
         <?php endforeach; ?>
     </div>
 </section>
+<script src="/assets/js/add-to-program.js"></script>

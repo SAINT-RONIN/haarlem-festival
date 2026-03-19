@@ -55,14 +55,12 @@ class StorytellingController extends BaseController
     {
         try {
             $pageData = $this->storytellingDetailService->getDetailPageData($slug);
-            $eventId = $pageData->event->eventId;
-            $detailCtaText = $pageData->cms['schedule_cta_button_text'] ?? null;
             $scheduleData = $this->scheduleService->getScheduleData(
                 StorytellingDetailConstants::SCHEDULE_PAGE_SLUG,
                 EventTypeId::Storytelling->value,
                 StorytellingDetailConstants::SCHEDULE_MAX_DAYS,
-                $eventId,
-                $detailCtaText,
+                $pageData->event->eventId,
+                $pageData->scheduleCtaButtonText ?: null,
             );
             $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
             $isLoggedIn = $this->sessionService->isLoggedIn();
