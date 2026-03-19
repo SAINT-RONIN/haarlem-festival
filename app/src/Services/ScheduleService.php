@@ -13,12 +13,12 @@ use App\Models\EventSessionLabelFilter;
 use App\Models\EventSessionPrice;
 use App\Models\EventSessionPriceFilter;
 use App\Models\ScheduleFilterParams;
-use App\Repositories\CmsContentRepository;
-use App\Repositories\EventSessionLabelRepository;
-use App\Repositories\EventSessionPriceRepository;
-use App\Repositories\EventSessionRepository;
-use App\Repositories\EventTypeRepository;
-use App\Repositories\ScheduleDayConfigRepository;
+use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IEventSessionLabelRepository;
+use App\Repositories\Interfaces\IEventSessionPriceRepository;
+use App\Repositories\Interfaces\IEventSessionRepository;
+use App\Repositories\Interfaces\IEventTypeRepository;
+use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Services\Interfaces\IScheduleService;
 use App\Helpers\AgeLabelFormatter;
 
@@ -30,12 +30,12 @@ use App\Helpers\AgeLabelFormatter;
 class ScheduleService implements IScheduleService
 {
     public function __construct(
-        private CmsContentRepository $cmsService,
-        private EventSessionRepository $sessionRepository,
-        private EventSessionLabelRepository $labelRepository,
-        private EventSessionPriceRepository $priceRepository,
-        private EventTypeRepository $eventTypeRepository,
-        private ScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private ICmsContentRepository $cmsService,
+        private IEventSessionRepository $sessionRepository,
+        private IEventSessionLabelRepository $labelRepository,
+        private IEventSessionPriceRepository $priceRepository,
+        private IEventTypeRepository $eventTypeRepository,
+        private IScheduleDayConfigRepository $scheduleDayConfigRepository,
     ) {
     }
 

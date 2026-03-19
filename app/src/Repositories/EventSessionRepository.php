@@ -113,10 +113,12 @@ class EventSessionRepository implements IEventSessionRepository
         }
 
         if ($filters->priceType !== null) {
+            $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
             match ($filters->priceType) {
-                'pay-what-you-like' => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = ' . PriceTierId::PayWhatYouLike->value . ')',
+                'pay-what-you-like' => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = :pwylTierId)',
                 'free'              => $conditions[] = '(es.IsFree = 1 OR NOT EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0))',
-                'fixed'             => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != ' . PriceTierId::PayWhatYouLike->value . ')',
+                'fixed'             => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != :pwylTierId)',
+                default             => null,
             };
         }
 

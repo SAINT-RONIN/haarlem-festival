@@ -79,6 +79,10 @@ class CmsDashboardMapper
         );
     }
 
+    /**
+     * @param array{page: CmsPage, sections: array} $pageData
+     * @return array{page: array{id: int, title: string, slug: string}, sections: array, contentLimits: array, imageLimits: array}
+     */
     public static function toPageEditViewData(array $pageData): array
     {
         return [
