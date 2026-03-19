@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Enums\EventTypeId;
 use App\Infrastructure\Database;
 use App\Models\Event;
+use App\Models\EventFilter;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\StorytellingDetailEvent;
@@ -22,13 +23,17 @@ class EventRepository implements IEventRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findEvents(array $filters = []): array
+    public function findEvents(EventFilter|array $filters = new EventFilter()): array
     {
-        $includeSessionCount = (bool)($filters['includeSessionCount'] ?? false);
-        $isActive = array_key_exists('isActive', $filters) ? (bool)$filters['isActive'] : null;
-        $eventTypeId = $filters['eventTypeId'] ?? null;
-        $dayOfWeek = $filters['dayOfWeek'] ?? null;
-        $eventId = $filters['eventId'] ?? null;
+        if (is_array($filters)) {
+            $filters = EventFilter::fromArray($filters);
+        }
+
+        $includeSessionCount = (bool)($filters->includeSessionCount ?? false);
+        $isActive = $filters->isActive;
+        $eventTypeId = $filters->eventTypeId;
+        $dayOfWeek = $filters->dayOfWeek;
+        $eventId = $filters->eventId;
 
         $select = '
             SELECT DISTINCT

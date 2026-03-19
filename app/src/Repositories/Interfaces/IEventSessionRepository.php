@@ -4,29 +4,15 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\EventSessionFilter;
+
 interface IEventSessionRepository
 {
     /**
-     * @param array{
-     *   eventId?: int,
-     *   eventTypeId?: int,
-     *   sessionId?: int,
-     *   sessionIds?: int[],
-     *   isActive?: bool,
-     *   includeCancelled?: bool,
-     *   orderBy?: string,
-     *   maxDays?: int,
-     *   startDate?: string,
-     *   endDate?: string,
-     *   visibleDays?: array<int>,
-     *   groupByDay?: bool,
-     *   includeEventType?: bool,
-     *   includeVenue?: bool,
-     *   includeArtist?: bool
-     * } $filters
-     * @return array<string, mixed>
+     * @param EventSessionFilter|array<string, mixed> $filters
+     * @return array{days?: \App\Models\ScheduleDayData[], sessions: \App\Models\SessionWithEvent[]}
      */
-    public function findSessions(array $filters = []): array;
+    public function findSessions(EventSessionFilter|array $filters = new EventSessionFilter()): array;
 
     public function create(array $data): int;
 

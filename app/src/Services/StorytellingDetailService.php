@@ -13,6 +13,8 @@ use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Models\EventSessionFilter;
+use App\Models\EventSessionLabelFilter;
 use App\Services\Interfaces\IStorytellingDetailService;
 
 class StorytellingDetailService implements IStorytellingDetailService
@@ -125,10 +127,9 @@ class StorytellingDetailService implements IStorytellingDetailService
      */
     private function fetchEventLabels(int $eventId): array
     {
-        $sessions = $this->sessionRepository->findSessions([
-            'eventId' => $eventId,
-            'isActive' => true,
-        ]);
+        $sessions = $this->sessionRepository->findSessions(
+            new EventSessionFilter(eventId: $eventId, isActive: true),
+        );
         $sessionList = $sessions['sessions'] ?? [];
         if (empty($sessionList)) {
             return [];
@@ -141,10 +142,9 @@ class StorytellingDetailService implements IStorytellingDetailService
      */
     private function fetchLabelTextsForSession(int $sessionId): array
     {
-        $labelsMap = $this->labelRepository->findLabels([
-            'sessionIds' => [$sessionId],
-            'groupBySession' => true,
-        ]);
+        $labelsMap = $this->labelRepository->findLabels(
+            new EventSessionLabelFilter(sessionIds: [$sessionId], groupBySession: true),
+        );
         return array_map(
             fn($label) => $label->labelText,
             $labelsMap[$sessionId] ?? [],

@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionPrice;
+use App\Models\EventSessionPriceFilter;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use PDO;
 
@@ -21,8 +22,12 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findPrices(array $filters = []): array
+    public function findPrices(EventSessionPriceFilter|array $filters = new EventSessionPriceFilter()): array
     {
+        if (is_array($filters)) {
+            $filters = EventSessionPriceFilter::fromArray($filters);
+        }
+
         $sql = '
             SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate
             FROM EventSessionPrice
@@ -30,12 +35,12 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
         ';
         $params = [];
 
-        if (isset($filters['sessionId'])) {
+        if ($filters->sessionId !== null) {
             $sql .= ' AND EventSessionId = :sessionId';
-            $params['sessionId'] = (int)$filters['sessionId'];
+            $params['sessionId'] = $filters->sessionId;
         }
 
-        $sessionIds = $filters['sessionIds'] ?? null;
+        $sessionIds = $filters->sessionIds;
         if (is_array($sessionIds)) {
             $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
             if ($normalizedIds === []) {
@@ -59,7 +64,7 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $prices = array_map([EventSessionPrice::class, 'fromRow'], $rows);
 
-        $groupBySession = (bool)($filters['groupBySession'] ?? false);
+        $groupBySession = (bool)($filters->groupBySession ?? false);
         if (!$groupBySession) {
             return $prices;
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\EventSessionPrice;
+use App\Models\EventSessionPriceFilter;
 
 /**
  * Interface for EventSessionPrice repository operations.
@@ -14,14 +15,10 @@ interface IEventSessionPriceRepository
     /**
      * Find prices using optional filters.
      *
-     * @param array{
-     *   sessionId?: int,
-     *   sessionIds?: array<int>,
-     *   groupBySession?: bool
-     * } $filters
+     * @param EventSessionPriceFilter|array<string, mixed> $filters
      * @return EventSessionPrice[]|array<int, EventSessionPrice[]>
      */
-    public function findPrices(array $filters = []): array;
+    public function findPrices(EventSessionPriceFilter|array $filters = new EventSessionPriceFilter()): array;
 
     /**
      * Create or update a price for a session and tier.

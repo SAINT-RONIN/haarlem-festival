@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
 use App\Models\SessionWithEvent;
 use App\Repositories\Interfaces\IEventSessionRepository;
@@ -19,29 +20,33 @@ class EventSessionRepository implements IEventSessionRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findSessions(array $filters = []): array
+    public function findSessions(EventSessionFilter|array $filters = new EventSessionFilter()): array
     {
+        if (is_array($filters)) {
+            $filters = EventSessionFilter::fromArray($filters);
+        }
+
         $conditions = [];
         $params = [];
 
-        if (isset($filters['eventId'])) {
+        if ($filters->eventId !== null) {
             $conditions[] = 'es.EventId = :eventId';
-            $params['eventId'] = (int)$filters['eventId'];
+            $params['eventId'] = $filters->eventId;
         }
 
-        if (isset($filters['eventTypeId'])) {
+        if ($filters->eventTypeId !== null) {
             $conditions[] = 'e.EventTypeId = :eventTypeId';
-            $params['eventTypeId'] = (int)$filters['eventTypeId'];
+            $params['eventTypeId'] = $filters->eventTypeId;
         }
 
-        if (isset($filters['sessionId'])) {
+        if ($filters->sessionId !== null) {
             $conditions[] = 'es.EventSessionId = :sessionId';
-            $params['sessionId'] = (int)$filters['sessionId'];
+            $params['sessionId'] = $filters->sessionId;
         }
 
-        if (isset($filters['sessionIds']) && is_array($filters['sessionIds']) && $filters['sessionIds'] !== []) {
+        if ($filters->sessionIds !== null && $filters->sessionIds !== []) {
             $sessionIdPlaceholders = [];
-            foreach ($filters['sessionIds'] as $index => $sid) {
+            foreach ($filters->sessionIds as $index => $sid) {
                 $key = 'sessionId_' . $index;
                 $sessionIdPlaceholders[] = ':' . $key;
                 $params[$key] = (int)$sid;
@@ -49,40 +54,40 @@ class EventSessionRepository implements IEventSessionRepository
             $conditions[] = 'es.EventSessionId IN (' . implode(',', $sessionIdPlaceholders) . ')';
         }
 
-        if (array_key_exists('isActive', $filters)) {
+        if ($filters->isActive !== null) {
             $conditions[] = 'es.IsActive = :isActive';
-            $params['isActive'] = ((bool)$filters['isActive']) ? 1 : 0;
+            $params['isActive'] = $filters->isActive ? 1 : 0;
         }
 
-        $includeCancelled = (bool)($filters['includeCancelled'] ?? false);
+        $includeCancelled = (bool)($filters->includeCancelled ?? false);
         if (!$includeCancelled) {
             $conditions[] = 'es.IsCancelled = 0';
         }
 
-        if (isset($filters['eventIsActive'])) {
+        if ($filters->eventIsActive !== null) {
             $conditions[] = 'e.IsActive = :eventIsActive';
-            $params['eventIsActive'] = ((bool)$filters['eventIsActive']) ? 1 : 0;
+            $params['eventIsActive'] = $filters->eventIsActive ? 1 : 0;
         }
 
-        if (isset($filters['startDate']) && is_string($filters['startDate']) && $filters['startDate'] !== '') {
+        if ($filters->startDate !== null) {
             $conditions[] = 'DATE(es.StartDateTime) >= :startDate';
-            $params['startDate'] = $filters['startDate'];
+            $params['startDate'] = $filters->startDate;
         }
 
-        if (isset($filters['endDate']) && is_string($filters['endDate']) && $filters['endDate'] !== '') {
+        if ($filters->endDate !== null) {
             $conditions[] = 'DATE(es.StartDateTime) <= :endDate';
-            $params['endDate'] = $filters['endDate'];
+            $params['endDate'] = $filters->endDate;
         }
 
-        if (isset($filters['dayOfWeek']) && is_string($filters['dayOfWeek']) && $filters['dayOfWeek'] !== '') {
-            $dayNumber = $this->dayNameToNumber($filters['dayOfWeek']);
+        if ($filters->dayOfWeek !== null && $filters->dayOfWeek !== '') {
+            $dayNumber = $this->dayNameToNumber($filters->dayOfWeek);
             if ($dayNumber !== null) {
                 $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
                 $params['dayOfWeekNum'] = $dayNumber;
             }
         }
 
-        $visibleDays = $filters['visibleDays'] ?? null;
+        $visibleDays = $filters->visibleDays;
         if (is_array($visibleDays)) {
             if ($visibleDays === []) {
                 // Explicitly no visible days configured: force an empty result set.
@@ -99,7 +104,7 @@ class EventSessionRepository implements IEventSessionRepository
         }
 
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
-        $requestedOrderBy = is_string($filters['orderBy'] ?? null) ? $filters['orderBy'] : '';
+        $requestedOrderBy = is_string($filters->orderBy) ? $filters->orderBy : '';
         $allowedOrderBy = [
             'es.StartDateTime ASC',
             'es.StartDateTime DESC',
@@ -118,9 +123,9 @@ class EventSessionRepository implements IEventSessionRepository
             LEFT JOIN MediaAsset ma ON a.ImageAssetId = ma.MediaAssetId
         ';
 
-        $groupByDay = (bool)($filters['groupByDay'] ?? false);
+        $groupByDay = (bool)($filters->groupByDay ?? false);
         if ($groupByDay) {
-            $maxDays = (int)($filters['maxDays'] ?? 7);
+            $maxDays = (int)($filters->maxDays ?? 7);
             if ($maxDays <= 0) {
                 $maxDays = 7;
             }

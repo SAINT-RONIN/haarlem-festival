@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionLabel;
+use App\Models\EventSessionLabelFilter;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use PDO;
 
@@ -21,8 +22,12 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findLabels(array $filters = []): array
+    public function findLabels(EventSessionLabelFilter|array $filters = new EventSessionLabelFilter()): array
     {
+        if (is_array($filters)) {
+            $filters = EventSessionLabelFilter::fromArray($filters);
+        }
+
         $sql = '
             SELECT EventSessionLabelId, EventSessionId, LabelText
             FROM EventSessionLabel
@@ -30,12 +35,12 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
         ';
         $params = [];
 
-        if (isset($filters['sessionId'])) {
+        if ($filters->sessionId !== null) {
             $sql .= ' AND EventSessionId = :sessionId';
-            $params['sessionId'] = (int)$filters['sessionId'];
+            $params['sessionId'] = $filters->sessionId;
         }
 
-        $sessionIds = $filters['sessionIds'] ?? null;
+        $sessionIds = $filters->sessionIds;
         if (is_array($sessionIds)) {
             $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
             if ($normalizedIds === []) {
@@ -59,7 +64,7 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $labels = array_map([EventSessionLabel::class, 'fromRow'], $rows);
 
-        $groupBySession = (bool)($filters['groupBySession'] ?? false);
+        $groupBySession = (bool)($filters->groupBySession ?? false);
         if (!$groupBySession) {
             return $labels;
         }

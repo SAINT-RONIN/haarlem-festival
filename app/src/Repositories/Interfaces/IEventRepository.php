@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Event;
+use App\Models\EventFilter;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\StorytellingDetailEvent;
@@ -12,16 +13,10 @@ use App\Models\StorytellingDetailEvent;
 interface IEventRepository
 {
     /**
-     * @param array{
-     *   eventTypeId?: int,
-     *   dayOfWeek?: string,
-     *   isActive?: bool,
-     *   includeSessionCount?: bool,
-     *   eventId?: int
-     * } $filters
+     * @param EventFilter|array<string, mixed> $filters
      * @return EventWithDetails[]
      */
-    public function findEvents(array $filters = []): array;
+    public function findEvents(EventFilter|array $filters = new EventFilter()): array;
 
     public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent;
 
