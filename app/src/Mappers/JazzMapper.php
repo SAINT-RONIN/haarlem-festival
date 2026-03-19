@@ -6,6 +6,11 @@ namespace App\Mappers;
 
 use App\Constants\JazzArtistDetailConstants;
 use App\Constants\JazzPageConstants;
+use App\Models\ArtistAlbum;
+use App\Models\ArtistGalleryImage;
+use App\Models\ArtistHighlight;
+use App\Models\ArtistLineupMember;
+use App\Models\ArtistTrack;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\JazzArtistDetailPageData;
 use App\ViewModels\GlobalUiData;
@@ -116,27 +121,15 @@ class JazzMapper
             ),
             'overviewBodySecondary' => self::cmsValue($cms, 'overview_body_secondary'),
             'lineupHeading' => self::cmsValue($cms, 'lineup_heading'),
-            'lineup' => self::collectTextList(
-                $cms,
-                JazzArtistDetailConstants::LINEUP_PREFIX,
-                JazzArtistDetailConstants::MAX_LIST_ITEMS,
-            ),
+            'lineup' => array_map(fn(ArtistLineupMember $m) => $m->memberText, $pageData->lineupMembers),
             'highlightsHeading' => self::cmsValue($cms, 'highlights_heading'),
-            'highlights' => self::collectTextList(
-                $cms,
-                JazzArtistDetailConstants::HIGHLIGHT_PREFIX,
-                JazzArtistDetailConstants::MAX_LIST_ITEMS,
-            ),
+            'highlights' => array_map(fn(ArtistHighlight $h) => $h->highlightText, $pageData->highlights),
             'photoGalleryHeading' => self::cmsValue($cms, 'photo_gallery_heading'),
             'photoGalleryDescription' => self::cmsValue($cms, 'photo_gallery_description'),
-            'galleryImages' => self::collectTextList(
-                $cms,
-                JazzArtistDetailConstants::GALLERY_IMAGE_PREFIX,
-                JazzArtistDetailConstants::MAX_LIST_ITEMS,
-            ),
+            'galleryImages' => array_map(fn(ArtistGalleryImage $g) => $g->imagePath, $pageData->galleryImages),
             'albumsHeading' => self::cmsValue($cms, 'albums_heading'),
             'albumsDescription' => self::cmsValue($cms, 'albums_description'),
-            'albums' => self::buildAlbums($cms),
+            'albums' => self::buildAlbumsFromTable($pageData->albums),
             'listenHeading' => self::cmsValue($cms, 'listen_heading'),
             'listenSubheading' => self::cmsValue($cms, 'listen_subheading'),
             'listenDescription' => self::cmsValue($cms, 'listen_description'),
@@ -146,7 +139,7 @@ class JazzMapper
                 $cms,
                 'listen_track_artwork_alt_suffix',
             ),
-            'tracks' => self::buildTracks($cms),
+            'tracks' => self::buildTracksFromTable($pageData->tracks),
             'liveCtaHeading' => self::cmsValue($cms, 'live_cta_heading'),
             'liveCtaDescription' => self::cmsValue($cms, 'live_cta_description'),
             'liveCtaBookButtonText' => self::cmsValue($cms, 'live_cta_book_button_text'),
@@ -607,72 +600,29 @@ class JazzMapper
         return new JazzArtistDetailPageViewModel(...$data);
     }
 
-    private static function buildAlbums(array $cms): array
+    /** @param ArtistAlbum[] $albums */
+    private static function buildAlbumsFromTable(array $albums): array
     {
-        $albums = [];
-
-        for ($index = 1; $index <= JazzArtistDetailConstants::MAX_ALBUMS; $index++) {
-            $title = self::cmsValue($cms, JazzArtistDetailConstants::ALBUM_PREFIX . $index . '_title');
-            if ($title === '') {
-                continue;
-            }
-
-            $albums[] = [
-                'title' => $title,
-                'description' => self::cmsValue(
-                    $cms,
-                    JazzArtistDetailConstants::ALBUM_PREFIX . $index . '_description',
-                ),
-                'year' => self::cmsValue($cms, JazzArtistDetailConstants::ALBUM_PREFIX . $index . '_year'),
-                'tag' => self::cmsValue($cms, JazzArtistDetailConstants::ALBUM_PREFIX . $index . '_tag'),
-                'imageUrl' => self::cmsValue($cms, JazzArtistDetailConstants::ALBUM_PREFIX . $index . '_image'),
-            ];
-        }
-
-        return $albums;
+        return array_map(fn(ArtistAlbum $a) => [
+            'title' => $a->title,
+            'description' => $a->description,
+            'year' => $a->year,
+            'tag' => $a->tag,
+            'imageUrl' => $a->imagePath,
+        ], $albums);
     }
 
-    private static function buildTracks(array $cms): array
+    /** @param ArtistTrack[] $tracks */
+    private static function buildTracksFromTable(array $tracks): array
     {
-        $tracks = [];
-
-        for ($index = 1; $index <= JazzArtistDetailConstants::MAX_TRACKS; $index++) {
-            $title = self::cmsValue($cms, JazzArtistDetailConstants::TRACK_PREFIX . $index . '_title');
-            if ($title === '') {
-                continue;
-            }
-
-            $tracks[] = [
-                'title' => $title,
-                'album' => self::cmsValue($cms, JazzArtistDetailConstants::TRACK_PREFIX . $index . '_album'),
-                'description' => self::cmsValue(
-                    $cms,
-                    JazzArtistDetailConstants::TRACK_PREFIX . $index . '_description',
-                ),
-                'duration' => self::cmsValue($cms, JazzArtistDetailConstants::TRACK_PREFIX . $index . '_duration'),
-                'imageUrl' => self::cmsValue($cms, JazzArtistDetailConstants::TRACK_PREFIX . $index . '_image'),
-                'progressClass' => self::cmsValue(
-                    $cms,
-                    JazzArtistDetailConstants::TRACK_PREFIX . $index . '_progress_class',
-                ),
-            ];
-        }
-
-        return $tracks;
-    }
-
-    private static function collectTextList(array $cms, string $prefix, int $maxItems): array
-    {
-        $values = [];
-
-        for ($index = 1; $index <= $maxItems; $index++) {
-            $value = self::cmsValue($cms, $prefix . $index);
-            if ($value !== '') {
-                $values[] = $value;
-            }
-        }
-
-        return $values;
+        return array_map(fn(ArtistTrack $t) => [
+            'title' => $t->title,
+            'album' => $t->album,
+            'description' => $t->description,
+            'duration' => $t->duration,
+            'imageUrl' => $t->imagePath,
+            'progressClass' => $t->progressClass,
+        ], $tracks);
     }
 
     private static function buildPrimaryOverviewFallbackFromModel(JazzArtistDetailEvent $event): string

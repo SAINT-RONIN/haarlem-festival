@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Models\CuisineType;
 use App\Models\Restaurant;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -23,6 +24,7 @@ final class RestaurantMapper
     public static function toPageViewModel(array $data, bool $isLoggedIn): RestaurantPageViewModel
     {
         $restaurants = $data['restaurants'];
+        $cuisinesByRestaurant = $data['cuisinesByRestaurant'] ?? [];
         $heroData = CmsMapper::toHeroData($data['heroContent'], 'restaurant');
         $globalUi = CmsMapper::toGlobalUiData($data['globalUiContent'], $isLoggedIn);
 
@@ -34,7 +36,7 @@ final class RestaurantMapper
             introSplitSection:      self::toIntroSplitSection($data['introSplitSection']),
             introSplit2Section:     self::toIntroSplit2Section($data['introSplit2Section']),
             instructionsSection:    self::toInstructionsSection($data['instructionsSection']),
-            restaurantCardsSection: self::toRestaurantCardsSection($data['cardsSection'], $restaurants),
+            restaurantCardsSection: self::toRestaurantCardsSection($data['cardsSection'], $restaurants, $cuisinesByRestaurant),
         );
     }
 
@@ -44,9 +46,12 @@ final class RestaurantMapper
         $imagesByType = $data['imagesByType'];
         $cms         = $data['cms'];
 
-        $heroData    = self::toDetailHeroData($restaurant, $cms);
+        $cuisineTypes = $data['cuisineTypes'] ?? [];
+        $cuisineString = implode(', ', array_map(fn(CuisineType $c) => $c->name, $cuisineTypes));
+        $cuisineTags = array_map(fn(CuisineType $c) => $c->name, $cuisineTypes);
+
+        $heroData    = self::toDetailHeroData($restaurant, $cms, $cuisineString);
         $globalUi    = CmsMapper::toGlobalUiData($data['globalUiContent'], $isLoggedIn);
-        $cuisineTags = self::parseCuisineTags($restaurant->cuisineType);
 
         return new RestaurantDetailViewModel(
             heroData: $heroData,
@@ -55,7 +60,7 @@ final class RestaurantMapper
 
             id:          $restaurant->restaurantId,
             name:        $restaurant->name,
-            cuisine:     $restaurant->cuisineType,
+            cuisine:     $cuisineString,
             address:     self::buildAddress($restaurant),
             description: self::cleanDescription($restaurant->descriptionHtml),
             rating:      $restaurant->stars ?? 0,
@@ -118,12 +123,12 @@ final class RestaurantMapper
         );
     }
 
-    private static function toDetailHeroData(Restaurant $restaurant, array $cms): HeroData
+    private static function toDetailHeroData(Restaurant $restaurant, array $cms, string $cuisineString): HeroData
     {
         $subtitleTemplate = self::text($cms, 'detail_hero_subtitle_template');
         $heroSubtitle = str_replace(
             ['{name}', '{cuisine}'],
-            [$restaurant->name, $restaurant->cuisineType],
+            [$restaurant->name, $cuisineString],
             $subtitleTemplate
         );
 
@@ -199,31 +204,32 @@ final class RestaurantMapper
 
     /**
      * @param Restaurant[] $restaurants
+     * @param array<int, CuisineType[]> $cuisinesByRestaurant
      */
-    private static function toRestaurantCardsSection(array $cms, array $restaurants): RestaurantCardsSectionData
+    private static function toRestaurantCardsSection(array $cms, array $restaurants, array $cuisinesByRestaurant): RestaurantCardsSectionData
     {
         return new RestaurantCardsSectionData(
             title:    self::text($cms, 'cards_title'),
             subtitle: self::text($cms, 'cards_subtitle'),
-            filters:  self::buildCuisineFilters($restaurants),
-            cards:    self::buildCards($restaurants),
+            filters:  self::buildCuisineFilters($restaurants, $cuisinesByRestaurant),
+            cards:    self::buildCards($restaurants, $cuisinesByRestaurant),
         );
     }
 
     /**
      * @param Restaurant[] $restaurants
+     * @param array<int, CuisineType[]> $cuisinesByRestaurant
      */
-    private static function buildCuisineFilters(array $restaurants): array
+    private static function buildCuisineFilters(array $restaurants, array $cuisinesByRestaurant): array
     {
         $unique = [];
 
         foreach ($restaurants as $restaurant) {
-            foreach (explode(',', $restaurant->cuisineType) as $cuisine) {
-                $cuisine = trim($cuisine);
-                $key     = mb_strtolower($cuisine);
-
+            $cuisineTypes = $cuisinesByRestaurant[$restaurant->restaurantId] ?? [];
+            foreach ($cuisineTypes as $cuisineType) {
+                $key = mb_strtolower($cuisineType->name);
                 if ($key !== '' && !isset($unique[$key])) {
-                    $unique[$key] = $cuisine;
+                    $unique[$key] = $cuisineType->name;
                 }
             }
         }
@@ -236,17 +242,21 @@ final class RestaurantMapper
 
     /**
      * @param Restaurant[] $restaurants
+     * @param array<int, CuisineType[]> $cuisinesByRestaurant
      * @return RestaurantCardData[]
      */
-    private static function buildCards(array $restaurants): array
+    private static function buildCards(array $restaurants, array $cuisinesByRestaurant): array
     {
         $cards = [];
 
         foreach ($restaurants as $restaurant) {
+            $cuisineTypes = $cuisinesByRestaurant[$restaurant->restaurantId] ?? [];
+            $cuisineString = implode(', ', array_map(fn(CuisineType $c) => $c->name, $cuisineTypes));
+
             $cards[] = new RestaurantCardData(
                 id:          $restaurant->restaurantId,
                 name:        $restaurant->name,
-                cuisine:     $restaurant->cuisineType,
+                cuisine:     $cuisineString,
                 address:     self::buildAddress($restaurant),
                 description: self::cleanDescription($restaurant->descriptionHtml),
                 rating:      $restaurant->stars ?? 0,
@@ -279,12 +289,6 @@ final class RestaurantMapper
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         return trim(preg_replace('/\s+/', ' ', $text) ?? $text);
-    }
-
-    private static function parseCuisineTags(string $cuisineType): array
-    {
-        $tags = array_map('trim', explode(',', $cuisineType));
-        return array_values(array_filter($tags, fn(string $tag) => $tag !== ''));
     }
 
     private static function text(array $cms, string $key, string $default = ''): string

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Repositories\CmsContentRepository;
+use App\Repositories\Interfaces\ICuisineTypeRepository;
 use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
@@ -36,6 +37,7 @@ class RestaurantService implements IRestaurantService
         private CmsContentRepository $cmsService,
         private RestaurantRepository $restaurantRepository,
         private RestaurantImageRepository $restaurantImageRepository,
+        private ICuisineTypeRepository $cuisineTypeRepository,
     ) {
     }
 
@@ -44,15 +46,19 @@ class RestaurantService implements IRestaurantService
      */
     public function getRestaurantPageData(): array
     {
+        $restaurants = $this->restaurantRepository->findAllActive();
+        $cuisinesByRestaurant = $this->buildCuisineMap($restaurants);
+
         return [
-            'heroContent'        => $this->cmsService->getHeroSectionContent(self::PAGE_SLUG),
-            'globalUiContent'    => $this->cmsService->getSectionContent('home', 'global_ui'),
-            'gradientSection'    => $this->getCmsSection(self::SECTION_GRADIENT),
-            'introSplitSection'  => $this->getCmsSection(self::SECTION_INTRO_SPLIT),
-            'introSplit2Section' => $this->getCmsSection(self::SECTION_INTRO_SPLIT2),
-            'instructionsSection' => $this->getCmsSection(self::SECTION_INSTRUCTIONS),
-            'cardsSection'       => $this->getCmsSection(self::SECTION_CARDS),
-            'restaurants'        => $this->restaurantRepository->findAllActive(),
+            'heroContent'          => $this->cmsService->getHeroSectionContent(self::PAGE_SLUG),
+            'globalUiContent'      => $this->cmsService->getSectionContent('home', 'global_ui'),
+            'gradientSection'      => $this->getCmsSection(self::SECTION_GRADIENT),
+            'introSplitSection'    => $this->getCmsSection(self::SECTION_INTRO_SPLIT),
+            'introSplit2Section'   => $this->getCmsSection(self::SECTION_INTRO_SPLIT2),
+            'instructionsSection'  => $this->getCmsSection(self::SECTION_INSTRUCTIONS),
+            'cardsSection'         => $this->getCmsSection(self::SECTION_CARDS),
+            'restaurants'          => $restaurants,
+            'cuisinesByRestaurant' => $cuisinesByRestaurant,
         ];
     }
 
@@ -72,15 +78,29 @@ class RestaurantService implements IRestaurantService
         $imagesByType = $this->groupImagesByType($images);
         $cms         = $this->getCmsSection(self::SECTION_DETAIL);
         $scheduleData = $this->getRestaurantScheduleData($restaurant->name);
+        $cuisineTypes = $this->cuisineTypeRepository->findByRestaurantId($restaurant->restaurantId);
 
         return [
-            'restaurant'     => $restaurant,
-            'imagesByType'   => $imagesByType,
-            'cms'            => $cms,
+            'restaurant'      => $restaurant,
+            'imagesByType'    => $imagesByType,
+            'cms'             => $cms,
             'globalUiContent' => $this->cmsService->getSectionContent('home', 'global_ui'),
-            'timeSlots'      => $scheduleData['timeSlots'],
-            'priceCards'     => $scheduleData['priceCards'],
+            'timeSlots'       => $scheduleData['timeSlots'],
+            'priceCards'      => $scheduleData['priceCards'],
+            'cuisineTypes'    => $cuisineTypes,
         ];
+    }
+
+    /**
+     * Batch-fetches cuisines for all restaurants to avoid N+1 queries per card.
+     *
+     * @param \App\Models\Restaurant[] $restaurants
+     * @return array<int, \App\Models\CuisineType[]>
+     */
+    private function buildCuisineMap(array $restaurants): array
+    {
+        $ids = array_map(fn($r) => $r->restaurantId, $restaurants);
+        return $this->cuisineTypeRepository->findByRestaurantIds($ids);
     }
 
     /**

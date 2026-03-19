@@ -36,6 +36,15 @@ use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\UserAccountRepository;
 use App\Repositories\ProgramRepository;
+use App\Repositories\ArtistAlbumRepository;
+use App\Repositories\ArtistGalleryImageRepository;
+use App\Repositories\ArtistHighlightRepository;
+use App\Repositories\ArtistLineupMemberRepository;
+use App\Repositories\ArtistTrackRepository;
+use App\Repositories\CuisineTypeRepository;
+use App\Repositories\EventGalleryImageRepository;
+use App\Repositories\EventHighlightRepository;
+use App\Repositories\PageGalleryImageRepository;
 use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
@@ -81,6 +90,15 @@ return static function (string $controllerClass): object {
     $scheduleDayConfigRepository = new ScheduleDayConfigRepository();
     $restaurantRepository = new RestaurantRepository();
     $restaurantImageRepository = new RestaurantImageRepository();
+    $artistAlbumRepository = new ArtistAlbumRepository();
+    $artistTrackRepository = new ArtistTrackRepository();
+    $artistLineupMemberRepository = new ArtistLineupMemberRepository();
+    $artistHighlightRepository = new ArtistHighlightRepository();
+    $artistGalleryImageRepository = new ArtistGalleryImageRepository();
+    $eventHighlightRepository = new EventHighlightRepository();
+    $eventGalleryImageRepository = new EventGalleryImageRepository();
+    $pageGalleryImageRepository = new PageGalleryImageRepository();
+    $cuisineTypeRepository = new CuisineTypeRepository();
     $userAccountRepository = new UserAccountRepository();
     $passwordResetTokenRepository = new PasswordResetTokenRepository();
     $programRepository = new ProgramRepository();
@@ -135,12 +153,14 @@ return static function (string $controllerClass): object {
                 $cmsContent,
                 $restaurantRepository,
                 $restaurantImageRepository,
+                $cuisineTypeRepository,
             ),
             $sessionService,
         ),
         StorytellingController::class => new StorytellingController(
             new StorytellingService(
                 $cmsContent,
+                $pageGalleryImageRepository,
             ),
             new StorytellingDetailService(
                 $cmsContent,
@@ -148,6 +168,8 @@ return static function (string $controllerClass): object {
                 $eventSessionRepository,
                 $eventSessionLabelRepository,
                 $mediaAssetRepository,
+                $eventHighlightRepository,
+                $eventGalleryImageRepository,
             ),
             $sessionService,
             $scheduleService,
@@ -159,6 +181,11 @@ return static function (string $controllerClass): object {
             new JazzArtistDetailService(
                 $cmsContent,
                 $eventRepository,
+                $artistAlbumRepository,
+                $artistTrackRepository,
+                $artistLineupMemberRepository,
+                $artistHighlightRepository,
+                $artistGalleryImageRepository,
             ),
             $cmsPageContentService,
             $sessionService,

@@ -13,6 +13,8 @@ use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IEventHighlightRepository;
+use App\Repositories\Interfaces\IEventGalleryImageRepository;
 use App\Services\Interfaces\IStorytellingDetailService;
 
 class StorytellingDetailService implements IStorytellingDetailService
@@ -23,6 +25,8 @@ class StorytellingDetailService implements IStorytellingDetailService
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IMediaAssetRepository $mediaAssetRepository,
+        private readonly IEventHighlightRepository $highlightRepository,
+        private readonly IEventGalleryImageRepository $galleryImageRepository,
     ) {
     }
 
@@ -48,6 +52,9 @@ class StorytellingDetailService implements IStorytellingDetailService
             aboutBody: $this->resolveAboutBody($cms, $event),
             // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
             globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
+            highlights: $this->highlightRepository->findByEventId($eventId),
+            galleryImages: $this->galleryImageRepository->findByEventId($eventId, 'gallery'),
+            aboutImages: $this->galleryImageRepository->findByEventId($eventId, 'about'),
         );
     }
 

@@ -8,11 +8,21 @@ final readonly class JazzArtistDetailPageData
 {
     /**
      * @param array<string, string> $cms
+     * @param ArtistAlbum[] $albums
+     * @param ArtistTrack[] $tracks
+     * @param ArtistLineupMember[] $lineupMembers
+     * @param ArtistHighlight[] $highlights
+     * @param ArtistGalleryImage[] $galleryImages
      */
     public function __construct(
         public JazzArtistDetailEvent $event,
         public array $cms,
         public int $eventId,
+        public array $albums = [],
+        public array $tracks = [],
+        public array $lineupMembers = [],
+        public array $highlights = [],
+        public array $galleryImages = [],
     ) {
     }
 }

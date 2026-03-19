@@ -13,10 +13,12 @@ final readonly class StorytellingPageData
     /**
      * @param array<string, array<string, mixed>> $sections CMS section content keyed by section name
      * @param array<string, mixed> $globalUiContent CMS content for the global_ui section
+     * @param \App\Models\PageGalleryImage[] $masonryImages Masonry grid images (imageType='masonry') from page_gallery_images
      */
     public function __construct(
         public array $sections,
         public array $globalUiContent,
+        public array $masonryImages = [],
     ) {
     }
 }

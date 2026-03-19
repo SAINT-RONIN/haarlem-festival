@@ -7,6 +7,9 @@ namespace App\Mappers;
 use App\Constants\StorytellingPageConstants;
 use App\Helpers\CmsOutputHelper;
 use App\Helpers\ImageHelper;
+use App\Models\EventGalleryImage;
+use App\Models\EventHighlight;
+use App\Models\PageGalleryImage;
 use App\Models\StorytellingDetailPageData;
 use App\Models\StorytellingPageData;
 use App\ViewModels\GlobalUiData;
@@ -35,7 +38,6 @@ class StorytellingMapper
     private const ROUTE_RESTAURANT = '/restaurant';
     private const ROUTE_STORYTELLING = '/storytelling';
 
-    private const MASONRY_IMAGE_COUNT = 12;
     private const MASONRY_SIZE_CLASSES = [
         'masonry-tall',
         'masonry-short',
@@ -71,7 +73,10 @@ class StorytellingMapper
             cms: CmsMapper::toCmsData($heroData, $globalUi),
             gradientSection: self::buildGradientSection($sections),
             introSplitSection: self::buildIntroSplitSection($sections),
-            masonrySection: self::buildMasonrySection($sections[StorytellingPageConstants::SECTION_MASONRY] ?? []),
+            masonrySection: self::buildMasonrySection(
+                $sections[StorytellingPageConstants::SECTION_MASONRY] ?? [],
+                $pageData->masonryImages,
+            ),
             scheduleSection: $scheduleSection,
         );
     }
@@ -95,8 +100,8 @@ class StorytellingMapper
             cms: CmsMapper::toCmsData($heroData, $globalUi),
             detailHero: $detailHero,
             aboutSection: self::buildAboutSection($pageData),
-            highlightsSection: self::buildHighlightsSection($pageData->cms),
-            gallerySection: self::buildGallerySection($pageData->cms),
+            highlightsSection: self::buildHighlightsSection($pageData->cms, $pageData->highlights),
+            gallerySection: self::buildGallerySection($pageData->cms, $pageData->galleryImages),
             videoSection: self::buildVideoSection($pageData->cms),
             scheduleSection: $scheduleSection,
         );
@@ -133,18 +138,19 @@ class StorytellingMapper
     }
 
     /**
-     * Builds the masonry photo grid section from CMS image slots.
-     * The reason for this is because the masonry layout requires a fixed number of images each assigned a predetermined size class so the CSS grid renders correctly.
+     * Builds the masonry photo grid section from relational images and CMS heading.
+     * The reason for this is because the masonry layout assigns a predetermined size class per position so the CSS grid renders correctly.
+     *
+     * @param PageGalleryImage[] $masonryImages
      */
-    private static function buildMasonrySection(array $content): MasonrySectionData
+    private static function buildMasonrySection(array $content, array $masonryImages): MasonrySectionData
     {
         $images = [];
-        for ($i = 1; $i <= self::MASONRY_IMAGE_COUNT; $i++) {
-            $key = sprintf('masonry_image_%02d', $i);
-            $path = (string)($content[$key] ?? '');
+        foreach ($masonryImages as $index => $img) {
+            $path = $img->imagePath;
             $validPath = ImageHelper::validatePath($path);
             $altText = ImageHelper::altTextFromFilename(basename($path), 'Storytelling moment');
-            $sizeClass = self::MASONRY_SIZE_CLASSES[$i - 1] ?? 'masonry-medium';
+            $sizeClass = self::MASONRY_SIZE_CLASSES[$index] ?? 'masonry-medium';
             $images[] = new MasonryImageData(imageUrl: $validPath, altText: $altText, sizeClass: $sizeClass);
         }
         return new MasonrySectionData(
@@ -213,27 +219,28 @@ class StorytellingMapper
         return new StorytellingAboutSectionData(
             heading: ImageHelper::getStringValue($pageData->cms, 'about_heading', $pageData->event->title),
             bodyHtml: CmsOutputHelper::html($pageData->aboutBody),
-            image1Url: ImageHelper::validatePath((string)($pageData->cms['about_image_1'] ?? '')),
-            image2Url: ImageHelper::validatePath((string)($pageData->cms['about_image_2'] ?? '')),
+            image1Url: ImageHelper::validatePath(($pageData->aboutImages[0] ?? null)?->imagePath ?? ''),
+            image2Url: ImageHelper::validatePath(($pageData->aboutImages[1] ?? null)?->imagePath ?? ''),
         );
     }
 
     /**
-     * Builds the highlights section ViewModel from up to three numbered CMS slots.
-     * The reason for this is because highlight items are stored as numbered keys and any slot with an empty title must be silently skipped rather than rendered as a blank card.
+     * Builds the highlights section ViewModel from relational EventHighlight rows.
+     * The reason for this is because highlights are now stored in their own table; rows with an empty title are silently skipped rather than rendered as blank cards.
+     *
+     * @param EventHighlight[] $highlights
      */
-    private static function buildHighlightsSection(array $cms): StoryHighlightsSectionData
+    private static function buildHighlightsSection(array $cms, array $highlights): StoryHighlightsSectionData
     {
         $items = [];
-        for ($i = 1; $i <= 3; $i++) {
-            $title = $cms["highlight_{$i}_title"] ?? '';
-            if (empty($title)) {
+        foreach ($highlights as $highlight) {
+            if ($highlight->title === '') {
                 continue;
             }
             $items[] = new StoryHighlightData(
-                imageUrl: ImageHelper::validatePath((string)($cms["highlight_{$i}_image"] ?? '')),
-                title: $title,
-                description: $cms["highlight_{$i}_description"] ?? '',
+                imageUrl: ImageHelper::validatePath($highlight->imagePath),
+                title: $highlight->title,
+                description: $highlight->description,
             );
         }
         return new StoryHighlightsSectionData(
@@ -243,15 +250,17 @@ class StorytellingMapper
     }
 
     /**
-     * Builds the gallery section ViewModel splitting five CMS image slots into two display rows.
+     * Builds the gallery section ViewModel splitting relational images into two display rows.
      * The reason for this is because the gallery template renders a top row of three and a bottom row of two, so the split must happen here rather than in the view.
+     *
+     * @param EventGalleryImage[] $galleryImages
      */
-    private static function buildGallerySection(array $cms): StoryGallerySectionData
+    private static function buildGallerySection(array $cms, array $galleryImages): StoryGallerySectionData
     {
-        $images = [];
-        for ($i = 1; $i <= 5; $i++) {
-            $images[] = ImageHelper::validatePath((string)($cms["gallery_image_{$i}"] ?? ''));
-        }
+        $images = array_map(
+            fn(EventGalleryImage $g) => ImageHelper::validatePath($g->imagePath),
+            $galleryImages,
+        );
         return new StoryGallerySectionData(
             heading: ImageHelper::getStringValue($cms, 'gallery_heading', ''),
             topRowImages: array_slice($images, 0, 3),

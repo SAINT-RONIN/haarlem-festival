@@ -7,12 +7,16 @@ namespace App\Services;
 use App\Constants\StorytellingPageConstants;
 use App\Models\StorytellingPageData;
 use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IPageGalleryImageRepository;
 use App\Services\Interfaces\IStorytellingService;
 
 class StorytellingService implements IStorytellingService
 {
+    private const CMS_PAGE_ID_STORYTELLING = 2;
+
     public function __construct(
         private readonly ICmsContentRepository $cmsService,
+        private readonly IPageGalleryImageRepository $pageGalleryImageRepository,
     ) {
     }
 
@@ -42,6 +46,10 @@ class StorytellingService implements IStorytellingService
             ],
             // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
             globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
+            masonryImages: $this->pageGalleryImageRepository->findByPageId(
+                self::CMS_PAGE_ID_STORYTELLING,
+                'masonry',
+            ),
         );
     }
 }
