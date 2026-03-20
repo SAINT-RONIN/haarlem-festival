@@ -144,16 +144,19 @@ final class HistoryMapper
                 name: $venuesSection['history_grotemarkt_name'] ?? 'Grote Markt',
                 description: $venuesSection['history_grotemarkt_description'] ?? 'The heart of the historic center of Haarlem.',
                 imageUrl: $venuesSection['history_grotemarkt_image'] ?? '/assets/Image/History/History-GroteMarkt.png',
+                venueUrl: $venuesSection['history_grotemarkt_link'] ?? '/history/grote-markt',
             ),
             new VenueCardData(
                 name: $venuesSection['history_amsterdamsepoort_name'] ?? 'Amsterdamse Poort',
                 description: $venuesSection['history_amsterdamsepoort_description'] ?? 'As the only remaining city gate.',
                 imageUrl: $venuesSection['history_amsterdamsepoort_image'] ?? '/assets/Image/History/History-AmsterdamsePoort.png',
+                venueUrl: $venuesSection['history_amsterdamsepoort_link'] ?? 'amsterdamse-poort',
             ),
             new VenueCardData(
                 name: $venuesSection['history_molendeadriaan_name'] ?? 'Molen De Adriaan',
                 description: $venuesSection['history_molendeadriaan_description'] ?? 'A striking riverside windmill.',
                 imageUrl: $venuesSection['history_molendeadriaan_image'] ?? '/assets/Image/History/History-MolenDeAdriaan.png',
+                venueUrl: $venuesSection['history_molendeadriaan_link'] ?? 'molen-de-adriaan',
             ),
         ];
 
