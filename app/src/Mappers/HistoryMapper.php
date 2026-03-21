@@ -57,6 +57,7 @@ final class HistoryMapper
             secondaryButtonLink: $hero['hero_button_secondary_link'] ?? '#tickets',
             backgroundImageUrl:  $hero['hero_background_image'] ?? '/assets/Image/History/History-hero.png',
             currentPage:         'history',
+            mapImageUrl:         null
         );
     }
 
@@ -209,7 +210,7 @@ final class HistoryMapper
                 $info['important_info_item5'] ?? 'Starting point: Look for the giant flag near Church of St. Bavo at Grote Markt',
                 $info['important_info_item6'] ?? 'Group size: Maximum 12 participants per guide',
                 $info['important_info_item7'] ?? 'Comfortable walking shoes recommended',
-                $info['important_info_item8'] ?? 'Tours run in light rain; severe weather cancellations will be communicated via email',
+                $info['important_info_item8'] ?? 'Tours run in light rain. severe weather cancellations will be communicated via email',
             ],
         );
     }

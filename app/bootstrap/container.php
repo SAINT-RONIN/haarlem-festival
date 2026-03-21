@@ -213,7 +213,10 @@ return static function (string $controllerClass): object {
             new HistoryService(
                 $cmsPageContentService,
             ),
-            new HistoricalLocationService(),
+            new HistoricalLocationService(
+                $cmsPageContentService,
+            ),
+
             $cmsPageContentService,
             $sessionService,
             $scheduleService

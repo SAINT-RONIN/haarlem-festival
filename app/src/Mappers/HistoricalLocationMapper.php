@@ -67,19 +67,20 @@ final class HistoricalLocationMapper
             $data['fact3'] ?? 'Uncover the rich history of our city',
         ];
         return new LocationFacts(
-            headingText: $data['facts_title'] ?? 'Discover the rich history of our city',
+            headingText: $data['facts_heading'] ?? 'Discover the rich history of our city',
             facts: $facts,
         );
     }
 
+
     private static function toLocationSignificance(array $data): LocationSignificance
     {
         return new LocationSignificance(
-            architecturalSignificanceHeadingText: $data['significance_architectural_heading'] ?? 'Architectural Significance',
-            architecturalSignificanceText: $data['significance_architectural_text'] ?? 'Our',
-            historicalSignificanceHeadingText: $data['significance_historical_heading'] ?? 'Historical Significance',
-            historicalSignificanceText: $data['significance_historical_text'] ?? 'Our city',
-            locationImagePath: $data['significance_location_image_path'] ?? '',
+            architecturalSignificanceHeadingText: $data['architectural_significance_heading'] ?? 'Architectural Significance',
+            architecturalSignificanceText: $data['architectural_significance_text'] ?? 'Our',
+            historicalSignificanceHeadingText: $data['historical_significance_heading'] ?? 'Historical Significance',
+            historicalSignificanceText: $data['historical_significance_text'] ?? 'Our city',
+            locationImagePath: $data['significance_image'] ?? '',
         );
     }
 }

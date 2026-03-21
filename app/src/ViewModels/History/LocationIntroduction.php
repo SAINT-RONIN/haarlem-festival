@@ -14,7 +14,7 @@ final readonly class LocationIntroduction
         public string $headingText,
         public string $introText,
         public string $factText,
-        public string $locationImagePath = '',
+        public string $locationImagePath,
     ) {
     }
 }
