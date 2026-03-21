@@ -13,15 +13,16 @@ final readonly class HistoricalLocationViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
-        public LocationHeroData $locationHero,
         public LocationIntroduction $locationIntroduction,
         public LocationFacts $locationFacts,
-        public LocationSignificance $locationSignificance
+        public LocationSignificance $locationSignificance,
+        array $cms,
     ) {
         parent::__construct(
             heroData: $heroData,
             globalUi: $globalUi,
-            currentPage: 'history',
+            currentPage: $heroData->currentPage,
+            cms: $cms,
             includeNav: false,
         );
     }

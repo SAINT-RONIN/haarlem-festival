@@ -16,5 +16,5 @@ interface IHistoricalLocationService
      *
      * @return HistoricalLocationViewModel Prepared data for the historical location view
      */
-    public function getHistoralLocationData(string $name): ?HistoricalLocationViewModel;
+    public function getHistoralLocationPageData(string $name): ?array;
 }

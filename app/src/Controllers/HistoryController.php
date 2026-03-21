@@ -80,7 +80,7 @@ class HistoryController extends BaseController
     public function location(string $name): void
     {
         try {
-            $viewModel = $this->historyService->getHistoralLocationData($name);
+            $viewModel = $this->historicalLocationService->getHistoralLocationPageData($name);
 
             if ($viewModel === null) {
                 http_response_code(404);
