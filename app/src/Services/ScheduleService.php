@@ -92,8 +92,8 @@ class ScheduleService implements IScheduleService
         $ctaButtonText = $ctaTextOverride ?? ($cmsSection->scheduleCtaButtonText ?? 'Discover');
         $payWhatYouLikeText = $cmsSection->schedulePayWhatYouLikeText ?? 'Pay as you like';
         $currencySymbol = $cmsSection->scheduleCurrencySymbol ?? '€';
-        $startPoint = $cmsSection->scheduleStartPoint ?? '';
-        $groupTicketFallback = $cmsSection->scheduleHistoryGroupTicket ?? '';
+        $startPoint = $cmsSection->scheduleStartPoint ?? 'A giant flag near Church of St. Bavo at Grote Markt';
+        $groupTicketFallback = $cmsSection->scheduleHistoryGroupTicket ?? 'Group ticket- best value for 4 people';
 
         $days = $this->buildScheduleDays(
             $scheduleData,
