@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\GlobalUiConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Exceptions\StorytellingEventNotFoundException;
 use App\Models\EventSessionFilter;
@@ -66,11 +67,10 @@ class StorytellingDetailService implements IStorytellingDetailService
         );
     }
 
-    // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
     private function fetchGlobalUiContent(): GlobalUiContent
     {
         return GlobalUiContent::fromRawArray(
-            $this->cmsService->getSectionContent('home', 'global_ui'),
+            $this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY),
         );
     }
 

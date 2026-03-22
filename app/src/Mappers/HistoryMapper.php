@@ -46,9 +46,7 @@ final class HistoryMapper
         ?ScheduleSectionViewModel $scheduleSection,
     ): HistoryPageViewModel {
         return new HistoryPageViewModel(
-            heroData:           $heroData,
-            globalUi:           $globalUi,
-            cms:                CmsMapper::toCmsData($heroData, $globalUi),
+            heroData: $heroData, globalUi: $globalUi, cms: CmsMapper::toCmsData($heroData, $globalUi),
             gradientSection:    self::toGradientSection($data->gradientSection),
             introSplitSection:  self::toIntroSplitSection($data->introSection),
             routeData:          self::toRouteData($data->routeSection),

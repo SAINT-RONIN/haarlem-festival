@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\GlobalUiConstants;
 use App\Constants\HistoricalLocationPageConstants;
 use App\Exceptions\HistoricalLocationNotFoundException;
 use App\Models\GlobalUiContent;
@@ -40,18 +41,10 @@ class HistoricalLocationService implements IHistoricalLocationService
         return new HistoricalLocationPageData(
             heroSection:         HeroSectionContent::fromRawArray($heroRaw),
             locationHeroSection: HistoricalLocationHeroContent::fromRawArray($heroRaw),
-            introSection:        HistoricalLocationIntroContent::fromRawArray(
-                $this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_INTRO),
-            ),
-            factsSection:        HistoricalLocationFactsContent::fromRawArray(
-                $this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_FACTS),
-            ),
-            significanceSection: HistoricalLocationSignificanceContent::fromRawArray(
-                $this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_SIGNIFICANCE),
-            ),
-            globalUiContent:     GlobalUiContent::fromRawArray(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
-            ),
+            introSection:        HistoricalLocationIntroContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_INTRO)),
+            factsSection:        HistoricalLocationFactsContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_FACTS)),
+            significanceSection: HistoricalLocationSignificanceContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_SIGNIFICANCE)),
+            globalUiContent:     GlobalUiContent::fromRawArray($this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY)),
         );
     }
 }

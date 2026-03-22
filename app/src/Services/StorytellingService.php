@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\GlobalUiConstants;
 use App\Constants\StorytellingPageConstants;
 use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
@@ -27,25 +28,13 @@ class StorytellingService implements IStorytellingService
      */
     public function getStorytellingPageData(): StorytellingPageData
     {
-        $pageSlug = StorytellingPageConstants::PAGE_SLUG;
-
+        $slug = StorytellingPageConstants::PAGE_SLUG;
         return new StorytellingPageData(
-            heroSection: HeroSectionContent::fromRawArray(
-                $this->cmsService->getHeroSectionContent($pageSlug),
-            ),
-            gradientSection: StorytellingGradientSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent($pageSlug, StorytellingPageConstants::SECTION_GRADIENT),
-            ),
-            introSplitSection: StorytellingIntroSplitSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent($pageSlug, StorytellingPageConstants::SECTION_INTRO_SPLIT),
-            ),
-            masonrySection: StorytellingMasonrySectionContent::fromRawArray(
-                $this->cmsService->getSectionContent($pageSlug, StorytellingPageConstants::SECTION_MASONRY),
-            ),
-            // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
-            globalUiContent: GlobalUiContent::fromRawArray(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
-            ),
+            heroSection:       HeroSectionContent::fromRawArray($this->cmsService->getHeroSectionContent($slug)),
+            gradientSection:   StorytellingGradientSectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_GRADIENT)),
+            introSplitSection: StorytellingIntroSplitSectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_INTRO_SPLIT)),
+            masonrySection:    StorytellingMasonrySectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_MASONRY)),
+            globalUiContent:   GlobalUiContent::fromRawArray($this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY)),
         );
     }
 }
