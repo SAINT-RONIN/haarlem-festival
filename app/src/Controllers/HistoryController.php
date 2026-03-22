@@ -8,6 +8,7 @@ use App\Constants\HistoryPageConstants;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\EventTypeId;
 use App\Mappers\CmsMapper;
+use App\Mappers\HistoricalLocationMapper;
 use App\Mappers\HistoryMapper;
 use App\Mappers\ScheduleMapper;
 use App\Models\GlobalUiContent;
@@ -83,15 +84,14 @@ class HistoryController extends BaseController
     public function location(string $name): void
     {
         try {
-            $viewModel = $this->historyService->getHistoralLocationData($name);
+            $data = $this->historicalLocationService->getHistoralLocationPageData($name);
 
-            if ($viewModel === null) {
-                http_response_code(404);
-                require __DIR__ . '/../Views/pages/errors/404.php';
-                return;
-            }
+            $viewModel = HistoricalLocationMapper::toPageViewModel(
+                $data,
+                $this->sessionService->isLoggedIn(),
+            );
 
-            $this->renderPage(__DIR__ . '/../Views/pages/history-detail.php', $viewModel);
+            $this->renderPage(__DIR__ . '/../Views/pages/historical-location.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }

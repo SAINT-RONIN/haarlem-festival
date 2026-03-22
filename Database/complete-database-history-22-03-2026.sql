@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Generation Time: Mar 19, 2026 at 02:30 PM
--- Server version: 12.0.2-MariaDB-ubu2404
--- PHP Version: 8.3.27
+-- Generation Time: Mar 22, 2026 at 09:47 PM
+-- Server version: 12.2.2-MariaDB-ubu2404
+-- PHP Version: 8.3.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -67,153 +67,6 @@ INSERT INTO `Artist` (`ArtistId`, `Name`, `Style`, `BioHtml`, `ImageAssetId`, `I
 (23, 'Hardwell', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
 (24, 'Martin Garrix', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
 (25, 'Armin van Buuren', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ArtistAlbum`
---
-
-CREATE TABLE `ArtistAlbum` (
-  `ArtistAlbumId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
-  `Title` varchar(160) NOT NULL,
-  `Description` text NOT NULL DEFAULT '',
-  `Year` varchar(10) NOT NULL DEFAULT '',
-  `Tag` varchar(30) NOT NULL DEFAULT '',
-  `ImagePath` varchar(500) NOT NULL DEFAULT '',
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `ArtistAlbum`
---
-
-INSERT INTO `ArtistAlbum` (`ArtistAlbumId`, `EventId`, `Title`, `Description`, `Year`, `Tag`, `ImagePath`, `SortOrder`) VALUES
-(1, 1, 'Second Line Swing', 'Their breakthrough album featuring traditional second line rhythms mixed with contemporary jazz sensibilities. The title track became a festival favorite across Europe.', '2019', 'JAZZ', '/assets/Image/Jazz/GumboKingsAlbum1.png', 1),
-(2, 1, 'Big Easy', 'A love letter to New Orleans featuring reimagined classics and original compositions inspired by the city\'s rich musical heritage.', '2021', 'JAZZ', '/assets/Image/Jazz/GumboKingsAlbum2.png', 2),
-(3, 1, 'Live at Paradiso', 'Recorded live at Amsterdam\'s legendary Paradiso venue, this album captures the raw energy and spontaneity of their live performances.', '2023', 'LIVE', '/assets/Image/Jazz/GumboKingsAlbum3.png', 3),
-(4, 3, 'Atouba', 'Her debut album where Ntjam Rosie introduced her Afro-European blend of soul and jazz.', '2019', 'JAZZ', '/assets/Image/Jazz/Ntjamalbum1.png', 1),
-(5, 3, 'At the Back of Beyond', 'At the Back of Beyond showcases Ntjam Rosie\'s soulful blend of jazz and Afro-European sounds.', '2021', 'JAZZ', '/assets/Image/Jazz/Ntjamalbum2.png', 2),
-(6, 3, 'Family and Friends', 'Family and Friends highlights Ntjam Rosie\'s warm vocals and her fusion of jazz and Afro-European influences.', '2023', 'LIVE', '/assets/Image/Jazz/Ntjamalbum3.png', 3);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ArtistGalleryImage`
---
-
-CREATE TABLE `ArtistGalleryImage` (
-  `ArtistGalleryImageId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
-  `ImagePath` varchar(500) NOT NULL,
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `ArtistGalleryImage`
---
-
-INSERT INTO `ArtistGalleryImage` (`ArtistGalleryImageId`, `EventId`, `ImagePath`, `SortOrder`) VALUES
-(1, 1, '/assets/Image/Jazz/GumboGallery1.png', 1),
-(2, 1, '/assets/Image/Jazz/GumboGallery2.png', 2),
-(3, 1, '/assets/Image/Jazz/GumboGallery3.png', 3),
-(4, 3, '/assets/Image/Jazz/Ntjamgallery1.png', 1),
-(5, 3, '/assets/Image/Jazz/Ntjamgallery2.png', 2),
-(6, 3, '/assets/Image/Jazz/Ntjamgallery3.png', 3);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ArtistHighlight`
---
-
-CREATE TABLE `ArtistHighlight` (
-  `ArtistHighlightId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
-  `HighlightText` varchar(400) NOT NULL,
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `ArtistHighlight`
---
-
-INSERT INTO `ArtistHighlight` (`ArtistHighlightId`, `EventId`, `HighlightText`, `SortOrder`) VALUES
-(1, 1, 'Featured performers at New Orleans Jazz and Heritage Festival 2023', 1),
-(2, 1, 'Touring Europe extensively since 2019, performing at 50+ major festivals', 2),
-(3, 1, 'Authentic brass band sound with modern energy and innovation', 3),
-(4, 1, 'Collaborations with legendary New Orleans musicians including Trombone Shorty', 4),
-(5, 1, 'Known for interactive, high-energy live shows that get audiences dancing', 5),
-(6, 1, 'Winner of Best Jazz Ensemble at European Jazz Awards 2022', 6),
-(7, 3, 'Featured performer at the New Orleans Jazz and Heritage Festival 2023', 1),
-(8, 3, 'Toured across Europe since 2019, playing 50+ major festivals', 2),
-(9, 3, 'Blends Afro-European vocals with modern jazz and soul energy', 3),
-(10, 3, 'Collaborated with New Orleans artists, including Trombone Shorty', 4),
-(11, 3, 'Renowned for vibrant, high-energy live shows', 5),
-(12, 3, 'Winner of Best Jazz Ensemble at the European Jazz Awards 2022', 6);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ArtistLineupMember`
---
-
-CREATE TABLE `ArtistLineupMember` (
-  `ArtistLineupMemberId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
-  `MemberText` varchar(200) NOT NULL,
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `ArtistLineupMember`
---
-
-INSERT INTO `ArtistLineupMember` (`ArtistLineupMemberId`, `EventId`, `MemberText`, `SortOrder`) VALUES
-(1, 1, 'Marcus Johnson - Trumpet, Band Leader', 1),
-(2, 1, 'DeShawn Williams - Trombone', 2),
-(3, 1, 'Antoine Davis - Tenor Saxophone', 3),
-(4, 1, 'Jerome Baptiste - Drums', 4),
-(5, 1, 'Louis Carter - Upright Bass', 5),
-(6, 1, 'Raymond Pierce - Piano', 6),
-(7, 3, 'Ntjam Rosie - Vocals', 1),
-(8, 3, 'Bart Wirtz - Tenor Saxophone', 2),
-(9, 3, 'Niels Broos - Piano and Keys', 3),
-(10, 3, 'Bram Hakkens - Drums', 4),
-(11, 3, 'Tijn Wybenga - Bass', 5);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ArtistTrack`
---
-
-CREATE TABLE `ArtistTrack` (
-  `ArtistTrackId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
-  `Title` varchar(160) NOT NULL,
-  `Album` varchar(160) NOT NULL DEFAULT '',
-  `Description` text NOT NULL DEFAULT '',
-  `Duration` varchar(10) NOT NULL DEFAULT '',
-  `ImagePath` varchar(500) NOT NULL DEFAULT '',
-  `ProgressClass` varchar(30) NOT NULL DEFAULT '',
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `ArtistTrack`
---
-
-INSERT INTO `ArtistTrack` (`ArtistTrackId`, `EventId`, `Title`, `Album`, `Description`, `Duration`, `ImagePath`, `ProgressClass`, `SortOrder`) VALUES
-(1, 1, 'All Night Long', 'Live in the Quarter', 'Classic New Orleans standard with powerful brass arrangements', '4:32', '/assets/Image/Jazz/Allnightlong.png', 'w-[5%]', 1),
-(2, 1, 'Hot Damn!', 'Brass and Soul', 'Original composition featuring traditional second-line rhythms', '3:45', '/assets/Image/Jazz/Container.png', 'w-[15%]', 2),
-(3, 1, 'Valenzuela', 'Big Easy Nights', 'Fast-paced instrumental showcasing virtuoso musicianship', '4:18', '/assets/Image/Jazz/Listennowsection.png', 'w-full', 3),
-(4, 1, 'Here We Are', 'Live in the Quarter', 'High-energy rendition of the jazz funeral classic', '5:12', '/assets/Image/Jazz/Allnightlong.png', 'w-[60%]', 4),
-(5, 3, 'What is Love?', 'Live in the Quarter', 'Classic New Orleans standard with powerful brass arrangements', '4:32', '/assets/Image/Jazz/Ntjamwhatislove.png', 'w-[5%]', 1),
-(6, 3, 'Thinkin About You', 'Brass and Soul', 'Original composition featuring traditional second-line rhythms', '3:45', '/assets/Image/Jazz/Ntjamthinkinaboutyou.png', 'w-[15%]', 2),
-(7, 3, 'You got this', 'Big Easy Nights', 'Fast-paced instrumental showcasing virtuoso musicianship', '4:18', '/assets/Image/Jazz/Ntjamyougotthis.png', 'w-full', 3),
-(8, 3, 'In Need - Reworked', 'Live in the Quarter', 'High-energy rendition of the jazz funeral classic', '5:12', '/assets/Image/Jazz/Ntjaminneed.png', 'w-[60%]', 4);
 
 -- --------------------------------------------------------
 
@@ -310,14 +163,26 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (98, 7, 'history_image', 'MEDIA', NULL, NULL, 6, '2026-02-08 13:54:33'),
 (99, 8, 'restaurant_image', 'MEDIA', NULL, NULL, 7, '2026-02-08 13:54:33'),
 (100, 9, 'storytelling_image', 'MEDIA', NULL, NULL, 8, '2026-02-08 13:54:33'),
+(101, 16, 'masonry_image_01', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(102, 16, 'masonry_image_02', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(103, 16, 'masonry_image_03', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(104, 16, 'masonry_image_04', 'IMAGE_PATH', '/assets/Image/storytelling/winnie-the-pooh.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(105, 16, 'masonry_image_05', 'IMAGE_PATH', '/assets/Image/storytelling/pig.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(106, 16, 'masonry_image_06', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(107, 16, 'masonry_image_07', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(108, 16, 'masonry_image_08', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, NULL, '2026-02-08 14:29:20'),
+(109, 16, 'masonry_image_09', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(110, 16, 'masonry_image_10', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-drip.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(111, 16, 'masonry_image_11', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-visser.jpg', NULL, NULL, '2026-02-08 14:29:20'),
+(112, 16, 'masonry_image_12', 'IMAGE_PATH', '/assets/Image/storytelling/WinnieThePoohHeader.png', NULL, NULL, '2026-02-08 14:29:20'),
 (113, 14, 'gradient_background_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-02-08 14:32:21'),
 (114, 15, 'intro_image_alt', 'TEXT', 'Stories in Haarlem', NULL, NULL, '2026-02-08 14:34:54'),
 (115, 28, 'hero_main_title', 'HEADING', 'HAARLEM JAZZ', NULL, NULL, '2026-02-10 15:02:54'),
 (116, 28, 'hero_subtitle', 'TEXT', 'Experience world-class jazz performances at Haarlem\'s premier music festival. Discover our complete lineup, detailed schedules, and venue information.', NULL, NULL, '2026-02-10 14:12:56'),
 (117, 28, 'hero_button_primary', 'BUTTON_TEXT', 'Discover all performances', NULL, NULL, '2026-02-10 12:02:48'),
-(118, 28, 'hero_button_primary_link', 'LINK', '#artists', NULL, NULL, '2026-02-10 12:02:48'),
+(118, 28, 'hero_button_primary_link', 'LINK', '#artists', NULL, NULL, '2026-03-17 15:40:12'),
 (119, 28, 'hero_button_secondary', 'BUTTON_TEXT', 'What is Haarlem Jazz?', NULL, NULL, '2026-02-10 12:02:48'),
-(120, 28, 'hero_button_secondary_link', 'LINK', '#intro', NULL, NULL, '2026-02-10 12:02:48'),
+(120, 28, 'hero_button_secondary_link', 'LINK', '#intro', NULL, NULL, '2026-03-17 15:40:12'),
 (121, 29, 'gradient_heading', 'HEADING', 'Every note carries emotion, intention, and connection beyond what is heard.', NULL, NULL, '2026-02-10 12:02:48'),
 (122, 29, 'gradient_subheading', 'TEXT', 'A place where jazz is experienced, not just played.', NULL, NULL, '2026-02-10 13:40:15'),
 (123, 30, 'intro_heading', 'HEADING', 'Haarlem moves to the rhythm of jazz', NULL, NULL, '2026-02-10 12:02:48'),
@@ -371,7 +236,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (171, 33, 'schedule_cta_heading', 'HEADING', 'Ready to Plan Your Festival Experience?', NULL, NULL, '2026-02-10 12:02:48'),
 (172, 33, 'schedule_cta_description', 'TEXT', 'Now that you\'ve explored our artists, check out the complete performance schedule below to see exact times, venues, and ticket availability. You can filter by day to plan your perfect jazz weekend.', NULL, NULL, '2026-02-10 14:12:56'),
 (173, 33, 'schedule_cta_button', 'BUTTON_TEXT', 'View complete schedule', NULL, NULL, '2026-02-10 12:02:48'),
-(174, 33, 'schedule_cta_button_link', 'LINK', '#schedule', NULL, NULL, '2026-02-10 12:02:48'),
+(174, 33, 'schedule_cta_button_link', 'LINK', '#schedule', NULL, NULL, '2026-03-17 15:40:12'),
 (175, 34, 'artists_heading', 'HEADING', 'Discover our lineup', NULL, NULL, '2026-02-10 12:02:48'),
 (176, 35, 'booking_cta_heading', 'HEADING', 'Book Your Experience', NULL, NULL, '2026-02-10 12:02:48'),
 (177, 35, 'booking_cta_description', 'TEXT', 'Secure your tickets now for the last weekend of July. With limited seating at Patronaat and free performances at Grote Markt, there\'s an option for every jazz lover. Don\'t miss out on this year\'s incredible lineup.', NULL, NULL, '2026-02-10 14:12:56'),
@@ -408,7 +273,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (208, 36, 'schedule_show_additional_info', 'TEXT', '1', NULL, NULL, '2026-02-10 17:17:49'),
 (209, 36, 'schedule_show_story_count', 'TEXT', '1', NULL, NULL, '2026-02-10 17:17:49'),
 (210, 36, 'schedule_story_count_label', 'TEXT', 'Stories', NULL, NULL, '2026-02-10 17:17:49'),
-(211, 36, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Discover', NULL, NULL, '2026-03-19 12:39:55'),
+(211, 36, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Discover', NULL, NULL, '2026-02-10 17:17:49'),
 (212, 36, 'schedule_pay_what_you_like_text', 'TEXT', 'Pay as you like', NULL, NULL, '2026-02-10 17:17:49'),
 (213, 36, 'schedule_currency_symbol', 'TEXT', '€', NULL, NULL, '2026-02-10 17:17:49'),
 (214, 37, 'schedule_title', 'HEADING', 'Jazz schedule', NULL, NULL, '2026-02-10 20:36:52'),
@@ -431,7 +296,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (231, 45, 'gradient_heading', 'HEADING', 'Every street holds echoes of the past, shaped by the people who once walked there.', NULL, NULL, '2026-02-16 12:52:54'),
 (232, 45, 'gradient_subheading', 'TEXT', 'Where history comes alive through places, paths, and people.', NULL, NULL, '2026-02-16 12:52:54'),
 (233, 40, 'intro_heading', 'HEADING', 'Experience the living history of Haarlem', NULL, NULL, '2026-02-16 13:01:35'),
-(234, 51, 'route_location1_name', 'TEXT', 'Church of St.Bavo', NULL, NULL, '2026-02-16 13:04:58'),
+(234, 51, 'route_location1_name', 'TEXT', 'Church of St.Bavo', NULL, NULL, '2026-03-18 16:17:57'),
 (235, 51, 'route_location1_description', 'TEXT', 'A monumental Gothic church famed for its towering nave and historic Müller organ once played by Mozart.', NULL, NULL, '2026-02-16 13:04:58'),
 (236, 51, 'route_location2_name', 'TEXT', 'Grote Markt', NULL, NULL, '2026-02-16 13:06:02'),
 (237, 51, 'route_location2_description', 'TEXT', 'A vibrant central square surrounded by landmark buildings and lively cafés; the city\'s cultural heart.', NULL, NULL, '2026-02-16 17:53:02'),
@@ -462,13 +327,13 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (262, 38, 'history_molendeadriaan_image', 'IMAGE_PATH', '/assets/Image/History/History-MolenDeAdriaan.png', NULL, NULL, '2026-03-09 23:08:47'),
 (263, 38, 'historical_locations_heading', 'HEADING', 'Read more about these locations', NULL, NULL, '2026-02-16 13:36:54'),
 (264, 52, 'ticket_options_heading', 'HEADING', 'Your ticket options to join the experience', NULL, NULL, '2026-02-16 13:38:08'),
-(265, 52, 'history_single_ticket_icon', 'LINK', '/assets/Icons/History/single-ticket-icon.svg', NULL, NULL, '2026-02-16 13:49:05'),
+(265, 52, 'history_single_ticket_icon', 'LINK', '/assets/Icons/History/single-ticket-icon.svg', NULL, NULL, '2026-03-17 15:40:12'),
 (266, 52, 'history_pricing_single_title', 'TEXT', 'Single Ticket', NULL, NULL, '2026-02-16 13:49:05'),
 (267, 53, 'history_pricing_single_price', 'TEXT', '€17.50', NULL, NULL, '2026-02-16 13:49:05'),
 (268, 53, 'history_pricing_single_include1', 'TEXT', 'Per person', NULL, NULL, '2026-02-16 13:49:05'),
 (269, 53, 'history_pricing_single_include2', 'TEXT', 'Includes one complimentary drink', NULL, NULL, '2026-02-16 13:49:05'),
 (270, 53, 'history_pricing_single_include3', 'TEXT', '2.5 hour guided tour', NULL, NULL, '2026-02-16 13:49:05'),
-(271, 52, 'history_group_ticket_icon', 'LINK', '/assets/Icons/History/group-ticket-icon.svg', NULL, NULL, '2026-02-16 13:49:05'),
+(271, 52, 'history_group_ticket_icon', 'LINK', '/assets/Icons/History/group-ticket-icon.svg', NULL, NULL, '2026-03-17 15:40:12'),
 (272, 52, 'history_pricing_group_title', 'TEXT', 'Group Ticket', NULL, NULL, '2026-02-16 13:49:05'),
 (273, 53, 'history_pricing_group_price', 'TEXT', '€60.00', NULL, NULL, '2026-02-16 13:49:05'),
 (274, 53, 'history_pricing_group_include1', 'TEXT', 'For up to 4 people', NULL, NULL, '2026-02-16 13:49:05'),
@@ -517,41 +382,323 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (317, 60, 'filter_modern', 'BUTTON_TEXT', 'Modern', NULL, NULL, '2026-02-16 16:31:14'),
 (318, 60, 'filter_fish_seafood', 'BUTTON_TEXT', 'Fish & Seafood', NULL, NULL, '2026-02-16 16:31:14'),
 (319, 60, 'filter_vegetarian', 'BUTTON_TEXT', 'Vegetarian', NULL, NULL, '2026-02-16 16:31:14'),
+(320, 60, 'restaurant_1_name', 'HEADING', 'Ratatouille', NULL, NULL, '2026-02-16 16:31:14'),
+(321, 60, 'restaurant_1_cuisine', 'TEXT', 'French, fish and seafood, European', NULL, NULL, '2026-02-16 16:31:14'),
+(322, 60, 'restaurant_1_address', 'TEXT', 'Spaarne 96, 2011 CL Haarlem', NULL, NULL, '2026-02-16 16:31:14'),
+(323, 60, 'restaurant_1_description', 'TEXT', 'Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.', NULL, NULL, '2026-02-16 16:31:14'),
+(324, 60, 'restaurant_1_distance_text', 'TEXT', '5 min walk from Patronaat', NULL, NULL, '2026-02-16 16:31:14'),
+(325, 60, 'restaurant_1_rating', 'TEXT', '4', NULL, NULL, '2026-02-16 16:31:14'),
+(326, 60, 'restaurant_1_price', 'TEXT', '€€€', NULL, NULL, '2026-02-16 16:31:14'),
+(327, 60, 'restaurant_1_image', 'IMAGE_PATH', '/assets/Image/restaurants/Restaurant-Ratatouille-card.png', NULL, NULL, '2026-02-16 16:31:14'),
+(328, 60, 'restaurant_1_about_label', 'BUTTON_TEXT', 'About it', NULL, NULL, '2026-02-16 16:31:14'),
+(329, 60, 'restaurant_1_book_label', 'TEXT', 'What is Yummy?', NULL, NULL, '2026-03-07 15:14:05'),
+(330, 60, 'restaurant_2_name', 'TEXT', 'A festival of food where each restaurant offers one unique menu, set time slots, and special prices.', NULL, NULL, '2026-03-07 15:14:05'),
+(331, 60, 'restaurant_2_cuisine', 'TEXT', 'Who takes part?', NULL, NULL, '2026-03-07 15:14:05'),
+(332, 60, 'restaurant_2_address', 'TEXT', 'Local chefs and restaurants from all around Haarlem, prepare with their own style a great variety of dishes, such as: Dutch-French-European-Fish & Seafood-Modern Vegan.', NULL, NULL, '2026-03-07 15:14:05'),
+(333, 60, 'restaurant_2_description', 'TEXT', 'How does it work?', NULL, NULL, '2026-03-07 15:14:05'),
+(334, 60, 'restaurant_2_distance_text', 'TEXT', 'Choose a restaurant, pick a time slot, and make a reservation. Seats are limited, so booking ahead is important.', NULL, NULL, '2026-03-07 15:14:05'),
+(335, 60, 'restaurant_2_rating', 'TEXT', 'Come enjoy great food, good company, and a warm festival atmosphere.', NULL, NULL, '2026-03-07 15:14:05'),
+(336, 60, 'restaurant_2_price', 'TEXT', '{cuisine}\nRelax, explore, and let {name} make your evening something truly special.', NULL, NULL, '2026-03-08 12:40:41'),
+(337, 60, 'restaurant_2_image', 'BUTTON_TEXT', 'Make a reservation', NULL, NULL, '2026-03-08 12:40:41'),
+(338, 60, 'restaurant_2_about_label', 'BUTTON_TEXT', 'Back to restaurant', NULL, NULL, '2026-03-08 12:40:41'),
+(339, 60, 'restaurant_2_book_label', 'HEADING', 'Contact', NULL, NULL, '2026-03-08 12:40:41'),
+(340, 60, 'restaurant_3_name', 'TEXT', 'ADDRESS', NULL, NULL, '2026-03-08 12:40:41'),
+(341, 60, 'restaurant_3_cuisine', 'TEXT', 'CONTACT', NULL, NULL, '2026-03-08 12:40:41'),
+(342, 60, 'restaurant_3_address', 'TEXT', 'OPEN HOURS FOR YUMMY', NULL, NULL, '2026-03-08 12:40:41'),
+(343, 60, 'restaurant_3_description', 'HEADING', 'Practical Info', NULL, NULL, '2026-03-08 12:40:41'),
+(344, 60, 'restaurant_3_distance_text', 'TEXT', 'PRICE AND FOOD', NULL, NULL, '2026-03-08 12:40:41'),
+(345, 60, 'restaurant_3_rating', 'TEXT', 'RESTAURANT RATING', NULL, NULL, '2026-03-08 12:40:41'),
+(346, 60, 'restaurant_3_price', 'TEXT', 'SPECIAL REQUESTS', NULL, NULL, '2026-03-08 12:40:41'),
+(347, 60, 'restaurant_3_image', 'HEADING', 'Restaurant Gallery', NULL, NULL, '2026-03-08 12:40:41'),
+(348, 60, 'restaurant_3_about_label', 'HEADING', 'About', NULL, NULL, '2026-03-08 12:40:41'),
+(349, 60, 'restaurant_3_book_label', 'HEADING', 'Chef & Philosophy', NULL, NULL, '2026-03-08 12:40:41'),
+(350, 60, 'restaurant_4_name', 'HEADING', 'Menu Style', NULL, NULL, '2026-03-08 12:40:41'),
+(351, 60, 'restaurant_4_cuisine', 'TEXT', 'Cuisine type:', NULL, NULL, '2026-03-08 12:40:41'),
+(352, 60, 'restaurant_4_address', 'HEADING', 'Location', NULL, NULL, '2026-03-08 12:40:41'),
+(353, 60, 'restaurant_4_description', 'TEXT', 'Address', NULL, NULL, '2026-03-08 12:40:41'),
+(354, 60, 'restaurant_4_distance_text', 'HEADING', 'Make your Reservation', NULL, NULL, '2026-03-08 12:40:41'),
+(355, 60, 'restaurant_4_rating', 'TEXT', 'Choose a time slot that suits your evening. When you\'re ready to book, continue to the next screen to confirm your guests and add any special requests.', NULL, NULL, '2026-03-08 12:40:41'),
+(356, 60, 'restaurant_4_price', 'TEXT', 'AVAILABLE TIME SLOTS', NULL, NULL, '2026-03-08 12:40:41'),
+(357, 60, 'restaurant_4_image', 'TEXT', 'To make your reservation, please continue to the next screen.', NULL, NULL, '2026-03-08 12:40:41'),
+(358, 60, 'restaurant_4_about_label', 'BUTTON_TEXT', 'Continue to Reservation', NULL, NULL, '2026-03-08 12:40:41'),
+(359, 60, 'restaurant_4_book_label', 'TEXT', 'Duration', NULL, NULL, '2026-03-08 12:40:41'),
+(360, 60, 'restaurant_5_name', 'TEXT', 'Seats', NULL, NULL, '2026-03-08 12:40:41'),
+(361, 60, 'restaurant_5_cuisine', 'TEXT', 'Festival-rated', NULL, NULL, '2026-03-08 12:40:41'),
+(362, 60, 'restaurant_5_address', 'TEXT', 'Michelin-star', NULL, NULL, '2026-03-08 12:40:41'),
+(363, 60, 'restaurant_5_description', 'TEXT', 'Map coming soon', NULL, NULL, '2026-03-08 12:40:41'),
+(364, 60, 'restaurant_5_distance_text', 'TEXT', '12 min walk from Slachthuis', NULL, NULL, '2026-02-16 16:31:14'),
+(365, 60, 'restaurant_5_rating', 'TEXT', '4', NULL, NULL, '2026-02-16 16:31:14'),
+(366, 60, 'restaurant_5_price', 'TEXT', '€€€', NULL, NULL, '2026-02-16 16:31:14'),
+(367, 60, 'restaurant_5_image', 'IMAGE_PATH', '/assets/Image/restaurants/Restaurant-ML-card.png', NULL, NULL, '2026-02-16 16:31:14'),
+(368, 60, 'restaurant_5_about_label', 'BUTTON_TEXT', 'About it', NULL, NULL, '2026-02-16 16:31:14'),
+(369, 60, 'restaurant_5_book_label', 'BUTTON_TEXT', 'Book table', NULL, NULL, '2026-02-16 16:31:14'),
+(370, 60, 'restaurant_6_name', 'HEADING', 'Cafe de Roemer', NULL, NULL, '2026-02-16 16:31:14'),
+(371, 60, 'restaurant_6_cuisine', 'TEXT', 'Dutch, fish and seafood, European', NULL, NULL, '2026-02-16 16:31:14'),
+(372, 60, 'restaurant_6_address', 'TEXT', 'Botermarkt 17, 2011 XL Haarlem', NULL, NULL, '2026-02-16 16:31:14'),
+(373, 60, 'restaurant_6_description', 'TEXT', 'A cozy neighborhood cafe serving honest food and classic flavors in a relaxed and friendly setting.', NULL, NULL, '2026-02-16 16:31:14'),
+(374, 60, 'restaurant_6_distance_text', 'TEXT', '7 min walk from Puncher Comedy Club', NULL, NULL, '2026-02-16 16:31:14'),
+(375, 60, 'restaurant_6_rating', 'TEXT', '4', NULL, NULL, '2026-02-16 16:31:14'),
+(376, 60, 'restaurant_6_price', 'TEXT', '€€€', NULL, NULL, '2026-02-16 16:31:14'),
+(377, 60, 'restaurant_6_image', 'IMAGE_PATH', '/assets/Image/restaurants/Restaurant-deRoemer-card.png', NULL, NULL, '2026-02-16 16:31:14'),
+(378, 60, 'restaurant_6_about_label', 'BUTTON_TEXT', 'About it', NULL, NULL, '2026-02-16 16:31:14'),
+(379, 60, 'restaurant_6_book_label', 'BUTTON_TEXT', 'Book table', NULL, NULL, '2026-02-16 16:31:14'),
+(380, 60, 'restaurant_7_name', 'HEADING', 'Restaurant Fris', NULL, NULL, '2026-02-16 16:31:14'),
+(381, 60, 'restaurant_7_cuisine', 'TEXT', 'Dutch, French, European', NULL, NULL, '2026-02-16 16:31:14'),
+(382, 60, 'restaurant_7_address', 'TEXT', 'Twijnderslaan 7, 2012 BG, Haarlem', NULL, NULL, '2026-02-16 16:31:14'),
+(383, 60, 'restaurant_7_description', 'TEXT', 'A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.', NULL, NULL, '2026-02-16 16:31:14'),
+(384, 60, 'restaurant_7_distance_text', 'TEXT', '10 min walk from Patronaat', NULL, NULL, '2026-02-16 16:31:14'),
+(385, 60, 'restaurant_7_rating', 'TEXT', '4', NULL, NULL, '2026-02-16 16:31:14'),
+(386, 60, 'restaurant_7_price', 'TEXT', '€€€', NULL, NULL, '2026-02-16 16:31:14'),
+(387, 60, 'restaurant_7_image', 'IMAGE_PATH', '/assets/Image/restaurants/Restaurant-Fris-card.png', NULL, NULL, '2026-02-16 16:31:14'),
+(388, 60, 'restaurant_7_about_label', 'BUTTON_TEXT', 'About it', NULL, NULL, '2026-02-16 16:31:14'),
+(389, 60, 'restaurant_7_book_label', 'BUTTON_TEXT', 'Book table', NULL, NULL, '2026-02-16 16:31:14'),
 (390, 61, 'about_heading', 'HEADING', 'Winnie de Poeh (4+)', NULL, NULL, '2026-03-09 15:46:45'),
 (391, 61, 'about_body', 'HTML', NULL, '<p>An enchanting storytelling experience for children aged 4 and above, bringing the beloved story of Winnie the Pooh to life in the heart of Haarlem.</p>', NULL, '2026-03-09 15:46:45'),
+(392, 61, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/winnie-the-pooh.jpg', NULL, NULL, '2026-03-09 15:46:45'),
+(393, 61, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/WinnieThePoohHeader.png', NULL, NULL, '2026-03-09 15:46:45'),
+(394, 61, 'highlight_1_title', 'TEXT', 'A Story for All Ages', NULL, NULL, '2026-03-09 15:46:45'),
+(395, 61, 'highlight_1_description', 'TEXT', 'A classic tale reimagined for young and old alike.', NULL, NULL, '2026-03-09 15:46:45'),
+(396, 61, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/winnie-the-pooh.jpg', NULL, NULL, '2026-03-14 16:25:32'),
+(397, 61, 'highlight_2_title', 'TEXT', 'Live Storytelling', NULL, NULL, '2026-03-14 16:25:32'),
+(398, 61, 'highlight_2_description', 'TEXT', 'Experience the magic of oral storytelling in an intimate setting.', NULL, NULL, '2026-03-09 15:46:45'),
+(399, 61, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:46:45'),
+(400, 61, 'highlight_3_title', 'TEXT', 'Interactive & Fun', NULL, NULL, '2026-03-09 15:46:45'),
+(401, 61, 'highlight_3_description', 'TEXT', 'Children are invited to participate and use their imagination.', NULL, NULL, '2026-03-09 15:46:45'),
+(402, 61, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/pig.jpg', NULL, NULL, '2026-03-09 15:46:45');
+INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
+(403, 61, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/winnie-the-pooh.jpg', NULL, NULL, '2026-03-09 15:46:45'),
+(404, 61, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/WinnieThePoohHeader.png', NULL, NULL, '2026-03-09 15:46:45'),
+(405, 61, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:46:45'),
+(406, 61, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/pig.jpg', NULL, NULL, '2026-03-09 15:46:45'),
+(407, 61, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:46:45'),
 (408, 61, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:46:45'),
 (409, 62, 'about_heading', 'HEADING', 'Omdenken Podcast', NULL, NULL, '2026-03-09 15:51:55'),
 (410, 62, 'about_body', 'HTML', NULL, '<p>A live podcast recording with audience participation. Thought-provoking conversations that challenge conventional thinking and inspire new perspectives.</p>', NULL, '2026-03-09 15:51:55'),
+(411, 62, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(412, 62, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(413, 62, 'highlight_1_title', 'TEXT', 'Live Recording', NULL, NULL, '2026-03-09 15:51:55'),
+(414, 62, 'highlight_1_description', 'TEXT', 'Be part of a live podcast recording in front of an audience.', NULL, NULL, '2026-03-09 15:51:55'),
+(415, 62, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(416, 62, 'highlight_2_title', 'TEXT', 'Audience Participation', NULL, NULL, '2026-03-09 15:51:55'),
+(417, 62, 'highlight_2_description', 'TEXT', 'Your questions and insights shape the conversation.', NULL, NULL, '2026-03-09 15:51:55'),
+(418, 62, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(419, 62, 'highlight_3_title', 'TEXT', 'New Perspectives', NULL, NULL, '2026-03-09 15:51:55'),
+(420, 62, 'highlight_3_description', 'TEXT', 'Discover how reframing challenges can lead to creative solutions.', NULL, NULL, '2026-03-09 15:51:55'),
+(421, 62, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(422, 62, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(423, 62, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(424, 62, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(425, 62, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(426, 62, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (427, 62, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (428, 63, 'about_heading', 'HEADING', 'About Buurderij Haarlem', NULL, NULL, '2026-03-09 15:51:55'),
-(429, 63, 'about_body', 'HTML', NULL, '<p>Buurderij Haarlem is a local food community where neighbours order directly from farmers and small producers in the region. What started as a simple idea grew into a place where food is not just bought, but shared as a story. Each product represents a person, a process, and a belief in fair trade and sustainability.<br><br>During this storytelling session, the audience is taken behind the scenes of Buurderij Haarlem. The story explains how local entrepreneurs, volunteers, and residents work together to create a system based on trust, transparency, and respect for nature. It highlights the human side of food, showing how everyday choices can strengthen local economies and communities.</p>', NULL, '2026-03-19 14:01:29'),
-(446, 63, 'video_url', 'TEXT', 'https://www.youtube.com/embed/25Pt1AZO9EM', NULL, NULL, '2026-03-19 14:06:52'),
+(429, 63, 'about_body', 'HTML', NULL, '<p>Buurderij Haarlem is a local food community where neighbours order directly from farmers and small producers in the region. What started as a simple idea grew into a place where food is not just bought, but shared as a story.</p><p>During this storytelling session, the audience is taken behind the scenes of Buurderij Haarlem. The story explains how local entrepreneurs, volunteers, and residents work together to create a system based on trust, transparency, and respect for nature.</p>', NULL, '2026-03-09 15:51:55'),
+(430, 63, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(431, 63, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(432, 63, 'highlight_1_title', 'TEXT', 'From Farmer to Neighbour', NULL, NULL, '2026-03-09 15:51:55'),
+(433, 63, 'highlight_1_description', 'TEXT', 'A personal story about how local farmers connect directly with Haarlem residents, focusing on trust, fair pricing, and the journey food takes from land to table.', NULL, NULL, '2026-03-09 15:51:55'),
+(434, 63, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(435, 63, 'highlight_2_title', 'TEXT', 'Building a Local Food Community', NULL, NULL, '2026-03-09 15:51:55'),
+(436, 63, 'highlight_2_description', 'TEXT', 'How Buurderij Haarlem became more than a marketplace - weekly meetups created friendships and a shared sense of responsibility for local food.', NULL, NULL, '2026-03-09 15:51:55'),
+(437, 63, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(438, 63, 'highlight_3_title', 'TEXT', 'Food with a Future', NULL, NULL, '2026-03-09 15:51:55'),
+(439, 63, 'highlight_3_description', 'TEXT', 'How Buurderij Haarlem supports seasonal food, reduces waste, and encourages conscious consumption for future generations.', NULL, NULL, '2026-03-09 15:51:55'),
+(440, 63, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(441, 63, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(442, 63, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(443, 63, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/where-stories-come-alive.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(444, 63, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(445, 63, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(446, 63, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (447, 64, 'about_heading', 'HEADING', 'Corrie voor kinderen', NULL, NULL, '2026-03-09 15:51:55'),
 (448, 64, 'about_body', 'HTML', NULL, '<p>A family storytelling experience that brings the story of Corrie to life for young audiences with engaging performances and vivid imagery.</p>', NULL, '2026-03-09 15:51:55'),
+(449, 64, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(450, 64, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(451, 64, 'highlight_1_title', 'TEXT', 'Stories for Every Child', NULL, NULL, '2026-03-09 15:51:55'),
+(452, 64, 'highlight_1_description', 'TEXT', 'An accessible and joyful storytelling session designed with children in mind.', NULL, NULL, '2026-03-09 15:51:55'),
+(453, 64, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(454, 64, 'highlight_2_title', 'TEXT', 'Imagination in Action', NULL, NULL, '2026-03-09 15:51:55'),
+(455, 64, 'highlight_2_description', 'TEXT', 'Watch as the performer brings characters to life through voice, gesture, and storytelling.', NULL, NULL, '2026-03-09 15:51:55'),
+(456, 64, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(457, 64, 'highlight_3_title', 'TEXT', 'A Shared Experience', NULL, NULL, '2026-03-09 15:51:55'),
+(458, 64, 'highlight_3_description', 'TEXT', 'A session that brings families and communities together around shared stories.', NULL, NULL, '2026-03-09 15:51:55'),
+(459, 64, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(460, 64, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(461, 64, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(462, 64, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(463, 64, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(464, 64, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (465, 64, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (466, 65, 'about_heading', 'HEADING', 'Winnaars verhalenvertel wedstrijd', NULL, NULL, '2026-03-09 15:51:55'),
 (467, 65, 'about_body', 'HTML', NULL, '<p>The winners of this year verhalenvertel competition share their winning stories about Haarlem, its people, and its spirit.</p>', NULL, '2026-03-09 15:51:55'),
+(468, 65, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(469, 65, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(470, 65, 'highlight_1_title', 'TEXT', 'Competition Winners', NULL, NULL, '2026-03-09 15:51:55'),
+(471, 65, 'highlight_1_description', 'TEXT', 'Hear from the storytellers who won the Haarlem storytelling competition.', NULL, NULL, '2026-03-09 15:51:55'),
+(472, 65, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(473, 65, 'highlight_2_title', 'TEXT', 'Stories About Haarlem', NULL, NULL, '2026-03-09 15:51:55'),
+(474, 65, 'highlight_2_description', 'TEXT', 'Each winner tells a story rooted in the city culture and everyday life.', NULL, NULL, '2026-03-09 15:51:55'),
+(475, 65, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(476, 65, 'highlight_3_title', 'TEXT', 'Community Voice', NULL, NULL, '2026-03-09 15:51:55'),
+(477, 65, 'highlight_3_description', 'TEXT', 'The competition celebrates storytelling as a way to strengthen community bonds.', NULL, NULL, '2026-03-09 15:51:55'),
+(478, 65, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(479, 65, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(480, 65, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(481, 65, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(482, 65, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(483, 65, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (484, 65, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (485, 66, 'about_heading', 'HEADING', 'Het verhaal van de Oeserzwammerij', NULL, NULL, '2026-03-09 15:51:55'),
 (486, 66, 'about_body', 'HTML', NULL, '<p>An intimate storytelling session about the Oeserzwammerij, a local initiative growing oyster mushrooms sustainably in Haarlem.</p>', NULL, '2026-03-09 15:51:55'),
+(487, 66, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(488, 66, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(489, 66, 'highlight_1_title', 'TEXT', 'Sustainable Innovation', NULL, NULL, '2026-03-09 15:51:55'),
+(490, 66, 'highlight_1_description', 'TEXT', 'Learn how local entrepreneurs are growing food sustainably in the city.', NULL, NULL, '2026-03-09 15:51:55'),
+(491, 66, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(492, 66, 'highlight_2_title', 'TEXT', 'Community Impact', NULL, NULL, '2026-03-09 15:51:55'),
+(493, 66, 'highlight_2_description', 'TEXT', 'The Oeserzwammerij connects growers, volunteers, and consumers.', NULL, NULL, '2026-03-09 15:51:55'),
+(494, 66, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(495, 66, 'highlight_3_title', 'TEXT', 'From Waste to Food', NULL, NULL, '2026-03-09 15:51:55'),
+(496, 66, 'highlight_3_description', 'TEXT', 'Using coffee grounds and organic waste to grow nutritious mushrooms.', NULL, NULL, '2026-03-09 15:51:55'),
+(497, 66, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(498, 66, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(499, 66, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(500, 66, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(501, 66, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(502, 66, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (503, 66, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (504, 67, 'about_heading', 'HEADING', 'Flip Thinking Podcast', NULL, NULL, '2026-03-09 15:51:55'),
 (505, 67, 'about_body', 'HTML', NULL, '<p>A live recording of the popular Flip Thinking podcast, where hosts and guests explore the art of reframing problems into opportunities.</p>', NULL, '2026-03-09 15:51:55'),
+(506, 67, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(507, 67, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(508, 67, 'highlight_1_title', 'TEXT', 'Reframe Your World', NULL, NULL, '2026-03-09 15:51:55'),
+(509, 67, 'highlight_1_description', 'TEXT', 'Learn practical techniques for turning obstacles into opportunities.', NULL, NULL, '2026-03-09 15:51:55'),
+(510, 67, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(511, 67, 'highlight_2_title', 'TEXT', 'Live Podcast Recording', NULL, NULL, '2026-03-09 15:51:55'),
+(512, 67, 'highlight_2_description', 'TEXT', 'Experience the magic of a podcast recorded before a live audience.', NULL, NULL, '2026-03-09 15:51:55'),
+(513, 67, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(514, 67, 'highlight_3_title', 'TEXT', 'Q and A with Audience', NULL, NULL, '2026-03-09 15:51:55'),
+(515, 67, 'highlight_3_description', 'TEXT', 'After the recording, guests take questions from the audience.', NULL, NULL, '2026-03-09 15:51:55'),
+(516, 67, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(517, 67, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(518, 67, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(519, 67, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(520, 67, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(521, 67, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (522, 67, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
-(542, 69, 'about_heading', 'HEADING', 'About Mister Anansi', NULL, NULL, '2026-03-19 12:51:45'),
-(543, 69, 'about_body', 'HTML', NULL, '<p>Mister Anansi is one of the most iconic figures in West African and Caribbean storytelling traditions. Known as the clever spider who uses wit and creativity to navigate challenges, Anansi has been at the heart of oral storytelling for generations. His tales have travelled across continents, carried through families, communities and cultural celebrations.<br><br>Over time, Anansi&rsquo;s stories have appeared in books, theatre performances, educational programs and festivals around the world. His role as a trickster and teacher makes him a powerful symbol of resilience and imagination. Today, Mister Anansi continues to inspire audiences with stories that explore courage, intelligence and the importance of community, ensuring his enduring relevance in modern storytelling.</p>', NULL, '2026-03-19 12:45:02'),
-(560, 69, 'video_url', 'TEXT', 'https://www.youtube.com/embed/OYQNvjaxo38', NULL, NULL, '2026-03-19 14:07:49'),
+(523, 68, 'about_heading', 'HEADING', 'Meneer Anansi', NULL, NULL, '2026-03-09 15:51:55'),
+(524, 68, 'about_body', 'HTML', NULL, '<p>Meneer Anansi brings the West African trickster spider to life in Dutch, weaving together folklore, humour, and wisdom in a totally original way.</p>', NULL, '2026-03-09 15:51:55'),
+(525, 68, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, NULL, '2026-03-09 15:51:55'),
+(526, 68, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(527, 68, 'highlight_1_title', 'TEXT', 'Anansi the Trickster', NULL, NULL, '2026-03-09 15:51:55'),
+(528, 68, 'highlight_1_description', 'TEXT', 'The beloved spider of West African folklore comes alive on stage.', NULL, NULL, '2026-03-09 15:51:55'),
+(529, 68, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, NULL, '2026-03-09 15:51:55'),
+(530, 68, 'highlight_2_title', 'TEXT', 'Dutch Folk and World Heritage', NULL, NULL, '2026-03-09 15:51:55'),
+(531, 68, 'highlight_2_description', 'TEXT', 'Ancient Anansi stories told in Dutch, bridging cultures and generations.', NULL, NULL, '2026-03-09 15:51:55'),
+(532, 68, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(533, 68, 'highlight_3_title', 'TEXT', 'Humour and Wisdom', NULL, NULL, '2026-03-09 15:51:55'),
+(534, 68, 'highlight_3_description', 'TEXT', 'Each Anansi story carries a lesson wrapped in laughter and surprise.', NULL, NULL, '2026-03-09 15:51:55'),
+(535, 68, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-drip.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(536, 68, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, NULL, '2026-03-09 15:51:55'),
+(537, 68, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(538, 68, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-drip.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(539, 68, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-visser.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(540, 68, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(541, 68, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
+(542, 69, 'about_heading', 'HEADING', 'Mister Anansi', NULL, NULL, '2026-03-09 15:51:55'),
+(543, 69, 'about_body', 'HTML', NULL, '<p>Mister Anansi is the English-language version of the beloved spider trickster story, perfect for international visitors and English-speaking families.</p>', NULL, '2026-03-09 15:51:55'),
+(544, 69, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, NULL, '2026-03-09 15:51:55'),
+(545, 69, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-visser.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(546, 69, 'highlight_1_title', 'TEXT', 'In English', NULL, NULL, '2026-03-09 15:51:55'),
+(547, 69, 'highlight_1_description', 'TEXT', 'The Anansi story performed in English for international audiences.', NULL, NULL, '2026-03-09 15:51:55'),
+(548, 69, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, NULL, '2026-03-09 15:51:55'),
+(549, 69, 'highlight_2_title', 'TEXT', 'Universal Themes', NULL, NULL, '2026-03-09 15:51:55'),
+(550, 69, 'highlight_2_description', 'TEXT', 'Stories of cunning, community, and creativity that transcend cultures.', NULL, NULL, '2026-03-09 15:51:55'),
+(551, 69, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(552, 69, 'highlight_3_title', 'TEXT', 'World Folklore on Stage', NULL, NULL, '2026-03-09 15:51:55'),
+(553, 69, 'highlight_3_description', 'TEXT', 'Experience the rich tradition of West African oral storytelling at Haarlem Festival.', NULL, NULL, '2026-03-09 15:51:55'),
+(554, 69, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-drip.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(555, 69, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, NULL, '2026-03-09 15:51:55'),
+(556, 69, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-visser.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(557, 69, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(558, 69, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-drip.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(559, 69, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(560, 69, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (561, 70, 'about_heading', 'HEADING', 'Podcastlast Haarlem Special', NULL, NULL, '2026-03-09 15:51:55'),
 (562, 70, 'about_body', 'HTML', NULL, '<p>A special live edition of the Podcastlast podcast, recorded at the Haarlem Festival with candid conversations and local insights.</p>', NULL, '2026-03-09 15:51:55'),
+(563, 70, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(564, 70, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(565, 70, 'highlight_1_title', 'TEXT', 'Haarlem Special Edition', NULL, NULL, '2026-03-09 15:51:55'),
+(566, 70, 'highlight_1_description', 'TEXT', 'A one-of-a-kind live episode recorded exclusively at the festival.', NULL, NULL, '2026-03-09 15:51:55'),
+(567, 70, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(568, 70, 'highlight_2_title', 'TEXT', 'Local Conversations', NULL, NULL, '2026-03-09 15:51:55'),
+(569, 70, 'highlight_2_description', 'TEXT', 'Featuring guests from Haarlem creative and cultural scene.', NULL, NULL, '2026-03-09 15:51:55'),
+(570, 70, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(571, 70, 'highlight_3_title', 'TEXT', 'Live Audience Experience', NULL, NULL, '2026-03-09 15:51:55'),
+(572, 70, 'highlight_3_description', 'TEXT', 'Be part of the recording and feel the energy of a live podcast taping.', NULL, NULL, '2026-03-09 15:51:55'),
+(573, 70, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(574, 70, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(575, 70, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(576, 70, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(577, 70, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(578, 70, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (579, 70, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (580, 71, 'about_heading', 'HEADING', 'De geschiedenis van familie ten Boom', NULL, NULL, '2026-03-09 15:51:55'),
 (581, 71, 'about_body', 'HTML', NULL, '<p>The remarkable story of the ten Boom family, whose Haarlem home became a refuge during World War II, sheltering Jewish families at great personal risk.</p>', NULL, '2026-03-09 15:51:55'),
+(582, 71, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(583, 71, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(584, 71, 'highlight_1_title', 'TEXT', 'A Story of Courage', NULL, NULL, '2026-03-09 15:51:55'),
+(585, 71, 'highlight_1_description', 'TEXT', 'The ten Boom family risked everything to shelter Jews during the occupation.', NULL, NULL, '2026-03-09 15:51:55'),
+(586, 71, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(587, 71, 'highlight_2_title', 'TEXT', 'Haarlem in History', NULL, NULL, '2026-03-09 15:51:55'),
+(588, 71, 'highlight_2_description', 'TEXT', 'Explore how one family home became a symbol of resistance and compassion.', NULL, NULL, '2026-03-09 15:51:55'),
+(589, 71, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(590, 71, 'highlight_3_title', 'TEXT', 'Legacy and Memory', NULL, NULL, '2026-03-09 15:51:55'),
+(591, 71, 'highlight_3_description', 'TEXT', 'Their story lives on as an inspiration for future generations.', NULL, NULL, '2026-03-09 15:51:55'),
+(592, 71, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(593, 71, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(594, 71, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(595, 71, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(596, 71, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(597, 71, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (598, 71, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (599, 72, 'about_heading', 'HEADING', 'The History of the Ten Boom Family', NULL, NULL, '2026-03-09 15:51:55'),
 (600, 72, 'about_body', 'HTML', NULL, '<p>The story of the ten Boom family told in English. During WWII they used their Haarlem shop to hide Jewish families, leaving a lasting legacy on the city.</p>', NULL, '2026-03-09 15:51:55'),
+(601, 72, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(602, 72, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(603, 72, 'highlight_1_title', 'TEXT', 'In English', NULL, NULL, '2026-03-09 15:51:55'),
+(604, 72, 'highlight_1_description', 'TEXT', 'The ten Boom family story told for international visitors.', NULL, NULL, '2026-03-09 15:51:55'),
+(605, 72, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(606, 72, 'highlight_2_title', 'TEXT', 'Wartime Haarlem', NULL, NULL, '2026-03-09 15:51:55'),
+(607, 72, 'highlight_2_description', 'TEXT', 'Step back in time to a Haarlem that faced unimaginable choices.', NULL, NULL, '2026-03-09 15:51:55'),
+(608, 72, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(609, 72, 'highlight_3_title', 'TEXT', 'Hope and Resilience', NULL, NULL, '2026-03-09 15:51:55'),
+(610, 72, 'highlight_3_description', 'TEXT', 'A story about human courage that resonates across generations and borders.', NULL, NULL, '2026-03-09 15:51:55'),
+(611, 72, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(612, 72, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(613, 72, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(614, 72, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(615, 72, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(616, 72, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (617, 72, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (618, 73, 'about_heading', 'HEADING', 'Winners of the Storytelling Competition', NULL, NULL, '2026-03-09 15:51:55'),
 (619, 73, 'about_body', 'HTML', NULL, '<p>The best storytellers from this year competition take the stage to share their winning tales about Haarlem in English, selected for creativity, emotional depth, and unique perspective.</p>', NULL, '2026-03-09 15:51:55'),
+(620, 73, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(621, 73, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(622, 73, 'highlight_1_title', 'TEXT', 'Competition Winners', NULL, NULL, '2026-03-09 15:51:55'),
+(623, 73, 'highlight_1_description', 'TEXT', 'The English-language winners of the storytelling competition share their best work.', NULL, NULL, '2026-03-09 15:51:55'),
+(624, 73, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(625, 73, 'highlight_2_title', 'TEXT', 'Stories About Haarlem', NULL, NULL, '2026-03-09 15:51:55'),
+(626, 73, 'highlight_2_description', 'TEXT', 'Each story is rooted in the life and character of the city.', NULL, NULL, '2026-03-09 15:51:55'),
+(627, 73, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(628, 73, 'highlight_3_title', 'TEXT', 'New Voices', NULL, NULL, '2026-03-09 15:51:55'),
+(629, 73, 'highlight_3_description', 'TEXT', 'Discover emerging storytelling talent from Haarlem and beyond.', NULL, NULL, '2026-03-09 15:51:55'),
+(630, 73, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(631, 73, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(632, 73, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(633, 73, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(634, 73, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
+(635, 73, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
 (636, 73, 'video_url', 'TEXT', '', NULL, NULL, '2026-03-09 15:51:55'),
 (637, 74, 'detail_hero_subtitle_template', 'TEXT', '{cuisine}\nRelax, explore, and let {name} make your evening something truly special.', NULL, NULL, '2026-03-08 12:40:41'),
 (638, 74, 'detail_hero_btn_primary', 'BUTTON_TEXT', 'Make a reservation', NULL, NULL, '2026-03-08 12:40:41'),
@@ -587,7 +734,6 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (668, 76, 'schedule_no_events_text', 'TEXT', 'No events scheduled', NULL, NULL, '2026-02-18 14:37:27'),
 (669, 76, 'schedule_show_filters', 'TEXT', '1', NULL, NULL, '2026-02-18 14:37:27'),
 (670, 76, 'schedule_start_point', 'TEXT', 'A giant flag near Church of St. Bavo at Grote Markt', NULL, NULL, '2026-03-09 20:41:13'),
-(1244, 76, 'schedule_history_group_ticket', 'TEXT', 'Group ticket- best value for 4 people', NULL, NULL, '2026-03-22 12:00:00'),
 (671, 76, 'schedule_title', 'HEADING', 'Tour Schedule', NULL, NULL, '2026-02-18 14:37:27'),
 (682, 77, 'hero_subtitle', 'TEXT', 'New Orleans Jazz', NULL, NULL, '2026-03-15 16:01:52'),
 (683, 77, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/Jazz/GubmboKings-Hero.png', NULL, NULL, '2026-03-15 16:01:52'),
@@ -595,19 +741,72 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (685, 77, 'formed_text', 'TEXT', 'Formed: 2015', NULL, NULL, '2026-03-15 16:01:52'),
 (686, 77, 'performances_text', 'TEXT', '2 performances at Haarlem Jazz 2026', NULL, NULL, '2026-03-15 16:01:52'),
 (687, 77, 'overview_heading', 'HEADING', 'Gumbo Kings', NULL, NULL, '2026-03-15 16:01:52'),
-(688, 77, 'overview_lead', 'TEXT', 'High-energy New Orleans style jazz band bringing authentic Big Easy sound to Haarlem. Known for their infectious rhythms and crowd-pleasing performances that get audiences on their feet.', NULL, NULL, '2026-03-15 16:01:52');
-INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
+(688, 77, 'overview_lead', 'TEXT', 'High-energy New Orleans style jazz band bringing authentic Big Easy sound to Haarlem. Known for their infectious rhythms and crowd-pleasing performances that get audiences on their feet.', NULL, NULL, '2026-03-15 16:01:52'),
 (689, 77, 'overview_body_primary', 'TEXT', 'The Gumbo Kings deliver an electrifying blend of traditional New Orleans jazz, funk, and second-line grooves. With a powerful horn section, driving rhythm section, and authentic Crescent City soul, they transport audiences straight to the streets of the French Quarter. Their performances are known for spontaneous moments of musical magic and infectious energy that keeps crowds dancing all night long. Since their formation in 2015, they have become one of the most sought-after New Orleans jazz acts in Europe.', NULL, NULL, '2026-03-15 16:01:52'),
 (690, 77, 'overview_body_secondary', 'TEXT', 'Drawing inspiration from the rich musical heritage of New Orleans, the Gumbo Kings have mastered the art of combining traditional jazz elements with contemporary energy. Their repertoire spans classic jazz standards, original compositions, and reimagined funk grooves. The band has performed at major jazz festivals across Europe and the United States, earning acclaim for their authentic sound and dynamic stage presence. Their commitment to preserving and evolving the New Orleans jazz tradition has made them favorites among both purists and new jazz audiences.', NULL, NULL, '2026-03-15 16:01:52'),
 (691, 77, 'lineup_heading', 'TEXT', 'Band Lineup', NULL, NULL, '2026-03-15 16:01:52'),
+(692, 77, 'lineup_1', 'TEXT', 'Marcus Johnson - Trumpet, Band Leader', NULL, NULL, '2026-03-15 16:01:52'),
+(693, 77, 'lineup_2', 'TEXT', 'DeShawn Williams - Trombone', NULL, NULL, '2026-03-15 16:01:52'),
+(694, 77, 'lineup_3', 'TEXT', 'Antoine Davis - Tenor Saxophone', NULL, NULL, '2026-03-15 16:01:52'),
+(695, 77, 'lineup_4', 'TEXT', 'Jerome Baptiste - Drums', NULL, NULL, '2026-03-15 16:01:52'),
+(696, 77, 'lineup_5', 'TEXT', 'Louis Carter - Upright Bass', NULL, NULL, '2026-03-15 16:01:52'),
+(697, 77, 'lineup_6', 'TEXT', 'Raymond Pierce - Piano', NULL, NULL, '2026-03-15 16:01:52'),
 (698, 77, 'highlights_heading', 'TEXT', 'Career Highlights', NULL, NULL, '2026-03-15 16:01:52'),
+(699, 77, 'highlight_1', 'TEXT', 'Featured performers at New Orleans Jazz and Heritage Festival 2023', NULL, NULL, '2026-03-15 16:01:52'),
+(700, 77, 'highlight_2', 'TEXT', 'Touring Europe extensively since 2019, performing at 50+ major festivals', NULL, NULL, '2026-03-15 16:01:52'),
+(701, 77, 'highlight_3', 'TEXT', 'Authentic brass band sound with modern energy and innovation', NULL, NULL, '2026-03-15 16:01:52'),
+(702, 77, 'highlight_4', 'TEXT', 'Collaborations with legendary New Orleans musicians including Trombone Shorty', NULL, NULL, '2026-03-15 16:01:52'),
+(703, 77, 'highlight_5', 'TEXT', 'Known for interactive, high-energy live shows that get audiences dancing', NULL, NULL, '2026-03-15 16:01:52'),
+(704, 77, 'highlight_6', 'TEXT', 'Winner of Best Jazz Ensemble at European Jazz Awards 2022', NULL, NULL, '2026-03-15 16:01:52'),
 (705, 77, 'photo_gallery_heading', 'TEXT', 'Photo Gallery', NULL, NULL, '2026-03-15 16:01:52'),
 (706, 77, 'photo_gallery_description', 'TEXT', 'Experience the energy and passion of Gumbo Kings through these performance and portrait photographs.', NULL, NULL, '2026-03-15 16:01:52'),
+(707, 77, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/Jazz/GumboGallery1.png', NULL, NULL, '2026-03-15 16:01:52'),
+(708, 77, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/Jazz/GumboGallery2.png', NULL, NULL, '2026-03-15 16:01:52'),
+(709, 77, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/Jazz/GumboGallery3.png', NULL, NULL, '2026-03-15 16:01:52'),
 (710, 77, 'albums_heading', 'TEXT', 'Featured Albums', NULL, NULL, '2026-03-15 16:01:52'),
 (711, 77, 'albums_description', 'TEXT', 'Explore the studio recordings that capture the magic of Gumbo Kings. Each album showcases their evolution and mastery of the New Orleans jazz tradition.', NULL, NULL, '2026-03-15 16:01:52'),
+(712, 77, 'album_1_title', 'TEXT', 'Second Line Swing', NULL, NULL, '2026-03-15 16:01:52'),
+(713, 77, 'album_1_description', 'TEXT', 'Their breakthrough album featuring traditional second line rhythms mixed with contemporary jazz sensibilities. The title track became a festival favorite across Europe.', NULL, NULL, '2026-03-15 16:01:52'),
+(714, 77, 'album_1_year', 'TEXT', '2019', NULL, NULL, '2026-03-15 16:01:52'),
+(715, 77, 'album_1_tag', 'TEXT', 'JAZZ', NULL, NULL, '2026-03-15 16:01:52'),
+(716, 77, 'album_1_image', 'IMAGE_PATH', '/assets/Image/Jazz/GumboKingsAlbum1.png', NULL, NULL, '2026-03-15 16:01:52'),
+(717, 77, 'album_2_title', 'TEXT', 'Big Easy', NULL, NULL, '2026-03-15 16:01:52'),
+(718, 77, 'album_2_description', 'TEXT', 'A love letter to New Orleans featuring reimagined classics and original compositions inspired by the city\'s rich musical heritage.', NULL, NULL, '2026-03-15 16:01:52'),
+(719, 77, 'album_2_year', 'TEXT', '2021', NULL, NULL, '2026-03-15 16:01:52'),
+(720, 77, 'album_2_tag', 'TEXT', 'JAZZ', NULL, NULL, '2026-03-15 16:01:52'),
+(721, 77, 'album_2_image', 'IMAGE_PATH', '/assets/Image/Jazz/GumboKingsAlbum2.png', NULL, NULL, '2026-03-15 16:01:52'),
+(722, 77, 'album_3_title', 'TEXT', 'Live at Paradiso', NULL, NULL, '2026-03-15 16:01:52'),
+(723, 77, 'album_3_description', 'TEXT', 'Recorded live at Amsterdam\'s legendary Paradiso venue, this album captures the raw energy and spontaneity of their live performances.', NULL, NULL, '2026-03-15 16:01:52'),
+(724, 77, 'album_3_year', 'TEXT', '2023', NULL, NULL, '2026-03-15 16:01:52'),
+(725, 77, 'album_3_tag', 'TEXT', 'LIVE', NULL, NULL, '2026-03-15 16:01:52'),
+(726, 77, 'album_3_image', 'IMAGE_PATH', '/assets/Image/Jazz/GumboKingsAlbum3.png', NULL, NULL, '2026-03-15 16:01:52'),
 (727, 77, 'listen_heading', 'TEXT', 'LISTEN NOW', NULL, NULL, '2026-03-15 16:01:52'),
 (728, 77, 'listen_subheading', 'TEXT', 'Important Tracks', NULL, NULL, '2026-03-15 16:01:52'),
 (729, 77, 'listen_description', 'TEXT', 'Listen to excerpts from Gumbo Kings\'s most important and popular tracks. Experience the energy and musicianship that defines their sound.', NULL, NULL, '2026-03-15 16:01:52'),
+(730, 77, 'track_1_title', 'TEXT', 'All Night Long', NULL, NULL, '2026-03-15 16:01:52'),
+(731, 77, 'track_1_album', 'TEXT', 'Live in the Quarter', NULL, NULL, '2026-03-15 16:01:52'),
+(732, 77, 'track_1_description', 'TEXT', 'Classic New Orleans standard with powerful brass arrangements', NULL, NULL, '2026-03-15 16:01:52'),
+(733, 77, 'track_1_duration', 'TEXT', '4:32', NULL, NULL, '2026-03-15 16:01:52'),
+(734, 77, 'track_1_image', 'IMAGE_PATH', '/assets/Image/Jazz/Allnightlong.png', NULL, NULL, '2026-03-15 16:01:52'),
+(735, 77, 'track_1_progress_class', 'TEXT', 'w-[5%]', NULL, NULL, '2026-03-15 16:01:52'),
+(736, 77, 'track_2_title', 'TEXT', 'Hot Damn!', NULL, NULL, '2026-03-15 16:01:52'),
+(737, 77, 'track_2_album', 'TEXT', 'Brass and Soul', NULL, NULL, '2026-03-15 16:01:52'),
+(738, 77, 'track_2_description', 'TEXT', 'Original composition featuring traditional second-line rhythms', NULL, NULL, '2026-03-15 16:01:52'),
+(739, 77, 'track_2_duration', 'TEXT', '3:45', NULL, NULL, '2026-03-15 16:01:52'),
+(740, 77, 'track_2_image', 'IMAGE_PATH', '/assets/Image/Jazz/Container.png', NULL, NULL, '2026-03-15 16:01:52'),
+(741, 77, 'track_2_progress_class', 'TEXT', 'w-[15%]', NULL, NULL, '2026-03-15 16:01:52'),
+(742, 77, 'track_3_title', 'TEXT', 'Valenzuela', NULL, NULL, '2026-03-15 16:01:52'),
+(743, 77, 'track_3_album', 'TEXT', 'Big Easy Nights', NULL, NULL, '2026-03-15 16:01:52'),
+(744, 77, 'track_3_description', 'TEXT', 'Fast-paced instrumental showcasing virtuoso musicianship', NULL, NULL, '2026-03-15 16:01:52'),
+(745, 77, 'track_3_duration', 'TEXT', '4:18', NULL, NULL, '2026-03-15 16:01:52'),
+(746, 77, 'track_3_image', 'IMAGE_PATH', '/assets/Image/Jazz/Listennowsection.png', NULL, NULL, '2026-03-15 16:01:52'),
+(747, 77, 'track_3_progress_class', 'TEXT', 'w-full', NULL, NULL, '2026-03-15 16:01:52'),
+(748, 77, 'track_4_title', 'TEXT', 'Here We Are', NULL, NULL, '2026-03-16 14:25:39'),
+(749, 77, 'track_4_album', 'TEXT', 'Live in the Quarter', NULL, NULL, '2026-03-15 16:01:52'),
+(750, 77, 'track_4_description', 'TEXT', 'High-energy rendition of the jazz funeral classic', NULL, NULL, '2026-03-15 16:01:52'),
+(751, 77, 'track_4_duration', 'TEXT', '5:12', NULL, NULL, '2026-03-15 16:01:52'),
+(752, 77, 'track_4_image', 'IMAGE_PATH', '/assets/Image/Jazz/Allnightlong.png', NULL, NULL, '2026-03-15 16:01:52'),
+(753, 77, 'track_4_progress_class', 'TEXT', 'w-[60%]', NULL, NULL, '2026-03-15 16:01:52'),
 (754, 77, 'live_cta_heading', 'TEXT', 'Experience Gumbo Kings Live', NULL, NULL, '2026-03-15 16:01:52'),
 (755, 77, 'live_cta_description', 'TEXT', 'Do not miss the chance to see Gumbo Kings perform live at Haarlem Jazz 2026. With 2 performances scheduled, there are multiple opportunities to experience their incredible energy and musicianship.', NULL, NULL, '2026-03-15 16:01:52'),
 (756, 77, 'performances_section_id', 'TEXT', 'artist-performances', NULL, NULL, '2026-03-15 16:15:19'),
@@ -623,14 +822,68 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (766, 78, 'overview_body_primary', 'TEXT', 'Her debut album, Atouba, released in 2008, was the first to showcase that hybrid style, mixing African rhythms with soul and jazz influences. Since then she has developed a distinctive musical voice across several albums and performances.', NULL, NULL, '2026-03-15 16:01:52'),
 (767, 78, 'overview_body_secondary', 'TEXT', 'Ntjam Rosie has built a reputation for compelling live performances and wide appeal. She has performed at major festivals and toured internationally. Her music resonates with both jazz and soul audiences, and she continues to evolve by blending tradition and innovation.', NULL, NULL, '2026-03-15 16:01:52'),
 (768, 78, 'lineup_heading', 'TEXT', 'Band Lineup', NULL, NULL, '2026-03-15 16:01:52'),
+(769, 78, 'lineup_1', 'TEXT', 'Ntjam Rosie - Vocals', NULL, NULL, '2026-03-15 16:01:52'),
+(770, 78, 'lineup_2', 'TEXT', 'Bart Wirtz - Tenor Saxophone', NULL, NULL, '2026-03-15 16:01:52'),
+(771, 78, 'lineup_3', 'TEXT', 'Niels Broos - Piano and Keys', NULL, NULL, '2026-03-15 16:01:52'),
+(772, 78, 'lineup_4', 'TEXT', 'Bram Hakkens - Drums', NULL, NULL, '2026-03-15 16:01:52'),
+(773, 78, 'lineup_5', 'TEXT', 'Tijn Wybenga - Bass', NULL, NULL, '2026-03-15 16:01:52'),
 (774, 78, 'highlights_heading', 'TEXT', 'Career Highlights', NULL, NULL, '2026-03-15 16:01:52'),
+(775, 78, 'highlight_1', 'TEXT', 'Featured performer at the New Orleans Jazz and Heritage Festival 2023', NULL, NULL, '2026-03-15 16:01:52'),
+(776, 78, 'highlight_2', 'TEXT', 'Toured across Europe since 2019, playing 50+ major festivals', NULL, NULL, '2026-03-15 16:01:52'),
+(777, 78, 'highlight_3', 'TEXT', 'Blends Afro-European vocals with modern jazz and soul energy', NULL, NULL, '2026-03-15 16:01:52'),
+(778, 78, 'highlight_4', 'TEXT', 'Collaborated with New Orleans artists, including Trombone Shorty', NULL, NULL, '2026-03-15 16:01:52'),
+(779, 78, 'highlight_5', 'TEXT', 'Renowned for vibrant, high-energy live shows', NULL, NULL, '2026-03-15 16:01:52'),
+(780, 78, 'highlight_6', 'TEXT', 'Winner of Best Jazz Ensemble at the European Jazz Awards 2022', NULL, NULL, '2026-03-15 16:01:52'),
 (781, 78, 'photo_gallery_heading', 'TEXT', 'Photo Gallery', NULL, NULL, '2026-03-15 16:01:52'),
 (782, 78, 'photo_gallery_description', 'TEXT', 'Experience the soulful elegance of Ntjam Rosie through these intimate performance and portrait photographs.', NULL, NULL, '2026-03-15 16:01:52'),
+(783, 78, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamgallery1.png', NULL, NULL, '2026-03-15 16:01:52'),
+(784, 78, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamgallery2.png', NULL, NULL, '2026-03-15 16:01:52'),
+(785, 78, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamgallery3.png', NULL, NULL, '2026-03-15 16:01:52'),
 (786, 78, 'albums_heading', 'TEXT', 'Featured Albums', NULL, NULL, '2026-03-15 16:01:52'),
 (787, 78, 'albums_description', 'TEXT', 'Explore the studio recordings that capture the soulful artistry of Ntjam Rosie. Each album reflects her evolving blend of jazz, soul, and Afro-inspired sound.', NULL, NULL, '2026-03-15 16:01:53'),
+(788, 78, 'album_1_title', 'TEXT', 'Atouba', NULL, NULL, '2026-03-15 16:01:53'),
+(789, 78, 'album_1_description', 'TEXT', 'Her debut album where Ntjam Rosie introduced her Afro-European blend of soul and jazz.', NULL, NULL, '2026-03-15 16:01:53'),
+(790, 78, 'album_1_year', 'TEXT', '2019', NULL, NULL, '2026-03-15 16:01:53'),
+(791, 78, 'album_1_tag', 'TEXT', 'JAZZ', NULL, NULL, '2026-03-15 16:01:53'),
+(792, 78, 'album_1_image', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamalbum1.png', NULL, NULL, '2026-03-15 16:01:53'),
+(793, 78, 'album_2_title', 'TEXT', 'At the Back of Beyond', NULL, NULL, '2026-03-15 16:01:53'),
+(794, 78, 'album_2_description', 'TEXT', 'At the Back of Beyond showcases Ntjam Rosie\'s soulful blend of jazz and Afro-European sounds.', NULL, NULL, '2026-03-15 16:01:53'),
+(795, 78, 'album_2_year', 'TEXT', '2021', NULL, NULL, '2026-03-15 16:01:53'),
+(796, 78, 'album_2_tag', 'TEXT', 'JAZZ', NULL, NULL, '2026-03-15 16:01:53'),
+(797, 78, 'album_2_image', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamalbum2.png', NULL, NULL, '2026-03-15 16:01:53'),
+(798, 78, 'album_3_title', 'TEXT', 'Family and Friends', NULL, NULL, '2026-03-15 16:01:53'),
+(799, 78, 'album_3_description', 'TEXT', 'Family and Friends highlights Ntjam Rosie\'s warm vocals and her fusion of jazz and Afro-European influences.', NULL, NULL, '2026-03-15 16:01:53'),
+(800, 78, 'album_3_year', 'TEXT', '2023', NULL, NULL, '2026-03-15 16:01:53'),
+(801, 78, 'album_3_tag', 'TEXT', 'LIVE', NULL, NULL, '2026-03-15 16:01:53'),
+(802, 78, 'album_3_image', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamalbum3.png', NULL, NULL, '2026-03-15 16:01:53'),
 (803, 78, 'listen_heading', 'TEXT', 'LISTEN NOW', NULL, NULL, '2026-03-15 16:01:53'),
 (804, 78, 'listen_subheading', 'TEXT', 'Important Tracks', NULL, NULL, '2026-03-15 16:01:53'),
 (805, 78, 'listen_description', 'TEXT', 'Listen to excerpts from Ntjam Rosie\'s most celebrated and influential tracks. Immerse yourself in the soulful energy and refined musicianship that define her signature sound.', NULL, NULL, '2026-03-15 16:01:53'),
+(806, 78, 'track_1_title', 'TEXT', 'What is Love?', NULL, NULL, '2026-03-15 16:01:53'),
+(807, 78, 'track_1_album', 'TEXT', 'Live in the Quarter', NULL, NULL, '2026-03-15 16:01:53'),
+(808, 78, 'track_1_description', 'TEXT', 'Classic New Orleans standard with powerful brass arrangements', NULL, NULL, '2026-03-15 16:01:53'),
+(809, 78, 'track_1_duration', 'TEXT', '4:32', NULL, NULL, '2026-03-15 16:01:53'),
+(810, 78, 'track_1_image', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamwhatislove.png', NULL, NULL, '2026-03-15 16:01:53');
+INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
+(811, 78, 'track_1_progress_class', 'TEXT', 'w-[5%]', NULL, NULL, '2026-03-15 16:01:53'),
+(812, 78, 'track_2_title', 'TEXT', 'Thinkin About You', NULL, NULL, '2026-03-15 16:01:53'),
+(813, 78, 'track_2_album', 'TEXT', 'Brass and Soul', NULL, NULL, '2026-03-15 16:01:53'),
+(814, 78, 'track_2_description', 'TEXT', 'Original composition featuring traditional second-line rhythms', NULL, NULL, '2026-03-15 16:01:53'),
+(815, 78, 'track_2_duration', 'TEXT', '3:45', NULL, NULL, '2026-03-15 16:01:53'),
+(816, 78, 'track_2_image', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamthinkinaboutyou.png', NULL, NULL, '2026-03-15 16:01:53'),
+(817, 78, 'track_2_progress_class', 'TEXT', 'w-[15%]', NULL, NULL, '2026-03-15 16:01:53'),
+(818, 78, 'track_3_title', 'TEXT', 'You got this', NULL, NULL, '2026-03-15 16:01:53'),
+(819, 78, 'track_3_album', 'TEXT', 'Big Easy Nights', NULL, NULL, '2026-03-15 16:01:53'),
+(820, 78, 'track_3_description', 'TEXT', 'Fast-paced instrumental showcasing virtuoso musicianship', NULL, NULL, '2026-03-15 16:01:53'),
+(821, 78, 'track_3_duration', 'TEXT', '4:18', NULL, NULL, '2026-03-15 16:01:53'),
+(822, 78, 'track_3_image', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamyougotthis.png', NULL, NULL, '2026-03-15 16:01:53'),
+(823, 78, 'track_3_progress_class', 'TEXT', 'w-full', NULL, NULL, '2026-03-15 16:01:53'),
+(824, 78, 'track_4_title', 'TEXT', 'In Need - Reworked', NULL, NULL, '2026-03-15 16:01:53'),
+(825, 78, 'track_4_album', 'TEXT', 'Live in the Quarter', NULL, NULL, '2026-03-15 16:01:53'),
+(826, 78, 'track_4_description', 'TEXT', 'High-energy rendition of the jazz funeral classic', NULL, NULL, '2026-03-15 16:01:53'),
+(827, 78, 'track_4_duration', 'TEXT', '5:12', NULL, NULL, '2026-03-15 16:01:53'),
+(828, 78, 'track_4_image', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjaminneed.png', NULL, NULL, '2026-03-15 16:01:53'),
+(829, 78, 'track_4_progress_class', 'TEXT', 'w-[60%]', NULL, NULL, '2026-03-15 16:01:53'),
 (830, 78, 'live_cta_heading', 'TEXT', 'Experience Ntjam Rosie Live', NULL, NULL, '2026-03-15 16:01:53'),
 (831, 78, 'live_cta_description', 'TEXT', 'Do not miss the chance to see Ntjam Rosie perform live at Haarlem Jazz 2026. With 2 performances scheduled, there are multiple opportunities to experience her incredible energy and musicianship.', NULL, NULL, '2026-03-15 16:01:53'),
 (832, 78, 'performances_section_id', 'TEXT', 'artist-performances', NULL, NULL, '2026-03-15 16:15:19'),
@@ -648,288 +901,549 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (845, 78, 'live_cta_schedule_button_text', 'TEXT', 'View Full Schedule', NULL, NULL, '2026-03-15 16:15:19'),
 (846, 78, 'listen_play_button_label', 'TEXT', 'Play excerpt', NULL, NULL, '2026-03-15 16:15:19'),
 (847, 78, 'listen_play_excerpt_text', 'TEXT', 'Click to Play Excerpt', NULL, NULL, '2026-03-15 16:15:19'),
-(849, 77, 'hero_back_button_url', 'LINK', '/jazz', NULL, NULL, '2026-03-16 14:06:12'),
-(850, 77, 'live_cta_schedule_button_url', 'LINK', '/jazz#jazz-schedule', NULL, NULL, '2026-03-16 14:06:12'),
+(849, 77, 'hero_back_button_url', 'LINK', '/jazz', NULL, NULL, '2026-03-17 15:40:12'),
+(850, 77, 'live_cta_schedule_button_url', 'LINK', '/jazz#jazz-schedule', NULL, NULL, '2026-03-17 15:40:12'),
 (851, 77, 'listen_track_artwork_alt_suffix', 'TEXT', 'track artwork', NULL, NULL, '2026-03-16 14:06:12'),
-(852, 78, 'hero_back_button_url', 'LINK', '/jazz', NULL, NULL, '2026-03-16 14:06:12'),
-(853, 78, 'live_cta_schedule_button_url', 'LINK', '/jazz#jazz-schedule', NULL, NULL, '2026-03-16 14:06:12'),
+(852, 78, 'hero_back_button_url', 'LINK', '/jazz', NULL, NULL, '2026-03-17 15:40:12'),
+(853, 78, 'live_cta_schedule_button_url', 'LINK', '/jazz#jazz-schedule', NULL, NULL, '2026-03-17 15:40:12'),
 (854, 78, 'listen_track_artwork_alt_suffix', 'TEXT', 'track artwork', NULL, NULL, '2026-03-16 14:06:12'),
-(855, 79, 'page_title', 'HEADING', 'My Program', NULL, NULL, '2026-03-19 00:00:00'),
-(856, 79, 'selected_events_heading', 'HEADING', 'Your Selected Events', NULL, NULL, '2026-03-19 00:00:00'),
-(857, 79, 'pay_what_you_like_message', 'TEXT', 'Choose the amount you want to pay for this story. Any contribution is welcome and supports the initiative sharing their story.\nYou can adjust the amount before confirming your reservation.', NULL, NULL, '2026-03-19 00:00:00'),
-(858, 79, 'clear_button_text', 'BUTTON_TEXT', 'CLEAR MY PROGRAMS', NULL, NULL, '2026-03-19 00:00:00'),
-(859, 79, 'continue_exploring_text', 'TEXT', 'Continue exploring events', NULL, NULL, '2026-03-19 00:00:00'),
-(860, 79, 'payment_overview_heading', 'HEADING', 'Payment Overview', NULL, NULL, '2026-03-19 00:00:00'),
-(861, 79, 'tax_label', 'TEXT', 'VAT (21%)', NULL, NULL, '2026-03-19 00:00:00'),
-(862, 79, 'checkout_button_text', 'BUTTON_TEXT', 'Continue to Checkout', NULL, NULL, '2026-03-19 00:00:00'),
-(863, 80, 'page_title', 'HEADING', 'Checkout', NULL, NULL, '2026-03-19 00:00:00'),
-(864, 80, 'back_button_text', 'BUTTON_TEXT', 'Back to My Program', NULL, NULL, '2026-03-19 00:00:00'),
-(865, 80, 'payment_overview_heading', 'HEADING', 'Payment Overview', NULL, NULL, '2026-03-19 00:00:00'),
-(866, 80, 'personal_info_heading', 'HEADING', 'Personal Information', NULL, NULL, '2026-03-19 00:00:00'),
-(867, 80, 'personal_info_subtext', 'TEXT', 'Please fill in your details to complete the reservation', NULL, NULL, '2026-03-19 00:00:00'),
-(868, 80, 'first_name_label', 'TEXT', 'First Name', NULL, NULL, '2026-03-19 00:00:00'),
-(869, 80, 'first_name_placeholder', 'TEXT', 'Enter your first name', NULL, NULL, '2026-03-19 00:00:00'),
-(870, 80, 'last_name_label', 'TEXT', 'Last Name', NULL, NULL, '2026-03-19 00:00:00'),
-(871, 80, 'last_name_placeholder', 'TEXT', 'Enter your last name', NULL, NULL, '2026-03-19 00:00:00'),
-(872, 80, 'email_label', 'TEXT', 'Email Address', NULL, NULL, '2026-03-19 00:00:00'),
-(873, 80, 'email_placeholder', 'TEXT', 'Enter your email address', NULL, NULL, '2026-03-19 00:00:00'),
-(874, 80, 'payment_methods_heading', 'HEADING', 'Payment Method', NULL, NULL, '2026-03-19 00:00:00'),
-(875, 80, 'save_details_label', 'TEXT', 'Save my details', NULL, NULL, '2026-03-19 00:00:00'),
-(876, 80, 'save_details_subtext', 'TEXT', 'for faster checkout next time', NULL, NULL, '2026-03-19 00:00:00'),
-(877, 80, 'pay_button_text', 'BUTTON_TEXT', 'Pay Now', NULL, NULL, '2026-03-19 00:00:00'),
-(878, 80, 'tax_label', 'TEXT', 'VAT (21%)', NULL, NULL, '2026-03-19 00:00:00'),
-(879, 61, 'hero_image', 'IMAGE_PATH', '', NULL, 99, '2026-03-19 12:42:58'),
-(880, 62, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(881, 63, 'hero_image', 'IMAGE_PATH', '', NULL, 109, '2026-03-19 13:59:52'),
-(882, 64, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(883, 65, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(884, 66, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(885, 67, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(887, 69, 'hero_image', 'IMAGE_PATH', '', NULL, 100, '2026-03-19 12:44:06'),
-(888, 70, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(889, 71, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(890, 72, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(891, 73, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
-(892, 61, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(893, 61, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(894, 62, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(895, 62, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(896, 63, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(897, 63, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(898, 64, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(899, 64, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(900, 65, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(901, 65, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(902, 66, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(903, 66, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(904, 67, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(905, 67, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(908, 69, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(909, 69, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(910, 70, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(911, 70, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(912, 71, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(913, 71, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(914, 72, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(915, 72, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(916, 73, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(917, 73, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(957, 61, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(958, 62, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(959, 63, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(960, 64, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(961, 65, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(962, 66, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(963, 67, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(965, 69, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(966, 70, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(967, 71, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(968, 72, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(969, 73, 'schedule_cta_button_text', 'BUTTON_TEXT', 'Add to program', NULL, NULL, '2026-03-19 12:40:52'),
-(970, 69, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, 101, '2026-03-19 13:01:22'),
-(971, 69, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-visser.jpg', NULL, 102, '2026-03-19 13:01:42'),
-(972, 69, 'highlight_1_title', 'TEXT', 'Anansi and the Pot of Wisdom', NULL, NULL, '2026-03-19 13:03:30'),
-(973, 69, 'highlight_1_description', 'TEXT', 'Anansi’s quest to gather all the world’s wisdom leads to a humorous and insightful adventure that shows how knowledge grows when it is shared.', NULL, NULL, '2026-03-19 13:03:30'),
-(974, 69, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, 103, '2026-03-19 13:02:06'),
-(975, 69, 'highlight_2_title', 'TEXT', 'Anansi and the Talking Melon', NULL, NULL, '2026-03-19 13:03:30'),
-(976, 69, 'highlight_2_description', 'TEXT', 'A playful tale in which Anansi outsmarts animals across the kingdom, bringing laughter while subtly teaching lessons about pride and clever thinking.', NULL, NULL, '2026-03-19 13:03:30'),
-(977, 69, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, 104, '2026-03-19 13:02:13'),
-(978, 69, 'highlight_3_title', 'TEXT', 'Anansi and the Turtle Feast', NULL, NULL, '2026-03-19 13:03:30'),
-(979, 69, 'highlight_3_description', 'TEXT', 'A warm and funny story that explores themes of fairness and friendship as Anansi learns that tricks do not always go as planned.', NULL, NULL, '2026-03-19 13:03:30'),
-(980, 69, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-drip.jpg', NULL, 105, '2026-03-19 13:02:37'),
-(981, 69, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, 106, '2026-03-19 13:03:05'),
-(982, 69, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-visser.jpg', NULL, 107, '2026-03-19 13:03:15'),
-(983, 69, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, NULL, '2026-03-19 12:54:51'),
-(984, 69, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-drip.jpg', NULL, NULL, '2026-03-19 12:54:51'),
-(985, 69, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, 108, '2026-03-19 13:03:28'),
-(986, 61, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/winnie-the-pooh.jpg', NULL, NULL, '2026-03-09 15:46:45'),
-(987, 61, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/WinnieThePoohHeader.png', NULL, NULL, '2026-03-09 15:46:45'),
-(988, 61, 'highlight_1_title', 'TEXT', 'A Story for All Ages', NULL, NULL, '2026-03-09 15:46:45'),
-(989, 61, 'highlight_1_description', 'TEXT', 'A classic tale reimagined for young and old alike.', NULL, NULL, '2026-03-09 15:46:45'),
-(990, 61, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/winnie-the-pooh.jpg', NULL, NULL, '2026-03-14 16:25:32'),
-(991, 61, 'highlight_2_title', 'TEXT', 'Live Storytelling', NULL, NULL, '2026-03-14 16:25:32'),
-(992, 61, 'highlight_2_description', 'TEXT', 'Experience the magic of oral storytelling in an intimate setting.', NULL, NULL, '2026-03-09 15:46:45'),
-(993, 61, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:46:45'),
-(994, 61, 'highlight_3_title', 'TEXT', 'Interactive & Fun', NULL, NULL, '2026-03-09 15:46:45'),
-(995, 61, 'highlight_3_description', 'TEXT', 'Children are invited to participate and use their imagination.', NULL, NULL, '2026-03-09 15:46:45'),
-(996, 61, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/pig.jpg', NULL, NULL, '2026-03-09 15:46:45'),
-(997, 61, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/winnie-the-pooh.jpg', NULL, NULL, '2026-03-09 15:46:45'),
-(998, 61, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/WinnieThePoohHeader.png', NULL, NULL, '2026-03-09 15:46:45'),
-(999, 61, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:46:45'),
-(1000, 61, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/pig.jpg', NULL, NULL, '2026-03-09 15:46:45'),
-(1001, 61, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:46:45'),
-(1005, 62, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1006, 62, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1007, 62, 'highlight_1_title', 'TEXT', 'Live Recording', NULL, NULL, '2026-03-09 15:51:55'),
-(1008, 62, 'highlight_1_description', 'TEXT', 'Be part of a live podcast recording in front of an audience.', NULL, NULL, '2026-03-09 15:51:55'),
-(1009, 62, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1010, 62, 'highlight_2_title', 'TEXT', 'Audience Participation', NULL, NULL, '2026-03-09 15:51:55'),
-(1011, 62, 'highlight_2_description', 'TEXT', 'Your questions and insights shape the conversation.', NULL, NULL, '2026-03-09 15:51:55'),
-(1012, 62, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1013, 62, 'highlight_3_title', 'TEXT', 'New Perspectives', NULL, NULL, '2026-03-09 15:51:55'),
-(1014, 62, 'highlight_3_description', 'TEXT', 'Discover how reframing challenges can lead to creative solutions.', NULL, NULL, '2026-03-09 15:51:55'),
-(1015, 62, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1016, 62, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1017, 62, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1018, 62, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1019, 62, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1020, 62, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1024, 63, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, 110, '2026-03-19 14:01:47'),
-(1025, 63, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, 111, '2026-03-19 14:02:23'),
-(1026, 63, 'highlight_1_title', 'TEXT', 'From Farmer to Neighbour', NULL, NULL, '2026-03-09 15:51:55'),
-(1027, 63, 'highlight_1_description', 'TEXT', 'A personal story about how local farmers connect directly with Haarlem residents. This highlight focuses on trust, fair pricing, and the journey food takes from the land to the table.', NULL, NULL, '2026-03-19 14:01:29'),
-(1028, 63, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, 112, '2026-03-19 14:02:32'),
-(1029, 63, 'highlight_2_title', 'TEXT', 'Building a Local Food Community', NULL, NULL, '2026-03-09 15:51:55'),
-(1030, 63, 'highlight_2_description', 'TEXT', 'This story explains how Buurderij Haarlem became more than a marketplace. It shows how weekly meetups created friendships, conversations, and a shared sense of responsibility for local food.', NULL, NULL, '2026-03-19 14:01:29'),
-(1031, 63, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, 113, '2026-03-19 14:03:02'),
-(1032, 63, 'highlight_3_title', 'TEXT', 'Food with a Future', NULL, NULL, '2026-03-09 15:51:55'),
-(1033, 63, 'highlight_3_description', 'TEXT', 'This highlight focuses on sustainability and circular thinking. It tells how Buurderij Haarlem supports seasonal food, reduces waste, and encourages conscious consumption for future generations.', NULL, NULL, '2026-03-19 14:01:29'),
-(1034, 63, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, 114, '2026-03-19 14:03:15'),
-(1035, 63, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, 115, '2026-03-19 14:03:24'),
-(1036, 63, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, 116, '2026-03-19 14:03:37'),
-(1037, 63, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/where-stories-come-alive.jpg', NULL, 117, '2026-03-19 14:03:45'),
-(1038, 63, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, 118, '2026-03-19 14:03:56'),
-(1039, 63, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, 119, '2026-03-19 14:04:03'),
-(1043, 64, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1044, 64, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1045, 64, 'highlight_1_title', 'TEXT', 'Stories for Every Child', NULL, NULL, '2026-03-09 15:51:55'),
-(1046, 64, 'highlight_1_description', 'TEXT', 'An accessible and joyful storytelling session designed with children in mind.', NULL, NULL, '2026-03-09 15:51:55'),
-(1047, 64, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1048, 64, 'highlight_2_title', 'TEXT', 'Imagination in Action', NULL, NULL, '2026-03-09 15:51:55'),
-(1049, 64, 'highlight_2_description', 'TEXT', 'Watch as the performer brings characters to life through voice, gesture, and storytelling.', NULL, NULL, '2026-03-09 15:51:55'),
-(1050, 64, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1051, 64, 'highlight_3_title', 'TEXT', 'A Shared Experience', NULL, NULL, '2026-03-09 15:51:55'),
-(1052, 64, 'highlight_3_description', 'TEXT', 'A session that brings families and communities together around shared stories.', NULL, NULL, '2026-03-09 15:51:55'),
-(1053, 64, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1054, 64, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1055, 64, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1056, 64, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1057, 64, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1058, 64, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1062, 65, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1063, 65, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1064, 65, 'highlight_1_title', 'TEXT', 'Competition Winners', NULL, NULL, '2026-03-09 15:51:55'),
-(1065, 65, 'highlight_1_description', 'TEXT', 'Hear from the storytellers who won the Haarlem storytelling competition.', NULL, NULL, '2026-03-09 15:51:55'),
-(1066, 65, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1067, 65, 'highlight_2_title', 'TEXT', 'Stories About Haarlem', NULL, NULL, '2026-03-09 15:51:55'),
-(1068, 65, 'highlight_2_description', 'TEXT', 'Each winner tells a story rooted in the city culture and everyday life.', NULL, NULL, '2026-03-09 15:51:55'),
-(1069, 65, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1070, 65, 'highlight_3_title', 'TEXT', 'Community Voice', NULL, NULL, '2026-03-09 15:51:55'),
-(1071, 65, 'highlight_3_description', 'TEXT', 'The competition celebrates storytelling as a way to strengthen community bonds.', NULL, NULL, '2026-03-09 15:51:55'),
-(1072, 65, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1073, 65, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1074, 65, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1075, 65, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1076, 65, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1077, 65, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1081, 66, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1082, 66, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1083, 66, 'highlight_1_title', 'TEXT', 'Sustainable Innovation', NULL, NULL, '2026-03-09 15:51:55'),
-(1084, 66, 'highlight_1_description', 'TEXT', 'Learn how local entrepreneurs are growing food sustainably in the city.', NULL, NULL, '2026-03-09 15:51:55'),
-(1085, 66, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1086, 66, 'highlight_2_title', 'TEXT', 'Community Impact', NULL, NULL, '2026-03-09 15:51:55'),
-(1087, 66, 'highlight_2_description', 'TEXT', 'The Oeserzwammerij connects growers, volunteers, and consumers.', NULL, NULL, '2026-03-09 15:51:55'),
-(1088, 66, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1089, 66, 'highlight_3_title', 'TEXT', 'From Waste to Food', NULL, NULL, '2026-03-09 15:51:55'),
-(1090, 66, 'highlight_3_description', 'TEXT', 'Using coffee grounds and organic waste to grow nutritious mushrooms.', NULL, NULL, '2026-03-09 15:51:55'),
-(1091, 66, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1092, 66, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1093, 66, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1094, 66, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1095, 66, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1096, 66, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1100, 67, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1101, 67, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1102, 67, 'highlight_1_title', 'TEXT', 'Reframe Your World', NULL, NULL, '2026-03-09 15:51:55'),
-(1103, 67, 'highlight_1_description', 'TEXT', 'Learn practical techniques for turning obstacles into opportunities.', NULL, NULL, '2026-03-09 15:51:55'),
-(1104, 67, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1105, 67, 'highlight_2_title', 'TEXT', 'Live Podcast Recording', NULL, NULL, '2026-03-09 15:51:55'),
-(1106, 67, 'highlight_2_description', 'TEXT', 'Experience the magic of a podcast recorded before a live audience.', NULL, NULL, '2026-03-09 15:51:55'),
-(1107, 67, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1108, 67, 'highlight_3_title', 'TEXT', 'Q and A with Audience', NULL, NULL, '2026-03-09 15:51:55'),
-(1109, 67, 'highlight_3_description', 'TEXT', 'After the recording, guests take questions from the audience.', NULL, NULL, '2026-03-09 15:51:55'),
-(1110, 67, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1111, 67, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1112, 67, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1113, 67, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1114, 67, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1115, 67, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1157, 70, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1158, 70, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1159, 70, 'highlight_1_title', 'TEXT', 'Haarlem Special Edition', NULL, NULL, '2026-03-09 15:51:55'),
-(1160, 70, 'highlight_1_description', 'TEXT', 'A one-of-a-kind live episode recorded exclusively at the festival.', NULL, NULL, '2026-03-09 15:51:55'),
-(1161, 70, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1162, 70, 'highlight_2_title', 'TEXT', 'Local Conversations', NULL, NULL, '2026-03-09 15:51:55'),
-(1163, 70, 'highlight_2_description', 'TEXT', 'Featuring guests from Haarlem creative and cultural scene.', NULL, NULL, '2026-03-09 15:51:55'),
-(1164, 70, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1165, 70, 'highlight_3_title', 'TEXT', 'Live Audience Experience', NULL, NULL, '2026-03-09 15:51:55'),
-(1166, 70, 'highlight_3_description', 'TEXT', 'Be part of the recording and feel the energy of a live podcast taping.', NULL, NULL, '2026-03-09 15:51:55'),
-(1167, 70, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1168, 70, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1169, 70, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1170, 70, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1171, 70, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1172, 70, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1176, 71, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1177, 71, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1178, 71, 'highlight_1_title', 'TEXT', 'A Story of Courage', NULL, NULL, '2026-03-09 15:51:55'),
-(1179, 71, 'highlight_1_description', 'TEXT', 'The ten Boom family risked everything to shelter Jews during the occupation.', NULL, NULL, '2026-03-09 15:51:55'),
-(1180, 71, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1181, 71, 'highlight_2_title', 'TEXT', 'Haarlem in History', NULL, NULL, '2026-03-09 15:51:55'),
-(1182, 71, 'highlight_2_description', 'TEXT', 'Explore how one family home became a symbol of resistance and compassion.', NULL, NULL, '2026-03-09 15:51:55'),
-(1183, 71, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1184, 71, 'highlight_3_title', 'TEXT', 'Legacy and Memory', NULL, NULL, '2026-03-09 15:51:55'),
-(1185, 71, 'highlight_3_description', 'TEXT', 'Their story lives on as an inspiration for future generations.', NULL, NULL, '2026-03-09 15:51:55'),
-(1186, 71, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1187, 71, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1188, 71, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1189, 71, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1190, 71, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1191, 71, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1195, 72, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1196, 72, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1197, 72, 'highlight_1_title', 'TEXT', 'In English', NULL, NULL, '2026-03-09 15:51:55'),
-(1198, 72, 'highlight_1_description', 'TEXT', 'The ten Boom family story told for international visitors.', NULL, NULL, '2026-03-09 15:51:55'),
-(1199, 72, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1200, 72, 'highlight_2_title', 'TEXT', 'Wartime Haarlem', NULL, NULL, '2026-03-09 15:51:55'),
-(1201, 72, 'highlight_2_description', 'TEXT', 'Step back in time to a Haarlem that faced unimaginable choices.', NULL, NULL, '2026-03-09 15:51:55'),
-(1202, 72, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1203, 72, 'highlight_3_title', 'TEXT', 'Hope and Resilience', NULL, NULL, '2026-03-09 15:51:55'),
-(1204, 72, 'highlight_3_description', 'TEXT', 'A story about human courage that resonates across generations and borders.', NULL, NULL, '2026-03-09 15:51:55'),
-(1205, 72, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1206, 72, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1207, 72, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1208, 72, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1209, 72, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1210, 72, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1214, 73, 'about_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1215, 73, 'about_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1216, 73, 'highlight_1_title', 'TEXT', 'Competition Winners', NULL, NULL, '2026-03-09 15:51:55'),
-(1217, 73, 'highlight_1_description', 'TEXT', 'The English-language winners of the storytelling competition share their best work.', NULL, NULL, '2026-03-09 15:51:55'),
-(1218, 73, 'highlight_1_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1219, 73, 'highlight_2_title', 'TEXT', 'Stories About Haarlem', NULL, NULL, '2026-03-09 15:51:55'),
-(1220, 73, 'highlight_2_description', 'TEXT', 'Each story is rooted in the life and character of the city.', NULL, NULL, '2026-03-09 15:51:55'),
-(1221, 73, 'highlight_2_image', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1222, 73, 'highlight_3_title', 'TEXT', 'New Voices', NULL, NULL, '2026-03-09 15:51:55'),
-(1223, 73, 'highlight_3_description', 'TEXT', 'Discover emerging storytelling talent from Haarlem and beyond.', NULL, NULL, '2026-03-09 15:51:55'),
-(1224, 73, 'highlight_3_image', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1225, 73, 'gallery_image_1', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1226, 73, 'gallery_image_2', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1227, 73, 'gallery_image_3', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1228, 73, 'gallery_image_4', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1229, 73, 'gallery_image_5', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-09 15:51:55'),
-(1231, 16, 'masonry_image_01', 'IMAGE_PATH', '/assets/Image/storytelling/d-student.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1232, 16, 'masonry_image_02', 'IMAGE_PATH', '/assets/Image/storytelling/d-student2.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1233, 16, 'masonry_image_03', 'IMAGE_PATH', '/assets/Image/storytelling/m-student.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1234, 16, 'masonry_image_04', 'IMAGE_PATH', '/assets/Image/storytelling/winnie-the-pooh.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1235, 16, 'masonry_image_05', 'IMAGE_PATH', '/assets/Image/storytelling/pig.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1236, 16, 'masonry_image_06', 'IMAGE_PATH', '/assets/Image/storytelling/entrance-kweek.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1237, 16, 'masonry_image_07', 'IMAGE_PATH', '/assets/Image/storytelling/building.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1238, 16, 'masonry_image_08', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-pointing.png', NULL, NULL, '2026-03-19 13:52:24'),
-(1239, 16, 'masonry_image_09', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-conversation.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1240, 16, 'masonry_image_10', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-drip.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1241, 16, 'masonry_image_11', 'IMAGE_PATH', '/assets/Image/storytelling/anansi-visser.jpg', NULL, NULL, '2026-03-19 13:52:24'),
-(1242, 16, 'masonry_image_12', 'IMAGE_PATH', '/assets/Image/storytelling/WinnieThePoohHeader.png', NULL, NULL, '2026-03-19 13:52:24');
+(864, 38, 'history_molendeadriaan_link', 'LINK', '/history/molen-de-adriaan', NULL, NULL, '2026-03-20 18:43:56'),
+(865, 38, 'history_amsterdamsepoort_link', 'LINK', '/history/amsterdamse-poort', NULL, NULL, '2026-03-20 18:43:56'),
+(866, 38, 'history_grotemarkt_link', 'LINK', '/history/grote-markt', NULL, NULL, '2026-03-20 18:43:56'),
+(1155, 79, 'hero_main_title', 'HEADING', 'GROTE MARKT', NULL, NULL, '2026-03-16 15:09:14'),
+(1156, 79, 'hero_subtitle', 'TEXT', 'A vibrant central square, where centuries of culture, trade, and community life come together', NULL, NULL, '2026-03-16 15:04:56'),
+(1157, 79, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/History/GroteMarkt-hero.png', NULL, NULL, '2026-03-16 15:04:56'),
+(1158, 79, 'hero_map_image', 'IMAGE_PATH', '/assets/Image/History/GroteMarkt-map.png', NULL, NULL, '2026-03-16 15:04:56'),
+(1159, 79, 'hero_button', 'BUTTON_TEXT', 'Back to history', NULL, NULL, '2026-03-16 15:04:56'),
+(1160, 79, 'hero_button_link', 'LINK', '/history', NULL, NULL, '2026-03-16 15:04:56'),
+(1167, 83, 'hero_main_title', 'HEADING', 'AMSTERDAMSE POORT', NULL, NULL, '2026-03-16 15:08:32'),
+(1168, 83, 'hero_subtitle', 'TEXT', 'An iconic medieval gateway of Haarlem, standing as a striking reminder of the city’s fortified past.', NULL, NULL, '2026-03-16 15:08:32'),
+(1169, 83, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/History/AmsterdamsePoort-hero.png', NULL, NULL, '2026-03-16 15:08:32'),
+(1170, 83, 'hero_map_image', 'IMAGE_PATH', '/assets/Image/History/AmsterdamsePoort-map.png', NULL, NULL, '2026-03-16 15:08:32'),
+(1171, 83, 'hero_button', 'BUTTON_TEXT', 'Back to history', NULL, NULL, '2026-03-16 15:08:32'),
+(1172, 83, 'hero_button_link', 'LINK', '/history', NULL, NULL, '2026-03-16 15:08:32'),
+(1173, 87, 'hero_main_title', 'HEADING', 'MOLEN DE ADRIAAN', NULL, NULL, '2026-03-16 15:08:32'),
+(1174, 87, 'hero_subtitle', 'TEXT', 'A striking riverside windmill that reflects rich industrial and cultural heritage of the city.', NULL, NULL, '2026-03-16 15:08:32'),
+(1175, 87, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/History/MolenDeAdriaan-hero.png', NULL, NULL, '2026-03-16 15:08:32'),
+(1176, 87, 'hero_map_image', 'IMAGE_PATH', '/assets/Image/History/MolenDeAdriaan-map.png', NULL, NULL, '2026-03-16 15:08:32'),
+(1177, 87, 'hero_button', 'BUTTON_TEXT', 'Back to history', NULL, NULL, '2026-03-16 15:08:32'),
+(1178, 87, 'hero_button_link', 'LINK', '/history', NULL, NULL, '2026-03-16 15:08:32'),
+(1179, 80, 'intro_heading', 'HEADING', 'Explore the heart of the historic center of Haarlem.', NULL, NULL, '2026-03-16 15:47:48'),
+(1180, 80, 'intro_text', 'TEXT', 'Step into the beating heart of the center of Haarlem as you arrive at the iconic Grote Markt. Surrounded by centuries-old architecture, lively cafés, and landmarks that shaped the city’s identity, this vibrant square is where Haarlem’s past and present come together. Grote Markt is your gateway to the stories, craftsmanship, and cultural moments that have defined the city for generations. From grand celebrations to Saturday market life, every corner of this square holds a piece of Haarlem’s enduring spirit. Begin your journey here and discover how history continues to echo through its bustling streets.', NULL, NULL, '2026-03-16 15:47:48'),
+(1181, 80, 'intro_fact', 'TEXT', 'For centuries, Grote Markt has been the stage for the most important celebrations and gatherings in Haarlem. From medieval fairs and market days to modern cultural festivals, the square consistently brings the city to life. Its enduring role as a public meeting point reflects the spirit and resilience of the community of the city.', NULL, NULL, '2026-03-16 15:47:48'),
+(1182, 80, 'intro_image', 'IMAGE_PATH', '/assets/Image/History/GroteMarkt-intro.png', NULL, NULL, '2026-03-16 15:47:48'),
+(1183, 84, 'intro_heading', 'HEADING', 'Explore the last surviving city gate of Haarlem.', NULL, NULL, '2026-03-16 15:47:48'),
+(1184, 84, 'intro_text', 'TEXT', 'Amsterdamse Poort marks the threshold between historic Haarlem and the ancient road that once connected the city to Amsterdam. As the only remaining city gate, it offers a rare glimpse into the defensive structures that once protected citizens of Haarlem from outside threats. Today, its towers, arches, and brickwork tell stories of trade, travel, and transformation throughout the centuries. During the tour, this landmark invites visitors to slow down, look closer, and imagine the many journeys that began and ended at its impressive walls. Let this gateway introduce you to a chapter of the history of Haarlem where architecture, strategy, and daily life intertwined.', NULL, NULL, '2026-03-16 15:47:48'),
+(1185, 84, 'intro_fact', 'TEXT', 'In the late Middle Ages, Amsterdamse Poort played a crucial role during periods of conflict, serving as both a defensive stronghold and a primary checkpoint for goods entering the city. During times of heightened tension, the gate was heavily fortified, illustrating its strategic importance to Haarlem’s security. Its presence helped shape the flow of commerce and movement, making it central to the city’s resilience and growth.', NULL, NULL, '2026-03-16 15:47:48'),
+(1186, 84, 'intro_image', 'IMAGE_PATH', '/assets/Image/History/AmsterdamsePoort-intro.png', NULL, NULL, '2026-03-16 15:47:48'),
+(1187, 88, 'intro_heading', 'HEADING', 'Explore one of the most iconic windmills of Haarlem.', NULL, NULL, '2026-03-16 15:47:48'),
+(1188, 88, 'intro_text', 'TEXT', 'Standing proudly along the River Spaarne, Molen De Adriaan is one of the most recognizable landmarks of Haarlem. Its lofty silhouette has welcomed visitors for centuries, offering a glimpse into the city’s craftsmanship, innovation, and relationship with the wind-powered industries that shaped the region. Today, the mill is not only a historic monument but also a vibrant learning space where history comes alive through demonstrations and storytelling. During the tour, this beloved windmill invites you to discover how technology, trade, and daily life intertwined in Haarlem’s past. Let Molen De Adriaan show you how a simple force of nature powered an era of ingenuity.', NULL, NULL, '2026-03-16 15:47:48'),
+(1189, 88, 'intro_fact', 'TEXT', 'After a devastating fire destroyed the original structure in 1932, the community of Haarlem rallied for decades to rebuild Molen De Adriaan. Their dedication culminated in its grand reopening in 2002, restoring the windmill to its former glory. This event marked not only the rebirth of a historic icon but also the strength of local pride and commitment to preserving heritage.', NULL, NULL, '2026-03-16 15:47:48'),
+(1190, 88, 'intro_image', 'IMAGE_PATH', '/assets/Image/History/MolenDeAdriaan-intro.png', NULL, NULL, '2026-03-16 15:47:48'),
+(1191, 81, 'fact1', 'TEXT', 'The Grote Markt has been Haarlem’s main marketplace since the Middle Ages.', NULL, NULL, '2026-03-16 15:49:46'),
+(1192, 81, 'fact2', 'TEXT', 'The square hosts the annual Flower Parade finale, one of the region’s most beloved traditions.', NULL, NULL, '2026-03-16 15:49:46'),
+(1193, 81, 'fact3', 'TEXT', 'Grote Markt once hosted lively weekly cheese markets, attracting traders from across the region and making Haarlem an important commercial hub.', NULL, NULL, '2026-03-16 15:49:46'),
+(1194, 85, 'fact1', 'TEXT', 'The Amsterdamse Poort dates back to the 14th century and is the only surviving gate of Haarlem’s original twelve city gates.', NULL, NULL, '2026-03-16 15:51:25'),
+(1195, 85, 'fact2', 'TEXT', 'Its distinctive mix of towers and pointed arches makes it one of the city’s most photographed historic structures.', NULL, NULL, '2026-03-16 15:51:25'),
+(1196, 85, 'fact3', 'TEXT', 'The gateway once formed part of the main trade route between Haarlem and Amsterdam, influencing daily commerce for centuries.', NULL, NULL, '2026-03-16 15:51:25'),
+(1197, 89, 'fact1', 'TEXT', 'Molen De Adriaan was originally built in 1779 and served as a mill for producing materials like cement, tobacco, and spices.', NULL, NULL, '2026-03-16 15:51:25'),
+(1198, 89, 'fact2', 'TEXT', 'The mill’s elevated base was designed to capture stronger winds from above nearby buildings.', NULL, NULL, '2026-03-16 15:51:25'),
+(1199, 89, 'fact3', 'TEXT', 'Visitors can climb inside to see the mill’s wooden gears and machinery in action during demonstrations.', NULL, NULL, '2026-03-16 15:51:25'),
+(1200, 82, 'architectural_significance_heading', 'HEADING', 'Architectural significance', NULL, NULL, '2026-03-16 15:55:51'),
+(1201, 82, 'architectural_significance_text', 'TEXT', 'The Grote Markt is surrounded by some of Haarlem’s most defining architectural treasures, creating a visually striking and cohesive cityscape. The grandeur of St. Bavo Church contrasts beautifully with the refined Gothic elements of the City Hall. Historic merchant houses, each with their own distinct facades, illustrate centuries of urban development. Together, these buildings tell a story of Haarlem’s architectural evolution through time. The square remains a living example of harmonious civic design in the heart of the city.', NULL, NULL, '2026-03-16 15:55:51'),
+(1202, 82, 'historical_significance_heading', 'HEADING', 'Historical significance', NULL, NULL, '2026-03-16 15:55:51'),
+(1203, 82, 'historical_significance_text', 'TEXT', 'As Haarlem’s central square, the Grote Markt has witnessed pivotal moments in the city’s economic, political, and cultural history. It served as the primary marketplace where trade fueled Haarlem’s prosperity. The square was also a gathering place during major civic events, from public announcements to celebrations. Many surrounding landmarks played essential roles in shaping the city’s identity. Today, the Grote Markt stands as a testament to Haarlem’s enduring heritage and vibrant public life.', NULL, NULL, '2026-03-16 15:55:51'),
+(1204, 82, 'significance_image', 'IMAGE_PATH', '/assets/Image/History/GroteMarkt-significance.png', NULL, NULL, '2026-03-16 15:55:51'),
+(1205, 86, 'architectural_significance_heading', 'HEADING', 'Architectural significance', NULL, NULL, '2026-03-16 15:59:30'),
+(1206, 86, 'architectural_significance_text', 'TEXT', 'Amsterdamse Poort showcases classic medieval fortification design with its twin round towers, pointed archways, and robust brick construction. Its asymmetrical layout hints at centuries of renovations and adaptations to shifting defensive needs. Decorative stonework and brick patterns add visual richness while highlighting the craftsmanship of the era. The gate’s placement at a former moat crossing demonstrates the architectural balance between aesthetics and military function. Together, these features make Amsterdamse Poort an exceptional example of the medieval architectural heritage of Haarlem.', NULL, NULL, '2026-03-16 15:59:30'),
+(1207, 86, 'historical_significance_heading', 'HEADING', 'Historical significance', NULL, NULL, '2026-03-16 15:59:30'),
+(1208, 86, 'historical_significance_text', 'TEXT', 'Historically, Amsterdamse Poort served as a vital entry point for travelers, merchants, and goods arriving from Amsterdam. It played a central role in Haarlem’s defense system, helping guard the city during numerous conflicts. As trade flourished, the gate became an economic lifeline, shaping the growth of urban landscape in Haarlem. Over time, it transitioned from a military necessity to a cherished cultural monument. Today, it stands as a powerful symbol of Haarlem’s resilience and centuries-long connection to the wider region.', NULL, NULL, '2026-03-16 15:59:30'),
+(1209, 86, 'significance_image', 'IMAGE_PATH', '/assets/Image/History/AmsterdamsePoort-significance.png', NULL, NULL, '2026-03-16 15:59:30'),
+(1210, 90, 'architectural_significance_heading', 'HEADING', 'Architectural significance', NULL, NULL, '2026-03-16 15:59:30'),
+(1211, 90, 'architectural_significance_text', 'TEXT', 'Molen De Adriaan is a classic example of a Dutch tower mill, characterized by its tall brick base and elegant wooden superstructure. The elevated construction not only improves wind capture but also adds to its dramatic presence along the river. Its rotating cap, sails, and internal mechanisms demonstrate the engineering brilliance of 18th-century millwrights. The reconstruction in 2002 faithfully replicated traditional building techniques, blending historical accuracy with modern safety standards. Together, these architectural elements create a visually captivating landmark that embodies both beauty and functionality.', NULL, NULL, '2026-03-16 15:59:30'),
+(1212, 90, 'historical_significance_heading', 'HEADING', 'Historical significance', NULL, NULL, '2026-03-16 15:59:30'),
+(1213, 90, 'historical_significance_text', 'TEXT', 'Throughout its history, Molen De Adriaan played a crucial role in Haarlem’s industrial development by grinding various materials essential for trade and craftsmanship. It served as a testament to the economic importance of wind power in the Netherlands. The mill’s destruction and subsequent restoration reflect Haarlem’s deep respect for its cultural heritage. Over time, it has transformed from an industrial site into a symbol of community identity and historical continuity. Today, Molen De Adriaan continues to share its story with visitors from around the world, preserving the legacy of working past of the city.', NULL, NULL, '2026-03-16 15:59:30'),
+(1214, 90, 'significance_image', 'IMAGE_PATH', '/assets/Image/History/MolenDeAdriaan-significance.png', NULL, NULL, '2026-03-16 15:59:30'),
+(1218, 81, 'facts_heading', 'HEADING', 'Did you know that...', NULL, NULL, '2026-03-21 23:35:14'),
+(1219, 85, 'facts_heading', 'HEADING', 'Did you know that...', NULL, NULL, '2026-03-21 23:35:14'),
+(1220, 89, 'facts_heading', 'HEADING', 'Did you know that...', NULL, NULL, '2026-03-21 23:35:14');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CmsItemKey`
+--
+
+CREATE TABLE `CmsItemKey` (
+  `ItemKey` varchar(80) NOT NULL,
+  `ExpectedItemType` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+--
+-- Dumping data for table `CmsItemKey`
+--
+
+INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
+('about_button', 'BUTTON_TEXT'),
+('btn_my_program', 'BUTTON_TEXT'),
+('dance_button', 'BUTTON_TEXT'),
+('detail_hero_btn_primary', 'BUTTON_TEXT'),
+('detail_hero_btn_secondary', 'BUTTON_TEXT'),
+('detail_reservation_btn', 'BUTTON_TEXT'),
+('filter_all', 'BUTTON_TEXT'),
+('filter_dutch', 'BUTTON_TEXT'),
+('filter_european', 'BUTTON_TEXT'),
+('filter_fish_seafood', 'BUTTON_TEXT'),
+('filter_french', 'BUTTON_TEXT'),
+('filter_modern', 'BUTTON_TEXT'),
+('filter_vegetarian', 'BUTTON_TEXT'),
+('hero_button', 'BUTTON_TEXT'),
+('hero_button_primary', 'BUTTON_TEXT'),
+('hero_button_secondary', 'BUTTON_TEXT'),
+('history_button', 'BUTTON_TEXT'),
+('jazz_button', 'BUTTON_TEXT'),
+('restaurant_1_about_label', 'BUTTON_TEXT'),
+('restaurant_2_about_label', 'BUTTON_TEXT'),
+('restaurant_2_image', 'BUTTON_TEXT'),
+('restaurant_4_about_label', 'BUTTON_TEXT'),
+('restaurant_5_about_label', 'BUTTON_TEXT'),
+('restaurant_5_book_label', 'BUTTON_TEXT'),
+('restaurant_6_about_label', 'BUTTON_TEXT'),
+('restaurant_6_book_label', 'BUTTON_TEXT'),
+('restaurant_7_about_label', 'BUTTON_TEXT'),
+('restaurant_7_book_label', 'BUTTON_TEXT'),
+('restaurant_button', 'BUTTON_TEXT'),
+('schedule_cta_button', 'BUTTON_TEXT'),
+('schedule_cta_button_text', 'BUTTON_TEXT'),
+('schedule_filters_button_text', 'BUTTON_TEXT'),
+('storytelling_button', 'BUTTON_TEXT'),
+('venue_filter_all', 'BUTTON_TEXT'),
+('venue_filter_dance', 'BUTTON_TEXT'),
+('venue_filter_history', 'BUTTON_TEXT'),
+('venue_filter_jazz', 'BUTTON_TEXT'),
+('venue_filter_restaurants', 'BUTTON_TEXT'),
+('venue_filter_stories', 'BUTTON_TEXT'),
+('about_heading', 'HEADING'),
+('about_main_title', 'HEADING'),
+('architectural_significance_heading', 'HEADING'),
+('artists_heading', 'HEADING'),
+('banner_main_title', 'HEADING'),
+('booking_cta_heading', 'HEADING'),
+('cards_title', 'HEADING'),
+('dance_title', 'HEADING'),
+('detail_about_title_prefix', 'HEADING'),
+('detail_chef_title', 'HEADING'),
+('detail_contact_title', 'HEADING'),
+('detail_gallery_title', 'HEADING'),
+('detail_location_title', 'HEADING'),
+('detail_menu_title', 'HEADING'),
+('detail_practical_title', 'HEADING'),
+('detail_reservation_title', 'HEADING'),
+('events_main_title', 'HEADING'),
+('facts_heading', 'HEADING'),
+('gradient_heading', 'HEADING'),
+('hero_main_title', 'HEADING'),
+('historical_locations_heading', 'HEADING'),
+('historical_significance_heading', 'HEADING'),
+('history_title', 'HEADING'),
+('instructions_card_1_title', 'HEADING'),
+('instructions_card_2_title', 'HEADING'),
+('instructions_card_3_title', 'HEADING'),
+('instructions_title', 'HEADING'),
+('intro_heading', 'HEADING'),
+('intro2_heading', 'HEADING'),
+('jazz_title', 'HEADING'),
+('masonry_heading', 'HEADING'),
+('overview_heading', 'HEADING'),
+('pricing_heading', 'HEADING'),
+('restaurant_1_name', 'HEADING'),
+('restaurant_2_book_label', 'HEADING'),
+('restaurant_3_about_label', 'HEADING'),
+('restaurant_3_book_label', 'HEADING'),
+('restaurant_3_description', 'HEADING'),
+('restaurant_3_image', 'HEADING'),
+('restaurant_4_address', 'HEADING'),
+('restaurant_4_distance_text', 'HEADING'),
+('restaurant_4_name', 'HEADING'),
+('restaurant_6_name', 'HEADING'),
+('restaurant_7_name', 'HEADING'),
+('restaurant_title', 'HEADING'),
+('route_heading', 'HEADING'),
+('schedule_cta_heading', 'HEADING'),
+('schedule_main_title', 'HEADING'),
+('schedule_title', 'HEADING'),
+('storytelling_title', 'HEADING'),
+('ticket_options_heading', 'HEADING'),
+('venue_main_title', 'HEADING'),
+('venues_heading', 'HEADING'),
+('about_body', 'HTML'),
+('about_description', 'HTML'),
+('schedule_additional_info_body', 'HTML'),
+('about_image_1', 'IMAGE_PATH'),
+('about_image_2', 'IMAGE_PATH'),
+('album_1_image', 'IMAGE_PATH'),
+('album_2_image', 'IMAGE_PATH'),
+('album_3_image', 'IMAGE_PATH'),
+('gallery_image_1', 'IMAGE_PATH'),
+('gallery_image_2', 'IMAGE_PATH'),
+('gallery_image_3', 'IMAGE_PATH'),
+('gallery_image_4', 'IMAGE_PATH'),
+('gallery_image_5', 'IMAGE_PATH'),
+('gradient_background_image', 'IMAGE_PATH'),
+('hero_background_image', 'IMAGE_PATH'),
+('hero_map_image', 'IMAGE_PATH'),
+('highlight_1_image', 'IMAGE_PATH'),
+('highlight_2_image', 'IMAGE_PATH'),
+('highlight_3_image', 'IMAGE_PATH'),
+('history_amsterdamsepoort_image', 'IMAGE_PATH'),
+('history_grotemarkt_image', 'IMAGE_PATH'),
+('history_molendeadriaan_image', 'IMAGE_PATH'),
+('intro_image', 'IMAGE_PATH'),
+('intro2_image', 'IMAGE_PATH'),
+('masonry_image_01', 'IMAGE_PATH'),
+('masonry_image_02', 'IMAGE_PATH'),
+('masonry_image_03', 'IMAGE_PATH'),
+('masonry_image_04', 'IMAGE_PATH'),
+('masonry_image_05', 'IMAGE_PATH'),
+('masonry_image_06', 'IMAGE_PATH'),
+('masonry_image_07', 'IMAGE_PATH'),
+('masonry_image_08', 'IMAGE_PATH'),
+('masonry_image_09', 'IMAGE_PATH'),
+('masonry_image_10', 'IMAGE_PATH'),
+('masonry_image_11', 'IMAGE_PATH'),
+('masonry_image_12', 'IMAGE_PATH'),
+('restaurant_1_image', 'IMAGE_PATH'),
+('restaurant_5_image', 'IMAGE_PATH'),
+('restaurant_6_image', 'IMAGE_PATH'),
+('restaurant_7_image', 'IMAGE_PATH'),
+('route_map_image', 'IMAGE_PATH'),
+('significance_image', 'IMAGE_PATH'),
+('track_1_image', 'IMAGE_PATH'),
+('track_2_image', 'IMAGE_PATH'),
+('track_3_image', 'IMAGE_PATH'),
+('track_4_image', 'IMAGE_PATH'),
+('hero_back_button_url', 'LINK'),
+('hero_button_link', 'LINK'),
+('hero_button_primary_link', 'LINK'),
+('hero_button_secondary_link', 'LINK'),
+('history_amsterdamsepoort_link', 'LINK'),
+('history_grotemarkt_link', 'LINK'),
+('history_group_ticket_icon', 'LINK'),
+('history_molendeadriaan_link', 'LINK'),
+('history_single_ticket_icon', 'LINK'),
+('live_cta_schedule_button_url', 'LINK'),
+('schedule_cta_button_link', 'LINK'),
+('about_image', 'MEDIA'),
+('artists_evolve_image', 'MEDIA'),
+('artists_gumbokings_image', 'MEDIA'),
+('artists_ntjam_image', 'MEDIA'),
+('banner_background_image', 'MEDIA'),
+('dance_image', 'MEDIA'),
+('history_image', 'MEDIA'),
+('jazz_gradient_background_image', 'MEDIA'),
+('jazz_hero_background_image', 'MEDIA'),
+('jazz_image', 'MEDIA'),
+('jazz_intro_image', 'MEDIA'),
+('restaurant_image', 'MEDIA'),
+('storytelling_image', 'MEDIA'),
+('about_tagline', 'TEXT'),
+('album_1_description', 'TEXT'),
+('album_1_tag', 'TEXT'),
+('album_1_title', 'TEXT'),
+('album_1_year', 'TEXT'),
+('album_2_description', 'TEXT'),
+('album_2_tag', 'TEXT'),
+('album_2_title', 'TEXT'),
+('album_2_year', 'TEXT'),
+('album_3_description', 'TEXT'),
+('album_3_tag', 'TEXT'),
+('album_3_title', 'TEXT'),
+('album_3_year', 'TEXT'),
+('albums_description', 'TEXT'),
+('albums_heading', 'TEXT'),
+('architectural_significance_text', 'TEXT'),
+('artists_evolve_description', 'TEXT'),
+('artists_evolve_first_performance', 'TEXT'),
+('artists_evolve_genre', 'TEXT'),
+('artists_evolve_more_performances_text', 'TEXT'),
+('artists_evolve_name', 'TEXT'),
+('artists_evolve_performance_count', 'TEXT'),
+('artists_gumbokings_description', 'TEXT'),
+('artists_gumbokings_first_performance', 'TEXT'),
+('artists_gumbokings_genre', 'TEXT'),
+('artists_gumbokings_more_performances_text', 'TEXT'),
+('artists_gumbokings_name', 'TEXT'),
+('artists_gumbokings_performance_count', 'TEXT'),
+('artists_ntjam_description', 'TEXT'),
+('artists_ntjam_first_performance', 'TEXT'),
+('artists_ntjam_genre', 'TEXT'),
+('artists_ntjam_more_performances_text', 'TEXT'),
+('artists_ntjam_name', 'TEXT'),
+('artists_ntjam_performance_count', 'TEXT'),
+('banner_subtitle', 'TEXT'),
+('booking_cta_description', 'TEXT'),
+('btn_explore_template', 'TEXT'),
+('cards_subtitle', 'TEXT'),
+('dance_description', 'TEXT'),
+('detail_hero_subtitle_template', 'TEXT'),
+('detail_label_address', 'TEXT'),
+('detail_label_contact', 'TEXT'),
+('detail_label_duration', 'TEXT'),
+('detail_label_festival_rated', 'TEXT'),
+('detail_label_michelin', 'TEXT'),
+('detail_label_open_hours', 'TEXT'),
+('detail_label_price_food', 'TEXT'),
+('detail_label_rating', 'TEXT'),
+('detail_label_seats', 'TEXT'),
+('detail_label_special_requests', 'TEXT'),
+('detail_location_address_label', 'TEXT'),
+('detail_map_fallback_text', 'TEXT'),
+('detail_menu_cuisine_label', 'TEXT'),
+('detail_reservation_description', 'TEXT'),
+('detail_reservation_note', 'TEXT'),
+('detail_reservation_slots_label', 'TEXT'),
+('events_subtitle', 'TEXT'),
+('fact1', 'TEXT'),
+('fact2', 'TEXT'),
+('fact3', 'TEXT'),
+('formed_text', 'TEXT'),
+('gradient_subheading', 'TEXT'),
+('hero_back_button_text', 'TEXT'),
+('hero_reserve_button_text', 'TEXT'),
+('hero_subtitle', 'TEXT'),
+('highlight_1', 'TEXT'),
+('highlight_1_description', 'TEXT'),
+('highlight_1_title', 'TEXT'),
+('highlight_2', 'TEXT'),
+('highlight_2_description', 'TEXT'),
+('highlight_2_title', 'TEXT'),
+('highlight_3', 'TEXT'),
+('highlight_3_description', 'TEXT'),
+('highlight_3_title', 'TEXT'),
+('highlight_4', 'TEXT'),
+('highlight_5', 'TEXT'),
+('highlight_6', 'TEXT'),
+('highlights_heading', 'TEXT'),
+('historical_significance_text', 'TEXT'),
+('history_amsterdamsepoort_description', 'TEXT'),
+('history_amsterdamsepoort_name', 'TEXT'),
+('history_description', 'TEXT'),
+('history_grotemarkt_description', 'TEXT'),
+('history_grotemarkt_name', 'TEXT'),
+('history_important_tour_info_heading', 'TEXT'),
+('history_molendeadriaan_description', 'TEXT'),
+('history_molendeadriaan_name', 'TEXT'),
+('history_pricing_group_include1', 'TEXT'),
+('history_pricing_group_include2', 'TEXT'),
+('history_pricing_group_include3', 'TEXT'),
+('history_pricing_group_price', 'TEXT'),
+('history_pricing_group_title', 'TEXT'),
+('history_pricing_single_include1', 'TEXT'),
+('history_pricing_single_include2', 'TEXT'),
+('history_pricing_single_include3', 'TEXT'),
+('history_pricing_single_price', 'TEXT'),
+('history_pricing_single_title', 'TEXT'),
+('important_info_item1', 'TEXT'),
+('important_info_item2', 'TEXT'),
+('important_info_item3', 'TEXT'),
+('important_info_item4', 'TEXT'),
+('important_info_item5', 'TEXT'),
+('important_info_item6', 'TEXT'),
+('important_info_item7', 'TEXT'),
+('important_info_item8', 'TEXT'),
+('instructions_card_1_text', 'TEXT'),
+('instructions_card_2_text', 'TEXT'),
+('instructions_card_3_text', 'TEXT'),
+('intro_body', 'TEXT'),
+('intro_fact', 'TEXT'),
+('intro_image_alt', 'TEXT'),
+('intro_text', 'TEXT'),
+('intro2_body', 'TEXT'),
+('intro2_image_alt', 'TEXT'),
+('jazz_description', 'TEXT'),
+('label_events_count', 'TEXT'),
+('label_no_events', 'TEXT'),
+('lineup_1', 'TEXT'),
+('lineup_2', 'TEXT'),
+('lineup_3', 'TEXT'),
+('lineup_4', 'TEXT'),
+('lineup_5', 'TEXT'),
+('lineup_6', 'TEXT'),
+('lineup_heading', 'TEXT'),
+('listen_description', 'TEXT'),
+('listen_heading', 'TEXT'),
+('listen_play_button_label', 'TEXT'),
+('listen_play_excerpt_text', 'TEXT'),
+('listen_subheading', 'TEXT'),
+('listen_track_artwork_alt_suffix', 'TEXT'),
+('live_cta_book_button_text', 'TEXT'),
+('live_cta_description', 'TEXT'),
+('live_cta_heading', 'TEXT'),
+('live_cta_schedule_button_text', 'TEXT'),
+('nav_dance', 'TEXT'),
+('nav_history', 'TEXT'),
+('nav_home', 'TEXT'),
+('nav_jazz', 'TEXT'),
+('nav_restaurant', 'TEXT'),
+('nav_storytelling', 'TEXT'),
+('origin_text', 'TEXT'),
+('overview_body_primary', 'TEXT'),
+('overview_body_secondary', 'TEXT'),
+('overview_lead', 'TEXT'),
+('performances_description', 'TEXT'),
+('performances_heading', 'TEXT'),
+('performances_section_id', 'TEXT'),
+('performances_text', 'TEXT'),
+('photo_gallery_description', 'TEXT'),
+('photo_gallery_heading', 'TEXT'),
+('pricing_3day_desc', 'TEXT'),
+('pricing_3day_include1', 'TEXT'),
+('pricing_3day_include2', 'TEXT'),
+('pricing_3day_include3', 'TEXT'),
+('pricing_3day_include4', 'TEXT'),
+('pricing_3day_info', 'TEXT'),
+('pricing_3day_price', 'TEXT'),
+('pricing_3day_title', 'TEXT'),
+('pricing_daypass_desc', 'TEXT'),
+('pricing_daypass_include1', 'TEXT'),
+('pricing_daypass_include2', 'TEXT'),
+('pricing_daypass_include3', 'TEXT'),
+('pricing_daypass_include4', 'TEXT'),
+('pricing_daypass_info', 'TEXT'),
+('pricing_daypass_price', 'TEXT'),
+('pricing_daypass_title', 'TEXT'),
+('pricing_description', 'TEXT'),
+('pricing_individual_item1', 'TEXT'),
+('pricing_individual_item2', 'TEXT'),
+('pricing_individual_item3', 'TEXT'),
+('pricing_individual_title', 'TEXT'),
+('pricing_subheading', 'TEXT'),
+('restaurant_1_address', 'TEXT'),
+('restaurant_1_book_label', 'TEXT'),
+('restaurant_1_cuisine', 'TEXT'),
+('restaurant_1_description', 'TEXT'),
+('restaurant_1_distance_text', 'TEXT'),
+('restaurant_1_price', 'TEXT'),
+('restaurant_1_rating', 'TEXT'),
+('restaurant_2_address', 'TEXT'),
+('restaurant_2_cuisine', 'TEXT'),
+('restaurant_2_description', 'TEXT'),
+('restaurant_2_distance_text', 'TEXT'),
+('restaurant_2_name', 'TEXT'),
+('restaurant_2_price', 'TEXT'),
+('restaurant_2_rating', 'TEXT'),
+('restaurant_3_address', 'TEXT'),
+('restaurant_3_cuisine', 'TEXT'),
+('restaurant_3_distance_text', 'TEXT'),
+('restaurant_3_name', 'TEXT'),
+('restaurant_3_price', 'TEXT'),
+('restaurant_3_rating', 'TEXT'),
+('restaurant_4_book_label', 'TEXT'),
+('restaurant_4_cuisine', 'TEXT'),
+('restaurant_4_description', 'TEXT'),
+('restaurant_4_image', 'TEXT'),
+('restaurant_4_price', 'TEXT'),
+('restaurant_4_rating', 'TEXT'),
+('restaurant_5_address', 'TEXT'),
+('restaurant_5_cuisine', 'TEXT'),
+('restaurant_5_description', 'TEXT'),
+('restaurant_5_distance_text', 'TEXT'),
+('restaurant_5_name', 'TEXT'),
+('restaurant_5_price', 'TEXT'),
+('restaurant_5_rating', 'TEXT'),
+('restaurant_6_address', 'TEXT'),
+('restaurant_6_cuisine', 'TEXT'),
+('restaurant_6_description', 'TEXT'),
+('restaurant_6_distance_text', 'TEXT'),
+('restaurant_6_price', 'TEXT'),
+('restaurant_6_rating', 'TEXT'),
+('restaurant_7_address', 'TEXT'),
+('restaurant_7_cuisine', 'TEXT'),
+('restaurant_7_description', 'TEXT'),
+('restaurant_7_distance_text', 'TEXT'),
+('restaurant_7_price', 'TEXT'),
+('restaurant_7_rating', 'TEXT'),
+('restaurant_description', 'TEXT'),
+('route_location1_description', 'TEXT'),
+('route_location1_name', 'TEXT'),
+('route_location2_description', 'TEXT'),
+('route_location2_name', 'TEXT'),
+('route_location3_description', 'TEXT'),
+('route_location3_name', 'TEXT'),
+('route_location4_description', 'TEXT'),
+('route_location4_name', 'TEXT'),
+('route_location5_description', 'TEXT'),
+('route_location5_name', 'TEXT'),
+('route_location6_description', 'TEXT'),
+('route_location6_name', 'TEXT'),
+('route_location7_description', 'TEXT'),
+('route_location7_name', 'TEXT'),
+('route_location8_description', 'TEXT'),
+('route_location8_name', 'TEXT'),
+('route_location9_description', 'TEXT'),
+('route_location9_name', 'TEXT'),
+('schedule_additional_info_title', 'TEXT'),
+('schedule_cta_description', 'TEXT'),
+('schedule_currency_symbol', 'TEXT'),
+('schedule_event_count_label', 'TEXT'),
+('schedule_no_events_text', 'TEXT'),
+('schedule_pay_what_you_like_text', 'TEXT'),
+('schedule_show_additional_info', 'TEXT'),
+('schedule_show_event_count', 'TEXT'),
+('schedule_show_filters', 'TEXT'),
+('schedule_show_story_count', 'TEXT'),
+('schedule_start_point', 'TEXT'),
+('schedule_story_count_label', 'TEXT'),
+('schedule_subtitle_1', 'TEXT'),
+('schedule_subtitle_2', 'TEXT'),
+('schedule_year', 'TEXT'),
+('site_name', 'TEXT'),
+('storytelling_description', 'TEXT'),
+('track_1_album', 'TEXT'),
+('track_1_description', 'TEXT'),
+('track_1_duration', 'TEXT'),
+('track_1_progress_class', 'TEXT'),
+('track_1_title', 'TEXT'),
+('track_2_album', 'TEXT'),
+('track_2_description', 'TEXT'),
+('track_2_duration', 'TEXT'),
+('track_2_progress_class', 'TEXT'),
+('track_2_title', 'TEXT'),
+('track_3_album', 'TEXT'),
+('track_3_description', 'TEXT'),
+('track_3_duration', 'TEXT'),
+('track_3_progress_class', 'TEXT'),
+('track_3_title', 'TEXT'),
+('track_4_album', 'TEXT'),
+('track_4_description', 'TEXT'),
+('track_4_duration', 'TEXT'),
+('track_4_progress_class', 'TEXT'),
+('track_4_title', 'TEXT'),
+('venue_filter_label', 'TEXT'),
+('venue_filter_title', 'TEXT'),
+('venue_grotemarkt_hall_desc', 'TEXT'),
+('venue_grotemarkt_hall_info', 'TEXT'),
+('venue_grotemarkt_hall_name', 'TEXT'),
+('venue_grotemarkt_hall_price', 'TEXT'),
+('venue_grotemarkt_location1', 'TEXT'),
+('venue_grotemarkt_location2', 'TEXT'),
+('venue_grotemarkt_name', 'TEXT'),
+('venue_patronaat_address1', 'TEXT'),
+('venue_patronaat_address2', 'TEXT'),
+('venue_patronaat_contact', 'TEXT'),
+('venue_patronaat_hall1_capacity', 'TEXT'),
+('venue_patronaat_hall1_desc', 'TEXT'),
+('venue_patronaat_hall1_name', 'TEXT'),
+('venue_patronaat_hall2_capacity', 'TEXT'),
+('venue_patronaat_hall2_desc', 'TEXT'),
+('venue_patronaat_hall2_name', 'TEXT'),
+('venue_patronaat_hall3_capacity', 'TEXT'),
+('venue_patronaat_hall3_desc', 'TEXT'),
+('venue_patronaat_hall3_name', 'TEXT'),
+('venue_patronaat_name', 'TEXT'),
+('venues_description', 'TEXT'),
+('venues_subheading', 'TEXT'),
+('video_url', 'TEXT');
 
 -- --------------------------------------------------------
 
@@ -979,8 +1493,9 @@ INSERT INTO `CmsPage` (`CmsPageId`, `Slug`, `Title`) VALUES
 (6, 'restaurant', 'Yummy! Restaurant Experience'),
 (7, 'storytelling-detail', 'Storytelling Detail Pages'),
 (8, 'jazz-artist-detail', 'Jazz Artist Detail Pages'),
-(9, 'my-program', 'My Program'),
-(10, 'checkout', 'Checkout');
+(9, 'grote-markt', 'Grote Markt'),
+(10, 'amsterdamse-poort', 'Amsterdaamse Poort'),
+(11, 'molen-de-adriaan', 'Molen De Adriaan');
 
 -- --------------------------------------------------------
 
@@ -1048,6 +1563,7 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (65, 7, 'event_38'),
 (66, 7, 'event_39'),
 (67, 7, 'event_40'),
+(68, 7, 'event_41'),
 (69, 7, 'event_42'),
 (70, 7, 'event_43'),
 (71, 7, 'event_44'),
@@ -1055,31 +1571,18 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (73, 7, 'event_46'),
 (77, 8, 'event_1'),
 (78, 8, 'event_3'),
-(79, 9, 'main'),
-(80, 10, 'main');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `CuisineType`
---
-
-CREATE TABLE `CuisineType` (
-  `CuisineTypeId` int(11) NOT NULL,
-  `Name` varchar(60) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `CuisineType`
---
-
-INSERT INTO `CuisineType` (`CuisineTypeId`, `Name`) VALUES
-(1, 'Dutch'),
-(2, 'European'),
-(3, 'Fish & Seafood'),
-(4, 'French'),
-(5, 'Modern'),
-(6, 'Vegan');
+(81, 9, 'facts_section'),
+(79, 9, 'hero_section'),
+(80, 9, 'intro_section'),
+(82, 9, 'significance_section'),
+(85, 10, 'facts_section'),
+(83, 10, 'hero_section'),
+(84, 10, 'intro_section'),
+(86, 10, 'significance_section'),
+(89, 11, 'facts_section'),
+(87, 11, 'hero_section'),
+(88, 11, 'intro_section'),
+(90, 11, 'significance_section');
 
 -- --------------------------------------------------------
 
@@ -1153,7 +1656,7 @@ INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `ShortDescriptio
 (30, 2, 'Armin van Buuren - Club (Sunday)', 'armin-van-buuren-club-sunday', 'Club session by Armin van Buuren', '<p></p>', NULL, 5, 25, NULL, 1, '2026-02-06 15:30:32'),
 (31, 2, 'Hardwell - Club (Sunday)', 'hardwell-club-sunday', 'Club session by Hardwell', '<p></p>', NULL, 6, 23, NULL, 1, '2026-02-06 15:30:32'),
 (32, 2, 'Martin Garrix - Club (Sunday)', 'martin-garrix-club-sunday', 'Club session by Martin Garrix', '<p></p>', NULL, 4, 24, NULL, 1, '2026-02-06 15:30:32'),
-(33, 3, 'Haarlem History Walking Tour', 'haarlem-history-walking-tour', 'Guided walking tour through historic Haarlem. Due to the nature of this walk, participants must be a minimum of 12 years old and no strollers are allowed.', '<p></p>', NULL, NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(33, 3, 'A Stroll Through History', 'a-stroll-through-history', 'Guided walking tour through historic Haarlem. Due to the nature of this walk, participants must be a minimum of 12 years old and no strollers are allowed.', '<p></p>', NULL, 15, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (34, 4, 'Winnie de Poeh (4+)', 'winnie-de-poeh-4', 'Stories for the whole family', '<p></p>', NULL, NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (35, 4, 'Omdenken Podcast', 'omdenken-podcast', 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (36, 4, 'The story of Buurderij Haarlem', 'the-story-of-buurderij-haarlem', 'Stories with impact', '<p></p>', NULL, 12, NULL, NULL, 1, '2026-02-06 15:30:32'),
@@ -1161,6 +1664,7 @@ INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `ShortDescriptio
 (38, 4, 'Winnaars van verhalenvertel wedstrijd, verhalen voor Haarlem', 'winnaars-van-verhalenvertel-wedstrijd-verhalen-voor-haarlem', 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (39, 4, 'Het verhaal van de Oeserzwammerij', 'het-verhaal-van-de-oeserzwammerij', 'Stories with impact', '<p></p>', NULL, 12, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (40, 4, 'Flip Thinking Podcast', 'flip-thinking-podcast', 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(41, 4, 'Meneer Anansi', 'meneer-anansi', 'Stories for the whole family', '<p></p>', NULL, 14, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (42, 4, 'Mister Anansi', 'mister-anansi', 'Stories for the whole family', '<p></p>', NULL, 14, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (43, 4, 'Podcastlast Haarlem Special', 'podcastlast-haarlem-special', 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (44, 4, 'De geschiedenis van familie ten Boom', 'de-geschiedenis-van-familie-ten-boom', 'Stories with impact', '<p></p>', NULL, 13, NULL, NULL, 1, '2026-02-06 15:30:32'),
@@ -1173,162 +1677,6 @@ INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `ShortDescriptio
 (51, 5, 'New Vegas - Festival Dinner', 'new-vegas-festival-dinner', 'Vegan cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 5, 1, '2026-02-06 15:30:32'),
 (52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'grand-cafe-brinkman-festival-dinner', 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 4, 1, '2026-02-06 15:30:32'),
 (53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'urban-frenchy-bistro-toujours-festival-dinner', 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 2, 1, '2026-02-06 15:30:32');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `EventGalleryImage`
---
-
-CREATE TABLE `EventGalleryImage` (
-  `EventGalleryImageId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
-  `ImagePath` varchar(500) NOT NULL,
-  `ImageType` varchar(20) NOT NULL DEFAULT 'gallery',
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `EventGalleryImage`
---
-
-INSERT INTO `EventGalleryImage` (`EventGalleryImageId`, `EventId`, `ImagePath`, `ImageType`, `SortOrder`) VALUES
-(1, 34, '/assets/Image/storytelling/winnie-the-pooh.jpg', 'gallery', 1),
-(2, 34, '/assets/Image/storytelling/WinnieThePoohHeader.png', 'gallery', 2),
-(3, 34, '/assets/Image/storytelling/d-student.jpg', 'gallery', 3),
-(4, 34, '/assets/Image/storytelling/pig.jpg', 'gallery', 4),
-(5, 34, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 5),
-(6, 35, '/assets/Image/storytelling/building.jpg', 'gallery', 1),
-(7, 35, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 2),
-(8, 35, '/assets/Image/storytelling/d-student.jpg', 'gallery', 3),
-(9, 35, '/assets/Image/storytelling/d-student2.jpg', 'gallery', 4),
-(10, 35, '/assets/Image/storytelling/m-student.jpg', 'gallery', 5),
-(11, 35, '/assets/Image/storytelling/building.jpg', 'about', 1),
-(12, 35, '/assets/Image/storytelling/entrance-kweek.jpg', 'about', 2),
-(13, 36, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 1),
-(14, 36, '/assets/Image/storytelling/building.jpg', 'gallery', 2),
-(15, 36, '/assets/Image/storytelling/where-stories-come-alive.jpg', 'gallery', 3),
-(16, 36, '/assets/Image/storytelling/picture-looking-text.jpg', 'gallery', 4),
-(17, 36, '/assets/Image/storytelling/d-student.jpg', 'gallery', 5),
-(18, 36, '/assets/Image/storytelling/entrance-kweek.jpg', 'about', 1),
-(19, 36, '/assets/Image/storytelling/building.jpg', 'about', 2),
-(20, 37, '/assets/Image/storytelling/d-student.jpg', 'gallery', 1),
-(21, 37, '/assets/Image/storytelling/d-student2.jpg', 'gallery', 2),
-(22, 37, '/assets/Image/storytelling/m-student.jpg', 'gallery', 3),
-(23, 37, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 4),
-(24, 37, '/assets/Image/storytelling/building.jpg', 'gallery', 5),
-(25, 37, '/assets/Image/storytelling/d-student.jpg', 'about', 1),
-(26, 37, '/assets/Image/storytelling/d-student2.jpg', 'about', 2),
-(27, 38, '/assets/Image/storytelling/d-student.jpg', 'gallery', 1),
-(28, 38, '/assets/Image/storytelling/d-student2.jpg', 'gallery', 2),
-(29, 38, '/assets/Image/storytelling/m-student.jpg', 'gallery', 3),
-(30, 38, '/assets/Image/storytelling/building.jpg', 'gallery', 4),
-(31, 38, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 5),
-(32, 38, '/assets/Image/storytelling/building.jpg', 'about', 1),
-(33, 38, '/assets/Image/storytelling/entrance-kweek.jpg', 'about', 2),
-(34, 39, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 1),
-(35, 39, '/assets/Image/storytelling/building.jpg', 'gallery', 2),
-(36, 39, '/assets/Image/storytelling/picture-looking-text.jpg', 'gallery', 3),
-(37, 39, '/assets/Image/storytelling/d-student.jpg', 'gallery', 4),
-(38, 39, '/assets/Image/storytelling/m-student.jpg', 'gallery', 5),
-(39, 39, '/assets/Image/storytelling/entrance-kweek.jpg', 'about', 1),
-(40, 39, '/assets/Image/storytelling/building.jpg', 'about', 2),
-(41, 40, '/assets/Image/storytelling/building.jpg', 'gallery', 1),
-(42, 40, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 2),
-(43, 40, '/assets/Image/storytelling/d-student.jpg', 'gallery', 3),
-(44, 40, '/assets/Image/storytelling/d-student2.jpg', 'gallery', 4),
-(45, 40, '/assets/Image/storytelling/m-student.jpg', 'gallery', 5),
-(46, 40, '/assets/Image/storytelling/building.jpg', 'about', 1),
-(47, 40, '/assets/Image/storytelling/d-student2.jpg', 'about', 2),
-(55, 42, '/assets/Image/storytelling/anansi-pointing.png', 'gallery', 1),
-(56, 42, '/assets/Image/storytelling/anansi-visser.jpg', 'gallery', 2),
-(57, 42, '/assets/Image/storytelling/anansi-conversation.jpg', 'gallery', 3),
-(58, 42, '/assets/Image/storytelling/anansi-drip.jpg', 'gallery', 4),
-(59, 42, '/assets/Image/storytelling/building.jpg', 'gallery', 5),
-(60, 42, '/assets/Image/storytelling/anansi-pointing.png', 'about', 1),
-(61, 42, '/assets/Image/storytelling/anansi-visser.jpg', 'about', 2),
-(62, 43, '/assets/Image/storytelling/building.jpg', 'gallery', 1),
-(63, 43, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 2),
-(64, 43, '/assets/Image/storytelling/d-student.jpg', 'gallery', 3),
-(65, 43, '/assets/Image/storytelling/d-student2.jpg', 'gallery', 4),
-(66, 43, '/assets/Image/storytelling/m-student.jpg', 'gallery', 5),
-(67, 43, '/assets/Image/storytelling/building.jpg', 'about', 1),
-(68, 43, '/assets/Image/storytelling/entrance-kweek.jpg', 'about', 2),
-(69, 44, '/assets/Image/storytelling/building.jpg', 'gallery', 1),
-(70, 44, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 2),
-(71, 44, '/assets/Image/storytelling/picture-looking-text.jpg', 'gallery', 3),
-(72, 44, '/assets/Image/storytelling/d-student.jpg', 'gallery', 4),
-(73, 44, '/assets/Image/storytelling/m-student.jpg', 'gallery', 5),
-(74, 44, '/assets/Image/storytelling/building.jpg', 'about', 1),
-(75, 44, '/assets/Image/storytelling/entrance-kweek.jpg', 'about', 2),
-(76, 45, '/assets/Image/storytelling/building.jpg', 'gallery', 1),
-(77, 45, '/assets/Image/storytelling/picture-looking-text.jpg', 'gallery', 2),
-(78, 45, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 3),
-(79, 45, '/assets/Image/storytelling/d-student.jpg', 'gallery', 4),
-(80, 45, '/assets/Image/storytelling/m-student.jpg', 'gallery', 5),
-(81, 45, '/assets/Image/storytelling/building.jpg', 'about', 1),
-(82, 45, '/assets/Image/storytelling/picture-looking-text.jpg', 'about', 2),
-(83, 46, '/assets/Image/storytelling/d-student.jpg', 'gallery', 1),
-(84, 46, '/assets/Image/storytelling/d-student2.jpg', 'gallery', 2),
-(85, 46, '/assets/Image/storytelling/m-student.jpg', 'gallery', 3),
-(86, 46, '/assets/Image/storytelling/building.jpg', 'gallery', 4),
-(87, 46, '/assets/Image/storytelling/entrance-kweek.jpg', 'gallery', 5),
-(88, 46, '/assets/Image/storytelling/d-student.jpg', 'about', 1),
-(89, 46, '/assets/Image/storytelling/m-student.jpg', 'about', 2);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `EventHighlight`
---
-
-CREATE TABLE `EventHighlight` (
-  `EventHighlightId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
-  `Title` varchar(160) NOT NULL,
-  `Description` text NOT NULL DEFAULT '',
-  `ImagePath` varchar(500) NOT NULL DEFAULT '',
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `EventHighlight`
---
-
-INSERT INTO `EventHighlight` (`EventHighlightId`, `EventId`, `Title`, `Description`, `ImagePath`, `SortOrder`) VALUES
-(1, 35, 'Live Recording', 'Be part of a live podcast recording in front of an audience.', '/assets/Image/storytelling/building.jpg', 1),
-(2, 35, 'Audience Participation', 'Your questions and insights shape the conversation.', '/assets/Image/storytelling/d-student2.jpg', 2),
-(3, 35, 'New Perspectives', 'Discover how reframing challenges can lead to creative solutions.', '/assets/Image/storytelling/m-student.jpg', 3),
-(4, 36, 'From Farmer to Neighbour', 'A personal story about how local farmers connect directly with Haarlem residents, focusing on trust, fair pricing, and the journey food takes from land to table.', '/assets/Image/storytelling/entrance-kweek.jpg', 1),
-(5, 36, 'Building a Local Food Community', 'How Buurderij Haarlem became more than a marketplace - weekly meetups created friendships and a shared sense of responsibility for local food.', '/assets/Image/storytelling/building.jpg', 2),
-(6, 36, 'Food with a Future', 'How Buurderij Haarlem supports seasonal food, reduces waste, and encourages conscious consumption for future generations.', '/assets/Image/storytelling/picture-looking-text.jpg', 3),
-(7, 37, 'Stories for Every Child', 'An accessible and joyful storytelling session designed with children in mind.', '/assets/Image/storytelling/d-student.jpg', 1),
-(8, 37, 'Imagination in Action', 'Watch as the performer brings characters to life through voice, gesture, and storytelling.', '/assets/Image/storytelling/d-student2.jpg', 2),
-(9, 37, 'A Shared Experience', 'A session that brings families and communities together around shared stories.', '/assets/Image/storytelling/m-student.jpg', 3),
-(10, 38, 'Competition Winners', 'Hear from the storytellers who won the Haarlem storytelling competition.', '/assets/Image/storytelling/d-student.jpg', 1),
-(11, 38, 'Stories About Haarlem', 'Each winner tells a story rooted in the city culture and everyday life.', '/assets/Image/storytelling/m-student.jpg', 2),
-(12, 38, 'Community Voice', 'The competition celebrates storytelling as a way to strengthen community bonds.', '/assets/Image/storytelling/d-student2.jpg', 3),
-(13, 39, 'Sustainable Innovation', 'Learn how local entrepreneurs are growing food sustainably in the city.', '/assets/Image/storytelling/entrance-kweek.jpg', 1),
-(14, 39, 'Community Impact', 'The Oeserzwammerij connects growers, volunteers, and consumers.', '/assets/Image/storytelling/building.jpg', 2),
-(15, 39, 'From Waste to Food', 'Using coffee grounds and organic waste to grow nutritious mushrooms.', '/assets/Image/storytelling/picture-looking-text.jpg', 3),
-(16, 40, 'Reframe Your World', 'Learn practical techniques for turning obstacles into opportunities.', '/assets/Image/storytelling/d-student.jpg', 1),
-(17, 40, 'Live Podcast Recording', 'Experience the magic of a podcast recorded before a live audience.', '/assets/Image/storytelling/building.jpg', 2),
-(18, 40, 'Q and A with Audience', 'After the recording, guests take questions from the audience.', '/assets/Image/storytelling/m-student.jpg', 3),
-(22, 42, 'In English', 'The Anansi story performed in English for international audiences.', '/assets/Image/storytelling/anansi-pointing.png', 1),
-(23, 42, 'Universal Themes', 'Stories of cunning, community, and creativity that transcend cultures.', '/assets/Image/storytelling/anansi-conversation.jpg', 2),
-(24, 42, 'World Folklore on Stage', 'Experience the rich tradition of West African oral storytelling at Haarlem Festival.', '/assets/Image/storytelling/anansi-drip.jpg', 3),
-(25, 43, 'Haarlem Special Edition', 'A one-of-a-kind live episode recorded exclusively at the festival.', '/assets/Image/storytelling/building.jpg', 1),
-(26, 43, 'Local Conversations', 'Featuring guests from Haarlem creative and cultural scene.', '/assets/Image/storytelling/d-student.jpg', 2),
-(27, 43, 'Live Audience Experience', 'Be part of the recording and feel the energy of a live podcast taping.', '/assets/Image/storytelling/m-student.jpg', 3),
-(28, 44, 'A Story of Courage', 'The ten Boom family risked everything to shelter Jews during the occupation.', '/assets/Image/storytelling/building.jpg', 1),
-(29, 44, 'Haarlem in History', 'Explore how one family home became a symbol of resistance and compassion.', '/assets/Image/storytelling/picture-looking-text.jpg', 2),
-(30, 44, 'Legacy and Memory', 'Their story lives on as an inspiration for future generations.', '/assets/Image/storytelling/entrance-kweek.jpg', 3),
-(31, 45, 'In English', 'The ten Boom family story told for international visitors.', '/assets/Image/storytelling/building.jpg', 1),
-(32, 45, 'Wartime Haarlem', 'Step back in time to a Haarlem that faced unimaginable choices.', '/assets/Image/storytelling/picture-looking-text.jpg', 2),
-(33, 45, 'Hope and Resilience', 'A story about human courage that resonates across generations and borders.', '/assets/Image/storytelling/entrance-kweek.jpg', 3),
-(34, 46, 'Competition Winners', 'The English-language winners of the storytelling competition share their best work.', '/assets/Image/storytelling/d-student.jpg', 1),
-(35, 46, 'Stories About Haarlem', 'Each story is rooted in the life and character of the city.', '/assets/Image/storytelling/d-student2.jpg', 2),
-(36, 46, 'New Voices', 'Discover emerging storytelling talent from Haarlem and beyond.', '/assets/Image/storytelling/m-student.jpg', 3);
 
 -- --------------------------------------------------------
 
@@ -1368,55 +1716,55 @@ CREATE TABLE `EventSession` (
 --
 
 INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `StartDateTime`, `EndDateTime`, `CapacityTotal`, `CapacitySingleTicketLimit`, `SeatsAvailable`, `SoldSingleTickets`, `SoldReservedSeats`, `HallName`, `SessionType`, `DurationMinutes`, `LanguageCode`, `MinAge`, `MaxAge`, `ReservationRequired`, `IsFree`, `Notes`, `HistoryTicketLabel`, `CtaLabel`, `CtaUrl`, `IsCancelled`, `CreatedAtUtc`, `IsActive`) VALUES
-(1, 1, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 300, 270, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(2, 2, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(3, 3, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(4, 4, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 200, 180, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(5, 5, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(6, 6, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(7, 7, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(8, 8, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(9, 9, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(10, 10, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(11, 11, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(12, 12, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(13, 13, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(14, 14, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(15, 15, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(16, 16, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(17, 17, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(18, 18, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(19, 19, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, 'Free for all visitors. No reservation needed.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(20, 4, '2026-07-26 16:00:00', '2026-07-26 17:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(21, 2, '2026-07-26 17:00:00', '2026-07-26 18:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(22, 17, '2026-07-26 18:00:00', '2026-07-26 19:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(23, 1, '2026-07-26 19:00:00', '2026-07-26 20:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(24, 13, '2026-07-26 20:00:00', '2026-07-26 21:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(25, 20, '2026-07-24 20:00:00', '2026-07-25 02:00:00', 1500, 1350, NULL, 0, 0, NULL, 'Back2Back', 360, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €125,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(26, 21, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(27, 22, '2026-07-24 23:00:00', '2026-07-25 00:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(28, 23, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(29, 24, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(30, 25, '2026-07-25 14:00:00', '2026-07-25 23:00:00', 2000, 1800, NULL, 0, 0, NULL, 'Back2Back', 540, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €150,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(31, 26, '2026-07-25 22:00:00', '2026-07-25 23:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(32, 27, '2026-07-25 21:00:00', '2026-07-26 01:00:00', 1500, 1350, NULL, 0, 0, NULL, 'TiëstoWorld', 240, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(33, 28, '2026-07-25 23:00:00', '2026-07-26 00:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(34, 29, '2026-07-26 14:00:00', '2026-07-26 23:00:00', 2000, 1800, NULL, 0, 0, NULL, 'Back2Back', 540, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €150,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(35, 30, '2026-07-26 19:00:00', '2026-07-26 20:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(36, 31, '2026-07-26 21:00:00', '2026-07-26 22:30:00', 1500, 1350, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(37, 32, '2026-07-26 18:00:00', '2026-07-26 19:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(38, 33, '2026-07-23 10:00:00', '2026-07-23 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, 'Due to the nature of this walk participants must be a minimum of 12 years old and no strollers are allowed. Groups will consist of 12 participants + 1 guide.', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(39, 33, '2026-07-23 13:00:00', '2026-07-23 15:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(40, 33, '2026-07-23 16:00:00', '2026-07-23 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(41, 33, '2026-07-24 10:00:00', '2026-07-24 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(42, 33, '2026-07-24 13:00:00', '2026-07-24 15:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(43, 33, '2026-07-24 16:00:00', '2026-07-24 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(44, 33, '2026-07-25 10:00:00', '2026-07-25 12:00:00', 48, 43, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(45, 33, '2026-07-25 13:00:00', '2026-07-25 15:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(46, 33, '2026-07-25 16:00:00', '2026-07-25 18:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(47, 33, '2026-07-26 10:00:00', '2026-07-26 12:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(48, 33, '2026-07-26 13:00:00', '2026-07-26 15:00:00', 96, 86, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(49, 33, '2026-07-26 16:00:00', '2026-07-26 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(1, 1, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 300, 270, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(2, 2, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(3, 3, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(4, 4, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 200, 180, NULL, 0, 0, 'Second Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(5, 5, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(6, 6, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(7, 7, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(8, 8, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(9, 9, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(10, 10, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(11, 11, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(12, 12, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(13, 13, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(14, 14, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(15, 15, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(16, 16, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(17, 17, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(18, 18, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(19, 19, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, 'ENG', NULL, NULL, 0, 1, 'Free for all visitors. No reservation needed.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(20, 4, '2026-07-26 16:00:00', '2026-07-26 17:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, 'ENG', NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(21, 2, '2026-07-26 17:00:00', '2026-07-26 18:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, 'ENG', NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(22, 17, '2026-07-26 18:00:00', '2026-07-26 19:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, 'ENG', NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(23, 1, '2026-07-26 19:00:00', '2026-07-26 20:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, 'ENG', NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(24, 13, '2026-07-26 20:00:00', '2026-07-26 21:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, 'ENG', NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(25, 20, '2026-07-24 20:00:00', '2026-07-25 02:00:00', 1500, 1350, NULL, 0, 0, NULL, 'Back2Back', 360, 'ENG', NULL, NULL, 0, 0, 'All-Access pass for this day €125,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(26, 21, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(27, 22, '2026-07-24 23:00:00', '2026-07-25 00:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(28, 23, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(29, 24, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(30, 25, '2026-07-25 14:00:00', '2026-07-25 23:00:00', 2000, 1800, NULL, 0, 0, NULL, 'Back2Back', 540, 'ENG', NULL, NULL, 0, 0, 'All-Access pass for this day €150,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(31, 26, '2026-07-25 22:00:00', '2026-07-25 23:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(32, 27, '2026-07-25 21:00:00', '2026-07-26 01:00:00', 1500, 1350, NULL, 0, 0, NULL, 'TiëstoWorld', 240, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(33, 28, '2026-07-25 23:00:00', '2026-07-26 00:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(34, 29, '2026-07-26 14:00:00', '2026-07-26 23:00:00', 2000, 1800, NULL, 0, 0, NULL, 'Back2Back', 540, 'ENG', NULL, NULL, 0, 0, 'All-Access pass for this day €150,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(35, 30, '2026-07-26 19:00:00', '2026-07-26 20:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(36, 31, '2026-07-26 21:00:00', '2026-07-26 22:30:00', 1500, 1350, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(37, 32, '2026-07-26 18:00:00', '2026-07-26 19:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(38, 33, '2026-07-23 10:00:00', '2026-07-23 12:00:00', 24, 21, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, 'Due to the nature of this walk participants must be a minimum of 12 years old and no strollers are allowed. Groups will consist of 12 participants + 1 guide.', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(39, 33, '2026-07-23 13:00:00', '2026-07-23 15:00:00', 24, 21, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(40, 33, '2026-07-23 16:00:00', '2026-07-23 18:00:00', 24, 21, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(41, 33, '2026-07-24 10:00:00', '2026-07-24 12:00:00', 24, 21, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(42, 33, '2026-07-24 13:00:00', '2026-07-24 15:00:00', 36, 32, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(43, 33, '2026-07-24 16:00:00', '2026-07-24 18:00:00', 24, 21, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(44, 33, '2026-07-25 10:00:00', '2026-07-25 12:00:00', 48, 43, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(45, 33, '2026-07-25 13:00:00', '2026-07-25 15:00:00', 60, 54, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(46, 33, '2026-07-25 16:00:00', '2026-07-25 18:00:00', 36, 32, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(47, 33, '2026-07-26 10:00:00', '2026-07-26 12:00:00', 60, 54, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(48, 33, '2026-07-26 13:00:00', '2026-07-26 15:00:00', 96, 86, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(49, 33, '2026-07-26 16:00:00', '2026-07-26 18:00:00', 24, 21, 12, 0, 0, NULL, 'Tour', 150, 'ENG', NULL, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (50, 34, '2026-07-23 16:00:00', '2026-07-23 17:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 4, NULL, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (51, 35, '2026-07-23 19:00:00', '2026-07-23 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (52, 36, '2026-07-23 20:30:00', '2026-07-23 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'ENG', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
@@ -1424,54 +1772,54 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `StartDateTime`, `EndDa
 (54, 38, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (55, 39, '2026-07-24 19:00:00', '2026-07-24 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'NL', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (56, 40, '2026-07-24 20:30:00', '2026-07-24 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'ENG', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(57, 42, '2026-07-25 10:00:00', '2026-07-25 11:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(57, 41, '2026-07-25 10:00:00', '2026-07-25 11:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (58, 42, '2026-07-25 15:00:00', '2026-07-25 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (59, 43, '2026-07-25 14:00:00', '2026-07-25 15:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 12, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (60, 44, '2026-07-25 13:00:00', '2026-07-25 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (61, 42, '2026-07-26 10:00:00', '2026-07-26 11:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(62, 42, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(62, 41, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (63, 45, '2026-07-26 13:00:00', '2026-07-26 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'ENG', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (64, 46, '2026-07-26 16:00:00', '2026-07-26 17:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'ENG', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(65, 47, '2026-07-24 18:00:00', '2026-07-24 19:30:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(66, 47, '2026-07-24 19:30:00', '2026-07-24 21:00:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(67, 47, '2026-07-24 21:00:00', '2026-07-24 22:30:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(68, 48, '2026-07-24 17:00:00', '2026-07-24 19:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(69, 48, '2026-07-24 19:00:00', '2026-07-24 21:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(70, 48, '2026-07-24 21:00:00', '2026-07-24 23:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(71, 49, '2026-07-24 17:00:00', '2026-07-24 19:00:00', 60, 54, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(72, 49, '2026-07-24 19:00:00', '2026-07-24 21:00:00', 60, 54, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(73, 50, '2026-07-24 17:30:00', '2026-07-24 19:00:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(74, 50, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(75, 50, '2026-07-24 20:30:00', '2026-07-24 22:00:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(76, 51, '2026-07-24 17:00:00', '2026-07-24 18:30:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(77, 51, '2026-07-24 18:30:00', '2026-07-24 20:00:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(78, 51, '2026-07-24 20:00:00', '2026-07-24 21:30:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(79, 52, '2026-07-24 16:30:00', '2026-07-24 18:00:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(80, 52, '2026-07-24 18:00:00', '2026-07-24 19:30:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(81, 52, '2026-07-24 19:30:00', '2026-07-24 21:00:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(82, 53, '2026-07-24 17:30:00', '2026-07-24 19:00:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(83, 53, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(84, 53, '2026-07-24 20:30:00', '2026-07-24 22:00:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(90, 33, '2026-07-23 10:00:00', '2026-07-23 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 12:06:20', 1),
-(91, 33, '2026-07-23 13:00:00', '2026-07-23 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:11:18', 1),
-(92, 33, '2026-07-23 16:00:00', '2026-07-23 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:11:18', 1),
-(93, 33, '2026-07-24 10:00:00', '2026-07-24 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(94, 33, '2026-07-24 13:00:00', '2026-07-24 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(95, 33, '2026-07-24 13:00:00', '2026-07-24 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(96, 33, '2026-07-24 16:00:00', '2026-07-24 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(97, 33, '2026-07-25 10:00:00', '2026-07-25 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(98, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(99, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(100, 33, '2026-07-25 10:00:00', '2026-07-25 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(101, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(102, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(103, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(104, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(105, 33, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(106, 33, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(107, 33, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(108, 33, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(109, 33, '2026-07-26 16:00:00', '2026-07-26 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-09 19:19:22', 1);
+(65, 47, '2026-07-24 18:00:00', '2026-07-24 19:30:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(66, 47, '2026-07-24 19:30:00', '2026-07-24 21:00:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(67, 47, '2026-07-24 21:00:00', '2026-07-24 22:30:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(68, 48, '2026-07-24 17:00:00', '2026-07-24 19:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(69, 48, '2026-07-24 19:00:00', '2026-07-24 21:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(70, 48, '2026-07-24 21:00:00', '2026-07-24 23:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(71, 49, '2026-07-24 17:00:00', '2026-07-24 19:00:00', 60, 54, NULL, 0, 0, NULL, 'Dinner', 120, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(72, 49, '2026-07-24 19:00:00', '2026-07-24 21:00:00', 60, 54, NULL, 0, 0, NULL, 'Dinner', 120, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(73, 50, '2026-07-24 17:30:00', '2026-07-24 19:00:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(74, 50, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(75, 50, '2026-07-24 20:30:00', '2026-07-24 22:00:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(76, 51, '2026-07-24 17:00:00', '2026-07-24 18:30:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(77, 51, '2026-07-24 18:30:00', '2026-07-24 20:00:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(78, 51, '2026-07-24 20:00:00', '2026-07-24 21:30:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(79, 52, '2026-07-24 16:30:00', '2026-07-24 18:00:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(80, 52, '2026-07-24 18:00:00', '2026-07-24 19:30:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(81, 52, '2026-07-24 19:30:00', '2026-07-24 21:00:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(82, 53, '2026-07-24 17:30:00', '2026-07-24 19:00:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(83, 53, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(84, 53, '2026-07-24 20:30:00', '2026-07-24 22:00:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, 'ENG', NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(90, 33, '2026-07-23 10:00:00', '2026-07-23 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 12:06:20', 1),
+(91, 33, '2026-07-23 13:00:00', '2026-07-23 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:11:18', 1),
+(92, 33, '2026-07-23 16:00:00', '2026-07-23 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:11:18', 1),
+(93, 33, '2026-07-24 10:00:00', '2026-07-24 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(94, 33, '2026-07-24 13:00:00', '2026-07-24 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(95, 33, '2026-07-24 13:00:00', '2026-07-24 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(96, 33, '2026-07-24 16:00:00', '2026-07-24 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(97, 33, '2026-07-25 10:00:00', '2026-07-25 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(98, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(99, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(100, 33, '2026-07-25 10:00:00', '2026-07-25 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(101, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(102, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(103, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(104, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(105, 33, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(106, 33, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(107, 33, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(108, 33, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(109, 33, '2026-07-26 16:00:00', '2026-07-26 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', NULL, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1);
 
 -- --------------------------------------------------------
 
@@ -1700,7 +2048,39 @@ INSERT INTO `EventSessionPrice` (`EventSessionPriceId`, `EventSessionId`, `Price
 (113, 83, 1, 35.00, 'EUR', 9.00),
 (114, 83, 2, 17.50, 'EUR', 9.00),
 (115, 84, 1, 35.00, 'EUR', 9.00),
-(116, 84, 2, 17.50, 'EUR', 9.00);
+(116, 84, 2, 17.50, 'EUR', 9.00),
+(179, 38, 6, 17.50, 'EUR', 21.00),
+(180, 90, 6, 17.50, 'EUR', 21.00),
+(181, 39, 6, 17.50, 'EUR', 21.00),
+(182, 91, 6, 17.50, 'EUR', 21.00),
+(183, 40, 6, 17.50, 'EUR', 21.00),
+(184, 92, 6, 17.50, 'EUR', 21.00),
+(185, 41, 6, 17.50, 'EUR', 21.00),
+(186, 93, 6, 17.50, 'EUR', 21.00),
+(187, 42, 6, 17.50, 'EUR', 21.00),
+(188, 94, 6, 17.50, 'EUR', 21.00),
+(189, 95, 6, 17.50, 'EUR', 21.00),
+(190, 43, 6, 17.50, 'EUR', 21.00),
+(191, 96, 6, 17.50, 'EUR', 21.00),
+(192, 44, 6, 17.50, 'EUR', 21.00),
+(193, 97, 6, 17.50, 'EUR', 21.00),
+(194, 100, 6, 17.50, 'EUR', 21.00),
+(195, 45, 6, 17.50, 'EUR', 21.00),
+(196, 98, 6, 17.50, 'EUR', 21.00),
+(197, 101, 6, 17.50, 'EUR', 21.00),
+(198, 102, 6, 17.50, 'EUR', 21.00),
+(199, 46, 6, 17.50, 'EUR', 21.00),
+(200, 99, 6, 17.50, 'EUR', 21.00),
+(201, 103, 6, 17.50, 'EUR', 21.00),
+(202, 104, 6, 17.50, 'EUR', 21.00),
+(203, 47, 6, 17.50, 'EUR', 21.00),
+(204, 105, 6, 17.50, 'EUR', 21.00),
+(205, 106, 6, 17.50, 'EUR', 21.00),
+(206, 48, 6, 17.50, 'EUR', 21.00),
+(207, 107, 6, 17.50, 'EUR', 21.00),
+(208, 108, 6, 17.50, 'EUR', 21.00),
+(209, 49, 6, 17.50, 'EUR', 21.00),
+(210, 109, 6, 17.50, 'EUR', 21.00);
 
 -- --------------------------------------------------------
 
@@ -2012,28 +2392,7 @@ INSERT INTO `MediaAsset` (`MediaAssetId`, `FilePath`, `OriginalFileName`, `MimeT
 (95, '/assets/Image/restaurants/toujours-menu-1.png', 'toujours-menu-1.png', 'image/png', 0, 'Toujours Menu 1', '2026-02-06 15:30:32'),
 (96, '/assets/Image/restaurants/toujours-menu-2.png', 'toujours-menu-2.png', 'image/png', 0, 'Toujours Menu 2', '2026-02-06 15:30:32'),
 (97, '/assets/Image/restaurants/toujours-reservation.png', 'toujours-reservation.png', 'image/png', 0, 'Toujours Reservation', '2026-03-08 16:07:48'),
-(98, '/assets/Image/restaurants/toujours-chef.jpg', 'toujours-chef.jpg', 'image/jpeg', 0, 'Chef Toujours', '2026-02-06 15:30:32'),
-(99, '/assets/Image/cms/img_69bbef528d9d12.96030426.jpg', '616cba41-3c94-4fbd-835d-bc0aeedfbaf4.jpg', 'image/jpeg', 174526, '', '2026-03-19 12:42:58'),
-(100, '/assets/Image/cms/img_69bbef967a9f53.97810384.jpg', '616cba41-3c94-4fbd-835d-bc0aeedfbaf4.jpg', 'image/jpeg', 174526, '', '2026-03-19 12:44:06'),
-(101, '/assets/Image/cms/img_69bbf3a2c96d31.98368045.jpg', 'Foto-Mister-Anansi-leert-de-wereld-lachen.jpeg', 'image/jpeg', 183316, '', '2026-03-19 13:01:22'),
-(102, '/assets/Image/cms/img_69bbf3b6a31759.33298381.jpg', 'd93cd66cfe101a5b56d3da4876fbfe70.jpg', 'image/jpeg', 214509, '', '2026-03-19 13:01:42'),
-(103, '/assets/Image/cms/img_69bbf3ce3ef514.64175921.jpg', '32828394.jpg', 'image/jpeg', 105042, '', '2026-03-19 13:02:06'),
-(104, '/assets/Image/cms/img_69bbf3d5039f25.86763941.jpg', '71xaH6hW8oL._AC_UF1000,1000_QL80_.jpg', 'image/jpeg', 163601, '', '2026-03-19 13:02:13'),
-(105, '/assets/Image/cms/img_69bbf3ed76d7a8.47499591.png', 'U111ntitled.png', 'image/png', 1693182, '', '2026-03-19 13:02:37'),
-(106, '/assets/Image/cms/img_69bbf4094a8d05.53949416.jpg', '59f4d9e53514422b9d72fd70ddf9d573H3000W3000_320_320.jpg', 'image/jpeg', 21780, '', '2026-03-19 13:03:05'),
-(107, '/assets/Image/cms/img_69bbf413705627.94131764.jpg', 'Mv4q5DbA.jpg', 'image/jpeg', 24875, '', '2026-03-19 13:03:15'),
-(108, '/assets/Image/cms/img_69bbf420e8bbd1.00624951.jpg', 'Mister_Anansi_presentator.jpg', 'image/jpeg', 634717, '', '2026-03-19 13:03:28'),
-(109, '/assets/Image/cms/img_69bc015850fe41.40561995.jpg', 'pexels-tkirkgoz-16509950.jpg', 'image/jpeg', 311876, '', '2026-03-19 13:59:52'),
-(110, '/assets/Image/cms/img_69bc01cbc15b00.40333275.jpg', 'pexels-rihan-ishan-das-739500-2519332.jpg', 'image/jpeg', 1178960, '', '2026-03-19 14:01:47'),
-(111, '/assets/Image/cms/img_69bc01efc85bf3.05889602.jpg', 'pexels-linafoxy-7612910.jpg', 'image/jpeg', 4393082, '', '2026-03-19 14:02:23'),
-(112, '/assets/Image/cms/img_69bc01f8c3c935.16528174.jpg', 'pexels-erikscheel-95425.jpg', 'image/jpeg', 313988, '', '2026-03-19 14:02:32'),
-(113, '/assets/Image/cms/img_69bc0216451550.49495262.jpg', 'pexels-pixabay-45852.jpg', 'image/jpeg', 828933, '', '2026-03-19 14:03:02'),
-(114, '/assets/Image/cms/img_69bc0223648f59.66487036.jpg', 'pexels-kelly-2321837.jpg', 'image/jpeg', 1421823, '', '2026-03-19 14:03:15'),
-(115, '/assets/Image/cms/img_69bc022c11ed30.99868104.jpg', 'pexels-pixabay-47862.jpg', 'image/jpeg', 378902, '', '2026-03-19 14:03:24'),
-(116, '/assets/Image/cms/img_69bc02395608e9.02804662.jpg', 'pexels-quang-nguyen-vinh-222549-2158060.jpg', 'image/jpeg', 2393141, '', '2026-03-19 14:03:37'),
-(117, '/assets/Image/cms/img_69bc02416dd260.59429514.jpg', 'pexels-samarth-2301903.jpg', 'image/jpeg', 2459293, '', '2026-03-19 14:03:45'),
-(118, '/assets/Image/cms/img_69bc024cb16e39.78789064.jpg', 'pexels-edris-ibraheem-1697115432-31842596.jpg', 'image/jpeg', 1318696, '', '2026-03-19 14:03:56'),
-(119, '/assets/Image/cms/img_69bc0253470b58.41608350.jpg', 'pexels-lekepov-2044219506-34528385.jpg', 'image/jpeg', 1221614, '', '2026-03-19 14:04:03');
+(98, '/assets/Image/restaurants/toujours-chef.jpg', 'toujours-chef.jpg', 'image/jpeg', 0, 'Chef Toujours', '2026-02-06 15:30:32');
 
 -- --------------------------------------------------------
 
@@ -2122,38 +2481,6 @@ INSERT INTO `OrderStatus` (`Status`) VALUES
 ('Cancelled'),
 ('Paid'),
 ('Pending');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `PageGalleryImage`
---
-
-CREATE TABLE `PageGalleryImage` (
-  `PageGalleryImageId` int(11) NOT NULL,
-  `CmsPageId` int(11) NOT NULL,
-  `ImagePath` varchar(500) NOT NULL,
-  `ImageType` varchar(20) NOT NULL DEFAULT 'gallery',
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `PageGalleryImage`
---
-
-INSERT INTO `PageGalleryImage` (`PageGalleryImageId`, `CmsPageId`, `ImagePath`, `ImageType`, `SortOrder`) VALUES
-(1, 2, '/assets/Image/storytelling/d-student.jpg', 'masonry', 1),
-(2, 2, '/assets/Image/storytelling/d-student2.jpg', 'masonry', 2),
-(3, 2, '/assets/Image/storytelling/m-student.jpg', 'masonry', 3),
-(4, 2, '/assets/Image/storytelling/winnie-the-pooh.jpg', 'masonry', 4),
-(5, 2, '/assets/Image/storytelling/pig.jpg', 'masonry', 5),
-(6, 2, '/assets/Image/storytelling/entrance-kweek.jpg', 'masonry', 6),
-(7, 2, '/assets/Image/storytelling/building.jpg', 'masonry', 7),
-(8, 2, '/assets/Image/storytelling/anansi-pointing.png', 'masonry', 8),
-(9, 2, '/assets/Image/storytelling/anansi-conversation.jpg', 'masonry', 9),
-(10, 2, '/assets/Image/storytelling/anansi-drip.jpg', 'masonry', 10),
-(11, 2, '/assets/Image/storytelling/anansi-visser.jpg', 'masonry', 11),
-(12, 2, '/assets/Image/storytelling/WinnieThePoohHeader.png', 'masonry', 12);
 
 -- --------------------------------------------------------
 
@@ -2365,7 +2692,8 @@ INSERT INTO `PriceTier` (`PriceTierId`, `Name`) VALUES
 (2, 'ChildU12'),
 (3, 'Family'),
 (5, 'PayWhatYouLike'),
-(4, 'ReservationFee');
+(4, 'ReservationFee'),
+(6, 'Single');
 
 -- --------------------------------------------------------
 
@@ -2411,13 +2739,15 @@ CREATE TABLE `ProgramItem` (
 --
 
 INSERT INTO `ProgramItem` (`ProgramItemId`, `ProgramId`, `EventSessionId`, `HistoryTourId`, `PassTypeId`, `PassValidDate`, `Quantity`, `DonationAmount`) VALUES
-(3, 1, 4, NULL, NULL, NULL, 3, 0.00),
+(3, 1, 4, NULL, NULL, NULL, 4, 0.00),
 (4, 1, 8, NULL, NULL, NULL, 2, 0.00),
 (5, 1, 1, NULL, NULL, NULL, 2, 0.00),
 (6, 2, 1, NULL, NULL, NULL, 2, 0.00),
 (7, 2, 4, NULL, NULL, NULL, 2, 0.00),
 (10, 2, 52, NULL, NULL, NULL, 2, 0.00),
-(11, 2, 50, NULL, NULL, NULL, 1, 0.00);
+(11, 2, 50, NULL, NULL, NULL, 1, 0.00),
+(12, 1, 50, NULL, NULL, NULL, 4, 0.00),
+(13, 1, 40, NULL, NULL, NULL, 4, 0.00);
 
 -- --------------------------------------------------------
 
@@ -2448,65 +2778,21 @@ CREATE TABLE `Restaurant` (
   `MichelinStars` int(11) DEFAULT NULL,
   `SeatsPerSession` int(11) DEFAULT NULL,
   `DurationMinutes` int(11) DEFAULT NULL,
-  `SpecialRequestsNote` varchar(500) DEFAULT NULL,
-  `GalleryImage1AssetId` int(11) DEFAULT NULL,
-  `GalleryImage2AssetId` int(11) DEFAULT NULL,
-  `GalleryImage3AssetId` int(11) DEFAULT NULL,
-  `AboutImageAssetId` int(11) DEFAULT NULL,
-  `ChefImageAssetId` int(11) DEFAULT NULL,
-  `MenuImage1AssetId` int(11) DEFAULT NULL,
-  `MenuImage2AssetId` int(11) DEFAULT NULL,
-  `ReservationImageAssetId` int(11) DEFAULT NULL
+  `SpecialRequestsNote` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
 -- Dumping data for table `Restaurant`
 --
 
-INSERT INTO `Restaurant` (`RestaurantId`, `Name`, `AddressLine`, `City`, `Stars`, `CuisineType`, `DescriptionHtml`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`, `Phone`, `Email`, `Website`, `AboutText`, `ChefName`, `ChefText`, `MenuDescription`, `LocationDescription`, `MapEmbedUrl`, `MichelinStars`, `SeatsPerSession`, `DurationMinutes`, `SpecialRequestsNote`, `GalleryImage1AssetId`, `GalleryImage2AssetId`, `GalleryImage3AssetId`, `AboutImageAssetId`, `ChefImageAssetId`, `MenuImage1AssetId`, `MenuImage2AssetId`, `ReservationImageAssetId`) VALUES
-(1, 'Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem', 4, 'French, fish and seafood, European', 'Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.', 76, 1, '2026-02-06 15:30:32', '+31 (0)23 123 4567', 'info@ratatouille.nl', 'ratatouillefoodandwine.nl', 'Welcome to <strong>Ratatouille</strong>, a Michelin-starred French restaurant on the Spaarne, known for turning fine dining into something <strong>warm, creative, and surprisingly accessible</strong>.\n\nEvery dish is prepared with <strong>seasonal ingredients, bright flavors,</strong> and a touch of <strong>French elegance.</strong> For the Yummy! festival, Ratatouille offers one special menu.\n\n<strong>Expect plates that feel refined,</strong> crafted with the same <strong>creativity</strong> that makes Ratatouille so loved.', 'Jozua Jaring', '<strong>Jozua Jaring</strong> leads the kitchen at Ratatouille. Under his leadership, the restaurant earned a <strong>Michelin star</strong>.\n\nHis cooking style is simple at its core. He starts with good ingredients and then adds creativity.\n\nFor the <strong>Yummy! festival</strong>, Chef Jaring designed a special menu.', 'For the Yummy! festival, guests enjoy a set menu specially created by Ratatouille.', 'Ratatouille is located by the river Spaarne, right in the center of Haarlem.\n\nThe <strong>Patronaat</strong> is just a 5-minute walk away.\n\nWhether you want to explore the city, enjoy a show, or continue your festival evening, Ratatouille is in a perfect location.', 'https://maps.google.com/maps?q=Spaarne+96,+2011+CL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 1, 35, 120, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 82, 83, 84, 85, 86, 87, 88, 89),
-(2, 'Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem', 3, 'Dutch, fish and seafood, European', 'A cozy city bistro focused on seafood and comforting dishes in a lively central setting.', 81, 1, '2026-02-06 15:30:32', '+31 023 532 1699', 'info@toujours.nl', 'restauranttoujours.nl', '<strong>Urban Frenchy Bistro Toujours </strong>is a stylish and welcoming spot in the heart of Haarlem. The restaurant is known for its <strong>cozy boudoir-style interior, warm lighting, and relaxed atmosphere</strong> that makes every visit feel special. Toujours brings together Dutch freshness, European comfort, and a strong focus on seafood, creating a menu that feels both modern and approachable.\n\nFor the Yummy! festival, Toujours offers a special menu built around the dishes they do best: <strong>bright seafood plates, familiar European flavors, </strong>and<strong> ingredients that celebrate local Dutch products</strong>. It\'s a perfect stop for anyone who wants a relaxed, flavorful meal before exploring the rest of the festival.\n\nWhether you\'re visiting with friends, family, or enjoying the evening on your own, Toujours brings together great food and a warm setting to make your festival night feel complete.', 'Georgiana Viou', 'Chef <strong>Georgiana Viou </strong>guides the Toujours kitchen with a focus on fresh seafood, seasonal produce, and relaxed European flavors. His cooking is warm, welcoming, and built around good ingredients.\n\n<strong>For Yummy!, the chef created a menu</strong> that reflects what Toujours is known for. Every dish is prepared with care, keeping the <strong>experience warm, relaxed, and enjoyable for everyone.</strong>', 'Toujours focuses on fresh seafood, Dutch ingredients, and European bistro-style cooking. Their plates often feature fish, seasonal produce, and comforting flavors that feel both elevated and easy to enjoy.\n\nExpect dishes that highlight seafood, local produce, and warm European influences. It\'s perfect for a relaxed and tasty festival dinner.', 'Toujours is located at <strong>Oude Groenmarkt 10-12</strong>, a lively square in the center of Haarlem and only steps away from the <strong>Grote Markt</strong>, one of the festival\'s busiest spots. Its central location makes it an easy stop before or after concerts, events, and evening activities.\n\nThe <strong>Jopenkerk</strong> is only 2 minutes walk away and the area is full of energy, history, and festival life. A great combination for anyone wanting to combine great food with a memorable night out.\n\n<strong>Address: </strong> Oude Groenmarkt 10-12, 2011 HL Haarlem, Nederland', 'https://maps.google.com/maps?q=Oude+Groenmarkt+10,+2011+HL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 0, 48, 90, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 90, 91, 92, 93, 98, 95, 96, 89),
-(3, 'Café de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A cozy neighborhood café serving honest food and classic flavors in a relaxed and friendly setting.', 75, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 'Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem', 3, 'Dutch, European, Modern', 'A classic grand café on Haarlem\'s main square, serving familiar European dishes in the heart of the festival buzz.', 80, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(5, 'New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem', 3, 'Vegan', 'A casual spot with an international feel, offering familiar dishes and vegetarian options right in the city center.', 79, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(6, 'Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem', 4, 'Dutch, French, European', 'A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.', 78, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 'Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A modern fine-dining restaurant known for a refined yet welcoming atmosphere.', 77, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `RestaurantCuisine`
---
-
-CREATE TABLE `RestaurantCuisine` (
-  `RestaurantId` int(11) NOT NULL,
-  `CuisineTypeId` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `RestaurantCuisine`
---
-
-INSERT INTO `RestaurantCuisine` (`RestaurantId`, `CuisineTypeId`) VALUES
-(2, 1),
-(3, 1),
-(4, 1),
-(6, 1),
-(7, 1),
-(1, 2),
-(2, 2),
-(3, 2),
-(4, 2),
-(6, 2),
-(7, 2),
-(1, 3),
-(2, 3),
-(3, 3),
-(7, 3),
-(1, 4),
-(6, 4),
-(4, 5),
-(5, 6);
+INSERT INTO `Restaurant` (`RestaurantId`, `Name`, `AddressLine`, `City`, `Stars`, `CuisineType`, `DescriptionHtml`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`, `Phone`, `Email`, `Website`, `AboutText`, `ChefName`, `ChefText`, `MenuDescription`, `LocationDescription`, `MapEmbedUrl`, `MichelinStars`, `SeatsPerSession`, `DurationMinutes`, `SpecialRequestsNote`) VALUES
+(1, 'Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem', 4, 'French, fish and seafood, European', 'Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.', 76, 1, '2026-02-06 15:30:32', '+31 (0)23 123 4567', 'info@ratatouille.nl', 'ratatouillefoodandwine.nl', 'Welcome to <strong>Ratatouille</strong>, a Michelin-starred French restaurant on the Spaarne, known for turning fine dining into something <strong>warm, creative, and surprisingly accessible</strong>.\n\nEvery dish is prepared with <strong>seasonal ingredients, bright flavors,</strong> and a touch of <strong>French elegance.</strong> For the Yummy! festival, Ratatouille offers one special menu.\n\n<strong>Expect plates that feel refined,</strong> crafted with the same <strong>creativity</strong> that makes Ratatouille so loved.', 'Jozua Jaring', '<strong>Jozua Jaring</strong> leads the kitchen at Ratatouille. Under his leadership, the restaurant earned a <strong>Michelin star</strong>.\n\nHis cooking style is simple at its core. He starts with good ingredients and then adds creativity.\n\nFor the <strong>Yummy! festival</strong>, Chef Jaring designed a special menu.', 'For the Yummy! festival, guests enjoy a set menu specially created by Ratatouille.', 'Ratatouille is located by the river Spaarne, right in the center of Haarlem.\n\nThe <strong>Patronaat</strong> is just a 5-minute walk away.\n\nWhether you want to explore the city, enjoy a show, or continue your festival evening, Ratatouille is in a perfect location.', 'https://maps.google.com/maps?q=Spaarne+96,+2011+CL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 1, 35, 120, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.'),
+(2, 'Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem', 3, 'Dutch, fish and seafood, European', 'A cozy city bistro focused on seafood and comforting dishes in a lively central setting.', 81, 1, '2026-02-06 15:30:32', '+31 023 532 1699', 'info@toujours.nl', 'restauranttoujours.nl', '<strong>Urban Frenchy Bistro Toujours </strong>is a stylish and welcoming spot in the heart of Haarlem. The restaurant is known for its <strong>cozy boudoir-style interior, warm lighting, and relaxed atmosphere</strong> that makes every visit feel special. Toujours brings together Dutch freshness, European comfort, and a strong focus on seafood, creating a menu that feels both modern and approachable.\n\nFor the Yummy! festival, Toujours offers a special menu built around the dishes they do best: <strong>bright seafood plates, familiar European flavors, </strong>and<strong> ingredients that celebrate local Dutch products</strong>. It\'s a perfect stop for anyone who wants a relaxed, flavorful meal before exploring the rest of the festival.\n\nWhether you\'re visiting with friends, family, or enjoying the evening on your own, Toujours brings together great food and a warm setting to make your festival night feel complete.', 'Georgiana Viou', 'Chef <strong>Georgiana Viou </strong>guides the Toujours kitchen with a focus on fresh seafood, seasonal produce, and relaxed European flavors. His cooking is warm, welcoming, and built around good ingredients.\n\n<strong>For Yummy!, the chef created a menu</strong> that reflects what Toujours is known for. Every dish is prepared with care, keeping the <strong>experience warm, relaxed, and enjoyable for everyone.</strong>', 'Toujours focuses on fresh seafood, Dutch ingredients, and European bistro-style cooking. Their plates often feature fish, seasonal produce, and comforting flavors that feel both elevated and easy to enjoy.\n\nExpect dishes that highlight seafood, local produce, and warm European influences. It\'s perfect for a relaxed and tasty festival dinner.', 'Toujours is located at <strong>Oude Groenmarkt 10-12</strong>, a lively square in the center of Haarlem and only steps away from the <strong>Grote Markt</strong>, one of the festival\'s busiest spots. Its central location makes it an easy stop before or after concerts, events, and evening activities.\n\nThe <strong>Jopenkerk</strong> is only 2 minutes walk away and the area is full of energy, history, and festival life. A great combination for anyone wanting to combine great food with a memorable night out.\n\n<strong>Address: </strong> Oude Groenmarkt 10-12, 2011 HL Haarlem, Nederland', 'https://maps.google.com/maps?q=Oude+Groenmarkt+10,+2011+HL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 0, 48, 90, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.'),
+(3, 'Café de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A cozy neighborhood café serving honest food and classic flavors in a relaxed and friendly setting.', 75, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(4, 'Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem', 3, 'Dutch, European, Modern', 'A classic grand café on Haarlem\'s main square, serving familiar European dishes in the heart of the festival buzz.', 80, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(5, 'New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem', 3, 'Vegan', 'A casual spot with an international feel, offering familiar dishes and vegetarian options right in the city center.', 79, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 'Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem', 4, 'Dutch, French, European', 'A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.', 78, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(7, 'Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A modern fine-dining restaurant known for a refined yet welcoming atmosphere.', 77, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2527,22 +2813,22 @@ CREATE TABLE `RestaurantImage` (
 --
 
 INSERT INTO `RestaurantImage` (`RestaurantImageId`, `RestaurantId`, `MediaAssetId`, `ImageType`, `SortOrder`) VALUES
-(1, 1, 82, 'gallery', 1),
-(2, 2, 90, 'gallery', 1),
-(3, 1, 83, 'gallery', 2),
-(4, 2, 91, 'gallery', 2),
-(5, 1, 84, 'gallery', 3),
-(6, 2, 92, 'gallery', 3),
-(7, 1, 85, 'about', 1),
-(8, 2, 93, 'about', 1),
-(9, 1, 86, 'chef', 1),
-(10, 2, 98, 'chef', 1),
-(11, 1, 87, 'menu', 1),
-(12, 2, 95, 'menu', 1),
-(13, 1, 88, 'menu', 2),
-(14, 2, 96, 'menu', 2),
-(15, 1, 89, 'reservation', 1),
-(16, 2, 89, 'reservation', 1);
+(1, 1, 82, 'gallery', 0),
+(2, 2, 90, 'gallery', 0),
+(4, 1, 83, 'gallery', 1),
+(5, 2, 91, 'gallery', 1),
+(7, 1, 84, 'gallery', 2),
+(8, 2, 92, 'gallery', 2),
+(10, 1, 85, 'about', 0),
+(11, 2, 93, 'about', 0),
+(13, 1, 86, 'chef', 0),
+(14, 2, 98, 'chef', 0),
+(16, 1, 87, 'menu', 0),
+(17, 2, 95, 'menu', 0),
+(19, 1, 88, 'menu', 1),
+(20, 2, 96, 'menu', 1),
+(22, 1, 89, 'reservation', 0),
+(23, 2, 89, 'reservation', 0);
 
 -- --------------------------------------------------------
 
@@ -2602,19 +2888,16 @@ CREATE TABLE `ScheduleDayConfig` (
 --
 
 INSERT INTO `ScheduleDayConfig` (`ScheduleDayConfigId`, `EventTypeId`, `DayOfWeek`, `IsVisible`, `UpdatedAtUtc`) VALUES
-(1, 0, 0, 1, '2026-03-19 13:45:00'),
-(2, 0, 1, 1, '2026-03-19 13:44:24'),
-(3, 0, 2, 1, '2026-03-19 13:44:25'),
-(4, 0, 3, 1, '2026-03-19 13:44:30'),
-(5, 0, 4, 1, '2026-03-19 13:45:19'),
+(1, 0, 0, 1, '2026-02-10 22:19:41'),
+(2, 0, 1, 0, '2026-02-17 10:47:24'),
+(3, 0, 2, 0, '2026-02-10 22:19:27'),
+(4, 0, 3, 0, '2026-02-10 22:19:27'),
+(5, 0, 4, 1, '2026-02-10 22:16:18'),
 (6, 0, 5, 1, '2026-02-11 00:19:42'),
-(7, 0, 6, 1, '2026-03-19 13:44:33'),
+(7, 0, 6, 0, '2026-02-17 14:54:07'),
 (33, 3, 0, 1, '2026-02-16 21:10:38'),
-(34, 3, 4, 1, '2026-03-19 13:41:32'),
-(35, 3, 5, 1, '2026-02-16 21:10:40'),
-(38, 3, 3, 1, '2026-03-19 13:44:43'),
-(44, 1, 3, 1, '2026-03-19 13:41:37'),
-(49, 5, 3, 1, '2026-03-19 13:41:42');
+(34, 3, 4, 1, '2026-02-16 21:10:39'),
+(35, 3, 5, 1, '2026-02-16 21:10:40');
 
 -- --------------------------------------------------------
 
@@ -2657,34 +2940,12 @@ INSERT INTO `SessionType` (`SessionType`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `StarRating`
---
-
-CREATE TABLE `StarRating` (
-  `Stars` int(11) NOT NULL,
-  `Label` varchar(30) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `StarRating`
---
-
-INSERT INTO `StarRating` (`Stars`, `Label`) VALUES
-(1, '1 Star'),
-(2, '2 Stars'),
-(3, '3 Stars'),
-(4, '4 Stars'),
-(5, '5 Stars');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `StripeWebhookEvent`
 --
 
 CREATE TABLE `StripeWebhookEvent` (
   `StripeWebhookEventId` int(11) NOT NULL,
-  `StripeEventId` varchar(120) NOT NULL,
+  `EventId` varchar(120) NOT NULL,
   `EventType` varchar(120) NOT NULL,
   `ProcessedAtUtc` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -2693,7 +2954,7 @@ CREATE TABLE `StripeWebhookEvent` (
 -- Dumping data for table `StripeWebhookEvent`
 --
 
-INSERT INTO `StripeWebhookEvent` (`StripeWebhookEventId`, `StripeEventId`, `EventType`, `ProcessedAtUtc`) VALUES
+INSERT INTO `StripeWebhookEvent` (`StripeWebhookEventId`, `EventId`, `EventType`, `ProcessedAtUtc`) VALUES
 (1, 'evt_3TBfD0CvFyf0GBTv1RncMR1y', 'payment_intent.created', '2026-03-16 17:45:43'),
 (2, 'evt_3TBfDGCvFyf0GBTv0T5AghLT', 'payment_intent.created', '2026-03-16 17:45:59'),
 (5, 'evt_3TBfFQCvFyf0GBTv1rRmXJg5', 'payment_intent.created', '2026-03-16 17:48:12'),
@@ -2800,7 +3061,8 @@ INSERT INTO `Venue` (`VenueId`, `Name`, `AddressLine`, `City`, `CreatedAtUtc`, `
 (11, 'De Schuur', 'Lange Begijnestraat 9, 2011 HH Haarlem', 'Haarlem', '2026-02-06 15:30:32', 1),
 (12, 'Kweekcafé', 'Kleverlaan 9, 2023 JC Haarlem', 'Haarlem', '2026-02-06 15:30:32', 1),
 (13, 'Corrie ten Boom Huis', 'Barteljorisstraat 19', 'Haarlem', '2026-02-06 15:30:32', 1),
-(14, 'Theater Elswout', 'Elswoutslaan 24-a, 2051 AE Overveen', 'Overveen', '2026-02-06 15:30:32', 1);
+(14, 'Theater Elswout', 'Elswoutslaan 24-a, 2051 AE Overveen', 'Overveen', '2026-02-06 15:30:32', 1),
+(15, 'A giant flag near Church of St. Bavo at Grote Markt', '', 'Haarlem', '2026-03-18 11:24:34', 1);
 
 --
 -- Indexes for dumped tables
@@ -2814,41 +3076,6 @@ ALTER TABLE `Artist`
   ADD KEY `FK_Artist_Image` (`ImageAssetId`);
 
 --
--- Indexes for table `ArtistAlbum`
---
-ALTER TABLE `ArtistAlbum`
-  ADD PRIMARY KEY (`ArtistAlbumId`),
-  ADD KEY `IX_ArtistAlbum_Event` (`EventId`,`SortOrder`);
-
---
--- Indexes for table `ArtistGalleryImage`
---
-ALTER TABLE `ArtistGalleryImage`
-  ADD PRIMARY KEY (`ArtistGalleryImageId`),
-  ADD KEY `IX_ArtistGalleryImage_Event` (`EventId`,`SortOrder`);
-
---
--- Indexes for table `ArtistHighlight`
---
-ALTER TABLE `ArtistHighlight`
-  ADD PRIMARY KEY (`ArtistHighlightId`),
-  ADD KEY `IX_ArtistHighlight_Event` (`EventId`,`SortOrder`);
-
---
--- Indexes for table `ArtistLineupMember`
---
-ALTER TABLE `ArtistLineupMember`
-  ADD PRIMARY KEY (`ArtistLineupMemberId`),
-  ADD KEY `IX_ArtistLineupMember_Event` (`EventId`,`SortOrder`);
-
---
--- Indexes for table `ArtistTrack`
---
-ALTER TABLE `ArtistTrack`
-  ADD PRIMARY KEY (`ArtistTrackId`),
-  ADD KEY `IX_ArtistTrack_Event` (`EventId`,`SortOrder`);
-
---
 -- Indexes for table `CmsItem`
 --
 ALTER TABLE `CmsItem`
@@ -2856,7 +3083,15 @@ ALTER TABLE `CmsItem`
   ADD UNIQUE KEY `UQ_CmsItem` (`CmsSectionId`,`ItemKey`),
   ADD KEY `FK_CmsItem_Asset` (`MediaAssetId`),
   ADD KEY `IX_CmsItem_Section` (`CmsSectionId`),
-  ADD KEY `FK_CmsItem_ItemType` (`ItemType`);
+  ADD KEY `FK_CmsItem_ItemType` (`ItemType`),
+  ADD KEY `FK_CmsItem_ItemKey` (`ItemKey`);
+
+--
+-- Indexes for table `CmsItemKey`
+--
+ALTER TABLE `CmsItemKey`
+  ADD PRIMARY KEY (`ItemKey`),
+  ADD KEY `FK_CmsItemKey_Type` (`ExpectedItemType`);
 
 --
 -- Indexes for table `CmsItemType`
@@ -2880,13 +3115,6 @@ ALTER TABLE `CmsSection`
   ADD KEY `IX_CmsSection_Page` (`CmsPageId`);
 
 --
--- Indexes for table `CuisineType`
---
-ALTER TABLE `CuisineType`
-  ADD PRIMARY KEY (`CuisineTypeId`),
-  ADD UNIQUE KEY `UQ_CuisineType_Name` (`Name`);
-
---
 -- Indexes for table `EmailConfirmationToken`
 --
 ALTER TABLE `EmailConfirmationToken`
@@ -2906,20 +3134,6 @@ ALTER TABLE `Event`
   ADD KEY `FK_Event_Restaurant` (`RestaurantId`),
   ADD KEY `IX_Event_Type` (`EventTypeId`,`IsActive`),
   ADD KEY `IX_Event_Active` (`IsActive`,`EventId`);
-
---
--- Indexes for table `EventGalleryImage`
---
-ALTER TABLE `EventGalleryImage`
-  ADD PRIMARY KEY (`EventGalleryImageId`),
-  ADD KEY `IX_EventGalleryImage_Event` (`EventId`,`ImageType`,`SortOrder`);
-
---
--- Indexes for table `EventHighlight`
---
-ALTER TABLE `EventHighlight`
-  ADD PRIMARY KEY (`EventHighlightId`),
-  ADD KEY `IX_EventHighlight_Event` (`EventId`,`SortOrder`);
 
 --
 -- Indexes for table `EventSession`
@@ -3030,13 +3244,6 @@ ALTER TABLE `OrderStatus`
   ADD PRIMARY KEY (`Status`);
 
 --
--- Indexes for table `PageGalleryImage`
---
-ALTER TABLE `PageGalleryImage`
-  ADD PRIMARY KEY (`PageGalleryImageId`),
-  ADD KEY `IX_PageGalleryImage_Page` (`CmsPageId`,`ImageType`,`SortOrder`);
-
---
 -- Indexes for table `PassPurchase`
 --
 ALTER TABLE `PassPurchase`
@@ -3119,32 +3326,15 @@ ALTER TABLE `ProgramItem`
 --
 ALTER TABLE `Restaurant`
   ADD PRIMARY KEY (`RestaurantId`),
-  ADD KEY `FK_Restaurant_Image` (`ImageAssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage1` (`GalleryImage1AssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage2` (`GalleryImage2AssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage3` (`GalleryImage3AssetId`),
-  ADD KEY `FK_Restaurant_AboutImage` (`AboutImageAssetId`),
-  ADD KEY `FK_Restaurant_ChefImage` (`ChefImageAssetId`),
-  ADD KEY `FK_Restaurant_MenuImage1` (`MenuImage1AssetId`),
-  ADD KEY `FK_Restaurant_MenuImage2` (`MenuImage2AssetId`),
-  ADD KEY `FK_Restaurant_ReservationImage` (`ReservationImageAssetId`),
-  ADD KEY `FK_Restaurant_StarRating` (`Stars`);
-
---
--- Indexes for table `RestaurantCuisine`
---
-ALTER TABLE `RestaurantCuisine`
-  ADD PRIMARY KEY (`RestaurantId`,`CuisineTypeId`),
-  ADD KEY `IX_RestaurantCuisine_Cuisine` (`CuisineTypeId`);
+  ADD KEY `FK_Restaurant_Image` (`ImageAssetId`);
 
 --
 -- Indexes for table `RestaurantImage`
 --
 ALTER TABLE `RestaurantImage`
   ADD PRIMARY KEY (`RestaurantImageId`),
-  ADD UNIQUE KEY `UQ_RestaurantImage` (`RestaurantId`,`ImageType`,`SortOrder`),
-  ADD KEY `IX_RestaurantImage_Restaurant` (`RestaurantId`),
-  ADD KEY `FK_RestaurantImage_Asset` (`MediaAssetId`);
+  ADD KEY `FK_RestaurantImage_Restaurant` (`RestaurantId`),
+  ADD KEY `FK_RestaurantImage_MediaAsset` (`MediaAssetId`);
 
 --
 -- Indexes for table `ScheduleDay`
@@ -3176,17 +3366,11 @@ ALTER TABLE `SessionType`
   ADD PRIMARY KEY (`SessionType`);
 
 --
--- Indexes for table `StarRating`
---
-ALTER TABLE `StarRating`
-  ADD PRIMARY KEY (`Stars`);
-
---
 -- Indexes for table `StripeWebhookEvent`
 --
 ALTER TABLE `StripeWebhookEvent`
   ADD PRIMARY KEY (`StripeWebhookEventId`),
-  ADD UNIQUE KEY `UQ_StripeWebhookEvent_StripeEventId` (`StripeEventId`);
+  ADD UNIQUE KEY `UQ_StripeWebhookEvent_EventId` (`EventId`);
 
 --
 -- Indexes for table `Ticket`
@@ -3233,58 +3417,22 @@ ALTER TABLE `Artist`
   MODIFY `ArtistId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
--- AUTO_INCREMENT for table `ArtistAlbum`
---
-ALTER TABLE `ArtistAlbum`
-  MODIFY `ArtistAlbumId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `ArtistGalleryImage`
---
-ALTER TABLE `ArtistGalleryImage`
-  MODIFY `ArtistGalleryImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `ArtistHighlight`
---
-ALTER TABLE `ArtistHighlight`
-  MODIFY `ArtistHighlightId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
-
---
--- AUTO_INCREMENT for table `ArtistLineupMember`
---
-ALTER TABLE `ArtistLineupMember`
-  MODIFY `ArtistLineupMemberId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT for table `ArtistTrack`
---
-ALTER TABLE `ArtistTrack`
-  MODIFY `ArtistTrackId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
 -- AUTO_INCREMENT for table `CmsItem`
 --
 ALTER TABLE `CmsItem`
-  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1245;
+  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1221;
 
 --
 -- AUTO_INCREMENT for table `CmsPage`
 --
 ALTER TABLE `CmsPage`
-  MODIFY `CmsPageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `CmsPageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `CmsSection`
 --
 ALTER TABLE `CmsSection`
-  MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
-
---
--- AUTO_INCREMENT for table `CuisineType`
---
-ALTER TABLE `CuisineType`
-  MODIFY `CuisineTypeId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
 -- AUTO_INCREMENT for table `EmailConfirmationToken`
@@ -3297,18 +3445,6 @@ ALTER TABLE `EmailConfirmationToken`
 --
 ALTER TABLE `Event`
   MODIFY `EventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
-
---
--- AUTO_INCREMENT for table `EventGalleryImage`
---
-ALTER TABLE `EventGalleryImage`
-  MODIFY `EventGalleryImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
-
---
--- AUTO_INCREMENT for table `EventHighlight`
---
-ALTER TABLE `EventHighlight`
-  MODIFY `EventHighlightId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `EventSession`
@@ -3326,7 +3462,7 @@ ALTER TABLE `EventSessionLabel`
 -- AUTO_INCREMENT for table `EventSessionPrice`
 --
 ALTER TABLE `EventSessionPrice`
-  MODIFY `EventSessionPriceId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=178;
+  MODIFY `EventSessionPriceId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=211;
 
 --
 -- AUTO_INCREMENT for table `EventType`
@@ -3362,7 +3498,7 @@ ALTER TABLE `InvoiceLine`
 -- AUTO_INCREMENT for table `MediaAsset`
 --
 ALTER TABLE `MediaAsset`
-  MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
+  MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
 
 --
 -- AUTO_INCREMENT for table `Order`
@@ -3375,12 +3511,6 @@ ALTER TABLE `Order`
 --
 ALTER TABLE `OrderItem`
   MODIFY `OrderItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
-
---
--- AUTO_INCREMENT for table `PageGalleryImage`
---
-ALTER TABLE `PageGalleryImage`
-  MODIFY `PageGalleryImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `PassPurchase`
@@ -3410,7 +3540,7 @@ ALTER TABLE `Payment`
 -- AUTO_INCREMENT for table `PriceTier`
 --
 ALTER TABLE `PriceTier`
-  MODIFY `PriceTierId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `PriceTierId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `Program`
@@ -3422,7 +3552,7 @@ ALTER TABLE `Program`
 -- AUTO_INCREMENT for table `ProgramItem`
 --
 ALTER TABLE `ProgramItem`
-  MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `Restaurant`
@@ -3434,7 +3564,7 @@ ALTER TABLE `Restaurant`
 -- AUTO_INCREMENT for table `RestaurantImage`
 --
 ALTER TABLE `RestaurantImage`
-  MODIFY `RestaurantImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `RestaurantImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `ScheduleDay`
@@ -3446,7 +3576,7 @@ ALTER TABLE `ScheduleDay`
 -- AUTO_INCREMENT for table `ScheduleDayConfig`
 --
 ALTER TABLE `ScheduleDayConfig`
-  MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `SessionDiscountRule`
@@ -3482,7 +3612,7 @@ ALTER TABLE `UserRole`
 -- AUTO_INCREMENT for table `Venue`
 --
 ALTER TABLE `Venue`
-  MODIFY `VenueId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `VenueId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables
@@ -3495,42 +3625,19 @@ ALTER TABLE `Artist`
   ADD CONSTRAINT `FK_Artist_Image` FOREIGN KEY (`ImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`);
 
 --
--- Constraints for table `ArtistAlbum`
---
-ALTER TABLE `ArtistAlbum`
-  ADD CONSTRAINT `FK_ArtistAlbum_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
-
---
--- Constraints for table `ArtistGalleryImage`
---
-ALTER TABLE `ArtistGalleryImage`
-  ADD CONSTRAINT `FK_ArtistGalleryImage_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
-
---
--- Constraints for table `ArtistHighlight`
---
-ALTER TABLE `ArtistHighlight`
-  ADD CONSTRAINT `FK_ArtistHighlight_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
-
---
--- Constraints for table `ArtistLineupMember`
---
-ALTER TABLE `ArtistLineupMember`
-  ADD CONSTRAINT `FK_ArtistLineupMember_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
-
---
--- Constraints for table `ArtistTrack`
---
-ALTER TABLE `ArtistTrack`
-  ADD CONSTRAINT `FK_ArtistTrack_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
-
---
 -- Constraints for table `CmsItem`
 --
 ALTER TABLE `CmsItem`
   ADD CONSTRAINT `FK_CmsItem_Asset` FOREIGN KEY (`MediaAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
+  ADD CONSTRAINT `FK_CmsItem_ItemKey` FOREIGN KEY (`ItemKey`) REFERENCES `CmsItemKey` (`ItemKey`),
   ADD CONSTRAINT `FK_CmsItem_ItemType` FOREIGN KEY (`ItemType`) REFERENCES `CmsItemType` (`ItemType`),
   ADD CONSTRAINT `FK_CmsItem_Section` FOREIGN KEY (`CmsSectionId`) REFERENCES `CmsSection` (`CmsSectionId`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `CmsItemKey`
+--
+ALTER TABLE `CmsItemKey`
+  ADD CONSTRAINT `FK_CmsItemKey_Type` FOREIGN KEY (`ExpectedItemType`) REFERENCES `CmsItemType` (`ItemType`);
 
 --
 -- Constraints for table `CmsSection`
@@ -3553,18 +3660,6 @@ ALTER TABLE `Event`
   ADD CONSTRAINT `FK_Event_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`),
   ADD CONSTRAINT `FK_Event_Type` FOREIGN KEY (`EventTypeId`) REFERENCES `EventType` (`EventTypeId`),
   ADD CONSTRAINT `FK_Event_Venue` FOREIGN KEY (`VenueId`) REFERENCES `Venue` (`VenueId`);
-
---
--- Constraints for table `EventGalleryImage`
---
-ALTER TABLE `EventGalleryImage`
-  ADD CONSTRAINT `FK_EventGalleryImage_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
-
---
--- Constraints for table `EventHighlight`
---
-ALTER TABLE `EventHighlight`
-  ADD CONSTRAINT `FK_EventHighlight_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `EventSession`
@@ -3630,12 +3725,6 @@ ALTER TABLE `OrderItem`
   ADD CONSTRAINT `FK_OrderItem_Session` FOREIGN KEY (`EventSessionId`) REFERENCES `EventSession` (`EventSessionId`);
 
 --
--- Constraints for table `PageGalleryImage`
---
-ALTER TABLE `PageGalleryImage`
-  ADD CONSTRAINT `FK_PageGalleryImage_Page` FOREIGN KEY (`CmsPageId`) REFERENCES `CmsPage` (`CmsPageId`) ON DELETE CASCADE;
-
---
 -- Constraints for table `PassPurchase`
 --
 ALTER TABLE `PassPurchase`
@@ -3682,30 +3771,14 @@ ALTER TABLE `ProgramItem`
 -- Constraints for table `Restaurant`
 --
 ALTER TABLE `Restaurant`
-  ADD CONSTRAINT `FK_Restaurant_AboutImage` FOREIGN KEY (`AboutImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_ChefImage` FOREIGN KEY (`ChefImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage1` FOREIGN KEY (`GalleryImage1AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage2` FOREIGN KEY (`GalleryImage2AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage3` FOREIGN KEY (`GalleryImage3AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_Image` FOREIGN KEY (`ImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_MenuImage1` FOREIGN KEY (`MenuImage1AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_MenuImage2` FOREIGN KEY (`MenuImage2AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_ReservationImage` FOREIGN KEY (`ReservationImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_StarRating` FOREIGN KEY (`Stars`) REFERENCES `StarRating` (`Stars`);
-
---
--- Constraints for table `RestaurantCuisine`
---
-ALTER TABLE `RestaurantCuisine`
-  ADD CONSTRAINT `FK_RestaurantCuisine_CuisineType` FOREIGN KEY (`CuisineTypeId`) REFERENCES `CuisineType` (`CuisineTypeId`),
-  ADD CONSTRAINT `FK_RestaurantCuisine_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`) ON DELETE CASCADE;
+  ADD CONSTRAINT `FK_Restaurant_Image` FOREIGN KEY (`ImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`);
 
 --
 -- Constraints for table `RestaurantImage`
 --
 ALTER TABLE `RestaurantImage`
-  ADD CONSTRAINT `FK_RestaurantImage_Asset` FOREIGN KEY (`MediaAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_RestaurantImage_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`) ON DELETE CASCADE;
+  ADD CONSTRAINT `FK_RestaurantImage_MediaAsset` FOREIGN KEY (`MediaAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
+  ADD CONSTRAINT `FK_RestaurantImage_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`);
 
 --
 -- Constraints for table `ScheduleDay`

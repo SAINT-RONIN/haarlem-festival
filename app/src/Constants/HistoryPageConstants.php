@@ -13,9 +13,10 @@ final class HistoryPageConstants
     public const SECTION_GRADIENT = 'gradient_section';
     public const SECTION_INTRO = 'intro_section';
     public const SECTION_ROUTE = 'route_section';
-    public const SECTION_VENUES = 'venues_section';
+    public const SECTION_VENUES = 'historical_locations_section';
     public const SECTION_TICKET_OPTIONS = 'ticket_options_section';
     public const SECTION_TOUR_INFO = 'history_important_tour_info_section';
+
 
     private function __construct()
     {

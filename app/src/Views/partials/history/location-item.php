@@ -25,10 +25,12 @@ use App\ViewModels\History\VenueCardData;
         <div class="w-full text-slate-800 text-lg font-normal font-['Montserrat']">
             <?= htmlspecialchars($venue->description) ?>
         </div>
-        <div class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center">
-            <div class="flex-1 text-white text-xl font-normal font-['Montserrat'] leading-5">
-                View more
-            </div>
-        </div>
+
+            <a href="<?= htmlspecialchars($venue->venueUrl) ?>" class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center">
+                <div class="flex-1 text-white text-xl font-normal font-['Montserrat'] leading-5">
+                    View more
+                </div>
+            </a>
+
     </div>
 </article>
