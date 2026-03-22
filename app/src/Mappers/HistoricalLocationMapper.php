@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Constants\HistoricalLocationPageConstants;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoricalLocationViewModel;
 use App\ViewModels\History\LocationFacts;
+use App\ViewModels\History\LocationHero;
 use App\ViewModels\History\LocationIntroduction;
 use App\ViewModels\History\LocationSignificance;
 
@@ -19,30 +21,30 @@ final class HistoricalLocationMapper
     {
         // $data now comes from HistoricalLocationService::getHistoricalLocationPageData(),
         // which returns ['sections' => [...]]
+        $heroContent = $pageData->sections[HistoricalLocationPageConstants::SECTION_HERO] ?? [];
         $sections = $data['sections'] ?? [];
-
-        $heroData = self::toHeroData($sections['hero_section'] ?? []);
+        $heroData = CmsMapper::toHeroData($heroContent, 'history');
+        $locationHero = self::toHeroData($sections['hero_section'] ?? []);
         $globalUi = CmsMapper::toGlobalUiData($sections['global_ui'] ?? [], $isLoggedIn);
 
         return new HistoricalLocationViewModel(
             heroData: $heroData,
+            globalUi: $globalUi,
+            locationHero: $locationHero,
             locationIntroduction: self::toLocationIntroduction($sections['intro_section'] ?? []),
             locationFacts: self::toLocationFacts($sections['facts_section'] ?? []),
             locationSignificance: self::toLocationSignificance($sections['significance_section'] ?? []),
-            globalUi: $globalUi,
             cms: CmsMapper::toCmsData($heroData, $globalUi),
         );
     }
 
-    private static function toHeroData(array $hero): HeroData
+    private static function toHeroData(array $hero): LocationHero
     {
-        return new HeroData(
+        return new LocationHero(
             mainTitle: $hero['hero_main_title'] ?? 'A STROLL THROUGH HISTORY',
             subtitle: $hero['hero_subtitle'] ?? 'Explore nine centuries of turbulent history, magnificent architecture, and cultural treasures',
-            primaryButtonText: $hero['hero_button'] ?? 'Explore the tour',
-            primaryButtonLink: $hero['hero_button_link'] ?? '#route',
-            secondaryButtonText: null,
-            secondaryButtonLink: null,
+            buttonText: $hero['hero_button'] ?? 'Explore the tour',
+            buttonLink: $hero['hero_button_link'] ?? '#route',
             backgroundImageUrl: $hero['hero_background_image'] ?? '/assets/Image/History/History-hero.png',
             currentPage: 'history',
             mapImageUrl: $hero['hero_map_image'] ?? '/assets/Image/History/History-map.png',

@@ -57,7 +57,6 @@ final class HistoryMapper
             secondaryButtonLink: $hero['hero_button_secondary_link'] ?? '#tickets',
             backgroundImageUrl:  $hero['hero_background_image'] ?? '/assets/Image/History/History-hero.png',
             currentPage:         'history',
-            mapImageUrl:         null
         );
     }
 

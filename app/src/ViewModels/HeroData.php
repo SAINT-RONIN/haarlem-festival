@@ -11,11 +11,10 @@ final readonly class HeroData
         public string $subtitle,
         public string $primaryButtonText,
         public string $primaryButtonLink,
-        public ?string $secondaryButtonText,
-        public ?string $secondaryButtonLink,
+        public string $secondaryButtonText,
+        public string $secondaryButtonLink,
         public string $backgroundImageUrl,
         public string $currentPage,
-        public ?string $mapImageUrl,
     ) {
     }
 }
