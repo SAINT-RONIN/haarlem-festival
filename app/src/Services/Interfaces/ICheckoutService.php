@@ -25,7 +25,7 @@ interface ICheckoutService
     public function handleWebhook(string $payload, ?string $signatureHeader): array;
 
     /**
-     * @return array<string,mixed>
+     * @return array{sessionId:string,paymentStatus:string,status:string,amountTotal:float,currency:string}
      */
     public function getSessionSummary(string $sessionId): array;
 }

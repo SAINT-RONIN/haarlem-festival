@@ -9,8 +9,10 @@ use App\Models\EventSessionFilter;
 use App\Models\EventSessionPrice;
 use App\Models\Program;
 use App\Models\ProgramData;
+use App\Models\ProgramFilter;
 use App\Models\ProgramItem;
 use App\Models\ProgramItemData;
+use App\Models\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -54,7 +56,7 @@ class ProgramService implements IProgramService
             $newQuantity = $existingItem->quantity + $quantity;
             $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
 
-            $items = $this->programRepository->findProgramItems(['programItemId' => $existingItem->programItemId]);
+            $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
             return $items[0];
         }
 
@@ -119,7 +121,7 @@ class ProgramService implements IProgramService
             return new ProgramData(program: null, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
         }
 
-        $programItems = $this->programRepository->findProgramItems(['programId' => $program->programId]);
+        $programItems = $this->programRepository->findProgramItems(new ProgramItemFilter(programId: $program->programId));
 
         if ($programItems === []) {
             return new ProgramData(program: $program, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
@@ -146,10 +148,10 @@ class ProgramService implements IProgramService
             throw new \InvalidArgumentException('Program not found');
         }
 
-        $items = $this->programRepository->findProgramItems([
-            'programItemId' => $programItemId,
-            'programId' => $program->programId,
-        ]);
+        $items = $this->programRepository->findProgramItems(new ProgramItemFilter(
+            programItemId: $programItemId,
+            programId: $program->programId,
+        ));
 
         if ($items === []) {
             throw new \InvalidArgumentException('Item does not belong to your program');
@@ -159,30 +161,30 @@ class ProgramService implements IProgramService
     private function findActiveProgram(string $sessionKey, ?int $userAccountId): ?Program
     {
         if ($userAccountId !== null) {
-            $programs = $this->programRepository->findPrograms([
-                'userAccountId' => $userAccountId,
-                'isCheckedOut' => false,
-            ]);
+            $programs = $this->programRepository->findPrograms(new ProgramFilter(
+                userAccountId: $userAccountId,
+                isCheckedOut: false,
+            ));
 
             if ($programs !== []) {
                 return $programs[0];
             }
         }
 
-        $programs = $this->programRepository->findPrograms([
-            'sessionKey' => $sessionKey,
-            'isCheckedOut' => false,
-        ]);
+        $programs = $this->programRepository->findPrograms(new ProgramFilter(
+            sessionKey: $sessionKey,
+            isCheckedOut: false,
+        ));
 
         return $programs !== [] ? $programs[0] : null;
     }
 
     private function findExistingItem(int $programId, int $eventSessionId): ?ProgramItem
     {
-        $items = $this->programRepository->findProgramItems([
-            'programId' => $programId,
-            'eventSessionId' => $eventSessionId,
-        ]);
+        $items = $this->programRepository->findProgramItems(new ProgramItemFilter(
+            programId: $programId,
+            eventSessionId: $eventSessionId,
+        ));
 
         return $items !== [] ? $items[0] : null;
     }

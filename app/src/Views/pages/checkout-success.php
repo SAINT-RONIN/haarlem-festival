@@ -10,11 +10,11 @@ $isLoggedIn = $viewModel->isLoggedIn;
 <?php
 $title = 'Payment submitted';
 $message = 'Thank you. Your payment is being finalized by Stripe. You will receive confirmation shortly.';
-$details = $viewModel->sessionSummary !== null
+$details = $viewModel->hasSessionData
     ? [
-        'Session' => (string)($viewModel->sessionSummary['sessionId'] ?? ''),
-        'Stripe status' => (string)($viewModel->sessionSummary['paymentStatus'] ?? 'unknown'),
-        'Checkout state' => (string)($viewModel->sessionSummary['status'] ?? 'unknown'),
+        'Session' => $viewModel->sessionId,
+        'Stripe status' => $viewModel->paymentStatus,
+        'Checkout state' => $viewModel->checkoutStatus,
     ]
     : [];
 $primaryHref = '/';

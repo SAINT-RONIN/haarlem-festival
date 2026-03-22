@@ -6,8 +6,11 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\CmsItem;
+use App\Models\CmsItemFilter;
 use App\Models\CmsPage;
+use App\Models\CmsPageFilter;
 use App\Models\CmsSection;
+use App\Models\CmsSectionFilter;
 use App\Repositories\Interfaces\ICmsRepository;
 use PDO;
 
@@ -23,11 +26,9 @@ class CmsRepository implements ICmsRepository
     /**
      * @return CmsPage[]
      */
-    public function findPages(array $filters = []): array
+    public function findPages(CmsPageFilter $filter): array
     {
-        $includeLastUpdated = (bool)($filters['includeLastUpdated'] ?? false);
-
-        $select = $includeLastUpdated
+        $select = $filter->includeLastUpdated
             ? '
                 SELECT cp.*, MAX(ci.UpdatedAtUtc) AS UpdatedAtUtc
                 FROM CmsPage cp
@@ -39,14 +40,14 @@ class CmsRepository implements ICmsRepository
         $conditions = [];
         $params = [];
 
-        if (isset($filters['cmsPageId'])) {
+        if ($filter->cmsPageId !== null) {
             $conditions[] = 'cp.CmsPageId = :cmsPageId';
-            $params['cmsPageId'] = (int)$filters['cmsPageId'];
+            $params['cmsPageId'] = $filter->cmsPageId;
         }
 
-        if (isset($filters['slug']) && is_string($filters['slug']) && $filters['slug'] !== '') {
+        if ($filter->slug !== null && $filter->slug !== '') {
             $conditions[] = 'cp.Slug = :slug';
-            $params['slug'] = $filters['slug'];
+            $params['slug'] = $filter->slug;
         }
 
         $sql = $select;
@@ -54,7 +55,7 @@ class CmsRepository implements ICmsRepository
             $sql .= ' WHERE ' . implode(' AND ', $conditions);
         }
 
-        if ($includeLastUpdated) {
+        if ($filter->includeLastUpdated) {
             $sql .= ' GROUP BY cp.CmsPageId ORDER BY UpdatedAtUtc DESC';
         }
 
@@ -64,19 +65,22 @@ class CmsRepository implements ICmsRepository
         return array_map([CmsPage::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    public function findSections(array $filters = []): array
+    /**
+     * @return CmsSection[]
+     */
+    public function findSections(CmsSectionFilter $filter): array
     {
         $sql = 'SELECT * FROM CmsSection WHERE 1 = 1';
         $params = [];
 
-        if (isset($filters['cmsPageId'])) {
+        if ($filter->cmsPageId !== null) {
             $sql .= ' AND CmsPageId = :cmsPageId';
-            $params['cmsPageId'] = (int)$filters['cmsPageId'];
+            $params['cmsPageId'] = $filter->cmsPageId;
         }
 
-        if (isset($filters['sectionKey']) && is_string($filters['sectionKey']) && $filters['sectionKey'] !== '') {
+        if ($filter->sectionKey !== null && $filter->sectionKey !== '') {
             $sql .= ' AND SectionKey = :sectionKey';
-            $params['sectionKey'] = $filters['sectionKey'];
+            $params['sectionKey'] = $filter->sectionKey;
         }
 
         $sql .= ' ORDER BY CmsSectionId ASC';
@@ -88,7 +92,10 @@ class CmsRepository implements ICmsRepository
         return array_map([CmsSection::class, 'fromRow'], $rows);
     }
 
-    public function findItems(array $filters = []): array
+    /**
+     * @return CmsItem[]
+     */
+    public function findItems(CmsItemFilter $filter): array
     {
         $sql = '
             SELECT ci.*
@@ -99,24 +106,24 @@ class CmsRepository implements ICmsRepository
         ';
         $params = [];
 
-        if (isset($filters['cmsItemId'])) {
+        if ($filter->cmsItemId !== null) {
             $sql .= ' AND ci.CmsItemId = :cmsItemId';
-            $params['cmsItemId'] = (int)$filters['cmsItemId'];
+            $params['cmsItemId'] = $filter->cmsItemId;
         }
 
-        if (isset($filters['cmsSectionId'])) {
+        if ($filter->cmsSectionId !== null) {
             $sql .= ' AND ci.CmsSectionId = :cmsSectionId';
-            $params['cmsSectionId'] = (int)$filters['cmsSectionId'];
+            $params['cmsSectionId'] = $filter->cmsSectionId;
         }
 
-        if (isset($filters['cmsPageId'])) {
+        if ($filter->cmsPageId !== null) {
             $sql .= ' AND cs.CmsPageId = :cmsPageId';
-            $params['cmsPageId'] = (int)$filters['cmsPageId'];
+            $params['cmsPageId'] = $filter->cmsPageId;
         }
 
-        if (isset($filters['sectionKey']) && is_string($filters['sectionKey']) && $filters['sectionKey'] !== '') {
+        if ($filter->sectionKey !== null && $filter->sectionKey !== '') {
             $sql .= ' AND cs.SectionKey = :sectionKey';
-            $params['sectionKey'] = $filters['sectionKey'];
+            $params['sectionKey'] = $filter->sectionKey;
         }
 
         $sql .= ' ORDER BY ci.CmsItemId ASC';
@@ -128,6 +135,9 @@ class CmsRepository implements ICmsRepository
         return array_map([CmsItem::class, 'fromRow'], $rows);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function updateItem(int $cmsItemId, array $data): bool
     {
         $fields = [];

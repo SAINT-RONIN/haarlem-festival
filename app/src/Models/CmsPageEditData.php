@@ -11,7 +11,7 @@ namespace App\Models;
 final readonly class CmsPageEditData
 {
     /**
-     * @param array<int, array<string, mixed>> $sections Enriched sections with items metadata
+     * @param CmsSectionEditData[] $sections Enriched sections with items metadata
      */
     public function __construct(
         public CmsPage $page,

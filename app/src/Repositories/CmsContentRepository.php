@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\CmsItem;
+use App\Models\CmsItemFilter;
+use App\Models\CmsPageFilter;
 use App\Models\CmsSection;
+use App\Models\CmsSectionFilter;
 use App\Models\MediaAsset;
 use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\ICmsRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 
 class CmsContentRepository implements ICmsContentRepository
 {
@@ -21,11 +26,14 @@ class CmsContentRepository implements ICmsContentRepository
     private array $pageSectionsCache = [];
 
     public function __construct(
-        private CmsRepository $cmsRepository,
-        private MediaAssetRepository $mediaAssetRepository,
+        private ICmsRepository $cmsRepository,
+        private IMediaAssetRepository $mediaAssetRepository,
     ) {
     }
 
+    /**
+     * @return array<string, array<string, ?string>>
+     */
     public function getHomePageContent(): array
     {
         $pageId = $this->getPageIdBySlug('home');
@@ -44,6 +52,9 @@ class CmsContentRepository implements ICmsContentRepository
         return $content;
     }
 
+    /**
+     * @return array<string, ?string>
+     */
     public function getSectionContent(string $pageSlug, string $sectionKey): array
     {
         $pageId = $this->getPageIdBySlug($pageSlug);
@@ -55,6 +66,9 @@ class CmsContentRepository implements ICmsContentRepository
         return $this->pageContentCache[$pageId][$sectionKey] ?? [];
     }
 
+    /**
+     * @return array<string, ?string>
+     */
     public function getHeroSectionContent(string $pageSlug): array
     {
         return $this->getSectionContent($pageSlug, 'hero_section');
@@ -72,9 +86,9 @@ class CmsContentRepository implements ICmsContentRepository
             return $this->pageSectionsCache[$pageId];
         }
 
-        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
+        $sections = $this->cmsRepository->findSections(new CmsSectionFilter(cmsPageId: $pageId));
         $sectionKeyById = $this->indexSectionKeysById($sections);
-        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $items = $this->cmsRepository->findItems(new CmsItemFilter(cmsPageId: $pageId));
         $assetMap = $this->batchFetchMediaAssets($items);
         $grouped = [];
 
@@ -146,7 +160,7 @@ class CmsContentRepository implements ICmsContentRepository
             return $this->pageIdCache[$slug];
         }
 
-        $rows = $this->cmsRepository->findPages(['slug' => $slug]);
+        $rows = $this->cmsRepository->findPages(new CmsPageFilter(slug: $slug));
         $pageId = $rows !== [] ? $rows[0]->cmsPageId : null;
 
         $this->pageIdCache[$slug] = $pageId;

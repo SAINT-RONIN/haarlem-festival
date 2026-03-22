@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Enums\PageStatus;
+use App\Models\ActivityData;
+use App\Models\CmsItemEditData;
+use App\Models\CmsMediaAssetData;
 use App\Models\CmsPage;
 use App\Models\CmsPageEditData;
+use App\Models\CmsSectionEditData;
 use App\Utils\CmsContentLimits;
 use App\Utils\TimeFormatter;
 use App\ViewModels\Cms\ActivityViewModel;
+use App\ViewModels\Cms\CmsPageEditViewModel;
 use App\ViewModels\Cms\DashboardViewModel;
 use App\ViewModels\Cms\PageListItemViewModel;
 use App\ViewModels\Cms\PagesListViewModel;
@@ -18,8 +23,8 @@ use App\ViewModels\Cms\RecentPageViewModel;
 class CmsDashboardMapper
 {
     /**
-     * @param CmsPage[] $recentPages
-     * @param array[]   $activities  Each entry: ['icon', 'text', 'time', 'color']
+     * @param CmsPage[]      $recentPages
+     * @param ActivityData[] $activities
      */
     public static function toDashboardViewModel(array $recentPages, array $activities, string $userName): DashboardViewModel
     {
@@ -67,30 +72,24 @@ class CmsDashboardMapper
         return $page->updatedAtUtc !== null ? PageStatus::Published : PageStatus::Draft;
     }
 
-    /**
-     * @param array{icon: string, text: string, time: string, color: string} $activity
-     */
-    private static function toActivityViewModel(array $activity): ActivityViewModel
+    private static function toActivityViewModel(ActivityData $activity): ActivityViewModel
     {
         return new ActivityViewModel(
-            icon: $activity['icon'],
-            text: $activity['text'],
-            time: $activity['time'],
-            color: $activity['color'],
+            icon: $activity->icon,
+            text: $activity->text,
+            time: $activity->time,
+            color: $activity->color,
         );
     }
 
-    /**
-     * @return array{page: array{id: int, title: string, slug: string}, sections: array, contentLimits: array, imageLimits: array}
-     */
-    public static function toPageEditViewData(CmsPageEditData $pageData): array
+    public static function toPageEditViewData(CmsPageEditData $pageData): CmsPageEditViewModel
     {
-        return [
-            'page' => self::formatPage($pageData->page),
-            'sections' => self::formatSections($pageData->sections),
-            'contentLimits' => self::getContentLimits(),
-            'imageLimits' => self::getImageLimits(),
-        ];
+        return new CmsPageEditViewModel(
+            page: self::formatPage($pageData->page),
+            sections: self::formatSections($pageData->sections),
+            contentLimits: self::getContentLimits(),
+            imageLimits: self::getImageLimits(),
+        );
     }
 
     private static function formatPage(CmsPage $page): array
@@ -103,49 +102,144 @@ class CmsDashboardMapper
     }
 
     /**
-     * @param array<int, array<string, mixed>> $sections
+     * @param CmsSectionEditData[] $sections
+     * @return array<int, array<string, mixed>>
      */
     private static function formatSections(array $sections): array
     {
-        $result = [];
-        foreach ($sections as $section) {
-            $result[] = [
-                'id' => $section['sectionId'],
-                'key' => $section['sectionKey'],
-                'displayName' => $section['displayName'],
-                'isEditable' => self::isSectionEditable($section['sectionKey']),
-                'items' => self::groupItemsByType($section['items']),
-                'subGroups' => self::buildSubGroups($section['sectionKey'], $section['items']),
-            ];
-        }
-        return $result;
+        return array_map([self::class, 'formatSingleSection'], $sections);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    private static function formatSingleSection(CmsSectionEditData $section): array
+    {
+        return [
+            'id'          => $section->sectionId,
+            'key'         => $section->sectionKey,
+            'displayName' => self::resolveSectionDisplayName($section->displayName),
+            'isEditable'  => self::isSectionEditable($section->sectionKey),
+            'items'       => self::groupItemsByType($section->items),
+            'subGroups'   => self::buildSubGroups($section->sectionKey, $section->items),
+        ];
+    }
+
+    private static function resolveSectionDisplayName(string $displayName): string
+    {
+        return str_contains($displayName, '_') ? self::formatSectionName($displayName) : $displayName;
+    }
+
+    /**
+     * @param CmsItemEditData[] $items
+     * @return array<int, array<string, mixed>>
+     */
     private static function groupItemsByType(array $items): array
+    {
+        $grouped = self::bucketItemsByInputType($items);
+        return self::flattenOrderedBuckets($grouped);
+    }
+
+    /**
+     * @param CmsItemEditData[] $items
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    private static function bucketItemsByInputType(array $items): array
     {
         $grouped = ['text' => [], 'tinymce' => [], 'file' => []];
         foreach ($items as $item) {
-            $inputType = $item['inputType'];
-            if (isset($grouped[$inputType])) {
-                $grouped[$inputType][] = $item;
-            } else {
-                $grouped['text'][] = $item;
-            }
+            $inputType = $item->inputType;
+            $bucket = isset($grouped[$inputType]) ? $inputType : 'text';
+            $grouped[$bucket][] = self::toItemArray($item);
         }
+        return $grouped;
+    }
 
+    /**
+     * @param array<string, array<int, array<string, mixed>>> $grouped
+     * @return array<int, array<string, mixed>>
+     */
+    private static function flattenOrderedBuckets(array $grouped): array
+    {
         $result = [];
         foreach (['text', 'tinymce', 'file'] as $type) {
-            foreach ($grouped[$type] as $item) {
-                $result[] = $item;
+            foreach ($grouped[$type] as $itemArray) {
+                $result[] = $itemArray;
             }
         }
         return $result;
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private static function toItemArray(CmsItemEditData $item): array
+    {
+        return array_merge(
+            self::toItemCoreFields($item),
+            self::toItemMediaFields($item),
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function toItemCoreFields(CmsItemEditData $item): array
+    {
+        return [
+            'itemId'      => $item->itemId,
+            'itemKey'     => $item->itemKey,
+            'displayName' => self::formatItemKeyName($item->displayName),
+            'type'        => $item->type,
+            'typeLabel'   => $item->typeLabel,
+            'inputType'   => $item->inputType,
+            'maxChars'    => $item->maxChars,
+            'value'       => $item->value,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function toItemMediaFields(CmsItemEditData $item): array
+    {
+        return [
+            'mediaAssetId' => $item->mediaAssetId,
+            'mediaAsset'   => self::mediaAssetToArray($item->mediaAsset),
+        ];
+    }
+
+    /**
+     * @return array{FilePath: string, OriginalFileName: string, AltText: string}|null
+     */
+    private static function mediaAssetToArray(?CmsMediaAssetData $asset): ?array
+    {
+        if ($asset === null) {
+            return null;
+        }
+
+        return [
+            'FilePath'         => $asset->filePath,
+            'OriginalFileName' => $asset->originalFileName,
+            'AltText'          => self::formatItemKeyName($asset->altText),
+        ];
+    }
+
+    private static function formatItemKeyName(string $itemKey): string
+    {
+        return ucwords(str_replace('_', ' ', $itemKey));
+    }
+
+    private static function formatSectionName(string $sectionKey): string
+    {
+        return ucwords(str_replace('_', ' ', $sectionKey));
+    }
+
+    /**
      * Groups section items into logical sub-categories for a cleaner CMS editor.
      * Returns null for small sections that don't need grouping.
      *
+     * @param CmsItemEditData[] $items
      * @return array<array{label: string, icon: string, color: string, columns: int, items: array}>|null
      */
     private static function buildSubGroups(string $sectionKey, array $items): ?array
@@ -159,9 +253,19 @@ class CmsDashboardMapper
             return null;
         }
 
+        return self::distributeItemsIntoGroups($sectionKey, $items, $groupDefs);
+    }
+
+    /**
+     * @param CmsItemEditData[] $items
+     * @param array<string, array{label: string, icon: string, color: string, columns: int, items: array}> $groupDefs
+     * @return array<array{label: string, icon: string, color: string, columns: int, items: array}>
+     */
+    private static function distributeItemsIntoGroups(string $sectionKey, array $items, array $groupDefs): array
+    {
         foreach ($items as $item) {
-            $target = self::routeItemToGroup($sectionKey, $item['itemKey'], $groupDefs);
-            $groupDefs[$target]['items'][] = $item;
+            $target = self::routeItemToGroup($sectionKey, $item->itemKey, $groupDefs);
+            $groupDefs[$target]['items'][] = self::toItemArray($item);
         }
 
         return array_values(array_filter($groupDefs, fn(array $g) => $g['items'] !== []));
@@ -174,14 +278,40 @@ class CmsDashboardMapper
      */
     private static function getGroupDefinitions(string $sectionKey): ?array
     {
+        return self::getNamedSectionGroups($sectionKey) ?? self::getFallbackSectionGroups($sectionKey);
+    }
+
+    /**
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: array}>|null
+     */
+    private static function getNamedSectionGroups(string $sectionKey): ?array
+    {
+        return self::getJazzPageSectionGroups($sectionKey) ?? self::getOtherPageSectionGroups($sectionKey);
+    }
+
+    /**
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: array}>|null
+     */
+    private static function getJazzPageSectionGroups(string $sectionKey): ?array
+    {
         return match ($sectionKey) {
-            'schedule_section'                    => self::scheduleGroups(),
-            'hero_section'                        => self::heroGroups(),
-            'masonry_section'                     => self::masonryGroups(),
-            'venues_section'                      => self::venuesGroups(),
-            'pricing_section'                     => self::pricingGroups(),
-            'artists_section'                     => self::artistsGroups(),
-            'historical_locations_section'        => self::historicalLocationsGroups(),
+            'schedule_section'             => self::scheduleGroups(),
+            'hero_section'                 => self::heroGroups(),
+            'masonry_section'              => self::masonryGroups(),
+            'venues_section'               => self::venuesGroups(),
+            'pricing_section'              => self::pricingGroups(),
+            'artists_section'              => self::artistsGroups(),
+            'historical_locations_section' => self::historicalLocationsGroups(),
+            default => null,
+        };
+    }
+
+    /**
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: array}>|null
+     */
+    private static function getOtherPageSectionGroups(string $sectionKey): ?array
+    {
+        return match ($sectionKey) {
             'route_section'                       => self::routeSectionGroups(),
             'history_pricing_section'             => self::historyPricingGroups(),
             'history_important_tour_info_section' => self::historyInfoGroups(),
@@ -189,8 +319,16 @@ class CmsDashboardMapper
             'venue_map_section'                   => self::venueMapGroups(),
             'global_ui'                           => self::globalUiGroups(),
             'main'                                => self::mainSectionGroups(),
-            default => str_starts_with($sectionKey, 'event_') ? self::eventDetailGroups() : null,
+            default => null,
         };
+    }
+
+    /**
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: array}>|null
+     */
+    private static function getFallbackSectionGroups(string $sectionKey): ?array
+    {
+        return str_starts_with($sectionKey, 'event_') ? self::eventDetailGroups() : null;
     }
 
     /**
@@ -200,14 +338,28 @@ class CmsDashboardMapper
      */
     private static function routeItemToGroup(string $sectionKey, string $itemKey, array $groupDefs): string
     {
+        return self::routeJazzPageItem($sectionKey, $itemKey)
+            ?? self::routeOtherPageItem($sectionKey, $itemKey)
+            ?? 'other';
+    }
+
+    private static function routeJazzPageItem(string $sectionKey, string $itemKey): ?string
+    {
         return match ($sectionKey) {
-            'schedule_section'                    => self::resolveScheduleGroup($itemKey),
-            'hero_section'                        => self::resolveHeroGroup($itemKey),
-            'masonry_section'                     => str_starts_with($itemKey, 'masonry_image') ? 'images' : 'content',
-            'venues_section'                      => self::resolveVenuesGroup($itemKey),
-            'pricing_section'                     => self::resolvePricingGroup($itemKey),
-            'artists_section'                     => self::resolveArtistsGroup($itemKey),
-            'historical_locations_section'        => self::resolveHistoricalLocationsGroup($itemKey),
+            'schedule_section'             => self::resolveScheduleGroup($itemKey),
+            'hero_section'                 => self::resolveHeroGroup($itemKey),
+            'masonry_section'              => str_starts_with($itemKey, 'masonry_image') ? 'images' : 'content',
+            'venues_section'               => self::resolveVenuesGroup($itemKey),
+            'pricing_section'              => self::resolvePricingGroup($itemKey),
+            'artists_section'              => self::resolveArtistsGroup($itemKey),
+            'historical_locations_section' => self::resolveHistoricalLocationsGroup($itemKey),
+            default => null,
+        };
+    }
+
+    private static function routeOtherPageItem(string $sectionKey, string $itemKey): ?string
+    {
+        return match ($sectionKey) {
             'route_section'                       => str_starts_with($itemKey, 'route_location') ? 'locations' : 'header',
             'history_pricing_section'             => str_contains($itemKey, '_group_') ? 'group' : 'single',
             'history_important_tour_info_section' => str_starts_with($itemKey, 'important_info_') ? 'items' : 'header',
@@ -215,7 +367,7 @@ class CmsDashboardMapper
             'venue_map_section'                   => str_starts_with($itemKey, 'venue_map_filter_') ? 'filters' : 'content',
             'global_ui'                           => self::resolveGlobalUiGroup($itemKey),
             'main'                                => self::resolveMainGroup($itemKey),
-            default => str_starts_with($sectionKey, 'event_') ? self::resolveEventDetailGroup($itemKey) : 'other',
+            default => str_starts_with($sectionKey, 'event_') ? self::resolveEventDetailGroup($itemKey) : null,
         };
     }
 
@@ -475,6 +627,9 @@ class CmsDashboardMapper
         return !in_array($sectionKey, $nonEditableSections, true);
     }
 
+    /**
+     * @return array{HEADING: int, TEXT: int, HTML: int, BUTTON_TEXT: int}
+     */
     private static function getContentLimits(): array
     {
         return [
@@ -485,6 +640,9 @@ class CmsDashboardMapper
         ];
     }
 
+    /**
+     * @return array{maxWidth: int, maxHeight: int, maxFileSize: int, maxFileSizeFormatted: string, allowedMimes: string[], allowedExtensions: string[]}
+     */
     private static function getImageLimits(): array
     {
         return [

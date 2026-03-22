@@ -6,7 +6,11 @@ namespace App\Services;
 
 use App\Models\EventSessionFilter;
 use App\Models\EventType;
+use App\Models\HomeEventTypeData;
+use App\Models\HomeLocationData;
 use App\Models\HomePageData;
+use App\Models\HomeScheduleDayData;
+use App\Models\HomeScheduleSessionData;
 use App\Models\Restaurant;
 use App\Models\Venue;
 use App\Models\VenueFilter;
@@ -54,6 +58,9 @@ class HomeService implements IHomeService
 
     /**
      * Builds event type showcase data with precomputed styles.
+     *
+     * @param array<string, array<string, ?string>> $cmsContent
+     * @return HomeEventTypeData[]
      */
     private function buildEventTypes(array $cmsContent): array
     {
@@ -88,8 +95,11 @@ class HomeService implements IHomeService
 
     /**
      * Builds data for a single event type, or returns null if not available.
+     *
+     * @param array<string, EventType> $typesBySlug
+     * @param array<string, array<string, ?string>> $cmsContent
      */
-    private function buildSingleEventType(string $slug, array $typesBySlug, array $cmsContent): ?array
+    private function buildSingleEventType(string $slug, array $typesBySlug, array $cmsContent): ?HomeEventTypeData
     {
         if (!isset($typesBySlug[$slug])) {
             return null;
@@ -102,19 +112,21 @@ class HomeService implements IHomeService
 
         $section = $cmsContent[$sectionKey];
 
-        return [
-            'slug'       => $slug,
-            'title'      => $section[$slug . '_title'] ?? ucfirst($slug),
-            'description' => $section[$slug . '_description'] ?? '',
-            'button'     => $section[$slug . '_button'] ?? 'Explore Events',
-            'image'      => $section[$slug . '_image'] ?? null,
-            'darkBg'     => HomeUiConfig::DARK_BG_MAP[$slug] ?? false,
-            'badgeClass' => HomeUiConfig::BADGE_COLORS[$slug] ?? 'bg-gray-500',
-        ];
+        return new HomeEventTypeData(
+            slug: $slug,
+            title: (string)($section[$slug . '_title'] ?? ucfirst($slug)),
+            description: (string)($section[$slug . '_description'] ?? ''),
+            button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
+            image: $section[$slug . '_image'] ?? null,
+            darkBg: HomeUiConfig::DARK_BG_MAP[$slug] ?? false,
+            badgeClass: HomeUiConfig::BADGE_COLORS[$slug] ?? 'bg-gray-500',
+        );
     }
 
     /**
      * Builds locations list from venues and restaurants.
+     *
+     * @return HomeLocationData[]
      */
     private function buildLocations(): array
     {
@@ -134,29 +146,33 @@ class HomeService implements IHomeService
     /**
      * Builds location data for a single venue.
      */
-    private function buildVenueLocation(Venue $venue): array
+    private function buildVenueLocation(Venue $venue): HomeLocationData
     {
         $category = $this->determineVenueCategory($venue->name);
 
-        return [
-            'name'       => $venue->name,
-            'address'    => $venue->addressLine,
-            'category'   => $category,
-            'badgeClass' => HomeUiConfig::BADGE_COLORS[$category] ?? 'bg-gray-500',
-        ];
+        return new HomeLocationData(
+            name: $venue->name,
+            address: $venue->addressLine,
+            category: $category,
+            badgeClass: HomeUiConfig::BADGE_COLORS[$category] ?? 'bg-gray-500',
+            lat: null,
+            lng: null,
+        );
     }
 
     /**
      * Builds location data for a single restaurant.
      */
-    private function buildRestaurantLocation(Restaurant $restaurant): array
+    private function buildRestaurantLocation(Restaurant $restaurant): HomeLocationData
     {
-        return [
-            'name'       => $restaurant->name,
-            'address'    => $restaurant->addressLine,
-            'category'   => 'restaurant',
-            'badgeClass' => HomeUiConfig::BADGE_COLORS['restaurant'],
-        ];
+        return new HomeLocationData(
+            name: $restaurant->name,
+            address: $restaurant->addressLine,
+            category: 'restaurant',
+            badgeClass: HomeUiConfig::BADGE_COLORS['restaurant'],
+            lat: null,
+            lng: null,
+        );
     }
 
     /**
@@ -188,6 +204,8 @@ class HomeService implements IHomeService
 
     /**
      * Builds schedule days with grouped and formatted sessions.
+     *
+     * @return HomeScheduleDayData[]
      */
     private function buildScheduleDays(): array
     {
@@ -208,6 +226,9 @@ class HomeService implements IHomeService
 
     /**
      * Groups sessions by date string (Y-m-d).
+     *
+     * @param \App\Models\SessionWithEvent[] $sessions
+     * @return array<string, \App\Models\SessionWithEvent[]>
      */
     private function groupSessionsByDate(array $sessions): array
     {
@@ -221,6 +242,9 @@ class HomeService implements IHomeService
 
     /**
      * Builds schedule days from grouped session data.
+     *
+     * @param array<string, \App\Models\SessionWithEvent[]> $grouped
+     * @return HomeScheduleDayData[]
      */
     private function buildScheduleDaysFromGrouped(array $grouped): array
     {
@@ -238,20 +262,25 @@ class HomeService implements IHomeService
 
     /**
      * Builds data for a single schedule day.
+     *
+     * @param \App\Models\SessionWithEvent[] $sessions
      */
-    private function buildDayData(string $date, array $sessions): array
+    private function buildDayData(string $date, array $sessions): HomeScheduleDayData
     {
         $byType = $this->groupSessionsByType($sessions);
 
-        return [
-            'date'       => $date,
-            'eventCount' => count($byType),
-            'sessions'   => $this->collectSessionsForDisplay($byType),
-        ];
+        return new HomeScheduleDayData(
+            date: $date,
+            eventCount: count($byType),
+            sessions: $this->collectSessionsForDisplay($byType),
+        );
     }
 
     /**
      * Groups sessions by event type slug.
+     *
+     * @param \App\Models\SessionWithEvent[] $sessions
+     * @return array<string, array{typeName: string, typeSlug: string, sessions: \App\Models\SessionWithEvent[]}>
      */
     private function groupSessionsByType(array $sessions): array
     {
@@ -272,7 +301,10 @@ class HomeService implements IHomeService
     }
 
     /**
-     * Collects raw session data grouped by type for mapper formatting.
+     * Collects session data grouped by type for mapper formatting.
+     *
+     * @param array<string, array{typeName: string, typeSlug: string, sessions: \App\Models\SessionWithEvent[]}> $byType
+     * @return HomeScheduleSessionData[]
      */
     private function collectSessionsForDisplay(array $byType): array
     {
@@ -283,13 +315,13 @@ class HomeService implements IHomeService
             $starts   = array_map(fn ($s) => $s->startDateTime->getTimestamp(), $sessions);
             $ends     = array_map(fn ($s) => $s->endDateTime ? $s->endDateTime->getTimestamp() : $s->startDateTime->getTimestamp(), $sessions);
 
-            $result[] = [
-                'earliestStart'  => min($starts),
-                'latestEnd'      => max($ends),
-                'eventTypeSlug'  => $slug,
-                'typeName'       => $typeData['typeName'],
-                'firstEventTitle' => $sessions[0]->eventTitle ?? '',
-            ];
+            $result[] = new HomeScheduleSessionData(
+                earliestStart: min($starts),
+                latestEnd: max($ends),
+                eventTypeSlug: $slug,
+                firstEventTitle: (string)($sessions[0]->eventTitle ?? ''),
+                typeName: (string)($typeData['typeName']),
+            );
         }
 
         return $result;
@@ -297,6 +329,8 @@ class HomeService implements IHomeService
 
     /**
      * Gets summary title for event type sessions.
+     *
+     * @param \App\Models\SessionWithEvent[] $sessions
      */
     private function getEventSummaryTitle(string $slug, array $sessions): string
     {
@@ -305,6 +339,8 @@ class HomeService implements IHomeService
 
     /**
      * Builds placeholder days when no sessions exist.
+     *
+     * @return HomeScheduleDayData[]
      */
     private function buildPlaceholderDays(): array
     {
@@ -318,12 +354,8 @@ class HomeService implements IHomeService
     /**
      * Builds data for a single placeholder day.
      */
-    private function buildSinglePlaceholderDay(string $date): array
+    private function buildSinglePlaceholderDay(string $date): HomeScheduleDayData
     {
-        return [
-            'date'       => $date,
-            'eventCount' => 0,
-            'sessions'   => [],
-        ];
+        return new HomeScheduleDayData(date: $date, eventCount: 0, sessions: []);
     }
 }

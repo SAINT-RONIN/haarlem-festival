@@ -50,6 +50,10 @@ class CheckoutService implements ICheckoutService
         $this->pdo = $pdo;
     }
 
+    /**
+     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
+     * @return array{redirectUrl:string,orderId:int,paymentId:int}
+     */
     public function createCheckoutSession(ProgramData $programData, int $userId, array $payload): array
     {
         $this->validatePayload($payload);
@@ -156,7 +160,7 @@ class CheckoutService implements ICheckoutService
                 'orderId' => $orderId,
                 'paymentId' => $paymentId,
             ];
-        } catch (\Throwable $error) {
+        } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -165,6 +169,9 @@ class CheckoutService implements ICheckoutService
         }
     }
 
+    /**
+     * @return array{status:string,orderId:?int,paymentId:?int}
+     */
     public function handleCancel(?int $orderId, ?int $paymentId): array
     {
         if ($orderId !== null) {
@@ -182,6 +189,9 @@ class CheckoutService implements ICheckoutService
         ];
     }
 
+    /**
+     * @return array{processed:bool,eventId:string,eventType:string}
+     */
     public function handleWebhook(string $payload, ?string $signatureHeader): array
     {
         $event = $this->stripeService->constructWebhookEvent($payload, $signatureHeader);
@@ -250,7 +260,7 @@ class CheckoutService implements ICheckoutService
 
             $this->webhookEventRepository->markProcessed($eventId, $eventType);
             $this->pdo->commit();
-        } catch (\Throwable $error) {
+        } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -264,6 +274,9 @@ class CheckoutService implements ICheckoutService
         ];
     }
 
+    /**
+     * @return array{sessionId:string,paymentStatus:string,status:string,amountTotal:float,currency:string}
+     */
     public function getSessionSummary(string $sessionId): array
     {
         if ($sessionId === '') {

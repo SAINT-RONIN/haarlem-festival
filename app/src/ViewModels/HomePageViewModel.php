@@ -12,6 +12,11 @@ namespace App\ViewModels;
  */
 final readonly class HomePageViewModel extends BaseViewModel
 {
+    /**
+     * @param HomeEventTypeViewModel[]   $eventTypes   Display-ready event type rows from HomeMapper
+     * @param HomeLocationViewModel[]    $locations    Display-ready location rows from HomeMapper
+     * @param HomeScheduleDayViewModel[] $scheduleDays Display-ready schedule day rows from HomeMapper
+     */
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
@@ -19,7 +24,6 @@ final readonly class HomePageViewModel extends BaseViewModel
         public array $eventTypes = [],
         public array $locations = [],
         public array $scheduleDays = [],
-        public array $cmsContent = [],
     ) {
         parent::__construct(
             heroData: $heroData,

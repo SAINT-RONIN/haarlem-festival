@@ -7,13 +7,12 @@ namespace App\Controllers;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\CheckoutException;
 use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
+use App\Mappers\CheckoutMapper;
 use App\Mappers\ProgramMapper;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
-use App\ViewModels\Program\CheckoutCancelPageViewModel;
-use App\ViewModels\Program\CheckoutSuccessPageViewModel;
 
 class CheckoutController extends BaseController
 {
@@ -84,10 +83,7 @@ class CheckoutController extends BaseController
         try {
             $sessionId = $this->readStringQueryParam('session_id', 255);
             $sessionSummary = $sessionId !== null ? $this->checkoutService->getSessionSummary($sessionId) : null;
-            $viewModel = new CheckoutSuccessPageViewModel(
-                $sessionSummary,
-                $this->getLoggedInUserId() !== null,
-            );
+            $viewModel = CheckoutMapper::toSuccessViewModel($sessionSummary, $this->getLoggedInUserId() !== null);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-success.php', $viewModel);
         } catch (CheckoutException $error) {
@@ -102,10 +98,7 @@ class CheckoutController extends BaseController
             $paymentId = $this->readPositiveIntQueryParam('payment_id');
 
             $cancelResult = $this->checkoutService->handleCancel($orderId, $paymentId);
-            $viewModel = new CheckoutCancelPageViewModel(
-                $cancelResult,
-                $this->getLoggedInUserId() !== null,
-            );
+            $viewModel = CheckoutMapper::toCancelViewModel($cancelResult, $this->getLoggedInUserId() !== null);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-cancel.php', $viewModel);
         } catch (CheckoutException $error) {

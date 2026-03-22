@@ -6,13 +6,12 @@ namespace App\ViewModels\Program;
 
 final readonly class CheckoutSuccessPageViewModel
 {
-    /**
-     * @param array<string,mixed>|null $sessionSummary
-     */
     public function __construct(
-        public ?array $sessionSummary,
         public bool $isLoggedIn,
+        public bool $hasSessionData,
+        public string $sessionId,
+        public string $paymentStatus,
+        public string $checkoutStatus,
     ) {
     }
 }
-

@@ -6,6 +6,7 @@ namespace App\Services\Interfaces;
 
 use App\Models\CmsPage;
 use App\Models\CmsPageEditData;
+use App\Models\CmsSectionEditData;
 use App\Models\CmsUpdateResult;
 
 /**
@@ -28,7 +29,7 @@ interface ICmsEditService
     /**
      * Builds a route-aware preview URL for CMS page edit screens.
      *
-     * @param array<int, array<string, mixed>> $sections
+     * @param CmsSectionEditData[] $sections
      */
     public function resolvePreviewUrl(CmsPage $page, array $sections): string;
 
