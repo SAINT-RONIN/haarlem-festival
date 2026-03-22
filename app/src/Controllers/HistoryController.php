@@ -54,15 +54,17 @@ class HistoryController extends BaseController
     public function location(string $name): void
     {
         try {
-            $data = $this->historicalLocationService->getHistoralLocationPageData($name);
-            $viewModel = HistoricalLocationMapper::toPageViewModel(
-                $data,
-                $this->sessionService->isLoggedIn(),
-            );
-            $this->renderPage(__DIR__ . '/../Views/pages/historical-location.php', $viewModel);
+            $this->renderLocation($name);
         } catch (HistoricalLocationNotFoundException) {
             http_response_code(404);
             require __DIR__ . '/../Views/pages/errors/404.php';
         }
+    }
+
+    private function renderLocation(string $name): void
+    {
+        $data = $this->historicalLocationService->getHistoralLocationPageData($name);
+        $viewModel = HistoricalLocationMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
+        $this->renderPage(__DIR__ . '/../Views/pages/historical-location.php', $viewModel);
     }
 }

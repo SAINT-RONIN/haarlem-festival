@@ -10,6 +10,8 @@ use App\Models\HistoricalLocationIntroContent;
 use App\Models\HistoricalLocationPageData;
 use App\Models\HistoricalLocationSignificanceContent;
 use App\Constants\HistoryPageConstants;
+use App\ViewModels\GlobalUiData;
+use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoricalLocationViewModel;
 use App\ViewModels\History\LocationFacts;
 use App\ViewModels\History\LocationHero;
@@ -26,6 +28,15 @@ final class HistoricalLocationMapper
         $locationHero = self::toLocationHero($data->locationHeroSection);
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
+        return self::buildViewModel($heroData, $globalUi, $locationHero, $data);
+    }
+
+    private static function buildViewModel(
+        HeroData $heroData,
+        GlobalUiData $globalUi,
+        LocationHero $locationHero,
+        HistoricalLocationPageData $data,
+    ): HistoricalLocationViewModel {
         return new HistoricalLocationViewModel(
             heroData: $heroData,
             globalUi: $globalUi,

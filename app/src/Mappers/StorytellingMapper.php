@@ -34,7 +34,7 @@ use App\ViewModels\Storytelling\StorytellingDetailPageViewModel;
 use App\ViewModels\Storytelling\StorytellingPageViewModel;
 use App\ViewModels\Storytelling\StoryVideoSectionData;
 
-class StorytellingMapper
+final class StorytellingMapper
 {
     private const MASONRY_SIZE_CLASSES = [
         'masonry-tall',
@@ -236,8 +236,7 @@ class StorytellingMapper
             heroImageUrl: self::resolveDetailHeroImage($pageData),
             labels: $pageData->labels,
             navLinks: self::buildDetailNavLinks($globalUi),
-            backButtonLabel: $pageData->cms->backButtonLabel ?? '',
-            backButtonUrl: RouteConstants::STORYTELLING,
+            backButtonLabel: $pageData->cms->backButtonLabel ?? '', backButtonUrl: RouteConstants::STORYTELLING,
             reserveButtonLabel: $pageData->cms->reserveButtonLabel ?? '',
             reserveButtonUrl: '#' . $scheduleSection->sectionId,
         );

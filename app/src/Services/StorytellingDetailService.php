@@ -8,6 +8,7 @@ use App\Constants\GlobalUiConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Exceptions\StorytellingEventNotFoundException;
 use App\Models\EventSessionFilter;
+use App\Models\EventSessionLabel;
 use App\Models\GlobalUiContent;
 use App\Models\StorytellingDetailEvent;
 use App\Models\StorytellingDetailPageData;
@@ -154,7 +155,7 @@ class StorytellingDetailService implements IStorytellingDetailService
     {
         $labelsMap = $this->labelRepository->findLabelsBySessionIds([$sessionId]);
         return array_map(
-            fn($label) => $label->labelText,
+            fn(EventSessionLabel $label) => $label->labelText,
             $labelsMap[$sessionId] ?? [],
         );
     }
