@@ -11,6 +11,7 @@ use App\Models\HistoryRouteSectionContent;
 use App\Models\HistoryTicketOptionsSectionContent;
 use App\Models\HistoryTourInfoSectionContent;
 use App\Models\HistoryVenuesSectionContent;
+use App\Constants\HistoryPageConstants;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
@@ -32,7 +33,7 @@ final class HistoryMapper
         bool $isLoggedIn,
         ?ScheduleSectionViewModel $scheduleSection = null
     ): HistoryPageViewModel {
-        $heroData = CmsMapper::toHeroData($data->heroSection, 'history');
+        $heroData = CmsMapper::toHeroData($data->heroSection, HistoryPageConstants::CURRENT_PAGE);
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return self::buildPageViewModel($data, $heroData, $globalUi, $scheduleSection);
@@ -112,28 +113,23 @@ final class HistoryMapper
     }
 
     /** @return VenueCardData[] */
-    private static function buildVenueCards(HistoryVenuesSectionContent $content): array
+    private static function buildVenueCards(HistoryVenuesSectionContent $c): array
     {
         return [
-            new VenueCardData(
-                name:        $content->historyGrotemarktName ?? '',
-                description: $content->historyGrotemarktDescription ?? '',
-                imageUrl:    $content->historyGrotemarktImage ?? '',
-                venueUrl:    $content->historyGrotemarktLink ?? '',
-            ),
-            new VenueCardData(
-                name:        $content->historyAmsterdamsepoortName ?? '',
-                description: $content->historyAmsterdamsepoortDescription ?? '',
-                imageUrl:    $content->historyAmsterdamsepoortImage ?? '',
-                venueUrl:    $content->historyAmsterdamsepoortLink ?? '',
-            ),
-            new VenueCardData(
-                name:        $content->historyMolendeadriaanName ?? '',
-                description: $content->historyMolendeadriaanDescription ?? '',
-                imageUrl:    $content->historyMolendeadriaanImage ?? '',
-                venueUrl:    $content->historyMolendeadriaanLink ?? '',
-            ),
+            self::buildVenueCard($c->historyGrotemarktName, $c->historyGrotemarktDescription, $c->historyGrotemarktImage, $c->historyGrotemarktLink),
+            self::buildVenueCard($c->historyAmsterdamsepoortName, $c->historyAmsterdamsepoortDescription, $c->historyAmsterdamsepoortImage, $c->historyAmsterdamsepoortLink),
+            self::buildVenueCard($c->historyMolendeadriaanName, $c->historyMolendeadriaanDescription, $c->historyMolendeadriaanImage, $c->historyMolendeadriaanLink),
         ];
+    }
+
+    private static function buildVenueCard(?string $name, ?string $description, ?string $imageUrl, ?string $venueUrl): VenueCardData
+    {
+        return new VenueCardData(
+            name: $name ?? '',
+            description: $description ?? '',
+            imageUrl: $imageUrl ?? '',
+            venueUrl: $venueUrl ?? '',
+        );
     }
 
     private static function toTicketOptions(HistoryTicketOptionsSectionContent $content): TicketOptions
@@ -145,30 +141,23 @@ final class HistoryMapper
     }
 
     /** @return PricingCard[] */
-    private static function buildPricingCards(HistoryTicketOptionsSectionContent $content): array
+    private static function buildPricingCards(HistoryTicketOptionsSectionContent $c): array
     {
         return [
-            new PricingCard(
-                icon:             $content->historySingleTicketIcon ?? '',
-                title:            $content->historyPricingSingleTitle ?? '',
-                price:            $content->historyPricingSinglePrice ?? '',
-                descriptionItems: [
-                    $content->historyPricingSingleInclude1 ?? '',
-                    $content->historyPricingSingleInclude2 ?? '',
-                    $content->historyPricingSingleInclude3 ?? '',
-                ],
-            ),
-            new PricingCard(
-                icon:             $content->historyGroupTicketIcon ?? '',
-                title:            $content->historyPricingGroupTitle ?? '',
-                price:            $content->historyPricingGroupPrice ?? '',
-                descriptionItems: [
-                    $content->historyPricingGroupInclude1 ?? '',
-                    $content->historyPricingGroupInclude2 ?? '',
-                    $content->historyPricingGroupInclude3 ?? '',
-                ],
-            ),
+            self::buildPricingCard($c->historySingleTicketIcon, $c->historyPricingSingleTitle, $c->historyPricingSinglePrice, [$c->historyPricingSingleInclude1, $c->historyPricingSingleInclude2, $c->historyPricingSingleInclude3]),
+            self::buildPricingCard($c->historyGroupTicketIcon, $c->historyPricingGroupTitle, $c->historyPricingGroupPrice, [$c->historyPricingGroupInclude1, $c->historyPricingGroupInclude2, $c->historyPricingGroupInclude3]),
         ];
+    }
+
+    /** @param array<int, ?string> $includes */
+    private static function buildPricingCard(?string $icon, ?string $title, ?string $price, array $includes): PricingCard
+    {
+        return new PricingCard(
+            icon: $icon ?? '',
+            title: $title ?? '',
+            price: $price ?? '',
+            descriptionItems: array_map(fn(?string $s) => $s ?? '', $includes),
+        );
     }
 
     private static function toInfoAboutTour(HistoryTourInfoSectionContent $content): ImportantInfoAboutTour

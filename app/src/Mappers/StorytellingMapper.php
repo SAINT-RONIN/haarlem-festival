@@ -209,13 +209,18 @@ class StorytellingMapper
     private static function buildDetailNavLinks(GlobalUiData $globalUi): array
     {
         return [
-            new StorytellingDetailNavLinkData(RouteConstants::HOME, $globalUi->navHome, false),
-            new StorytellingDetailNavLinkData(RouteConstants::JAZZ, $globalUi->navJazz, false),
-            new StorytellingDetailNavLinkData(RouteConstants::DANCE, $globalUi->navDance, false),
-            new StorytellingDetailNavLinkData(RouteConstants::HISTORY, $globalUi->navHistory, false),
-            new StorytellingDetailNavLinkData(RouteConstants::RESTAURANT, $globalUi->navRestaurant, false),
-            new StorytellingDetailNavLinkData(RouteConstants::STORYTELLING, $globalUi->navStorytelling, true),
+            self::navLink(RouteConstants::HOME, $globalUi->navHome, false),
+            self::navLink(RouteConstants::JAZZ, $globalUi->navJazz, false),
+            self::navLink(RouteConstants::DANCE, $globalUi->navDance, false),
+            self::navLink(RouteConstants::HISTORY, $globalUi->navHistory, false),
+            self::navLink(RouteConstants::RESTAURANT, $globalUi->navRestaurant, false),
+            self::navLink(RouteConstants::STORYTELLING, $globalUi->navStorytelling, true),
         ];
+    }
+
+    private static function navLink(string $url, string $label, bool $isActive): StorytellingDetailNavLinkData
+    {
+        return new StorytellingDetailNavLinkData($url, $label, $isActive);
     }
 
     /**
@@ -323,22 +328,27 @@ class StorytellingMapper
      */
     private static function buildHighlightsFromCms(StorytellingEventCmsData $cms): array
     {
-        $highlights = [
+        $tuples = [
             [$cms->highlight1Title, $cms->highlight1Image, $cms->highlight1Description],
             [$cms->highlight2Title, $cms->highlight2Image, $cms->highlight2Description],
             [$cms->highlight3Title, $cms->highlight3Image, $cms->highlight3Description],
         ];
         $items = [];
-        foreach ($highlights as [$title, $image, $description]) {
+        foreach ($tuples as [$title, $image, $description]) {
             if ($title !== null && $title !== '') {
-                $items[] = new StoryHighlightData(
-                    imageUrl: ImageHelper::validatePath($image ?? ''),
-                    title: $title,
-                    description: $description ?? '',
-                );
+                $items[] = self::buildHighlightFromCmsFields($title, $image, $description);
             }
         }
         return $items;
+    }
+
+    private static function buildHighlightFromCmsFields(?string $title, ?string $image, ?string $description): StoryHighlightData
+    {
+        return new StoryHighlightData(
+            imageUrl: ImageHelper::validatePath($image ?? ''),
+            title: $title ?? '',
+            description: $description ?? '',
+        );
     }
 
     /**

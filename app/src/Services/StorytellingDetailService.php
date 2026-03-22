@@ -61,11 +61,16 @@ class StorytellingDetailService implements IStorytellingDetailService
             featuredImagePath: $this->fetchFeaturedImagePath($event),
             labels: $this->fetchEventLabels($event->eventId),
             aboutBody: $this->resolveAboutBody($cms, $event),
-            // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
-            globalUiContent: GlobalUiContent::fromRawArray(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
-            ),
+            globalUiContent: $this->fetchGlobalUiContent(),
             scheduleCtaButtonText: $cms->scheduleCtaButtonText ?? '',
+        );
+    }
+
+    // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
+    private function fetchGlobalUiContent(): GlobalUiContent
+    {
+        return GlobalUiContent::fromRawArray(
+            $this->cmsService->getSectionContent('home', 'global_ui'),
         );
     }
 

@@ -6,5 +6,6 @@ namespace App\Services\Interfaces;
 
 interface ICmsPageContentService
 {
+    /** @return array<string, ?string> */
     public function getSectionContent(string $pageSlug, string $sectionKey): array;
 }
