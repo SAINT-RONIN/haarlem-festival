@@ -7,15 +7,15 @@ namespace App\Services;
 use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
-use App\Repositories\EventRepository;
-use App\Repositories\EventSessionLabelRepository;
-use App\Repositories\EventSessionPriceRepository;
-use App\Repositories\EventSessionRepository;
-use App\Repositories\EventTypeRepository;
+use App\Repositories\Interfaces\IEventRepository;
+use App\Repositories\Interfaces\IEventSessionLabelRepository;
+use App\Repositories\Interfaces\IEventSessionPriceRepository;
+use App\Repositories\Interfaces\IEventSessionRepository;
+use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
-use App\Repositories\PriceTierRepository;
-use App\Repositories\ScheduleDayConfigRepository;
-use App\Repositories\VenueRepository;
+use App\Repositories\Interfaces\IPriceTierRepository;
+use App\Repositories\Interfaces\IScheduleDayConfigRepository;
+use App\Repositories\Interfaces\IVenueRepository;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Utils\CmsEventConstraints;
 
@@ -27,14 +27,14 @@ use App\Utils\CmsEventConstraints;
 class CmsEventsService implements ICmsEventsService
 {
     public function __construct(
-        private EventRepository $eventRepository,
-        private EventSessionRepository $sessionRepository,
-        private EventSessionLabelRepository $labelRepository,
-        private EventSessionPriceRepository $priceRepository,
-        private EventTypeRepository $eventTypeRepository,
-        private VenueRepository $venueRepository,
-        private PriceTierRepository $priceTierRepository,
-        private ScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private IEventRepository $eventRepository,
+        private IEventSessionRepository $sessionRepository,
+        private IEventSessionLabelRepository $labelRepository,
+        private IEventSessionPriceRepository $priceRepository,
+        private IEventTypeRepository $eventTypeRepository,
+        private IVenueRepository $venueRepository,
+        private IPriceTierRepository $priceTierRepository,
+        private IScheduleDayConfigRepository $scheduleDayConfigRepository,
         private IOrderItemRepository $orderItemRepository,
     ) {
     }
@@ -418,7 +418,70 @@ class CmsEventsService implements ICmsEventsService
             }
         }
 
+        $errors = array_merge($errors, $this->validateCapacityTotal($data));
+        $errors = array_merge($errors, $this->validateCapacitySingleTicketLimit($data));
+        $errors = array_merge($errors, $this->validateDurationMinutes($data));
+        $errors = array_merge($errors, $this->validateAgeRange($data));
+
         return $errors;
+    }
+
+    /**
+     * Validates that CapacityTotal is a positive integer, if provided.
+     */
+    private function validateCapacityTotal(array $data): array
+    {
+        if (!array_key_exists('CapacityTotal', $data)) {
+            return [];
+        }
+        if ((int) $data['CapacityTotal'] <= 0) {
+            return ['Capacity must be a positive integer'];
+        }
+        return [];
+    }
+
+    /**
+     * Validates that CapacitySingleTicketLimit does not exceed CapacityTotal, if both are provided.
+     */
+    private function validateCapacitySingleTicketLimit(array $data): array
+    {
+        if (!array_key_exists('CapacityTotal', $data) || !array_key_exists('CapacitySingleTicketLimit', $data)) {
+            return [];
+        }
+        if ((int) $data['CapacitySingleTicketLimit'] > (int) $data['CapacityTotal']) {
+            return ['Single ticket limit cannot exceed total capacity'];
+        }
+        return [];
+    }
+
+    /**
+     * Validates that DurationMinutes is a positive integer, if provided and not empty.
+     */
+    private function validateDurationMinutes(array $data): array
+    {
+        if (!array_key_exists('DurationMinutes', $data) || $data['DurationMinutes'] === '' || $data['DurationMinutes'] === null) {
+            return [];
+        }
+        if ((int) $data['DurationMinutes'] <= 0) {
+            return ['Duration must be a positive integer'];
+        }
+        return [];
+    }
+
+    /**
+     * Validates that MaxAge is at least MinAge, if both are provided and not empty.
+     */
+    private function validateAgeRange(array $data): array
+    {
+        $hasMin = array_key_exists('MinAge', $data) && $data['MinAge'] !== '' && $data['MinAge'] !== null;
+        $hasMax = array_key_exists('MaxAge', $data) && $data['MaxAge'] !== '' && $data['MaxAge'] !== null;
+        if (!$hasMin || !$hasMax) {
+            return [];
+        }
+        if ((int) $data['MaxAge'] < (int) $data['MinAge']) {
+            return ['Maximum age cannot be less than minimum age'];
+        }
+        return [];
     }
 
     /**

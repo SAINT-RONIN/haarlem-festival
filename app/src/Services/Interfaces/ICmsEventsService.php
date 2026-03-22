@@ -92,6 +92,25 @@ interface ICmsEventsService
     public function deleteSession(int $sessionId): bool;
 
     /**
+     * Adds a label to a session.
+     *
+     * @throws ValidationException
+     */
+    public function addLabel(int $sessionId, string $labelText): int;
+
+    /**
+     * Deletes a label.
+     */
+    public function deleteLabel(int $labelId): bool;
+
+    /**
+     * Sets the price for a session.
+     *
+     * @throws ValidationException
+     */
+    public function setSessionPrice(int $sessionId, int $priceTierId, float $price): bool;
+
+    /**
      * Deletes an event (soft delete).
      *
      * @throws ValidationException

@@ -74,7 +74,7 @@
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><?= htmlspecialchars($viewModel->shortDescription) ?></textarea>
                     </div>
 
-                    <?php if ($viewModel->eventTypeId === 1): // Jazz ?>
+                    <?php if ($viewModel->eventTypeSlug === 'jazz'): ?>
                     <div class="md:col-span-2">
                         <label for="ArtistId" class="block text-sm font-medium text-gray-700 mb-1">Artist</label>
                         <select name="ArtistId" id="ArtistId"
@@ -97,7 +97,7 @@
                     </div>
                     <?php endif; ?>
 
-                    <?php if ($viewModel->eventTypeId === 5): // Restaurant ?>
+                    <?php if ($viewModel->eventTypeSlug === 'restaurant'): ?>
                     <div class="md:col-span-2">
                         <label for="RestaurantId" class="block text-sm font-medium text-gray-700 mb-1">Restaurant</label>
                         <select name="RestaurantId" id="RestaurantId"
@@ -309,6 +309,13 @@
                                                    placeholder="Main Hall, Outdoor Stage..."
                                                    class="w-full px-2 py-1 text-sm border border-purple-300 rounded focus:ring-1 focus:ring-purple-500 bg-purple-50">
                                         </div>
+                                    <?php else: ?>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1">Total Capacity</label>
+                                            <input type="number" name="CapacityTotal" min="1"
+                                                   value="<?= $session->capacityTotal ?>"
+                                                   class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                        </div>
                                     <?php endif; ?>
                                     <?php if ($viewModel->eventTypeSlug === 'history'): ?>
                                         <div>
@@ -348,7 +355,14 @@
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Seats Available</label>
                                         <p class="px-2 py-1 text-sm bg-gray-100 rounded text-gray-700"><?= $session->seatsAvailable ?></p>
-                                        <p class="text-[10px] text-gray-400 mt-0.5">Sold: <?= $session->soldTicketsTotal ?></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Single Tickets Sold</label>
+                                        <p class="px-2 py-1 text-sm bg-gray-100 rounded text-gray-700"><?= $session->soldSingleTickets ?></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Reserved Seats Sold</label>
+                                        <p class="px-2 py-1 text-sm bg-gray-100 rounded text-gray-700"><?= $session->soldReservedSeats ?></p>
                                     </div>
                                     <!-- Session Type -->
                                     <div>

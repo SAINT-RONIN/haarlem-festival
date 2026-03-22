@@ -76,7 +76,7 @@ class CheckoutService implements ICheckoutService
 
         try {
             $orderNumber = $this->generateOrderNumber();
-            $payBeforeUtc = new \DateTimeImmutable('+30 minutes');
+            $payBeforeUtc = new \DateTimeImmutable('+24 hours');
 
             $orderId = $this->orderRepository->create(
                 userAccountId: $userId,
