@@ -26,6 +26,7 @@ use App\Repositories\CmsContentRepository;
 use App\Repositories\CmsOrdersRepository;
 use App\Repositories\CmsRepository;
 use App\Repositories\CmsUsersRepository;
+use App\Repositories\Interfaces\ICmsUsersRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionRepository;

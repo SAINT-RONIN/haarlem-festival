@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Interfaces;
+namespace App\Repositories\Interfaces;
 
 use App\Models\UserAccount;
 use App\Models\UserWithRole;
 
-interface ICmsUsersService
+interface ICmsUsersRepository
 {
-    /**
-     * @return UserWithRole[]
-     */
-    public function getUsersWithRoles(
+    /** @return UserWithRole[] */
+    public function findUsersWithRoles(
         ?int $roleFilter = null,
         ?string $search = null,
         string $sortBy = 'registered',
@@ -21,33 +19,10 @@ interface ICmsUsersService
 
     public function findById(int $id): ?UserAccount;
 
-    /**
-     * @return array<string, string>
-     */
-    public function validateForCreate(
-        string $username,
-        string $email,
-        string $password,
-        string $firstName,
-        string $lastName,
-    ): array;
-
-    /**
-     * @return array<string, string>
-     */
-    public function validateForUpdate(
-        int $id,
-        string $username,
-        string $email,
-        ?string $password,
-        string $firstName,
-        string $lastName,
-    ): array;
-
     public function createUser(
         string $username,
         string $email,
-        string $password,
+        string $passwordHash,
         string $firstName,
         string $lastName,
         int $roleId,
@@ -57,11 +32,20 @@ interface ICmsUsersService
         int $id,
         string $username,
         string $email,
-        ?string $password,
         string $firstName,
         string $lastName,
         int $roleId,
     ): void;
 
+    public function updateUserPassword(int $id, string $passwordHash): void;
+
     public function deleteUser(int $id): void;
+
+    public function existsByUsername(string $username): bool;
+
+    public function existsByEmail(string $email): bool;
+
+    public function existsByUsernameExcluding(string $username, int $excludeId): bool;
+
+    public function existsByEmailExcluding(string $email, int $excludeId): bool;
 }

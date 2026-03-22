@@ -145,7 +145,12 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/orders', [CmsOrdersController::class, 'index']);
 
     // CMS Users Routes
-    $r->addRoute('GET', '/cms/users', [CmsUsersController::class, 'index']);
+    $r->addRoute('GET',  '/cms/users',                    [CmsUsersController::class, 'index']);
+    $r->addRoute('GET',  '/cms/users/create',             [CmsUsersController::class, 'create']);
+    $r->addRoute('POST', '/cms/users',                    [CmsUsersController::class, 'store']);
+    $r->addRoute('GET',  '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'edit']);
+    $r->addRoute('POST', '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'update']);
+    $r->addRoute('POST', '/cms/users/{id:\d+}/delete',    [CmsUsersController::class, 'delete']);
 
     // Slug-aware routes (preferred)
     $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);
