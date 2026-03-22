@@ -73,6 +73,22 @@ $currentView = $currentView ?? 'dashboard';
                     <span class="font-medium">Users</span>
                 </a>
             </li>
+            <li>
+                <a href="/cms/restaurants"
+                   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'restaurants' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
+                        <?= $currentView === 'restaurants' ? 'aria-current="page"' : '' ?>>
+                    <i data-lucide="utensils" class="w-5 h-5" aria-hidden="true"></i>
+                    <span class="font-medium">Restaurants</span>
+                </a>
+            </li>
+            <li>
+                <a href="/cms/artists"
+                   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'artists' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
+                        <?= $currentView === 'artists' ? 'aria-current="page"' : '' ?>>
+                    <i data-lucide="music" class="w-5 h-5" aria-hidden="true"></i>
+                    <span class="font-medium">Artists</span>
+                </a>
+            </li>
         </ul>
     </nav>
 

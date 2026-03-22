@@ -7,6 +7,7 @@ namespace App\Mappers;
 use App\Constants\JazzArtistDetailConstants;
 use App\Constants\JazzPageConstants;
 use App\Models\ArtistAlbum;
+use App\Models\PassType;
 use App\Models\ArtistGalleryImage;
 use App\Models\ArtistHighlight;
 use App\Models\ArtistLineupMember;
@@ -48,13 +49,14 @@ class JazzMapper
         $scheduleSectionData = is_array($domain['scheduleSectionData'] ?? null)
             ? $domain['scheduleSectionData']
             : [];
+        $passPrices = is_array($domain['passPrices'] ?? null) ? $domain['passPrices'] : [];
 
         $mapped = [
             'heroData' => self::buildHeroData($sections),
             'gradientSection' => self::buildGradientSectionData($sections),
             'introSplitSection' => self::buildIntroData($sections),
             'venuesData' => self::buildVenuesData($sections),
-            'pricingData' => self::buildPricingData($sections),
+            'pricingData' => self::buildPricingData($sections, $passPrices),
             'scheduleCtaData' => self::buildScheduleCtaData($sections),
             'artistsData' => self::buildArtistsData($sections),
             'scheduleData' => self::buildScheduleData($scheduleSectionData),
@@ -264,16 +266,21 @@ class JazzMapper
         return [
             'name' => self::value($section, $prefix . '_name', $defaultName),
             'description' => self::value($section, $prefix . '_desc', 'Intimate performances'),
-            'price' => '€10.00',
+            'price' => self::value($section, $prefix . '_price', ''),
             'capacity' => self::value($section, $prefix . '_capacity', '150 seats'),
             'isFree' => false,
         ];
     }
 
-    /** @param array<string, mixed> $sections */
-    private static function buildPricingData(array $sections): array
+    /**
+     * @param array<string, mixed> $sections
+     * @param PassType[] $passPrices
+     */
+    private static function buildPricingData(array $sections, array $passPrices): array
     {
         $section = self::section($sections, JazzPageConstants::SECTION_PRICING);
+        $dayPassPrice   = self::findPassPrice($passPrices, 'Day', $section, 'pricing_daypass_price');
+        $allAccessPrice = self::findPassPrice($passPrices, 'Range', $section, 'pricing_3day_price');
 
         return [
             'headingText' => self::value($section, 'pricing_heading', 'Pricing information'),
@@ -295,7 +302,7 @@ class JazzMapper
                 ],
                 [
                     'title' => self::value($section, 'pricing_daypass_title', 'All-Access Day Pass'),
-                    'price' => self::value($section, 'pricing_daypass_price', '€35.00'),
+                    'price' => $dayPassPrice,
                     'priceDescription' => self::value($section, 'pricing_daypass_desc', 'Per day'),
                     'items' => [],
                     'includes' => [
@@ -309,7 +316,7 @@ class JazzMapper
                 ],
                 [
                     'title' => self::value($section, 'pricing_3day_title', 'All-Access Day Pass'),
-                    'price' => self::value($section, 'pricing_3day_price', '€80.00'),
+                    'price' => $allAccessPrice,
                     'priceDescription' => self::value(
                         $section,
                         'pricing_3day_desc',
@@ -327,6 +334,20 @@ class JazzMapper
                 ],
             ],
         ];
+    }
+
+    /**
+     * @param PassType[] $passPrices
+     */
+    private static function findPassPrice(array $passPrices, string $scope, array $section, string $cmsKey): string
+    {
+        foreach ($passPrices as $pass) {
+            if ($pass->passScope->value === $scope) {
+                return '€' . number_format((float) $pass->price, 2);
+            }
+        }
+
+        return self::value($section, $cmsKey, '');
     }
 
     /** @param array<string, mixed> $sections */

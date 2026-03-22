@@ -12,6 +12,7 @@ use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\EventSessionRepository;
 use App\Repositories\EventTypeRepository;
+use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\PriceTierRepository;
 use App\Repositories\ScheduleDayConfigRepository;
 use App\Repositories\VenueRepository;
@@ -34,6 +35,7 @@ class CmsEventsService implements ICmsEventsService
         private VenueRepository $venueRepository,
         private PriceTierRepository $priceTierRepository,
         private ScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private IOrderItemRepository $orderItemRepository,
     ) {
     }
 
@@ -295,9 +297,14 @@ class CmsEventsService implements ICmsEventsService
 
     /**
      * Deletes an event session.
+     *
+     * @throws ValidationException
      */
     public function deleteSession(int $sessionId): bool
     {
+        if ($this->orderItemRepository->existsForSession($sessionId)) {
+            throw new ValidationException(['This session has sold tickets and cannot be deleted.']);
+        }
         return $this->sessionRepository->delete($sessionId);
     }
 

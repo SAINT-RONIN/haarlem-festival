@@ -44,7 +44,7 @@ class EventRepository implements IEventRepository
         ';
 
         if ($includeSessionCount) {
-            $select .= ', COALESCE(es_count.SessionCount, 0) AS SessionCount';
+            $select .= ', COALESCE(es_count.SessionCount, 0) AS SessionCount, COALESCE(es_count.TotalSoldTickets, 0) AS TotalSoldTickets, COALESCE(es_count.TotalCapacity, 0) AS TotalCapacity';
         }
 
         $sql = $select . '
@@ -55,8 +55,14 @@ class EventRepository implements IEventRepository
 
         if ($includeSessionCount) {
             $sql .= '
-            LEFT JOIN (SELECT EventId, COUNT(*) AS SessionCount FROM EventSession GROUP BY EventId) es_count
-                ON es_count.EventId = e.EventId
+            LEFT JOIN (
+                SELECT EventId,
+                       COUNT(*) AS SessionCount,
+                       COALESCE(SUM(SoldSingleTickets + SoldReservedSeats), 0) AS TotalSoldTickets,
+                       COALESCE(SUM(CapacityTotal), 0) AS TotalCapacity
+                FROM EventSession
+                GROUP BY EventId
+            ) es_count ON es_count.EventId = e.EventId
             ';
         }
 
@@ -200,7 +206,10 @@ class EventRepository implements IEventRepository
                 Title = :title,
                 ShortDescription = :shortDescription,
                 LongDescriptionHtml = :longDescriptionHtml,
+                FeaturedImageAssetId = :featuredImageAssetId,
                 VenueId = :venueId,
+                ArtistId = :artistId,
+                RestaurantId = :restaurantId,
                 IsActive = :isActive
             WHERE EventId = :eventId
         ');
@@ -210,7 +219,10 @@ class EventRepository implements IEventRepository
             'title' => $data['Title'],
             'shortDescription' => $data['ShortDescription'] ?? '',
             'longDescriptionHtml' => $data['LongDescriptionHtml'] ?? '<p></p>',
+            'featuredImageAssetId' => isset($data['FeaturedImageAssetId']) && is_numeric($data['FeaturedImageAssetId']) ? (int)$data['FeaturedImageAssetId'] : null,
             'venueId' => $data['VenueId'] ?? null,
+            'artistId' => isset($data['ArtistId']) && is_numeric($data['ArtistId']) ? (int)$data['ArtistId'] : null,
+            'restaurantId' => isset($data['RestaurantId']) && is_numeric($data['RestaurantId']) ? (int)$data['RestaurantId'] : null,
             'isActive' => $data['IsActive'] ?? 1,
         ]);
     }

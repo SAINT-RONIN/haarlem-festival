@@ -107,6 +107,8 @@ class ScheduleService implements IScheduleService
             'days' => $days,
             'activeFilters' => $filterParams,
             'availableDays' => $availableDays,
+            'filterGroupTypes' => $this->resolveFilterGroupTypes($eventTypeSlug),
+            'priceTypeOptions' => $this->resolvePriceTypeOptions($eventTypeSlug),
         ];
     }
 
@@ -371,6 +373,24 @@ class ScheduleService implements IScheduleService
         }
 
         return ['amount' => null, 'isPayWhatYouLike' => false];
+    }
+
+    /** @return string[] */
+    private function resolveFilterGroupTypes(string $eventTypeSlug): array
+    {
+        return match ($eventTypeSlug) {
+            'storytelling' => ['day', 'timeRange', 'priceType', 'language', 'ageGroup'],
+            'jazz'         => ['day', 'venue', 'priceType'],
+            default        => ['day'],
+        };
+    }
+
+    /** @return string[] */
+    private function resolvePriceTypeOptions(string $eventTypeSlug): array
+    {
+        return $eventTypeSlug === 'jazz'
+            ? ['free', 'fixed']
+            : ['pay-what-you-like', 'fixed'];
     }
 
     /**

@@ -54,8 +54,6 @@ class ProgramController extends BaseController
             $quantity = (int)($body['quantity'] ?? 1);
             $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-            $this->validateAddInput($eventSessionId, $quantity);
-
             $item = $this->programService->addToProgram($sessionKey, $userId, $eventSessionId, $quantity, $donationAmount);
 
             $this->json(['success' => true, 'programItemId' => $item->programItemId]);
@@ -73,8 +71,6 @@ class ProgramController extends BaseController
 
             $programItemId = (int)($body['programItemId'] ?? 0);
             $quantity = (int)($body['quantity'] ?? 0);
-
-            $this->validatePositiveId($programItemId, 'programItemId');
 
             $this->programService->updateQuantity($sessionKey, $userId, $programItemId, $quantity);
 
@@ -94,8 +90,6 @@ class ProgramController extends BaseController
             $programItemId = (int)($body['programItemId'] ?? 0);
             $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-            $this->validatePositiveId($programItemId, 'programItemId');
-
             $this->programService->updateDonation($sessionKey, $userId, $programItemId, $donationAmount);
 
             $this->respondJsonWithTotals($sessionKey, $userId);
@@ -112,8 +106,6 @@ class ProgramController extends BaseController
             $userId = $this->getLoggedInUserId();
 
             $programItemId = (int)($body['programItemId'] ?? 0);
-
-            $this->validatePositiveId($programItemId, 'programItemId');
 
             $this->programService->removeItem($sessionKey, $userId, $programItemId);
 
@@ -160,24 +152,6 @@ class ProgramController extends BaseController
     private function getLoggedInUserId(): ?int
     {
         return $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
-    }
-
-    private function validateAddInput(int $eventSessionId, int $quantity): void
-    {
-        if ($eventSessionId <= 0) {
-            throw new \InvalidArgumentException('eventSessionId is required');
-        }
-
-        if ($quantity <= 0) {
-            throw new \InvalidArgumentException('quantity must be at least 1');
-        }
-    }
-
-    private function validatePositiveId(int $id, string $fieldName): void
-    {
-        if ($id <= 0) {
-            throw new \InvalidArgumentException("{$fieldName} is required");
-        }
     }
 
 }

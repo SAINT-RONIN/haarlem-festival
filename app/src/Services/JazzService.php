@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\JazzPageConstants;
+use App\Enums\EventTypeId;
 use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IPassTypeRepository;
 use App\Services\Interfaces\IJazzService;
 
 /**
@@ -18,12 +20,14 @@ class JazzService implements IJazzService
 {
     public function __construct(
         private readonly ICmsContentRepository $cmsService,
+        private readonly IPassTypeRepository $passTypeRepository,
     ) {
     }
 
     public function getJazzPageData(): array
     {
         $pageSlug = JazzPageConstants::PAGE_SLUG;
+        $passPrices = $this->passTypeRepository->findByEventType(EventTypeId::Jazz->value);
 
         return [
             'sections' => [
@@ -60,6 +64,7 @@ class JazzService implements IJazzService
                     JazzPageConstants::SECTION_BOOKING_CTA,
                 ),
             ],
+            'passPrices' => $passPrices,
         ];
     }
 }

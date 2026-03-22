@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
+use App\Controllers\CmsArtistsController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsOrdersController;
+use App\Controllers\CmsRestaurantsController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
@@ -38,6 +40,7 @@ use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\UserAccountRepository;
 use App\Repositories\ProgramRepository;
+use App\Repositories\ArtistRepository;
 use App\Repositories\ArtistAlbumRepository;
 use App\Repositories\ArtistGalleryImageRepository;
 use App\Repositories\ArtistHighlightRepository;
@@ -51,10 +54,13 @@ use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
+use App\Repositories\PassTypeRepository;
 use App\Repositories\PriceTierRepository;
 use App\Repositories\ScheduleDayConfigRepository;
 use App\Repositories\VenueRepository;
+use App\Services\CmsArtistsService;
 use App\Services\CmsDashboardService;
+use App\Services\CmsRestaurantsService;
 use App\Services\CmsEventsService;
 use App\Services\CmsEditService;
 use App\Services\CmsOrdersService;
@@ -124,6 +130,7 @@ return static function (string $controllerClass): object {
         $venueRepository,
         $priceTierRepository,
         $scheduleDayConfigRepository,
+        $orderItemRepository,
     );
 
     $scheduleService = new ScheduleService(
@@ -176,6 +183,7 @@ return static function (string $controllerClass): object {
         JazzController::class => new JazzController(
             new JazzService(
                 $cmsContent,
+                new PassTypeRepository(),
             ),
             new JazzArtistDetailService(
                 $cmsContent,
@@ -193,6 +201,8 @@ return static function (string $controllerClass): object {
         CmsEventsController::class => new CmsEventsController(
             $cmsEventsService,
             $sessionService,
+            new CmsArtistsService(new ArtistRepository()),
+            new CmsRestaurantsService($restaurantRepository),
         ),
         AuthController::class => new AuthController(
             new AuthService(
@@ -268,6 +278,14 @@ return static function (string $controllerClass): object {
         ),
         CmsUsersController::class => new CmsUsersController(
             new CmsUsersService(new CmsUsersRepository(Database::getConnection())),
+            $sessionService,
+        ),
+        CmsRestaurantsController::class => new CmsRestaurantsController(
+            new CmsRestaurantsService($restaurantRepository),
+            $sessionService,
+        ),
+        CmsArtistsController::class => new CmsArtistsController(
+            new CmsArtistsService(new ArtistRepository()),
             $sessionService,
         ),
         ScheduleApiController::class => new ScheduleApiController(

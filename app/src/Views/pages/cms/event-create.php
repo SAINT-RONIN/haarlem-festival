@@ -5,6 +5,8 @@
  * @var string $currentView
  * @var array $eventTypes
  * @var \App\Models\Venue[] $venues
+ * @var \App\Models\Artist[] $artists
+ * @var \App\Models\Restaurant[] $restaurants
  * @var string|null $errorMessage
  * @var string $preselectedDay Pre-selected day from URL (passed from controller)
  */
@@ -163,6 +165,54 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Artist (shown for Jazz events only) -->
+                    <div id="artistField" class="hidden">
+                        <label for="ArtistId" class="block text-sm font-medium text-gray-700 mb-1">
+                            Artist
+                        </label>
+                        <select name="ArtistId" id="ArtistId"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                            <option value="">No artist selected</option>
+                            <?php foreach ($artists as $artist): ?>
+                                <?php /** @var \App\Models\Artist $artist */ ?>
+                                <option value="<?= $artist->artistId ?>">
+                                    <?= htmlspecialchars($artist->name) ?>
+                                    <?php if ($artist->style !== ''): ?>
+                                        — <?= htmlspecialchars($artist->style) ?>
+                                    <?php endif; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Select the artist performing at this Jazz event.
+                            <a href="/cms/artists/create" class="text-blue-600 hover:underline" target="_blank">Create a new artist</a>
+                        </p>
+                    </div>
+
+                    <!-- Restaurant (shown for Restaurant events only) -->
+                    <div id="restaurantField" class="hidden">
+                        <label for="RestaurantId" class="block text-sm font-medium text-gray-700 mb-1">
+                            Restaurant
+                        </label>
+                        <select name="RestaurantId" id="RestaurantId"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                            <option value="">No restaurant selected</option>
+                            <?php foreach ($restaurants as $restaurant): ?>
+                                <?php /** @var \App\Models\Restaurant $restaurant */ ?>
+                                <option value="<?= $restaurant->restaurantId ?>">
+                                    <?= htmlspecialchars($restaurant->name) ?>
+                                    <?php if ($restaurant->city !== ''): ?>
+                                        — <?= htmlspecialchars($restaurant->city) ?>
+                                    <?php endif; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Select the restaurant for this Restaurant event.
+                            <a href="/cms/restaurants/create" class="text-blue-600 hover:underline" target="_blank">Create a new restaurant</a>
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Form Actions -->
@@ -209,6 +259,24 @@
 
 <script src="/assets/js/cms/cms-common.js"></script>
 <script src="/assets/js/cms/event-create.js"></script>
+<script>
+(function () {
+    var typeSelect = document.getElementById('EventTypeId');
+    var artistField = document.getElementById('artistField');
+    var restaurantField = document.getElementById('restaurantField');
+    var JAZZ_TYPE = 1;
+    var RESTAURANT_TYPE = 5;
+
+    function updateVisibility() {
+        var val = parseInt(typeSelect.value, 10);
+        artistField.classList.toggle('hidden', val !== JAZZ_TYPE);
+        restaurantField.classList.toggle('hidden', val !== RESTAURANT_TYPE);
+    }
+
+    typeSelect.addEventListener('change', updateVisibility);
+    updateVisibility();
+}());
+</script>
 </body>
 </html>
 

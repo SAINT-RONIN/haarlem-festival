@@ -47,6 +47,12 @@ class ProgramService implements IProgramService
 
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
+        if ($eventSessionId <= 0) {
+            throw new \InvalidArgumentException('eventSessionId is required');
+        }
+        if ($quantity <= 0) {
+            throw new \InvalidArgumentException('quantity must be at least 1');
+        }
         $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
 
         $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
@@ -64,6 +70,9 @@ class ProgramService implements IProgramService
 
     public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void
     {
+        if ($programItemId <= 0) {
+            throw new \InvalidArgumentException('programItemId is required');
+        }
         $this->verifyItemOwnership($sessionKey, $userAccountId, $programItemId);
 
         if ($quantity <= 0) {
@@ -76,6 +85,9 @@ class ProgramService implements IProgramService
 
     public function updateDonation(string $sessionKey, ?int $userAccountId, int $programItemId, float $donationAmount): void
     {
+        if ($programItemId <= 0) {
+            throw new \InvalidArgumentException('programItemId is required');
+        }
         $this->verifyItemOwnership($sessionKey, $userAccountId, $programItemId);
 
         if ($donationAmount < 0) {
@@ -87,6 +99,9 @@ class ProgramService implements IProgramService
 
     public function removeItem(string $sessionKey, ?int $userAccountId, int $programItemId): void
     {
+        if ($programItemId <= 0) {
+            throw new \InvalidArgumentException('programItemId is required');
+        }
         $this->verifyItemOwnership($sessionKey, $userAccountId, $programItemId);
 
         $this->programRepository->removeItem($programItemId);

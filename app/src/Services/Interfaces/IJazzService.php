@@ -12,7 +12,7 @@ interface IJazzService
     /**
      * Builds the Jazz page domain payload.
      *
-     * @return array<string, mixed> Raw Jazz section content and schedule data
+     * @return array{sections: array<string, mixed>, passPrices: \App\Models\PassType[]}
      */
     public function getJazzPageData(): array;
 }

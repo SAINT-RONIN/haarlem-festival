@@ -28,6 +28,8 @@ final readonly class EventWithDetails
         public string             $eventTypeSlug,
         public ?string            $venueName,
         public int                $sessionCount,
+        public int                $totalSoldTickets,
+        public int                $totalCapacity,
     ) {
     }
 
@@ -49,6 +51,8 @@ final readonly class EventWithDetails
             eventTypeSlug: (string)$row['EventTypeSlug'],
             venueName: isset($row['VenueName']) ? (string)$row['VenueName'] : null,
             sessionCount: (int)($row['SessionCount'] ?? 0),
+            totalSoldTickets: (int)($row['TotalSoldTickets'] ?? 0),
+            totalCapacity: (int)($row['TotalCapacity'] ?? 0),
         );
     }
 }

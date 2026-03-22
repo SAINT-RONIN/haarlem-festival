@@ -8,7 +8,9 @@ use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsEventsMapper;
+use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
+use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ISessionService;
 
 class CmsEventsController
@@ -16,6 +18,8 @@ class CmsEventsController
     public function __construct(
         private ICmsEventsService $eventsService,
         private readonly ISessionService $sessionService,
+        private readonly ICmsArtistsService $artistsService,
+        private readonly ICmsRestaurantsService $restaurantsService,
     ) {
     }
 
@@ -55,10 +59,12 @@ class CmsEventsController
         try {
             CmsAuthController::requireAdmin($this->sessionService);
 
-            $currentView = 'events';
-            $eventTypes = $this->eventsService->getEventTypes();
-            $venues = $this->eventsService->getVenues();
-            $errorMessage = $_GET['error'] ?? null;
+            $currentView    = 'events';
+            $eventTypes     = $this->eventsService->getEventTypes();
+            $venues         = $this->eventsService->getVenues();
+            $artists        = $this->artistsService->getArtists(null);
+            $restaurants    = $this->restaurantsService->getRestaurants(null);
+            $errorMessage   = $_GET['error'] ?? null;
             $preselectedDay = $_GET['day'] ?? '';
 
             require __DIR__ . '/../Views/pages/cms/event-create.php';
@@ -102,7 +108,9 @@ class CmsEventsController
                 $editData['labelsMap'],
             );
 
-            $priceTiers = $this->eventsService->getPriceTiers();
+            $priceTiers  = $this->eventsService->getPriceTiers();
+            $artists     = $this->artistsService->getArtists(null);
+            $restaurants = $this->restaurantsService->getRestaurants(null);
             $successMessage = $_GET['success'] ?? null;
             $errorMessage = $_GET['error'] ?? null;
 

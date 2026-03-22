@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Artist
+final class Artist
 {
     /*
      * Purpose: Holds artist information (name, style, bio) for performers
@@ -35,19 +35,21 @@ class Artist
     public static function fromRow(array $row): self
     {
         return new self(
-            artistId: (int)$row['ArtistId'],
-            name: (string)$row['Name'],
-            style: (string)$row['Style'],
-            bioHtml: (string)$row['BioHtml'],
+            artistId: (int)($row['ArtistId'] ?? throw new \InvalidArgumentException('Missing required field: ArtistId')),
+            name: (string)($row['Name'] ?? throw new \InvalidArgumentException('Missing required field: Name')),
+            style: (string)($row['Style'] ?? throw new \InvalidArgumentException('Missing required field: Style')),
+            bioHtml: (string)($row['BioHtml'] ?? throw new \InvalidArgumentException('Missing required field: BioHtml')),
             imageAssetId: isset($row['ImageAssetId']) ? (int)$row['ImageAssetId'] : null,
-            isActive: (bool)$row['IsActive'],
-            createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
+            isActive: (bool)($row['IsActive'] ?? throw new \InvalidArgumentException('Missing required field: IsActive')),
+            createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: CreatedAtUtc')),
         );
     }
 
     /**
      * Converts the model to an associative array for INSERT/UPDATE queries.
      * Keys match the database column names.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

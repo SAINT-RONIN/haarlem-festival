@@ -34,7 +34,9 @@ use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
+use App\Controllers\CmsArtistsController;
 use App\Controllers\CmsOrdersController;
+use App\Controllers\CmsRestaurantsController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
@@ -152,6 +154,22 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'update']);
     $r->addRoute('POST', '/cms/users/{id:\d+}/delete',    [CmsUsersController::class, 'delete']);
 
+    // CMS Restaurants Routes
+    $r->addRoute('GET',  '/cms/restaurants',                       [CmsRestaurantsController::class, 'index']);
+    $r->addRoute('GET',  '/cms/restaurants/create',                [CmsRestaurantsController::class, 'create']);
+    $r->addRoute('POST', '/cms/restaurants',                       [CmsRestaurantsController::class, 'store']);
+    $r->addRoute('GET',  '/cms/restaurants/{id:\d+}/edit',         [CmsRestaurantsController::class, 'edit']);
+    $r->addRoute('POST', '/cms/restaurants/{id:\d+}/edit',         [CmsRestaurantsController::class, 'update']);
+    $r->addRoute('POST', '/cms/restaurants/{id:\d+}/delete',       [CmsRestaurantsController::class, 'delete']);
+
+    // CMS Artists Routes
+    $r->addRoute('GET',  '/cms/artists',                           [CmsArtistsController::class, 'index']);
+    $r->addRoute('GET',  '/cms/artists/create',                    [CmsArtistsController::class, 'create']);
+    $r->addRoute('POST', '/cms/artists',                           [CmsArtistsController::class, 'store']);
+    $r->addRoute('GET',  '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'edit']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'update']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/delete',           [CmsArtistsController::class, 'delete']);
+
     // Slug-aware routes (preferred)
     $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);
     $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'update']);
@@ -195,7 +213,7 @@ switch ($routeInfo[0]) {
 
     case Dispatcher::FOUND:
         $handler = $routeInfo[1];
-        $vars = $routeInfo[2];
+        $vars = array_map(fn($v) => is_numeric($v) ? (int)$v : $v, $routeInfo[2]);
 
         // Handle closure routes
         if ($handler instanceof \Closure) {
