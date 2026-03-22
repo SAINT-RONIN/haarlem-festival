@@ -256,7 +256,7 @@ class ScheduleService implements IScheduleService
     ): array {
         $sessionId = $session->eventSessionId;
         [$minAge, $maxAge] = $this->resolveAgeRange($session);
-        $labels = $this->extractLabels($labelsMap[$sessionId] ?? [], $minAge, $maxAge);
+        $labels = $this->extractLabels($labelsMap[$sessionId] ?? [], $minAge, $maxAge, $eventTypeId);
         $priceData = $this->resolvePrice($pricesMap[$sessionId] ?? []);
         $cta = $this->resolveCta($session, $eventTypeSlug, $defaultCtaText);
 
@@ -282,9 +282,14 @@ class ScheduleService implements IScheduleService
      * @param EventSessionLabel[] $sessionLabels
      * @return string[]
      */
-    private function extractLabels(array $sessionLabels, ?int $minAge, ?int $maxAge): array
+    private function extractLabels(array $sessionLabels, ?int $minAge, ?int $maxAge, int $eventTypeId): array
     {
         $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
+
+        if ($eventTypeId === EventTypeId::History->value) {
+            return $labels;
+        }
+
         return AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
     }
 
