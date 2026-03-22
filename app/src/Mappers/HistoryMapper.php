@@ -85,20 +85,21 @@ final class HistoryMapper
         );
     }
 
+    private const ROUTE_BADGE_COLORS = [
+        'bg-sky-600/80', 'bg-orange-800/80', 'bg-amber-400/80', 'bg-lime-700/80', 'bg-violet-800/80',
+        'bg-rose-500/80', 'bg-lime-500/80', 'bg-stone-700/80', 'bg-orange-500/80',
+    ];
+
     /** @return RouteVenue[] */
-    private static function buildRouteVenues(HistoryRouteSectionContent $content): array
+    private static function buildRouteVenues(HistoryRouteSectionContent $c): array
     {
-        return [
-            new RouteVenue(venueName: $content->routeLocation1Name ?? '', venueBadgeColor: 'bg-sky-600/80',    venueDescription: $content->routeLocation1Description ?? ''),
-            new RouteVenue(venueName: $content->routeLocation2Name ?? '', venueBadgeColor: 'bg-orange-800/80', venueDescription: $content->routeLocation2Description ?? ''),
-            new RouteVenue(venueName: $content->routeLocation3Name ?? '', venueBadgeColor: 'bg-amber-400/80',  venueDescription: $content->routeLocation3Description ?? ''),
-            new RouteVenue(venueName: $content->routeLocation4Name ?? '', venueBadgeColor: 'bg-lime-700/80',   venueDescription: $content->routeLocation4Description ?? ''),
-            new RouteVenue(venueName: $content->routeLocation5Name ?? '', venueBadgeColor: 'bg-violet-800/80', venueDescription: $content->routeLocation5Description ?? ''),
-            new RouteVenue(venueName: $content->routeLocation6Name ?? '', venueBadgeColor: 'bg-rose-500/80',   venueDescription: $content->routeLocation6Description ?? ''),
-            new RouteVenue(venueName: $content->routeLocation7Name ?? '', venueBadgeColor: 'bg-lime-500/80',   venueDescription: $content->routeLocation7Description ?? ''),
-            new RouteVenue(venueName: $content->routeLocation8Name ?? '', venueBadgeColor: 'bg-stone-700/80',  venueDescription: $content->routeLocation8Description ?? ''),
-            new RouteVenue(venueName: $content->routeLocation9Name ?? '', venueBadgeColor: 'bg-orange-500/80', venueDescription: $content->routeLocation9Description ?? ''),
-        ];
+        $names = [$c->routeLocation1Name, $c->routeLocation2Name, $c->routeLocation3Name, $c->routeLocation4Name, $c->routeLocation5Name, $c->routeLocation6Name, $c->routeLocation7Name, $c->routeLocation8Name, $c->routeLocation9Name];
+        $descs = [$c->routeLocation1Description, $c->routeLocation2Description, $c->routeLocation3Description, $c->routeLocation4Description, $c->routeLocation5Description, $c->routeLocation6Description, $c->routeLocation7Description, $c->routeLocation8Description, $c->routeLocation9Description];
+
+        return array_map(
+            fn(int $i) => new RouteVenue(venueName: $names[$i] ?? '', venueBadgeColor: self::ROUTE_BADGE_COLORS[$i], venueDescription: $descs[$i] ?? ''),
+            range(0, 8),
+        );
     }
 
     private static function toVenuesData(HistoryVenuesSectionContent $content): VenuesData
