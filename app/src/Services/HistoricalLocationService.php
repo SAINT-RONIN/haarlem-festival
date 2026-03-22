@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\HistoricalLocationPageConstants;
-use App\Constants\HistoryPageConstants;
-use App\Services\Interfaces\IHistoricalLocationService;
-use App\Services\Interfaces\IHistoryService;
+use App\Exceptions\HistoricalLocationNotFoundException;
+use App\Models\GlobalUiContent;
+use App\Models\HeroSectionContent;
+use App\Models\HistoricalLocationFactsContent;
+use App\Models\HistoricalLocationHeroContent;
+use App\Models\HistoricalLocationIntroContent;
+use App\Models\HistoricalLocationPageData;
+use App\Models\HistoricalLocationSignificanceContent;
 use App\Services\Interfaces\ICmsPageContentService;
+use App\Services\Interfaces\IHistoricalLocationService;
 
-/**
- * Service for preparing history page data.
- *
- * Assembles all data needed for the history view, including
- * event types, locations, and schedule information.
- */
 class HistoricalLocationService implements IHistoricalLocationService
 {
     public function __construct(
@@ -23,33 +23,35 @@ class HistoricalLocationService implements IHistoricalLocationService
     ) {
     }
 
-    /**
-     * Builds the historical location page view model with all required data.
-     */
-    public function getHistoralLocationPageData(string $name): array
+    public function getHistoralLocationPageData(string $name): HistoricalLocationPageData
     {
-        $pageSlug = $name;
+        $heroRaw = $this->cmsService->getSectionContent($name, HistoricalLocationPageConstants::SECTION_HERO);
 
-        return [
-            'sections' => [
-                HistoricalLocationPageConstants::SECTION_HERO => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoricalLocationPageConstants::SECTION_HERO,
-                ),
-                HistoricalLocationPageConstants::SECTION_INTRO => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoricalLocationPageConstants::SECTION_INTRO,
-                ),
-                HistoricalLocationPageConstants::SECTION_FACTS => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoricalLocationPageConstants::SECTION_FACTS,
-                ),
-                HistoricalLocationPageConstants::SECTION_SIGNIFICANCE => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoricalLocationPageConstants::SECTION_SIGNIFICANCE
-                ),
-                'global_ui' => $this->cmsService->getSectionContent('home', 'global_ui'),
-            ],
-        ];
+        if (empty($heroRaw)) {
+            throw new HistoricalLocationNotFoundException($name);
+        }
+
+        return $this->buildPageData($name, $heroRaw);
+    }
+
+    /** @param array<string, ?string> $heroRaw */
+    private function buildPageData(string $slug, array $heroRaw): HistoricalLocationPageData
+    {
+        return new HistoricalLocationPageData(
+            heroSection:         HeroSectionContent::fromRawArray($heroRaw),
+            locationHeroSection: HistoricalLocationHeroContent::fromRawArray($heroRaw),
+            introSection:        HistoricalLocationIntroContent::fromRawArray(
+                $this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_INTRO),
+            ),
+            factsSection:        HistoricalLocationFactsContent::fromRawArray(
+                $this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_FACTS),
+            ),
+            significanceSection: HistoricalLocationSignificanceContent::fromRawArray(
+                $this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_SIGNIFICANCE),
+            ),
+            globalUiContent:     GlobalUiContent::fromRawArray(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+            ),
+        );
     }
 }

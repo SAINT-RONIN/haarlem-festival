@@ -5,8 +5,8 @@
  * @var \App\ViewModels\History\HistoricalLocationViewModel $viewModel
  */
 
-$currentPage = 'history';
-$includeNav = false;
+$currentPage = $viewModel->currentPage;
+$includeNav = $viewModel->includeNav;
 ?>
 <?php require __DIR__ . '/../partials/header.php'; ?>
 

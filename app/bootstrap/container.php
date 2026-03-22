@@ -256,11 +256,8 @@ return static function (string $controllerClass): object {
             new HistoricalLocationService(
                 $cmsPageContentService,
             ),
-
-            $cmsPageContentService,
             $sessionService,
-            $scheduleService
-
+            $scheduleService,
         ),
         CmsAuthController::class => new CmsAuthController(
             new AuthService(

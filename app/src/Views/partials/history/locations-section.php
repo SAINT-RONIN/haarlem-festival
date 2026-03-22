@@ -40,7 +40,7 @@ $venues  = $venuesData->venues;
 
                     <a href="<?= htmlspecialchars($venue->venueUrl) ?>" class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center mt-auto">
                         <div class="flex-1 text-white text-xl font-normal font-['Montserrat'] leading-5">
-                            View more
+                            <?= htmlspecialchars($venuesData->viewMoreLabel) ?>
                         </div>
 
                     </a>

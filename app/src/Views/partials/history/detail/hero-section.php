@@ -65,27 +65,27 @@ $isLoggedIn = $globalUi->isLoggedIn;
                     <?php else: ?>
                         <a href="/" role="menuitem"
                            class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Home</span>
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal"><?= htmlspecialchars($globalUi->navHome) ?></span>
                         </a>
                         <a href="/jazz" role="menuitem"
                            class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Jazz</span>
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal"><?= htmlspecialchars($globalUi->navJazz) ?></span>
                         </a>
                         <a href="/dance" role="menuitem"
                            class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Dance</span>
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal"><?= htmlspecialchars($globalUi->navDance) ?></span>
                         </a>
                         <a href="/history" role="menuitem"
                            class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2" aria-current="page">
-                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">History</span>
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal"><?= htmlspecialchars($globalUi->navHistory) ?></span>
                         </a>
                         <a href="/restaurant" role="menuitem"
                            class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Restaurant</span>
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal"><?= htmlspecialchars($globalUi->navRestaurant) ?></span>
                         </a>
                         <a href="/storytelling" role="menuitem"
                            class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Storytelling</span>
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal"><?= htmlspecialchars($globalUi->navStorytelling) ?></span>
                         </a>
                     <?php endif; ?>
 
