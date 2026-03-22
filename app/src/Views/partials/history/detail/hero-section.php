@@ -54,13 +54,40 @@ $isLoggedIn = $globalUi->isLoggedIn;
                         p-2 bg-royal-blue rounded-xl sm:rounded-2xl shadow-lg
                         flex-col xl:flex-row justify-end items-center gap-1.5 xl:gap-2 2xl:gap-3 z-50
                         opacity-0 -translate-y-2 transition-all duration-300 ease-in-out" role="menubar">
-                    <?php foreach ($globalUi->navLinks as $link): ?>
-                        <a href="<?= htmlspecialchars($link->href) ?>" role="menuitem"
-                           class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 <?= $link->isActive ? 'bg-red' : 'hover:bg-red' ?> rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2"
-                            <?= $link->isActive ? 'aria-current="page"' : '' ?>>
-                            <span class="text-center text-sand text-sm 2xl:text-base font-normal"><?= htmlspecialchars($link->label) ?></span>
+                    <?php if (!empty($globalUi->navLinks ?? null)): ?>
+                        <?php foreach ($globalUi->navLinks as $link): ?>
+                            <a href="<?= htmlspecialchars($link->href) ?>" role="menuitem"
+                               class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 <?= $link->isActive ? 'bg-red' : 'hover:bg-red' ?> rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2"
+                                <?= $link->isActive ? 'aria-current="page"' : '' ?>>
+                                <span class="text-center text-sand text-sm 2xl:text-base font-normal"><?= htmlspecialchars($link->label) ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <a href="/" role="menuitem"
+                           class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Home</span>
                         </a>
-                    <?php endforeach; ?>
+                        <a href="/jazz" role="menuitem"
+                           class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Jazz</span>
+                        </a>
+                        <a href="/dance" role="menuitem"
+                           class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Dance</span>
+                        </a>
+                        <a href="/history" role="menuitem"
+                           class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2" aria-current="page">
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">History</span>
+                        </a>
+                        <a href="/restaurant" role="menuitem"
+                           class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Restaurant</span>
+                        </a>
+                        <a href="/storytelling" role="menuitem"
+                           class="w-full xl:w-auto px-3 xl:px-3.5 2xl:px-4 py-2 hover:bg-red rounded-lg flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                            <span class="text-center text-sand text-sm 2xl:text-base font-normal">Storytelling</span>
+                        </a>
+                    <?php endif; ?>
 
                     <!-- Divider -->
                     <span class="hidden xl:block w-px h-6 bg-sand/30 mx-1 2xl:mx-2" aria-hidden="true"></span>
@@ -115,8 +142,8 @@ $isLoggedIn = $globalUi->isLoggedIn;
 
         <!-- Hero Content - Title, Subtitle, and Map image -->
         <div class="self-stretch px-3 sm:px-4 md:px-8 lg:px-16 xl:px-24 flex flex-col justify-center items-start">
-            <div class="w-full flex flex-col lg:flex-row justify-center items-center lg:items-start gap-4 md:gap-6 lg:gap-10">
-                <div class="flex-1 flex flex-col justify-center items-start gap-2 sm:gap-3">
+            <div class="w-full flex flex-col lg:flex-row justify-center items-center lg:items-center gap-4 md:gap-6 lg:gap-10">
+                <div class="flex-1 flex flex-col justify-center items-center gap-2 sm:gap-3">
                     <h1 id="history-location-heading"
                         class="self-stretch text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-normal leading-tight">
                         <?= htmlspecialchars($hero->mainTitle) ?>
@@ -127,19 +154,19 @@ $isLoggedIn = $globalUi->isLoggedIn;
                 </div>
 
                 <?php if ($hero->mapImageUrl !== ''): ?>
-                    <div class="w-full max-w-md md:max-w-lg lg:max-w-xl flex justify-center items-center">
+                    <div class="w-3/4 max-w-md md:max-w-lg lg:max-w-xl flex justify-center items-center">
                         <img src="<?= htmlspecialchars($hero->mapImageUrl) ?>"
                              alt="Map showing the location of <?= htmlspecialchars($hero->mainTitle) ?>"
-                             class="w-full h-auto rounded-2xl shadow-lg object-cover">
+                             class="w-3/4 h-auto  shadow-lg object-cover">
                     </div>
                 <?php endif; ?>
             </div>
         </div>
 
-        <!-- Back to history CTA - Bottom RIGHT -->
-        <div class="self-stretch flex flex-col justify-end items-end">
+        <!-- Back to history CTA -->
+        <div class="self-stretch flex flex-col justify-start items-start">
             <div class="self-stretch h-4 sm:h-6 md:h-10 lg:h-16 xl:h-20" aria-hidden="true"></div>
-            <div class="pr-2 sm:pr-3 md:pr-4 lg:pr-12 xl:pr-24 pl-2 sm:pl-3 md:pl-4 py-2 sm:py-3 md:py-4 lg:py-5 bg-sand rounded-tl-[12px] sm:rounded-tl-[15px] md:rounded-tl-[25px] lg:rounded-tl-[35px] flex justify-end items-start">
+            <div class="pr-2 sm:pr-3 md:pr-4 lg:pr-12 xl:pr-24 pl-2 sm:pl-3 md:pl-4 py-2 sm:py-3 md:py-4 lg:py-5 bg-sand rounded-tr-[12px] sm:rounded-tr-[15px] md:rounded-tr-[25px] lg:rounded-tr-[35px] flex justify-end items-end">
                 <a href="<?= htmlspecialchars($hero->buttonLink) ?>"
                    class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3.5
                           bg-royal-blue hover:bg-red rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl
