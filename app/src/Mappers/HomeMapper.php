@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Models\HomePageData;
 use App\Utils\HomeUiConfig;
 use App\ViewModels\HomePageViewModel;
 
 final class HomeMapper
 {
-    public static function toPageViewModel(array $data, bool $isLoggedIn): HomePageViewModel
+    public static function toPageViewModel(HomePageData $data, bool $isLoggedIn): HomePageViewModel
     {
-        $heroData = CmsMapper::toHeroData($data['heroContent'], 'home');
-        $globalUi = CmsMapper::toGlobalUiData($data['globalUiContent'], $isLoggedIn);
+        $heroData = CmsMapper::toHeroData($data->heroContent, 'home');
+        $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return new HomePageViewModel(
             heroData:     $heroData,
             globalUi:     $globalUi,
             cms:          CmsMapper::toCmsData($heroData, $globalUi),
-            eventTypes:   $data['eventTypes'],
-            locations:    $data['locations'],
-            scheduleDays: self::formatScheduleDays($data['scheduleDays']),
-            cmsContent:   $data['cmsContent'],
+            eventTypes:   $data->eventTypes,
+            locations:    $data->locations,
+            scheduleDays: self::formatScheduleDays($data->scheduleDays),
+            cmsContent:   $data->cmsContent,
         );
     }
 

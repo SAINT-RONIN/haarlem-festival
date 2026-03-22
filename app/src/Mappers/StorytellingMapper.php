@@ -12,6 +12,7 @@ use App\Models\EventGalleryImage;
 use App\Models\EventHighlight;
 use App\Models\PageGalleryImage;
 use App\Models\StorytellingDetailPageData;
+use App\Models\StorytellingEventCmsData;
 use App\Models\StorytellingPageData;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
@@ -107,7 +108,6 @@ class StorytellingMapper
         StorytellingDetailHeroData $detailHero,
         ScheduleSectionViewModel $scheduleSection,
     ): StorytellingDetailPageViewModel {
-        $cms = $pageData->cms;
         return new StorytellingDetailPageViewModel(
             heroData: $heroData,
             globalUi: $globalUi,
@@ -115,9 +115,9 @@ class StorytellingMapper
             currentPage: StorytellingPageConstants::CURRENT_PAGE,
             detailHero: $detailHero,
             aboutSection: self::buildAboutSection($pageData),
-            highlightsSection: self::buildHighlightsSection($cms, $pageData->highlights),
-            gallerySection: self::buildGallerySection($cms, $pageData->galleryImages),
-            videoSection: self::buildVideoSection($cms),
+            highlightsSection: self::buildHighlightsSection($pageData->cms, $pageData->highlights),
+            gallerySection: self::buildGallerySection($pageData->cms, $pageData->galleryImages),
+            videoSection: self::buildVideoSection($pageData->cms),
             scheduleSection: $scheduleSection,
         );
     }
@@ -238,9 +238,9 @@ class StorytellingMapper
             heroImageUrl: self::resolveDetailHeroImage($pageData),
             labels: $pageData->labels,
             navLinks: self::buildDetailNavLinks($globalUi),
-            backButtonLabel: ImageHelper::getStringValue($pageData->cms, 'back_button_label', ''),
+            backButtonLabel: $pageData->cms->backButtonLabel ?? '',
             backButtonUrl: RouteConstants::STORYTELLING,
-            reserveButtonLabel: ImageHelper::getStringValue($pageData->cms, 'reserve_button_label', ''),
+            reserveButtonLabel: $pageData->cms->reserveButtonLabel ?? '',
             reserveButtonUrl: '#' . $scheduleSection->sectionId,
         );
     }
@@ -251,7 +251,7 @@ class StorytellingMapper
      */
     private static function resolveDetailHeroImage(StorytellingDetailPageData $pageData): string
     {
-        $cmsHeroImage = (string)($pageData->cms['hero_image'] ?? '');
+        $cmsHeroImage = $pageData->cms->heroImage ?? '';
         if ($cmsHeroImage !== '') {
             return ImageHelper::validatePath($cmsHeroImage);
         }
@@ -267,7 +267,7 @@ class StorytellingMapper
     {
         [$image1, $image2] = self::resolveAboutImages($pageData);
         return new StorytellingAboutSectionData(
-            heading: ImageHelper::getStringValue($pageData->cms, 'about_heading', $pageData->event->title),
+            heading: $pageData->cms->aboutHeading ?? $pageData->event->title,
             bodyHtml: CmsOutputHelper::html($pageData->aboutBody),
             image1Url: ImageHelper::validatePath($image1),
             image2Url: ImageHelper::validatePath($image2),
@@ -286,8 +286,8 @@ class StorytellingMapper
             ];
         }
         return [
-            (string)($pageData->cms['about_image_1'] ?? ''),
-            (string)($pageData->cms['about_image_2'] ?? ''),
+            $pageData->cms->aboutImage1 ?? '',
+            $pageData->cms->aboutImage2 ?? '',
         ];
     }
 
@@ -297,14 +297,14 @@ class StorytellingMapper
      *
      * @param EventHighlight[] $highlights
      */
-    private static function buildHighlightsSection(array $cms, array $highlights): StoryHighlightsSectionData
+    private static function buildHighlightsSection(StorytellingEventCmsData $cms, array $highlights): StoryHighlightsSectionData
     {
         $items = $highlights !== []
             ? self::buildHighlightsFromModels($highlights)
             : self::buildHighlightsFromCms($cms);
 
         return new StoryHighlightsSectionData(
-            heading: ImageHelper::getStringValue($cms, 'highlights_heading', ''),
+            heading: $cms->highlightsHeading ?? '',
             items: $items,
         );
     }
@@ -326,25 +326,24 @@ class StorytellingMapper
     /**
      * @return StoryHighlightData[]
      */
-    private static function buildHighlightsFromCms(array $cms): array
+    private static function buildHighlightsFromCms(StorytellingEventCmsData $cms): array
     {
+        $highlights = [
+            [$cms->highlight1Title, $cms->highlight1Image, $cms->highlight1Description],
+            [$cms->highlight2Title, $cms->highlight2Image, $cms->highlight2Description],
+            [$cms->highlight3Title, $cms->highlight3Image, $cms->highlight3Description],
+        ];
         $items = [];
-        for ($i = 1; $i <= 3; $i++) {
-            $title = $cms["highlight_{$i}_title"] ?? '';
-            if (!empty($title)) {
-                $items[] = self::buildCmsHighlightItem($cms, $i, $title);
+        foreach ($highlights as [$title, $image, $description]) {
+            if ($title !== null && $title !== '') {
+                $items[] = new StoryHighlightData(
+                    imageUrl: ImageHelper::validatePath($image ?? ''),
+                    title: $title,
+                    description: $description ?? '',
+                );
             }
         }
         return $items;
-    }
-
-    private static function buildCmsHighlightItem(array $cms, int $i, string $title): StoryHighlightData
-    {
-        return new StoryHighlightData(
-            imageUrl: ImageHelper::validatePath((string)($cms["highlight_{$i}_image"] ?? '')),
-            title: $title,
-            description: $cms["highlight_{$i}_description"] ?? '',
-        );
     }
 
     /**
@@ -353,14 +352,14 @@ class StorytellingMapper
      *
      * @param EventGalleryImage[] $galleryImages
      */
-    private static function buildGallerySection(array $cms, array $galleryImages): StoryGallerySectionData
+    private static function buildGallerySection(StorytellingEventCmsData $cms, array $galleryImages): StoryGallerySectionData
     {
         $images = $galleryImages !== []
             ? self::buildGalleryImagesFromModels($galleryImages)
             : self::buildGalleryImagesFromCms($cms);
 
         return new StoryGallerySectionData(
-            heading: ImageHelper::getStringValue($cms, 'gallery_heading', ''),
+            heading: $cms->galleryHeading ?? '',
             topRowImages: array_slice($images, 0, 3),
             bottomRowImages: array_slice($images, 3, 2),
         );
@@ -381,25 +380,27 @@ class StorytellingMapper
     /**
      * @return string[]
      */
-    private static function buildGalleryImagesFromCms(array $cms): array
+    private static function buildGalleryImagesFromCms(StorytellingEventCmsData $cms): array
     {
-        $images = [];
-        for ($i = 1; $i <= 5; $i++) {
-            $images[] = ImageHelper::validatePath((string)($cms["gallery_image_{$i}"] ?? ''));
-        }
-        return $images;
+        return [
+            ImageHelper::validatePath($cms->gallery1Image ?? ''),
+            ImageHelper::validatePath($cms->gallery2Image ?? ''),
+            ImageHelper::validatePath($cms->gallery3Image ?? ''),
+            ImageHelper::validatePath($cms->gallery4Image ?? ''),
+            ImageHelper::validatePath($cms->gallery5Image ?? ''),
+        ];
     }
 
     /**
      * Builds the video embed section ViewModel from CMS content.
      * The reason for this is because the video URL and placeholder text are CMS-driven and must be wrapped in a typed ViewModel before the view can safely access them.
      */
-    private static function buildVideoSection(array $cms): StoryVideoSectionData
+    private static function buildVideoSection(StorytellingEventCmsData $cms): StoryVideoSectionData
     {
         return new StoryVideoSectionData(
-            heading: ImageHelper::getStringValue($cms, 'video_heading', ''),
-            url: (string)($cms['video_url'] ?? ''),
-            placeholderText: ImageHelper::getStringValue($cms, 'video_placeholder', ''),
+            heading: $cms->videoHeading ?? '',
+            url: $cms->videoUrl ?? '',
+            placeholderText: $cms->videoPlaceholder ?? '',
         );
     }
 

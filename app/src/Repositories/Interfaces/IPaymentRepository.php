@@ -18,5 +18,13 @@ interface IPaymentRepository
     public function updateStripePaymentIntentId(int $paymentId, string $stripePaymentIntentId): void;
 
     public function updateProviderRef(int $paymentId, string $providerRef): void;
+
+    /**
+     * Updates payment status only when its current status is in the allowed list.
+     * Also clears PaidAtUtc when the new status is not Paid.
+     *
+     * @param PaymentStatus[] $allowedCurrentStatuses
+     */
+    public function updateStatusIfCurrentIn(int $paymentId, PaymentStatus $newStatus, array $allowedCurrentStatuses): void;
 }
 

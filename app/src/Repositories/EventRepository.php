@@ -23,12 +23,8 @@ class EventRepository implements IEventRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findEvents(EventFilter|array $filters = new EventFilter()): array
+    public function findEvents(EventFilter $filters = new EventFilter()): array
     {
-        if (is_array($filters)) {
-            $filters = EventFilter::fromArray($filters);
-        }
-
         $includeSessionCount = (bool)($filters->includeSessionCount ?? false);
         $isActive = $filters->isActive;
         $eventTypeId = $filters->eventTypeId;

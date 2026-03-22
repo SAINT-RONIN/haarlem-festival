@@ -142,7 +142,11 @@ return static function (string $controllerClass): object {
         $scheduleDayConfigRepository,
     );
 
-    $programService = new ProgramService();
+    $programService = new ProgramService(
+        $programRepository,
+        $eventSessionRepository,
+        $eventSessionPriceRepository,
+    );
 
     // ── Controller wiring ──
 

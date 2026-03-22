@@ -38,7 +38,7 @@ class ProgramController extends BaseController
             $viewModel = ProgramMapper::toMyProgramViewModel($programData, $cmsContent, $isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respond($error);
         }
     }
@@ -57,7 +57,7 @@ class ProgramController extends BaseController
             $item = $this->programService->addToProgram($sessionKey, $userId, $eventSessionId, $quantity, $donationAmount);
 
             $this->json(['success' => true, 'programItemId' => $item->programItemId]);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -75,7 +75,7 @@ class ProgramController extends BaseController
             $this->programService->updateQuantity($sessionKey, $userId, $programItemId, $quantity);
 
             $this->respondJsonWithTotals($sessionKey, $userId);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -93,7 +93,7 @@ class ProgramController extends BaseController
             $this->programService->updateDonation($sessionKey, $userId, $programItemId, $donationAmount);
 
             $this->respondJsonWithTotals($sessionKey, $userId);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -110,7 +110,7 @@ class ProgramController extends BaseController
             $this->programService->removeItem($sessionKey, $userId, $programItemId);
 
             $this->respondJsonWithTotals($sessionKey, $userId);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -124,7 +124,7 @@ class ProgramController extends BaseController
             $this->programService->clearProgram($sessionKey, $userId);
 
             $this->json(['success' => true]);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -139,7 +139,7 @@ class ProgramController extends BaseController
             'subtotal' => $totals['subtotal'],
             'taxAmount' => $totals['taxAmount'],
             'total' => $totals['total'],
-            'canCheckout' => $programData['items'] !== [],
+            'canCheckout' => $programData->items !== [],
         ]);
     }
 

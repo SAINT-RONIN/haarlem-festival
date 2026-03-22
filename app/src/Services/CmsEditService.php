@@ -7,10 +7,13 @@ namespace App\Services;
 use App\Enums\EventTypeId;
 use App\Models\CmsItem;
 use App\Models\CmsPage;
+use App\Models\CmsPageEditData;
 use App\Models\CmsSection;
-use App\Repositories\CmsRepository;
-use App\Repositories\EventRepository;
-use App\Repositories\MediaAssetRepository;
+use App\Models\CmsUpdateResult;
+use App\Models\EventFilter;
+use App\Repositories\Interfaces\ICmsRepository;
+use App\Repositories\Interfaces\IEventRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\ICmsEditService;
 use App\Utils\CmsContentLimits;
 
@@ -23,18 +26,16 @@ use App\Utils\CmsContentLimits;
 class CmsEditService implements ICmsEditService
 {
     public function __construct(
-        private CmsRepository $cmsRepository,
-        private MediaAssetRepository $mediaAssetRepository,
-        private EventRepository $eventRepository,
+        private ICmsRepository $cmsRepository,
+        private IMediaAssetRepository $mediaAssetRepository,
+        private IEventRepository $eventRepository,
     ) {
     }
 
     /**
      * Gets a page with all its sections and items for editing.
-     *
-     * @return array|null Array with 'page', 'sections' keys or null if not found
      */
-    public function getPageForEditing(int $pageId): ?array
+    public function getPageForEditing(int $pageId): ?CmsPageEditData
     {
         $pages = $this->cmsRepository->findPages(['cmsPageId' => $pageId]);
         $page = $pages[0] ?? null;
@@ -42,20 +43,21 @@ class CmsEditService implements ICmsEditService
             return null;
         }
 
-        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
-        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $sections = $this->buildSectionsWithItems($page);
+
+        return new CmsPageEditData(page: $page, sections: $sections);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildSectionsWithItems(CmsPage $page): array
+    {
+        $sections = $this->cmsRepository->findSections(['cmsPageId' => $page->cmsPageId]);
+        $items = $this->cmsRepository->findItems(['cmsPageId' => $page->cmsPageId]);
         $itemsBySection = $this->groupItemsBySection($items);
+        $eventNameMap = $this->buildEventNameMapForPage($page->slug);
         $sectionsWithItems = [];
-
-        $eventNameMap = [];
-        $pageSlug = $page->slug;
-        if ($pageSlug === 'storytelling-detail') {
-            $eventNameMap = $this->buildEventNameMap(EventTypeId::Storytelling->value);
-        }
-
-        if ($pageSlug === 'jazz-artist-detail') {
-            $eventNameMap = $this->buildEventNameMap(EventTypeId::Jazz->value);
-        }
 
         foreach ($sections as $section) {
             /** @var CmsSection $section */
@@ -63,71 +65,82 @@ class CmsEditService implements ICmsEditService
                 continue;
             }
 
-            $sectionItems = $itemsBySection[$section->cmsSectionId] ?? [];
-            $sectionItems = $this->sortHeroImageFirst($sectionItems);
-            $enrichedItems = $this->enrichItemsWithMetadata($sectionItems);
-
+            $sectionItems = $this->sortHeroImageFirst($itemsBySection[$section->cmsSectionId] ?? []);
             $sectionsWithItems[] = [
                 'sectionId' => $section->cmsSectionId,
                 'sectionKey' => $section->sectionKey,
                 'displayName' => $this->resolveDisplayName($section->sectionKey, $eventNameMap),
-                'items' => $enrichedItems
+                'items' => $this->enrichItemsWithMetadata($sectionItems),
             ];
         }
 
-        return [
-            'page' => $page,
-            'sections' => $sectionsWithItems
-        ];
+        return $sectionsWithItems;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildEventNameMapForPage(string $pageSlug): array
+    {
+        if ($pageSlug === 'storytelling-detail') {
+            return $this->buildEventNameMap(EventTypeId::Storytelling->value);
+        }
+        if ($pageSlug === 'jazz-artist-detail') {
+            return $this->buildEventNameMap(EventTypeId::Jazz->value);
+        }
+        return [];
     }
 
     /**
      * Updates multiple CMS items from form submission.
      *
-     * @param int $pageId The page ID for validation
-     * @param array $items Array of item updates: [itemId => value_string]
-     * @return array ['success' => bool, 'errors' => array]
+     * @param array<int|string, mixed> $items Array of item updates: [itemId => value_string]
      */
-    public function updatePageItems(int $pageId, array $items): array
+    public function updatePageItems(int $pageId, array $items): CmsUpdateResult
     {
         $errors = [];
         $updatedCount = 0;
-        $pageItems = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
-        $pageItemsById = [];
-        foreach ($pageItems as $pageItem) {
-            $pageItemsById[$pageItem->cmsItemId] = $pageItem;
-        }
+        $pageItemsById = $this->indexPageItemsById($pageId);
 
         foreach ($items as $itemId => $rawValue) {
             $itemId = (int)$itemId;
             $item = $pageItemsById[$itemId] ?? null;
 
-            if (!$item) {
+            if ($item === null) {
                 $errors[] = "Item ID {$itemId} not found";
                 continue;
             }
 
             $type = $item->itemType->value;
-            $itemData = ['value' => $rawValue];
-            $value = $itemData['value'] ?? '';
-
-            $validationError = $this->validateItemValue($value, $type, $item->itemKey);
-            if ($validationError) {
+            $validationError = $this->validateItemValue((string)$rawValue, $type, $item->itemKey);
+            if ($validationError !== null) {
                 $errors[] = $validationError;
                 continue;
             }
 
-            $updateData = $this->prepareUpdateData($value, $type);
-            if ($this->cmsRepository->updateItem($itemId, $updateData)) {
+            if ($this->cmsRepository->updateItem($itemId, $this->prepareUpdateData((string)$rawValue, $type))) {
                 $updatedCount++;
             }
         }
 
-        return [
-            'success' => empty($errors),
-            'updatedCount' => $updatedCount,
-            'errors' => $errors
-        ];
+        return new CmsUpdateResult(
+            success: $errors === [],
+            updatedCount: $updatedCount,
+            errors: $errors,
+        );
+    }
+
+    /**
+     * @return array<int, CmsItem>
+     */
+    private function indexPageItemsById(int $pageId): array
+    {
+        $pageItems = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $indexed = [];
+        foreach ($pageItems as $pageItem) {
+            $indexed[$pageItem->cmsItemId] = $pageItem;
+        }
+        return $indexed;
     }
 
     /**
@@ -363,7 +376,7 @@ class CmsEditService implements ICmsEditService
      */
     private function buildEventNameMap(int $eventTypeId): array
     {
-        $events = $this->eventRepository->findEvents(['eventTypeId' => $eventTypeId, 'isActive' => true]);
+        $events = $this->eventRepository->findEvents(new EventFilter(eventTypeId: $eventTypeId, isActive: true));
         $map = [];
         foreach ($events as $event) {
             $map['event_' . $event->eventId] = $event->title;

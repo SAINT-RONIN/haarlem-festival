@@ -6,15 +6,15 @@ namespace App\Services;
 
 use App\Constants\StorytellingDetailConstants;
 use App\Exceptions\StorytellingEventNotFoundException;
+use App\Models\EventSessionFilter;
 use App\Models\StorytellingDetailEvent;
 use App\Models\StorytellingDetailPageData;
+use App\Models\StorytellingEventCmsData;
+use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
-use App\Repositories\Interfaces\ICmsContentRepository;
-use App\Models\EventSessionFilter;
-use App\Models\EventSessionLabelFilter;
 use App\Services\Interfaces\IStorytellingDetailService;
 
 class StorytellingDetailService implements IStorytellingDetailService
@@ -43,15 +43,16 @@ class StorytellingDetailService implements IStorytellingDetailService
         return $this->buildPageData($event, $cms);
     }
 
-    private function fetchCmsContent(int $eventId): array
+    private function fetchCmsContent(int $eventId): StorytellingEventCmsData
     {
-        return $this->cmsService->getSectionContent(
+        $raw = $this->cmsService->getSectionContent(
             StorytellingDetailConstants::DETAIL_PAGE_SLUG,
             StorytellingDetailConstants::eventSectionKey($eventId),
         );
+        return StorytellingEventCmsData::fromRawArray($raw);
     }
 
-    private function buildPageData(StorytellingDetailEvent $event, array $cms): StorytellingDetailPageData
+    private function buildPageData(StorytellingDetailEvent $event, StorytellingEventCmsData $cms): StorytellingDetailPageData
     {
         return new StorytellingDetailPageData(
             event: $event,
@@ -61,7 +62,7 @@ class StorytellingDetailService implements IStorytellingDetailService
             aboutBody: $this->resolveAboutBody($cms, $event),
             // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
             globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
-            scheduleCtaButtonText: (string)($cms['schedule_cta_button_text'] ?? ''),
+            scheduleCtaButtonText: $cms->scheduleCtaButtonText ?? '',
         );
     }
 
@@ -112,10 +113,11 @@ class StorytellingDetailService implements IStorytellingDetailService
      * Returns the best available about-section body text, falling back from CMS to event descriptions.
      * The reason for this is because content editors may not always fill the CMS field, so the service provides a sensible fallback chain before the mapper receives the data.
      */
-    private function resolveAboutBody(array $cms, StorytellingDetailEvent $event): string
+    private function resolveAboutBody(StorytellingEventCmsData $cms, StorytellingDetailEvent $event): string
     {
-        return !empty($cms['about_body'])
-            ? $cms['about_body']
+        $aboutBody = $cms->aboutBody;
+        return ($aboutBody !== null && $aboutBody !== '')
+            ? $aboutBody
             : ($event->longDescriptionHtml ?: $event->shortDescription ?: '');
     }
 
@@ -130,7 +132,7 @@ class StorytellingDetailService implements IStorytellingDetailService
         $sessions = $this->sessionRepository->findSessions(
             new EventSessionFilter(eventId: $eventId, isActive: true),
         );
-        $sessionList = $sessions['sessions'] ?? [];
+        $sessionList = $sessions->sessions;
         if (empty($sessionList)) {
             return [];
         }
@@ -142,9 +144,7 @@ class StorytellingDetailService implements IStorytellingDetailService
      */
     private function fetchLabelTextsForSession(int $sessionId): array
     {
-        $labelsMap = $this->labelRepository->findLabels(
-            new EventSessionLabelFilter(sessionIds: [$sessionId], groupBySession: true),
-        );
+        $labelsMap = $this->labelRepository->findLabelsBySessionIds([$sessionId]);
         return array_map(
             fn($label) => $label->labelText,
             $labelsMap[$sessionId] ?? [],

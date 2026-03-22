@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\EventSessionFilter;
 use App\Models\EventType;
+use App\Models\HomePageData;
 use App\Models\Restaurant;
 use App\Models\Venue;
-use App\Repositories\CmsContentRepository;
-use App\Repositories\EventSessionRepository;
-use App\Repositories\EventTypeRepository;
-use App\Repositories\RestaurantRepository;
-use App\Repositories\VenueRepository;
+use App\Models\VenueFilter;
+use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IEventSessionRepository;
+use App\Repositories\Interfaces\IEventTypeRepository;
+use App\Repositories\Interfaces\IRestaurantRepository;
+use App\Repositories\Interfaces\IVenueRepository;
 use App\Services\Interfaces\IHomeService;
 use App\Utils\HomeUiConfig;
 
@@ -24,29 +27,29 @@ use App\Utils\HomeUiConfig;
 class HomeService implements IHomeService
 {
     public function __construct(
-        private EventTypeRepository $eventTypeRepository,
-        private VenueRepository $venueRepository,
-        private RestaurantRepository $restaurantRepository,
-        private EventSessionRepository $eventSessionRepository,
-        private CmsContentRepository $cmsService,
+        private IEventTypeRepository $eventTypeRepository,
+        private IVenueRepository $venueRepository,
+        private IRestaurantRepository $restaurantRepository,
+        private IEventSessionRepository $eventSessionRepository,
+        private ICmsContentRepository $cmsService,
     ) {
     }
 
     /**
      * Returns all raw data needed to render the home page.
      */
-    public function getHomePageData(): array
+    public function getHomePageData(): HomePageData
     {
         $cmsContent = $this->cmsService->getHomePageContent();
 
-        return [
-            'cmsContent'      => $cmsContent,
-            'heroContent'     => $this->cmsService->getHeroSectionContent('home'),
-            'globalUiContent' => $this->cmsService->getSectionContent('home', 'global_ui'),
-            'eventTypes'      => $this->buildEventTypes($cmsContent),
-            'locations'       => $this->buildLocations(),
-            'scheduleDays'    => $this->buildScheduleDays(),
-        ];
+        return new HomePageData(
+            cmsContent: $cmsContent,
+            heroContent: $this->cmsService->getHeroSectionContent('home'),
+            globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
+            eventTypes: $this->buildEventTypes($cmsContent),
+            locations: $this->buildLocations(),
+            scheduleDays: $this->buildScheduleDays(),
+        );
     }
 
     /**
@@ -117,7 +120,7 @@ class HomeService implements IHomeService
     {
         $locations = [];
 
-        foreach ($this->venueRepository->findVenues(['isActive' => true]) as $venue) {
+        foreach ($this->venueRepository->findVenues(new VenueFilter(isActive: true)) as $venue) {
             $locations[] = $this->buildVenueLocation($venue);
         }
 
@@ -188,12 +191,12 @@ class HomeService implements IHomeService
      */
     private function buildScheduleDays(): array
     {
-        $sessions = $this->eventSessionRepository->findSessions([
-            'isActive'        => true,
-            'eventIsActive'   => true,
-            'includeCancelled' => false,
-            'orderBy'         => 'es.StartDateTime ASC',
-        ])['sessions'] ?? [];
+        $sessions = $this->eventSessionRepository->findSessions(new EventSessionFilter(
+            isActive: true,
+            eventIsActive: true,
+            includeCancelled: false,
+            orderBy: 'es.StartDateTime ASC',
+        ))->sessions;
         $grouped = $this->groupSessionsByDate($sessions);
 
         if (empty($grouped)) {

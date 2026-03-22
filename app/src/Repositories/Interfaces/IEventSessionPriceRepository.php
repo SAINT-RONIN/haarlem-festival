@@ -15,10 +15,17 @@ interface IEventSessionPriceRepository
     /**
      * Find prices using optional filters.
      *
-     * @param EventSessionPriceFilter|array<string, mixed> $filters
-     * @return EventSessionPrice[]|array<int, EventSessionPrice[]>
+     * @return EventSessionPrice[]
      */
-    public function findPrices(EventSessionPriceFilter|array $filters = new EventSessionPriceFilter()): array;
+    public function findPrices(EventSessionPriceFilter $filters = new EventSessionPriceFilter()): array;
+
+    /**
+     * Find prices grouped by session ID for a set of session IDs.
+     *
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionPrice[]>
+     */
+    public function findPricesBySessionIds(array $sessionIds): array;
 
     /**
      * Create or update a price for a session and tier.

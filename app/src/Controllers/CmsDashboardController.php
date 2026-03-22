@@ -107,7 +107,7 @@ class CmsDashboardController
                 return;
             }
 
-            $previewUrl = $this->cmsEditService->resolvePreviewUrl($pageData['page'], $pageData['sections']);
+            $previewUrl = $this->cmsEditService->resolvePreviewUrl($pageData->page, $pageData->sections);
             $viewData = CmsDashboardMapper::toPageEditViewData($pageData);
             $page = $viewData['page'];
             $sections = $viewData['sections'];
@@ -164,12 +164,11 @@ class CmsDashboardController
 
             $result = $this->cmsEditService->updatePageItems($pageId, $items);
 
-            if (($result['success'] ?? false) === true) {
-                $updatedCount = (int)($result['updatedCount'] ?? 0);
-                $this->sessionService->setFlash('cms_success', "Updated {$updatedCount} item(s) successfully");
+            if ($result->success) {
+                $this->sessionService->setFlash('cms_success', "Updated {$result->updatedCount} item(s) successfully");
             } else {
-                $errors = $result['errors'] ?? [];
-                $this->sessionService->setFlash('cms_error', is_array($errors) ? implode(', ', $errors) : 'Failed to update content');
+                $errorMessage = $result->errors !== [] ? implode(', ', $result->errors) : 'Failed to update content';
+                $this->sessionService->setFlash('cms_error', $errorMessage);
             }
 
             header("Location: /cms/pages/{$pageId}/edit");

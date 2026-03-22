@@ -8,6 +8,7 @@ use App\Enums\PriceTierId;
 use App\Infrastructure\Database;
 use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
+use App\Models\SessionQueryResult;
 use App\Models\SessionWithEvent;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
@@ -21,12 +22,8 @@ class EventSessionRepository implements IEventSessionRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findSessions(EventSessionFilter|array $filters = new EventSessionFilter()): array
+    public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult
     {
-        if (is_array($filters)) {
-            $filters = EventSessionFilter::fromArray($filters);
-        }
-
         $conditions = [];
         $params = [];
 
@@ -180,7 +177,7 @@ class EventSessionRepository implements IEventSessionRepository
             $days = $daysStmt->fetchAll(PDO::FETCH_ASSOC);
 
             if ($days === []) {
-                return ['days' => [], 'sessions' => []];
+                return new SessionQueryResult(sessions: [], days: []);
             }
 
             $dates = array_column($days, 'Date');
@@ -220,10 +217,10 @@ class EventSessionRepository implements IEventSessionRepository
             $prepared->execute(array_merge($params, $dateBindings));
             $sessionRows = $prepared->fetchAll(PDO::FETCH_ASSOC);
 
-            return [
-                'days'     => array_map([ScheduleDayData::class, 'fromRow'], $days),
-                'sessions' => array_map([SessionWithEvent::class, 'fromRow'], $sessionRows),
-            ];
+            return new SessionQueryResult(
+                sessions: array_map([SessionWithEvent::class, 'fromRow'], $sessionRows),
+                days: array_map([ScheduleDayData::class, 'fromRow'], $days),
+            );
         }
 
         $sessionsSql = '
@@ -249,7 +246,9 @@ class EventSessionRepository implements IEventSessionRepository
 
         $stmt = $this->pdo->prepare($sessionsSql);
         $stmt->execute($params);
-        return ['sessions' => array_map([SessionWithEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC))];
+        return new SessionQueryResult(
+            sessions: array_map([SessionWithEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC)),
+        );
     }
 
     public function create(array $data): int

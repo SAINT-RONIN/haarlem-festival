@@ -22,12 +22,11 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findPrices(EventSessionPriceFilter|array $filters = new EventSessionPriceFilter()): array
+    /**
+     * @return EventSessionPrice[]
+     */
+    public function findPrices(EventSessionPriceFilter $filters = new EventSessionPriceFilter()): array
     {
-        if (is_array($filters)) {
-            $filters = EventSessionPriceFilter::fromArray($filters);
-        }
-
         $sql = '
             SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate
             FROM EventSessionPrice
@@ -40,34 +39,45 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
             $params['sessionId'] = $filters->sessionId;
         }
 
-        $sessionIds = $filters->sessionIds;
-        if (is_array($sessionIds)) {
-            $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
-            if ($normalizedIds === []) {
-                return [];
-            }
-
-            $inPlaceholders = [];
-            foreach ($normalizedIds as $index => $sessionId) {
-                $paramName = 'sessionId' . $index;
-                $inPlaceholders[] = ':' . $paramName;
-                $params[$paramName] = $sessionId;
-            }
-
-            $sql .= ' AND EventSessionId IN (' . implode(', ', $inPlaceholders) . ')';
-        }
-
         $sql .= ' ORDER BY EventSessionId ASC, PriceTierId ASC';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $prices = array_map([EventSessionPrice::class, 'fromRow'], $rows);
 
-        $groupBySession = (bool)($filters->groupBySession ?? false);
-        if (!$groupBySession) {
-            return $prices;
+        return array_map([EventSessionPrice::class, 'fromRow'], $rows);
+    }
+
+    /**
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionPrice[]>
+     */
+    public function findPricesBySessionIds(array $sessionIds): array
+    {
+        $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
+        if ($normalizedIds === []) {
+            return [];
         }
+
+        $params = [];
+        $inPlaceholders = [];
+        foreach ($normalizedIds as $index => $sessionId) {
+            $paramName = 'sessionId' . $index;
+            $inPlaceholders[] = ':' . $paramName;
+            $params[$paramName] = $sessionId;
+        }
+
+        $sql = '
+            SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate
+            FROM EventSessionPrice
+            WHERE EventSessionId IN (' . implode(', ', $inPlaceholders) . ')
+            ORDER BY EventSessionId ASC, PriceTierId ASC
+        ';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $prices = array_map([EventSessionPrice::class, 'fromRow'], $rows);
 
         $grouped = [];
         foreach ($prices as $price) {

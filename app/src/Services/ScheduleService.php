@@ -9,10 +9,11 @@ use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
 use App\Models\EventSessionFilter;
 use App\Models\EventSessionLabel;
-use App\Models\EventSessionLabelFilter;
 use App\Models\EventSessionPrice;
-use App\Models\EventSessionPriceFilter;
+use App\Models\EventTypeFilter;
+use App\Models\ScheduleDayConfigFilter;
 use App\Models\ScheduleFilterParams;
+use App\Models\SessionQueryResult;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -47,7 +48,7 @@ class ScheduleService implements IScheduleService
         ?string $ctaTextOverride = null,
         ?ScheduleFilterParams $filterParams = null,
     ): array {
-        $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
+        $eventType = $this->eventTypeRepository->findEventTypes(new EventTypeFilter(eventTypeId: $eventTypeId))[0] ?? null;
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
 
         $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
@@ -116,15 +117,15 @@ class ScheduleService implements IScheduleService
      * Builds day ViewModels from schedule data.
      */
     private function buildScheduleDays(
-        array  $scheduleData,
-        string $eventTypeSlug,
-        int    $eventTypeId,
-        string $defaultCtaText,
-        string $payWhatYouLikeText,
-        string $currencySymbol
+        SessionQueryResult $scheduleData,
+        string             $eventTypeSlug,
+        int                $eventTypeId,
+        string             $defaultCtaText,
+        string             $payWhatYouLikeText,
+        string             $currencySymbol
     ): array {
-        $days = $scheduleData['days'] ?? [];
-        $sessions = $scheduleData['sessions'] ?? [];
+        $days = $scheduleData->days;
+        $sessions = $scheduleData->sessions;
 
         if (empty($days)) {
             return [];
@@ -133,10 +134,10 @@ class ScheduleService implements IScheduleService
         // Get session IDs for batch loading labels and prices
         $sessionIds = array_map(static fn ($s) => $s->eventSessionId, $sessions);
         $labelsMap = !empty($sessionIds)
-            ? $this->labelRepository->findLabels(new EventSessionLabelFilter(sessionIds: $sessionIds, groupBySession: true))
+            ? $this->labelRepository->findLabelsBySessionIds($sessionIds)
             : [];
         $pricesMap = !empty($sessionIds)
-            ? $this->priceRepository->findPrices(new EventSessionPriceFilter(sessionIds: $sessionIds, groupBySession: true))
+            ? $this->priceRepository->findPricesBySessionIds($sessionIds)
             : [];
 
         // Group sessions by date
@@ -417,7 +418,7 @@ class ScheduleService implements IScheduleService
     private function loadGlobalDaySettings(): array
     {
         $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(['eventTypeId' => null, 'orderBy' => 'day']) as $row) {
+        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: 0, orderBy: 'day')) as $row) {
             $settings[$row->dayOfWeek] = $row->isVisible;
         }
         return $settings;
@@ -426,7 +427,7 @@ class ScheduleService implements IScheduleService
     private function loadTypeDaySettings(int $eventTypeId): array
     {
         $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(['eventTypeId' => $eventTypeId, 'orderBy' => 'day']) as $row) {
+        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: $eventTypeId, orderBy: 'day')) as $row) {
             $settings[$row->dayOfWeek] = $row->isVisible;
         }
         return $settings;

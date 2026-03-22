@@ -15,10 +15,17 @@ interface IEventSessionLabelRepository
     /**
      * Find labels using optional filters.
      *
-     * @param EventSessionLabelFilter|array<string, mixed> $filters
-     * @return EventSessionLabel[]|array<int, EventSessionLabel[]>
+     * @return EventSessionLabel[]
      */
-    public function findLabels(EventSessionLabelFilter|array $filters = new EventSessionLabelFilter()): array;
+    public function findLabels(EventSessionLabelFilter $filters = new EventSessionLabelFilter()): array;
+
+    /**
+     * Find labels grouped by session ID for a set of session IDs.
+     *
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionLabel[]>
+     */
+    public function findLabelsBySessionIds(array $sessionIds): array;
 
     /**
      * Create a new label for a session.

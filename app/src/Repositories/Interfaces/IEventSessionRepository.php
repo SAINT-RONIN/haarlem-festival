@@ -6,14 +6,14 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
+use App\Models\SessionQueryResult;
 
 interface IEventSessionRepository
 {
     /**
-     * @param EventSessionFilter|array<string, mixed> $filters
-     * @return array{days?: \App\Models\ScheduleDayData[], sessions: \App\Models\SessionWithEvent[]}
+     * @return SessionQueryResult
      */
-    public function findSessions(EventSessionFilter|array $filters = new EventSessionFilter()): array;
+    public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult;
 
     /**
      * Returns distinct session dates for building filter UI.

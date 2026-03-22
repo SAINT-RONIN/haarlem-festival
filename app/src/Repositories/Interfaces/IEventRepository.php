@@ -13,10 +13,9 @@ use App\Models\StorytellingDetailEvent;
 interface IEventRepository
 {
     /**
-     * @param EventFilter|array<string, mixed> $filters
      * @return EventWithDetails[]
      */
-    public function findEvents(EventFilter|array $filters = new EventFilter()): array;
+    public function findEvents(EventFilter $filters = new EventFilter()): array;
 
     public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent;
 

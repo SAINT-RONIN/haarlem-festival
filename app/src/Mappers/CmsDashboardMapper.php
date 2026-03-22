@@ -6,6 +6,7 @@ namespace App\Mappers;
 
 use App\Enums\PageStatus;
 use App\Models\CmsPage;
+use App\Models\CmsPageEditData;
 use App\Utils\CmsContentLimits;
 use App\Utils\TimeFormatter;
 use App\ViewModels\Cms\ActivityViewModel;
@@ -80,22 +81,20 @@ class CmsDashboardMapper
     }
 
     /**
-     * @param array{page: CmsPage, sections: array} $pageData
      * @return array{page: array{id: int, title: string, slug: string}, sections: array, contentLimits: array, imageLimits: array}
      */
-    public static function toPageEditViewData(array $pageData): array
+    public static function toPageEditViewData(CmsPageEditData $pageData): array
     {
         return [
-            'page' => self::formatPage($pageData),
-            'sections' => self::formatSections($pageData),
+            'page' => self::formatPage($pageData->page),
+            'sections' => self::formatSections($pageData->sections),
             'contentLimits' => self::getContentLimits(),
             'imageLimits' => self::getImageLimits(),
         ];
     }
 
-    private static function formatPage(array $pageData): array
+    private static function formatPage(CmsPage $page): array
     {
-        $page = $pageData['page'];
         return [
             'id' => $page->cmsPageId,
             'title' => $page->title,
@@ -103,11 +102,14 @@ class CmsDashboardMapper
         ];
     }
 
-    private static function formatSections(array $pageData): array
+    /**
+     * @param array<int, array<string, mixed>> $sections
+     */
+    private static function formatSections(array $sections): array
     {
-        $sections = [];
-        foreach ($pageData['sections'] as $section) {
-            $sections[] = [
+        $result = [];
+        foreach ($sections as $section) {
+            $result[] = [
                 'id' => $section['sectionId'],
                 'key' => $section['sectionKey'],
                 'displayName' => $section['displayName'],
@@ -116,7 +118,7 @@ class CmsDashboardMapper
                 'subGroups' => self::buildSubGroups($section['sectionKey'], $section['items']),
             ];
         }
-        return $sections;
+        return $result;
     }
 
     private static function groupItemsByType(array $items): array

@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\EventGalleryImage;
 use App\Models\EventHighlight;
 use App\Models\StorytellingDetailEvent;
+use App\Models\StorytellingEventCmsData;
 
 /**
  * Carries the event, CMS content, and pre-resolved fields needed to render a single Storytelling detail page.
@@ -16,11 +17,11 @@ final readonly class StorytellingDetailPageData
 {
     /**
      * @param StorytellingDetailEvent $event The storytelling event
-     * @param array<string, mixed> $cms CMS content for this event
+     * @param StorytellingEventCmsData $cms Typed CMS content for this event
      * @param ?string $featuredImagePath Resolved file path for the featured image
      * @param string[] $labels Session label texts (e.g. "English", "Beginner")
      * @param string $aboutBody Resolved about section body text
-     * @param array<string, mixed> $globalUiContent CMS content for the global_ui section
+     * @param array<string, ?string> $globalUiContent CMS content for the global_ui section
      * @param string $scheduleCtaButtonText CTA button text for the schedule section
      * @param EventHighlight[] $highlights Highlight cards from the event_highlights table
      * @param EventGalleryImage[] $galleryImages Gallery images (imageType='gallery') from event_gallery_images
@@ -28,7 +29,7 @@ final readonly class StorytellingDetailPageData
      */
     public function __construct(
         public StorytellingDetailEvent $event,
-        public array $cms,
+        public StorytellingEventCmsData $cms,
         public ?string $featuredImagePath,
         public array $labels,
         public string $aboutBody,
