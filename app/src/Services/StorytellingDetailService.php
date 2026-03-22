@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Constants\StorytellingDetailConstants;
 use App\Exceptions\StorytellingEventNotFoundException;
 use App\Models\EventSessionFilter;
+use App\Models\GlobalUiContent;
 use App\Models\StorytellingDetailEvent;
 use App\Models\StorytellingDetailPageData;
 use App\Models\StorytellingEventCmsData;
@@ -61,7 +62,9 @@ class StorytellingDetailService implements IStorytellingDetailService
             labels: $this->fetchEventLabels($event->eventId),
             aboutBody: $this->resolveAboutBody($cms, $event),
             // TODO: change 'home' to 'global' after running the database migration in docs/global-ui-migration.md
-            globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
+            globalUiContent: GlobalUiContent::fromRawArray(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+            ),
             scheduleCtaButtonText: $cms->scheduleCtaButtonText ?? '',
         );
     }

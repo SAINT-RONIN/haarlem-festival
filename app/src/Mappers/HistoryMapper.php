@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Helpers\AgeLabelFormatter;
+use App\Models\GlobalUiContent;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoryPageViewModel;
@@ -30,7 +31,10 @@ final class HistoryMapper
         $sections = $data['sections'] ?? [];
 
         $heroData = self::toHeroData($sections['hero_section'] ?? []);
-        $globalUi = CmsMapper::toGlobalUiData($sections['global_ui'] ?? [], $isLoggedIn);
+        $globalUi = CmsMapper::toGlobalUiData(
+            GlobalUiContent::fromRawArray($sections['global_ui'] ?? []),
+            $isLoggedIn,
+        );
 
         return new HistoryPageViewModel(
             heroData:           $heroData,

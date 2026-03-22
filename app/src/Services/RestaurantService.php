@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\GlobalUiContent;
+use App\Models\HeroSectionContent;
+use App\Models\RestaurantCardsSectionContent;
+use App\Models\RestaurantDetailData;
+use App\Models\RestaurantDetailSectionContent;
+use App\Models\RestaurantGradientSectionContent;
+use App\Models\RestaurantInstructionsSectionContent;
+use App\Models\RestaurantIntroSectionContent;
+use App\Models\RestaurantIntroSplit2SectionContent;
+use App\Models\RestaurantPageData;
 use App\Repositories\CmsContentRepository;
 use App\Repositories\Interfaces\ICuisineTypeRepository;
 use App\Repositories\RestaurantImageRepository;
@@ -13,7 +23,7 @@ use App\Services\Interfaces\IRestaurantService;
 /**
  * Service for preparing all data needed by the Restaurant page.
  *
- * Returns plain arrays with raw data.
+ * Returns typed data models.
  * Mapping to ViewModels happens in RestaurantMapper.
  *
  * Uses TWO different data sources:
@@ -31,8 +41,6 @@ class RestaurantService implements IRestaurantService
     private const SECTION_CARDS        = 'restaurant_cards_section';
     private const SECTION_DETAIL       = 'detail_section';
 
-    private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
-
     public function __construct(
         private CmsContentRepository $cmsService,
         private RestaurantRepository $restaurantRepository,
@@ -41,32 +49,39 @@ class RestaurantService implements IRestaurantService
     ) {
     }
 
-    /**
-     * Returns all raw data needed to render the restaurant listing page.
-     */
-    public function getRestaurantPageData(): array
+    public function getRestaurantPageData(): RestaurantPageData
     {
         $restaurants = $this->restaurantRepository->findAllActive();
         $cuisinesByRestaurant = $this->buildCuisineMap($restaurants);
 
-        return [
-            'heroContent'          => $this->cmsService->getHeroSectionContent(self::PAGE_SLUG),
-            'globalUiContent'      => $this->cmsService->getSectionContent('home', 'global_ui'),
-            'gradientSection'      => $this->getCmsSection(self::SECTION_GRADIENT),
-            'introSplitSection'    => $this->getCmsSection(self::SECTION_INTRO_SPLIT),
-            'introSplit2Section'   => $this->getCmsSection(self::SECTION_INTRO_SPLIT2),
-            'instructionsSection'  => $this->getCmsSection(self::SECTION_INSTRUCTIONS),
-            'cardsSection'         => $this->getCmsSection(self::SECTION_CARDS),
-            'restaurants'          => $restaurants,
-            'cuisinesByRestaurant' => $cuisinesByRestaurant,
-        ];
+        return new RestaurantPageData(
+            heroContent: HeroSectionContent::fromRawArray(
+                $this->cmsService->getHeroSectionContent(self::PAGE_SLUG),
+            ),
+            globalUiContent: GlobalUiContent::fromRawArray(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+            ),
+            gradientSection: RestaurantGradientSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_GRADIENT),
+            ),
+            introSplitSection: RestaurantIntroSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT),
+            ),
+            introSplit2Section: RestaurantIntroSplit2SectionContent::fromRawArray(
+                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT2),
+            ),
+            instructionsSection: RestaurantInstructionsSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INSTRUCTIONS),
+            ),
+            cardsSection: RestaurantCardsSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_CARDS),
+            ),
+            restaurants: $restaurants,
+            cuisinesByRestaurant: $cuisinesByRestaurant,
+        );
     }
 
-    /**
-     * Returns all raw data needed to render the restaurant detail page.
-     * Returns null if the restaurant is not found.
-     */
-    public function getRestaurantDetailData(int $id): ?array
+    public function getRestaurantDetailData(int $id): ?RestaurantDetailData
     {
         $restaurant = $this->restaurantRepository->findById($id);
 
@@ -74,21 +89,23 @@ class RestaurantService implements IRestaurantService
             return null;
         }
 
-        $images      = $this->restaurantImageRepository->findByRestaurantId($restaurant->restaurantId);
-        $imagesByType = $this->groupImagesByType($images);
-        $cms         = $this->getCmsSection(self::SECTION_DETAIL);
+        $images = $this->restaurantImageRepository->findByRestaurantId($restaurant->restaurantId);
         $scheduleData = $this->getRestaurantScheduleData($restaurant->name);
         $cuisineTypes = $this->cuisineTypeRepository->findByRestaurantId($restaurant->restaurantId);
 
-        return [
-            'restaurant'      => $restaurant,
-            'imagesByType'    => $imagesByType,
-            'cms'             => $cms,
-            'globalUiContent' => $this->cmsService->getSectionContent('home', 'global_ui'),
-            'timeSlots'       => $scheduleData['timeSlots'],
-            'priceCards'      => $scheduleData['priceCards'],
-            'cuisineTypes'    => $cuisineTypes,
-        ];
+        return new RestaurantDetailData(
+            restaurant: $restaurant,
+            imagesByType: $this->groupImagesByType($images),
+            cms: RestaurantDetailSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_DETAIL),
+            ),
+            globalUiContent: GlobalUiContent::fromRawArray(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+            ),
+            timeSlots: $scheduleData['timeSlots'],
+            priceCards: $scheduleData['priceCards'],
+            cuisineTypes: $cuisineTypes,
+        );
     }
 
     /**
@@ -101,14 +118,6 @@ class RestaurantService implements IRestaurantService
     {
         $ids = array_map(fn($r) => $r->restaurantId, $restaurants);
         return $this->cuisineTypeRepository->findByRestaurantIds($ids);
-    }
-
-    /**
-     * Reads one CMS section for this page.
-     */
-    private function getCmsSection(string $sectionKey): array
-    {
-        return $this->cmsService->getSectionContent(self::PAGE_SLUG, $sectionKey);
     }
 
     /**
@@ -129,6 +138,8 @@ class RestaurantService implements IRestaurantService
     /**
      * Returns per-restaurant time slots and price cards.
      * TODO: Replace with EventSession/pricing data from database.
+     *
+     * @return array{timeSlots: array<mixed>, priceCards: array<mixed>}
      */
     private function getRestaurantScheduleData(string $name): array
     {

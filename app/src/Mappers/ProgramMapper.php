@@ -6,8 +6,10 @@ namespace App\Mappers;
 
 use App\Enums\EventTypeId;
 use App\Helpers\AgeLabelFormatter;
+use App\Models\CheckoutMainContent;
 use App\Models\ProgramData;
 use App\Models\ProgramItemData;
+use App\Models\ProgramMainContent;
 use App\ViewModels\Program\CheckoutItemViewModel;
 use App\ViewModels\Program\CheckoutPageViewModel;
 use App\ViewModels\Program\MyProgramPageViewModel;
@@ -52,57 +54,51 @@ class ProgramMapper
         );
     }
 
-    /**
-     * @param array<string, ?string> $cmsContent
-     */
-    public static function toMyProgramViewModel(ProgramData $programData, array $cmsContent, bool $isLoggedIn): MyProgramPageViewModel
+    public static function toMyProgramViewModel(ProgramData $programData, ProgramMainContent $cmsContent, bool $isLoggedIn): MyProgramPageViewModel
     {
         $itemViewModels = array_map([self::class, 'toItemViewModel'], $programData->items);
 
         return new MyProgramPageViewModel(
-            pageTitle: $cmsContent['page_title'] ?? '',
-            selectedEventsHeading: $cmsContent['selected_events_heading'] ?? '',
-            payWhatYouLikeMessage: $cmsContent['pay_what_you_like_message'] ?? '',
-            clearButtonText: $cmsContent['clear_button_text'] ?? '',
-            continueExploringText: $cmsContent['continue_exploring_text'] ?? '',
-            paymentOverviewHeading: $cmsContent['payment_overview_heading'] ?? '',
+            pageTitle: $cmsContent->pageTitle ?? '',
+            selectedEventsHeading: $cmsContent->selectedEventsHeading ?? '',
+            payWhatYouLikeMessage: $cmsContent->payWhatYouLikeMessage ?? '',
+            clearButtonText: $cmsContent->clearButtonText ?? '',
+            continueExploringText: $cmsContent->continueExploringText ?? '',
+            paymentOverviewHeading: $cmsContent->paymentOverviewHeading ?? '',
             items: $itemViewModels,
             subtotal: self::formatPrice($programData->subtotal),
-            taxLabel: $cmsContent['tax_label'] ?? '',
+            taxLabel: $cmsContent->taxLabel ?? '',
             taxAmount: self::formatPrice($programData->taxAmount),
             total: self::formatPrice($programData->total),
-            checkoutButtonText: $cmsContent['checkout_button_text'] ?? '',
+            checkoutButtonText: $cmsContent->checkoutButtonText ?? '',
             canCheckout: $itemViewModels !== [],
             isLoggedIn: $isLoggedIn,
         );
     }
 
-    /**
-     * @param array<string, ?string> $cmsContent
-     */
-    public static function toCheckoutViewModel(ProgramData $programData, array $cmsContent, bool $isLoggedIn): CheckoutPageViewModel
+    public static function toCheckoutViewModel(ProgramData $programData, CheckoutMainContent $cmsContent, bool $isLoggedIn): CheckoutPageViewModel
     {
         $itemViewModels = array_map([self::class, 'toCheckoutItemViewModel'], $programData->items);
 
         return new CheckoutPageViewModel(
-            pageTitle: $cmsContent['page_title'] ?? '',
-            backButtonText: $cmsContent['back_button_text'] ?? '',
-            paymentOverviewHeading: $cmsContent['payment_overview_heading'] ?? '',
-            personalInfoHeading: $cmsContent['personal_info_heading'] ?? '',
-            personalInfoSubtext: $cmsContent['personal_info_subtext'] ?? '',
-            firstNameLabel: $cmsContent['first_name_label'] ?? '',
-            firstNamePlaceholder: $cmsContent['first_name_placeholder'] ?? '',
-            lastNameLabel: $cmsContent['last_name_label'] ?? '',
-            lastNamePlaceholder: $cmsContent['last_name_placeholder'] ?? '',
-            emailLabel: $cmsContent['email_label'] ?? '',
-            emailPlaceholder: $cmsContent['email_placeholder'] ?? '',
-            paymentMethodsHeading: $cmsContent['payment_methods_heading'] ?? '',
-            saveDetailsLabel: $cmsContent['save_details_label'] ?? '',
-            saveDetailsSubtext: $cmsContent['save_details_subtext'] ?? '',
-            payButtonText: $cmsContent['pay_button_text'] ?? '',
+            pageTitle: $cmsContent->pageTitle ?? '',
+            backButtonText: $cmsContent->backButtonText ?? '',
+            paymentOverviewHeading: $cmsContent->paymentOverviewHeading ?? '',
+            personalInfoHeading: $cmsContent->personalInfoHeading ?? '',
+            personalInfoSubtext: $cmsContent->personalInfoSubtext ?? '',
+            firstNameLabel: $cmsContent->firstNameLabel ?? '',
+            firstNamePlaceholder: $cmsContent->firstNamePlaceholder ?? '',
+            lastNameLabel: $cmsContent->lastNameLabel ?? '',
+            lastNamePlaceholder: $cmsContent->lastNamePlaceholder ?? '',
+            emailLabel: $cmsContent->emailLabel ?? '',
+            emailPlaceholder: $cmsContent->emailPlaceholder ?? '',
+            paymentMethodsHeading: $cmsContent->paymentMethodsHeading ?? '',
+            saveDetailsLabel: $cmsContent->saveDetailsLabel ?? '',
+            saveDetailsSubtext: $cmsContent->saveDetailsSubtext ?? '',
+            payButtonText: $cmsContent->payButtonText ?? '',
             items: $itemViewModels,
             subtotal: self::formatPrice($programData->subtotal),
-            taxLabel: $cmsContent['tax_label'] ?? '',
+            taxLabel: $cmsContent->taxLabel ?? '',
             taxAmount: self::formatPrice($programData->taxAmount),
             total: self::formatPrice($programData->total),
             isLoggedIn: $isLoggedIn,

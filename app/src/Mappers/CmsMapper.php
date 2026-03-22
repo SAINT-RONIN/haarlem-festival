@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Models\GlobalUiContent;
+use App\Models\HeroSectionContent;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 
@@ -43,36 +45,36 @@ class CmsMapper
         ];
     }
 
-    public static function toHeroData(array $content, string $currentPage): HeroData
+    public static function toHeroData(HeroSectionContent $content, string $currentPage): HeroData
     {
         return new HeroData(
-            mainTitle: $content['hero_main_title'] ?? 'Welcome',
-            subtitle: $content['hero_subtitle'] ?? '',
-            primaryButtonText: $content['hero_button_primary'] ?? 'Explore',
-            primaryButtonLink: $content['hero_button_primary_link'] ?? '#',
-            secondaryButtonText: $content['hero_button_secondary'] ?? 'Learn More',
-            secondaryButtonLink: $content['hero_button_secondary_link'] ?? '#',
-            backgroundImageUrl: $content['hero_background_image'] ?? '/assets/Image/HeroImageHome.png',
+            mainTitle: $content->heroMainTitle ?? 'Welcome',
+            subtitle: $content->heroSubtitle ?? '',
+            primaryButtonText: $content->heroButtonPrimary ?? 'Explore',
+            primaryButtonLink: $content->heroButtonPrimaryLink ?? '#',
+            secondaryButtonText: $content->heroButtonSecondary ?? 'Learn More',
+            secondaryButtonLink: $content->heroButtonSecondaryLink ?? '#',
+            backgroundImageUrl: $content->heroBackgroundImage ?? '/assets/Image/HeroImageHome.png',
             currentPage: $currentPage,
         );
     }
 
-    public static function toGlobalUiData(array $content, bool $isLoggedIn): GlobalUiData
+    public static function toGlobalUiData(GlobalUiContent $content, bool $isLoggedIn): GlobalUiData
     {
         return new GlobalUiData(
-            siteName: $content['site_name'] ?? 'Haarlem Festivals',
-            navHome: $content['nav_home'] ?? 'Home',
-            navJazz: $content['nav_jazz'] ?? 'Jazz',
-            navDance: $content['nav_dance'] ?? 'Dance',
-            navHistory: $content['nav_history'] ?? 'History',
-            navRestaurant: $content['nav_restaurant'] ?? 'Restaurant',
-            navStorytelling: $content['nav_storytelling'] ?? 'Storytelling',
-            btnMyProgram: $content['btn_my_program'] ?? 'My Program',
-            loginLabel: $content['login_label'] ?? 'Login',
-            logoutLabel: $content['logout_label'] ?? 'Logout',
-            labelEventsCount: $content['label_events_count'] ?? 'events',
-            labelNoEvents: $content['label_no_events'] ?? 'No events scheduled',
-            btnExploreTemplate: $content['btn_explore_template'] ?? 'Explore {title} Events',
+            siteName: $content->siteName ?? 'Haarlem Festivals',
+            navHome: $content->navHome ?? 'Home',
+            navJazz: $content->navJazz ?? 'Jazz',
+            navDance: $content->navDance ?? 'Dance',
+            navHistory: $content->navHistory ?? 'History',
+            navRestaurant: $content->navRestaurant ?? 'Restaurant',
+            navStorytelling: $content->navStorytelling ?? 'Storytelling',
+            btnMyProgram: $content->btnMyProgram ?? 'My Program',
+            loginLabel: $content->loginLabel ?? 'Login',
+            logoutLabel: $content->logoutLabel ?? 'Logout',
+            labelEventsCount: $content->labelEventsCount ?? 'events',
+            labelNoEvents: $content->labelNoEvents ?? 'No events scheduled',
+            btnExploreTemplate: $content->btnExploreTemplate ?? 'Explore {title} Events',
             isLoggedIn: $isLoggedIn,
         );
     }

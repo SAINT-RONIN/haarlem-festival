@@ -13,6 +13,9 @@ use App\Models\EventHighlight;
 use App\Models\PageGalleryImage;
 use App\Models\StorytellingDetailPageData;
 use App\Models\StorytellingEventCmsData;
+use App\Models\StorytellingGradientSectionContent;
+use App\Models\StorytellingIntroSplitSectionContent;
+use App\Models\StorytellingMasonrySectionContent;
 use App\Models\StorytellingPageData;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
@@ -33,8 +36,6 @@ use App\ViewModels\Storytelling\StoryVideoSectionData;
 
 class StorytellingMapper
 {
-    private const MASONRY_IMAGE_COUNT = 12;
-
     private const MASONRY_SIZE_CLASSES = [
         'masonry-tall',
         'masonry-short',
@@ -59,8 +60,7 @@ class StorytellingMapper
         ScheduleSectionViewModel $scheduleSection,
         bool $isLoggedIn,
     ): StorytellingPageViewModel {
-        $heroContent = $pageData->sections[StorytellingPageConstants::SECTION_HERO] ?? [];
-        $heroData = CmsMapper::toHeroData($heroContent, StorytellingPageConstants::CURRENT_PAGE);
+        $heroData = CmsMapper::toHeroData($pageData->heroSection, StorytellingPageConstants::CURRENT_PAGE);
         $globalUi = CmsMapper::toGlobalUiData($pageData->globalUiContent, $isLoggedIn);
 
         return self::assemblePageViewModel($pageData, $heroData, $globalUi, $scheduleSection);
@@ -72,15 +72,13 @@ class StorytellingMapper
         GlobalUiData $globalUi,
         ScheduleSectionViewModel $scheduleSection,
     ): StorytellingPageViewModel {
-        $sections = $pageData->sections;
-        $masonryContent = $sections[StorytellingPageConstants::SECTION_MASONRY] ?? [];
         return new StorytellingPageViewModel(
             heroData: $heroData,
             globalUi: $globalUi,
             cms: CmsMapper::toCmsData($heroData, $globalUi),
-            gradientSection: self::buildGradientSection($sections),
-            introSplitSection: self::buildIntroSplitSection($sections),
-            masonrySection: self::buildMasonrySection($masonryContent, $pageData->masonryImages),
+            gradientSection: self::buildGradientSection($pageData->gradientSection),
+            introSplitSection: self::buildIntroSplitSection($pageData->introSplitSection),
+            masonrySection: self::buildMasonrySection($pageData->masonrySection, $pageData->masonryImages),
             scheduleSection: $scheduleSection,
         );
     }
@@ -123,49 +121,47 @@ class StorytellingMapper
     }
 
     /**
-     * Builds the gradient banner section ViewModel from raw CMS content.
+     * Builds the gradient banner section ViewModel from typed CMS content.
      * The reason for this is because the gradient section needs its own ViewModel shape and the mapping is extracted here to keep toPageViewModel under 10 lines.
      */
-    private static function buildGradientSection(array $sections): GradientSectionData
+    private static function buildGradientSection(StorytellingGradientSectionContent $section): GradientSectionData
     {
-        $section = $sections[StorytellingPageConstants::SECTION_GRADIENT] ?? [];
         return new GradientSectionData(
-            headingText: ImageHelper::getStringValue($section, 'gradient_heading', ''),
-            subheadingText: ImageHelper::getStringValue($section, 'gradient_subheading', ''),
-            backgroundImageUrl: ImageHelper::validatePath((string)($section['gradient_background_image'] ?? '')),
+            headingText: $section->gradientHeading ?? '',
+            subheadingText: $section->gradientSubheading ?? '',
+            backgroundImageUrl: ImageHelper::validatePath($section->gradientBackgroundImage ?? ''),
         );
     }
 
     /**
-     * Builds the two-column intro split section ViewModel from raw CMS content.
+     * Builds the two-column intro split section ViewModel from typed CMS content.
      * The reason for this is because the intro split section has its own image and text fields that must be validated and assembled into a typed ViewModel before reaching the view.
      */
-    private static function buildIntroSplitSection(array $sections): IntroSplitSectionData
+    private static function buildIntroSplitSection(StorytellingIntroSplitSectionContent $section): IntroSplitSectionData
     {
-        $section = $sections[StorytellingPageConstants::SECTION_INTRO_SPLIT] ?? [];
-        $heading = ImageHelper::getStringValue($section, 'intro_heading', '');
+        $heading = $section->introHeading ?? '';
         return new IntroSplitSectionData(
             headingText: $heading,
-            bodyText: ImageHelper::getStringValue($section, 'intro_body', ''),
-            imageUrl: ImageHelper::validatePath((string)($section['intro_image'] ?? '')),
-            imageAltText: ImageHelper::getStringValue($section, 'intro_image_alt', $heading),
+            bodyText: $section->introBody ?? '',
+            imageUrl: ImageHelper::validatePath($section->introImage ?? ''),
+            imageAltText: $section->introImageAlt ?? $heading,
         );
     }
 
     /**
-     * Builds the masonry photo grid section from relational images and CMS heading.
+     * Builds the masonry photo grid section from relational images and typed CMS content.
      * The reason for this is because the masonry layout assigns a predetermined size class per position so the CSS grid renders correctly.
      *
      * @param PageGalleryImage[] $masonryImages
      */
-    private static function buildMasonrySection(array $content, array $masonryImages): MasonrySectionData
+    private static function buildMasonrySection(StorytellingMasonrySectionContent $section, array $masonryImages): MasonrySectionData
     {
         $images = $masonryImages !== []
             ? self::buildMasonryImagesFromModels($masonryImages)
-            : self::buildMasonryImagesFromCms($content);
+            : self::buildMasonryImagesFromTypedContent($section);
 
         return new MasonrySectionData(
-            headingText: ImageHelper::getStringValue($content, 'masonry_heading', ''),
+            headingText: $section->masonryHeading ?? '',
             images: $images,
         );
     }
@@ -191,15 +187,14 @@ class StorytellingMapper
     /**
      * @return MasonryImageData[]
      */
-    private static function buildMasonryImagesFromCms(array $content): array
+    private static function buildMasonryImagesFromTypedContent(StorytellingMasonrySectionContent $section): array
     {
         $images = [];
-        for ($i = 1; $i <= self::MASONRY_IMAGE_COUNT; $i++) {
-            $path = (string)($content[sprintf('masonry_image_%02d', $i)] ?? '');
+        foreach ($section->imagePaths as $index => $path) {
             $images[] = new MasonryImageData(
                 imageUrl: ImageHelper::validatePath($path),
                 altText: ImageHelper::altTextFromFilename(basename($path)),
-                sizeClass: self::MASONRY_SIZE_CLASSES[$i - 1] ?? 'masonry-medium',
+                sizeClass: self::MASONRY_SIZE_CLASSES[$index] ?? 'masonry-medium',
             );
         }
         return $images;

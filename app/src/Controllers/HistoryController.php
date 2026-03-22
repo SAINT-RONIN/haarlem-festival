@@ -10,6 +10,7 @@ use App\Enums\EventTypeId;
 use App\Mappers\CmsMapper;
 use App\Mappers\HistoryMapper;
 use App\Mappers\ScheduleMapper;
+use App\Models\GlobalUiContent;
 use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IHistoricalLocationService;
 use App\Services\Interfaces\IHistoryService;
@@ -56,7 +57,9 @@ class HistoryController extends BaseController
         try {
             $data = $this->historyService->getHistoryPageData();
             $globalUi = CmsMapper::toGlobalUiData(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
+                GlobalUiContent::fromRawArray(
+                    $this->cmsService->getSectionContent('home', 'global_ui'),
+                ),
                 $this->sessionService->isLoggedIn(),
             );
             $scheduleData = $this->scheduleService->getScheduleData(

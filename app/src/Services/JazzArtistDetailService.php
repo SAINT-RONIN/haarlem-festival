@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Constants\JazzArtistDetailConstants;
 use App\Exceptions\JazzArtistDetailNotFoundException;
+use App\Models\JazzArtistDetailCmsData;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\JazzArtistDetailPageData;
 use App\Repositories\CmsContentRepository;
@@ -46,9 +47,11 @@ class JazzArtistDetailService implements IJazzArtistDetailService
 
         $pageData = new JazzArtistDetailPageData(
             event: $event,
-            cms: $this->cmsService->getSectionContent(
-                JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
-                JazzArtistDetailConstants::eventSectionKey($event->eventId),
+            cms: JazzArtistDetailCmsData::fromRawArray(
+                $this->cmsService->getSectionContent(
+                    JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
+                    JazzArtistDetailConstants::eventSectionKey($event->eventId),
+                ),
             ),
             eventId: $event->eventId,
             albums: $this->albumRepository->findByEventId($event->eventId),

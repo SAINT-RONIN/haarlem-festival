@@ -6,6 +6,15 @@ namespace App\Services;
 
 use App\Constants\JazzPageConstants;
 use App\Enums\EventTypeId;
+use App\Models\HeroSectionContent;
+use App\Models\JazzArtistsSectionContent;
+use App\Models\JazzBookingCtaSectionContent;
+use App\Models\JazzGradientSectionContent;
+use App\Models\JazzIntroSectionContent;
+use App\Models\JazzPageData;
+use App\Models\JazzPricingSectionContent;
+use App\Models\JazzScheduleCtaSectionContent;
+use App\Models\JazzVenuesSectionContent;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
 use App\Services\Interfaces\IJazzService;
@@ -24,47 +33,36 @@ class JazzService implements IJazzService
     ) {
     }
 
-    public function getJazzPageData(): array
+    public function getJazzPageData(): JazzPageData
     {
         $pageSlug = JazzPageConstants::PAGE_SLUG;
-        $passPrices = $this->passTypeRepository->findByEventType(EventTypeId::Jazz->value);
 
-        return [
-            'sections' => [
-                JazzPageConstants::SECTION_HERO => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    JazzPageConstants::SECTION_HERO,
-                ),
-                JazzPageConstants::SECTION_GRADIENT => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    JazzPageConstants::SECTION_GRADIENT,
-                ),
-                JazzPageConstants::SECTION_INTRO => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    JazzPageConstants::SECTION_INTRO,
-                ),
-                JazzPageConstants::SECTION_VENUES => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    JazzPageConstants::SECTION_VENUES,
-                ),
-                JazzPageConstants::SECTION_PRICING => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    JazzPageConstants::SECTION_PRICING,
-                ),
-                JazzPageConstants::SECTION_SCHEDULE_CTA => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    JazzPageConstants::SECTION_SCHEDULE_CTA,
-                ),
-                JazzPageConstants::SECTION_ARTISTS => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    JazzPageConstants::SECTION_ARTISTS,
-                ),
-                JazzPageConstants::SECTION_BOOKING_CTA => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    JazzPageConstants::SECTION_BOOKING_CTA,
-                ),
-            ],
-            'passPrices' => $passPrices,
-        ];
+        return new JazzPageData(
+            heroSection: HeroSectionContent::fromRawArray(
+                $this->cmsService->getHeroSectionContent($pageSlug),
+            ),
+            gradientSection: JazzGradientSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_GRADIENT),
+            ),
+            introSection: JazzIntroSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_INTRO),
+            ),
+            venuesSection: JazzVenuesSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_VENUES),
+            ),
+            pricingSection: JazzPricingSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_PRICING),
+            ),
+            scheduleCtaSection: JazzScheduleCtaSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_SCHEDULE_CTA),
+            ),
+            artistsSection: JazzArtistsSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_ARTISTS),
+            ),
+            bookingCtaSection: JazzBookingCtaSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_BOOKING_CTA),
+            ),
+            passPrices: $this->passTypeRepository->findByEventType(EventTypeId::Jazz->value),
+        );
     }
 }

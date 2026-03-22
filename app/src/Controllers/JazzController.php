@@ -11,6 +11,7 @@ use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Mappers\CmsMapper;
 use App\Mappers\JazzMapper;
 use App\Mappers\ScheduleMapper;
+use App\Models\GlobalUiContent;
 use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IJazzArtistDetailService;
 use App\Services\Interfaces\IJazzService;
@@ -39,7 +40,9 @@ class JazzController extends BaseController
         $filterParams = $this->readScheduleFilterParams();
         $data = $this->jazzService->getJazzPageData();
         $globalUi = CmsMapper::toGlobalUiData(
-            $this->cmsService->getSectionContent('home', 'global_ui'),
+            GlobalUiContent::fromRawArray(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+            ),
             $this->sessionService->isLoggedIn(),
         );
         $scheduleData = $this->scheduleService->getScheduleData(

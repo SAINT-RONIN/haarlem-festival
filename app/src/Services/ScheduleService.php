@@ -13,6 +13,7 @@ use App\Models\EventSessionPrice;
 use App\Models\EventTypeFilter;
 use App\Models\ScheduleDayConfigFilter;
 use App\Models\ScheduleFilterParams;
+use App\Models\ScheduleSectionContent;
 use App\Models\SessionQueryResult;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
@@ -51,7 +52,8 @@ class ScheduleService implements IScheduleService
         $eventType = $this->eventTypeRepository->findEventTypes(new EventTypeFilter(eventTypeId: $eventTypeId))[0] ?? null;
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
 
-        $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
+        $cmsRaw = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
+        $cmsSection = ScheduleSectionContent::fromRawArray($cmsRaw);
         $visibleDays = $this->getVisibleDays($eventTypeId);
 
         $availableDays = $this->sessionRepository->findDistinctDays(
@@ -87,9 +89,11 @@ class ScheduleService implements IScheduleService
             ),
         );
 
-        $ctaButtonText = $ctaTextOverride ?? $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
-        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
-        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
+        $ctaButtonText = $ctaTextOverride ?? ($cmsSection->scheduleCtaButtonText ?? 'Discover');
+        $payWhatYouLikeText = $cmsSection->schedulePayWhatYouLikeText ?? 'Pay as you like';
+        $currencySymbol = $cmsSection->scheduleCurrencySymbol ?? '€';
+        $startPoint = $cmsSection->scheduleStartPoint ?? '';
+        $groupTicketFallback = $cmsSection->scheduleHistoryGroupTicket ?? '';
 
         $days = $this->buildScheduleDays(
             $scheduleData,
@@ -97,11 +101,13 @@ class ScheduleService implements IScheduleService
             $eventTypeId,
             $ctaButtonText,
             $payWhatYouLikeText,
-            $currencySymbol
+            $currencySymbol,
+            $startPoint,
+            $groupTicketFallback
         );
 
         return [
-            'cmsContent' => $cmsContent,
+            'cmsContent' => $cmsRaw,
             'pageSlug' => $pageSlug,
             'eventTypeSlug' => $eventTypeSlug,
             'eventTypeId' => $eventTypeId,
@@ -122,7 +128,9 @@ class ScheduleService implements IScheduleService
         int                $eventTypeId,
         string             $defaultCtaText,
         string             $payWhatYouLikeText,
-        string             $currencySymbol
+        string             $currencySymbol,
+        string             $startPoint = '',
+        string             $groupTicketFallback = ''
     ): array {
         $days = $scheduleData->days;
         $sessions = $scheduleData->sessions;
@@ -172,7 +180,9 @@ class ScheduleService implements IScheduleService
                     $pricesMap,
                     $defaultCtaText,
                     $payWhatYouLikeText,
-                    $currencySymbol
+                    $currencySymbol,
+                    $startPoint,
+                    $groupTicketFallback
                 );
             }
 
@@ -240,7 +250,9 @@ class ScheduleService implements IScheduleService
         array  $pricesMap,
         string $defaultCtaText,
         string $payWhatYouLikeText,
-        string $currencySymbol
+        string $currencySymbol,
+        string $startPoint = '',
+        string $groupTicketFallback = ''
     ): array {
         $sessionId = $session->eventSessionId;
         [$minAge, $maxAge] = $this->resolveAgeRange($session);
@@ -248,7 +260,7 @@ class ScheduleService implements IScheduleService
         $priceData = $this->resolvePrice($pricesMap[$sessionId] ?? []);
         $cta = $this->resolveCta($session, $eventTypeSlug, $defaultCtaText);
 
-        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $payWhatYouLikeText, $currencySymbol);
+        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $payWhatYouLikeText, $currencySymbol, $startPoint, $groupTicketFallback);
     }
 
     /**
@@ -299,7 +311,9 @@ class ScheduleService implements IScheduleService
         array $priceData,
         array $cta,
         string $payWhatYouLikeText,
-        string $currencySymbol
+        string $currencySymbol,
+        string $startPoint = '',
+        string $groupTicketFallback = ''
     ): array {
         $startDateTime = $session->startDateTime;
         $endDateTime = $session->endDateTime;
@@ -317,7 +331,7 @@ class ScheduleService implements IScheduleService
             'currencySymbol' => $currencySymbol,
             'ctaLabel' => $cta['label'],
             'ctaUrl' => $cta['url'],
-            'locationName' => $session->venueName ?? '',
+            'locationName' => $session->venueName ?? $startPoint,
             'hallName' => $session->hallName ?? '',
             'startDateTime' => $startDateTime,
             'endDateTime' => $endDateTime,
@@ -333,7 +347,7 @@ class ScheduleService implements IScheduleService
             'ageLabel' => AgeLabelFormatter::format($minAge, $maxAge),
             'artistName' => $session->artistName,
             'artistImageUrl' => $session->artistImageUrl,
-            'historyTicketLabel' => $session->historyTicketLabel,
+            'historyTicketLabel' => $session->historyTicketLabel ?? $groupTicketFallback ?: null,
             'timeRange' => $this->computeTimeRange($startDateTime),
             'priceType' => $priceData['isPayWhatYouLike'] ? 'pay-what-you-like' : ($priceData['amount'] === null || $priceData['amount'] == 0 ? 'free' : 'fixed'),
         ];
@@ -392,15 +406,6 @@ class ScheduleService implements IScheduleService
         return $eventTypeSlug === 'jazz'
             ? ['free', 'fixed']
             : ['pay-what-you-like', 'fixed'];
-    }
-
-    /**
-     * Gets a string value from content array with default fallback.
-     */
-    private function getStringValue(array $content, string $key, string $default): string
-    {
-        $value = $content[$key] ?? null;
-        return is_string($value) && $value !== '' ? $value : $default;
     }
 
     /**

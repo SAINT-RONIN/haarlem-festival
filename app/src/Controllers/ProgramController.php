@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\ProgramMapper;
+use App\Models\ProgramMainContent;
 use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
@@ -34,7 +35,9 @@ class ProgramController extends BaseController
             $isLoggedIn = $this->sessionService->isLoggedIn();
 
             $programData = $this->programService->getProgramData($sessionKey, $userId);
-            $cmsContent = $this->cmsService->getSectionContent('my-program', 'main');
+            $cmsContent = ProgramMainContent::fromRawArray(
+                $this->cmsService->getSectionContent('my-program', 'main'),
+            );
             $viewModel = ProgramMapper::toMyProgramViewModel($programData, $cmsContent, $isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);

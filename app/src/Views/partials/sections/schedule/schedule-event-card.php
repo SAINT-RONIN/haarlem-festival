@@ -120,7 +120,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                 loading="lazy"
                             >
                             <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4">
-                                <?= htmlspecialchars($event->historyTicketLabel) ?>
+                                <?= htmlspecialchars($event->historyTicketLabel ?? '') ?>
                             </span>
                         </dd>
                     </div>

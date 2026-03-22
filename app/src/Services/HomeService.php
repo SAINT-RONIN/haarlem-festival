@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Models\EventSessionFilter;
 use App\Models\EventType;
+use App\Models\GlobalUiContent;
+use App\Models\HeroSectionContent;
 use App\Models\HomeEventTypeData;
 use App\Models\HomeLocationData;
 use App\Models\HomePageData;
@@ -48,8 +50,12 @@ class HomeService implements IHomeService
 
         return new HomePageData(
             cmsContent: $cmsContent,
-            heroContent: $this->cmsService->getHeroSectionContent('home'),
-            globalUiContent: $this->cmsService->getSectionContent('home', 'global_ui'),
+            heroContent: HeroSectionContent::fromRawArray(
+                $this->cmsService->getHeroSectionContent('home'),
+            ),
+            globalUiContent: GlobalUiContent::fromRawArray(
+                $this->cmsService->getSectionContent('home', 'global_ui'),
+            ),
             eventTypes: $this->buildEventTypes($cmsContent),
             locations: $this->buildLocations(),
             scheduleDays: $this->buildScheduleDays(),

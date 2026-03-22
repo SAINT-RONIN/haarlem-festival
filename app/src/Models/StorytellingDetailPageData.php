@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\EventGalleryImage;
 use App\Models\EventHighlight;
+use App\Models\GlobalUiContent;
 use App\Models\StorytellingDetailEvent;
 use App\Models\StorytellingEventCmsData;
 
@@ -21,7 +22,7 @@ final readonly class StorytellingDetailPageData
      * @param ?string $featuredImagePath Resolved file path for the featured image
      * @param string[] $labels Session label texts (e.g. "English", "Beginner")
      * @param string $aboutBody Resolved about section body text
-     * @param array<string, ?string> $globalUiContent CMS content for the global_ui section
+     * @param GlobalUiContent $globalUiContent CMS content for the global_ui section
      * @param string $scheduleCtaButtonText CTA button text for the schedule section
      * @param EventHighlight[] $highlights Highlight cards from the event_highlights table
      * @param EventGalleryImage[] $galleryImages Gallery images (imageType='gallery') from event_gallery_images
@@ -33,7 +34,7 @@ final readonly class StorytellingDetailPageData
         public ?string $featuredImagePath,
         public array $labels,
         public string $aboutBody,
-        public array $globalUiContent,
+        public GlobalUiContent $globalUiContent,
         public string $scheduleCtaButtonText = '',
         public array $highlights = [],
         public array $galleryImages = [],
