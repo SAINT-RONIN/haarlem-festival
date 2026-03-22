@@ -213,7 +213,7 @@ switch ($routeInfo[0]) {
 
     case Dispatcher::FOUND:
         $handler = $routeInfo[1];
-        $vars = array_map(fn($v) => is_numeric($v) ? (int)$v : $v, $routeInfo[2]);
+        $vars = $routeInfo[2];
 
         // Handle closure routes
         if ($handler instanceof \Closure) {

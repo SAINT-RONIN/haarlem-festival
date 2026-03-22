@@ -2,14 +2,14 @@
 /**
  * CMS Edit Item Image - File upload with preview.
  *
- * @var array $item Item data with itemId, displayName, mediaAsset
- * @var array $imageLimits Image limits from viewModel
+ * @var \App\ViewModels\Cms\CmsItemDisplayViewModel $item
+ * @var \App\ViewModels\Cms\CmsImageLimitsViewModel $imageLimits
  */
-$itemId = $item['itemId'];
+$itemId = $item->itemId;
 $inputId = 'item-' . $itemId;
-$mediaAsset = $item['mediaAsset'];
+$mediaAsset = $item->mediaAsset;
 
-$rawFilePath = is_array($mediaAsset) ? (string)($mediaAsset['FilePath'] ?? '') : '';
+$rawFilePath = $mediaAsset !== null ? $mediaAsset->filePath : '';
 $previewSrc = '';
 if ($rawFilePath !== '') {
     $path = parse_url($rawFilePath, PHP_URL_PATH);
@@ -27,7 +27,7 @@ if ($rawFilePath !== '') {
 <div class="space-y-3">
     <div class="flex items-center justify-between">
         <label for="<?= $inputId ?>" class="text-sm font-medium text-gray-700">
-            <?= htmlspecialchars($item['displayName']) ?>
+            <?= htmlspecialchars($item->displayName) ?>
         </label>
         <span class="px-2 py-0.5 text-xs bg-green-50 text-green-600 rounded">
             Image
@@ -38,7 +38,7 @@ if ($rawFilePath !== '') {
             <?php if ($previewSrc !== ''): ?>
                 <img src="<?= htmlspecialchars($previewSrc) ?>" 
                      class="max-h-40 rounded-lg border border-gray-200" 
-                     alt="<?= htmlspecialchars($mediaAsset['AltText'] ?? 'Current image') ?>">
+                     alt="<?= htmlspecialchars($mediaAsset->altText !== '' ? $mediaAsset->altText : 'Current image') ?>">
             <?php else: ?>
                 <div class="w-40 h-32 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                     <i data-lucide="image" class="w-8 h-8 text-gray-400"></i>
@@ -63,11 +63,11 @@ if ($rawFilePath !== '') {
             </div>
             <div class="text-xs text-gray-500 space-y-1">
                 <p><strong>Allowed types:</strong> JPG, PNG, WebP</p>
-                <p><strong>Max size:</strong> <?= htmlspecialchars($imageLimits['maxFileSizeFormatted']) ?></p>
-                <p><strong>Max dimensions:</strong> <?= $imageLimits['maxWidth'] ?>x<?= $imageLimits['maxHeight'] ?>px</p>
+                <p><strong>Max size:</strong> <?= htmlspecialchars($imageLimits->maxFileSizeFormatted) ?></p>
+                <p><strong>Max dimensions:</strong> <?= $imageLimits->maxWidth ?>x<?= $imageLimits->maxHeight ?>px</p>
             </div>
-            <?php if ($mediaAsset && !empty($mediaAsset['OriginalFileName'])): ?>
-                <p class="text-xs text-gray-400">Current: <?= htmlspecialchars($mediaAsset['OriginalFileName']) ?></p>
+            <?php if ($mediaAsset !== null && $mediaAsset->originalFileName !== ''): ?>
+                <p class="text-xs text-gray-400">Current: <?= htmlspecialchars($mediaAsset->originalFileName) ?></p>
             <?php endif; ?>
         </div>
     </div>

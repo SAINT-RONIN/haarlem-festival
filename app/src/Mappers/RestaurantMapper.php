@@ -54,13 +54,11 @@ final class RestaurantMapper
         $heroData    = self::toDetailHeroData($restaurant, $cms, $cuisineString);
         $globalUi    = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
-        return new RestaurantDetailViewModel(
-            heroData: $heroData,
-            globalUi: $globalUi,
-            cms:      CmsMapper::toCmsData($heroData, $globalUi),
-            ...self::buildDetailDomainFields($restaurant, $data, $cuisineString),
-            ...self::buildDetailCmsLabels($cms),
-        );
+        return new RestaurantDetailViewModel(...array_merge(
+            ['heroData' => $heroData, 'globalUi' => $globalUi, 'cms' => CmsMapper::toCmsData($heroData, $globalUi)],
+            self::buildDetailDomainFields($restaurant, $data, $cuisineString),
+            self::buildDetailCmsLabels($cms),
+        ));
     }
 
     /**

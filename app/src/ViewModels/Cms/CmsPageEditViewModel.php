@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+/**
+ * ViewModel for the CMS page editor.
+ */
 final readonly class CmsPageEditViewModel
 {
     /**
-     * @param array{id: int, title: string, slug: string} $page
-     * @param array<int, array<string, mixed>> $sections
-     * @param array<string, int> $contentLimits
-     * @param array<string, mixed> $imageLimits
+     * @param CmsSectionDisplayViewModel[]                        $sections
+     * @param array{HEADING: int, TEXT: int, HTML: int, BUTTON_TEXT: int} $contentLimits
      */
     public function __construct(
-        public array $page,
-        public array $sections,
-        public array $contentLimits,
-        public array $imageLimits,
+        public CmsPageInfoViewModel    $page,
+        public array                   $sections,
+        public array                   $contentLimits,
+        public CmsImageLimitsViewModel $imageLimits,
     ) {}
 }

@@ -1,9 +1,8 @@
 <?php
 /**
  * CMS Edit Section Accordion - Collapsible section with editable items.
- * Supports optional sub-groups with multi-column grid layouts for large sections.
  *
- * @var array $section Section data with items and optional subGroups
+ * @var \App\ViewModels\Cms\CmsSectionDisplayViewModel $section
  */
 
 $colorMap = [
@@ -29,9 +28,9 @@ $columnClassMap = [
             class="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors">
         <div class="flex items-center gap-3">
             <i data-lucide="layout" class="w-5 h-5 text-blue-600"></i>
-            <span class="text-sm font-semibold text-gray-900"><?= htmlspecialchars($section['displayName']) ?></span>
+            <span class="text-sm font-semibold text-gray-900"><?= htmlspecialchars($section->displayName) ?></span>
             <span class="px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full">
-                <?= count($section['items']) ?> items
+                <?= count($section->items) ?> items
             </span>
         </div>
         <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform"></i>
@@ -39,31 +38,31 @@ $columnClassMap = [
 
     <!-- Section Content -->
     <div class="accordion-content hidden border-t border-gray-200">
-        <?php if (!empty($section['subGroups'])): ?>
+        <?php if ($section->subGroups !== null): ?>
             <!-- Grouped card layout -->
             <div class="p-4 sm:p-6 space-y-6">
-                <?php foreach ($section['subGroups'] as $group):
-                    $colors = $colorMap[$group['color']] ?? $defaultColor;
-                    $gridClass = $columnClassMap[$group['columns']] ?? $columnClassMap[1];
+                <?php foreach ($section->subGroups as $group):
+                    $colors = $colorMap[$group->color] ?? $defaultColor;
+                    $gridClass = $columnClassMap[$group->columns] ?? $columnClassMap[1];
                 ?>
                     <div class="rounded-lg border border-gray-200 <?= $colors['border'] ?> border-l-4 overflow-hidden">
                         <!-- Group header -->
                         <div class="px-4 py-3 <?= $colors['bg'] ?> flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <i data-lucide="<?= htmlspecialchars($group['icon']) ?>" class="w-4 h-4 <?= $colors['icon'] ?>"></i>
+                                <i data-lucide="<?= htmlspecialchars($group->icon) ?>" class="w-4 h-4 <?= $colors['icon'] ?>"></i>
                                 <h4 class="text-sm font-semibold <?= $colors['text'] ?>">
-                                    <?= htmlspecialchars($group['label']) ?>
+                                    <?= htmlspecialchars($group->label) ?>
                                 </h4>
                             </div>
                             <span class="px-2 py-0.5 text-xs <?= $colors['bg'] ?> <?= $colors['text'] ?> rounded-full border border-current/20">
-                                <?= count($group['items']) ?> fields
+                                <?= count($group->items) ?> fields
                             </span>
                         </div>
                         <!-- Group items in grid -->
                         <div class="p-4 grid <?= $gridClass ?> gap-4">
-                            <?php foreach ($group['items'] as $item): ?>
+                            <?php foreach ($group->items as $item): ?>
                                 <?php
-                                $inputType = $item['inputType'];
+                                $inputType = $item->inputType;
                                 $isFullWidth = $inputType === 'tinymce' || $inputType === 'file';
                                 ?>
                                 <div class="<?= $isFullWidth ? 'col-span-full' : '' ?>">
@@ -85,9 +84,9 @@ $columnClassMap = [
         <?php else: ?>
             <!-- Flat layout (default for non-schedule sections) -->
             <div class="p-6 space-y-6">
-                <?php foreach ($section['items'] as $item): ?>
+                <?php foreach ($section->items as $item): ?>
                     <?php
-                    $inputType = $item['inputType'];
+                    $inputType = $item->inputType;
                     if ($inputType === 'tinymce') {
                         require __DIR__ . '/edit-item-html.php';
                     } elseif ($inputType === 'file') {

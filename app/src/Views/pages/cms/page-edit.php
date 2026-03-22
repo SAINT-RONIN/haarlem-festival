@@ -2,13 +2,13 @@
 /**
  * CMS Page Edit - Admin page content editor.
  *
- * @var array $page Page info (id, title, slug)
- * @var array $sections Sections with items
- * @var array $contentLimits Character limits per type
- * @var array $imageLimits Image dimension/size limits
- * @var string|null $successMessage Flash success message
- * @var string|null $errorMessage Flash error message
- * @var string $userName Admin user display name (passed from controller)
+ * @var \App\ViewModels\Cms\CmsPageInfoViewModel $page
+ * @var \App\ViewModels\Cms\CmsSectionDisplayViewModel[] $sections
+ * @var array{HEADING: int, TEXT: int, HTML: int, BUTTON_TEXT: int} $contentLimits
+ * @var \App\ViewModels\Cms\CmsImageLimitsViewModel $imageLimits
+ * @var string|null $successMessage
+ * @var string|null $errorMessage
+ * @var string $userName
  */
 
 $currentView = 'pages'; // For sidebar highlighting
@@ -19,7 +19,7 @@ $userName = $userName ?? 'Administrator';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit <?= htmlspecialchars($page['title']) ?> | CMS</title>
+    <title>Edit <?= htmlspecialchars($page->title) ?> | CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -48,12 +48,12 @@ $userName = $userName ?? 'Administrator';
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </a>
                 <div>
-                    <h1 class="text-xl font-semibold text-gray-900">Edit: <?= htmlspecialchars($page['title']) ?></h1>
-                    <p class="text-sm text-gray-500">Slug: /<?= htmlspecialchars($page['slug']) ?></p>
+                    <h1 class="text-xl font-semibold text-gray-900">Edit: <?= htmlspecialchars($page->title) ?></h1>
+                    <p class="text-sm text-gray-500">Slug: /<?= htmlspecialchars($page->slug) ?></p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <a href="<?= htmlspecialchars($previewUrl ?? ('/' . ($page['slug'] === 'home' ? '' : $page['slug']))) ?>"
+                <a href="<?= htmlspecialchars($previewUrl ?? ('/' . ($page->slug === 'home' ? '' : $page->slug))) ?>"
                    target="_blank"
                    class="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                     <i data-lucide="external-link" class="w-4 h-4"></i>
@@ -83,11 +83,11 @@ $userName = $userName ?? 'Administrator';
                 </div>
             <?php endif; ?>
 
-            <form id="page-edit-form" action="/cms/pages/<?= $page['id'] ?>/<?= htmlspecialchars($page['slug']) ?>/edit"
+            <form id="page-edit-form" action="/cms/pages/<?= $page->id ?>/<?= htmlspecialchars($page->slug) ?>/edit"
                   method="POST" class="space-y-6">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                 <?php foreach ($sections as $section): ?>
-                    <?php if ($section['isEditable']): ?>
+                    <?php if ($section->isEditable): ?>
                         <?php require __DIR__ . '/../../partials/cms/edit-section-accordion.php'; ?>
                     <?php endif; ?>
                 <?php endforeach; ?>
@@ -100,8 +100,8 @@ $userName = $userName ?? 'Administrator';
 <script>
     const contentLimits = <?= json_encode($contentLimits) ?>;
     const imageLimits = <?= json_encode($imageLimits) ?>;
-    const pageId = <?= $page['id'] ?>;
-    const pageSlug = <?= json_encode($page['slug']) ?>;
+    const pageId = <?= $page->id ?>;
+    const pageSlug = <?= json_encode($page->slug) ?>;
     const csrfToken = <?= json_encode($csrfToken ?? '') ?>;
 </script>
 <script src="/assets/js/cms/cms-common.js"></script>
