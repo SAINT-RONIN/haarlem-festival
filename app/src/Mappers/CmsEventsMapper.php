@@ -7,6 +7,7 @@ namespace App\Mappers;
 use App\Helpers\AgeLabelFormatter;
 use App\Helpers\FormatHelper;
 use App\Models\EventSession;
+use App\Models\EventsListPageData;
 use App\Models\EventType;
 use App\Models\EventWithDetails;
 use App\Models\MediaAsset;
@@ -203,10 +204,7 @@ class CmsEventsMapper
      * @param array<string, SessionWithEvent[]> $weeklyScheduleDomain
      */
     public static function toEventsListViewModel(
-        array $eventsData,
-        array $eventTypes,
-        array $venues,
-        array $weeklyScheduleDomain,
+        EventsListPageData $pageData,
         string $selectedType,
         string $selectedDay,
         ?string $successMessage,
@@ -214,14 +212,14 @@ class CmsEventsMapper
     ): CmsEventsListViewModel {
         $events = array_map(
             static fn(EventWithDetails $event): CmsEventListItemViewModel => self::toEventListItemViewModel($event),
-            $eventsData,
+            $pageData->events,
         );
 
         return new CmsEventsListViewModel(
             events: $events,
-            eventTypes: $eventTypes,
-            venues: $venues,
-            weeklySchedule: self::toWeeklyOverview($weeklyScheduleDomain),
+            eventTypes: $pageData->eventTypes,
+            venues: $pageData->venues,
+            weeklySchedule: self::toWeeklyOverview($pageData->weeklySchedule),
             selectedType: $selectedType,
             selectedDay: $selectedDay,
             successMessage: $successMessage,

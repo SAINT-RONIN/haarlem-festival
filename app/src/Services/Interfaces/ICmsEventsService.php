@@ -6,7 +6,9 @@ namespace App\Services\Interfaces;
 
 use App\Exceptions\ValidationException;
 use App\Models\EventEditBundle;
+use App\Models\EventsListPageData;
 use App\Models\GroupedScheduleDayConfigs;
+use App\Models\ScheduleDaysPageData;
 
 /**
  * Interface for CMS Events management service.
@@ -31,6 +33,16 @@ interface ICmsEventsService
      * Gets all venues for dropdown.
      */
     public function getVenues(): array;
+
+    /**
+     * Assembles all data needed for the CMS events list page.
+     */
+    public function getEventsListPageData(?int $eventTypeId = null, ?string $dayOfWeek = null): EventsListPageData;
+
+    /**
+     * Assembles all data needed for the CMS schedule days management page.
+     */
+    public function getScheduleDaysPageData(): ScheduleDaysPageData;
 
     /**
      * Creates a new venue.

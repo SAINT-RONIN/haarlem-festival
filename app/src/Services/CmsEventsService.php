@@ -19,8 +19,10 @@ use App\Repositories\Interfaces\IVenueRepository;
 use App\Models\EventEditBundle;
 use App\Models\EventFilter;
 use App\Models\EventSessionFilter;
+use App\Models\EventsListPageData;
 use App\Models\GroupedScheduleDayConfigs;
 use App\Models\EventTypeFilter;
+use App\Models\ScheduleDaysPageData;
 use App\Models\ScheduleDayConfigFilter;
 use App\Models\VenueFilter;
 use App\Services\Interfaces\ICmsEventsService;
@@ -80,6 +82,30 @@ class CmsEventsService implements ICmsEventsService
     public function getVenues(): array
     {
         return $this->venueRepository->findVenues(new VenueFilter(isActive: true));
+    }
+
+    /**
+     * Assembles all data needed for the CMS events list page.
+     */
+    public function getEventsListPageData(?int $eventTypeId = null, ?string $dayOfWeek = null): EventsListPageData
+    {
+        return new EventsListPageData(
+            events: $this->getAllEventsWithDetails($eventTypeId, $dayOfWeek),
+            eventTypes: $this->getEventTypes(),
+            venues: $this->getVenues(),
+            weeklySchedule: $this->getWeeklyScheduleOverview($eventTypeId),
+        );
+    }
+
+    /**
+     * Assembles all data needed for the CMS schedule days management page.
+     */
+    public function getScheduleDaysPageData(): ScheduleDaysPageData
+    {
+        return new ScheduleDaysPageData(
+            eventTypes: $this->getEventTypes(),
+            grouped: $this->getGroupedScheduleDayConfigs(),
+        );
     }
 
     /**

@@ -235,12 +235,12 @@ class CmsEventsController extends CmsBaseController
 
     private function renderScheduleDaysPage(): void
     {
-        $eventTypes = $this->eventsService->getEventTypes();
-        $grouped       = $this->eventsService->getGroupedScheduleDayConfigs();
-        $globalConfigs = $grouped->global;
-        $typeConfigs   = $grouped->byType;
+        $pageData       = $this->eventsService->getScheduleDaysPageData();
+        $eventTypes     = $pageData->eventTypes;
+        $globalConfigs  = $pageData->grouped->global;
+        $typeConfigs    = $pageData->grouped->byType;
         $successMessage = $this->sessionService->consumeFlash('success');
-        $errorMessage = $this->sessionService->consumeFlash('error');
+        $errorMessage   = $this->sessionService->consumeFlash('error');
         require __DIR__ . '/../Views/pages/cms/schedule-days.php';
     }
 
@@ -250,10 +250,7 @@ class CmsEventsController extends CmsBaseController
         $dayOfWeek = isset($_GET['day']) && $_GET['day'] !== '' ? $_GET['day'] : null;
 
         return CmsEventsMapper::toEventsListViewModel(
-            $this->eventsService->getAllEventsWithDetails($eventTypeId, $dayOfWeek),
-            $this->eventsService->getEventTypes(),
-            $this->eventsService->getVenues(),
-            $this->eventsService->getWeeklyScheduleOverview($eventTypeId),
+            $this->eventsService->getEventsListPageData($eventTypeId, $dayOfWeek),
             $_GET['type'] ?? '',
             $_GET['day'] ?? '',
             $this->sessionService->consumeFlash('success'),
