@@ -10,6 +10,8 @@ namespace App\Helpers;
 final class FormatHelper
 {
     public const CMS_DATE_FORMAT = 'd M Y, H:i';
+    public const SHORT_DATE = 'Y-m-d';
+    public const TIME_SHORT = 'H:i';
 
     public static function fileSize(int $bytes): string
     {

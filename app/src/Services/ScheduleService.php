@@ -32,12 +32,12 @@ use App\Helpers\AgeLabelFormatter;
 class ScheduleService implements IScheduleService
 {
     public function __construct(
-        private ICmsContentRepository $cmsService,
-        private IEventSessionRepository $sessionRepository,
-        private IEventSessionLabelRepository $labelRepository,
-        private IEventSessionPriceRepository $priceRepository,
-        private IEventTypeRepository $eventTypeRepository,
-        private IScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private readonly ICmsContentRepository $cmsService,
+        private readonly IEventSessionRepository $sessionRepository,
+        private readonly IEventSessionLabelRepository $labelRepository,
+        private readonly IEventSessionPriceRepository $priceRepository,
+        private readonly IEventTypeRepository $eventTypeRepository,
+        private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
     ) {
     }
 

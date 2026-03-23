@@ -33,11 +33,11 @@ use App\Utils\HomeUiConfig;
 class HomeService implements IHomeService
 {
     public function __construct(
-        private IEventTypeRepository $eventTypeRepository,
-        private IVenueRepository $venueRepository,
-        private IRestaurantRepository $restaurantRepository,
-        private IEventSessionRepository $eventSessionRepository,
-        private ICmsContentRepository $cmsService,
+        private readonly IEventTypeRepository $eventTypeRepository,
+        private readonly IVenueRepository $venueRepository,
+        private readonly IRestaurantRepository $restaurantRepository,
+        private readonly IEventSessionRepository $eventSessionRepository,
+        private readonly ICmsContentRepository $cmsService,
     ) {
     }
 

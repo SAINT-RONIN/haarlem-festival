@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Helpers\FormatHelper;
 use App\Models\Artist;
 use App\Models\ArtistUpsertData;
 use App\ViewModels\Cms\CmsArtistFormViewModel;
@@ -74,7 +75,7 @@ class CmsArtistsMapper
             name: $a->name,
             style: $a->style,
             isActive: $a->isActive,
-            createdAt: $a->createdAtUtc->format('Y-m-d'),
+            createdAt: $a->createdAtUtc->format(FormatHelper::SHORT_DATE),
         );
     }
 }
