@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Enums\UserRoleId;
+use App\Helpers\FormatHelper;
 use App\Models\UserAccount;
 use App\Models\UserWithRole;
 use App\ViewModels\Cms\CmsUserFormViewModel;
@@ -55,7 +56,7 @@ class CmsUsersMapper
             statusText:       $isActive ? 'Active' : 'Inactive',
             statusBadgeClass: $isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
             registeredAt:     $user->registeredAtUtc !== ''
-                                  ? (new \DateTimeImmutable($user->registeredAtUtc))->format('d M Y, H:i')
+                                  ? (new \DateTimeImmutable($user->registeredAtUtc))->format(FormatHelper::CMS_DATE_FORMAT)
                                   : '',
         );
     }

@@ -28,24 +28,20 @@ class PageGalleryImageRepository implements IPageGalleryImageRepository
      */
     public function findByPageId(int $cmsPageId, ?string $imageType = null): array
     {
-        try {
-            $sql = 'SELECT * FROM PageGalleryImage WHERE CmsPageId = :cmsPageId';
-            $params = ['cmsPageId' => $cmsPageId];
+        $sql = 'SELECT * FROM PageGalleryImage WHERE CmsPageId = :cmsPageId';
+        $params = ['cmsPageId' => $cmsPageId];
 
-            if ($imageType !== null) {
-                $sql .= ' AND ImageType = :imageType';
-                $params['imageType'] = $imageType;
-            }
-
-            $sql .= ' ORDER BY SortOrder ASC';
-
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            return array_map([PageGalleryImage::class, 'fromRow'], $rows);
-        } catch (\PDOException) {
-            return [];
+        if ($imageType !== null) {
+            $sql .= ' AND ImageType = :imageType';
+            $params['imageType'] = $imageType;
         }
+
+        $sql .= ' ORDER BY SortOrder ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map([PageGalleryImage::class, 'fromRow'], $rows);
     }
 }

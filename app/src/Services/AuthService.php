@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\UserRoleId;
+use App\Helpers\UserValidationHelper;
 use App\Infrastructure\Interfaces\IEmailService;
 use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\UserAccountRepository;
@@ -19,9 +20,6 @@ use App\Utils\PasswordHasher;
  */
 class AuthService implements IAuthService
 {
-    private const PASSWORD_MIN_LENGTH = 8;
-    private const USERNAME_MIN_LENGTH = 3;
-    private const USERNAME_MAX_LENGTH = 60;
     private const RESET_TOKEN_EXPIRY_HOURS = 1;
 
     public function __construct(
@@ -102,19 +100,9 @@ class AuthService implements IAuthService
         return $errors;
     }
 
-    /**
-     * Validates first name and last name.
-     */
     private function validateNames(array $data, array $errors): array
     {
-        if (empty(trim($data['firstName'] ?? ''))) {
-            $errors['firstName'] = 'First name is required.';
-        }
-        if (empty(trim($data['lastName'] ?? ''))) {
-            $errors['lastName'] = 'Last name is required.';
-        }
-
-        return $errors;
+        return array_merge($errors, UserValidationHelper::checkNames($data['firstName'] ?? '', $data['lastName'] ?? ''));
     }
 
     /**
@@ -137,41 +125,18 @@ class AuthService implements IAuthService
         return $errors;
     }
 
-    /**
-     * Checks username format requirements.
-     */
     private function checkUsernameFormat(string $username): ?string
     {
-        if (empty($username)) {
-            return 'Username is required.';
-        }
-        if (strlen($username) < self::USERNAME_MIN_LENGTH) {
-            return 'Username must be at least ' . self::USERNAME_MIN_LENGTH . ' characters.';
-        }
-        if (strlen($username) > self::USERNAME_MAX_LENGTH) {
-            return 'Username must be no more than ' . self::USERNAME_MAX_LENGTH . ' characters.';
-        }
-        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $username)) {
-            return 'Username can only contain letters, numbers, underscores, and hyphens.';
-        }
-
-        return null;
+        return UserValidationHelper::checkUsernameFormat($username);
     }
 
-    /**
-     * Validates email format and uniqueness.
-     */
     private function validateEmail(string $email, array $errors): array
     {
         $email = trim($email);
+        $formatError = UserValidationHelper::checkEmail($email);
 
-        if (empty($email)) {
-            $errors['email'] = 'Email is required.';
-            return $errors;
-        }
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address.';
+        if ($formatError !== null) {
+            $errors['email'] = $formatError;
             return $errors;
         }
 
@@ -182,18 +147,11 @@ class AuthService implements IAuthService
         return $errors;
     }
 
-    /**
-     * Validates password strength and confirmation match.
-     */
     private function validatePasswords(string $password, string $confirm, array $errors): array
     {
-        if (empty($password)) {
-            $errors['password'] = 'Password is required.';
-            return $errors;
-        }
-
-        if (strlen($password) < self::PASSWORD_MIN_LENGTH) {
-            $errors['password'] = 'Password must be at least ' . self::PASSWORD_MIN_LENGTH . ' characters.';
+        $lengthError = UserValidationHelper::checkPasswordLength($password);
+        if ($lengthError !== null) {
+            $errors['password'] = $lengthError;
             return $errors;
         }
 
@@ -284,11 +242,9 @@ class AuthService implements IAuthService
         }
 
         // Validate new password
-        if (strlen($newPassword) < self::PASSWORD_MIN_LENGTH) {
-            return [
-                'success' => false,
-                'error' => 'Password must be at least ' . self::PASSWORD_MIN_LENGTH . ' characters.',
-            ];
+        $passwordError = UserValidationHelper::checkPasswordLength($newPassword);
+        if ($passwordError !== null) {
+            return ['success' => false, 'error' => $passwordError];
         }
 
         if ($newPassword !== $confirmPassword) {

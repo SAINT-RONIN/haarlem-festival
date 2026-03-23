@@ -7,8 +7,8 @@
  * @var \App\Models\PriceTier[] $priceTiers
  * @var \App\Models\Artist[] $artists
  * @var \App\Models\Restaurant[] $restaurants
- * @var string|null $successMessage
- * @var string|null $errorMessage
+ * @var string|null $successMessage  Flash success message from session
+ * @var string|null $errorMessage    Flash error message from session
  */
 ?>
 <!DOCTYPE html>
@@ -35,18 +35,12 @@
             <h1 class="text-2xl font-bold text-gray-900">Edit Event</h1>
         </header>
 
-        <!-- Messages -->
-        <?php if ($successMessage): ?>
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                <?= htmlspecialchars($successMessage) ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($errorMessage): ?>
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <?= htmlspecialchars($errorMessage) ?>
-            </div>
-        <?php endif; ?>
+        <?php
+        $__flashViewModel = $viewModel;
+        $viewModel = (object)['successMessage' => $successMessage ?? null, 'errorMessage' => $errorMessage ?? null];
+        require __DIR__ . '/../../partials/cms/_flash-messages.php';
+        $viewModel = $__flashViewModel;
+        ?>
 
         <!-- Event Details Card -->
         <div class="bg-white rounded-lg shadow mb-8">

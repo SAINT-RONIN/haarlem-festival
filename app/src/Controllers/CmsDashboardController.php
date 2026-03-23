@@ -85,10 +85,8 @@ class CmsDashboardController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $pageId = $this->parsePositiveIntId($id);
+            $pageId = $this->requireValidPageId($id);
             if ($pageId === null) {
-                http_response_code(400);
-                echo CmsMessages::INVALID_PAGE_ID;
                 return;
             }
             $this->renderEditPage($pageId);
@@ -161,10 +159,8 @@ class CmsDashboardController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $pageId = $this->parsePositiveIntId($id);
+            $pageId = $this->requireValidPageId($id);
             if ($pageId === null) {
-                http_response_code(400);
-                echo CmsMessages::INVALID_PAGE_ID;
                 return;
             }
             $this->validateCsrfOrRedirect($pageId);
@@ -230,18 +226,11 @@ class CmsDashboardController
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             header('Content-Type: application/json');
-
-            $pageId = $this->parsePositiveIntId($id);
+            $pageId = $this->requireValidPageIdJson($id);
             if ($pageId === null) {
-                echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_PAGE_ID]);
                 return;
             }
-
-            if (!$this->isUploadRequestValid()) {
-                return;
-            }
-
-            $this->dispatchUploadAction();
+            $this->processUploadRequest();
         } catch (CmsEditException $e) {
             echo json_encode(['success' => false, 'error' => CmsMessages::UPDATE_UNEXPECTED_ERROR]);
         }
@@ -321,6 +310,33 @@ class CmsDashboardController
     {
         $name = $this->sessionService->get('user_display_name', CmsMessages::DEFAULT_ADMIN_NAME);
         return is_string($name) && $name !== '' ? $name : CmsMessages::DEFAULT_ADMIN_NAME;
+    }
+
+    private function requireValidPageId(string $id): ?int
+    {
+        $pageId = $this->parsePositiveIntId($id);
+        if ($pageId === null) {
+            http_response_code(400);
+            echo CmsMessages::INVALID_PAGE_ID;
+        }
+        return $pageId;
+    }
+
+    private function requireValidPageIdJson(string $id): ?int
+    {
+        $pageId = $this->parsePositiveIntId($id);
+        if ($pageId === null) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_PAGE_ID]);
+        }
+        return $pageId;
+    }
+
+    private function processUploadRequest(): void
+    {
+        if (!$this->isUploadRequestValid()) {
+            return;
+        }
+        $this->dispatchUploadAction();
     }
 
     private function parsePositiveIntId(string $id): ?int

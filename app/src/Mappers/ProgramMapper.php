@@ -6,6 +6,7 @@ namespace App\Mappers;
 
 use App\Enums\EventTypeId;
 use App\Helpers\AgeLabelFormatter;
+use App\Helpers\FormatHelper;
 use App\Models\CheckoutMainContent;
 use App\Models\ProgramData;
 use App\Models\ProgramItemData;
@@ -107,7 +108,7 @@ class ProgramMapper
 
     public static function formatPrice(float $amount): string
     {
-        return '€' . number_format($amount, 2, '.', '');
+        return FormatHelper::price($amount);
     }
 
     /**

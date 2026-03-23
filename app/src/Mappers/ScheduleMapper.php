@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Helpers\FormatHelper;
 use App\Models\ScheduleFilterParams;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
@@ -461,7 +462,7 @@ final class ScheduleMapper
         }
 
         $symbol = (string)($event['currencySymbol'] ?? '€');
-        return $symbol . ' ' . number_format((float)$amount, 2);
+        return FormatHelper::price((float)$amount, $symbol . ' ');
     }
 
     private static function buildLocationDisplay(array $event): string

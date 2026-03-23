@@ -92,31 +92,12 @@ class AuthController
     public function register(): void
     {
         try {
-            $data = [
-                'username' => $_POST['username'] ?? '',
-                'email' => $_POST['email'] ?? '',
-                'password' => $_POST['password'] ?? '',
-                'confirmPassword' => $_POST['confirm_password'] ?? '',
-                'firstName' => $_POST['first_name'] ?? '',
-                'lastName' => $_POST['last_name'] ?? '',
-            ];
-
+            $data = $this->extractRegistrationData();
             if (!$this->captchaService->verify($_POST['g-recaptcha-response'] ?? null, $_SERVER['REMOTE_ADDR'] ?? null)) {
                 $this->redirectWithErrors('/register', ['captcha' => 'Please complete the CAPTCHA verification.'], $data);
                 return;
             }
-
-            $errors = $this->authService->validateRegistration($data);
-            if ($errors !== []) {
-                $this->redirectWithErrors('/register', $errors, $data);
-                return;
-            }
-
-            $this->authService->register($data);
-            $this->sessionService->start();
-            $_SESSION['login_success'] = 'Registration successful! Please log in.';
-            header('Location: /login');
-            exit;
+            $this->processRegistration($data);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -155,17 +136,8 @@ class AuthController
         try {
             $token = $_GET['token'] ?? '';
             $result = $this->authService->validateResetToken($token);
-
             $this->sessionService->start();
-            if (!$result['valid']) {
-                $error = $result['error'];
-                $validToken = false;
-            } else {
-                $error = $_SESSION['reset_error'] ?? null;
-                $validToken = true;
-                unset($_SESSION['reset_error']);
-            }
-
+            [$error, $validToken] = $this->resolveResetTokenState($result);
             require __DIR__ . '/../Views/pages/reset-password.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -176,24 +148,60 @@ class AuthController
     {
         try {
             $token = $_POST['token'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $confirmPassword = $_POST['confirm_password'] ?? '';
-            $result = $this->authService->resetPassword($token, $password, $confirmPassword);
-
-            if (!$result['success']) {
-                $this->sessionService->start();
-                $_SESSION['reset_error'] = $result['error'];
-                header('Location: /reset-password?token=' . urlencode($token));
-                exit;
-            }
-
-            $this->sessionService->start();
-            $_SESSION['login_success'] = 'Your password has been reset. Please log in with your new password.';
-            header('Location: /login');
-            exit;
+            $result = $this->authService->resetPassword($token, $_POST['password'] ?? '', $_POST['confirm_password'] ?? '');
+            $this->handleResetPasswordResult($result, $token);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    private function extractRegistrationData(): array
+    {
+        return [
+            'username' => $_POST['username'] ?? '',
+            'email' => $_POST['email'] ?? '',
+            'password' => $_POST['password'] ?? '',
+            'confirmPassword' => $_POST['confirm_password'] ?? '',
+            'firstName' => $_POST['first_name'] ?? '',
+            'lastName' => $_POST['last_name'] ?? '',
+        ];
+    }
+
+    private function processRegistration(array $data): void
+    {
+        $errors = $this->authService->validateRegistration($data);
+        if ($errors !== []) {
+            $this->redirectWithErrors('/register', $errors, $data);
+            return;
+        }
+        $this->authService->register($data);
+        $this->sessionService->start();
+        $_SESSION['login_success'] = 'Registration successful! Please log in.';
+        header('Location: /login');
+        exit;
+    }
+
+    private function resolveResetTokenState(array $result): array
+    {
+        if (!$result['valid']) {
+            return [$result['error'], false];
+        }
+        $error = $_SESSION['reset_error'] ?? null;
+        unset($_SESSION['reset_error']);
+        return [$error, true];
+    }
+
+    private function handleResetPasswordResult(array $result, string $token): void
+    {
+        $this->sessionService->start();
+        if (!$result['success']) {
+            $_SESSION['reset_error'] = $result['error'];
+            header('Location: /reset-password?token=' . urlencode($token));
+            exit;
+        }
+        $_SESSION['login_success'] = 'Your password has been reset. Please log in with your new password.';
+        header('Location: /login');
+        exit;
     }
 
     private function redirectWithError(string $url, string $error): void

@@ -30,8 +30,8 @@ class CmsOrdersController
             $viewModel = CmsOrdersMapper::toListViewModel(
                 $ordersData,
                 $_GET['status'] ?? '',
-                $_GET['success'] ?? null,
-                $_GET['error'] ?? null,
+                $this->sessionService->consumeFlash('success'),
+                $this->sessionService->consumeFlash('error'),
             );
 
             require __DIR__ . '/../Views/pages/cms/orders.php';

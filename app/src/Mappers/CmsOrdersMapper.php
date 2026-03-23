@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Helpers\FormatHelper;
 use App\Models\OrderWithDetails;
 use App\ViewModels\Cms\CmsOrderListItemViewModel;
 use App\ViewModels\Cms\CmsOrdersListViewModel;
@@ -40,7 +41,7 @@ class CmsOrdersMapper
             paymentStatus:     $paymentStatus,
             totalAmount:       '€ ' . number_format((float)$order->totalAmount, 2),
             createdAt:         $order->createdAtUtc !== ''
-                                   ? (new \DateTimeImmutable($order->createdAtUtc))->format('d M Y, H:i')
+                                   ? (new \DateTimeImmutable($order->createdAtUtc))->format(FormatHelper::CMS_DATE_FORMAT)
                                    : '',
             statusBadgeClass:  self::resolveStatusBadgeClass($orderStatus),
             paymentBadgeClass: self::resolvePaymentBadgeClass($paymentStatus),

@@ -10,12 +10,14 @@ use App\Models\ArtistUpsertData;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ISessionService;
 
-class CmsArtistsController
+class CmsArtistsController extends CmsBaseController
 {
     public function __construct(
         private readonly ICmsArtistsService $artistsService,
-        private readonly ISessionService $sessionService,
-    ) {}
+        ISessionService $sessionService,
+    ) {
+        parent::__construct($sessionService);
+    }
 
     public function index(): void
     {
@@ -112,22 +114,6 @@ class CmsArtistsController
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
-    }
-
-    private function validateCsrf(string $scope, string $redirectUrl): void
-    {
-        if (!$this->sessionService->isValidCsrfToken($scope, $_POST['_csrf'] ?? null)) {
-            $this->sessionService->setFlash('error', 'Invalid CSRF token. Please try again.');
-            header('Location: ' . $redirectUrl);
-            exit;
-        }
-    }
-
-    private function redirectWithFlash(string $message, string $type, string $url): void
-    {
-        $this->sessionService->setFlash($type, $message);
-        header('Location: ' . $url);
-        exit;
     }
 
     private function extractFormData(): ArtistUpsertData

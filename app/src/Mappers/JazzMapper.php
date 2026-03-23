@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Constants\JazzPageConstants;
+use App\Helpers\FormatHelper;
 use App\Enums\PassScope;
 use App\Models\ArtistAlbum;
 use App\Models\ArtistGalleryImage;
@@ -394,7 +395,7 @@ final class JazzMapper
     {
         foreach ($passPrices as $pass) {
             if ($pass->passScope->value === $scope) {
-                return '€' . number_format((float) $pass->price, 2);
+                return FormatHelper::price((float) $pass->price);
             }
         }
 

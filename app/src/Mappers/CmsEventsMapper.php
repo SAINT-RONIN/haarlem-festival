@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Helpers\AgeLabelFormatter;
+use App\Helpers\FormatHelper;
 use App\Models\EventSession;
 use App\Models\EventType;
 use App\Models\EventWithDetails;
@@ -53,9 +54,9 @@ class CmsEventsMapper
             filePath: $asset->filePath,
             originalFileName: $asset->originalFileName,
             mimeType: $asset->mimeType,
-            fileSize: self::formatFileSize($asset->fileSizeBytes),
+            fileSize: FormatHelper::fileSize($asset->fileSizeBytes),
             altText: $asset->altText,
-            createdAt: $asset->createdAtUtc->format('d M Y, H:i'),
+            createdAt: $asset->createdAtUtc->format(FormatHelper::CMS_DATE_FORMAT),
         );
     }
 
@@ -259,11 +260,4 @@ class CmsEventsMapper
         );
     }
 
-    private static function formatFileSize(int $bytes): string
-    {
-        if ($bytes >= 1048576) {
-            return round($bytes / 1048576, 1) . ' MB';
-        }
-        return round($bytes / 1024, 1) . ' KB';
-    }
 }

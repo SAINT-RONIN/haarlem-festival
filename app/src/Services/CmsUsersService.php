@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\UserValidationHelper;
 use App\Models\UserAccount;
 use App\Models\UserWithRole;
 use App\Repositories\Interfaces\ICmsUsersRepository;
@@ -12,9 +13,6 @@ use App\Utils\PasswordHasher;
 
 class CmsUsersService implements ICmsUsersService
 {
-    private const USERNAME_MIN_LENGTH = 3;
-    private const USERNAME_MAX_LENGTH = 60;
-    private const PASSWORD_MIN_LENGTH = 8;
 
     public function __construct(
         private readonly ICmsUsersRepository $usersRepository,
@@ -131,8 +129,9 @@ class CmsUsersService implements ICmsUsersService
      */
     private function checkEmail(string $email, array $errors, ?int $excludeId = null): array
     {
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address.';
+        $formatError = UserValidationHelper::checkEmail($email);
+        if ($formatError !== null) {
+            $errors['email'] = $formatError;
             return $errors;
         }
         $taken = $excludeId !== null
@@ -146,19 +145,7 @@ class CmsUsersService implements ICmsUsersService
 
     private function checkUsernameFormat(string $username): ?string
     {
-        if ($username === '') {
-            return 'Username is required.';
-        }
-        if (strlen($username) < self::USERNAME_MIN_LENGTH) {
-            return 'Username must be at least ' . self::USERNAME_MIN_LENGTH . ' characters.';
-        }
-        if (strlen($username) > self::USERNAME_MAX_LENGTH) {
-            return 'Username must be no more than ' . self::USERNAME_MAX_LENGTH . ' characters.';
-        }
-        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $username)) {
-            return 'Username can only contain letters, numbers, underscores, and hyphens.';
-        }
-        return null;
+        return UserValidationHelper::checkUsernameFormat($username);
     }
 
     /**
@@ -167,12 +154,9 @@ class CmsUsersService implements ICmsUsersService
      */
     private function validatePasswordRequired(string $password, array $errors): array
     {
-        if ($password === '') {
-            $errors['password'] = 'Password is required.';
-            return $errors;
-        }
-        if (strlen($password) < self::PASSWORD_MIN_LENGTH) {
-            $errors['password'] = 'Password must be at least ' . self::PASSWORD_MIN_LENGTH . ' characters.';
+        $lengthError = UserValidationHelper::checkPasswordLength($password);
+        if ($lengthError !== null) {
+            $errors['password'] = $lengthError;
         }
 
         return $errors;
@@ -184,8 +168,11 @@ class CmsUsersService implements ICmsUsersService
      */
     private function validatePasswordOptional(?string $password, array $errors): array
     {
-        if ($password !== null && $password !== '' && strlen($password) < self::PASSWORD_MIN_LENGTH) {
-            $errors['password'] = 'Password must be at least ' . self::PASSWORD_MIN_LENGTH . ' characters.';
+        if ($password !== null && $password !== '') {
+            $lengthError = UserValidationHelper::checkPasswordLength($password);
+            if ($lengthError !== null) {
+                $errors['password'] = $lengthError;
+            }
         }
 
         return $errors;
@@ -197,13 +184,6 @@ class CmsUsersService implements ICmsUsersService
      */
     private function validateNames(string $firstName, string $lastName, array $errors): array
     {
-        if (trim($firstName) === '') {
-            $errors['firstName'] = 'First name is required.';
-        }
-        if (trim($lastName) === '') {
-            $errors['lastName'] = 'Last name is required.';
-        }
-
-        return $errors;
+        return array_merge($errors, UserValidationHelper::checkNames($firstName, $lastName));
     }
 }

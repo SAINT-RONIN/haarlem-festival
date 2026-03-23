@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Enums\PageStatus;
+use App\Helpers\FormatHelper;
 use App\Models\ActivityData;
 use App\Models\CmsItemEditData;
 use App\Models\CmsMediaAssetData;
@@ -639,17 +640,10 @@ class CmsDashboardMapper
             maxWidth:             CmsContentLimits::IMAGE_MAX_WIDTH,
             maxHeight:            CmsContentLimits::IMAGE_MAX_HEIGHT,
             maxFileSize:          CmsContentLimits::IMAGE_MAX_FILE_SIZE,
-            maxFileSizeFormatted: self::formatFileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
+            maxFileSizeFormatted: FormatHelper::fileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
             allowedMimes:         CmsContentLimits::IMAGE_ALLOWED_MIMES,
             allowedExtensions:    ['jpg', 'jpeg', 'png', 'webp'],
         );
     }
 
-    private static function formatFileSize(int $bytes): string
-    {
-        if ($bytes >= 1048576) {
-            return round($bytes / 1048576, 1) . ' MB';
-        }
-        return round($bytes / 1024, 1) . ' KB';
-    }
 }
