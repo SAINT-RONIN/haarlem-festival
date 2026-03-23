@@ -24,9 +24,7 @@ class CmsAuthController
                 exit;
             }
 
-            $this->sessionService->start();
-            $error = $_SESSION['cms_login_error'] ?? null;
-            unset($_SESSION['cms_login_error']);
+            $error = $this->sessionService->consumeFlash('cms_login_error');
             require __DIR__ . '/../Views/pages/cms/login.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -67,8 +65,7 @@ class CmsAuthController
 
     private function redirectWithError(string $error): void
     {
-        $this->sessionService->start();
-        $_SESSION['cms_login_error'] = $error;
+        $this->sessionService->setFlash('cms_login_error', $error);
         header('Location: /cms/login');
         exit;
     }

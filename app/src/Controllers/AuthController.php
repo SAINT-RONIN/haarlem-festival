@@ -27,10 +27,8 @@ class AuthController
                 exit;
             }
 
-            $this->sessionService->start();
-            $error = $_SESSION['login_error'] ?? null;
-            $success = $_SESSION['login_success'] ?? null;
-            unset($_SESSION['login_error'], $_SESSION['login_success']);
+            $error = $this->sessionService->consumeFlash('login_error');
+            $success = $this->sessionService->consumeFlash('login_success');
 
             require __DIR__ . '/../Views/pages/login.php';
         } catch (\Throwable $error) {
@@ -78,11 +76,9 @@ class AuthController
                 exit;
             }
 
-            $this->sessionService->start();
             $recaptchaSiteKey = $this->captchaService->getSiteKey();
-            $errors = $_SESSION['register_errors'] ?? [];
-            $oldInput = $_SESSION['register_input'] ?? [];
-            unset($_SESSION['register_errors'], $_SESSION['register_input']);
+            $errors = $this->sessionService->consumeFlash('register_errors') ?? [];
+            $oldInput = $this->sessionService->consumeFlash('register_input') ?? [];
 
             require __DIR__ . '/../Views/pages/register.php';
         } catch (\Throwable $error) {
@@ -107,10 +103,8 @@ class AuthController
     public function showForgotPassword(): void
     {
         try {
-            $this->sessionService->start();
-            $success = $_SESSION['forgot_success'] ?? null;
-            $error = $_SESSION['forgot_error'] ?? null;
-            unset($_SESSION['forgot_success'], $_SESSION['forgot_error']);
+            $success = $this->sessionService->consumeFlash('forgot_success');
+            $error = $this->sessionService->consumeFlash('forgot_error');
 
             require __DIR__ . '/../Views/pages/forgot-password.php';
         } catch (\Throwable $error) {
@@ -123,8 +117,7 @@ class AuthController
         try {
             $email = trim($_POST['email'] ?? '');
             $this->authService->requestPasswordReset($email);
-            $this->sessionService->start();
-            $_SESSION['forgot_success'] = 'If an account exists with that email, you will receive a password reset link.';
+            $this->sessionService->setFlash('forgot_success', 'If an account exists with that email, you will receive a password reset link.');
             header('Location: /forgot-password');
             exit;
         } catch (\Throwable $error) {
@@ -177,8 +170,7 @@ class AuthController
             return;
         }
         $this->authService->register($dataArray);
-        $this->sessionService->start();
-        $_SESSION['login_success'] = 'Registration successful! Please log in.';
+        $this->sessionService->setFlash('login_success', 'Registration successful! Please log in.');
         header('Location: /login');
         exit;
     }
@@ -188,38 +180,34 @@ class AuthController
         if (!$result['valid']) {
             return [$result['error'], false];
         }
-        $error = $_SESSION['reset_error'] ?? null;
-        unset($_SESSION['reset_error']);
+        $error = $this->sessionService->consumeFlash('reset_error');
         return [$error, true];
     }
 
     private function handleResetPasswordResult(array $result, string $token): void
     {
-        $this->sessionService->start();
         if (!$result['success']) {
-            $_SESSION['reset_error'] = $result['error'];
+            $this->sessionService->setFlash('reset_error', $result['error']);
             header('Location: /reset-password?token=' . urlencode($token));
             exit;
         }
-        $_SESSION['login_success'] = 'Your password has been reset. Please log in with your new password.';
+        $this->sessionService->setFlash('login_success', 'Your password has been reset. Please log in with your new password.');
         header('Location: /login');
         exit;
     }
 
     private function redirectWithError(string $url, string $error): void
     {
-        $this->sessionService->start();
-        $_SESSION['login_error'] = $error;
+        $this->sessionService->setFlash('login_error', $error);
         header('Location: ' . $url);
         exit;
     }
 
     private function redirectWithErrors(string $url, array $errors, array $input): void
     {
-        $this->sessionService->start();
-        $_SESSION['register_errors'] = $errors;
         unset($input['password'], $input['confirmPassword']);
-        $_SESSION['register_input'] = $input;
+        $this->sessionService->setFlash('register_errors', $errors);
+        $this->sessionService->setFlash('register_input', $input);
         header('Location: ' . $url);
         exit;
     }

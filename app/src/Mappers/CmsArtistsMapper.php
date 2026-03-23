@@ -11,7 +11,7 @@ use App\ViewModels\Cms\CmsArtistFormViewModel;
 use App\ViewModels\Cms\CmsArtistListItemViewModel;
 use App\ViewModels\Cms\CmsArtistsListViewModel;
 
-class CmsArtistsMapper
+final class CmsArtistsMapper
 {
     /**
      * @param Artist[] $artists

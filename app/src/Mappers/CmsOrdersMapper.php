@@ -11,7 +11,7 @@ use App\Models\OrderWithDetails;
 use App\ViewModels\Cms\CmsOrderListItemViewModel;
 use App\ViewModels\Cms\CmsOrdersListViewModel;
 
-class CmsOrdersMapper
+final class CmsOrdersMapper
 {
     public static function toListViewModel(
         array $orders,

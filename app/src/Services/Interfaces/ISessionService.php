@@ -50,14 +50,14 @@ interface ISessionService
     public function get(string $key, mixed $default = null): mixed;
 
     /**
-     * Stores a flash message available for the next request.
+     * Stores a flash value available for the next request.
      */
-    public function setFlash(string $key, string $message): void;
+    public function setFlash(string $key, mixed $value): void;
 
     /**
-     * Retrieves and removes a flash message.
+     * Retrieves and removes a flash value.
      */
-    public function consumeFlash(string $key): ?string;
+    public function consumeFlash(string $key): mixed;
 
     /**
      * Generates (or returns existing) CSRF token for a form scope.

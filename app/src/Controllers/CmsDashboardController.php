@@ -23,17 +23,18 @@ use App\ViewModels\Cms\CmsPageEditViewModel;
  * - service calls
  * - selecting views / redirects / response codes
  */
-class CmsDashboardController
+class CmsDashboardController extends CmsBaseController
 {
     private const MEDIA_CONTEXT_CMS = 'cms';
     private const CSRF_SCOPE_PAGE_EDIT = 'cms_page_edit';
 
     public function __construct(
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
         private readonly ICmsDashboardService $cmsDashboardService,
         private readonly ICmsEditService $cmsEditService,
         private readonly IMediaAssetService $mediaAssetService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -102,6 +103,8 @@ class CmsDashboardController
         } catch (CmsEditException $e) {
             http_response_code(500);
             require __DIR__ . '/../Views/pages/errors/500.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
@@ -177,6 +180,8 @@ class CmsDashboardController
             $this->performUpdateAndRedirect($pageId);
         } catch (CmsEditException $e) {
             $this->handleUpdateError($e, $this->parsePositiveIntId($id));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
@@ -242,6 +247,8 @@ class CmsDashboardController
             $this->processUploadRequest();
         } catch (CmsEditException $e) {
             echo json_encode(['success' => false, 'error' => CmsMessages::UPDATE_UNEXPECTED_ERROR]);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
     }
 

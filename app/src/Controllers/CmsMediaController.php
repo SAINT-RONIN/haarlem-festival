@@ -12,12 +12,13 @@ use App\Services\Interfaces\IMediaAssetService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsMediaListItemViewModel;
 
-class CmsMediaController
+class CmsMediaController extends CmsBaseController
 {
     public function __construct(
         private readonly IMediaAssetService $mediaAssetService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
     ) {
+        parent::__construct($sessionService);
     }
 
     public function index(): void

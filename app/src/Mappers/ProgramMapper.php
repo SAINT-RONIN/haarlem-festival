@@ -16,7 +16,7 @@ use App\ViewModels\Program\CheckoutPageViewModel;
 use App\ViewModels\Program\MyProgramPageViewModel;
 use App\ViewModels\Program\ProgramItemViewModel;
 
-class ProgramMapper
+final class ProgramMapper
 {
     public static function toItemViewModel(ProgramItemData $item): ProgramItemViewModel
     {

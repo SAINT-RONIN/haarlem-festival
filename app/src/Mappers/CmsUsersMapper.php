@@ -13,7 +13,7 @@ use App\ViewModels\Cms\CmsUserFormViewModel;
 use App\ViewModels\Cms\CmsUserListItemViewModel;
 use App\ViewModels\Cms\CmsUsersListViewModel;
 
-class CmsUsersMapper
+final class CmsUsersMapper
 {
     /**
      * @param UserWithRole[] $users

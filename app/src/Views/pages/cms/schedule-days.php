@@ -3,11 +3,7 @@
  * CMS Schedule Days Management Page.
  *
  * @var string $currentView
- * @var array $eventTypes
- * @var array $globalConfigs
- * @var array $typeConfigs
- * @var string|null $successMessage
- * @var string|null $errorMessage
+ * @var \App\ViewModels\Cms\CmsScheduleDaysViewModel $viewModel
  */
 
 $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -31,17 +27,7 @@ $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
             <p class="text-gray-600 mt-1">Control which days are visible in the schedule for each event type.</p>
         </div>
 
-        <?php if ($successMessage): ?>
-            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                <?= htmlspecialchars($successMessage) ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($errorMessage): ?>
-            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                <?= htmlspecialchars($errorMessage) ?>
-            </div>
-        <?php endif; ?>
+        <?php require __DIR__ . '/../../partials/cms/_flash-messages.php'; ?>
 
         <!-- Global Settings -->
         <div class="bg-white rounded-lg shadow mb-6">
@@ -52,7 +38,7 @@ $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
             <div class="p-6">
                 <div class="grid grid-cols-7 gap-3">
                     <?php for ($day = 0; $day <= 6; $day++): ?>
-                        <?php $isVisible = isset($globalConfigs[$day]) ? (bool)$globalConfigs[$day]->isVisible : true; ?>
+                        <?php $isVisible = isset($viewModel->globalConfigs[$day]) ? (bool)$viewModel->globalConfigs[$day]->isVisible : true; ?>
                         <form method="POST" action="/cms/schedule-days/toggle" class="text-center">
                             <input type="hidden" name="EventTypeId" value="">
                             <input type="hidden" name="DayOfWeek" value="<?= $day ?>">
@@ -69,7 +55,7 @@ $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
         </div>
 
         <!-- Per Event Type Settings -->
-        <?php foreach ($eventTypes as $eventType): ?>
+        <?php foreach ($viewModel->eventTypes as $eventType): ?>
             <?php $etId = $eventType->eventTypeId; ?>
             <div class="bg-white rounded-lg shadow mb-6">
                 <div class="px-6 py-4 border-b border-gray-200">
@@ -82,8 +68,8 @@ $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
                     <div class="grid grid-cols-7 gap-3">
                         <?php for ($day = 0; $day <= 6; $day++): ?>
                             <?php
-                            $typeConfig = $typeConfigs[$etId][$day] ?? null;
-                            $globalVisible = isset($globalConfigs[$day]) ? (bool)$globalConfigs[$day]->isVisible : true;
+                            $typeConfig = $viewModel->typeConfigs[$etId][$day] ?? null;
+                            $globalVisible = isset($viewModel->globalConfigs[$day]) ? (bool)$viewModel->globalConfigs[$day]->isVisible : true;
                             $isVisible = $typeConfig !== null ? (bool)$typeConfig->isVisible : $globalVisible;
                             $isOverridden = $typeConfig !== null;
                             ?>

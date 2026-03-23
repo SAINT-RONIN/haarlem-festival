@@ -27,7 +27,7 @@ use App\ViewModels\Cms\PageListItemViewModel;
 use App\ViewModels\Cms\PagesListViewModel;
 use App\ViewModels\Cms\RecentPageViewModel;
 
-class CmsDashboardMapper
+final class CmsDashboardMapper
 {
     /**
      * @param CmsPage[]      $recentPages

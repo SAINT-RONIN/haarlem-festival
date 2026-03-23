@@ -36,15 +36,15 @@ use App\Utils\CmsEventConstraints;
 class CmsEventsService implements ICmsEventsService
 {
     public function __construct(
-        private IEventRepository $eventRepository,
-        private IEventSessionRepository $sessionRepository,
-        private IEventSessionLabelRepository $labelRepository,
-        private IEventSessionPriceRepository $priceRepository,
-        private IEventTypeRepository $eventTypeRepository,
-        private IVenueRepository $venueRepository,
-        private IPriceTierRepository $priceTierRepository,
-        private IScheduleDayConfigRepository $scheduleDayConfigRepository,
-        private IOrderItemRepository $orderItemRepository,
+        private readonly IEventRepository $eventRepository,
+        private readonly IEventSessionRepository $sessionRepository,
+        private readonly IEventSessionLabelRepository $labelRepository,
+        private readonly IEventSessionPriceRepository $priceRepository,
+        private readonly IEventTypeRepository $eventTypeRepository,
+        private readonly IVenueRepository $venueRepository,
+        private readonly IPriceTierRepository $priceTierRepository,
+        private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private readonly IOrderItemRepository $orderItemRepository,
     ) {
     }
 

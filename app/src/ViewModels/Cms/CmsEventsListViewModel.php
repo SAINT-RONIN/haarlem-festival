@@ -23,14 +23,14 @@ final readonly class CmsEventsListViewModel
      * @param string $selectedDay Current day filter
      */
     public function __construct(
-        public readonly array   $events,
-        public readonly array   $eventTypes,
-        public readonly array   $venues,
-        public readonly array   $weeklySchedule,
-        public readonly string  $selectedType,
-        public readonly string  $selectedDay,
-        public readonly ?string $successMessage,
-        public readonly ?string $errorMessage,
+        public array   $events,
+        public array   $eventTypes,
+        public array   $venues,
+        public array   $weeklySchedule,
+        public string  $selectedType,
+        public string  $selectedDay,
+        public ?string $successMessage,
+        public ?string $errorMessage,
     ) {
     }
 }

@@ -13,6 +13,8 @@ use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ISessionService;
+use App\ViewModels\Cms\CmsEventCreateViewModel;
+use App\ViewModels\Cms\CmsScheduleDaysViewModel;
 
 class CmsEventsController extends CmsBaseController
 {
@@ -42,13 +44,16 @@ class CmsEventsController extends CmsBaseController
         try {
             CmsAuthController::requireAdmin($this->sessionService);
 
-            $currentView    = 'events';
-            $eventTypes     = $this->eventsService->getEventTypes();
-            $venues         = $this->eventsService->getVenues();
-            $artists        = $this->artistsService->getArtists(null);
-            $restaurants    = $this->restaurantsService->getRestaurants(null);
-            $errorMessage   = $this->sessionService->consumeFlash('error');
-            $preselectedDay = $_GET['day'] ?? '';
+            $currentView = 'events';
+            $viewModel = new CmsEventCreateViewModel(
+                eventTypes: $this->eventsService->getEventTypes(),
+                venues: $this->eventsService->getVenues(),
+                artists: $this->artistsService->getArtists(null),
+                restaurants: $this->restaurantsService->getRestaurants(null),
+                errorMessage: $this->sessionService->consumeFlash('error'),
+                successMessage: $this->sessionService->consumeFlash('success'),
+                preselectedDay: $_GET['day'] ?? '',
+            );
 
             require __DIR__ . '/../Views/pages/cms/event-create.php';
         } catch (\Throwable $error) {
@@ -235,12 +240,14 @@ class CmsEventsController extends CmsBaseController
 
     private function renderScheduleDaysPage(): void
     {
-        $pageData       = $this->eventsService->getScheduleDaysPageData();
-        $eventTypes     = $pageData->eventTypes;
-        $globalConfigs  = $pageData->grouped->global;
-        $typeConfigs    = $pageData->grouped->byType;
-        $successMessage = $this->sessionService->consumeFlash('success');
-        $errorMessage   = $this->sessionService->consumeFlash('error');
+        $pageData  = $this->eventsService->getScheduleDaysPageData();
+        $viewModel = new CmsScheduleDaysViewModel(
+            eventTypes: $pageData->eventTypes,
+            globalConfigs: $pageData->grouped->global,
+            typeConfigs: $pageData->grouped->byType,
+            successMessage: $this->sessionService->consumeFlash('success'),
+            errorMessage: $this->sessionService->consumeFlash('error'),
+        );
         require __DIR__ . '/../Views/pages/cms/schedule-days.php';
     }
 

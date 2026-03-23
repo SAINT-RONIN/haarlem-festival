@@ -9,12 +9,13 @@ use App\Mappers\CmsOrdersMapper;
 use App\Services\Interfaces\ICmsOrdersService;
 use App\Services\Interfaces\ISessionService;
 
-class CmsOrdersController
+class CmsOrdersController extends CmsBaseController
 {
     public function __construct(
         private readonly ICmsOrdersService $ordersService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
     ) {
+        parent::__construct($sessionService);
     }
 
     public function index(): void

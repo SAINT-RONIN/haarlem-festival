@@ -21,7 +21,7 @@ use App\ViewModels\Cms\CmsMediaLibraryViewModel;
 use App\ViewModels\Cms\CmsMediaListItemViewModel;
 use App\ViewModels\Cms\CmsSessionPriceViewModel;
 
-class CmsEventsMapper
+final class CmsEventsMapper
 {
     public static function toMediaLibraryViewModel(
         array $assets,

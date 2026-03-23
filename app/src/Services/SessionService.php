@@ -113,17 +113,17 @@ class SessionService implements ISessionService
         return $_SESSION[$key] ?? $default;
     }
 
-    public function setFlash(string $key, string $message): void
+    public function setFlash(string $key, mixed $value): void
     {
         $this->start();
-        $_SESSION[self::FLASH_KEY][$key] = $message;
+        $_SESSION[self::FLASH_KEY][$key] = $value;
     }
 
-    public function consumeFlash(string $key): ?string
+    public function consumeFlash(string $key): mixed
     {
         $this->start();
 
-        $message = $_SESSION[self::FLASH_KEY][$key] ?? null;
+        $value = $_SESSION[self::FLASH_KEY][$key] ?? null;
         if (isset($_SESSION[self::FLASH_KEY][$key])) {
             unset($_SESSION[self::FLASH_KEY][$key]);
         }
@@ -132,7 +132,7 @@ class SessionService implements ISessionService
             unset($_SESSION[self::FLASH_KEY]);
         }
 
-        return is_string($message) ? $message : null;
+        return $value;
     }
 
     public function getCsrfToken(string $scope): string
