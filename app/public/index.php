@@ -55,8 +55,9 @@ use FastRoute\RouteCollector;
 // Load controller factory — returns a closure keyed by controller class name.
 $container = require __DIR__ . '/../bootstrap/container.php';
 
-// Define routes
-$dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
+// Define routes — cachedDispatcher writes the compiled route table to a file
+// so it only needs to parse route definitions once instead of every request.
+$dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     // Homepage
     $r->addRoute('GET', '/', [HomeController::class, 'index']);
 
@@ -180,7 +181,10 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'update']);
     $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
 
-});
+}, [
+    'cacheFile' => __DIR__ . '/../storage/cache/route.cache',
+    'cacheDisabled' => false,
+]);
 
 // Fetch method and URI from request
 $httpMethod = $_SERVER['REQUEST_METHOD'];

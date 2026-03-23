@@ -28,7 +28,6 @@ use App\Repositories\CmsContentRepository;
 use App\Repositories\CmsOrdersRepository;
 use App\Repositories\CmsRepository;
 use App\Repositories\CmsUsersRepository;
-use App\Repositories\Interfaces\ICmsUsersRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionRepository;
@@ -82,160 +81,161 @@ use App\Services\CmsPageContentService;
 use App\Services\StorytellingDetailService;
 use App\Services\StorytellingService;
 
+/**
+ * Lazy dependency container — only creates the repositories and services
+ * that the matched controller actually needs. Shared dependencies are
+ * cached via the $make() helper so they're created at most once per request.
+ */
 return static function (string $controllerClass): object {
 
-    // ── Repositories (created once, reused everywhere) ──
+    // Lazy singleton factory — caches each dependency on first creation
+    $singletons = [];
+    $make = static function (string $key, callable $factory) use (&$singletons): object {
+        return $singletons[$key] ??= $factory();
+    };
 
-    $cmsRepository = new CmsRepository();
-    $mediaAssetRepository = new MediaAssetRepository();
-    $eventRepository = new EventRepository();
-    $eventSessionRepository = new EventSessionRepository();
-    $eventSessionLabelRepository = new EventSessionLabelRepository();
-    $eventSessionPriceRepository = new EventSessionPriceRepository();
-    $eventTypeRepository = new EventTypeRepository();
-    $venueRepository = new VenueRepository();
-    $priceTierRepository = new PriceTierRepository();
-    $scheduleDayConfigRepository = new ScheduleDayConfigRepository();
-    $restaurantRepository = new RestaurantRepository();
-    $restaurantImageRepository = new RestaurantImageRepository();
-    $artistAlbumRepository = new ArtistAlbumRepository();
-    $artistTrackRepository = new ArtistTrackRepository();
-    $artistLineupMemberRepository = new ArtistLineupMemberRepository();
-    $artistHighlightRepository = new ArtistHighlightRepository();
-    $artistGalleryImageRepository = new ArtistGalleryImageRepository();
-    $eventHighlightRepository = new EventHighlightRepository();
-    $eventGalleryImageRepository = new EventGalleryImageRepository();
-    $pageGalleryImageRepository = new PageGalleryImageRepository();
-    $cuisineTypeRepository = new CuisineTypeRepository();
-    $userAccountRepository = new UserAccountRepository();
-    $passwordResetTokenRepository = new PasswordResetTokenRepository();
-    $programRepository = new ProgramRepository();
-    $orderRepository = new OrderRepository();
-    $orderItemRepository = new OrderItemRepository();
-    $paymentRepository = new PaymentRepository();
-    $stripeWebhookEventRepository = new StripeWebhookEventRepository();
-
-    // ── Services (built from shared repositories) ──
-
+    // SessionService is needed by almost every controller
     $sessionService = new SessionService();
-    $cmsContent = new CmsContentRepository($cmsRepository, $mediaAssetRepository);
-    $cmsPageContentService = new CmsPageContentService($cmsContent);
 
-    $cmsEventsService = new CmsEventsService(
-        $eventRepository,
-        $eventSessionRepository,
-        $eventSessionLabelRepository,
-        $eventSessionPriceRepository,
-        $eventTypeRepository,
-        $venueRepository,
-        $priceTierRepository,
-        $scheduleDayConfigRepository,
-        $orderItemRepository,
-    );
+    // ── Lazy repository accessors (shared across multiple controllers) ──
 
-    $scheduleService = new ScheduleService(
-        $cmsContent,
-        $eventSessionRepository,
-        $eventSessionLabelRepository,
-        $eventSessionPriceRepository,
-        $eventTypeRepository,
-        $scheduleDayConfigRepository,
-    );
+    $cmsRepo            = fn() => $make('cmsRepo', fn() => new CmsRepository());
+    $mediaAssetRepo     = fn() => $make('mediaAssetRepo', fn() => new MediaAssetRepository());
+    $eventRepo          = fn() => $make('eventRepo', fn() => new EventRepository());
+    $eventSessionRepo   = fn() => $make('eventSessionRepo', fn() => new EventSessionRepository());
+    $eventSessionLabel  = fn() => $make('eventSessionLabel', fn() => new EventSessionLabelRepository());
+    $eventSessionPrice  = fn() => $make('eventSessionPrice', fn() => new EventSessionPriceRepository());
+    $eventTypeRepo      = fn() => $make('eventTypeRepo', fn() => new EventTypeRepository());
+    $venueRepo          = fn() => $make('venueRepo', fn() => new VenueRepository());
+    $scheduleDayConfig  = fn() => $make('scheduleDayConfig', fn() => new ScheduleDayConfigRepository());
+    $restaurantRepo     = fn() => $make('restaurantRepo', fn() => new RestaurantRepository());
+    $userAccountRepo    = fn() => $make('userAccountRepo', fn() => new UserAccountRepository());
+    $resetTokenRepo     = fn() => $make('resetTokenRepo', fn() => new PasswordResetTokenRepository());
+    $programRepo        = fn() => $make('programRepo', fn() => new ProgramRepository());
+    $orderRepo          = fn() => $make('orderRepo', fn() => new OrderRepository());
+    $orderItemRepo      = fn() => $make('orderItemRepo', fn() => new OrderItemRepository());
+    $paymentRepo        = fn() => $make('paymentRepo', fn() => new PaymentRepository());
 
-    $programService = new ProgramService(
-        $programRepository,
-        $eventSessionRepository,
-        $eventSessionPriceRepository,
-    );
+    // ── Lazy service accessors (shared across multiple controllers) ──
 
-    // ── Controller wiring ──
+    $cmsContent = fn() => $make('cmsContent', fn() => new CmsContentRepository($cmsRepo(), $mediaAssetRepo()));
+    $cmsPageContent = fn() => $make('cmsPageContent', fn() => new CmsPageContentService($cmsContent()));
+
+    $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
+        $cmsContent(),
+        $eventSessionRepo(),
+        $eventSessionLabel(),
+        $eventSessionPrice(),
+        $eventTypeRepo(),
+        $scheduleDayConfig(),
+    ));
+
+    $programService = fn() => $make('programService', fn() => new ProgramService(
+        $programRepo(),
+        $eventSessionRepo(),
+        $eventSessionPrice(),
+    ));
+
+    $authService = fn() => $make('authService', fn() => new AuthService(
+        $userAccountRepo(),
+        $resetTokenRepo(),
+        new EmailService(),
+    ));
+
+    // ── Controller wiring — each arm only creates what it needs ──
 
     return match ($controllerClass) {
         HomeController::class => new HomeController(
             new HomeService(
-                $eventTypeRepository,
-                $venueRepository,
-                $restaurantRepository,
-                $eventSessionRepository,
-                $cmsContent,
+                $eventTypeRepo(),
+                $venueRepo(),
+                $restaurantRepo(),
+                $eventSessionRepo(),
+                $cmsContent(),
             ),
             $sessionService,
         ),
         RestaurantController::class => new RestaurantController(
             new RestaurantService(
-                $cmsContent,
-                $restaurantRepository,
-                $restaurantImageRepository,
-                $cuisineTypeRepository,
+                $cmsContent(),
+                $restaurantRepo(),
+                new RestaurantImageRepository(),
+                new CuisineTypeRepository(),
             ),
             $sessionService,
         ),
         StorytellingController::class => new StorytellingController(
             new StorytellingService(
-                $cmsContent,
+                $cmsContent(),
             ),
             new StorytellingDetailService(
-                $cmsContent,
-                $eventRepository,
-                $eventSessionRepository,
-                $eventSessionLabelRepository,
-                $mediaAssetRepository,
+                $cmsContent(),
+                $eventRepo(),
+                $eventSessionRepo(),
+                $eventSessionLabel(),
+                $mediaAssetRepo(),
             ),
             $sessionService,
-            $scheduleService,
+            $scheduleService(),
         ),
         JazzController::class => new JazzController(
             new JazzService(
-                $cmsContent,
+                $cmsContent(),
                 new PassTypeRepository(),
             ),
             new JazzArtistDetailService(
-                $cmsContent,
-                $eventRepository,
-                $artistAlbumRepository,
-                $artistTrackRepository,
-                $artistLineupMemberRepository,
-                $artistHighlightRepository,
-                $artistGalleryImageRepository,
+                $cmsContent(),
+                $eventRepo(),
+                new ArtistAlbumRepository(),
+                new ArtistTrackRepository(),
+                new ArtistLineupMemberRepository(),
+                new ArtistHighlightRepository(),
+                new ArtistGalleryImageRepository(),
             ),
             $sessionService,
-            $scheduleService,
+            $scheduleService(),
         ),
         CmsEventsController::class => new CmsEventsController(
-            $cmsEventsService,
+            new CmsEventsService(
+                $eventRepo(),
+                $eventSessionRepo(),
+                $eventSessionLabel(),
+                $eventSessionPrice(),
+                $eventTypeRepo(),
+                $venueRepo(),
+                new PriceTierRepository(),
+                $scheduleDayConfig(),
+                $orderItemRepo(),
+            ),
             $sessionService,
             new CmsArtistsService(new ArtistRepository()),
-            new CmsRestaurantsService($restaurantRepository),
+            new CmsRestaurantsService($restaurantRepo()),
         ),
         AuthController::class => new AuthController(
-            new AuthService(
-                $userAccountRepository,
-                $passwordResetTokenRepository,
-                new EmailService(),
-            ),
+            $authService(),
             $sessionService,
             new CaptchaService(),
         ),
         CmsDashboardController::class => new CmsDashboardController(
             $sessionService,
-            new CmsDashboardService($cmsRepository),
+            new CmsDashboardService($cmsRepo()),
             new CmsEditService(
-                $cmsRepository,
-                $mediaAssetRepository,
-                $eventRepository,
+                $cmsRepo(),
+                $mediaAssetRepo(),
+                $eventRepo(),
             ),
-            new MediaAssetService($mediaAssetRepository),
+            new MediaAssetService($mediaAssetRepo()),
         ),
         CheckoutController::class => new CheckoutController(
-            $programService,
-            $cmsPageContentService,
+            $programService(),
+            $cmsPageContent(),
             $sessionService,
             new CheckoutService(
-                $programRepository,
-                $orderRepository,
-                $orderItemRepository,
-                $paymentRepository,
-                $stripeWebhookEventRepository,
+                $programRepo(),
+                $orderRepo(),
+                $orderItemRepo(),
+                $paymentRepo(),
+                new StripeWebhookEventRepository(),
                 new StripeService(
                     (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
                     (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
@@ -250,29 +250,25 @@ return static function (string $controllerClass): object {
         ),
         HistoryController::class => new HistoryController(
             new HistoryService(
-                $cmsPageContentService,
+                $cmsPageContent(),
             ),
             new HistoricalLocationService(
-                $cmsPageContentService,
+                $cmsPageContent(),
             ),
             $sessionService,
-            $scheduleService,
+            $scheduleService(),
         ),
         CmsAuthController::class => new CmsAuthController(
-            new AuthService(
-                $userAccountRepository,
-                $passwordResetTokenRepository,
-                new EmailService(),
-            ),
+            $authService(),
             $sessionService,
         ),
         CmsMediaController::class => new CmsMediaController(
-            new MediaAssetService($mediaAssetRepository),
+            new MediaAssetService($mediaAssetRepo()),
             $sessionService,
         ),
         ProgramController::class => new ProgramController(
-            $programService,
-            $cmsPageContentService,
+            $programService(),
+            $cmsPageContent(),
             $sessionService,
         ),
         CmsOrdersController::class => new CmsOrdersController(
@@ -284,7 +280,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         CmsRestaurantsController::class => new CmsRestaurantsController(
-            new CmsRestaurantsService($restaurantRepository),
+            new CmsRestaurantsService($restaurantRepo()),
             $sessionService,
         ),
         CmsArtistsController::class => new CmsArtistsController(
@@ -292,7 +288,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         ScheduleApiController::class => new ScheduleApiController(
-            $scheduleService,
+            $scheduleService(),
         ),
         default => new $controllerClass(),
     };
