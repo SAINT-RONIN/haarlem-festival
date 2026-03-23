@@ -22,5 +22,6 @@ final readonly class JazzPageData
         public JazzArtistsSectionContent $artistsSection,
         public JazzBookingCtaSectionContent $bookingCtaSection,
         public array $passPrices,
+        public GlobalUiContent $globalUiContent,
     ) {}
 }

@@ -10,21 +10,21 @@
     <div class="flex flex-col gap-6 sm:gap-7">
         <header class="max-w-4xl flex flex-col gap-3 sm:gap-4">
             <h2 class="text-white/80 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-['Montserrat'] leading-tight">
-                <?= htmlspecialchars($viewModel->listenHeading) ?>
+                <?= htmlspecialchars($viewModel->media->listenHeading) ?>
             </h2>
             <h3 class="text-white text-2xl sm:text-3xl md:text-4xl font-normal font-['Montserrat']">
-                <?= htmlspecialchars($viewModel->listenSubheading) ?>
+                <?= htmlspecialchars($viewModel->media->listenSubheading) ?>
             </h3>
             <p class="text-white text-base sm:text-lg md:text-xl font-normal font-['Montserrat'] leading-relaxed">
-                <?= htmlspecialchars($viewModel->listenDescription) ?>
+                <?= htmlspecialchars($viewModel->media->listenDescription) ?>
             </p>
         </header>
 
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
-            <?php foreach ($viewModel->tracks as $track): ?>
+            <?php foreach ($viewModel->media->tracks as $track): ?>
                 <article class="bg-white rounded-xl shadow-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-4 sm:gap-5">
                     <img src="<?= htmlspecialchars($track->imageUrl) ?>"
-                         alt="<?= htmlspecialchars(trim($track->title . ' ' . $viewModel->listenTrackArtworkAltSuffix)) ?>"
+                         alt="<?= htmlspecialchars(trim($track->title . ' ' . $viewModel->media->listenTrackArtworkAltSuffix)) ?>"
                          class="w-full sm:w-28 md:w-36 lg:w-40 aspect-square rounded-lg object-cover">
 
                     <div class="flex-1 flex flex-col gap-2">
@@ -44,11 +44,11 @@
                                 <svg class="w-4 h-4 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                     <path d="M8 5v14l11-7z"></path>
                                 </svg>
-                                <span class="sr-only"><?= htmlspecialchars($viewModel->listenPlayButtonLabel) ?></span>
+                                <span class="sr-only"><?= htmlspecialchars($viewModel->media->listenPlayButtonLabel) ?></span>
                             </button>
                             <div class="flex-1 flex flex-col gap-2">
                                 <span class="text-black/70 text-sm sm:text-base font-normal font-['Montserrat']">
-                                    <?= htmlspecialchars($viewModel->listenPlayExcerptText) ?>
+                                    <?= htmlspecialchars($viewModel->media->listenPlayExcerptText) ?>
                                 </span>
                                 <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                                     <div class="h-full bg-royal-blue <?= htmlspecialchars($track->progressClass) ?>"></div>

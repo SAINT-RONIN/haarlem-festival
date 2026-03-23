@@ -9,7 +9,7 @@ use App\Models\HeroSectionContent;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 
-class CmsMapper
+final class CmsMapper
 {
     /**
      * @return array{hero_section: array<string, string>, global_ui: array<string, string|bool>}

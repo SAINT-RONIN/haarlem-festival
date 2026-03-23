@@ -9,15 +9,15 @@
 <section class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-10 md:py-12 flex flex-col gap-6">
     <header class="max-w-4xl flex flex-col gap-3 sm:gap-4">
         <h2 class="text-royal-blue text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-['Montserrat'] leading-tight">
-            <?= htmlspecialchars($viewModel->albumsHeading) ?>
+            <?= htmlspecialchars($viewModel->media->albumsHeading) ?>
         </h2>
         <p class="text-royal-blue/80 text-base sm:text-lg md:text-xl font-normal font-['Montserrat'] leading-relaxed">
-            <?= htmlspecialchars($viewModel->albumsDescription) ?>
+            <?= htmlspecialchars($viewModel->media->albumsDescription) ?>
         </p>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-        <?php foreach ($viewModel->albums as $album): ?>
+        <?php foreach ($viewModel->media->albums as $album): ?>
             <article class="flex flex-col gap-4">
                 <div class="rounded-2xl overflow-hidden shadow-xl">
                     <img src="<?= htmlspecialchars($album->imageUrl) ?>"

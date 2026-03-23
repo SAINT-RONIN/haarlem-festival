@@ -32,9 +32,11 @@ final readonly class JazzVenuesSectionContent
         public ?string $venueGrotemarktName,
         public ?string $venueGrotemarktLocation1,
         public ?string $venueGrotemarktLocation2,
+        public ?string $venueGrotemarktContact,
         public ?string $venueGrotemarktHallName,
         public ?string $venueGrotemarktHallDesc,
         public ?string $venueGrotemarktHallPrice,
+        public ?string $venueGrotemarktHallCapacity,
     ) {}
 
     /**
@@ -65,9 +67,11 @@ final readonly class JazzVenuesSectionContent
             venueGrotemarktName: $raw['venue_grotemarkt_name'] ?? null,
             venueGrotemarktLocation1: $raw['venue_grotemarkt_location1'] ?? null,
             venueGrotemarktLocation2: $raw['venue_grotemarkt_location2'] ?? null,
+            venueGrotemarktContact: $raw['venue_grotemarkt_contact'] ?? null,
             venueGrotemarktHallName: $raw['venue_grotemarkt_hall_name'] ?? null,
             venueGrotemarktHallDesc: $raw['venue_grotemarkt_hall_desc'] ?? null,
             venueGrotemarktHallPrice: $raw['venue_grotemarkt_hall_price'] ?? null,
+            venueGrotemarktHallCapacity: $raw['venue_grotemarkt_hall_capacity'] ?? null,
         );
     }
 }

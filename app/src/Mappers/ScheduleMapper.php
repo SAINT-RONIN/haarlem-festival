@@ -498,6 +498,22 @@ final class ScheduleMapper
         return $events;
     }
 
+    /**
+     * Flattens all events from all schedule days into typed ScheduleEventCardViewModels.
+     *
+     * @return ScheduleEventCardViewModel[]
+     */
+    public static function flattenEventsAsViewModels(array $scheduleData): array
+    {
+        $viewModels = [];
+        foreach ($scheduleData['days'] ?? [] as $day) {
+            foreach ($day['events'] ?? [] as $event) {
+                $viewModels[] = self::toEventCardViewModel($event, '', '', '');
+            }
+        }
+        return $viewModels;
+    }
+
     private static function str(array $content, string $key, string $default): string
     {
         $value = $content[$key] ?? null;

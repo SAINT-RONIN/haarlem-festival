@@ -198,7 +198,6 @@ return static function (string $controllerClass): object {
                 $artistHighlightRepository,
                 $artistGalleryImageRepository,
             ),
-            $cmsPageContentService,
             $sessionService,
             $scheduleService,
         ),

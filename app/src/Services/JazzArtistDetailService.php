@@ -9,7 +9,7 @@ use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Models\JazzArtistDetailCmsData;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\JazzArtistDetailPageData;
-use App\Repositories\CmsContentRepository;
+use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IArtistAlbumRepository;
 use App\Repositories\Interfaces\IArtistGalleryImageRepository;
 use App\Repositories\Interfaces\IArtistHighlightRepository;
@@ -24,7 +24,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     private static array $pageCache = [];
 
     public function __construct(
-        private readonly CmsContentRepository $cmsService,
+        private readonly ICmsContentRepository $cmsService,
         private readonly IEventRepository $eventRepository,
         private readonly IArtistAlbumRepository $albumRepository,
         private readonly IArtistTrackRepository $trackRepository,
@@ -44,15 +44,26 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         }
 
         $event = $this->findJazzEventBySlug($normalizedSlug);
+        $pageData = $this->buildPageData($event);
+        $this->setCachedPageData($normalizedSlug, $pageData);
 
-        $pageData = new JazzArtistDetailPageData(
+        return $pageData;
+    }
+
+    private function fetchCmsContent(int $eventId): JazzArtistDetailCmsData
+    {
+        $raw = $this->cmsService->getSectionContent(
+            JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
+            JazzArtistDetailConstants::eventSectionKey($eventId),
+        );
+        return JazzArtistDetailCmsData::fromRawArray($raw);
+    }
+
+    private function buildPageData(JazzArtistDetailEvent $event): JazzArtistDetailPageData
+    {
+        return new JazzArtistDetailPageData(
             event: $event,
-            cms: JazzArtistDetailCmsData::fromRawArray(
-                $this->cmsService->getSectionContent(
-                    JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
-                    JazzArtistDetailConstants::eventSectionKey($event->eventId),
-                ),
-            ),
+            cms: $this->fetchCmsContent($event->eventId),
             eventId: $event->eventId,
             albums: $this->albumRepository->findByEventId($event->eventId),
             tracks: $this->trackRepository->findByEventId($event->eventId),
@@ -60,10 +71,6 @@ class JazzArtistDetailService implements IJazzArtistDetailService
             highlights: $this->highlightRepository->findByEventId($event->eventId),
             galleryImages: $this->galleryImageRepository->findByEventId($event->eventId),
         );
-
-        $this->setCachedPageData($normalizedSlug, $pageData);
-
-        return $pageData;
     }
 
     private function setCachedPageData(string $slug, JazzArtistDetailPageData $pageData): void
@@ -81,8 +88,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
             return null;
         }
 
-        $expiresAt = (int)($entry['expiresAt'] ?? 0);
-        if ($expiresAt < time()) {
+        if ((int)($entry['expiresAt'] ?? 0) < time()) {
             unset(self::$pageCache[$slug]);
             return null;
         }
