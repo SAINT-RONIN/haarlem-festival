@@ -34,9 +34,9 @@ use App\Utils\CmsContentLimits;
 class CmsEditService implements ICmsEditService
 {
     public function __construct(
-        private ICmsRepository $cmsRepository,
-        private IMediaAssetRepository $mediaAssetRepository,
-        private IEventRepository $eventRepository,
+        private readonly ICmsRepository $cmsRepository,
+        private readonly IMediaAssetRepository $mediaAssetRepository,
+        private readonly IEventRepository $eventRepository,
     ) {
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\OrderWithDetails;
-use App\Repositories\CmsOrdersRepository;
+use App\Repositories\Interfaces\ICmsOrdersRepository;
 use App\Services\Interfaces\ICmsOrdersService;
 
 /**
@@ -14,7 +14,7 @@ use App\Services\Interfaces\ICmsOrdersService;
 class CmsOrdersService implements ICmsOrdersService
 {
     public function __construct(
-        private readonly CmsOrdersRepository $ordersRepository,
+        private readonly ICmsOrdersRepository $ordersRepository,
     ) {
     }
 

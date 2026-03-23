@@ -18,14 +18,15 @@ use App\Services\Interfaces\ICaptchaService;
  */
 class CaptchaService implements ICaptchaService
 {
-    private string $siteKey;
-    private string $secretKey;
-    private string $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
+    private readonly string $siteKey;
+    private readonly string $secretKey;
+    private readonly string $verifyUrl;
 
     public function __construct()
     {
         $this->siteKey = getenv('RECAPTCHA_SITE_KEY') ?: '';
         $this->secretKey = getenv('RECAPTCHA_SECRET_KEY') ?: '';
+        $this->verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
     }
 
     /**

@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\OrderWithDetails;
+use App\Repositories\Interfaces\ICmsOrdersRepository;
 use PDO;
 
 /**
  * Fetches orders joined with user email, item summary, and latest payment status
  * for the CMS orders list page.
  */
-class CmsOrdersRepository
+class CmsOrdersRepository implements ICmsOrdersRepository
 {
     public function __construct(
         private readonly PDO $pdo,

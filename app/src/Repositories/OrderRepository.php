@@ -80,14 +80,15 @@ class OrderRepository implements IOrderRepository
         if ($allowedCurrentStatuses === []) {
             return;
         }
-        $placeholders = implode(', ', array_fill(0, count($allowedCurrentStatuses), '?'));
-        $stmt = $this->pdo->prepare(
-            "UPDATE `Order` SET Status = ? WHERE OrderId = ? AND Status IN ({$placeholders})"
-        );
-        $params = [$newStatus->value, $orderId];
-        foreach ($allowedCurrentStatuses as $status) {
-            $params[] = $status->value;
+        $inPlaceholders = [];
+        $params = [':newStatus' => $newStatus->value, ':orderId' => $orderId];
+        foreach ($allowedCurrentStatuses as $i => $status) {
+            $key = ':allowedStatus' . $i;
+            $inPlaceholders[] = $key;
+            $params[$key] = $status->value;
         }
+        $in = implode(', ', $inPlaceholders);
+        $stmt = $this->pdo->prepare("UPDATE `Order` SET Status = :newStatus WHERE OrderId = :orderId AND Status IN ({$in})");
         $stmt->execute($params);
     }
 }

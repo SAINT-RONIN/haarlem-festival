@@ -12,7 +12,7 @@ use App\Services\Interfaces\ICmsDashboardService;
 class CmsDashboardService implements ICmsDashboardService
 {
     public function __construct(
-        private ICmsRepository $cmsRepository,
+        private readonly ICmsRepository $cmsRepository,
     ) {
     }
 

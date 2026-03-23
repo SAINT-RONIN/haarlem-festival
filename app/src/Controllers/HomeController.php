@@ -17,8 +17,8 @@ use App\Services\Interfaces\ISessionService;
 class HomeController extends BaseController
 {
     public function __construct(
-        private IHomeService $homeService,
-        private ISessionService $sessionService,
+        private readonly IHomeService $homeService,
+        private readonly ISessionService $sessionService,
     ) {
     }
 

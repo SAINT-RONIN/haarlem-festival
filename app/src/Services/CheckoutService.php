@@ -21,33 +21,16 @@ use PDO;
 
 class CheckoutService implements ICheckoutService
 {
-    private IProgramRepository $programRepository;
-    private IOrderRepository $orderRepository;
-    private IOrderItemRepository $orderItemRepository;
-    private IPaymentRepository $paymentRepository;
-    private IStripeWebhookEventRepository $webhookEventRepository;
-    private IStripeService $stripeService;
-    private ICheckoutRuntimeConfig $runtimeConfig;
-    private PDO $pdo;
-
     public function __construct(
-        IProgramRepository $programRepository,
-        IOrderRepository $orderRepository,
-        IOrderItemRepository $orderItemRepository,
-        IPaymentRepository $paymentRepository,
-        IStripeWebhookEventRepository $webhookEventRepository,
-        IStripeService $stripeService,
-        ICheckoutRuntimeConfig $runtimeConfig,
-        PDO $pdo,
+        private readonly IProgramRepository $programRepository,
+        private readonly IOrderRepository $orderRepository,
+        private readonly IOrderItemRepository $orderItemRepository,
+        private readonly IPaymentRepository $paymentRepository,
+        private readonly IStripeWebhookEventRepository $webhookEventRepository,
+        private readonly IStripeService $stripeService,
+        private readonly ICheckoutRuntimeConfig $runtimeConfig,
+        private readonly PDO $pdo,
     ) {
-        $this->programRepository = $programRepository;
-        $this->orderRepository = $orderRepository;
-        $this->orderItemRepository = $orderItemRepository;
-        $this->paymentRepository = $paymentRepository;
-        $this->webhookEventRepository = $webhookEventRepository;
-        $this->stripeService = $stripeService;
-        $this->runtimeConfig = $runtimeConfig;
-        $this->pdo = $pdo;
     }
 
     /**

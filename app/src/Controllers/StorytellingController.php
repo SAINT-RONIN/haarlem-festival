@@ -14,6 +14,7 @@ use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
 use App\Services\Interfaces\IStorytellingDetailService;
 use App\Services\Interfaces\IStorytellingService;
+use App\Controllers\Support\ControllerErrorResponder;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 class StorytellingController extends BaseController
@@ -32,11 +33,15 @@ class StorytellingController extends BaseController
      */
     public function index(): void
     {
-        $pageData = $this->storytellingService->getStorytellingPageData();
-        $scheduleSection = $this->buildListingScheduleSection();
-        $isLoggedIn = $this->sessionService->isLoggedIn();
-        $viewModel = StorytellingMapper::toPageViewModel($pageData, $scheduleSection, $isLoggedIn);
-        $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
+        try {
+            $pageData = $this->storytellingService->getStorytellingPageData();
+            $scheduleSection = $this->buildListingScheduleSection();
+            $isLoggedIn = $this->sessionService->isLoggedIn();
+            $viewModel = StorytellingMapper::toPageViewModel($pageData, $scheduleSection, $isLoggedIn);
+            $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
     private function buildListingScheduleSection(): ScheduleSectionViewModel

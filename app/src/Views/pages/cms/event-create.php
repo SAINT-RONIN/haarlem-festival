@@ -246,12 +246,8 @@
                         <li>Set pricing for each session</li>
                         <li>Add labels/badges (e.g., "In Dutch", "Age 16+")</li>
                         <li>Configure the CTA button text and link</li>
-                        <?php if (true): // Jazz type specific?>
-                            <li>For Jazz: Set available seats per session</li>
-                        <?php endif; ?>
-                        <?php if (true): // History type specific?>
-                            <li>For History: Set ticket type labels</li>
-                        <?php endif; ?>
+                        <li>For Jazz: Set available seats per session</li>
+                        <li>For History: Set ticket type labels</li>
                     </ul>
                 </div>
             </div>

@@ -86,15 +86,16 @@ class PaymentRepository implements IPaymentRepository
         if ($allowedCurrentStatuses === []) {
             return;
         }
-        $placeholders = implode(', ', array_fill(0, count($allowedCurrentStatuses), '?'));
-        $stmt = $this->pdo->prepare(
-            "UPDATE Payment SET Status = ?, PaidAtUtc = ? WHERE PaymentId = ? AND Status IN ({$placeholders})"
-        );
         $paidAtUtc = $newStatus === PaymentStatus::Paid ? (new \DateTimeImmutable())->format('Y-m-d H:i:s') : null;
-        $params = [$newStatus->value, $paidAtUtc, $paymentId];
-        foreach ($allowedCurrentStatuses as $status) {
-            $params[] = $status->value;
+        $inPlaceholders = [];
+        $params = [':newStatus' => $newStatus->value, ':paidAtUtc' => $paidAtUtc, ':paymentId' => $paymentId];
+        foreach ($allowedCurrentStatuses as $i => $status) {
+            $key = ':allowedStatus' . $i;
+            $inPlaceholders[] = $key;
+            $params[$key] = $status->value;
         }
+        $in = implode(', ', $inPlaceholders);
+        $stmt = $this->pdo->prepare("UPDATE Payment SET Status = :newStatus, PaidAtUtc = :paidAtUtc WHERE PaymentId = :paymentId AND Status IN ({$in})");
         $stmt->execute($params);
     }
 }

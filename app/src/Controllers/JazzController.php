@@ -14,6 +14,7 @@ use App\Services\Interfaces\IJazzArtistDetailService;
 use App\Services\Interfaces\IJazzService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
+use App\Controllers\Support\ControllerErrorResponder;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
@@ -31,10 +32,14 @@ class JazzController extends BaseController
 
     public function index(): void
     {
-        $data = $this->jazzService->getJazzPageData();
-        $scheduleSection = $this->buildListingScheduleSection();
-        $viewModel = JazzMapper::toPageViewModel($data, $scheduleSection, $this->sessionService->isLoggedIn());
-        $this->renderPage(__DIR__ . '/../Views/pages/jazz.php', $viewModel);
+        try {
+            $data = $this->jazzService->getJazzPageData();
+            $scheduleSection = $this->buildListingScheduleSection();
+            $viewModel = JazzMapper::toPageViewModel($data, $scheduleSection, $this->sessionService->isLoggedIn());
+            $this->renderPage(__DIR__ . '/../Views/pages/jazz.php', $viewModel);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
     private function buildListingScheduleSection(): ScheduleSectionViewModel

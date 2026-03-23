@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Constants\CmsMessages;
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\CmsEditException;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsDashboardMapper;
@@ -41,20 +42,24 @@ class CmsDashboardController
      */
     public function index(): void
     {
-        CmsAuthController::requireAdmin($this->sessionService);
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
 
-        $currentView = 'dashboard';
-        $domainData = $this->cmsDashboardService->getDashboardData();
-        $viewModel = CmsDashboardMapper::toDashboardViewModel(
-            $domainData->recentPages,
-            $domainData->activities,
-            $this->getUserDisplayName(),
-        );
+            $currentView = 'dashboard';
+            $domainData = $this->cmsDashboardService->getDashboardData();
+            $viewModel = CmsDashboardMapper::toDashboardViewModel(
+                $domainData->recentPages,
+                $domainData->activities,
+                $this->getUserDisplayName(),
+            );
 
-        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
-            'currentView' => $currentView,
-            'viewModel' => $viewModel,
-        ]);
+            $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+                'currentView' => $currentView,
+                'viewModel' => $viewModel,
+            ]);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
     /**
@@ -63,18 +68,22 @@ class CmsDashboardController
      */
     public function pages(): void
     {
-        CmsAuthController::requireAdmin($this->sessionService);
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
 
-        $currentView = 'pages';
-        $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
-        $allPages = $this->cmsDashboardService->getPagesListData();
-        $viewModel = CmsDashboardMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
+            $currentView = 'pages';
+            $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
+            $allPages = $this->cmsDashboardService->getPagesListData();
+            $viewModel = CmsDashboardMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
 
-        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
-            'currentView' => $currentView,
-            'searchQuery' => $searchQuery,
-            'viewModel' => $viewModel,
-        ]);
+            $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+                'currentView' => $currentView,
+                'searchQuery' => $searchQuery,
+                'viewModel' => $viewModel,
+            ]);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
     /**
