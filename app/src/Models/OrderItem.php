@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class OrderItem
+final readonly class OrderItem
 {
     /*
      * Purpose: Stores individual items in an order (tickets, passes, tours)
@@ -18,16 +18,16 @@ class OrderItem
      */
 
     public function __construct(
-        public readonly int     $orderItemId,
-        public readonly int     $orderId,
-        public readonly ?int    $eventSessionId,
-        public readonly ?int    $historyTourId,
-        public readonly ?int    $passPurchaseId,
-        public readonly int     $quantity,
-        public readonly string  $unitPrice,
-        public readonly string  $vatRate,
-        public readonly ?string $donationAmount,
-        public readonly string  $specialRequest,
+        public int     $orderItemId,
+        public int     $orderId,
+        public ?int    $eventSessionId,
+        public ?int    $historyTourId,
+        public ?int    $passPurchaseId,
+        public int     $quantity,
+        public string  $unitPrice,
+        public string  $vatRate,
+        public ?string $donationAmount,
+        public string  $specialRequest,
     ) {
     }
 

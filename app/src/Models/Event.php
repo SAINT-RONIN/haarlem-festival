@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Event
+final readonly class Event
 {
     /*
      * Purpose: Holds event data (title, description, linked venue/artist/restaurant)
@@ -18,17 +18,17 @@ class Event
      */
 
     public function __construct(
-        public readonly int                $eventId,
-        public readonly int                $eventTypeId,
-        public readonly string             $title,
-        public readonly string             $shortDescription,
-        public readonly string             $longDescriptionHtml,
-        public readonly ?int               $featuredImageAssetId,
-        public readonly ?int               $venueId,
-        public readonly ?int               $artistId,
-        public readonly ?int               $restaurantId,
-        public readonly bool               $isActive,
-        public readonly \DateTimeImmutable $createdAtUtc,
+        public int                $eventId,
+        public int                $eventTypeId,
+        public string             $title,
+        public string             $shortDescription,
+        public string             $longDescriptionHtml,
+        public ?int               $featuredImageAssetId,
+        public ?int               $venueId,
+        public ?int               $artistId,
+        public ?int               $restaurantId,
+        public bool               $isActive,
+        public \DateTimeImmutable $createdAtUtc,
     ) {
     }
 

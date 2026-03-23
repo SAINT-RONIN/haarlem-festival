@@ -7,13 +7,13 @@ namespace App\Models;
 /**
  * Represents a single row from the `ArtistHighlight` table.
  */
-class ArtistHighlight
+final readonly class ArtistHighlight
 {
     public function __construct(
-        public readonly int    $artistHighlightId,
-        public readonly int    $eventId,
-        public readonly string $highlightText,
-        public readonly int    $sortOrder,
+        public int    $artistHighlightId,
+        public int    $eventId,
+        public string $highlightText,
+        public int    $sortOrder,
     ) {}
 
     public static function fromRow(array $row): self

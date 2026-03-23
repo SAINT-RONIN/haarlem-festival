@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-final class Artist
+final readonly class Artist
 {
     /*
      * Purpose: Holds artist information (name, style, bio) for performers
@@ -18,13 +18,13 @@ final class Artist
      */
 
     public function __construct(
-        public readonly int                $artistId,
-        public readonly string             $name,
-        public readonly string             $style,
-        public readonly string             $bioHtml,
-        public readonly ?int               $imageAssetId,
-        public readonly bool               $isActive,
-        public readonly \DateTimeImmutable $createdAtUtc,
+        public int                $artistId,
+        public string             $name,
+        public string             $style,
+        public string             $bioHtml,
+        public ?int               $imageAssetId,
+        public bool               $isActive,
+        public \DateTimeImmutable $createdAtUtc,
     ) {
     }
 

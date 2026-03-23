@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class PassPurchase
+final readonly class PassPurchase
 {
     /*
      * Purpose: Records a user's purchased festival pass with
@@ -18,13 +18,13 @@ class PassPurchase
      */
 
     public function __construct(
-        public readonly int                 $passPurchaseId,
-        public readonly int                 $passTypeId,
-        public readonly int                 $userAccountId,
-        public readonly ?\DateTimeImmutable $validDate,
-        public readonly ?\DateTimeImmutable $validFromDate,
-        public readonly ?\DateTimeImmutable $validToDate,
-        public readonly \DateTimeImmutable  $createdAtUtc,
+        public int                 $passPurchaseId,
+        public int                 $passTypeId,
+        public int                 $userAccountId,
+        public ?\DateTimeImmutable $validDate,
+        public ?\DateTimeImmutable $validFromDate,
+        public ?\DateTimeImmutable $validToDate,
+        public \DateTimeImmutable  $createdAtUtc,
     ) {
     }
 

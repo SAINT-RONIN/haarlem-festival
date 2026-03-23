@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Program
+final readonly class Program
 {
     /*
      * Purpose: Represents a user's shopping cart/program containing
@@ -18,11 +18,11 @@ class Program
      */
 
     public function __construct(
-        public readonly int                $programId,
-        public readonly ?int               $userAccountId,
-        public readonly ?string            $sessionKey,
-        public readonly \DateTimeImmutable $createdAtUtc,
-        public readonly bool               $isCheckedOut,
+        public int                $programId,
+        public ?int               $userAccountId,
+        public ?string            $sessionKey,
+        public \DateTimeImmutable $createdAtUtc,
+        public bool               $isCheckedOut,
     ) {
     }
 

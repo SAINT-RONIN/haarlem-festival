@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Invoice
+final readonly class Invoice
 {
     /*
      * Purpose: Stores invoice header data including client details,
@@ -18,19 +18,19 @@ class Invoice
      */
 
     public function __construct(
-        public readonly int                 $invoiceId,
-        public readonly int                 $orderId,
-        public readonly string              $invoiceNumber,
-        public readonly \DateTimeImmutable  $invoiceDateUtc,
-        public readonly string              $clientName,
-        public readonly string              $phoneNumber,
-        public readonly string              $addressLine,
-        public readonly string              $emailAddress,
-        public readonly string              $subtotalAmount,
-        public readonly string              $totalVatAmount,
-        public readonly string              $totalAmount,
-        public readonly ?\DateTimeImmutable $paymentDateUtc,
-        public readonly ?int                $pdfAssetId,
+        public int                 $invoiceId,
+        public int                 $orderId,
+        public string              $invoiceNumber,
+        public \DateTimeImmutable  $invoiceDateUtc,
+        public string              $clientName,
+        public string              $phoneNumber,
+        public string              $addressLine,
+        public string              $emailAddress,
+        public string              $subtotalAmount,
+        public string              $totalVatAmount,
+        public string              $totalAmount,
+        public ?\DateTimeImmutable $paymentDateUtc,
+        public ?int                $pdfAssetId,
     ) {
     }
 

@@ -12,7 +12,7 @@ use App\Enums\OrderStatus;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Order
+final readonly class Order
 {
     /*
      * Purpose: Stores order header data including status, totals,
@@ -20,16 +20,16 @@ class Order
      */
 
     public function __construct(
-        public readonly int                 $orderId,
-        public readonly string              $orderNumber,
-        public readonly int                 $userAccountId,
-        public readonly int                 $programId,
-        public readonly OrderStatus         $status,
-        public readonly \DateTimeImmutable  $createdAtUtc,
-        public readonly ?\DateTimeImmutable $payBeforeUtc,
-        public readonly string              $subtotal,
-        public readonly string              $vatTotal,
-        public readonly string              $totalAmount,
+        public int                 $orderId,
+        public string              $orderNumber,
+        public int                 $userAccountId,
+        public int                 $programId,
+        public OrderStatus         $status,
+        public \DateTimeImmutable  $createdAtUtc,
+        public ?\DateTimeImmutable $payBeforeUtc,
+        public string              $subtotal,
+        public string              $vatTotal,
+        public string              $totalAmount,
     ) {
     }
 

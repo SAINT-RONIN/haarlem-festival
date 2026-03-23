@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Venue
+final readonly class Venue
 {
     /*
      * Purpose: Stores venue/location information where festival
@@ -18,12 +18,12 @@ class Venue
      */
 
     public function __construct(
-        public readonly int                $venueId,
-        public readonly string             $name,
-        public readonly string             $addressLine,
-        public readonly string             $city,
-        public readonly \DateTimeImmutable $createdAtUtc,
-        public readonly bool               $isActive,
+        public int                $venueId,
+        public string             $name,
+        public string             $addressLine,
+        public string             $city,
+        public \DateTimeImmutable $createdAtUtc,
+        public bool               $isActive,
     ) {
     }
 

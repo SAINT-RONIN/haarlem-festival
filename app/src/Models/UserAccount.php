@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class UserAccount
+final readonly class UserAccount
 {
     /*
      * Purpose: Stores user account data including credentials,
@@ -18,19 +18,19 @@ class UserAccount
      */
 
     public function __construct(
-        public readonly int                $userAccountId,
-        public readonly int                $userRoleId,
-        public readonly string             $username,
-        public readonly string             $email,
-        public readonly string             $passwordHash,
-        public readonly ?string            $passwordSalt, // Nullable for Argon2id (salt embedded in hash)
-        public readonly string             $firstName,
-        public readonly string             $lastName,
-        public readonly ?int               $profilePictureAssetId,
-        public readonly bool               $isEmailConfirmed,
-        public readonly bool               $isActive,
-        public readonly \DateTimeImmutable $registeredAtUtc,
-        public readonly \DateTimeImmutable $updatedAtUtc,
+        public int                $userAccountId,
+        public int                $userRoleId,
+        public string             $username,
+        public string             $email,
+        public string             $passwordHash,
+        public ?string            $passwordSalt, // Nullable for Argon2id (salt embedded in hash)
+        public string             $firstName,
+        public string             $lastName,
+        public ?int               $profilePictureAssetId,
+        public bool               $isEmailConfirmed,
+        public bool               $isActive,
+        public \DateTimeImmutable $registeredAtUtc,
+        public \DateTimeImmutable $updatedAtUtc,
     ) {
     }
 

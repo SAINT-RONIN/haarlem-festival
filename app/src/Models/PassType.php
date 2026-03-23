@@ -12,7 +12,7 @@ use App\Enums\PassScope;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class PassType
+final readonly class PassType
 {
     /*
      * Purpose: Defines available festival pass types (day pass, all-access)
@@ -20,14 +20,14 @@ class PassType
      */
 
     public function __construct(
-        public readonly int       $passTypeId,
-        public readonly int       $eventTypeId,
-        public readonly string    $passName,
-        public readonly PassScope $passScope,
-        public readonly string    $price,
-        public readonly string    $vatRate,
-        public readonly string    $currencyCode,
-        public readonly bool      $isActive,
+        public int       $passTypeId,
+        public int       $eventTypeId,
+        public string    $passName,
+        public PassScope $passScope,
+        public string    $price,
+        public string    $vatRate,
+        public string    $currencyCode,
+        public bool      $isActive,
     ) {
     }
 

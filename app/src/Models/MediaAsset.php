@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class MediaAsset
+final readonly class MediaAsset
 {
     /*
      * Purpose: Stores metadata for uploaded files (images, PDFs)
@@ -18,13 +18,13 @@ class MediaAsset
      */
 
     public function __construct(
-        public readonly int                $mediaAssetId,
-        public readonly string             $filePath,
-        public readonly string             $originalFileName,
-        public readonly string             $mimeType,
-        public readonly int                $fileSizeBytes,
-        public readonly string             $altText,
-        public readonly \DateTimeImmutable $createdAtUtc,
+        public int                $mediaAssetId,
+        public string             $filePath,
+        public string             $originalFileName,
+        public string             $mimeType,
+        public int                $fileSizeBytes,
+        public string             $altText,
+        public \DateTimeImmutable $createdAtUtc,
     ) {
     }
 

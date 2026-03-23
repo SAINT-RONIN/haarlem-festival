@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Ticket
+final readonly class Ticket
 {
     /*
      * Purpose: Stores individual tickets with unique codes for
@@ -18,13 +18,13 @@ class Ticket
      */
 
     public function __construct(
-        public readonly int                 $ticketId,
-        public readonly int                 $orderItemId,
-        public readonly string              $ticketCode,
-        public readonly bool                $isScanned,
-        public readonly ?\DateTimeImmutable $scannedAtUtc,
-        public readonly ?int                $scannedByUserId,
-        public readonly ?int                $pdfAssetId,
+        public int                 $ticketId,
+        public int                 $orderItemId,
+        public string              $ticketCode,
+        public bool                $isScanned,
+        public ?\DateTimeImmutable $scannedAtUtc,
+        public ?int                $scannedByUserId,
+        public ?int                $pdfAssetId,
     ) {
     }
 

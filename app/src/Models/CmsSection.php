@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class CmsSection
+final readonly class CmsSection
 {
     /*
      * Purpose: Groups CMS items into logical sections within a page
@@ -18,9 +18,9 @@ class CmsSection
      */
 
     public function __construct(
-        public readonly int    $cmsSectionId,
-        public readonly int    $cmsPageId,
-        public readonly string $sectionKey,
+        public int    $cmsSectionId,
+        public int    $cmsPageId,
+        public string $sectionKey,
     ) {
     }
 

@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class ProgramItem
+final readonly class ProgramItem
 {
     /*
      * Purpose: Stores individual items in a user's program/cart
@@ -18,14 +18,14 @@ class ProgramItem
      */
 
     public function __construct(
-        public readonly int                 $programItemId,
-        public readonly int                 $programId,
-        public readonly ?int                $eventSessionId,
-        public readonly ?int                $historyTourId,
-        public readonly ?int                $passTypeId,
-        public readonly ?\DateTimeImmutable $passValidDate,
-        public readonly int                 $quantity,
-        public readonly ?string             $donationAmount,
+        public int                 $programItemId,
+        public int                 $programId,
+        public ?int                $eventSessionId,
+        public ?int                $historyTourId,
+        public ?int                $passTypeId,
+        public ?\DateTimeImmutable $passValidDate,
+        public int                 $quantity,
+        public ?string             $donationAmount,
     ) {
     }
 

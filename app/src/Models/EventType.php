@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class EventType
+final readonly class EventType
 {
     /*
      * Purpose: Categorizes events by type (Jazz, Dance, History, etc.)
@@ -18,9 +18,9 @@ class EventType
      */
 
     public function __construct(
-        public readonly int    $eventTypeId,
-        public readonly string $name,
-        public readonly string $slug,
+        public int    $eventTypeId,
+        public string $name,
+        public string $slug,
     ) {
     }
 

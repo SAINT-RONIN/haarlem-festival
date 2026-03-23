@@ -7,14 +7,14 @@ namespace App\Models;
 /**
  * Represents a single row from the `EventGalleryImage` table.
  */
-class EventGalleryImage
+final readonly class EventGalleryImage
 {
     public function __construct(
-        public readonly int    $eventGalleryImageId,
-        public readonly int    $eventId,
-        public readonly string $imagePath,
-        public readonly string $imageType,
-        public readonly int    $sortOrder,
+        public int    $eventGalleryImageId,
+        public int    $eventId,
+        public string $imagePath,
+        public string $imageType,
+        public int    $sortOrder,
     ) {}
 
     public static function fromRow(array $row): self

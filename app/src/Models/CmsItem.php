@@ -12,7 +12,7 @@ use App\Enums\CmsItemType;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class CmsItem
+final readonly class CmsItem
 {
     /*
      * Purpose: Holds individual CMS content items (text, HTML, or media)
@@ -20,14 +20,14 @@ class CmsItem
      */
 
     public function __construct(
-        public readonly int                $cmsItemId,
-        public readonly int                $cmsSectionId,
-        public readonly string             $itemKey,
-        public readonly CmsItemType        $itemType,
-        public readonly ?string            $textValue,
-        public readonly ?string            $htmlValue,
-        public readonly ?int               $mediaAssetId,
-        public readonly \DateTimeImmutable $updatedAtUtc,
+        public int                $cmsItemId,
+        public int                $cmsSectionId,
+        public string             $itemKey,
+        public CmsItemType        $itemType,
+        public ?string            $textValue,
+        public ?string            $htmlValue,
+        public ?int               $mediaAssetId,
+        public \DateTimeImmutable $updatedAtUtc,
     ) {
     }
 

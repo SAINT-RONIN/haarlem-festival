@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class PasswordResetToken
+final readonly class PasswordResetToken
 {
     /*
      * Purpose: Stores tokens for password reset requests,
@@ -18,11 +18,11 @@ class PasswordResetToken
      */
 
     public function __construct(
-        public readonly int                 $passwordResetTokenId,
-        public readonly int                 $userAccountId,
-        public readonly string              $token,
-        public readonly \DateTimeImmutable  $expiresAtUtc,
-        public readonly ?\DateTimeImmutable $usedAtUtc,
+        public int                 $passwordResetTokenId,
+        public int                 $userAccountId,
+        public string              $token,
+        public \DateTimeImmutable  $expiresAtUtc,
+        public ?\DateTimeImmutable $usedAtUtc,
     ) {
     }
 

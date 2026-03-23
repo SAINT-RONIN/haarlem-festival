@@ -7,11 +7,11 @@ namespace App\Models;
 /**
  * Represents a single row from the `CuisineType` table.
  */
-class CuisineType
+final readonly class CuisineType
 {
     public function __construct(
-        public readonly int    $cuisineTypeId,
-        public readonly string $name,
+        public int    $cuisineTypeId,
+        public string $name,
     ) {}
 
     public static function fromRow(array $row): self

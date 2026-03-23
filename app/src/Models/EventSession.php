@@ -9,33 +9,33 @@ namespace App\Models;
  *
  * Columns verified against complete-database-11-02-2026.sql.
  */
-class EventSession
+final readonly class EventSession
 {
     public function __construct(
-        public readonly int                 $eventSessionId,
-        public readonly int                 $eventId,
-        public readonly \DateTimeImmutable  $startDateTime,
-        public readonly ?\DateTimeImmutable $endDateTime,
-        public readonly int                 $capacityTotal,
-        public readonly int                 $capacitySingleTicketLimit,
-        public readonly ?int                $seatsAvailable,
-        public readonly int                 $soldSingleTickets,
-        public readonly int                 $soldReservedSeats,
-        public readonly ?string             $hallName,
-        public readonly ?string             $sessionType,
-        public readonly ?int                $durationMinutes,
-        public readonly ?string             $languageCode,
-        public readonly ?int                $minAge,
-        public readonly ?int                $maxAge,
-        public readonly bool                $reservationRequired,
-        public readonly bool                $isFree,
-        public readonly string              $notes,
-        public readonly ?string             $historyTicketLabel,
-        public readonly ?string             $ctaLabel,
-        public readonly ?string             $ctaUrl,
-        public readonly bool                $isCancelled,
-        public readonly \DateTimeImmutable  $createdAtUtc,
-        public readonly bool                $isActive,
+        public int                 $eventSessionId,
+        public int                 $eventId,
+        public \DateTimeImmutable  $startDateTime,
+        public ?\DateTimeImmutable $endDateTime,
+        public int                 $capacityTotal,
+        public int                 $capacitySingleTicketLimit,
+        public ?int                $seatsAvailable,
+        public int                 $soldSingleTickets,
+        public int                 $soldReservedSeats,
+        public ?string             $hallName,
+        public ?string             $sessionType,
+        public ?int                $durationMinutes,
+        public ?string             $languageCode,
+        public ?int                $minAge,
+        public ?int                $maxAge,
+        public bool                $reservationRequired,
+        public bool                $isFree,
+        public string              $notes,
+        public ?string             $historyTicketLabel,
+        public ?string             $ctaLabel,
+        public ?string             $ctaUrl,
+        public bool                $isCancelled,
+        public \DateTimeImmutable  $createdAtUtc,
+        public bool                $isActive,
     ) {
     }
 

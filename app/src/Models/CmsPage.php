@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class CmsPage
+final readonly class CmsPage
 {
     /*
      * Purpose: Holds CMS page metadata (slug, title) for managing
@@ -18,10 +18,10 @@ class CmsPage
      */
 
     public function __construct(
-        public readonly int                   $cmsPageId,
-        public readonly string                $slug,
-        public readonly string                $title,
-        public readonly ?\DateTimeImmutable   $updatedAtUtc = null,
+        public int                   $cmsPageId,
+        public string                $slug,
+        public string                $title,
+        public ?\DateTimeImmutable   $updatedAtUtc = null,
     ) {
     }
 

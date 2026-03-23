@@ -13,7 +13,7 @@ use App\Enums\PaymentStatus;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Payment
+final readonly class Payment
 {
     /*
      * Purpose: Tracks payment attempts for orders including method,
@@ -21,13 +21,13 @@ class Payment
      */
 
     public function __construct(
-        public readonly int                 $paymentId,
-        public readonly int                 $orderId,
-        public readonly PaymentMethod       $method,
-        public readonly PaymentStatus       $status,
-        public readonly ?string             $providerRef,
-        public readonly \DateTimeImmutable  $createdAtUtc,
-        public readonly ?\DateTimeImmutable $paidAtUtc,
+        public int                 $paymentId,
+        public int                 $orderId,
+        public PaymentMethod       $method,
+        public PaymentStatus       $status,
+        public ?string             $providerRef,
+        public \DateTimeImmutable  $createdAtUtc,
+        public ?\DateTimeImmutable $paidAtUtc,
     ) {
     }
 
