@@ -463,7 +463,7 @@ final class JazzMapper
             performanceCount: (int) ($section->artistsGumboKingsPerformanceCount ?? 0),
             firstPerformance: $section->artistsGumboKingsFirstPerformance ?? '',
             morePerformancesText: $section->artistsGumboKingsMorePerformancesText ?? '',
-            profileUrl: $section->artistsGumboKingsProfileUrl ?? '',
+            profileUrl: self::resolveProfileUrl($section->artistsGumboKingsProfileUrl, 'gumbo-kings'),
         );
     }
 
@@ -477,7 +477,7 @@ final class JazzMapper
             performanceCount: (int) ($section->artistsEvolvePerformanceCount ?? 0),
             firstPerformance: $section->artistsEvolveFirstPerformance ?? '',
             morePerformancesText: $section->artistsEvolveMorePerformancesText ?? '',
-            profileUrl: ($section->artistsEvolveProfileUrl !== '' && $section->artistsEvolveProfileUrl !== null) ? $section->artistsEvolveProfileUrl : null,
+            profileUrl: self::resolveProfileUrl($section->artistsEvolveProfileUrl, 'evolve'),
         );
     }
 
@@ -491,8 +491,20 @@ final class JazzMapper
             performanceCount: (int) ($section->artistsNtjamPerformanceCount ?? 0),
             firstPerformance: $section->artistsNtjamFirstPerformance ?? '',
             morePerformancesText: $section->artistsNtjamMorePerformancesText ?? '',
-            profileUrl: $section->artistsNtjamProfileUrl ?? '',
+            profileUrl: self::resolveProfileUrl($section->artistsNtjamProfileUrl, 'ntjam-rosie'),
         );
+    }
+
+    /**
+     * Returns the CMS-provided profile URL if set, otherwise generates
+     * the default detail page URL from the event slug (e.g., /jazz/gumbo-kings).
+     */
+    private static function resolveProfileUrl(?string $cmsUrl, string $eventSlug): string
+    {
+        if ($cmsUrl !== null && $cmsUrl !== '') {
+            return $cmsUrl;
+        }
+        return '/jazz/' . $eventSlug;
     }
 
     private static function buildBookingCtaData(JazzBookingCtaSectionContent $section): BookingCallToActionData

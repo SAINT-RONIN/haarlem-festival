@@ -69,6 +69,8 @@ class JazzController extends BaseController
         } catch (JazzArtistDetailNotFoundException) {
             http_response_code(404);
             require __DIR__ . '/../Views/pages/errors/404.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
