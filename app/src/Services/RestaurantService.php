@@ -15,7 +15,6 @@ use App\Models\RestaurantIntroSectionContent;
 use App\Models\RestaurantIntroSplit2SectionContent;
 use App\Models\RestaurantPageData;
 use App\Repositories\CmsContentRepository;
-use App\Repositories\Interfaces\ICuisineTypeRepository;
 use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
@@ -45,15 +44,11 @@ class RestaurantService implements IRestaurantService
         private CmsContentRepository $cmsService,
         private RestaurantRepository $restaurantRepository,
         private RestaurantImageRepository $restaurantImageRepository,
-        private ICuisineTypeRepository $cuisineTypeRepository,
     ) {
     }
 
     public function getRestaurantPageData(): RestaurantPageData
     {
-        $restaurants = $this->restaurantRepository->findAllActive();
-        $cuisinesByRestaurant = $this->buildCuisineMap($restaurants);
-
         return new RestaurantPageData(
             heroContent: HeroSectionContent::fromRawArray(
                 $this->cmsService->getHeroSectionContent(self::PAGE_SLUG),
@@ -76,8 +71,7 @@ class RestaurantService implements IRestaurantService
             cardsSection: RestaurantCardsSectionContent::fromRawArray(
                 $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_CARDS),
             ),
-            restaurants: $restaurants,
-            cuisinesByRestaurant: $cuisinesByRestaurant,
+            restaurants: $this->restaurantRepository->findAllActive(),
         );
     }
 
@@ -89,13 +83,10 @@ class RestaurantService implements IRestaurantService
             return null;
         }
 
-        $images = $this->restaurantImageRepository->findByRestaurantId($restaurant->restaurantId);
-        $scheduleData = $this->getRestaurantScheduleData($restaurant->name);
-        $cuisineTypes = $this->cuisineTypeRepository->findByRestaurantId($restaurant->restaurantId);
+        $scheduleData = $this->getRestaurantScheduleData($restaurant);
 
         return new RestaurantDetailData(
             restaurant: $restaurant,
-            imagesByType: $this->groupImagesByType($images),
             cms: RestaurantDetailSectionContent::fromRawArray(
                 $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_DETAIL),
             ),
@@ -104,48 +95,30 @@ class RestaurantService implements IRestaurantService
             ),
             timeSlots: $scheduleData['timeSlots'],
             priceCards: $scheduleData['priceCards'],
-            cuisineTypes: $cuisineTypes,
+            images: $this->restaurantImageRepository->findByRestaurantId($restaurant->restaurantId),
         );
     }
 
     /**
-     * Batch-fetches cuisines for all restaurants to avoid N+1 queries per card.
+     * Returns per-restaurant time slots and price cards from the Restaurant row.
      *
-     * @param \App\Models\Restaurant[] $restaurants
-     * @return array<int, \App\Models\CuisineType[]>
+     * @return array{timeSlots: string[], priceCards: array<array{label: string, price: string}>}
      */
-    private function buildCuisineMap(array $restaurants): array
+    private function getRestaurantScheduleData(\App\Models\Restaurant $restaurant): array
     {
-        $ids = array_map(fn($r) => $r->restaurantId, $restaurants);
-        return $this->cuisineTypeRepository->findByRestaurantIds($ids);
-    }
+        $slotsString = $restaurant->timeSlots ?? '';
+        $timeSlots   = $slotsString !== ''
+            ? array_values(array_filter(array_map('trim', explode(',', $slotsString))))
+            : [];
 
-    /**
-     * Groups restaurant images by type and returns file paths.
-     *
-     * @param \App\Models\RestaurantImage[] $images
-     * @return array<string, string[]>
-     */
-    private function groupImagesByType(array $images): array
-    {
-        $grouped = [];
-        foreach ($images as $image) {
-            $grouped[$image->imageType][] = $image->filePath ?? '';
+        $priceCards = [];
+        if ($restaurant->priceAdult !== null) {
+            $priceCards[] = ['label' => 'Per adult (drinks not included)', 'price' => '€ ' . number_format($restaurant->priceAdult, 2)];
         }
-        return $grouped;
-    }
+        if ($restaurant->priceChild !== null) {
+            $priceCards[] = ['label' => 'Under 12 (drinks not included)', 'price' => '€ ' . number_format($restaurant->priceChild, 2)];
+        }
 
-    /**
-     * Returns per-restaurant time slots and price cards.
-     * TODO: Replace with EventSession/pricing data from database.
-     *
-     * @return array{timeSlots: array<mixed>, priceCards: array<mixed>}
-     */
-    private function getRestaurantScheduleData(string $name): array
-    {
-        return [
-            'timeSlots'  => [],
-            'priceCards' => [],
-        ];
+        return ['timeSlots' => $timeSlots, 'priceCards' => $priceCards];
     }
 }

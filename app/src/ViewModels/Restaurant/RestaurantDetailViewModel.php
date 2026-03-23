@@ -100,6 +100,8 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
         public string $labelFestivalRated       = '',
         public string $labelMichelin            = '',
         public string $labelMapFallback         = '',
+        public ?float $priceAdult               = null,
+        public ?float $priceChild               = null,
     ) {
         parent::__construct(
             heroData: $heroData,

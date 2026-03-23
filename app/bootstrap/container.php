@@ -46,7 +46,6 @@ use App\Repositories\ArtistGalleryImageRepository;
 use App\Repositories\ArtistHighlightRepository;
 use App\Repositories\ArtistLineupMemberRepository;
 use App\Repositories\ArtistTrackRepository;
-use App\Repositories\CuisineTypeRepository;
 use App\Repositories\EventGalleryImageRepository;
 use App\Repositories\EventHighlightRepository;
 use App\Repositories\PageGalleryImageRepository;
@@ -106,7 +105,6 @@ return static function (string $controllerClass): object {
     $eventHighlightRepository = new EventHighlightRepository();
     $eventGalleryImageRepository = new EventGalleryImageRepository();
     $pageGalleryImageRepository = new PageGalleryImageRepository();
-    $cuisineTypeRepository = new CuisineTypeRepository();
     $userAccountRepository = new UserAccountRepository();
     $passwordResetTokenRepository = new PasswordResetTokenRepository();
     $programRepository = new ProgramRepository();
@@ -166,7 +164,6 @@ return static function (string $controllerClass): object {
                 $cmsContent,
                 $restaurantRepository,
                 $restaurantImageRepository,
-                $cuisineTypeRepository,
             ),
             $sessionService,
         ),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\CuisineType;
+use App\Models\Reservation;
 use App\Models\Restaurant;
 use App\Models\RestaurantCardsSectionContent;
 use App\Models\RestaurantDetailData;
@@ -42,7 +42,7 @@ final class RestaurantMapper
             introSplitSection:      self::toIntroSplitSection($data->introSplitSection),
             introSplit2Section:     self::toIntroSplit2Section($data->introSplit2Section),
             instructionsSection:    self::toInstructionsSection($data->instructionsSection),
-            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsSection, $data->restaurants, $data->cuisinesByRestaurant),
+            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsSection, $data->restaurants),
         );
     }
 
@@ -50,36 +50,29 @@ final class RestaurantMapper
     {
         $restaurant  = $data->restaurant;
         $cms         = $data->cms;
-        $cuisineString = self::buildCuisineString($data->cuisineTypes);
+        $cuisineString = $restaurant->cuisineType;
         $heroData    = self::toDetailHeroData($restaurant, $cms, $cuisineString);
         $globalUi    = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return new RestaurantDetailViewModel(...array_merge(
             ['heroData' => $heroData, 'globalUi' => $globalUi, 'cms' => CmsMapper::toCmsData($heroData, $globalUi)],
-            self::buildDetailDomainFields($restaurant, $data, $cuisineString),
+            self::buildDetailDomainFields($restaurant, $data),
             self::buildDetailCmsLabels($cms),
         ));
     }
 
     /**
-     * @param CuisineType[] $cuisineTypes
-     */
-    private static function buildCuisineString(array $cuisineTypes): string
-    {
-        return implode(', ', array_map(fn(CuisineType $c) => $c->name, $cuisineTypes));
-    }
-
-    /**
      * @return array<string, mixed>
      */
-    private static function buildDetailDomainFields(Restaurant $restaurant, RestaurantDetailData $data, string $cuisineString): array
+    private static function buildDetailDomainFields(Restaurant $restaurant, RestaurantDetailData $data): array
     {
-        $cuisineTags = array_map(fn(CuisineType $c) => $c->name, $data->cuisineTypes);
+        $cuisineTags = array_values(array_filter(array_map('trim', explode(',', $restaurant->cuisineType))));
+        $imagesByType = self::groupImagesByType($data->images);
 
         return [
             'id'          => $restaurant->restaurantId,
             'name'        => $restaurant->name,
-            'cuisine'     => $cuisineString,
+            'cuisine'     => $restaurant->cuisineType,
             'address'     => self::buildAddress($restaurant),
             'description' => self::cleanDescription($restaurant->descriptionHtml),
             'rating'      => $restaurant->stars ?? 0,
@@ -88,23 +81,25 @@ final class RestaurantMapper
             'email'       => $restaurant->email ?? '',
             'website'     => $restaurant->website ?? '',
             'aboutText'   => str_replace('\n', "\n", $restaurant->aboutText ?? ''),
-            'aboutImage'  => ($data->imagesByType['about'] ?? [])[0] ?? self::DEFAULT_IMAGE,
+            'aboutImage'  => $imagesByType['about'][0] ?? self::DEFAULT_IMAGE,
             'chefName'    => $restaurant->chefName ?? '',
             'chefText'    => str_replace('\n', "\n", $restaurant->chefText ?? ''),
-            'chefImage'   => ($data->imagesByType['chef'] ?? [])[0] ?? self::DEFAULT_IMAGE,
+            'chefImage'   => $imagesByType['chef'][0] ?? self::DEFAULT_IMAGE,
             'menuDescription' => $restaurant->menuDescription ?? '',
             'cuisineTags'     => $cuisineTags,
-            'menuImages'      => $data->imagesByType['menu'] ?? [self::DEFAULT_IMAGE, self::DEFAULT_IMAGE],
+            'menuImages'      => $imagesByType['menu'] ?? [],
             'locationDescription' => str_replace('\n', "\n", $restaurant->locationDescription ?? ''),
             'mapEmbedUrl'     => $restaurant->mapEmbedUrl ?? '',
             'michelinStars'   => $restaurant->michelinStars ?? 0,
             'seatsPerSession' => $restaurant->seatsPerSession ?? 0,
             'durationMinutes' => $restaurant->durationMinutes ?? 0,
             'specialRequestsNote' => $restaurant->specialRequestsNote ?? '',
-            'galleryImages'   => $data->imagesByType['gallery'] ?? [self::DEFAULT_IMAGE],
-            'reservationImage' => ($data->imagesByType['reservation'] ?? [])[0] ?? self::DEFAULT_IMAGE,
+            'galleryImages'   => $imagesByType['gallery'] ?? [self::DEFAULT_IMAGE],
+            'reservationImage' => $imagesByType['reservation'][0] ?? self::DEFAULT_IMAGE,
             'timeSlots'       => $data->timeSlots,
             'priceCards'      => $data->priceCards,
+            'priceAdult'      => $restaurant->priceAdult,
+            'priceChild'      => $restaurant->priceChild,
         ];
     }
 
@@ -155,9 +150,9 @@ final class RestaurantMapper
             mainTitle:           $restaurant->name,
             subtitle:            $heroSubtitle,
             primaryButtonText:   $cms->detailHeroBtnPrimary ?? '',
-            primaryButtonLink:   '#reservation',
-            secondaryButtonText: $cms->detailHeroBtnSecondary ?? '',
-            secondaryButtonLink: '/restaurant',
+            primaryButtonLink:   '/restaurant/' . $restaurant->restaurantId . '/reservation',
+            secondaryButtonText: '',
+            secondaryButtonLink: '',
             backgroundImageUrl:  $restaurant->imagePath ?? self::DEFAULT_IMAGE,
             currentPage:         'restaurant',
         );
@@ -222,32 +217,29 @@ final class RestaurantMapper
 
     /**
      * @param Restaurant[] $restaurants
-     * @param array<int, CuisineType[]> $cuisinesByRestaurant
      */
-    private static function toRestaurantCardsSection(RestaurantCardsSectionContent $cms, array $restaurants, array $cuisinesByRestaurant): RestaurantCardsSectionData
+    private static function toRestaurantCardsSection(RestaurantCardsSectionContent $cms, array $restaurants): RestaurantCardsSectionData
     {
         return new RestaurantCardsSectionData(
             title:    $cms->cardsTitle ?? '',
             subtitle: $cms->cardsSubtitle ?? '',
-            filters:  self::buildCuisineFilters($restaurants, $cuisinesByRestaurant),
-            cards:    self::buildCards($restaurants, $cuisinesByRestaurant),
+            filters:  self::buildCuisineFilters($restaurants),
+            cards:    self::buildCards($restaurants),
         );
     }
 
     /**
      * @param Restaurant[] $restaurants
-     * @param array<int, CuisineType[]> $cuisinesByRestaurant
      */
-    private static function buildCuisineFilters(array $restaurants, array $cuisinesByRestaurant): array
+    private static function buildCuisineFilters(array $restaurants): array
     {
         $unique = [];
 
         foreach ($restaurants as $restaurant) {
-            $cuisineTypes = $cuisinesByRestaurant[$restaurant->restaurantId] ?? [];
-            foreach ($cuisineTypes as $cuisineType) {
-                $key = mb_strtolower($cuisineType->name);
+            foreach (array_filter(array_map('trim', explode(',', $restaurant->cuisineType))) as $part) {
+                $key = mb_strtolower($part);
                 if ($key !== '' && !isset($unique[$key])) {
-                    $unique[$key] = $cuisineType->name;
+                    $unique[$key] = $part;
                 }
             }
         }
@@ -260,21 +252,17 @@ final class RestaurantMapper
 
     /**
      * @param Restaurant[] $restaurants
-     * @param array<int, CuisineType[]> $cuisinesByRestaurant
      * @return RestaurantCardData[]
      */
-    private static function buildCards(array $restaurants, array $cuisinesByRestaurant): array
+    private static function buildCards(array $restaurants): array
     {
         $cards = [];
 
         foreach ($restaurants as $restaurant) {
-            $cuisineTypes = $cuisinesByRestaurant[$restaurant->restaurantId] ?? [];
-            $cuisineString = implode(', ', array_map(fn(CuisineType $c) => $c->name, $cuisineTypes));
-
             $cards[] = new RestaurantCardData(
                 id:          $restaurant->restaurantId,
                 name:        $restaurant->name,
-                cuisine:     $cuisineString,
+                cuisine:     $restaurant->cuisineType,
                 address:     self::buildAddress($restaurant),
                 description: self::cleanDescription($restaurant->descriptionHtml),
                 rating:      $restaurant->stars ?? 0,
@@ -307,6 +295,38 @@ final class RestaurantMapper
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         return trim(preg_replace('/\s+/', ' ', $text) ?? $text);
+    }
+
+    /**
+     * Groups RestaurantImage objects by their ImageType.
+     * Returns an array keyed by type, each value being an array of image paths.
+     *
+     * @param \App\Models\RestaurantImage[] $images
+     * @return array<string, string[]>
+     */
+    private static function groupImagesByType(array $images): array
+    {
+        $grouped = [];
+        foreach ($images as $image) {
+            $grouped[$image->imageType][] = $image->imagePath;
+        }
+        return $grouped;
+    }
+
+    public static function toReservation(array $post, int $restaurantId, float $feePerPerson): Reservation
+    {
+        $adultsCount   = (int) ($post['adults_count']   ?? 0);
+        $childrenCount = (int) ($post['children_count'] ?? 0);
+
+        return new Reservation(
+            restaurantId:    $restaurantId,
+            diningDate:      trim($post['dining_date']    ?? ''),
+            timeSlot:        trim($post['time_slot']      ?? ''),
+            adultsCount:     $adultsCount,
+            childrenCount:   $childrenCount,
+            specialRequests: trim($post['special_requests'] ?? ''),
+            totalFee:        ($adultsCount + $childrenCount) * $feePerPerson,
+        );
     }
 
     private static function validateImagePath(string $path): string

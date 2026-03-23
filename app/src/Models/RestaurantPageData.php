@@ -11,7 +11,6 @@ final readonly class RestaurantPageData
 {
     /**
      * @param Restaurant[] $restaurants
-     * @param array<int, CuisineType[]> $cuisinesByRestaurant
      */
     public function __construct(
         public HeroSectionContent $heroContent,
@@ -22,6 +21,5 @@ final readonly class RestaurantPageData
         public RestaurantInstructionsSectionContent $instructionsSection,
         public RestaurantCardsSectionContent $cardsSection,
         public array $restaurants,
-        public array $cuisinesByRestaurant,
     ) {}
 }

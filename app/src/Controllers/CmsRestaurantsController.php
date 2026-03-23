@@ -69,11 +69,11 @@ class CmsRestaurantsController
         }
     }
 
-    public function edit(int $id): void
+    public function edit(string $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $restaurant = $this->restaurantsService->findById($id);
+            $restaurant = $this->restaurantsService->findById((int) $id);
             if ($restaurant === null) {
                 http_response_code(404);
                 require __DIR__ . '/../Views/pages/errors/404.php';
@@ -81,37 +81,37 @@ class CmsRestaurantsController
             }
             $currentView = 'restaurants';
             $data = CmsRestaurantsMapper::fromRestaurant($restaurant);
-            $viewModel = $this->buildFormViewModel($id, $data, []);
+            $viewModel = $this->buildFormViewModel((int) $id, $data, []);
             require __DIR__ . '/../Views/pages/cms/restaurant-edit.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
     }
 
-    public function update(int $id): void
+    public function update(string $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_restaurant_edit_' . $id, '/cms/restaurants/' . $id . '/edit');
             $data   = $this->extractFormData();
-            $errors = $this->restaurantsService->validateForUpdate($id, $data);
+            $errors = $this->restaurantsService->validateForUpdate((int) $id, $data);
             if (!empty($errors)) {
-                $this->renderEditForm($id, $data, $errors);
+                $this->renderEditForm((int) $id, $data, $errors);
                 return;
             }
-            $this->restaurantsService->updateRestaurant($id, $data);
+            $this->restaurantsService->updateRestaurant((int) $id, $data);
             $this->redirectWithFlash('Restaurant updated successfully.', 'success', '/cms/restaurants');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
     }
 
-    public function delete(int $id): void
+    public function delete(string $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_restaurant_delete', '/cms/restaurants');
-            $this->restaurantsService->deleteRestaurant($id);
+            $this->restaurantsService->deleteRestaurant((int) $id);
             $this->redirectWithFlash('Restaurant deactivated successfully.', 'success', '/cms/restaurants');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
