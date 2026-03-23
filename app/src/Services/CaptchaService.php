@@ -92,12 +92,4 @@ class CaptchaService implements ICaptchaService
         return isset($responseData['success']) && $responseData['success'] === true;
     }
 
-    /**
-     * Legacy method for backwards compatibility.
-     * Now returns empty string since we use reCAPTCHA widget.
-     */
-    public function getQuestion(): string
-    {
-        return '';
-    }
 }

@@ -101,15 +101,6 @@ class SessionService implements ISessionService
         return $_SESSION[self::USER_ID_KEY] ?? null;
     }
 
-    /**
-     * Gets the current user's role ID, or null if not logged in.
-     */
-    public function getRoleId(): ?int
-    {
-        $this->start();
-        return $_SESSION[self::ROLE_ID_KEY] ?? null;
-    }
-
     public function set(string $key, mixed $value): void
     {
         $this->start();

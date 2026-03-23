@@ -13,18 +13,11 @@ use App\Services\Interfaces\ISessionService;
 
 class ProgramController extends BaseController
 {
-    private IProgramService $programService;
-    private ICmsPageContentService $cmsService;
-    private ISessionService $sessionService;
-
     public function __construct(
-        IProgramService $programService,
-        ICmsPageContentService $cmsService,
-        ISessionService $sessionService,
+        private readonly IProgramService $programService,
+        private readonly ICmsPageContentService $cmsService,
+        private readonly ISessionService $sessionService,
     ) {
-        $this->programService = $programService;
-        $this->cmsService = $cmsService;
-        $this->sessionService = $sessionService;
     }
 
     public function index(): void

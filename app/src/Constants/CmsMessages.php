@@ -12,7 +12,6 @@ final class CmsMessages
     public const UPDATE_UNEXPECTED_ERROR = 'An unexpected error occurred.';
     public const UPDATE_SUCCESS_TEMPLATE = 'Updated %d item(s) successfully';
     public const IMAGE_UPLOAD_SUCCESS = 'Image uploaded successfully';
-    public const IMAGE_UPLOAD_FAILED = 'Failed to process image';
     public const IMAGE_LINK_FAILED = 'Failed to link image';
     public const MISSING_ITEM_ID = 'Missing item ID';
     public const INVALID_PAGE_ID = 'Invalid page ID';
@@ -20,9 +19,4 @@ final class CmsMessages
     public const PAGE_NOT_FOUND = 'Page not found';
     public const IMAGE_LINK_SUCCESS = 'Image linked successfully';
     public const DEFAULT_ADMIN_NAME = 'Administrator';
-
-    public static function formatFieldLabel(string $itemKey): string
-    {
-        return ucwords(str_replace('_', ' ', $itemKey));
-    }
 }

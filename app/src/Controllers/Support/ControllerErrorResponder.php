@@ -13,8 +13,7 @@ final class ControllerErrorResponder
             return;
         }
 
-        self::startSessionIfNeeded();
-        $_SESSION['error'] = $error->getMessage();
+        $errorMessage = $error->getMessage();
         http_response_code($statusCode);
         require __DIR__ . '/../../Views/pages/errors/500.php';
     }
@@ -48,10 +47,4 @@ final class ControllerErrorResponder
         return str_contains($accept, 'application/json') || strtolower($requestedWith) === 'xmlhttprequest';
     }
 
-    private static function startSessionIfNeeded(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-    }
 }

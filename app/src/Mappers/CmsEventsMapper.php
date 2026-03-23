@@ -18,6 +18,7 @@ use App\ViewModels\Cms\CmsEventSessionViewModel;
 use App\ViewModels\Cms\CmsEventsListViewModel;
 use App\ViewModels\Cms\CmsMediaLibraryViewModel;
 use App\ViewModels\Cms\CmsMediaListItemViewModel;
+use App\ViewModels\Cms\CmsSessionPriceViewModel;
 
 class CmsEventsMapper
 {
@@ -85,6 +86,9 @@ class CmsEventsMapper
         array $sessions,
         array $pricesData = [],
         array $labelsData = [],
+        ?string $successMessage = null,
+        ?string $errorMessage = null,
+        array $priceTiers = [],
     ): CmsEventEditViewModel {
         $eventTitle = $event->title;
         $eventTypeSlug = $event->eventTypeSlug;
@@ -93,6 +97,8 @@ class CmsEventsMapper
             static fn(mixed $session): CmsEventSessionViewModel => self::resolveSessionViewModel($session, $eventTitle, $eventTypeSlug),
             $sessions,
         );
+
+        $enrichedPrices = self::enrichPricesWithTierNames($pricesData, $priceTiers);
 
         return new CmsEventEditViewModel(
             eventId: $event->eventId,
@@ -108,9 +114,37 @@ class CmsEventsMapper
             restaurantId: $event->restaurantId,
             isActive: $event->isActive,
             sessions: $sessionViewModels,
-            sessionPrices: $pricesData,
+            sessionPrices: $enrichedPrices,
             sessionLabels: $labelsData,
+            successMessage: $successMessage,
+            errorMessage: $errorMessage,
         );
+    }
+
+    /**
+     * Enriches session prices with resolved tier names as typed ViewModels.
+     *
+     * @return array<int, CmsSessionPriceViewModel[]>
+     */
+    private static function enrichPricesWithTierNames(array $pricesData, array $priceTiers): array
+    {
+        $tierNameMap = [];
+        foreach ($priceTiers as $tier) {
+            $tierNameMap[$tier->priceTierId] = $tier->name;
+        }
+        $enriched = [];
+        foreach ($pricesData as $sessionId => $prices) {
+            $enriched[$sessionId] = array_map(
+                static fn($price) => new CmsSessionPriceViewModel(
+                    priceTierId: $price->priceTierId,
+                    tierName: $tierNameMap[$price->priceTierId] ?? 'Unknown',
+                    price: $price->price,
+                    currencyCode: $price->currencyCode,
+                ),
+                $prices,
+            );
+        }
+        return $enriched;
     }
 
     public static function toEventSessionViewModel(

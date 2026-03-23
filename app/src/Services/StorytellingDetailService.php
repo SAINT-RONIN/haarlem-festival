@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Constants\GlobalUiConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Exceptions\StorytellingEventNotFoundException;
+use App\Helpers\SlugHelper;
 use App\Models\EventSessionFilter;
 use App\Models\EventSessionLabel;
 use App\Models\GlobalUiContent;
@@ -82,11 +83,7 @@ class StorytellingDetailService implements IStorytellingDetailService
      */
     private function normalizeSlug(string $slug): string
     {
-        $normalized = trim(strtolower(rawurldecode($slug)));
-        if ($normalized === '' || str_contains($normalized, '/')) {
-            throw new StorytellingEventNotFoundException($slug);
-        }
-        return trim($normalized, '-');
+        return SlugHelper::normalize($slug) ?? throw new StorytellingEventNotFoundException($slug);
     }
 
     /**

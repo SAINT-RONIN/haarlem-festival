@@ -280,22 +280,23 @@ class CmsEventsController extends CmsBaseController
 
     private function renderEventEditPage(array $editData): void
     {
-        $viewModel   = $this->buildEventEditViewModel($editData);
         $priceTiers  = $this->eventsService->getPriceTiers();
+        $viewModel   = $this->buildEventEditViewModel($editData, $priceTiers);
         $artists     = $this->artistsService->getArtists(null);
         $restaurants = $this->restaurantsService->getRestaurants(null);
-        $successMessage = $this->sessionService->consumeFlash('success');
-        $errorMessage = $this->sessionService->consumeFlash('error');
         require __DIR__ . '/../Views/pages/cms/event-edit.php';
     }
 
-    private function buildEventEditViewModel(array $editData): \App\ViewModels\Cms\CmsEventEditViewModel
+    private function buildEventEditViewModel(array $editData, array $priceTiers = []): \App\ViewModels\Cms\CmsEventEditViewModel
     {
         return CmsEventsMapper::toEventEditViewModel(
             $editData['event'],
             $editData['sessions'],
             $editData['pricesMap'],
             $editData['labelsMap'],
+            $this->sessionService->consumeFlash('success'),
+            $this->sessionService->consumeFlash('error'),
+            $priceTiers,
         );
     }
 

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Constants\JazzArtistDetailConstants;
 use App\Exceptions\JazzArtistDetailNotFoundException;
+use App\Helpers\SlugHelper;
 use App\Models\JazzArtistDetailCmsData;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\JazzArtistDetailPageData;
@@ -100,12 +101,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     /** @throws JazzArtistDetailNotFoundException */
     private function normalizeSlug(string $slug): string
     {
-        $normalizedSlug = trim(strtolower(rawurldecode($slug)));
-        if ($normalizedSlug === '' || str_contains($normalizedSlug, '/')) {
-            throw new JazzArtistDetailNotFoundException($slug);
-        }
-
-        return trim($normalizedSlug, '-');
+        return SlugHelper::normalize($slug) ?? throw new JazzArtistDetailNotFoundException($slug);
     }
 
     /** @throws JazzArtistDetailNotFoundException */

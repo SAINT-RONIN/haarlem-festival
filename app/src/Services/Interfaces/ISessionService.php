@@ -40,11 +40,6 @@ interface ISessionService
     public function getUserId(): ?int;
 
     /**
-     * Gets the current user's role ID.
-     */
-    public function getRoleId(): ?int;
-
-    /**
      * Sets a session key to a scalar/array value.
      */
     public function set(string $key, mixed $value): void;

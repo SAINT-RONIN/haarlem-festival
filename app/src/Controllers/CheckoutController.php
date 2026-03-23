@@ -17,24 +17,13 @@ use App\Services\Interfaces\ISessionService;
 
 class CheckoutController extends BaseController
 {
-    private IProgramService $programService;
-    private ICmsPageContentService $cmsService;
-    private ISessionService $sessionService;
-    private ICheckoutService $checkoutService;
-    private IStripeWebhookRequestFactory $stripeWebhookRequestFactory;
-
     public function __construct(
-        IProgramService $programService,
-        ICmsPageContentService $cmsService,
-        ISessionService $sessionService,
-        ICheckoutService $checkoutService,
-        IStripeWebhookRequestFactory $stripeWebhookRequestFactory,
+        private readonly IProgramService $programService,
+        private readonly ICmsPageContentService $cmsService,
+        private readonly ISessionService $sessionService,
+        private readonly ICheckoutService $checkoutService,
+        private readonly IStripeWebhookRequestFactory $stripeWebhookRequestFactory,
     ) {
-        $this->programService = $programService;
-        $this->cmsService = $cmsService;
-        $this->sessionService = $sessionService;
-        $this->checkoutService = $checkoutService;
-        $this->stripeWebhookRequestFactory = $stripeWebhookRequestFactory;
     }
 
     public function index(): void

@@ -12,6 +12,7 @@ final readonly class CmsUsersListViewModel
     /**
      * @param CmsUserListItemViewModel[] $users
      * @param array<int, string>         $roleFilterOptions
+     * @param array<string, CmsSortColumnViewModel> $sortColumns Pre-built sort URLs and icons per column
      */
     public function __construct(
         public array   $users,
@@ -23,5 +24,7 @@ final readonly class CmsUsersListViewModel
         public string  $sortDir,
         public string  $deleteCsrfToken,
         public array   $roleFilterOptions,
+        public array   $sortColumns = [],
+        public bool    $hasActiveFilters = false,
     ) {}
 }

@@ -7,8 +7,6 @@
  * @var \App\Models\PriceTier[] $priceTiers
  * @var \App\Models\Artist[] $artists
  * @var \App\Models\Restaurant[] $restaurants
- * @var string|null $successMessage  Flash success message from session
- * @var string|null $errorMessage    Flash error message from session
  */
 ?>
 <!DOCTYPE html>
@@ -35,12 +33,7 @@
             <h1 class="text-2xl font-bold text-gray-900">Edit Event</h1>
         </header>
 
-        <?php
-        $__flashViewModel = $viewModel;
-        $viewModel = (object)['successMessage' => $successMessage ?? null, 'errorMessage' => $errorMessage ?? null];
-        require __DIR__ . '/../../partials/cms/_flash-messages.php';
-        $viewModel = $__flashViewModel;
-        ?>
+        <?php require __DIR__ . '/../../partials/cms/_flash-messages.php'; ?>
 
         <!-- Event Details Card -->
         <div class="bg-white rounded-lg shadow mb-8">
@@ -478,16 +471,7 @@
                                 <div class="flex flex-wrap gap-2 mb-3">
                                     <?php foreach ($sessionPrices as $price): ?>
                                         <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
-                                            <?php
-                                                $tierName = 'Unknown';
-                                                foreach ($priceTiers as $tier) {
-                                                    if ($tier->priceTierId === $price->priceTierId) {
-                                                        $tierName = $tier->name;
-                                                        break;
-                                                    }
-                                                }
-                                            ?>
-                                            <?= htmlspecialchars($tierName) ?>:
+                                            <?= htmlspecialchars($price->tierName) ?>:
                                             <?= htmlspecialchars($price->currencyCode) ?> <?= number_format((float)$price->price, 2) ?>
                                         </span>
                                     <?php endforeach; ?>

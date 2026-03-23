@@ -23,4 +23,12 @@ final class FormatHelper
     {
         return $symbol . number_format($amount, 2, '.', '');
     }
+
+    /**
+     * Converts a snake_case item key to a human-readable label.
+     */
+    public static function formatFieldLabel(string $itemKey): string
+    {
+        return ucwords(str_replace('_', ' ', $itemKey));
+    }
 }

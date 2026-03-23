@@ -8,6 +8,7 @@ use App\Enums\UserRoleId;
 use App\Helpers\FormatHelper;
 use App\Models\UserAccount;
 use App\Models\UserWithRole;
+use App\ViewModels\Cms\CmsSortColumnViewModel;
 use App\ViewModels\Cms\CmsUserFormViewModel;
 use App\ViewModels\Cms\CmsUserListItemViewModel;
 use App\ViewModels\Cms\CmsUsersListViewModel;
@@ -37,6 +38,8 @@ class CmsUsersMapper
             sortDir:           $sortDir,
             deleteCsrfToken:   $deleteCsrfToken,
             roleFilterOptions: self::buildRoleOptions(),
+            sortColumns:       self::buildSortColumns($sortBy, $sortDir, $selectedRole, $searchQuery),
+            hasActiveFilters:  $selectedRole !== '' || $searchQuery !== '',
         );
     }
 
@@ -89,6 +92,21 @@ class CmsUsersMapper
             errors:         $errors,
             roleOptions:    self::buildRoleOptions(),
         );
+    }
+
+    /**
+     * @return array<string, CmsSortColumnViewModel>
+     */
+    private static function buildSortColumns(string $sortBy, string $sortDir, string $selectedRole, string $searchQuery): array
+    {
+        $columns = [];
+        foreach (['username', 'email', 'name', 'role', 'registered'] as $col) {
+            $dir = ($sortBy === $col && $sortDir === 'asc') ? 'desc' : 'asc';
+            $params = array_filter(['sort' => $col, 'dir' => $dir, 'role' => $selectedRole, 'search' => $searchQuery]);
+            $icon = $sortBy !== $col ? 'chevrons-up-down' : ($sortDir === 'asc' ? 'chevron-up' : 'chevron-down');
+            $columns[$col] = new CmsSortColumnViewModel(url: '/cms/users?' . http_build_query($params), icon: $icon);
+        }
+        return $columns;
     }
 
     private static function resolveRoleBadgeClass(string $roleName): string

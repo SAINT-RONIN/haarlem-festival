@@ -5,26 +5,6 @@
  * @var string $currentView
  * @var \App\ViewModels\Cms\CmsUsersListViewModel $viewModel
  */
-
-$buildSortUrl = function (string $col) use ($viewModel): string {
-    $dir = ($viewModel->sortBy === $col && $viewModel->sortDir === 'asc') ? 'desc' : 'asc';
-    $params = array_filter([
-        'sort'   => $col,
-        'dir'    => $dir,
-        'role'   => $viewModel->selectedRole,
-        'search' => $viewModel->searchQuery,
-    ]);
-    return '/cms/users?' . http_build_query($params);
-};
-
-$sortIcon = function (string $col) use ($viewModel): string {
-    if ($viewModel->sortBy !== $col) {
-        return 'chevrons-up-down';
-    }
-    return $viewModel->sortDir === 'asc' ? 'chevron-up' : 'chevron-down';
-};
-
-$hasActiveFilters = $viewModel->selectedRole !== '' || $viewModel->searchQuery !== '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +66,7 @@ $hasActiveFilters = $viewModel->selectedRole !== '' || $viewModel->searchQuery !
                         class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors">
                     Apply Filters
                 </button>
-                <?php if ($hasActiveFilters): ?>
+                <?php if ($viewModel->hasActiveFilters): ?>
                     <a href="/cms/users" class="px-4 py-2 text-gray-600 hover:text-gray-800">Clear Filters</a>
                 <?php endif; ?>
             </form>
@@ -109,34 +89,34 @@ $hasActiveFilters = $viewModel->selectedRole !== '' || $viewModel->searchQuery !
                     </th>
                     <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <a href="<?= htmlspecialchars($buildSortUrl('username')) ?>"
+                        <a href="<?= htmlspecialchars($viewModel->sortColumns['username']->url) ?>"
                            class="flex items-center gap-1 hover:text-gray-700">
                             Username
-                            <i data-lucide="<?= $sortIcon('username') ?>" class="w-3 h-3" aria-hidden="true"></i>
+                            <i data-lucide="<?= $viewModel->sortColumns['username']->icon ?>" class="w-3 h-3" aria-hidden="true"></i>
                         </a>
                     </th>
                     <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <a href="<?= htmlspecialchars($buildSortUrl('email')) ?>"
+                        <a href="<?= htmlspecialchars($viewModel->sortColumns['email']->url) ?>"
                            class="flex items-center gap-1 hover:text-gray-700">
                             Email
-                            <i data-lucide="<?= $sortIcon('email') ?>" class="w-3 h-3" aria-hidden="true"></i>
+                            <i data-lucide="<?= $viewModel->sortColumns['email']->icon ?>" class="w-3 h-3" aria-hidden="true"></i>
                         </a>
                     </th>
                     <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <a href="<?= htmlspecialchars($buildSortUrl('name')) ?>"
+                        <a href="<?= htmlspecialchars($viewModel->sortColumns['name']->url) ?>"
                            class="flex items-center gap-1 hover:text-gray-700">
                             Full Name
-                            <i data-lucide="<?= $sortIcon('name') ?>" class="w-3 h-3" aria-hidden="true"></i>
+                            <i data-lucide="<?= $viewModel->sortColumns['name']->icon ?>" class="w-3 h-3" aria-hidden="true"></i>
                         </a>
                     </th>
                     <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <a href="<?= htmlspecialchars($buildSortUrl('role')) ?>"
+                        <a href="<?= htmlspecialchars($viewModel->sortColumns['role']->url) ?>"
                            class="flex items-center gap-1 hover:text-gray-700">
                             Role
-                            <i data-lucide="<?= $sortIcon('role') ?>" class="w-3 h-3" aria-hidden="true"></i>
+                            <i data-lucide="<?= $viewModel->sortColumns['role']->icon ?>" class="w-3 h-3" aria-hidden="true"></i>
                         </a>
                     </th>
                     <th scope="col"
@@ -145,10 +125,10 @@ $hasActiveFilters = $viewModel->selectedRole !== '' || $viewModel->searchQuery !
                     </th>
                     <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <a href="<?= htmlspecialchars($buildSortUrl('registered')) ?>"
+                        <a href="<?= htmlspecialchars($viewModel->sortColumns['registered']->url) ?>"
                            class="flex items-center gap-1 hover:text-gray-700">
                             Registered
-                            <i data-lucide="<?= $sortIcon('registered') ?>" class="w-3 h-3" aria-hidden="true"></i>
+                            <i data-lucide="<?= $viewModel->sortColumns['registered']->icon ?>" class="w-3 h-3" aria-hidden="true"></i>
                         </a>
                     </th>
                     <th scope="col"

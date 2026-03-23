@@ -43,7 +43,9 @@
         <?php endif; ?>
 
         <!-- Create Form -->
-        <form action="/cms/events" method="POST" class="max-w-2xl">
+        <form action="/cms/events" method="POST" class="max-w-2xl"
+              data-jazz-type-id="<?= \App\Enums\EventTypeId::Jazz->value ?>"
+              data-restaurant-type-id="<?= \App\Enums\EventTypeId::Restaurant->value ?>">
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900">Event Details</h2>
@@ -261,11 +263,12 @@
 <script src="/assets/js/cms/event-create.js"></script>
 <script>
 (function () {
+    var form = document.querySelector('form[data-jazz-type-id]');
     var typeSelect = document.getElementById('EventTypeId');
     var artistField = document.getElementById('artistField');
     var restaurantField = document.getElementById('restaurantField');
-    var JAZZ_TYPE = 1;
-    var RESTAURANT_TYPE = 5;
+    var JAZZ_TYPE = parseInt(form.dataset.jazzTypeId, 10);
+    var RESTAURANT_TYPE = parseInt(form.dataset.restaurantTypeId, 10);
 
     function updateVisibility() {
         var val = parseInt(typeSelect.value, 10);

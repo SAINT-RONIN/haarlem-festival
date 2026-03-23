@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Constants\CmsMessages;
 use App\Enums\EventTypeId;
+use App\Helpers\FormatHelper;
 use App\Models\CmsItem;
 use App\Models\CmsItemEditData;
 use App\Models\CmsItemFilter;
@@ -242,7 +243,7 @@ class CmsEditService implements ICmsEditService
 
     private function buildCharLimitError(string $itemKey, int $maxChars): string
     {
-        $label = CmsMessages::formatFieldLabel($itemKey);
+        $label = FormatHelper::formatFieldLabel($itemKey);
         return "{$label} exceeds maximum of {$maxChars} characters";
     }
 
