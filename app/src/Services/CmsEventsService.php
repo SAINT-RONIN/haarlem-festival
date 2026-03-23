@@ -16,8 +16,10 @@ use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Repositories\Interfaces\IVenueRepository;
+use App\Models\EventEditBundle;
 use App\Models\EventFilter;
 use App\Models\EventSessionFilter;
+use App\Models\GroupedScheduleDayConfigs;
 use App\Models\EventTypeFilter;
 use App\Models\ScheduleDayConfigFilter;
 use App\Models\VenueFilter;
@@ -190,13 +192,9 @@ class CmsEventsService implements ICmsEventsService
 
     /**
      * Gets a single event with all related data for editing.
-     *
-     * Returns an array with keys: event, sessions, pricesMap, labelsMap.
      * Returns null when the event does not exist.
-     *
-     * @return array{event: \App\Models\EventWithDetails, sessions: \App\Models\SessionWithEvent[], pricesMap: array, labelsMap: array}|null
      */
-    public function getEventForEdit(int $eventId): ?array
+    public function getEventForEdit(int $eventId): ?EventEditBundle
     {
         $event = $this->eventRepository->findEvents(new EventFilter(
             eventId: $eventId,
@@ -214,12 +212,12 @@ class CmsEventsService implements ICmsEventsService
 
         [$pricesMap, $labelsMap] = $this->loadSessionPricesAndLabels($sessions);
 
-        return [
-            'event'     => $event,
-            'sessions'  => $sessions,
-            'pricesMap' => $pricesMap,
-            'labelsMap' => $labelsMap,
-        ];
+        return new EventEditBundle(
+            event: $event,
+            sessions: $sessions,
+            pricesMap: $pricesMap,
+            labelsMap: $labelsMap,
+        );
     }
 
     /**
@@ -547,11 +545,9 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets schedule day configs grouped into 'global' and 'byType' buckets.
-     *
-     * @return array{global: array<int, mixed>, byType: array<int, array<int, mixed>>}
+     * Gets schedule day configs grouped into global and type-specific buckets.
      */
-    public function getGroupedScheduleDayConfigs(): array
+    public function getGroupedScheduleDayConfigs(): GroupedScheduleDayConfigs
     {
         $dayConfigs = $this->getScheduleDayConfigs();
         $globalConfigs = [];
@@ -563,7 +559,7 @@ class CmsEventsService implements ICmsEventsService
                 $typeConfigs[(int)$config->eventTypeId][(int)$config->dayOfWeek] = $config;
             }
         }
-        return ['global' => $globalConfigs, 'byType' => $typeConfigs];
+        return new GroupedScheduleDayConfigs(global: $globalConfigs, byType: $typeConfigs);
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsEventsMapper;
+use App\Models\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Services\Interfaces\ICmsRestaurantsService;
@@ -236,8 +237,8 @@ class CmsEventsController extends CmsBaseController
     {
         $eventTypes = $this->eventsService->getEventTypes();
         $grouped       = $this->eventsService->getGroupedScheduleDayConfigs();
-        $globalConfigs = $grouped['global'];
-        $typeConfigs   = $grouped['byType'];
+        $globalConfigs = $grouped->global;
+        $typeConfigs   = $grouped->byType;
         $successMessage = $this->sessionService->consumeFlash('success');
         $errorMessage = $this->sessionService->consumeFlash('error');
         require __DIR__ . '/../Views/pages/cms/schedule-days.php';
@@ -267,7 +268,7 @@ class CmsEventsController extends CmsBaseController
         );
     }
 
-    private function loadEventEditData(int $eventId): ?array
+    private function loadEventEditData(int $eventId): ?EventEditBundle
     {
         $editData = $this->eventsService->getEventForEdit($eventId);
         if ($editData === null) {
@@ -278,7 +279,7 @@ class CmsEventsController extends CmsBaseController
         return $editData;
     }
 
-    private function renderEventEditPage(array $editData): void
+    private function renderEventEditPage(EventEditBundle $editData): void
     {
         $priceTiers  = $this->eventsService->getPriceTiers();
         $viewModel   = $this->buildEventEditViewModel($editData, $priceTiers);
@@ -287,13 +288,13 @@ class CmsEventsController extends CmsBaseController
         require __DIR__ . '/../Views/pages/cms/event-edit.php';
     }
 
-    private function buildEventEditViewModel(array $editData, array $priceTiers = []): \App\ViewModels\Cms\CmsEventEditViewModel
+    private function buildEventEditViewModel(EventEditBundle $editData, array $priceTiers = []): \App\ViewModels\Cms\CmsEventEditViewModel
     {
         return CmsEventsMapper::toEventEditViewModel(
-            $editData['event'],
-            $editData['sessions'],
-            $editData['pricesMap'],
-            $editData['labelsMap'],
+            $editData->event,
+            $editData->sessions,
+            $editData->pricesMap,
+            $editData->labelsMap,
             $this->sessionService->consumeFlash('success'),
             $this->sessionService->consumeFlash('error'),
             $priceTiers,

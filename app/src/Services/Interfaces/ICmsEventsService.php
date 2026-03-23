@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Exceptions\ValidationException;
+use App\Models\EventEditBundle;
+use App\Models\GroupedScheduleDayConfigs;
 
 /**
  * Interface for CMS Events management service.
@@ -60,10 +62,8 @@ interface ICmsEventsService
     /**
      * Gets a single event with all related data for editing.
      * Returns null when the event does not exist.
-     *
-     * @return array{event: \App\Models\EventWithDetails, sessions: \App\Models\SessionWithEvent[], pricesMap: array, labelsMap: array}|null
      */
-    public function getEventForEdit(int $eventId): ?array;
+    public function getEventForEdit(int $eventId): ?EventEditBundle;
 
     /**
      * Updates an event's basic information.
@@ -123,11 +123,9 @@ interface ICmsEventsService
     public function getScheduleDayConfigs(): array;
 
     /**
-     * Gets schedule day configs grouped into 'global' and 'byType' buckets.
-     *
-     * @return array{global: array<int, mixed>, byType: array<int, array<int, mixed>>}
+     * Gets schedule day configs grouped into global and type-specific buckets.
      */
-    public function getGroupedScheduleDayConfigs(): array;
+    public function getGroupedScheduleDayConfigs(): GroupedScheduleDayConfigs;
 
     /**
      * Sets the visibility of a schedule day.

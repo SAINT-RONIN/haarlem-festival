@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Models\RegistrationFormData;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ICaptchaService;
 use App\Services\Interfaces\ISessionService;
@@ -94,7 +95,7 @@ class AuthController
         try {
             $data = $this->extractRegistrationData();
             if (!$this->captchaService->verify($_POST['g-recaptcha-response'] ?? null, $_SERVER['REMOTE_ADDR'] ?? null)) {
-                $this->redirectWithErrors('/register', ['captcha' => 'Please complete the CAPTCHA verification.'], $data);
+                $this->redirectWithErrors('/register', ['captcha' => 'Please complete the CAPTCHA verification.'], $data->toArray());
                 return;
             }
             $this->processRegistration($data);
@@ -155,26 +156,27 @@ class AuthController
         }
     }
 
-    private function extractRegistrationData(): array
+    private function extractRegistrationData(): RegistrationFormData
     {
-        return [
-            'username' => $_POST['username'] ?? '',
-            'email' => $_POST['email'] ?? '',
-            'password' => $_POST['password'] ?? '',
-            'confirmPassword' => $_POST['confirm_password'] ?? '',
-            'firstName' => $_POST['first_name'] ?? '',
-            'lastName' => $_POST['last_name'] ?? '',
-        ];
+        return new RegistrationFormData(
+            username: $_POST['username'] ?? '',
+            email: $_POST['email'] ?? '',
+            password: $_POST['password'] ?? '',
+            confirmPassword: $_POST['confirm_password'] ?? '',
+            firstName: $_POST['first_name'] ?? '',
+            lastName: $_POST['last_name'] ?? '',
+        );
     }
 
-    private function processRegistration(array $data): void
+    private function processRegistration(RegistrationFormData $data): void
     {
-        $errors = $this->authService->validateRegistration($data);
+        $dataArray = $data->toArray();
+        $errors = $this->authService->validateRegistration($dataArray);
         if ($errors !== []) {
-            $this->redirectWithErrors('/register', $errors, $data);
+            $this->redirectWithErrors('/register', $errors, $dataArray);
             return;
         }
-        $this->authService->register($data);
+        $this->authService->register($dataArray);
         $this->sessionService->start();
         $_SESSION['login_success'] = 'Registration successful! Please log in.';
         header('Location: /login');
