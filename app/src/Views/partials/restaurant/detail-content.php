@@ -323,7 +323,7 @@ $e = function (string $text): string {
                 <?= $e($viewModel->labelReservationNote) ?>
             </p>
             <div class="flex justify-center">
-                <a href="#"
+                <a href="/restaurant/<?= $viewModel->id ?>/reservation"
                    class="px-6 py-3.5 bg-red hover:bg-royal-blue rounded-2xl text-white text-xl font-normal font-['Montserrat'] transition-colors duration-200 flex items-center gap-2">
                     <?= $e($viewModel->labelReservationBtn) ?>
                     <svg class="w-2 h-4" viewBox="0 0 6 12" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

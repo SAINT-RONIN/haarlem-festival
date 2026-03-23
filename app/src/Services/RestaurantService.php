@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\RestaurantPageConstants;
+use App\Models\Restaurant;
 use App\Repositories\CmsContentRepository;
 use App\Repositories\RestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
@@ -58,7 +59,7 @@ class RestaurantService implements IRestaurantService
         }
 
         $cms          = $this->getCmsSection(RestaurantPageConstants::SECTION_DETAIL);
-        $scheduleData = $this->getRestaurantScheduleData($restaurant->name);
+        $scheduleData = $this->getRestaurantScheduleData($restaurant);
 
         return [
             'restaurant'     => $restaurant,
@@ -80,13 +81,33 @@ class RestaurantService implements IRestaurantService
 
     /**
      * Returns per-restaurant time slots and price cards.
-     * TODO: Replace with EventSession/pricing data from database.
+     * Time slots come from Restaurant.TimeSlots (comma-separated string).
+     * Prices come from Restaurant.PriceAdult and Restaurant.PriceChild.
      */
-    private function getRestaurantScheduleData(string $name): array
+    private function getRestaurantScheduleData(Restaurant $restaurant): array
     {
+        $slotsString = $restaurant->timeSlots ?? '';
+        $timeSlots   = $slotsString !== ''
+            ? array_values(array_filter(array_map('trim', explode(',', $slotsString))))
+            : [];
+
+        $priceCards = [];
+        if ($restaurant->priceAdult !== null) {
+            $priceCards[] = [
+                'label' => 'Per adult (drinks not included)',
+                'price' => '€ ' . number_format($restaurant->priceAdult, 2),
+            ];
+        }
+        if ($restaurant->priceChild !== null) {
+            $priceCards[] = [
+                'label' => 'Under 12 (drinks not included)',
+                'price' => '€ ' . number_format($restaurant->priceChild, 2),
+            ];
+        }
+
         return [
-            'timeSlots'  => [],
-            'priceCards' => [],
+            'timeSlots'  => $timeSlots,
+            'priceCards' => $priceCards,
         ];
     }
 }

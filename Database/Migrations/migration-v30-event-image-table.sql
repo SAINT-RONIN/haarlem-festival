@@ -1,0 +1,2 @@
+-- migration-v30-event-image-table.sql
+-- (intentionally left blank) No new table will be created. Migration kept empty as per user request.

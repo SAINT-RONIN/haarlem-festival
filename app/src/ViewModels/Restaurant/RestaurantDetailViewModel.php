@@ -97,6 +97,8 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
         public string $labelReservationBtn      = '',
         public string $labelDuration            = '',
         public string $labelSeats               = '',
+        public ?float  $priceAdult              = null,
+        public ?float  $priceChild              = null,
         public string $labelFestivalRated       = '',
         public string $labelMichelin            = '',
         public string $labelMapFallback         = '',

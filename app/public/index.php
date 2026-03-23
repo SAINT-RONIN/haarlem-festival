@@ -73,6 +73,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
     $r->addRoute('GET', '/restaurant/{id:\d+}', [RestaurantController::class, 'detail']);
+    $r->addRoute('GET', '/restaurant/{id:\d+}/reservation', [RestaurantController::class, 'reservationPage']);
+    $r->addRoute('POST', '/restaurant/{id:\d+}/reservation', [RestaurantController::class, 'submitReservation']);
 
     // My Program (cart) Routes
     $r->addRoute('GET', '/my-program', [ProgramController::class, 'index']);

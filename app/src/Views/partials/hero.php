@@ -231,7 +231,7 @@ $isLoggedIn = $isLoggedIn ?? ($global['is_logged_in'] ?? false);
             <div class="pr-2 sm:pr-3 md:pr-4 lg:pr-12 xl:pr-24 pl-2 sm:pl-3 md:pl-4 py-2 sm:py-3 md:py-4 lg:py-5 bg-sand rounded-tl-[12px] sm:rounded-tl-[15px] md:rounded-tl-[25px] lg:rounded-tl-[35px] flex justify-end items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-5">
                 <div class="flex flex-row justify-start items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-5" role="group"
                      aria-label="Hero call to action">
-                    <a href="#events"
+                    <a href="<?= htmlspecialchars($hero['hero_button_primary_link'] ?? '#') ?>"
                        class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-red hover:bg-royal-blue rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 outline-offset-[-1px] outline-red hover:outline-royal-blue flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         <span class="text-center text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap"><?= htmlspecialchars($hero['hero_button_primary']) ?></span>
                         <span class="px-1 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 lg:py-1.5 flex justify-center items-center"
@@ -243,7 +243,7 @@ $isLoggedIn = $isLoggedIn ?? ($global['is_logged_in'] ?? false);
                             </svg>
                         </span>
                     </a>
-                    <a href="#schedule"
+                    <a href="<?= htmlspecialchars($hero['hero_button_secondary_link'] ?? '#') ?>"
                        class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-sand hover:bg-red rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 sm:outline-2 outline-offset-[-1px] sm:outline-offset-[-2px] outline-red flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         <span class="text-center text-red group-hover:text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap transition-colors duration-200"><?= htmlspecialchars($hero['hero_button_secondary']) ?></span>
                     </a>

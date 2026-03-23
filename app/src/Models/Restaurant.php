@@ -52,6 +52,11 @@ class Restaurant
         public readonly ?int    $seatsPerSession = null,
         public readonly ?int    $durationMinutes = null,
         public readonly ?string $specialRequestsNote = null,
+        // Available dining time slots (comma-separated, e.g. "16:30, 18:30, 20:30")
+        public readonly ?string $timeSlots = null,
+        // Menu prices per person
+        public readonly ?float  $priceAdult = null,
+        public readonly ?float  $priceChild = null,
     ) {
     }
 
@@ -89,6 +94,9 @@ class Restaurant
             seatsPerSession: isset($row['SeatsPerSession']) ? (int)$row['SeatsPerSession'] : null,
             durationMinutes: isset($row['DurationMinutes']) ? (int)$row['DurationMinutes'] : null,
             specialRequestsNote: $row['SpecialRequestsNote'] ?? null,
+            timeSlots:           $row['TimeSlots'] ?? null,
+            priceAdult:          isset($row['PriceAdult']) ? (float)$row['PriceAdult'] : null,
+            priceChild:          isset($row['PriceChild']) ? (float)$row['PriceChild'] : null,
         );
     }
 
@@ -122,6 +130,9 @@ class Restaurant
             'SeatsPerSession' => $this->seatsPerSession,
             'DurationMinutes' => $this->durationMinutes,
             'SpecialRequestsNote' => $this->specialRequestsNote,
+            'TimeSlots'           => $this->timeSlots,
+            'PriceAdult'          => $this->priceAdult,
+            'PriceChild'          => $this->priceChild,
         ];
     }
 }

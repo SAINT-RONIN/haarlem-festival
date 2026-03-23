@@ -36,6 +36,7 @@ use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\UserAccountRepository;
 use App\Repositories\ProgramRepository;
+use App\Repositories\ReservationRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
@@ -134,6 +135,7 @@ return static function (string $controllerClass): object {
                 $restaurantRepository,
             ),
             $sessionService,
+            new ReservationRepository(),
         ),
         StorytellingController::class => new StorytellingController(
             new StorytellingService(

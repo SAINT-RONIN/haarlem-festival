@@ -39,6 +39,102 @@ final class RestaurantMapper
         );
     }
 
+    /**
+     * Builds the ViewModel for the reservation form page (/restaurant/{id}/reservation).
+     * Re-uses the detail ViewModel but points the hero buttons at the form and back to the detail page.
+     */
+    public static function toReservationViewModel(array $data, bool $isLoggedIn): RestaurantDetailViewModel
+    {
+        $vm = self::toDetailViewModel($data, $isLoggedIn);
+        // Rebuild HeroData so the primary button scrolls to the form
+        // and the secondary button goes back to this restaurant's detail page.
+        $restaurant = $data['restaurant'];
+        $cms        = $data['cms'];
+
+        $heroData = new HeroData(
+            mainTitle:           $restaurant->name,
+            subtitle:            self::text($cms, 'detail_hero_subtitle_template'),
+            primaryButtonText:   self::text($cms, 'detail_hero_btn_primary'),
+            primaryButtonLink:   '#reservation-form',
+            secondaryButtonText: self::text($cms, 'detail_hero_btn_secondary'),
+            secondaryButtonLink: '/restaurant/' . $restaurant->restaurantId,
+            backgroundImageUrl:  $restaurant->imagePath ?? self::DEFAULT_IMAGE,
+            currentPage:         'restaurant',
+        );
+
+        $globalUi = CmsMapper::toGlobalUiData($data['globalUiContent'], $isLoggedIn);
+
+        return new RestaurantDetailViewModel(
+            heroData: $heroData,
+            globalUi: $globalUi,
+            cms:      CmsMapper::toCmsData($heroData, $globalUi),
+
+            id:          $vm->id,
+            name:        $vm->name,
+            cuisine:     $vm->cuisine,
+            address:     $vm->address,
+            description: $vm->description,
+            rating:      $vm->rating,
+            image:       $vm->image,
+
+            phone:   $vm->phone,
+            email:   $vm->email,
+            website: $vm->website,
+
+            aboutText:  $vm->aboutText,
+            aboutImage: $vm->aboutImage,
+
+            chefName:  $vm->chefName,
+            chefText:  $vm->chefText,
+            chefImage: $vm->chefImage,
+
+            menuDescription: $vm->menuDescription,
+            cuisineTags:     $vm->cuisineTags,
+            menuImages:      $vm->menuImages,
+
+            locationDescription: $vm->locationDescription,
+            mapEmbedUrl:         $vm->mapEmbedUrl,
+
+            michelinStars:       $vm->michelinStars,
+            seatsPerSession:     $vm->seatsPerSession,
+            durationMinutes:     $vm->durationMinutes,
+            specialRequestsNote: $vm->specialRequestsNote,
+
+            galleryImages:    $vm->galleryImages,
+            reservationImage: $vm->reservationImage,
+            timeSlots:        $vm->timeSlots,
+            priceCards:       $vm->priceCards,
+
+            labelContactTitle:    $vm->labelContactTitle,
+            labelAddress:         $vm->labelAddress,
+            labelContact:         $vm->labelContact,
+            labelOpenHours:       $vm->labelOpenHours,
+            labelPracticalTitle:  $vm->labelPracticalTitle,
+            labelPriceFood:       $vm->labelPriceFood,
+            labelRating:          $vm->labelRating,
+            labelSpecialRequests: $vm->labelSpecialRequests,
+            labelGalleryTitle:    $vm->labelGalleryTitle,
+            labelAboutPrefix:     $vm->labelAboutPrefix,
+            labelChefTitle:       $vm->labelChefTitle,
+            labelMenuTitle:       $vm->labelMenuTitle,
+            labelCuisineType:     $vm->labelCuisineType,
+            labelLocationTitle:   $vm->labelLocationTitle,
+            labelLocationAddress: $vm->labelLocationAddress,
+            labelReservationTitle: $vm->labelReservationTitle,
+            labelReservationDesc: $vm->labelReservationDesc,
+            labelSlotsLabel:      $vm->labelSlotsLabel,
+            labelReservationNote: $vm->labelReservationNote,
+            labelReservationBtn:  $vm->labelReservationBtn,
+            labelDuration:        $vm->labelDuration,
+            labelSeats:           $vm->labelSeats,
+            labelFestivalRated:   $vm->labelFestivalRated,
+            labelMichelin:        $vm->labelMichelin,
+            labelMapFallback:     $vm->labelMapFallback,
+            priceAdult:           $vm->priceAdult,
+            priceChild:           $vm->priceChild,
+        );
+    }
+
     public static function toDetailViewModel(array $data, bool $isLoggedIn): RestaurantDetailViewModel
     {
         $restaurant  = $data['restaurant'];
@@ -116,6 +212,8 @@ final class RestaurantMapper
             labelFestivalRated:   self::text($cms, 'detail_label_festival_rated'),
             labelMichelin:        self::text($cms, 'detail_label_michelin'),
             labelMapFallback:     self::text($cms, 'detail_map_fallback_text'),
+            priceAdult:           $restaurant->priceAdult,
+            priceChild:           $restaurant->priceChild,
         );
     }
 
