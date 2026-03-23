@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Program;
 
+/**
+ * A single line item in the my-program page.
+ *
+ * Pre-formatted event title, session time, price, and quantity controls.
+ */
 final readonly class ProgramItemViewModel
 {
     public function __construct(

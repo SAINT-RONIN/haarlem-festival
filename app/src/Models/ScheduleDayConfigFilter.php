@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Typed filter parameters for ScheduleDayConfig repository queries.
+ * Query parameters for ScheduleDayConfigRepository.
+ * Filters by event type and/or day of week.
  */
 final readonly class ScheduleDayConfigFilter
 {

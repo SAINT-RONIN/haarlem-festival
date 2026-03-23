@@ -108,6 +108,7 @@ class CmsDashboardController extends CmsBaseController
         }
     }
 
+    /** Loads page data and renders the full edit view, or returns 404 if the page does not exist. */
     private function renderEditPage(int $pageId): void
     {
         $pageData = $this->cmsEditService->getPageForEditing($pageId);
@@ -192,6 +193,7 @@ class CmsDashboardController extends CmsBaseController
         exit;
     }
 
+    /** Validates the CSRF token from POST; redirects back to the edit page if invalid. */
     private function validateCsrfOrRedirect(int $pageId): void
     {
         $csrfToken = $_POST['csrf_token'] ?? null;
@@ -206,6 +208,7 @@ class CmsDashboardController extends CmsBaseController
         }
     }
 
+    /** Ensures the submitted items array is non-empty; redirects if there is nothing to update. */
     private function validateItemsOrRedirect(int $pageId): void
     {
         $items = $_POST['items'] ?? [];
@@ -216,6 +219,7 @@ class CmsDashboardController extends CmsBaseController
         }
     }
 
+    /** Persists the page item changes and redirects with a success or error flash. */
     private function performUpdateAndRedirect(int $pageId): void
     {
         $result = $this->cmsEditService->updatePageItems($pageId, $_POST['items']);
@@ -252,6 +256,7 @@ class CmsDashboardController extends CmsBaseController
         }
     }
 
+    /** Checks CSRF token and item ID for an upload request; outputs JSON errors and returns false if invalid. */
     private function isUploadRequestValid(): bool
     {
         $csrfToken = $_POST['csrf_token'] ?? null;
@@ -269,6 +274,7 @@ class CmsDashboardController extends CmsBaseController
         return true;
     }
 
+    /** Routes the upload request to either link an existing asset or handle a new file upload. */
     private function dispatchUploadAction(): void
     {
         $itemId = (int)($_POST['item_id'] ?? 0);
@@ -282,6 +288,7 @@ class CmsDashboardController extends CmsBaseController
         $this->handleNewFileUpload($itemId);
     }
 
+    /** Links an already-uploaded media asset to a page content item. */
     private function handleExistingAssetLink(int $itemId, int $mediaAssetId): void
     {
         try {
@@ -301,6 +308,7 @@ class CmsDashboardController extends CmsBaseController
         return ['success' => true, 'mediaAssetId' => $mediaAssetId, 'filePath' => $filePath, 'message' => CmsMessages::IMAGE_LINK_SUCCESS];
     }
 
+    /** Validates that a file was submitted, then delegates to the upload-and-link flow. */
     private function handleNewFileUpload(int $itemId): void
     {
         if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
@@ -311,6 +319,7 @@ class CmsDashboardController extends CmsBaseController
         $this->uploadAndLinkImage($itemId);
     }
 
+    /** Uploads the file to storage, creates a media asset record, and links it to the content item. */
     private function uploadAndLinkImage(int $itemId): void
     {
         try {

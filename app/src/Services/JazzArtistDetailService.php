@@ -19,6 +19,14 @@ use App\Repositories\Interfaces\IArtistTrackRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Services\Interfaces\IJazzArtistDetailService;
 
+/**
+ * Assembles the full detail-page payload for a single Jazz artist.
+ *
+ * Combines event data, CMS overrides, albums, tracks, lineup members,
+ * highlights, and gallery images from six different repositories.
+ * Results are cached in-memory with a configurable TTL to avoid
+ * redundant queries within the same request cycle.
+ */
 class JazzArtistDetailService implements IJazzArtistDetailService
 {
     /** @var array<string, array{expiresAt:int, data:JazzArtistDetailPageData}> */
@@ -35,7 +43,15 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     ) {
     }
 
-    /** @throws JazzArtistDetailNotFoundException */
+    /**
+     * Returns the complete artist detail page payload for a given URL slug.
+     *
+     * Normalises the slug, checks the in-memory cache, and if missing
+     * resolves the event then aggregates CMS + repository data into a
+     * single JazzArtistDetailPageData object.
+     *
+     * @throws JazzArtistDetailNotFoundException if the slug is invalid or no matching active Jazz event exists
+     */
     public function getArtistPageDataBySlug(string $slug): JazzArtistDetailPageData
     {
         $normalizedSlug = $this->normalizeSlug($slug);
@@ -44,6 +60,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
             return $cached;
         }
 
+        // Resolve the event from the database and build the full page payload
         $event = $this->findJazzEventBySlug($normalizedSlug);
         $pageData = $this->buildPageData($event);
         $this->setCachedPageData($normalizedSlug, $pageData);
@@ -60,6 +77,10 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         return JazzArtistDetailCmsData::fromRawArray($raw);
     }
 
+    /**
+     * Aggregates CMS content and all artist-related collections (albums, tracks,
+     * lineup, highlights, gallery) into a single page-data object.
+     */
     private function buildPageData(JazzArtistDetailEvent $event): JazzArtistDetailPageData
     {
         return new JazzArtistDetailPageData(

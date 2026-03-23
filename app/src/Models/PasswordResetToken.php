@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `PasswordResetToken` SQL table.
+ * Represents a row in the PasswordResetToken table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Stores hashed tokens with expiry timestamps for the forgot-password flow.
  */
 final readonly class PasswordResetToken
 {

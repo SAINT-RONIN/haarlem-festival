@@ -13,6 +13,10 @@ use App\Models\ScheduleRouteConfig;
 use App\Services\Interfaces\IScheduleService;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
+/**
+ * Returns server-rendered schedule HTML fragments for AJAX-driven filter updates
+ * on event listing pages (Jazz, Storytelling).
+ */
 class ScheduleApiController extends BaseController
 {
     public function __construct(
@@ -22,6 +26,7 @@ class ScheduleApiController extends BaseController
 
     /**
      * Returns the rendered schedule section HTML for AJAX filter requests.
+     * GET /api/schedule/{pageSlug}
      */
     public function getScheduleHtml(string $pageSlug): void
     {
@@ -36,6 +41,7 @@ class ScheduleApiController extends BaseController
         }
     }
 
+    /** Builds the schedule view model by resolving page-specific config and applying query-string filters. */
     private function buildScheduleViewModel(string $pageSlug): ScheduleSectionViewModel
     {
         $config = $this->resolveConfig($pageSlug);

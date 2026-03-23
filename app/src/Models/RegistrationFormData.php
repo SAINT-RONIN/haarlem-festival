@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Typed representation of user registration form data from $_POST.
+ * Typed carrier for user registration form fields.
+ * Extracted from POST in AuthController, validated by AuthService.
  */
 final readonly class RegistrationFormData
 {

@@ -16,11 +16,21 @@ use App\ViewModels\Program\CheckoutPageViewModel;
 use App\ViewModels\Program\MyProgramPageViewModel;
 use App\ViewModels\Program\ProgramItemViewModel;
 
+/**
+ * Transforms program-item domain models into ViewModels for the "My Program" page
+ * and the checkout page, computing line totals, formatting prices, and resolving
+ * event-type icons and language/age labels.
+ */
 final class ProgramMapper
 {
+    /**
+     * Converts a single ProgramItemData into a display-ready ViewModel for the My Program list.
+     * Computes the line total (price x quantity + donation) and resolves the event-type icon URL.
+     */
     public static function toItemViewModel(ProgramItemData $item): ProgramItemViewModel
     {
         $lineTotal = ($item->basePrice * $item->quantity) + $item->donationAmount;
+        // "Pay what you like" events with a zero base price display as "Free"
         $priceDisplay = ($item->isPayWhatYouLike && $item->basePrice <= 0.0) ? 'Free' : self::formatPrice($item->basePrice);
 
         return new ProgramItemViewModel(
@@ -44,6 +54,9 @@ final class ProgramMapper
         );
     }
 
+    /**
+     * Converts a ProgramItemData into a compact checkout-summary ViewModel (quantity, title, line total).
+     */
     public static function toCheckoutItemViewModel(ProgramItemData $item): CheckoutItemViewModel
     {
         $lineTotal = ($item->basePrice * $item->quantity) + $item->donationAmount;
@@ -55,6 +68,10 @@ final class ProgramMapper
         );
     }
 
+    /**
+     * Assembles the full My Program page ViewModel from program items, CMS labels,
+     * and computed subtotal/tax/total. Consumed by the my-program view.
+     */
     public static function toMyProgramViewModel(ProgramData $programData, ProgramMainContent $cmsContent, bool $isLoggedIn): MyProgramPageViewModel
     {
         $itemViewModels = array_map([self::class, 'toItemViewModel'], $programData->items);
@@ -77,6 +94,10 @@ final class ProgramMapper
         );
     }
 
+    /**
+     * Assembles the checkout page ViewModel with personal-info form labels,
+     * payment method headings, and the order summary. Consumed by the checkout view.
+     */
     public static function toCheckoutViewModel(ProgramData $programData, CheckoutMainContent $cmsContent, bool $isLoggedIn): CheckoutPageViewModel
     {
         $itemViewModels = array_map([self::class, 'toCheckoutItemViewModel'], $programData->items);
@@ -106,12 +127,15 @@ final class ProgramMapper
         );
     }
 
+    /** Delegates to FormatHelper::price for consistent euro-formatted output. */
     public static function formatPrice(float $amount): string
     {
         return FormatHelper::price($amount);
     }
 
     /**
+     * Returns pre-formatted subtotal, tax, and total strings for AJAX cart updates.
+     *
      * @return array{subtotal: string, taxAmount: string, total: string}
      */
     public static function formatTotals(ProgramData $programData): array
@@ -123,10 +147,12 @@ final class ProgramMapper
         ];
     }
 
+    /**
+     * Resolves the My Program icon path for a given event type.
+     * These are static design assets with no DB counterpart.
+     */
     private static function getEventTypeImageUrl(int $eventTypeId): string
     {
-        // Maps event type IDs to static icon filenames in assets/icons/my-program/.
-        // These are design assets, not user-facing text — no DB column exists for them.
         $filename = match ($eventTypeId) {
             EventTypeId::Jazz->value => 'saxophone',
             EventTypeId::Dance->value => 'dance',
@@ -176,6 +202,7 @@ final class ProgramMapper
         return "{$dayAndDate} · {$startTime}";
     }
 
+    /** Converts an ISO-style language code (NL, ENG, ZH) into a human-readable label. */
     private static function buildLanguageLabel(?string $languageCode): ?string
     {
         if ($languageCode === null || $languageCode === '') {

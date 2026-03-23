@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * A single CMS item in its editable form — includes display name, type label,
+ * value, and validation constraints.
+ */
 final readonly class CmsItemEditData
 {
     public function __construct(

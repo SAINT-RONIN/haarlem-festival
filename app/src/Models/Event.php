@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `Event` SQL table.
+ * Represents a row in the Event table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * An event is a bookable activity (e.g., 'Jazz Night at Patronaat') that belongs to one
+ * event type and may have multiple sessions across festival days.
  */
 final readonly class Event
 {

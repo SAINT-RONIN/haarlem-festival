@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+/**
+ * A single event row in the CMS events list table.
+ *
+ * Pre-computed display values like type badge class and status text.
+ */
 final readonly class CmsEventListItemViewModel
 {
     public function __construct(

@@ -43,9 +43,14 @@ class HomeService implements IHomeService
 
     /**
      * Returns all raw data needed to render the home page.
+     *
+     * Combines CMS content, hero/global-UI sections, event-type showcase
+     * cards, venue/restaurant map locations, and a schedule preview
+     * (up to 4 days) into a single HomePageData object.
      */
     public function getHomePageData(): HomePageData
     {
+        // Load all CMS key-value content for the home page (used by event-type cards)
         $cmsContent = $this->cmsService->getHomePageContent();
 
         return new HomePageData(
@@ -182,7 +187,9 @@ class HomeService implements IHomeService
     }
 
     /**
-     * Determines venue category based on venue name/type.
+     * Maps a venue to an event-type category by matching known keywords in
+     * the venue name. Falls back to 'history' for unrecognised venues
+     * (walking-tour locations).
      */
     private function determineVenueCategory(string $venueName): string
     {

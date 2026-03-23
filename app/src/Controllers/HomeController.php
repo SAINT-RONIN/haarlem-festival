@@ -10,9 +10,7 @@ use App\Services\Interfaces\IHomeService;
 use App\Services\Interfaces\ISessionService;
 
 /**
- * Controller for the homepage.
- *
- * Handles HTTP requests for the main landing page.
+ * Serves the festival homepage with CMS-driven hero, highlights, and event teasers.
  */
 class HomeController extends BaseController
 {

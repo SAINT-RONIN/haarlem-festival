@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\PageGalleryImage;
 
+/**
+ * Defines persistence operations for gallery images linked to CMS pages.
+ */
 interface IPageGalleryImageRepository
 {
     /**

@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IEventHighlightRepository;
 use PDO;
 
 /**
- * Repository for EventHighlight database operations.
+ * Read-only access to the EventHighlight table.
+ *
+ * Event highlights are short promotional blurbs or key facts displayed
+ * on the event detail page, ordered by SortOrder.
  */
 class EventHighlightRepository implements IEventHighlightRepository
 {

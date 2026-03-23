@@ -33,8 +33,10 @@ class MediaAssetService implements IMediaAssetService
      */
     public function uploadImage(array $file, string $folder = 'cms'): MediaAsset
     {
+        // Validate MIME type, file size, and image dimensions
         $this->validateFile($file);
 
+        // Resolve and ensure the target upload directory exists and is writable
         $targetDir = PathResolver::getUploadPath($folder);
 
         // Create directory if it doesn't exist
@@ -49,6 +51,7 @@ class MediaAssetService implements IMediaAssetService
             throw new ValidationException('Upload directory is not writable');
         }
 
+        // Generate a unique filename and move the uploaded file to its final location
         $extension = $this->getExtensionFromMime($file['type']);
         $fileName = $this->generateFileName($extension);
         $filePath = $targetDir . '/' . $fileName;
@@ -58,6 +61,7 @@ class MediaAssetService implements IMediaAssetService
             throw new ValidationException('Failed to move uploaded file');
         }
 
+        // Persist the asset metadata in the database and return the full record
         $mediaAssetId = $this->mediaAssetRepository->create([
             'FilePath' => $relativePath,
             'OriginalFileName' => $file['name'],
@@ -70,7 +74,8 @@ class MediaAssetService implements IMediaAssetService
     }
 
     /**
-     * Deletes a media asset and its file.
+     * Deletes a media asset record and removes the physical file from disk.
+     * Returns false if the asset does not exist.
      */
     public function deleteAsset(int $mediaAssetId): bool
     {

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `EventGalleryImage` table.
+ * Represents a row in the EventGalleryImage table.
+ *
+ * Gallery images associated with events, used on storytelling and event detail pages.
  */
 final readonly class EventGalleryImage
 {

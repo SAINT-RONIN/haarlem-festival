@@ -10,10 +10,12 @@ use App\Models\ScheduleFilterParams;
 use App\ViewModels\BaseViewModel;
 
 /**
- * Base controller for pages rendered from a single BaseViewModel instance.
+ * Shared foundation for all controllers. Provides view rendering, JSON responses,
+ * request body/query-string parsing, and schedule filter extraction.
  */
 abstract class BaseController
 {
+    /** Renders a full page view, extracting standard layout variables (nav, CMS, auth state) from the view model. */
     protected function renderPage(string $viewPath, BaseViewModel $viewModel): void
     {
         $cms = $viewModel->cms;
@@ -24,6 +26,7 @@ abstract class BaseController
         require $viewPath;
     }
 
+    /** Renders a view without the standard layout variable extraction (used for non-BaseViewModel pages). */
     protected function renderView(string $viewPath, object $viewModel): void
     {
         require $viewPath;
@@ -57,11 +60,13 @@ abstract class BaseController
         exit;
     }
 
+    /** Reads the raw HTTP request body (e.g. for webhook signature verification). */
     protected function readRawBody(): string
     {
         return (string)file_get_contents('php://input');
     }
 
+    /** Reads and trims a query-string parameter, truncating to $maxLength. Returns null if absent or empty. */
     protected function readStringQueryParam(string $key, int $maxLength = 255): ?string
     {
         if (!isset($_GET[$key])) {
@@ -76,6 +81,7 @@ abstract class BaseController
         return mb_substr($value, 0, $maxLength);
     }
 
+    /** Reads a query-string parameter as a positive integer. Returns null if absent, non-numeric, or zero. */
     protected function readPositiveIntQueryParam(string $key): ?int
     {
         $value = $this->readStringQueryParam($key, 32);
@@ -108,6 +114,7 @@ abstract class BaseController
         return $this->buildScheduleFilterParams($day, $timeRange, $priceType, $venue, $language, $age);
     }
 
+    /** Constructs a ScheduleFilterParams DTO, normalizing enum values and lowercasing free-text fields. */
     private function buildScheduleFilterParams(
         ?string $day,
         ?string $timeRange,
@@ -126,6 +133,7 @@ abstract class BaseController
         );
     }
 
+    /** Reads a server/header value from $_SERVER (e.g. HTTP_STRIPE_SIGNATURE). Returns null if absent or empty. */
     protected function readServerHeader(string $headerName): ?string
     {
         $value = $_SERVER[$headerName] ?? null;

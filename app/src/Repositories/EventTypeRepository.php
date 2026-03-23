@@ -11,7 +11,10 @@ use App\Repositories\Interfaces\IEventTypeRepository;
 use PDO;
 
 /**
- * Repository for EventType database operations.
+ * Read-only access to the EventType lookup table.
+ *
+ * Event types categorise festival events (e.g. "Jazz", "Dance", "Food")
+ * and are referenced by Event, ScheduleDayConfig, and PassType.
  */
 class EventTypeRepository implements IEventTypeRepository
 {
@@ -22,6 +25,11 @@ class EventTypeRepository implements IEventTypeRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * Retrieves event types with optional ID filter and configurable sort order.
+     *
+     * @return EventType[]
+     */
     public function findEventTypes(EventTypeFilter $filter = new EventTypeFilter()): array
     {
         $sql = '

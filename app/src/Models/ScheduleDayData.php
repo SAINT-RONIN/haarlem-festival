@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single day row returned by the groupByDay query or findDistinctDays in EventSessionRepository.
+ * Read-only projection from EventSession aggregation.
  *
- * The days query selects: DATE(es.StartDateTime) AS Date, DAYNAME(es.StartDateTime) AS dayName
+ * Provides the distinct days that have active sessions, used to build the schedule day tabs.
  */
 final readonly class ScheduleDayData
 {

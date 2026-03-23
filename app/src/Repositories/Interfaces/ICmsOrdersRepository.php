@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\OrderWithDetails;
 
+/**
+ * Defines read-only queries for retrieving orders with joined details for CMS display.
+ */
 interface ICmsOrdersRepository
 {
     /**

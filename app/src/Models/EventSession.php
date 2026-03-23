@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `EventSession` SQL table.
+ * Represents a row in the EventSession table.
  *
- * Columns verified against complete-database-11-02-2026.sql.
+ * Each session is a specific date/time occurrence of an event — tracks capacity, ticket sales,
+ * and scheduling. Sessions are what visitors actually book tickets for.
  */
 final readonly class EventSession
 {

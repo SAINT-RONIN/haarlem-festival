@@ -11,6 +11,10 @@ use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
 
+/**
+ * Manages the user's personal festival program (cart): viewing, adding, updating,
+ * removing, and clearing event items before checkout.
+ */
 class ProgramController extends BaseController
 {
     public function __construct(
@@ -20,6 +24,10 @@ class ProgramController extends BaseController
     ) {
     }
 
+    /**
+     * Displays the "My Program" page listing all items the user has added.
+     * GET /my-program
+     */
     public function index(): void
     {
         try {
@@ -39,6 +47,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Adds an event session to the user's program with a given quantity and optional donation.
+     * POST /my-program/add (JSON)
+     */
     public function add(): void
     {
         try {
@@ -58,6 +70,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Updates the ticket quantity for a program item and returns recalculated totals.
+     * PATCH /my-program/update-quantity (JSON)
+     */
     public function updateQuantity(): void
     {
         try {
@@ -76,6 +92,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Updates the donation amount for a program item and returns recalculated totals.
+     * PATCH /my-program/update-donation (JSON)
+     */
     public function updateDonation(): void
     {
         try {
@@ -94,6 +114,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Removes a single item from the program and returns recalculated totals.
+     * DELETE /my-program/remove (JSON)
+     */
     public function remove(): void
     {
         try {
@@ -111,6 +135,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Removes all items from the user's program.
+     * DELETE /my-program/clear (JSON)
+     */
     public function clear(): void
     {
         try {

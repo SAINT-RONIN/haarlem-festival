@@ -12,6 +12,12 @@ use App\ViewModels\Schedule\ScheduleFilterGroupData;
 use App\ViewModels\Schedule\ScheduleFilterOptionData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
+/**
+ * Transforms raw schedule data arrays (from ScheduleService) into typed
+ * ScheduleSectionViewModel trees used by every event-type page's schedule component.
+ * Handles day/time/price/language/age/venue filter construction, CMS label resolution,
+ * and event-card formatting.
+ */
 final class ScheduleMapper
 {
     private const HISTORY_PAGE_SLUG = 'history';
@@ -49,6 +55,10 @@ final class ScheduleMapper
     /**
      * @param array<string, mixed> $cmsContent
      * @return array{title: string, year: ?string, eventCountLabel: ?string, showEventCount: bool}
+     */
+    /**
+     * Resolves the schedule section header (title, year, event count label).
+     * The history page suppresses the year and event count by design.
      */
     private static function resolveHeaderTexts(array $cmsContent, string $pageSlug): array
     {
@@ -384,6 +394,10 @@ final class ScheduleMapper
         return $days;
     }
 
+    /**
+     * Converts a raw event array into a ScheduleEventCardViewModel, formatting
+     * price display, time range, and location string with hall/capacity details.
+     */
     public static function toEventCardViewModel(
         array $event,
         string $confirmText,
@@ -438,6 +452,7 @@ final class ScheduleMapper
     {
         $rawPriceDisplay = self::buildPriceDisplay($event);
 
+        // History tours show "from <price>" because prices vary by group size
         return ($event['isHistory'] ?? false) && $rawPriceDisplay !== ''
             ? 'from ' . $rawPriceDisplay
             : $rawPriceDisplay;
@@ -465,6 +480,10 @@ final class ScheduleMapper
         return FormatHelper::price((float)$amount, $symbol . ' ');
     }
 
+    /**
+     * Builds the location string. Jazz events include hall name and seat capacity
+     * (e.g. "Patronaat - Main Hall - 300 seats"); other types show only the venue name.
+     */
     private static function buildLocationDisplay(array $event): string
     {
         $eventTypeSlug = (string)($event['eventTypeSlug'] ?? '');
@@ -515,6 +534,7 @@ final class ScheduleMapper
         return $viewModels;
     }
 
+    /** Reads a non-empty string from the CMS content array, returning a default when missing. */
     private static function str(array $content, string $key, string $default): string
     {
         $value = $content[$key] ?? null;

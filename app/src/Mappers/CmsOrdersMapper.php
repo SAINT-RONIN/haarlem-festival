@@ -11,8 +11,15 @@ use App\Models\OrderWithDetails;
 use App\ViewModels\Cms\CmsOrderListItemViewModel;
 use App\ViewModels\Cms\CmsOrdersListViewModel;
 
+/**
+ * Transforms order domain models into ViewModels for the CMS orders-list page,
+ * resolving status/payment badge colors and formatting monetary amounts.
+ */
 final class CmsOrdersMapper
 {
+    /**
+     * Builds the full CMS orders-list page ViewModel from an array of OrderWithDetails models.
+     */
     public static function toListViewModel(
         array $orders,
         string $selectedStatus,
@@ -28,6 +35,10 @@ final class CmsOrdersMapper
     }
 
 
+    /**
+     * Converts a single OrderWithDetails into a list-row ViewModel, formatting the
+     * total amount as currency and mapping order/payment statuses to badge color classes.
+     */
     public static function toListItem(OrderWithDetails $order): CmsOrderListItemViewModel
     {
         $orderStatus   = $order->status;
@@ -50,6 +61,7 @@ final class CmsOrdersMapper
         );
     }
 
+    /** Maps an OrderStatus value to its Tailwind badge color classes. */
     private static function resolveStatusBadgeClass(string $status): string
     {
         return match ($status) {
@@ -62,6 +74,7 @@ final class CmsOrdersMapper
         };
     }
 
+    /** Maps a PaymentStatus value to its Tailwind badge color classes. */
     private static function resolvePaymentBadgeClass(string $status): string
     {
         return match ($status) {

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `ArtistGalleryImage` table.
+ * Represents a row in the ArtistGalleryImage table.
+ *
+ * Photo gallery images for jazz artist detail pages.
  */
 final readonly class ArtistGalleryImage
 {

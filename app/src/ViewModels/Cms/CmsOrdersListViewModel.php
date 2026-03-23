@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\ViewModels\Cms;
 
 /**
- * ViewModel for the CMS orders list page.
+ * View data for the CMS orders list page (orders.php).
+ *
+ * Carries order items with status badges and filter state.
  */
 final readonly class CmsOrdersListViewModel
 {

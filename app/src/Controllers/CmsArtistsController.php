@@ -10,6 +10,12 @@ use App\Models\ArtistUpsertData;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ISessionService;
 
+/**
+ * CMS controller for managing festival artists.
+ *
+ * Handles listing, creating, editing, and soft-deleting artist records
+ * through the admin panel.
+ */
 class CmsArtistsController extends CmsBaseController
 {
     public function __construct(
@@ -19,6 +25,10 @@ class CmsArtistsController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
+    /**
+     * Displays the paginated artist list with optional search filtering.
+     * GET /cms/artists
+     */
     public function index(): void
     {
         try {
@@ -38,6 +48,10 @@ class CmsArtistsController extends CmsBaseController
         }
     }
 
+    /**
+     * Renders the blank artist creation form.
+     * GET /cms/artists/create
+     */
     public function create(): void
     {
         try {
@@ -50,12 +64,17 @@ class CmsArtistsController extends CmsBaseController
         }
     }
 
+    /**
+     * Validates and persists a new artist from the creation form.
+     * POST /cms/artists
+     */
     public function store(): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_artist_create', '/cms/artists/create');
             $data   = $this->extractFormData();
+            // Re-render the form with errors if validation fails
             $errors = $this->artistsService->validateForCreate($data);
             if (!empty($errors)) {
                 $this->renderCreateForm($data, $errors);
@@ -68,6 +87,10 @@ class CmsArtistsController extends CmsBaseController
         }
     }
 
+    /**
+     * Renders the edit form for an existing artist, pre-filled with current data.
+     * GET /cms/artists/{id}/edit
+     */
     public function edit(int $id): void
     {
         try {
@@ -86,12 +109,17 @@ class CmsArtistsController extends CmsBaseController
         }
     }
 
+    /**
+     * Validates and applies updates to an existing artist.
+     * POST /cms/artists/{id}/edit
+     */
     public function update(int $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_artist_edit_' . $id, '/cms/artists/' . $id . '/edit');
             $data   = $this->extractFormData();
+            // Re-render the form with errors if validation fails
             $errors = $this->artistsService->validateForUpdate($id, $data);
             if (!empty($errors)) {
                 $this->renderEditForm($id, $data, $errors);
@@ -104,6 +132,10 @@ class CmsArtistsController extends CmsBaseController
         }
     }
 
+    /**
+     * Soft-deletes (deactivates) an artist by ID.
+     * POST /cms/artists/{id}/delete
+     */
     public function delete(int $id): void
     {
         try {

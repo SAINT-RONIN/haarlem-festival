@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\ICuisineTypeRepository;
 use PDO;
 
 /**
- * Repository for CuisineType database operations.
+ * Read-only access to the CuisineType table via the RestaurantCuisine junction table.
+ *
+ * Cuisine types (e.g. "Italian", "Japanese") are linked to restaurants through a
+ * many-to-many relationship. This repository resolves those associations.
  */
 class CuisineTypeRepository implements ICuisineTypeRepository
 {
@@ -22,7 +25,8 @@ class CuisineTypeRepository implements ICuisineTypeRepository
     }
 
     /**
-     * Returns all cuisine types for a restaurant, ordered by name.
+     * Returns all cuisine types for a single restaurant, ordered by name.
+     * Joins through the RestaurantCuisine junction table.
      *
      * @return CuisineType[]
      */
@@ -41,6 +45,9 @@ class CuisineTypeRepository implements ICuisineTypeRepository
     }
 
     /**
+     * Batch-fetches cuisine types for multiple restaurants in one query to avoid N+1.
+     * Results are grouped by RestaurantId for easy lookup.
+     *
      * @param int[] $restaurantIds
      * @return array<int, CuisineType[]> Keyed by RestaurantId
      */
@@ -50,6 +57,7 @@ class CuisineTypeRepository implements ICuisineTypeRepository
             return [];
         }
 
+        // Build positional placeholders (?, ?, ...) for the IN clause
         $placeholders = implode(',', array_fill(0, count($restaurantIds), '?'));
         $stmt = $this->pdo->prepare("
             SELECT ct.*, rc.RestaurantId

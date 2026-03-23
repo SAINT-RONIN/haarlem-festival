@@ -11,5 +11,8 @@ use App\Models\JazzPageData;
  */
 interface IJazzService
 {
+    /**
+     * Assembles the complete domain payload for the Jazz overview page, including CMS content, artists, and sessions.
+     */
     public function getJazzPageData(): JazzPageData;
 }

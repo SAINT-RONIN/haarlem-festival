@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\ArtistAlbum;
 
+/**
+ * Defines persistence operations for artist albums linked to events.
+ */
 interface IArtistAlbumRepository
 {
     /**

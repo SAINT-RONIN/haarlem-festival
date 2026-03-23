@@ -10,6 +10,10 @@ use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ICaptchaService;
 use App\Services\Interfaces\ISessionService;
 
+/**
+ * Manages user authentication flows: login, registration, password reset, and logout.
+ * All form submissions use flash messages for error/success feedback across redirects.
+ */
 class AuthController
 {
     public function __construct(
@@ -19,6 +23,10 @@ class AuthController
     ) {
     }
 
+    /**
+     * Renders the login page with any flash error/success messages.
+     * GET /login
+     */
     public function showLogin(): void
     {
         try {
@@ -36,6 +44,10 @@ class AuthController
         }
     }
 
+    /**
+     * Authenticates the user with submitted credentials and starts a session on success.
+     * POST /login
+     */
     public function login(): void
     {
         try {
@@ -57,6 +69,10 @@ class AuthController
         }
     }
 
+    /**
+     * Destroys the user session and redirects to the homepage.
+     * POST /logout
+     */
     public function logout(): void
     {
         try {
@@ -68,6 +84,10 @@ class AuthController
         }
     }
 
+    /**
+     * Renders the registration form with reCAPTCHA, repopulating fields from flash on validation failure.
+     * GET /register
+     */
     public function showRegister(): void
     {
         try {
@@ -86,9 +106,14 @@ class AuthController
         }
     }
 
+    /**
+     * Validates CAPTCHA and registration data, then creates a new user account.
+     * POST /register
+     */
     public function register(): void
     {
         try {
+            // Extract form fields, then verify CAPTCHA before any further validation
             $data = $this->extractRegistrationData();
             if (!$this->captchaService->verify($_POST['g-recaptcha-response'] ?? null, $_SERVER['REMOTE_ADDR'] ?? null)) {
                 $this->redirectWithErrors('/register', ['captcha' => 'Please complete the CAPTCHA verification.'], $data->toArray());
@@ -100,6 +125,10 @@ class AuthController
         }
     }
 
+    /**
+     * Renders the forgot-password form with flash feedback.
+     * GET /forgot-password
+     */
     public function showForgotPassword(): void
     {
         try {
@@ -112,6 +141,10 @@ class AuthController
         }
     }
 
+    /**
+     * Triggers a password-reset email (always shows success to prevent user enumeration).
+     * POST /forgot-password
+     */
     public function forgotPassword(): void
     {
         try {
@@ -125,6 +158,10 @@ class AuthController
         }
     }
 
+    /**
+     * Validates the reset token from the query string and renders the password-reset form.
+     * GET /reset-password?token=...
+     */
     public function showResetPassword(): void
     {
         try {
@@ -138,6 +175,10 @@ class AuthController
         }
     }
 
+    /**
+     * Processes the new password submission and redirects to login on success.
+     * POST /reset-password
+     */
     public function resetPassword(): void
     {
         try {
@@ -205,6 +246,7 @@ class AuthController
 
     private function redirectWithErrors(string $url, array $errors, array $input): void
     {
+        // Strip sensitive fields before storing input in flash for form repopulation
         unset($input['password'], $input['confirmPassword']);
         $this->sessionService->setFlash('register_errors', $errors);
         $this->sessionService->setFlash('register_input', $input);

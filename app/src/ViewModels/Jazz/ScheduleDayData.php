@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for single schedule day data.
+ * A single day in the jazz page schedule section — date label and event cards.
  */
 final readonly class ScheduleDayData
 {

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `EventHighlight` table.
+ * Represents a row in the EventHighlight table.
+ *
+ * Featured highlights for events, displayed on detail pages.
  */
 final readonly class EventHighlight
 {

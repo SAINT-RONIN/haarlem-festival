@@ -10,6 +10,12 @@ use App\Models\ArtistUpsertData;
 use App\Repositories\Interfaces\IArtistRepository;
 use PDO;
 
+/**
+ * Provides CRUD operations against the Artist table.
+ *
+ * Supports optional name-based search for the artist listing and uses
+ * soft-delete (IsActive = 0) instead of removing rows.
+ */
 class ArtistRepository implements IArtistRepository
 {
     private PDO $pdo;
@@ -19,7 +25,11 @@ class ArtistRepository implements IArtistRepository
         $this->pdo = Database::getConnection();
     }
 
-    /** @return Artist[] */
+    /**
+     * Retrieves all artists, optionally filtered by a partial name match.
+     *
+     * @return Artist[]
+     */
     public function findAll(?string $search = null): array
     {
         $sql = 'SELECT * FROM Artist';
@@ -34,6 +44,9 @@ class ArtistRepository implements IArtistRepository
         return array_map([Artist::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    /**
+     * Looks up a single artist by primary key, or null if not found.
+     */
     public function findById(int $id): ?Artist
     {
         $stmt = $this->pdo->prepare('SELECT * FROM Artist WHERE ArtistId = :id LIMIT 1');
@@ -42,6 +55,9 @@ class ArtistRepository implements IArtistRepository
         return is_array($row) ? Artist::fromRow($row) : null;
     }
 
+    /**
+     * Inserts a new artist and returns the auto-incremented ID.
+     */
     public function create(ArtistUpsertData $data): int
     {
         $stmt = $this->pdo->prepare(
@@ -55,6 +71,9 @@ class ArtistRepository implements IArtistRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+    /**
+     * Overwrites all mutable fields of an existing artist.
+     */
     public function update(int $id, ArtistUpsertData $data): void
     {
         $stmt = $this->pdo->prepare(
@@ -67,6 +86,9 @@ class ArtistRepository implements IArtistRepository
         ]);
     }
 
+    /**
+     * Soft-deletes an artist by setting IsActive to 0 (row is preserved for FK integrity).
+     */
     public function delete(int $id): void
     {
         $stmt = $this->pdo->prepare('UPDATE Artist SET IsActive = 0 WHERE ArtistId = :id');

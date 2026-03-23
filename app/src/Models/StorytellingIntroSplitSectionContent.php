@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries CMS item values for the Storytelling intro_split_section.
+ * CMS content for the storytelling page intro split-layout section.
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class StorytellingIntroSplitSectionContent
 {

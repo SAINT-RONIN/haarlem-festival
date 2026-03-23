@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\ViewModels\Cms;
 
 /**
- * ViewModel for the CMS page editor.
+ * View data for the CMS page content editor.
+ *
+ * Carries page info, editable sections, and content/image limit configs.
  */
 final readonly class CmsPageEditViewModel
 {

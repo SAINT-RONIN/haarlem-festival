@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `OrderItem` SQL table.
+ * Represents a row in the OrderItem table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Each item links an order to a specific session with quantity, unit price, and VAT rate.
+ * Supports both single tickets and reserved seats.
  */
 final readonly class OrderItem
 {

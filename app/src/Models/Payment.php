@@ -8,10 +8,10 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 
 /**
- * Represents a single row from the `Payment` SQL table.
+ * Represents a row in the Payment table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Tracks payment attempts for orders — method, status, Stripe session/intent IDs,
+ * and provider reference.
  */
 final readonly class Payment
 {

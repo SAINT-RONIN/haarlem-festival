@@ -41,7 +41,10 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
-     * Gets a page with all its sections and items for editing.
+     * Loads a CMS page together with its sections (each enriched with editable
+     * items and media-asset metadata) for rendering in the CMS editor UI.
+     *
+     * Returns null when the page ID does not exist.
      */
     public function getPageForEditing(int $pageId): ?CmsPageEditData
     {
@@ -57,13 +60,19 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
+     * Loads all sections and items for a page, groups items by section,
+     * and enriches each with media-asset data and editor-input metadata.
+     *
      * @return CmsSectionEditData[]
      */
     private function buildSectionsWithItems(CmsPage $page): array
     {
+        // Load all sections and items for this page in two queries
         $sections = $this->cmsRepository->findSections(new CmsSectionFilter(cmsPageId: $page->cmsPageId));
         $items = $this->cmsRepository->findItems(new CmsItemFilter(cmsPageId: $page->cmsPageId));
         $itemsBySection = $this->groupItemsBySection($items);
+
+        // For detail pages, map event section keys to human-readable event names
         $eventNameMap = $this->buildEventNameMapForPage($page->slug);
 
         return $this->assembleSections($sections, $itemsBySection, $eventNameMap);
@@ -88,11 +97,15 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
+     * Builds an editable section, skipping orphaned event sections
+     * (sections whose event no longer exists in the database).
+     *
      * @param array<int, list<CmsItem>> $itemsBySection
      * @param array<string, string> $eventNameMap
      */
     private function buildSingleSection(CmsSection $section, array $itemsBySection, array $eventNameMap): ?CmsSectionEditData
     {
+        // Skip event sections that reference a deleted/inactive event
         if ($eventNameMap !== [] && str_starts_with($section->sectionKey, 'event_') && !isset($eventNameMap[$section->sectionKey])) {
             return null;
         }
@@ -109,6 +122,10 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
+     * Returns a section-key-to-event-title map for detail pages so the CMS
+     * editor can show the event name instead of a raw "event_42" key.
+     * Returns an empty array for non-detail pages.
+     *
      * @return array<string, string>
      */
     private function buildEventNameMapForPage(string $pageSlug): array
@@ -123,14 +140,19 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
-     * Updates multiple CMS items from form submission.
+     * Validates and persists updates for multiple CMS items in a single form submission.
+     *
+     * Each item is validated against its type-specific character limit before saving.
+     * Returns a result object indicating how many items were updated and any validation errors.
      *
      * @param array<int|string, mixed> $items Array of item updates: [itemId => value_string]
+     * @throws \App\Exceptions\CmsEditException if an item ID does not belong to the given page
      */
     public function updatePageItems(int $pageId, array $items): CmsUpdateResult
     {
         $errors = [];
         $updatedCount = 0;
+        // Pre-load all items for the page so each update can be validated against the correct type
         $pageItemsById = $this->indexPageItemsById($pageId);
 
         foreach ($items as $itemId => $rawValue) {
@@ -188,6 +210,10 @@ class CmsEditService implements ICmsEditService
 
     /**
      * Builds a route-aware preview URL for CMS page edit screens.
+     *
+     * For detail pages (storytelling-detail, jazz-artist-detail, restaurant-detail)
+     * it extracts the first event name/ID from the sections to build a slug-based URL.
+     * For all other pages it returns /{pageSlug} (or "/" for "home").
      *
      * @param CmsSectionEditData[] $sections
      */

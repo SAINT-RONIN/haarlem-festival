@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries CMS item values for the Jazz intro_section.
+ * CMS content for the jazz page intro section (headline, description, background image).
+ * Hydrated from CMS key-value pairs via fromRawArray().
  */
 final readonly class JazzIntroSectionContent
 {

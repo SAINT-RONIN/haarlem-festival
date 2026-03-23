@@ -18,7 +18,8 @@ use App\Controllers\Support\ControllerErrorResponder;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
- * Controller for Jazz page.
+ * Serves the Jazz event listing page and individual artist detail pages,
+ * including schedule sections with day/time/venue filtering.
  */
 class JazzController extends BaseController
 {
@@ -30,6 +31,10 @@ class JazzController extends BaseController
     ) {
     }
 
+    /**
+     * Renders the main Jazz listing page with all artists and a filterable schedule.
+     * GET /jazz
+     */
     public function index(): void
     {
         try {
@@ -53,6 +58,10 @@ class JazzController extends BaseController
         return ScheduleMapper::toScheduleSection($scheduleData);
     }
 
+    /**
+     * Renders the detail page for a single Jazz artist, identified by URL slug. Returns 404 if not found.
+     * GET /jazz/{slug}
+     */
     public function detail(string $slug): void
     {
         try {

@@ -17,6 +17,10 @@ use App\Services\Interfaces\IStorytellingService;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
+/**
+ * Serves the Storytelling event listing page and individual event detail pages,
+ * each with a filterable schedule section driven by CMS content.
+ */
 class StorytellingController extends BaseController
 {
     public function __construct(
@@ -28,8 +32,8 @@ class StorytellingController extends BaseController
     }
 
     /**
-     * Renders the storytelling listing page.
-     * The reason for this is because all page entry points live in the controller — it coordinates the service call, mapping, and view render without owning any logic.
+     * Renders the main Storytelling listing page with all events and a filterable schedule.
+     * GET /storytelling
      */
     public function index(): void
     {
@@ -56,8 +60,8 @@ class StorytellingController extends BaseController
     }
 
     /**
-     * Renders the detail page for a single storytelling event.
-     * The reason for this is because each event has its own CMS-driven detail page that requires fetching both event data and a filtered schedule.
+     * Renders the detail page for a single Storytelling event, identified by URL slug. Returns 404 if not found.
+     * GET /storytelling/{slug}
      */
     public function detail(string $slug): void
     {

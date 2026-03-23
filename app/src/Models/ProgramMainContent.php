@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries the CMS item values for the my-program page main section.
+ * CMS content for the my-program page (headings, empty state text).
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class ProgramMainContent
 {

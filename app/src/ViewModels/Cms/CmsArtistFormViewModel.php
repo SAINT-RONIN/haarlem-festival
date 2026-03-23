@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+/**
+ * View data for the CMS artist create/edit form.
+ *
+ * Carries form action URL, field values, validation errors, and CSRF token.
+ */
 final readonly class CmsArtistFormViewModel
 {
     /**

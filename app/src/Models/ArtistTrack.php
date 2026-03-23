@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `ArtistTrack` table.
+ * Represents a row in the ArtistTrack table.
+ *
+ * Individual tracks shown on jazz artist detail pages with audio preview URLs.
  */
 final readonly class ArtistTrack
 {

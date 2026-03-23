@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries CMS item values for the Jazz gradient_section.
+ * CMS content for the jazz page gradient banner section.
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class JazzGradientSectionContent
 {

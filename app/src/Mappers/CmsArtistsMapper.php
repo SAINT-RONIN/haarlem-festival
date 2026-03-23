@@ -11,9 +11,16 @@ use App\ViewModels\Cms\CmsArtistFormViewModel;
 use App\ViewModels\Cms\CmsArtistListItemViewModel;
 use App\ViewModels\Cms\CmsArtistsListViewModel;
 
+/**
+ * Transforms Artist domain models into ViewModels for the CMS artist-management pages
+ * (artist list and artist create/edit form).
+ */
 final class CmsArtistsMapper
 {
     /**
+     * Converts an array of Artist models into the full CMS artist-list page ViewModel,
+     * including search state, flash messages, and a CSRF token for delete actions.
+     *
      * @param Artist[] $artists
      */
     public static function toListViewModel(
@@ -33,6 +40,9 @@ final class CmsArtistsMapper
     }
 
     /**
+     * Builds the CMS artist create/edit form ViewModel from upsert data and validation errors.
+     * Used for both the "new artist" and "edit artist" pages (distinguished by $artistId).
+     *
      * @param array<string, string> $errors
      */
     public static function toFormViewModel(
@@ -57,6 +67,10 @@ final class CmsArtistsMapper
         );
     }
 
+    /**
+     * Extracts the editable fields from a persisted Artist into an ArtistUpsertData DTO,
+     * used to pre-populate the edit form with current values.
+     */
     public static function fromArtist(Artist $a): ArtistUpsertData
     {
         return new ArtistUpsertData(

@@ -8,18 +8,39 @@ use App\Models\Program;
 use App\Models\ProgramData;
 use App\Models\ProgramItem;
 
+/**
+ * Defines the contract for managing the user's personal festival program (shopping cart).
+ */
 interface IProgramService
 {
+    /**
+     * Retrieves the existing program for the session/user, or creates a new one if none exists.
+     */
     public function getOrCreateProgram(string $sessionKey, ?int $userAccountId): Program;
 
+    /**
+     * Adds an event session to the program with the given quantity and optional donation.
+     */
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem;
 
+    /**
+     * Updates the ticket quantity for an existing program item.
+     */
     public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void;
 
+    /**
+     * Updates the donation amount for an existing program item.
+     */
     public function updateDonation(string $sessionKey, ?int $userAccountId, int $programItemId, float $donationAmount): void;
 
+    /**
+     * Removes a single item from the program.
+     */
     public function removeItem(string $sessionKey, ?int $userAccountId, int $programItemId): void;
 
+    /**
+     * Removes all items from the program, effectively emptying the cart.
+     */
     public function clearProgram(string $sessionKey, ?int $userAccountId): void;
 
     /**

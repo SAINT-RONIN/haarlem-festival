@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `Venue` SQL table.
+ * Represents a row in the Venue table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Venues are physical locations where events take place (e.g., Patronaat, Jopenkerk).
  */
 final readonly class Venue
 {

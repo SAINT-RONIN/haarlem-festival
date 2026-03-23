@@ -8,6 +8,11 @@ use App\Infrastructure\Database;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use PDO;
 
+/**
+ * Manages the OrderItem table, which stores individual line items within an order.
+ * Each item links to exactly one purchasable entity (event session, history tour, or pass)
+ * via mutually exclusive nullable foreign keys.
+ */
 class OrderItemRepository implements IOrderItemRepository
 {
     private PDO $pdo;
@@ -17,6 +22,11 @@ class OrderItemRepository implements IOrderItemRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * Inserts a line item into an order. Exactly one of eventSessionId, historyTourId,
+     * or passPurchaseId should be non-null to identify the purchased product type.
+     * Monetary values are strings to preserve decimal precision.
+     */
     public function create(
         int $orderId,
         ?int $eventSessionId,
@@ -65,6 +75,10 @@ class OrderItemRepository implements IOrderItemRepository
         ]);
     }
 
+    /**
+     * Checks whether any order item references the given session. Used to prevent
+     * deletion of sessions that already have orders placed against them.
+     */
     public function existsForSession(int $sessionId): bool
     {
         $stmt = $this->pdo->prepare(

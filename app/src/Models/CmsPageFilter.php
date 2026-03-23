@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * Query parameters for CmsRepository page queries.
+ */
 final readonly class CmsPageFilter
 {
     public function __construct(

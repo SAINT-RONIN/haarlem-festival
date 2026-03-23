@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents an Event row joined with EventType and Venue data.
+ * Read-only projection from a JOIN across Event, EventType, and Venue.
  *
- * Returned by EventRepository::findEvents() for any query that includes
- * the EventType and Venue joins. Use Event for plain single-row lookups.
+ * Provides the CMS event list and public pages with combined display data without
+ * separate queries per table.
  */
 final readonly class EventWithDetails
 {

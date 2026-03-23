@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
+/**
+ * Hero banner data for public pages — title, subtitle, background image, and CTA button.
+ */
 final readonly class HeroData
 {
     public function __construct(

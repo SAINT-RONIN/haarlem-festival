@@ -14,6 +14,12 @@ use App\Models\CmsSectionFilter;
 use App\Repositories\Interfaces\ICmsRepository;
 use PDO;
 
+/**
+ * Low-level data access for the three core CMS tables: CmsPage, CmsSection, and CmsItem.
+ *
+ * Provides filtered reads and partial updates. Higher-level content resolution
+ * (slug lookup, caching, media-asset hydration) lives in CmsContentRepository.
+ */
 class CmsRepository implements ICmsRepository
 {
     private PDO $pdo;
@@ -24,10 +30,18 @@ class CmsRepository implements ICmsRepository
     }
 
     /**
+     * Finds CMS pages with optional filtering by ID or slug.
+     *
+     * When includeLastUpdated is set, the query joins through CmsSection -> CmsItem
+     * and aggregates MAX(UpdatedAtUtc) so the CMS dashboard can show when a page was
+     * last edited.
+     *
      * @return CmsPage[]
      */
     public function findPages(CmsPageFilter $filter): array
     {
+        // When last-updated info is requested, join page -> sections -> items to find
+        // the most recent CmsItem edit timestamp across the whole page
         $select = $filter->includeLastUpdated
             ? '
                 SELECT cp.*, MAX(ci.UpdatedAtUtc) AS UpdatedAtUtc
@@ -66,6 +80,8 @@ class CmsRepository implements ICmsRepository
     }
 
     /**
+     * Finds CMS sections, optionally scoped to a page and/or section key.
+     *
      * @return CmsSection[]
      */
     public function findSections(CmsSectionFilter $filter): array
@@ -93,10 +109,16 @@ class CmsRepository implements ICmsRepository
     }
 
     /**
+     * Finds CMS items with optional filtering by item ID, section, page, or section key.
+     *
+     * The query joins CmsItem -> CmsSection -> CmsPage so callers can filter items
+     * by page-level or section-level criteria in a single call.
+     *
      * @return CmsItem[]
      */
     public function findItems(CmsItemFilter $filter): array
     {
+        // Join up to CmsPage so we can filter by page ID or section key
         $sql = '
             SELECT ci.*
             FROM CmsItem ci
@@ -136,7 +158,11 @@ class CmsRepository implements ICmsRepository
     }
 
     /**
-     * @param array<string, mixed> $data
+     * Partially updates a CMS item's text or HTML value.
+     * Only columns present in $data are written; others are left untouched.
+     *
+     * @param array<string, mixed> $data Allowed keys: TextValue, HtmlValue
+     * @return bool False when $data had no recognised keys; true on execute.
      */
     public function updateItem(int $cmsItemId, array $data): bool
     {
@@ -163,6 +189,9 @@ class CmsRepository implements ICmsRepository
         return $stmt->execute($params);
     }
 
+    /**
+     * Replaces (or clears) the media asset linked to a CMS item.
+     */
     public function updateItemMediaAsset(int $cmsItemId, ?int $mediaAssetId): bool
     {
         $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = :mediaAssetId WHERE CmsItemId = :cmsItemId');

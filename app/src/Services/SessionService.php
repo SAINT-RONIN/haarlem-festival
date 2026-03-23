@@ -113,12 +113,18 @@ class SessionService implements ISessionService
         return $_SESSION[$key] ?? $default;
     }
 
+    /**
+     * Stores a flash message that survives exactly one subsequent read via consumeFlash().
+     */
     public function setFlash(string $key, mixed $value): void
     {
         $this->start();
         $_SESSION[self::FLASH_KEY][$key] = $value;
     }
 
+    /**
+     * Reads and removes a flash message in one step. Returns null if the key does not exist.
+     */
     public function consumeFlash(string $key): mixed
     {
         $this->start();
@@ -135,6 +141,10 @@ class SessionService implements ISessionService
         return $value;
     }
 
+    /**
+     * Returns an existing CSRF token for the given scope, or generates and stores a new one.
+     * Tokens are scoped so different forms cannot reuse each other's tokens.
+     */
     public function getCsrfToken(string $scope): string
     {
         $this->start();
@@ -149,6 +159,10 @@ class SessionService implements ISessionService
         return $token;
     }
 
+    /**
+     * Validates a submitted CSRF token against the stored token for the given scope.
+     * Uses timing-safe comparison to prevent timing attacks.
+     */
     public function isValidCsrfToken(string $scope, ?string $token): bool
     {
         $this->start();
@@ -161,6 +175,11 @@ class SessionService implements ISessionService
         return is_string($expected) && hash_equals($expected, $token);
     }
 
+    /**
+     * Returns the current PHP session ID. Used as a key to associate anonymous programs with a browser.
+     *
+     * @throws \RuntimeException When called before a session has been started
+     */
     public function getSessionId(): string
     {
         $this->start();

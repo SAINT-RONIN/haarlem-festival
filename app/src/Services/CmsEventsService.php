@@ -217,11 +217,12 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets a single event with all related data for editing.
-     * Returns null when the event does not exist.
+     * Assembles a single event together with its sessions, prices, and labels
+     * into an EventEditBundle for the CMS edit form. Returns null when the event does not exist.
      */
     public function getEventForEdit(int $eventId): ?EventEditBundle
     {
+        // Load the event with its session count
         $event = $this->eventRepository->findEvents(new EventFilter(
             eventId: $eventId,
             includeSessionCount: true,
@@ -230,12 +231,14 @@ class CmsEventsService implements ICmsEventsService
             return null;
         }
 
+        // Load all sessions (including cancelled) for the edit view
         $sessions = $this->sessionRepository->findSessions(new EventSessionFilter(
             eventId: $eventId,
             includeCancelled: true,
             orderBy: 'es.StartDateTime ASC',
         ))->sessions;
 
+        // Batch-load prices and labels for all sessions
         [$pricesMap, $labelsMap] = $this->loadSessionPricesAndLabels($sessions);
 
         return new EventEditBundle(
@@ -314,9 +317,10 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Deletes an event session.
+     * Hard-deletes an event session. Blocked if any order items reference this session
+     * (sessions with sold tickets must be cancelled instead).
      *
-     * @throws ValidationException
+     * @throws ValidationException When tickets have already been sold for this session
      */
     public function deleteSession(int $sessionId): bool
     {
@@ -548,9 +552,10 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Deletes an event (soft delete - sets IsActive = 0).
+     * Soft-deletes an event and deactivates all its sessions.
+     * The event remains in the database (IsActive = 0) for historical order references.
      *
-     * @throws ValidationException
+     * @throws ValidationException When the event does not exist
      */
     public function deleteEvent(int $eventId): void
     {
@@ -558,6 +563,7 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException(['Event not found']);
         }
 
+        // Soft-delete the event, then cascade-deactivate its sessions
         $this->eventRepository->softDelete($eventId);
         $this->eventRepository->deactivateSessions($eventId);
     }
@@ -607,11 +613,14 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets visible days for an event type.
-     * Returns array of day numbers (0-6) that are visible.
+     * Determines which days of the week are visible for a given event type by merging
+     * global defaults with type-specific overrides. Type settings take precedence.
+     *
+     * @return int[] Day numbers (0=Sunday through 6=Saturday) that should be shown
      */
     public function getVisibleDays(?int $eventTypeId = null): array
     {
+        // Load both layers and merge (type-specific overrides global)
         $globalSettings = $this->loadGlobalDaySettings();
         $typeSettings = $this->loadTypeDaySettings($eventTypeId);
 

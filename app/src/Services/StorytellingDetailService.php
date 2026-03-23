@@ -21,6 +21,13 @@ use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\IStorytellingDetailService;
 
+/**
+ * Assembles the detail-page payload for a single Storytelling event.
+ *
+ * Combines event data, CMS overrides, featured-image resolution,
+ * session labels, and about-body fallback logic from five repositories
+ * into a single StorytellingDetailPageData object.
+ */
 class StorytellingDetailService implements IStorytellingDetailService
 {
     public function __construct(

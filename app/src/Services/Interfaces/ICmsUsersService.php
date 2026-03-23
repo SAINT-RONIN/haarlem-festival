@@ -7,9 +7,14 @@ namespace App\Services\Interfaces;
 use App\Models\UserAccount;
 use App\Models\UserWithRole;
 
+/**
+ * Defines the contract for CMS user account management (CRUD and validation).
+ */
 interface ICmsUsersService
 {
     /**
+     * Returns all users with their role information, with optional filtering and sorting.
+     *
      * @return UserWithRole[]
      */
     public function getUsersWithRoles(
@@ -19,9 +24,14 @@ interface ICmsUsersService
         string $sortDir = 'desc',
     ): array;
 
+    /**
+     * Finds a single user account by its ID, or null if not found.
+     */
     public function findById(int $id): ?UserAccount;
 
     /**
+     * Validates fields for creating a new user, returning a map of field names to error messages.
+     *
      * @return array<string, string>
      */
     public function validateForCreate(
@@ -33,6 +43,8 @@ interface ICmsUsersService
     ): array;
 
     /**
+     * Validates fields for updating an existing user, returning a map of field names to error messages.
+     *
      * @return array<string, string>
      */
     public function validateForUpdate(
@@ -44,6 +56,9 @@ interface ICmsUsersService
         string $lastName,
     ): array;
 
+    /**
+     * Creates a new user account with the given details and returns the new user ID.
+     */
     public function createUser(
         string $username,
         string $email,
@@ -53,6 +68,9 @@ interface ICmsUsersService
         int $roleId,
     ): int;
 
+    /**
+     * Updates an existing user account. If password is null, the password is left unchanged.
+     */
     public function updateUser(
         int $id,
         string $username,
@@ -63,5 +81,8 @@ interface ICmsUsersService
         int $roleId,
     ): void;
 
+    /**
+     * Deletes a user account by its ID.
+     */
     public function deleteUser(int $id): void;
 }

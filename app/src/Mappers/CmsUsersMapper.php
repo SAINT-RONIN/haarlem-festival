@@ -13,9 +13,16 @@ use App\ViewModels\Cms\CmsUserFormViewModel;
 use App\ViewModels\Cms\CmsUserListItemViewModel;
 use App\ViewModels\Cms\CmsUsersListViewModel;
 
+/**
+ * Transforms user-account domain models into ViewModels for the CMS user-management pages
+ * (user list with sorting/filtering, and user create/edit form).
+ */
 final class CmsUsersMapper
 {
     /**
+     * Builds the CMS users-list page ViewModel, including sort column links,
+     * role-filter options, and role/status badge classes for each user row.
+     *
      * @param UserWithRole[] $users
      */
     public static function toListViewModel(
@@ -43,6 +50,10 @@ final class CmsUsersMapper
         );
     }
 
+    /**
+     * Converts a single UserWithRole into a list-row ViewModel, resolving the
+     * role badge color and the active/inactive status badge for the CMS table.
+     */
     public static function toListItem(UserWithRole $user): CmsUserListItemViewModel
     {
         $roleName = $user->roleName ?? 'Unknown';
@@ -65,6 +76,9 @@ final class CmsUsersMapper
     }
 
     /**
+     * Builds the CMS user create/edit form ViewModel with role options and validation errors.
+     * Serves both the "new user" and "edit user" pages (distinguished by $user being null or not).
+     *
      * @param array<string, string> $errors
      */
     public static function toFormViewModel(
@@ -97,6 +111,10 @@ final class CmsUsersMapper
     /**
      * @return array<string, CmsSortColumnViewModel>
      */
+    /**
+     * Generates sortable column header ViewModels — each contains the toggled URL
+     * and the appropriate chevron icon reflecting the current sort state.
+     */
     private static function buildSortColumns(string $sortBy, string $sortDir, string $selectedRole, string $searchQuery): array
     {
         $columns = [];
@@ -109,6 +127,7 @@ final class CmsUsersMapper
         return $columns;
     }
 
+    /** Maps a role name to its Tailwind badge color classes for the CMS user list. */
     private static function resolveRoleBadgeClass(string $roleName): string
     {
         return match ($roleName) {

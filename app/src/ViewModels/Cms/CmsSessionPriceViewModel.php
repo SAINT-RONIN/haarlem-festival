@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\ViewModels\Cms;
 
 /**
- * ViewModel for displaying a session price with its resolved tier name.
+ * A single price row in the session pricing table.
+ *
+ * Includes resolved tier name for display.
  */
 final readonly class CmsSessionPriceViewModel
 {

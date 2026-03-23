@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for single schedule event data.
+ * A single event in the jazz schedule section — time, title, venue, and free/paid indicator.
  */
 final readonly class ScheduleEventData
 {

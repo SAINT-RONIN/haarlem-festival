@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\EventGalleryImage;
 
+/**
+ * Defines persistence operations for gallery images linked to events.
+ */
 interface IEventGalleryImageRepository
 {
     /**

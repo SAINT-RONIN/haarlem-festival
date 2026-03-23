@@ -19,6 +19,9 @@ abstract class CmsBaseController
     ) {
     }
 
+    /**
+     * Verifies the CSRF token from POST data; redirects with an error flash if invalid.
+     */
     protected function validateCsrf(string $scope, string $redirectUrl): void
     {
         if (!$this->sessionService->isValidCsrfToken($scope, $_POST['_csrf'] ?? null)) {
@@ -28,6 +31,9 @@ abstract class CmsBaseController
         }
     }
 
+    /**
+     * Sets a flash message on the session and issues a redirect to the given URL.
+     */
     protected function redirectWithFlash(string $message, string $type, string $url): void
     {
         $this->sessionService->setFlash($type, $message);

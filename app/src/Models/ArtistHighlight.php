@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `ArtistHighlight` table.
+ * Represents a row in the ArtistHighlight table.
+ *
+ * Notable achievements or quotes displayed on jazz artist detail pages.
  */
 final readonly class ArtistHighlight
 {

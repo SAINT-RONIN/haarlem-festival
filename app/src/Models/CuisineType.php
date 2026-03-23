@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `CuisineType` table.
+ * Represents a row in the CuisineType table.
+ *
+ * Cuisine categories linked to restaurant events for filtering.
  */
 final readonly class CuisineType
 {

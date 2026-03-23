@@ -38,6 +38,11 @@ class CmsOrdersRepository implements ICmsOrdersRepository
         );
     }
 
+    /**
+     * Builds the orders listing query with two correlated subqueries:
+     * - ItemsSummary: concatenates each order's line items (event title, tour, or pass)
+     * - PaymentStatus: picks the most recent payment status for the order
+     */
     private function buildQuery(bool $withStatusFilter): string
     {
         $statusClause = $withStatusFilter ? ' AND o.Status = :status' : '';
@@ -52,6 +57,8 @@ class CmsOrdersRepository implements ICmsOrdersRepository
                 o.CreatedAtUtc,
                 ua.Email,
                 (
+                    /* Build a comma-separated summary like '2x Jazz Night, 1x History Tour #5'.
+                       COALESCE picks the first non-null label among event session, tour, or pass. */
                     SELECT GROUP_CONCAT(
                         CONCAT(oi.Quantity, 'x ',
                             COALESCE(
@@ -68,6 +75,7 @@ class CmsOrdersRepository implements ICmsOrdersRepository
                     WHERE oi.OrderId = o.OrderId
                 ) AS ItemsSummary,
                 (
+                    /* Latest payment status -- an order may have multiple payment attempts */
                     SELECT p.Status
                     FROM Payment p
                     WHERE p.OrderId = o.OrderId

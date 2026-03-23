@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+/**
+ * A single artist row in the CMS artists list table.
+ */
 final readonly class CmsArtistListItemViewModel
 {
     public function __construct(

@@ -25,10 +25,19 @@ interface IMediaAssetRepository
      */
     public function findByIds(array $ids): array;
 
+    /**
+     * Inserts a new media asset record and returns the generated ID.
+     */
     public function create(array $data): int;
 
+    /**
+     * Updates a media asset's columns and returns whether any row was affected.
+     */
     public function update(int $mediaAssetId, array $data): bool;
 
+    /**
+     * Deletes a media asset by its ID.
+     */
     public function delete(int $mediaAssetId): bool;
 
     /**

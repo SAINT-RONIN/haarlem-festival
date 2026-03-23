@@ -8,7 +8,9 @@ use App\Models\EventType;
 use App\Models\ScheduleDayConfig;
 
 /**
- * ViewModel for the CMS schedule days management page.
+ * View data for the CMS schedule days page (schedule-days.php).
+ *
+ * Carries global and per-type day visibility toggles.
  */
 final readonly class CmsScheduleDaysViewModel
 {

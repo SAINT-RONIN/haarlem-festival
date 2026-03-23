@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `ProgramItem` SQL table.
+ * Represents a row in the ProgramItem table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Links a program to a specific event session with a chosen quantity and optional donation amount.
  */
 final readonly class ProgramItem
 {

@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * Represents a row in the ScheduleDayConfig table.
+ *
+ * Controls which days of the week are visible in the public schedule, either globally
+ * or per event type.
+ */
 final readonly class ScheduleDayConfig
 {
     public function __construct(

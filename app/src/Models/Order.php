@@ -7,10 +7,10 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 
 /**
- * Represents a single row from the `Order` SQL table.
+ * Represents a row in the Order table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Created during checkout when a visitor purchases tickets. Tracks order status
+ * (Pending -> Paid/Cancelled/Expired) and total amounts including VAT.
  */
 final readonly class Order
 {

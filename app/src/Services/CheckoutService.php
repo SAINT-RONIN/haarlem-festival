@@ -19,6 +19,13 @@ use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
 use PDO;
 
+/**
+ * Orchestrates the full checkout lifecycle for festival ticket orders.
+ *
+ * Coordinates between the program (cart), order/payment persistence, and Stripe
+ * to create checkout sessions, handle cancellations, and process webhook callbacks.
+ * All multi-step mutations are wrapped in database transactions.
+ */
 class CheckoutService implements ICheckoutService
 {
     public function __construct(
@@ -34,11 +41,17 @@ class CheckoutService implements ICheckoutService
     }
 
     /**
+     * Validates the payload, persists an order with line items, creates a Stripe
+     * checkout session, and returns the redirect URL for the payment gateway.
+     *
      * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
      * @return array{redirectUrl:string,orderId:int,paymentId:int}
+     * @throws CheckoutException When the program is empty or Stripe session creation fails
+     * @throws \InvalidArgumentException When required payload fields are missing or invalid
      */
     public function createCheckoutSession(ProgramData $programData, int $userId, array $payload): array
     {
+        // Validate required fields and payment method before starting any DB work
         $this->validatePayload($payload);
 
         $program = $programData->program;
@@ -48,6 +61,7 @@ class CheckoutService implements ICheckoutService
             throw new CheckoutException('Your program is empty.');
         }
 
+        // Resolve pricing and payment method from the enriched program data
         $method = $this->mapPaymentMethod((string)$payload['paymentMethod']);
         $subtotal = $programData->subtotal;
         $vatTotal = $programData->taxAmount;
@@ -64,6 +78,7 @@ class CheckoutService implements ICheckoutService
         $this->pdo->beginTransaction();
 
         try {
+            // Persist the order header with a unique order number
             $orderNumber = $this->generateOrderNumber();
             $payBeforeUtc = new \DateTimeImmutable('+24 hours');
 
@@ -77,6 +92,7 @@ class CheckoutService implements ICheckoutService
                 payBeforeUtc: $payBeforeUtc,
             );
 
+            // Persist each program item as an order line item
             foreach ($items as $item) {
                 $this->orderItemRepository->create(
                     orderId: $orderId,
@@ -90,8 +106,10 @@ class CheckoutService implements ICheckoutService
                 );
             }
 
+            // Create a pending payment record before calling Stripe
             $paymentId = $this->paymentRepository->create($orderId, $method, PaymentStatus::Pending);
 
+            // Build the Stripe line items (single consolidated line for the full total)
             $lineItems = [[
                 'price_data' => [
                     'currency' => 'eur',
@@ -103,6 +121,7 @@ class CheckoutService implements ICheckoutService
                 'quantity' => 1,
             ]];
 
+            // Create the Stripe checkout session with order metadata for webhook reconciliation
             $session = $this->stripeService->createCheckoutSession([
                 'mode' => 'payment',
                 'success_url' => $appUrl . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
@@ -128,6 +147,7 @@ class CheckoutService implements ICheckoutService
                 throw new CheckoutException('Stripe checkout session could not be created.');
             }
 
+            // Link Stripe identifiers back to our payment record for later webhook matching
             $this->paymentRepository->updateStripeSessionId($paymentId, $sessionId);
             $this->paymentRepository->updateProviderRef($paymentId, $sessionId);
 
@@ -153,6 +173,9 @@ class CheckoutService implements ICheckoutService
     }
 
     /**
+     * Marks a pending order and its payment as cancelled when the user abandons checkout.
+     * Only transitions records that are still in Pending status to avoid overwriting webhook updates.
+     *
      * @return array{status:string,orderId:?int,paymentId:?int}
      */
     public function handleCancel(?int $orderId, ?int $paymentId): array
@@ -173,10 +196,16 @@ class CheckoutService implements ICheckoutService
     }
 
     /**
+     * Processes an incoming Stripe webhook event. Verifies the signature, ensures
+     * idempotency via the webhook event repository, and transitions order/payment
+     * statuses based on the event type (completed, expired, or failed).
+     *
      * @return array{processed:bool,eventId:string,eventType:string}
+     * @throws CheckoutException When the event payload is invalid or malformed
      */
     public function handleWebhook(string $payload, ?string $signatureHeader): array
     {
+        // Verify signature and decode the Stripe event
         $event = $this->stripeService->constructWebhookEvent($payload, $signatureHeader);
 
         $eventId = (string)($event['id'] ?? '');
@@ -186,6 +215,7 @@ class CheckoutService implements ICheckoutService
             throw new CheckoutException('Invalid Stripe event payload.');
         }
 
+        // Idempotency guard: skip already-processed events
         if ($this->webhookEventRepository->hasProcessed($eventId)) {
             return [
                 'processed' => false,
@@ -194,6 +224,7 @@ class CheckoutService implements ICheckoutService
             ];
         }
 
+        // Extract order/payment IDs from the event metadata for status transitions
         $object = $event['data']['object'] ?? null;
         if (!is_array($object)) {
             throw new CheckoutException('Stripe event object is missing.');
@@ -258,7 +289,11 @@ class CheckoutService implements ICheckoutService
     }
 
     /**
+     * Retrieves a Stripe checkout session and returns a normalized summary
+     * used to display the order confirmation or failure page.
+     *
      * @return array{sessionId:string,paymentStatus:string,status:string,amountTotal:float,currency:string}
+     * @throws \InvalidArgumentException When sessionId is empty
      */
     public function getSessionSummary(string $sessionId): array
     {

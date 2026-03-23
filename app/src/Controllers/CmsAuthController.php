@@ -8,6 +8,12 @@ use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ISessionService;
 
+/**
+ * Handles CMS admin authentication: login, logout, and access gating.
+ *
+ * Also exposes the static requireAdmin() guard used by all other CMS
+ * controllers to enforce admin-only access before processing requests.
+ */
 class CmsAuthController
 {
     public function __construct(
@@ -16,9 +22,14 @@ class CmsAuthController
     ) {
     }
 
+    /**
+     * Renders the CMS login page, or redirects to the dashboard if already authenticated.
+     * GET /cms/login
+     */
     public function showLogin(): void
     {
         try {
+            // Skip the login form if the admin is already authenticated
             if ($this->sessionService->isLoggedIn() && $this->sessionService->isAdmin()) {
                 header('Location: /cms');
                 exit;
@@ -31,11 +42,16 @@ class CmsAuthController
         }
     }
 
+    /**
+     * Authenticates admin credentials and starts a session on success.
+     * POST /cms/login
+     */
     public function login(): void
     {
         try {
             $login = trim($_POST['login'] ?? '');
             $password = $_POST['password'] ?? '';
+            // Delegate credential verification to the auth service
             $result = $this->authService->attemptAdminLogin($login, $password);
 
             if (!$result['success']) {
@@ -52,6 +68,10 @@ class CmsAuthController
         }
     }
 
+    /**
+     * Destroys the admin session and redirects to the login page.
+     * POST /cms/logout
+     */
     public function logout(): void
     {
         try {
@@ -70,6 +90,11 @@ class CmsAuthController
         exit;
     }
 
+    /**
+     * Guard that ensures the current session belongs to an admin user.
+     * Redirects to the login page if the session is missing or non-admin.
+     * Called at the top of every CMS controller action.
+     */
     public static function requireAdmin(ISessionService $sessionService): void
     {
         try {

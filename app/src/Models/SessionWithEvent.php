@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a denormalized row from the EventSessionRepository::findSessions() query.
+ * Read-only projection from a JOIN across EventSession, Event, EventType, and Venue.
  *
- * Combines EventSession columns (via es.*) with joined columns from
- * Event, EventType, Venue, and Artist tables.
+ * Used by the schedule pages and CMS weekly overview to display sessions with their
+ * parent event context.
  */
 final readonly class SessionWithEvent
 {

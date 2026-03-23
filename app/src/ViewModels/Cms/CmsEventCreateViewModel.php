@@ -9,7 +9,9 @@ use App\Models\EventType;
 use App\Models\Venue;
 
 /**
- * ViewModel for the CMS event create page.
+ * View data for the CMS event create page (event-create.php).
+ *
+ * Carries dropdown options for type, venue, artist, and restaurant.
  */
 final readonly class CmsEventCreateViewModel
 {

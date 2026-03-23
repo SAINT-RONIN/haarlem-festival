@@ -6,6 +6,11 @@ namespace App\ViewModels\Jazz;
 
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 
+/**
+ * View data for a single jazz artist detail page.
+ *
+ * Carries hero, overview, lineup, media, albums, and upcoming sessions.
+ */
 final readonly class JazzArtistDetailPageViewModel
 {
     /**

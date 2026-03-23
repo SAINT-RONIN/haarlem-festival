@@ -34,8 +34,14 @@ use App\ViewModels\Storytelling\StorytellingDetailPageViewModel;
 use App\ViewModels\Storytelling\StorytellingPageViewModel;
 use App\ViewModels\Storytelling\StoryVideoSectionData;
 
+/**
+ * Transforms StorytellingPageData and StorytellingDetailPageData domain models into
+ * ViewModels for the public Storytelling landing page and individual story detail pages.
+ * Handles masonry grid sizing, highlight/gallery image resolution, and detail-page hero assembly.
+ */
 final class StorytellingMapper
 {
+    /** Predetermined CSS size classes cycled across masonry grid positions for a balanced layout. */
     private const MASONRY_SIZE_CLASSES = [
         'masonry-tall',
         'masonry-short',

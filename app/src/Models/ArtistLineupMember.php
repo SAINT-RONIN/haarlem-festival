@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `ArtistLineupMember` table.
+ * Represents a row in the ArtistLineupMember table.
+ *
+ * Band/ensemble members shown on jazz artist detail pages.
  */
 final readonly class ArtistLineupMember
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Cms;
 
 /**
- * ViewModel for a recently updated page in the CMS dashboard.
+ * A single recently-edited page card on the CMS dashboard.
  */
 final readonly class RecentPageViewModel
 {

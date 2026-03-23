@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+/**
+ * Defines read-only queries for retrieving resolved CMS content by page and section.
+ */
 interface ICmsContentRepository
 {
     /**

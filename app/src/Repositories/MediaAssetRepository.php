@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IMediaAssetRepository;
 use PDO;
 
 /**
- * Repository for MediaAsset database operations.
+ * CRUD operations for the MediaAsset table, which stores metadata
+ * (file path, MIME type, size, alt text) for every uploaded image/file.
+ *
+ * Also provides a helper to link an asset to a CmsItem record.
  */
 class MediaAssetRepository implements IMediaAssetRepository
 {
@@ -36,6 +39,8 @@ class MediaAssetRepository implements IMediaAssetRepository
     }
 
     /**
+     * Batch-fetches multiple media assets in a single query, keyed by ID for easy lookup.
+     *
      * @param int[] $ids
      * @return array<int, MediaAsset> Keyed by MediaAssetId
      */
@@ -46,6 +51,7 @@ class MediaAssetRepository implements IMediaAssetRepository
             return [];
         }
 
+        // Build numbered placeholders (:id0, :id1, ...) for a safe IN clause
         $paramKeys = [];
         $paramValues = [];
         foreach (array_values($ids) as $index => $id) {
@@ -89,10 +95,13 @@ class MediaAssetRepository implements IMediaAssetRepository
     }
 
     /**
-     * Updates a media asset record.
+     * Partially updates a media asset -- only columns present in $data are changed.
+     *
+     * @return bool False if $data contained no recognised columns, true on successful execute.
      */
     public function update(int $mediaAssetId, array $data): bool
     {
+        // Dynamically build SET clause from whichever fields the caller provided
         $fields = [];
         $params = [':mediaAssetId' => $mediaAssetId];
 

@@ -16,6 +16,12 @@ use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsEventCreateViewModel;
 use App\ViewModels\Cms\CmsScheduleDaysViewModel;
 
+/**
+ * CMS controller for managing festival events.
+ *
+ * Handles full event CRUD, session (time-slot) management, label assignment,
+ * per-session pricing, venue creation, and schedule-day visibility toggles.
+ */
 class CmsEventsController extends CmsBaseController
 {
     public function __construct(
@@ -27,6 +33,10 @@ class CmsEventsController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
+    /**
+     * Displays the events list with optional event-type and day-of-week filters.
+     * GET /cms/events
+     */
     public function index(): void
     {
         try {
@@ -39,6 +49,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Renders the event creation form, pre-loading available types, venues, artists, and restaurants.
+     * GET /cms/events/create
+     */
     public function create(): void
     {
         try {
@@ -61,6 +75,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Validates and persists a new event, then redirects to its edit page.
+     * POST /cms/events
+     */
     public function store(): void
     {
         try {
@@ -74,6 +92,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Renders the event edit page with sessions, prices, and labels.
+     * GET /cms/events/{id}/edit
+     */
     public function edit(string $id): void
     {
         try {
@@ -89,6 +111,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Validates and applies updates to an existing event.
+     * POST /cms/events/{id}/edit
+     */
     public function update(string $id): void
     {
         try {
@@ -103,6 +129,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Adds a new time-slot session to an event.
+     * POST /cms/events/{eventId}/sessions
+     */
     public function createSession(string $eventId): void
     {
         try {
@@ -117,6 +147,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Updates an existing session's details (capacity, times, etc.).
+     * POST /cms/sessions/{id}/edit
+     */
     public function updateSession(string $id): void
     {
         try {
@@ -131,6 +165,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Removes a session from its parent event.
+     * POST /cms/sessions/{id}/delete
+     */
     public function deleteSession(string $id): void
     {
         try {
@@ -143,6 +181,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Attaches a text label to a session (e.g. "Sold Out", "VIP").
+     * POST /cms/sessions/{id}/labels
+     */
     public function addLabel(string $id): void
     {
         try {
@@ -157,6 +199,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Removes a label from a session.
+     * POST /cms/labels/{id}/delete
+     */
     public function deleteLabel(string $id): void
     {
         try {
@@ -169,6 +215,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Sets or updates the ticket price for a session at a given price tier.
+     * POST /cms/sessions/{id}/price
+     */
     public function setPrice(string $id): void
     {
         try {
@@ -182,6 +232,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Creates a new venue via AJAX and returns the new venue ID as JSON.
+     * POST /cms/venues
+     */
     public function createVenue(): void
     {
         try {
@@ -202,6 +256,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Deletes an event and all its associated sessions.
+     * POST /cms/events/{id}/delete
+     */
     public function delete(string $id): void
     {
         try {
@@ -215,6 +273,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Displays the schedule-day visibility configuration page.
+     * GET /cms/schedule-days
+     */
     public function scheduleDays(): void
     {
         try {
@@ -226,6 +288,10 @@ class CmsEventsController extends CmsBaseController
         }
     }
 
+    /**
+     * Toggles a specific day's visibility on the public schedule (global or per event type).
+     * POST /cms/schedule-days
+     */
     public function toggleScheduleDay(): void
     {
         try {
@@ -301,6 +367,7 @@ class CmsEventsController extends CmsBaseController
     private function handleSetPrice(int $sessionId, int $eventId): void
     {
         $priceTierId = (int)($_POST['PriceTierId'] ?? PriceTierId::Adult->value);
+        // Normalize comma decimal separators (e.g. "12,50" -> "12.50") for European input
         $priceInput = str_replace(',', '.', $_POST['Price'] ?? '0');
         $this->eventsService->setSessionPrice($sessionId, $priceTierId, (float)$priceInput);
         $this->redirectWithFlash('Price updated successfully.', 'success', "/cms/events/{$eventId}/edit");
@@ -308,6 +375,7 @@ class CmsEventsController extends CmsBaseController
 
     private function handleToggleScheduleDay(): void
     {
+        // null event type ID means this is a global (all-types) visibility toggle
         $rawEventTypeId = $_POST['EventTypeId'] ?? null;
         $eventTypeId = ($rawEventTypeId !== null && $rawEventTypeId !== '' && $rawEventTypeId !== '0')
             ? (int)$rawEventTypeId

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * Query parameters for ProgramRepository item queries.
+ */
 final readonly class ProgramItemFilter
 {
     public function __construct(

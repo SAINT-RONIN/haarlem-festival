@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for schedule section data.
+ * Section data for the jazz page inline schedule — days with event listings.
  */
 final readonly class ScheduleData
 {

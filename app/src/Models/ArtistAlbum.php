@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `ArtistAlbum` table.
+ * Represents a row in the ArtistAlbum table.
+ *
+ * Albums displayed on jazz artist detail pages with cover art and Spotify link.
  */
 final readonly class ArtistAlbum
 {

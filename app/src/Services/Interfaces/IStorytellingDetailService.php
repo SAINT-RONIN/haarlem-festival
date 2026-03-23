@@ -6,11 +6,13 @@ namespace App\Services\Interfaces;
 
 use App\Models\StorytellingDetailPageData;
 
+/**
+ * Defines the contract for assembling storytelling event detail page data.
+ */
 interface IStorytellingDetailService
 {
     /**
-     * Assembles the full domain payload for a single storytelling event detail page.
-     * The reason for this is because the interface enforces the contract so the controller can call this without knowing which concrete implementation fetches and assembles the data.
+     * Assembles the full domain payload for a single storytelling event detail page, looked up by URL slug.
      *
      * @throws \App\Exceptions\StorytellingEventNotFoundException if the event is not found or slug is invalid
      */

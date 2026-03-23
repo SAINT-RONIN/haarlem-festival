@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IEventGalleryImageRepository;
 use PDO;
 
 /**
- * Repository for EventGalleryImage database operations.
+ * Read-only access to the EventGalleryImage table.
+ *
+ * Stores gallery/carousel images for an event detail page, with an optional
+ * ImageType discriminator (e.g. "hero", "gallery") to separate different usages.
  */
 class EventGalleryImageRepository implements IEventGalleryImageRepository
 {

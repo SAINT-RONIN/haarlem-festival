@@ -8,6 +8,12 @@ use App\Infrastructure\Database;
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
 use PDO;
 
+/**
+ * Idempotency guard for Stripe webhook processing.
+ *
+ * Stores each processed Stripe event ID in the StripeWebhookEvent table so
+ * duplicate webhook deliveries can be detected and skipped.
+ */
 class StripeWebhookEventRepository implements IStripeWebhookEventRepository
 {
     private PDO $pdo;
@@ -17,6 +23,9 @@ class StripeWebhookEventRepository implements IStripeWebhookEventRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * Returns true if this Stripe event ID has already been handled (prevents duplicate processing).
+     */
     public function hasProcessed(string $eventId): bool
     {
         $stmt = $this->pdo->prepare('SELECT 1 FROM StripeWebhookEvent WHERE StripeEventId = :eventId LIMIT 1');
@@ -25,6 +34,9 @@ class StripeWebhookEventRepository implements IStripeWebhookEventRepository
         return (bool)$stmt->fetchColumn();
     }
 
+    /**
+     * Records a Stripe event as processed so future webhook retries are skipped.
+     */
     public function markProcessed(string $eventId, string $eventType): void
     {
         $stmt = $this->pdo->prepare('

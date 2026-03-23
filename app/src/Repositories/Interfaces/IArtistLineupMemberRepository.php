@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\ArtistLineupMember;
 
+/**
+ * Defines persistence operations for artist lineup members linked to events.
+ */
 interface IArtistLineupMemberRepository
 {
     /**

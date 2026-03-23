@@ -49,8 +49,17 @@ use App\ViewModels\Jazz\VenuesData;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
+/**
+ * Transforms JazzPageData and JazzArtistDetailPageData domain models into ViewModels
+ * for the public Jazz landing page and individual artist detail pages, assembling
+ * hero, gradient, venues, pricing cards, artist cards, and schedule sections.
+ */
 final class JazzMapper
 {
+    /**
+     * Builds the full Jazz landing page ViewModel from CMS section models, pass prices,
+     * and an optional pre-built schedule section.
+     */
     public static function toPageViewModel(JazzPageData $domain, ?ScheduleSectionViewModel $scheduleSection = null, bool $isLoggedIn = false): JazzPageViewModel
     {
         $heroData = CmsMapper::toHeroData($domain->heroSection, JazzPageConstants::CURRENT_PAGE);
@@ -83,6 +92,9 @@ final class JazzMapper
     }
 
     /**
+     * Builds the Jazz artist detail page ViewModel from CMS content, event data,
+     * lineup members, albums, tracks, and pre-mapped performance cards.
+     *
      * @param ScheduleEventCardViewModel[] $performances
      */
     public static function toArtistDetailViewModel(JazzArtistDetailPageData $pageData, array $performances): JazzArtistDetailPageViewModel
@@ -283,6 +295,9 @@ final class JazzMapper
     }
 
     /**
+     * Builds the pricing section with three cards (individual, day pass, all-access).
+     * Pass prices from the DB override CMS fallback values when available.
+     *
      * @param PassType[] $passPrices
      */
     private static function buildPricingData(JazzPricingSectionContent $section, array $passPrices): PricingData
@@ -389,6 +404,9 @@ final class JazzMapper
     }
 
     /**
+     * Searches the PassType array for a matching scope (Day or Range) and formats
+     * its price; falls back to the CMS-authored string if no DB record exists.
+     *
      * @param PassType[] $passPrices
      */
     private static function findPassPrice(array $passPrices, string $scope, ?string $cmsFallback): string
@@ -485,6 +503,7 @@ final class JazzMapper
         );
     }
 
+    /** Creates a placeholder ScheduleData with no days; the real schedule is injected via $scheduleSection. */
     private static function buildEmptyScheduleData(string $year): ScheduleData
     {
         return new ScheduleData(
@@ -536,6 +555,7 @@ final class JazzMapper
         return trim(strip_tags($event->longDescriptionHtml));
     }
 
+    /** Returns the first non-empty string, used to prefer CMS content over model fallbacks. */
     private static function coalesce(string $value, string $fallback): string
     {
         return $value !== '' ? $value : $fallback;

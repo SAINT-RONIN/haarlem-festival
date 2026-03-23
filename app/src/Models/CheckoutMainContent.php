@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries the CMS item values for the checkout page main section.
+ * CMS content for the checkout page (headings, labels, terms text).
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class CheckoutMainContent
 {

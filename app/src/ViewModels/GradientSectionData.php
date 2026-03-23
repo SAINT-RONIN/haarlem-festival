@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels;
 
 /**
- * DTO for the gradient text section.
- *
- * All fields are guaranteed to be populated by the Service layer.
+ * Gradient banner section data shared across Jazz and Storytelling pages.
  */
 final readonly class GradientSectionData
 {

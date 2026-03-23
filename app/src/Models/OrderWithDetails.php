@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a joined row from the CMS orders query:
- * Order + user Email + ItemsSummary + latest PaymentStatus.
+ * Read-only projection from a JOIN across Order, UserAccount, and Payment.
  *
- * Not a direct table row — used only for the CMS orders list.
+ * Used by the CMS orders list to show order info alongside customer email
+ * and payment status.
  */
 final readonly class OrderWithDetails
 {

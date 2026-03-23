@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Program;
 
+/**
+ * View data for the checkout page.
+ *
+ * Carries order summary, payment form fields, and Stripe public key.
+ */
 final readonly class CheckoutPageViewModel
 {
     public function __construct(

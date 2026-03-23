@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Typed filter parameters from URL query strings for schedule filtering.
- * Read by Controllers, passed to ScheduleService.
+ * Parsed filter parameters from the schedule page URL (day, time range, price type,
+ * language, venue). Read by BaseController, passed to ScheduleService.
  */
 final readonly class ScheduleFilterParams
 {

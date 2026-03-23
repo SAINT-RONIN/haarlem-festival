@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IArtistGalleryImageRepository;
 use PDO;
 
 /**
- * Repository for ArtistGalleryImage database operations.
+ * Read-only access to the ArtistGalleryImage table.
+ *
+ * Gallery images are tied to a Jazz event and shown in the artist detail
+ * photo gallery, ordered by SortOrder.
  */
 class ArtistGalleryImageRepository implements IArtistGalleryImageRepository
 {

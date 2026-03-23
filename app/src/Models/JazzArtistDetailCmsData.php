@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries the CMS item values for a single Jazz artist detail page.
- * Same pattern as StorytellingEventCmsData.
+ * CMS content for a single jazz artist detail page -- hero section, overview text, and CTA
+ * button labels. Hydrated from CMS key-value pairs.
  */
 final readonly class JazzArtistDetailCmsData
 {

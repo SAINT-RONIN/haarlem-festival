@@ -35,11 +35,19 @@ class JazzService implements IJazzService
     ) {
     }
 
+    /**
+     * Returns the complete domain payload for the Jazz overview page,
+     * including all CMS sections and Jazz pass prices.
+     */
     public function getJazzPageData(): JazzPageData
     {
         return $this->buildPageData(JazzPageConstants::PAGE_SLUG);
     }
 
+    /**
+     * Fetches every CMS section for the Jazz page and combines them
+     * with pass-type pricing and shared global-UI content.
+     */
     private function buildPageData(string $pageSlug): JazzPageData
     {
         return new JazzPageData(

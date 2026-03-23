@@ -27,9 +27,16 @@ use App\ViewModels\Cms\PageListItemViewModel;
 use App\ViewModels\Cms\PagesListViewModel;
 use App\ViewModels\Cms\RecentPageViewModel;
 
+/**
+ * Transforms CMS page and activity domain models into ViewModels for the CMS dashboard,
+ * page list, and page-edit screens. Also handles section/item grouping logic for the
+ * CMS content editor (sub-groups, input-type ordering, image limits).
+ */
 final class CmsDashboardMapper
 {
     /**
+     * Builds the CMS dashboard ViewModel showing recently-edited pages and activity feed.
+     *
      * @param CmsPage[]      $recentPages
      * @param ActivityData[] $activities
      */
@@ -43,6 +50,8 @@ final class CmsDashboardMapper
     }
 
     /**
+     * Builds the CMS pages-list ViewModel used on the "All Pages" management screen.
+     *
      * @param CmsPage[] $allPages
      */
     public static function toPagesListViewModel(array $allPages, string $searchQuery, string $userName): PagesListViewModel
@@ -54,6 +63,7 @@ final class CmsDashboardMapper
         );
     }
 
+    /** Converts a CmsPage into a dashboard "recent page" card with a relative time-ago label. */
     public static function toRecentPageViewModel(CmsPage $page): RecentPageViewModel
     {
         return new RecentPageViewModel(
@@ -63,6 +73,7 @@ final class CmsDashboardMapper
         );
     }
 
+    /** Converts a CmsPage into a list-row ViewModel for the pages-list table. */
     public static function toPageListItemViewModel(CmsPage $page): PageListItemViewModel
     {
         return new PageListItemViewModel(
@@ -74,6 +85,7 @@ final class CmsDashboardMapper
         );
     }
 
+    /** Derives Published/Draft status: a page with an updatedAt timestamp is considered published. */
     private static function resolvePageStatus(CmsPage $page): PageStatus
     {
         return $page->updatedAtUtc !== null ? PageStatus::Published : PageStatus::Draft;
@@ -89,6 +101,10 @@ final class CmsDashboardMapper
         );
     }
 
+    /**
+     * Builds the full page-editor ViewModel: page info, grouped sections/items,
+     * and content/image upload limits. Consumed by the CMS page-edit view.
+     */
     public static function toPageEditViewData(CmsPageEditData $pageData): CmsPageEditViewModel
     {
         return new CmsPageEditViewModel(
@@ -615,6 +631,7 @@ final class CmsDashboardMapper
         return 'extra';
     }
 
+    /** Sections in the deny-list (e.g. global_ui) are rendered read-only in the editor. */
     private static function isSectionEditable(string $sectionKey): bool
     {
         $nonEditableSections = ['global_ui'];

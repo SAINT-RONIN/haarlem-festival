@@ -6,8 +6,14 @@ namespace App\Repositories\Interfaces;
 
 use App\Enums\OrderStatus;
 
+/**
+ * Defines persistence operations for customer orders.
+ */
 interface IOrderRepository
 {
+    /**
+     * Inserts a new order linked to a user and program, and returns the generated order ID.
+     */
     public function create(
         int $userAccountId,
         int $programId,
@@ -18,6 +24,9 @@ interface IOrderRepository
         ?\DateTimeImmutable $payBeforeUtc,
     ): int;
 
+    /**
+     * Unconditionally updates an order's status.
+     */
     public function updateStatus(int $orderId, OrderStatus $status): void;
 
     /**

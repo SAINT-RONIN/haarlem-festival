@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\ViewModels\Cms;
 
 /**
- * ViewModel for the CMS Pages list view.
+ * View data for the CMS pages list.
+ *
+ * Carries filtered page items and search query.
  */
 final readonly class PagesListViewModel
 {

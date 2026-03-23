@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * All data for a single jazz artist detail page — CMS content, albums, tracks,
+ * lineup, gallery. Assembled by JazzArtistDetailService.
+ */
 final readonly class JazzArtistDetailPageData
 {
     /**

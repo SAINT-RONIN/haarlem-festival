@@ -15,6 +15,10 @@ use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
 
+/**
+ * Handles the ticket checkout flow: displaying the checkout page, creating Stripe sessions,
+ * processing success/cancel callbacks, and receiving Stripe webhook events.
+ */
 class CheckoutController extends BaseController
 {
     public function __construct(
@@ -26,6 +30,11 @@ class CheckoutController extends BaseController
     ) {
     }
 
+    /**
+     * Displays the checkout page with the user's program items and CMS content.
+     * Redirects to /my-program if the cart is empty.
+     * GET /checkout
+     */
     public function index(): void
     {
         try {
@@ -51,6 +60,11 @@ class CheckoutController extends BaseController
         }
     }
 
+    /**
+     * Creates a Stripe Checkout session and returns the redirect URL as JSON.
+     * Requires the user to be authenticated.
+     * POST /checkout/create-session
+     */
     public function createSession(): void
     {
         try {
@@ -70,6 +84,10 @@ class CheckoutController extends BaseController
         }
     }
 
+    /**
+     * Renders the post-payment success page with an order summary from Stripe.
+     * GET /checkout/success?session_id=...
+     */
     public function success(): void
     {
         try {
@@ -83,6 +101,10 @@ class CheckoutController extends BaseController
         }
     }
 
+    /**
+     * Handles payment cancellation, marks the order accordingly, and shows the cancel page.
+     * GET /checkout/cancel?order_id=...&payment_id=...
+     */
     public function cancel(): void
     {
         try {
@@ -98,6 +120,10 @@ class CheckoutController extends BaseController
         }
     }
 
+    /**
+     * Receives Stripe webhook events (e.g. payment confirmation) and processes them.
+     * POST /checkout/webhook
+     */
     public function webhook(): void
     {
         try {

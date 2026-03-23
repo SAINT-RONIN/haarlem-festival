@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IPageGalleryImageRepository;
 use PDO;
 
 /**
- * Repository for PageGalleryImage database operations.
+ * Read-only access to the PageGalleryImage table.
+ *
+ * Page gallery images are tied to a CMS page (rather than an event) and
+ * support an optional ImageType filter, ordered by SortOrder.
  */
 class PageGalleryImageRepository implements IPageGalleryImageRepository
 {

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
+/**
+ * A single event type card on the homepage — name, description, image, and detail page link.
+ */
 final readonly class HomeEventTypeViewModel
 {
     public function __construct(

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Typed result returned by ProgramService::getProgramData().
+ * A visitor's program (cart) with resolved item details.
+ * Assembled by ProgramService for the my-program page.
  */
 final readonly class ProgramData
 {

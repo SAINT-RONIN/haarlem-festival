@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Jazz;
 
+/**
+ * Media section for a jazz artist detail page — gallery images and video embed.
+ */
 final readonly class JazzArtistMediaData
 {
     /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for a Jazz artist track card.
+ * A single track on the jazz artist detail page — title, duration, and audio preview URL.
  */
 final readonly class JazzArtistTrackData
 {

@@ -7,10 +7,9 @@ namespace App\Models;
 use App\Enums\PassScope;
 
 /**
- * Represents a single row from the `PassType` SQL table.
+ * Represents a row in the PassType table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Defines multi-event passes for Jazz (day pass, full festival pass) with scope and pricing.
  */
 final readonly class PassType
 {

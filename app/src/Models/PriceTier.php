@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `PriceTier` SQL table.
+ * Represents a row in the PriceTier table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Defines named pricing categories (Adult, Child U12, Family, Reservation Fee) that
+ * sessions can have prices for.
  */
 final readonly class PriceTier
 {

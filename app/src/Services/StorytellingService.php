@@ -15,6 +15,12 @@ use App\Models\StorytellingPageData;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IStorytellingService;
 
+/**
+ * Composes the CMS-driven domain payload for the Storytelling overview page.
+ *
+ * Fetches hero, gradient, intro-split, masonry, and global-UI sections
+ * from the CMS repository and bundles them into a StorytellingPageData object.
+ */
 class StorytellingService implements IStorytellingService
 {
     public function __construct(

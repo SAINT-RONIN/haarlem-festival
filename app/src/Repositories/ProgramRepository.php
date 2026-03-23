@@ -12,6 +12,12 @@ use App\Models\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
 use PDO;
 
+/**
+ * Manages the Program and ProgramItem tables. A Program is a shopping cart tied to either
+ * an anonymous browser session (via SessionKey) or an authenticated user. ProgramItems are
+ * the individual session selections within a program, each with a quantity and optional
+ * donation. Once checkout completes, the program is marked as checked out and an Order is created.
+ */
 class ProgramRepository implements IProgramRepository
 {
     private PDO $pdo;
@@ -22,7 +28,10 @@ class ProgramRepository implements IProgramRepository
     }
 
     /**
-     * @return Program[]
+     * Retrieves programs matching the given filter criteria (by ID, session key, user, or
+     * checkout status). Returns newest programs first.
+     *
+     * @return Program[] Empty array if no programs match.
      */
     public function findPrograms(ProgramFilter $filter): array
     {
@@ -61,7 +70,9 @@ class ProgramRepository implements IProgramRepository
     }
 
     /**
-     * @return ProgramItem[]
+     * Retrieves program items (cart line items) matching the given filter criteria.
+     *
+     * @return ProgramItem[] Ordered by ProgramItemId ascending. Empty array if no matches.
      */
     public function findProgramItems(ProgramItemFilter $filter): array
     {
@@ -94,6 +105,13 @@ class ProgramRepository implements IProgramRepository
         return array_map([ProgramItem::class, 'fromRow'], $rows);
     }
 
+    /**
+     * Creates a new empty program (cart) and immediately fetches it back to return
+     * a fully populated model including server-generated defaults (e.g. CreatedAtUtc).
+     *
+     * @param string $sessionKey Browser session identifier for anonymous users.
+     * @param int|null $userAccountId Null for guest users, set for authenticated users.
+     */
     public function createProgram(string $sessionKey, ?int $userAccountId): Program
     {
         $stmt = $this->pdo->prepare('
@@ -113,6 +131,10 @@ class ProgramRepository implements IProgramRepository
         return $programs[0];
     }
 
+    /**
+     * Adds an event session to the program cart and returns the newly created item
+     * with server-generated fields populated.
+     */
     public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
         $stmt = $this->pdo->prepare('
@@ -134,6 +156,9 @@ class ProgramRepository implements IProgramRepository
         return $items[0];
     }
 
+    /**
+     * Updates the ticket quantity for a cart item (e.g. user changes "2 tickets" to "3").
+     */
     public function updateItemQuantity(int $programItemId, int $quantity): void
     {
         $stmt = $this->pdo->prepare('
@@ -147,6 +172,9 @@ class ProgramRepository implements IProgramRepository
         ]);
     }
 
+    /**
+     * Updates the voluntary donation amount for a pay-what-you-like cart item.
+     */
     public function updateItemDonation(int $programItemId, float $donationAmount): void
     {
         $stmt = $this->pdo->prepare('
@@ -160,18 +188,28 @@ class ProgramRepository implements IProgramRepository
         ]);
     }
 
+    /**
+     * Removes a single item from the cart.
+     */
     public function removeItem(int $programItemId): void
     {
         $stmt = $this->pdo->prepare('DELETE FROM ProgramItem WHERE ProgramItemId = :programItemId');
         $stmt->execute(['programItemId' => $programItemId]);
     }
 
+    /**
+     * Removes all items from a program, effectively emptying the cart.
+     */
     public function clearProgram(int $programId): void
     {
         $stmt = $this->pdo->prepare('DELETE FROM ProgramItem WHERE ProgramId = :programId');
         $stmt->execute(['programId' => $programId]);
     }
 
+    /**
+     * Flags the program as checked out, preventing further modifications.
+     * Called after an Order has been successfully created from this program.
+     */
     public function markCheckedOut(int $programId): void
     {
         $stmt = $this->pdo->prepare('UPDATE Program SET IsCheckedOut = 1 WHERE ProgramId = :programId');

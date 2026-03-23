@@ -21,8 +21,17 @@ use App\ViewModels\Cms\CmsMediaLibraryViewModel;
 use App\ViewModels\Cms\CmsMediaListItemViewModel;
 use App\ViewModels\Cms\CmsSessionPriceViewModel;
 
+/**
+ * Transforms event, session, and media-asset domain models into ViewModels
+ * consumed by the CMS event-management pages (event list, event edit, media library).
+ */
 final class CmsEventsMapper
 {
+    /**
+     * Builds the media-library page ViewModel from raw asset data and upload constraints.
+     *
+     * @return CmsMediaLibraryViewModel Used by the CMS media-library view.
+     */
     public static function toMediaLibraryViewModel(
         array $assets,
         array $imageLimits,
@@ -39,6 +48,10 @@ final class CmsEventsMapper
         );
     }
 
+    /**
+     * Converts a MediaAsset into a plain array suitable for JSON API responses
+     * (e.g. the media-picker AJAX endpoint in the CMS).
+     */
     public static function toMediaJsonData(MediaAsset $asset): array
     {
         return [
@@ -49,6 +62,10 @@ final class CmsEventsMapper
         ];
     }
 
+    /**
+     * Converts a MediaAsset into a display-ready list-item ViewModel for the CMS media grid,
+     * formatting the file size and creation date for human readability.
+     */
     public static function toMediaListItemViewModel(MediaAsset $asset): CmsMediaListItemViewModel
     {
         return new CmsMediaListItemViewModel(
@@ -62,6 +79,10 @@ final class CmsEventsMapper
         );
     }
 
+    /**
+     * Transforms an EventWithDetails domain model into a CMS list-row ViewModel,
+     * resolving the active/inactive status badge class and the event-type CSS class.
+     */
     public static function toEventListItemViewModel(EventWithDetails $event): CmsEventListItemViewModel
     {
         return new CmsEventListItemViewModel(
@@ -82,6 +103,10 @@ final class CmsEventsMapper
         );
     }
 
+    /**
+     * Builds the full event-edit page ViewModel, including session sub-ViewModels and
+     * price-tier enrichment. Consumed by the CMS event-edit form.
+     */
     public static function toEventEditViewModel(
         EventWithDetails $event,
         array $sessions,
@@ -148,6 +173,10 @@ final class CmsEventsMapper
         return $enriched;
     }
 
+    /**
+     * Converts an EventSession model into a CMS session ViewModel, computing derived
+     * display values: formatted dates/times, sold-ticket totals, available seats, and age label.
+     */
     public static function toEventSessionViewModel(
         EventSession $session,
         string $eventTitle = '',
@@ -156,7 +185,9 @@ final class CmsEventsMapper
         $startTimestamp = $session->startDateTime->getTimestamp();
         $endTimestamp = $session->endDateTime?->getTimestamp();
         $ageLabel = AgeLabelFormatter::format($session->minAge, $session->maxAge);
+        // Aggregate single + reserved tickets into one total for the CMS dashboard
         $soldTicketsTotal = $session->soldSingleTickets + $session->soldReservedSeats;
+        // Fall back to computing availability when the DB column is null
         $seatsAvailable = $session->seatsAvailable ?? ($session->capacityTotal - $soldTicketsTotal);
 
         return new CmsEventSessionViewModel(
@@ -249,6 +280,10 @@ final class CmsEventsMapper
         return $result;
     }
 
+    /**
+     * Handles both SessionWithEvent and EventSession inputs, adapting whichever
+     * type the caller supplies into a unified CmsEventSessionViewModel.
+     */
     private static function resolveSessionViewModel(mixed $session, string $eventTitle, string $eventTypeSlug): CmsEventSessionViewModel
     {
         if ($session instanceof SessionWithEvent) {
@@ -262,6 +297,10 @@ final class CmsEventsMapper
         return self::toEventSessionViewModel($session, $eventTitle, $eventTypeSlug);
     }
 
+    /**
+     * Down-converts a SessionWithEvent (joined row) into a plain EventSession so it
+     * can be passed to toEventSessionViewModel which expects the simpler type.
+     */
     private static function toEventSession(SessionWithEvent $s): EventSession
     {
         return new EventSession(

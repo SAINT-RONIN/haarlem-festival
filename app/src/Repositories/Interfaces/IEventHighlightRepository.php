@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\EventHighlight;
 
+/**
+ * Defines persistence operations for event highlights.
+ */
 interface IEventHighlightRepository
 {
     /**

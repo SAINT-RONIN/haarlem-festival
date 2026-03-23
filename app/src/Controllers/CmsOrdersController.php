@@ -9,6 +9,12 @@ use App\Mappers\CmsOrdersMapper;
 use App\Services\Interfaces\ICmsOrdersService;
 use App\Services\Interfaces\ISessionService;
 
+/**
+ * CMS controller for viewing customer orders.
+ *
+ * Provides a read-only list of orders with optional status filtering
+ * for admin review and support purposes.
+ */
 class CmsOrdersController extends CmsBaseController
 {
     public function __construct(
@@ -18,6 +24,10 @@ class CmsOrdersController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
+    /**
+     * Displays the orders list with optional payment-status filtering.
+     * GET /cms/orders
+     */
     public function index(): void
     {
         try {

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries CMS item values for the Jazz booking_cta_section.
+ * CMS content for the jazz page booking call-to-action section.
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class JazzBookingCtaSectionContent
 {

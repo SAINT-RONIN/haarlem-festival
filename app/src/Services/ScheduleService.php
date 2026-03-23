@@ -41,6 +41,16 @@ class ScheduleService implements IScheduleService
     ) {
     }
 
+    /**
+     * Builds the complete schedule payload for a given event type.
+     *
+     * Loads CMS labels, resolves visible days from global + type-specific
+     * day configs, fetches sessions with optional filters (day, time, price,
+     * venue, language, age), batch-loads labels and prices, then assembles
+     * day-grouped event card arrays ready for the mapper layer.
+     *
+     * @return array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: array, filterGroupTypes: string[], priceTypeOptions: string[]}
+     */
     public function getScheduleData(
         string $pageSlug,
         int $eventTypeId,
@@ -49,13 +59,18 @@ class ScheduleService implements IScheduleService
         ?string $ctaTextOverride = null,
         ?ScheduleFilterParams $filterParams = null,
     ): array {
+        // Resolve the event type slug used for URLs and filter logic
         $eventType = $this->eventTypeRepository->findEventTypes(new EventTypeFilter(eventTypeId: $eventTypeId))[0] ?? null;
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
 
+        // Load CMS-managed labels (button text, currency symbol, etc.)
         $cmsRaw = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
         $cmsSection = ScheduleSectionContent::fromRawArray($cmsRaw);
+
+        // Determine which weekdays are visible based on global + type overrides
         $visibleDays = $this->getVisibleDays($eventTypeId);
 
+        // Fetch distinct calendar days that have matching sessions (for day-tab navigation)
         $availableDays = $this->sessionRepository->findDistinctDays(
             new EventSessionFilter(
                 eventTypeId: $eventTypeId,
@@ -68,6 +83,7 @@ class ScheduleService implements IScheduleService
             ),
         );
 
+        // Fetch the actual sessions, applying all user-selected filters
         $scheduleData = $this->sessionRepository->findSessions(
             new EventSessionFilter(
                 eventTypeId: $eventTypeId,
@@ -89,12 +105,14 @@ class ScheduleService implements IScheduleService
             ),
         );
 
+        // Apply CMS defaults for display strings, with hardcoded fallbacks
         $ctaButtonText = $ctaTextOverride ?? ($cmsSection->scheduleCtaButtonText ?? 'Discover');
         $payWhatYouLikeText = $cmsSection->schedulePayWhatYouLikeText ?? 'Pay as you like';
         $currencySymbol = $cmsSection->scheduleCurrencySymbol ?? '€';
         $startPoint = $cmsSection->scheduleStartPoint ?? 'A giant flag near Church of St. Bavo at Grote Markt';
         $groupTicketFallback = $cmsSection->scheduleHistoryGroupTicket ?? 'Group ticket- best value for 4 people';
 
+        // Build the day-grouped event card arrays with batch-loaded labels and prices
         $days = $this->buildScheduleDays(
             $scheduleData,
             $eventTypeSlug,
@@ -242,6 +260,10 @@ class ScheduleService implements IScheduleService
      *
      * @return array<string, mixed>
      */
+    /**
+     * Assembles a single event card array by resolving age range, labels,
+     * pricing, and CTA for one session.
+     */
     private function buildEventCard(
         \App\Models\SessionWithEvent $session,
         string $eventTypeSlug,
@@ -255,6 +277,8 @@ class ScheduleService implements IScheduleService
         string $groupTicketFallback = ''
     ): array {
         $sessionId = $session->eventSessionId;
+
+        // Resolve derived display fields from the session + pre-loaded maps
         [$minAge, $maxAge] = $this->resolveAgeRange($session);
         $labels = $this->extractLabels($labelsMap[$sessionId] ?? [], $minAge, $maxAge, $eventTypeId);
         $priceData = $this->resolvePrice($pricesMap[$sessionId] ?? []);
@@ -264,6 +288,8 @@ class ScheduleService implements IScheduleService
     }
 
     /**
+     * Extracts and normalises min/max age from a session, swapping if inverted.
+     *
      * @return array{0: ?int, 1: ?int}
      */
     private function resolveAgeRange(\App\Models\SessionWithEvent $session): array
@@ -279,6 +305,9 @@ class ScheduleService implements IScheduleService
     }
 
     /**
+     * Converts label models to plain strings and appends an age-range label
+     * (except for History events, which handle age labels differently).
+     *
      * @param EventSessionLabel[] $sessionLabels
      * @return string[]
      */
@@ -294,6 +323,9 @@ class ScheduleService implements IScheduleService
     }
 
     /**
+     * Resolves the call-to-action label and URL, falling back to a
+     * convention-based URL (/{eventTypeSlug}/{eventSlug}) when none is set.
+     *
      * @return array{label: string, url: string}
      */
     private function resolveCta(\App\Models\SessionWithEvent $session, string $eventTypeSlug, string $defaultCtaText): array
@@ -358,6 +390,9 @@ class ScheduleService implements IScheduleService
         ];
     }
 
+    /**
+     * Maps a start time to a human-readable time-of-day bucket for filtering.
+     */
     private function computeTimeRange(\DateTimeInterface $startDateTime): string
     {
         $hour = (int) $startDateTime->format('G');
@@ -376,18 +411,21 @@ class ScheduleService implements IScheduleService
      */
     private function resolvePrice(array $prices): array
     {
+        // Priority 1: pay-what-you-like takes precedence over all fixed prices
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
                 return ['amount' => null, 'isPayWhatYouLike' => true];
             }
         }
 
+        // Priority 2: prefer the Adult tier as the display price
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::Adult->value) {
                 return ['amount' => (float)$price->price, 'isPayWhatYouLike' => false];
             }
         }
 
+        // Fallback: use whatever the first price tier is
         if (!empty($prices)) {
             return ['amount' => (float)$prices[0]->price, 'isPayWhatYouLike' => false];
         }
@@ -395,7 +433,12 @@ class ScheduleService implements IScheduleService
         return ['amount' => null, 'isPayWhatYouLike' => false];
     }
 
-    /** @return string[] */
+    /**
+     * Returns the filter categories shown in the UI for a given event type
+     * (e.g. storytelling shows day/time/price/language/age, jazz shows day/venue/price).
+     *
+     * @return string[]
+     */
     private function resolveFilterGroupTypes(string $eventTypeSlug): array
     {
         return match ($eventTypeSlug) {
@@ -405,7 +448,12 @@ class ScheduleService implements IScheduleService
         };
     }
 
-    /** @return string[] */
+    /**
+     * Returns the allowed price-type filter options for a given event type.
+     * Jazz events don't support pay-what-you-like, so that option is excluded.
+     *
+     * @return string[]
+     */
     private function resolvePriceTypeOptions(string $eventTypeSlug): array
     {
         return $eventTypeSlug === 'jazz'

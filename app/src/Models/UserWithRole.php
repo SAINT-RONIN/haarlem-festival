@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a joined row from the CMS users query:
- * UserAccount + RoleName from UserRole.
+ * Read-only projection from a JOIN of UserAccount and UserAccountRole.
  *
- * Not a direct table row — used only for the CMS users list.
+ * Used by the CMS user management list to display users with their role names.
  */
 final readonly class UserWithRole
 {

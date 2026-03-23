@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Typed filter parameters for Venue repository queries.
+ * Query parameters for VenueRepository.
+ * Optionally filters to active-only venues.
  */
 final readonly class VenueFilter
 {

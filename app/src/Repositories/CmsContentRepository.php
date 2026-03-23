@@ -14,6 +14,13 @@ use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 
+/**
+ * High-level read-only facade over the CMS data (pages, sections, items).
+ *
+ * Resolves page slugs to structured content arrays suitable for views,
+ * caches results per-request to avoid repeated queries, and batch-fetches
+ * linked MediaAsset records to prevent N+1 lookups.
+ */
 class CmsContentRepository implements ICmsContentRepository
 {
     /** @var array<string, int|null> In-memory cache for page slug → ID lookups */
@@ -32,6 +39,8 @@ class CmsContentRepository implements ICmsContentRepository
     }
 
     /**
+     * Returns all CMS content for the home page, keyed by sectionKey then itemKey.
+     *
      * @return array<string, array<string, ?string>>
      */
     public function getHomePageContent(): array
@@ -53,6 +62,8 @@ class CmsContentRepository implements ICmsContentRepository
     }
 
     /**
+     * Returns one section's items from a page, keyed by itemKey.
+     *
      * @return array<string, ?string>
      */
     public function getSectionContent(string $pageSlug, string $sectionKey): array
@@ -67,6 +78,8 @@ class CmsContentRepository implements ICmsContentRepository
     }
 
     /**
+     * Convenience shortcut to retrieve the "hero_section" of any page.
+     *
      * @return array<string, ?string>
      */
     public function getHeroSectionContent(string $pageSlug): array
@@ -130,11 +143,13 @@ class CmsContentRepository implements ICmsContentRepository
 
     /**
      * Resolves the value to expose to views for a CMS item.
+     * Priority: media asset file path > plain text > HTML > null.
      *
      * @param array<int, MediaAsset> $assetMap Pre-fetched media assets keyed by ID
      */
     private function resolveItemValue(CmsItem $item, array $assetMap): ?string
     {
+        // Media asset takes highest priority (used for images/files)
         $mediaAssetId = $item->mediaAssetId;
         if ($mediaAssetId !== null && $mediaAssetId > 0) {
             $asset = $assetMap[$mediaAssetId] ?? null;

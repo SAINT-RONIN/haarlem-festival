@@ -10,10 +10,14 @@ use App\Repositories\Interfaces\ICmsUsersRepository;
 use PDO;
 
 /**
- * Handles all UserAccount read/write operations for the CMS users section.
+ * Handles all UserAccount read/write operations for the CMS admin users section.
+ *
+ * Queries the UserAccount table joined with UserRole for listing and filtering,
+ * and provides uniqueness checks that can exclude a given user (for edit forms).
  */
 class CmsUsersRepository implements ICmsUsersRepository
 {
+    /** @var array<string, string> Maps front-end sort keys to safe SQL column references */
     private const SORT_COLUMNS = [
         'username'   => 'ua.Username',
         'email'      => 'ua.Email',
@@ -51,6 +55,9 @@ class CmsUsersRepository implements ICmsUsersRepository
         );
     }
 
+    /**
+     * Retrieves a single user by primary key (includes inactive users, for admin editing).
+     */
     public function findById(int $id): ?UserAccount
     {
         $stmt = $this->pdo->prepare('SELECT * FROM UserAccount WHERE UserAccountId = :id');
@@ -60,6 +67,11 @@ class CmsUsersRepository implements ICmsUsersRepository
         return is_array($row) ? UserAccount::fromRow($row) : null;
     }
 
+    /**
+     * Creates a user from the CMS admin panel (email confirmation starts unconfirmed).
+     *
+     * @return int The new UserAccountId
+     */
     public function createUser(
         string $username,
         string $email,
@@ -87,6 +99,9 @@ class CmsUsersRepository implements ICmsUsersRepository
         return (int)$this->pdo->lastInsertId();
     }
 
+    /**
+     * Updates a user's profile fields (does not touch password).
+     */
     public function updateUser(
         int $id,
         string $username,
@@ -116,6 +131,9 @@ class CmsUsersRepository implements ICmsUsersRepository
         ]);
     }
 
+    /**
+     * Replaces a user's password hash (admin reset).
+     */
     public function updateUserPassword(int $id, string $passwordHash): void
     {
         $sql = 'UPDATE UserAccount SET PasswordHash = :hash, UpdatedAtUtc = NOW() WHERE UserAccountId = :id';
@@ -123,6 +141,9 @@ class CmsUsersRepository implements ICmsUsersRepository
         $this->pdo->prepare($sql)->execute([':hash' => $passwordHash, ':id' => $id]);
     }
 
+    /**
+     * Soft-deletes a user by setting IsActive = 0 (preserves order/FK history).
+     */
     public function deleteUser(int $id): void
     {
         $sql = 'UPDATE UserAccount SET IsActive = 0, UpdatedAtUtc = NOW() WHERE UserAccountId = :id';
@@ -130,6 +151,9 @@ class CmsUsersRepository implements ICmsUsersRepository
         $this->pdo->prepare($sql)->execute([':id' => $id]);
     }
 
+    /**
+     * Checks whether a username is already taken (for create validation).
+     */
     public function existsByUsername(string $username): bool
     {
         $stmt = $this->pdo->prepare('SELECT 1 FROM UserAccount WHERE Username = :username LIMIT 1');
@@ -138,6 +162,9 @@ class CmsUsersRepository implements ICmsUsersRepository
         return $stmt->fetchColumn() !== false;
     }
 
+    /**
+     * Checks whether an email is already registered (for create validation).
+     */
     public function existsByEmail(string $email): bool
     {
         $stmt = $this->pdo->prepare('SELECT 1 FROM UserAccount WHERE Email = :email LIMIT 1');
@@ -146,6 +173,9 @@ class CmsUsersRepository implements ICmsUsersRepository
         return $stmt->fetchColumn() !== false;
     }
 
+    /**
+     * Same as existsByUsername but excludes a specific user (for edit-form uniqueness checks).
+     */
     public function existsByUsernameExcluding(string $username, int $excludeId): bool
     {
         $sql  = 'SELECT 1 FROM UserAccount WHERE Username = :username AND UserAccountId != :excludeId LIMIT 1';
@@ -155,6 +185,9 @@ class CmsUsersRepository implements ICmsUsersRepository
         return $stmt->fetchColumn() !== false;
     }
 
+    /**
+     * Same as existsByEmail but excludes a specific user (for edit-form uniqueness checks).
+     */
     public function existsByEmailExcluding(string $email, int $excludeId): bool
     {
         $sql  = 'SELECT 1 FROM UserAccount WHERE Email = :email AND UserAccountId != :excludeId LIMIT 1';
@@ -165,6 +198,9 @@ class CmsUsersRepository implements ICmsUsersRepository
     }
 
     /**
+     * Assembles the SQL and parameter array for the user list, applying
+     * optional role filter, search term (across username/email/name), and sort.
+     *
      * @return array{0: string, 1: array<string, mixed>}
      */
     private function buildListQuery(
@@ -192,6 +228,10 @@ class CmsUsersRepository implements ICmsUsersRepository
         return [$sql, $params];
     }
 
+    /**
+     * Base SELECT for the user listing -- joins UserRole to include the role name.
+     * Ends with "WHERE 1 = 1" so callers can append AND clauses directly.
+     */
     private function buildListSelect(): string
     {
         return '
@@ -210,11 +250,13 @@ class CmsUsersRepository implements ICmsUsersRepository
         ';
     }
 
+    /** Maps a front-end sort key to a safe column reference, falling back to registered date. */
     private function resolveSortColumn(string $sortBy): string
     {
         return self::SORT_COLUMNS[$sortBy] ?? 'ua.RegisteredAtUtc';
     }
 
+    /** Validates and normalises sort direction, defaulting to DESC. */
     private function resolveSortDir(string $sortDir): string
     {
         return in_array(strtolower($sortDir), self::SORT_DIRS, true) ? strtoupper($sortDir) : 'DESC';

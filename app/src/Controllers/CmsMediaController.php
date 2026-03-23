@@ -12,6 +12,12 @@ use App\Services\Interfaces\IMediaAssetService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsMediaListItemViewModel;
 
+/**
+ * CMS controller for the media asset library.
+ *
+ * Handles browsing, uploading, and deleting image assets used across
+ * the festival site. Provides both page-rendered and JSON endpoints.
+ */
 class CmsMediaController extends CmsBaseController
 {
     public function __construct(
@@ -21,6 +27,10 @@ class CmsMediaController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
+    /**
+     * Displays the media library page with all uploaded assets and upload limits.
+     * GET /cms/media
+     */
     public function index(): void
     {
         try {
@@ -33,6 +43,10 @@ class CmsMediaController extends CmsBaseController
         }
     }
 
+    /**
+     * Handles image file upload via AJAX and returns the new asset details as JSON.
+     * POST /cms/media/upload
+     */
     public function upload(): void
     {
         header('Content-Type: application/json');
@@ -48,6 +62,10 @@ class CmsMediaController extends CmsBaseController
         }
     }
 
+    /**
+     * Deletes a media asset by ID via AJAX and returns success/failure as JSON.
+     * POST /cms/media/delete
+     */
     public function delete(): void
     {
         header('Content-Type: application/json');
@@ -60,6 +78,10 @@ class CmsMediaController extends CmsBaseController
         }
     }
 
+    /**
+     * Returns all media assets as a JSON array for use by client-side pickers.
+     * GET /cms/media/list
+     */
     public function list(): void
     {
         header('Content-Type: application/json');
