@@ -2,22 +2,24 @@
 /**
  * @var string $currentPage
  * @var array $cms
+ * @var bool $isLoggedIn (optional - passed from controller or extracted from $globalUi)
  */
 $currentPage = $currentPage ?? 'home';
 $hero = $cms['hero_section'];
 $global = $cms['global_ui'];
 
-// Ensure login state is available for the hero navbar
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-$isLoggedIn = isset($_SESSION['user_id']);
+// Get the background image from CMS, fallback to default
+$heroBackgroundImage = $hero['hero_background_image'] ?? '/assets/Image/HeroImageHome.png';
+
+// Get login state from globalUi or direct variable (for backward compatibility)
+$isLoggedIn = $isLoggedIn ?? ($global['is_logged_in'] ?? false);
 ?>
 
 <!-- Hero Section with Floating Navigation -->
 <section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5"
          aria-labelledby="hero-heading">
-    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative hero-background"
+    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative hero-background-base"
+         style="background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), url('<?= htmlspecialchars($heroBackgroundImage) ?>');"
          role="img" aria-label="Haarlem Festival hero background">
 
         <!-- Sticky Navigation - Floating on top of hero image -->
@@ -35,7 +37,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
                 </a>
 
                 <!-- Mobile Menu Button with Animation -->
-                <button id="hero-menu-btn" onclick="toggleHeroMenu()"
+                <button id="hero-menu-btn" data-toggle-menu="hero-nav-menu"
                         class="xl:hidden p-2 sm:p-2.5 mr-1.5 sm:mr-2 text-sand relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 rounded-lg"
                         aria-expanded="false" aria-controls="hero-nav-menu" aria-label="Toggle navigation menu">
                     <span class="sr-only">Toggle menu</span>
@@ -234,15 +236,19 @@ $isLoggedIn = isset($_SESSION['user_id']);
                         <span class="text-center text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap"><?= htmlspecialchars($hero['hero_button_primary']) ?></span>
                         <span class="px-1 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 lg:py-1.5 flex justify-center items-center"
                               aria-hidden="true">
-                            <svg class="w-1.5 h-3 sm:w-2 sm:h-4" viewBox="0 0 6 12" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <svg class="w-1.5 h-3 sm:w-2 sm:h-4" viewBox="0 0 6 12" fill="none" stroke="white"
+                                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                                 focusable="false">
                                 <path d="M1 1l4 5-4 5"></path>
                             </svg>
                         </span>
                     </a>
+                    <?php if ($hero['hero_button_secondary'] !== null): ?>
                     <a href="#schedule"
                        class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-sand hover:bg-red rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 sm:outline-2 outline-offset-[-1px] sm:outline-offset-[-2px] outline-red flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         <span class="text-center text-red group-hover:text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap transition-colors duration-200"><?= htmlspecialchars($hero['hero_button_secondary']) ?></span>
                     </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

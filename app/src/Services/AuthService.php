@@ -4,32 +4,31 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\UserRoleId;
+use App\Infrastructure\Interfaces\IEmailService;
 use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\UserAccountRepository;
+use App\Services\Interfaces\IAuthService;
+use App\Utils\PasswordHasher;
 
 /**
  * Service for authentication business logic.
  *
  * Handles login validation, registration, and password reset flows.
- * All password hashing uses Argon2id.
+ * All password hashing uses Argon2id via PasswordHasher utility.
  */
-class AuthService
+class AuthService implements IAuthService
 {
-    private UserAccountRepository $userRepository;
-    private PasswordResetTokenRepository $resetTokenRepository;
-    private EmailService $emailService;
-
     private const PASSWORD_MIN_LENGTH = 8;
     private const USERNAME_MIN_LENGTH = 3;
     private const USERNAME_MAX_LENGTH = 60;
     private const RESET_TOKEN_EXPIRY_HOURS = 1;
-    private const CUSTOMER_ROLE_ID = 1;
 
-    public function __construct()
-    {
-        $this->userRepository = new UserAccountRepository();
-        $this->resetTokenRepository = new PasswordResetTokenRepository();
-        $this->emailService = new EmailService();
+    public function __construct(
+        private readonly UserAccountRepository $userRepository,
+        private readonly PasswordResetTokenRepository $resetTokenRepository,
+        private readonly IEmailService $emailService,
+    ) {
     }
 
     /**
@@ -47,11 +46,33 @@ class AuthService
             return $this->loginFailure();
         }
 
-        if (!password_verify($password, $user->passwordHash)) {
+        if (!PasswordHasher::verify($password, $user->passwordHash)) {
             return $this->loginFailure();
         }
 
         return ['success' => true, 'user' => $user];
+    }
+
+    /**
+     * Attempts login and additionally checks that the user has Administrator role.
+     *
+     * @param string $login Username or email
+     * @param string $password Plain text password
+     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     */
+    public function attemptAdminLogin(string $login, string $password): array
+    {
+        $result = $this->attemptLogin($login, $password);
+
+        if (!$result['success']) {
+            return $result;
+        }
+
+        if ($result['user']->userRoleId !== UserRoleId::Administrator->value) {
+            return $this->loginFailure();
+        }
+
+        return $result;
     }
 
     /**
@@ -73,21 +94,19 @@ class AuthService
     public function validateRegistration(array $data): array
     {
         $errors = [];
-
-        // Username validation
         $errors = $this->validateUsername($data['username'] ?? '', $errors);
-
-        // Email validation
         $errors = $this->validateEmail($data['email'] ?? '', $errors);
+        $errors = $this->validatePasswords($data['password'] ?? '', $data['confirmPassword'] ?? '', $errors);
+        $errors = $this->validateNames($data, $errors);
 
-        // Password validation
-        $errors = $this->validatePasswords(
-            $data['password'] ?? '',
-            $data['confirmPassword'] ?? '',
-            $errors
-        );
+        return $errors;
+    }
 
-        // First name and last name
+    /**
+     * Validates first name and last name.
+     */
+    private function validateNames(array $data, array $errors): array
+    {
         if (empty(trim($data['firstName'] ?? ''))) {
             $errors['firstName'] = 'First name is required.';
         }
@@ -104,25 +123,10 @@ class AuthService
     private function validateUsername(string $username, array $errors): array
     {
         $username = trim($username);
+        $formatError = $this->checkUsernameFormat($username);
 
-        if (empty($username)) {
-            $errors['username'] = 'Username is required.';
-            return $errors;
-        }
-
-        if (strlen($username) < self::USERNAME_MIN_LENGTH) {
-            $errors['username'] = 'Username must be at least ' . self::USERNAME_MIN_LENGTH . ' characters.';
-            return $errors;
-        }
-
-        if (strlen($username) > self::USERNAME_MAX_LENGTH) {
-            $errors['username'] = 'Username must be no more than ' . self::USERNAME_MAX_LENGTH . ' characters.';
-            return $errors;
-        }
-
-        // Only allow letters, numbers, underscores, hyphens
-        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $username)) {
-            $errors['username'] = 'Username can only contain letters, numbers, underscores, and hyphens.';
+        if ($formatError !== null) {
+            $errors['username'] = $formatError;
             return $errors;
         }
 
@@ -131,6 +135,27 @@ class AuthService
         }
 
         return $errors;
+    }
+
+    /**
+     * Checks username format requirements.
+     */
+    private function checkUsernameFormat(string $username): ?string
+    {
+        if (empty($username)) {
+            return 'Username is required.';
+        }
+        if (strlen($username) < self::USERNAME_MIN_LENGTH) {
+            return 'Username must be at least ' . self::USERNAME_MIN_LENGTH . ' characters.';
+        }
+        if (strlen($username) > self::USERNAME_MAX_LENGTH) {
+            return 'Username must be no more than ' . self::USERNAME_MAX_LENGTH . ' characters.';
+        }
+        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $username)) {
+            return 'Username can only contain letters, numbers, underscores, and hyphens.';
+        }
+
+        return null;
     }
 
     /**
@@ -186,10 +211,10 @@ class AuthService
      */
     public function register(array $data): int
     {
-        $passwordHash = password_hash($data['password'], PASSWORD_ARGON2ID);
+        $passwordHash = PasswordHasher::hash($data['password']);
 
         return $this->userRepository->create([
-            'roleId' => self::CUSTOMER_ROLE_ID,
+            'roleId' => UserRoleId::Customer->value,
             'username' => trim($data['username']),
             'email' => trim($data['email']),
             'passwordHash' => $passwordHash,
@@ -229,9 +254,9 @@ class AuthService
     public function validateResetToken(string $rawToken): array
     {
         $tokenHash = hash('sha256', $rawToken);
-        $tokenData = $this->resetTokenRepository->findValidByTokenHash($tokenHash);
+        $token = $this->resetTokenRepository->findValidByTokenHash($tokenHash);
 
-        if ($tokenData === null) {
+        if ($token === null) {
             return [
                 'valid' => false,
                 'error' => 'This password reset link is invalid or has expired.',
@@ -240,8 +265,8 @@ class AuthService
 
         return [
             'valid' => true,
-            'tokenId' => (int)$tokenData['PasswordResetTokenId'],
-            'userId' => (int)$tokenData['UserAccountId'],
+            'tokenId' => $token->passwordResetTokenId,
+            'userId' => $token->userAccountId,
         ];
     }
 
@@ -271,7 +296,7 @@ class AuthService
         }
 
         // Update password
-        $passwordHash = password_hash($newPassword, PASSWORD_ARGON2ID);
+        $passwordHash = PasswordHasher::hash($newPassword);
         $this->userRepository->updatePasswordHash($tokenResult['userId'], $passwordHash);
 
         // Mark token as used

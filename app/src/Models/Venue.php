@@ -18,12 +18,12 @@ class Venue
      */
 
     public function __construct(
-        public int $venueId,
-        public string $name,
-        public string $addressLine,
-        public string $city,
-        public \DateTimeImmutable $createdAtUtc,
-        public bool $isActive,
+        public readonly int                $venueId,
+        public readonly string             $name,
+        public readonly string             $addressLine,
+        public readonly string             $city,
+        public readonly \DateTimeImmutable $createdAtUtc,
+        public readonly bool               $isActive,
     ) {
     }
 
@@ -34,12 +34,12 @@ class Venue
     public static function fromRow(array $row): self
     {
         return new self(
-            venueId: (int) $row['VenueId'],
-            name: (string) $row['Name'],
-            addressLine: (string) $row['AddressLine'],
-            city: (string) $row['City'],
+            venueId: (int)$row['VenueId'],
+            name: (string)$row['Name'],
+            addressLine: (string)$row['AddressLine'],
+            city: (string)$row['City'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
-            isActive: (bool) $row['IsActive'],
+            isActive: (bool)$row['IsActive'],
         );
     }
 

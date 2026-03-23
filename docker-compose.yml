@@ -15,6 +15,7 @@ services:
       dockerfile: PHP.Dockerfile
     volumes:
       - ./app:/app
+      - ./php.ini:/usr/local/etc/php/conf.d/uploads.ini
     env_file:
       - ./.env
     environment:
@@ -35,6 +36,9 @@ services:
       MAIL_FORCE_SEND: ${MAIL_FORCE_SEND:-false}
       MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
       MAIL_DEBUG: ${MAIL_DEBUG:-false}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
 
   mysql:
     image: mariadb:latest

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Services\Interfaces\ICaptchaService;
+
 /**
  * Service for Google reCAPTCHA v2 verification.
  *
@@ -14,7 +16,7 @@ namespace App\Services;
  *
  * Get your keys at: https://www.google.com/recaptcha/admin
  */
-class CaptchaService
+class CaptchaService implements ICaptchaService
 {
     private string $siteKey;
     private string $secretKey;
@@ -46,9 +48,10 @@ class CaptchaService
      * Verifies the reCAPTCHA response from the form submission.
      *
      * @param string|null $recaptchaResponse The g-recaptcha-response from POST
+     * @param string|null $remoteAddr The client IP address from $_SERVER['REMOTE_ADDR']
      * @return bool True if verification passed, false otherwise
      */
-    public function verify(?string $recaptchaResponse): bool
+    public function verify(?string $recaptchaResponse, ?string $remoteAddr): bool
     {
         // If reCAPTCHA is not configured, skip verification (dev mode)
         if (!$this->isEnabled()) {
@@ -63,7 +66,7 @@ class CaptchaService
         $data = [
             'secret' => $this->secretKey,
             'response' => $recaptchaResponse,
-            'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '',
+            'remoteip' => $remoteAddr ?? '',
         ];
 
         $options = [

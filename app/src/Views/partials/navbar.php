@@ -5,16 +5,12 @@
  * @var string $currentPage Current page identifier for nav highlighting
  * @var bool $isSticky Whether the navbar should be sticky (default true)
  * @var bool $isDark Whether to use dark background style (default true)
+ * @var bool $isLoggedIn Whether user is logged in (passed from controller/ViewModel)
  */
 $currentPage = $currentPage ?? 'home';
 $isSticky = $isSticky ?? true;
 $isDark = $isDark ?? true;
-
-// Check if user is logged in
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-$isLoggedIn = isset($_SESSION['user_id']);
+$isLoggedIn = $isLoggedIn ?? false;
 
 $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
 ?>
@@ -35,7 +31,7 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
 
         <!-- Mobile Menu Button -->
         <button type="button" id="nav-menu-btn"
-                onclick="document.getElementById('nav-menu').classList.toggle('hidden'); document.getElementById('nav-menu').classList.toggle('flex'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');"
+                data-toggle-menu="nav-menu"
                 class="xl:hidden p-2 sm:p-2.5 mr-1.5 sm:mr-2 text-sand focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 rounded-lg"
                 aria-expanded="false" aria-controls="nav-menu" aria-label="Toggle navigation menu">
             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
@@ -179,7 +175,7 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
 
             <!-- Login/Logout Button -->
             <!-- My Program Button -->
-            <a href="/program"
+            <a href="/my-program"
                class="w-full xl:w-auto px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                 <i data-lucide="shopping-cart"
                    class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200"

@@ -20,14 +20,14 @@ class CmsItem
      */
 
     public function __construct(
-        public int $cmsItemId,
-        public int $cmsSectionId,
-        public string $itemKey,
-        public CmsItemType $itemType,
-        public ?string $textValue,
-        public ?string $htmlValue,
-        public ?int $mediaAssetId,
-        public \DateTimeImmutable $updatedAtUtc,
+        public readonly int                $cmsItemId,
+        public readonly int                $cmsSectionId,
+        public readonly string             $itemKey,
+        public readonly CmsItemType        $itemType,
+        public readonly ?string            $textValue,
+        public readonly ?string            $htmlValue,
+        public readonly ?int               $mediaAssetId,
+        public readonly \DateTimeImmutable $updatedAtUtc,
     ) {
     }
 
@@ -38,14 +38,14 @@ class CmsItem
     public static function fromRow(array $row): self
     {
         return new self(
-            cmsItemId: (int) $row['CmsItemId'],
-            cmsSectionId: (int) $row['CmsSectionId'],
-            itemKey: (string) $row['ItemKey'],
-            itemType: CmsItemType::from($row['ItemType']),
+            cmsItemId: (int)($row['CmsItemId'] ?? throw new \InvalidArgumentException('Missing required field: CmsItemId')),
+            cmsSectionId: (int)($row['CmsSectionId'] ?? throw new \InvalidArgumentException('Missing required field: CmsSectionId')),
+            itemKey: (string)($row['ItemKey'] ?? throw new \InvalidArgumentException('Missing required field: ItemKey')),
+            itemType: CmsItemType::from($row['ItemType'] ?? throw new \InvalidArgumentException('Missing required field: ItemType')),
             textValue: $row['TextValue'] ?? null,
             htmlValue: $row['HtmlValue'] ?? null,
-            mediaAssetId: isset($row['MediaAssetId']) ? (int) $row['MediaAssetId'] : null,
-            updatedAtUtc: new \DateTimeImmutable($row['UpdatedAtUtc']),
+            mediaAssetId: isset($row['MediaAssetId']) ? (int)$row['MediaAssetId'] : null,
+            updatedAtUtc: new \DateTimeImmutable($row['UpdatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: UpdatedAtUtc')),
         );
     }
 

@@ -1,0 +1,25 @@
+/**
+ * CMS-specific styles.
+ *
+ * Contains styles used by CMS admin pages.
+ */
+
+/* Base font for CMS */
+body.cms-body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* Character counter states */
+.char-counter.warning {
+    color: #f59e0b;
+}
+
+.char-counter.error {
+    color: #ef4444;
+}
+
+/* Accordion rotation */
+.accordion-icon.rotated {
+    transform: rotate(180deg);
+}
+

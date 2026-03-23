@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\UserRoleId;
+use App\Services\Interfaces\ISessionService;
+
 /**
  * Service for managing PHP sessions.
  *
  * Handles session lifecycle, user login state, and role-based access checks.
  * All session operations are centralized here for consistency and security.
  */
-class SessionService
+class SessionService implements ISessionService
 {
     private const USER_ID_KEY = 'user_id';
     private const ROLE_ID_KEY = 'role_id';
-    private const ADMIN_ROLE_ID = 3;
+    private const FLASH_KEY = '_flash';
+    private const CSRF_KEY = '_csrf_tokens';
 
     /**
      * Starts the session if not already started.
@@ -85,7 +89,7 @@ class SessionService
     {
         $this->start();
         return isset($_SESSION[self::ROLE_ID_KEY])
-            && $_SESSION[self::ROLE_ID_KEY] === self::ADMIN_ROLE_ID;
+            && $_SESSION[self::ROLE_ID_KEY] === UserRoleId::Administrator->value;
     }
 
     /**
@@ -104,5 +108,77 @@ class SessionService
     {
         $this->start();
         return $_SESSION[self::ROLE_ID_KEY] ?? null;
+    }
+
+    public function set(string $key, mixed $value): void
+    {
+        $this->start();
+        $_SESSION[$key] = $value;
+    }
+
+    public function get(string $key, mixed $default = null): mixed
+    {
+        $this->start();
+        return $_SESSION[$key] ?? $default;
+    }
+
+    public function setFlash(string $key, string $message): void
+    {
+        $this->start();
+        $_SESSION[self::FLASH_KEY][$key] = $message;
+    }
+
+    public function consumeFlash(string $key): ?string
+    {
+        $this->start();
+
+        $message = $_SESSION[self::FLASH_KEY][$key] ?? null;
+        if (isset($_SESSION[self::FLASH_KEY][$key])) {
+            unset($_SESSION[self::FLASH_KEY][$key]);
+        }
+
+        if (isset($_SESSION[self::FLASH_KEY]) && $_SESSION[self::FLASH_KEY] === []) {
+            unset($_SESSION[self::FLASH_KEY]);
+        }
+
+        return is_string($message) ? $message : null;
+    }
+
+    public function getCsrfToken(string $scope): string
+    {
+        $this->start();
+
+        $existing = $_SESSION[self::CSRF_KEY][$scope] ?? null;
+        if (is_string($existing) && $existing !== '') {
+            return $existing;
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $_SESSION[self::CSRF_KEY][$scope] = $token;
+        return $token;
+    }
+
+    public function isValidCsrfToken(string $scope, ?string $token): bool
+    {
+        $this->start();
+
+        if (!is_string($token) || $token === '') {
+            return false;
+        }
+
+        $expected = $_SESSION[self::CSRF_KEY][$scope] ?? null;
+        return is_string($expected) && hash_equals($expected, $token);
+    }
+
+    public function getSessionId(): string
+    {
+        $this->start();
+
+        $sessionId = session_id();
+        if ($sessionId === '') {
+            throw new \RuntimeException('Session has not been initialized for this request.');
+        }
+
+        return $sessionId;
     }
 }

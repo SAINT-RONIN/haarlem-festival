@@ -20,14 +20,14 @@ class PassType
      */
 
     public function __construct(
-        public int $passTypeId,
-        public int $eventTypeId,
-        public string $passName,
-        public PassScope $passScope,
-        public string $price,
-        public string $vatRate,
-        public string $currencyCode,
-        public bool $isActive,
+        public readonly int       $passTypeId,
+        public readonly int       $eventTypeId,
+        public readonly string    $passName,
+        public readonly PassScope $passScope,
+        public readonly string    $price,
+        public readonly string    $vatRate,
+        public readonly string    $currencyCode,
+        public readonly bool      $isActive,
     ) {
     }
 
@@ -38,14 +38,14 @@ class PassType
     public static function fromRow(array $row): self
     {
         return new self(
-            passTypeId: (int) $row['PassTypeId'],
-            eventTypeId: (int) $row['EventTypeId'],
-            passName: (string) $row['PassName'],
+            passTypeId: (int)$row['PassTypeId'],
+            eventTypeId: (int)$row['EventTypeId'],
+            passName: (string)$row['PassName'],
             passScope: PassScope::from($row['PassScope']),
-            price: (string) $row['Price'],
-            vatRate: (string) $row['VatRate'],
-            currencyCode: (string) $row['CurrencyCode'],
-            isActive: (bool) $row['IsActive'],
+            price: (string)$row['Price'],
+            vatRate: (string)$row['VatRate'],
+            currencyCode: (string)$row['CurrencyCode'],
+            isActive: (bool)$row['IsActive'],
         );
     }
 

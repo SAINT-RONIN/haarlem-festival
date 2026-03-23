@@ -17,9 +17,9 @@ class Guide
      */
 
     public function __construct(
-        public int $guideId,
-        public string $name,
-        public bool $isActive,
+        public readonly int    $guideId,
+        public readonly string $name,
+        public readonly bool   $isActive,
     ) {
     }
 
@@ -30,9 +30,9 @@ class Guide
     public static function fromRow(array $row): self
     {
         return new self(
-            guideId: (int) $row['GuideId'],
-            name: (string) $row['Name'],
-            isActive: (bool) $row['IsActive'],
+            guideId: (int)$row['GuideId'],
+            name: (string)$row['Name'],
+            isActive: (bool)$row['IsActive'],
         );
     }
 

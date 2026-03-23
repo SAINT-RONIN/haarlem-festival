@@ -6,7 +6,9 @@
  * @var bool $imageFirst Whether image appears before text (alternating layout)
  */
 
-$darkBg = $eventType['darkBg'];
+use App\Helpers\CmsOutputHelper;
+
+$darkBg = $eventType->darkBg;
 
 $bgClass = $darkBg ? 'bg-royal-blue' : 'bg-sand';
 $textClass = $darkBg ? 'text-sand' : 'text-royal-blue';
@@ -22,22 +24,24 @@ $buttonTextClass = 'text-royal-blue';
  */
 $buttonBorder = 'border border-royal-blue hover:border-sand';
 
-$title = htmlspecialchars($eventType['title']);
-$description = htmlspecialchars($eventType['description']);
-$slug = htmlspecialchars($eventType['slug']);
+$title = CmsOutputHelper::text($eventType->title);
+$description = CmsOutputHelper::html($eventType->description); // HTML allowed from TinyMCE
+$slug = htmlspecialchars($eventType->slug);
 
 // Generate unique ID for accessibility
 $cardId = 'event-type-' . $slug;
 
-// TODO: Image paths should be retrieved from database (e.g., EventType.ImagePath or MediaAsset)
-$imageMap = [
-        'jazz' => 'Image (Jazz).png',
-        'dance' => 'Image (Dance).png',
-        'history' => 'Image (History).png',
-        'restaurant' => 'Image (Yummy).png',
-        'storytelling' => 'Image (Story).png',
+// Fallback image map (used if CMS image not set)
+$fallbackImageMap = [
+        'jazz' => '/assets/Image/Image (Jazz).png',
+        'dance' => '/assets/Image/Image (Dance).png',
+        'history' => '/assets/Image/Image (History).png',
+        'restaurant' => '/assets/Image/Image (Yummy).png',
+        'storytelling' => '/assets/Image/Image (Story).png',
 ];
-$imageSrc = '/assets/Image/' . $imageMap[$slug];
+
+// Get image from CMS or use fallback
+$imageSrc = $eventType->image ?? $fallbackImageMap[$slug] ?? '/assets/Image/placeholder.png';
 
 // Alt text map for meaningful image descriptions
 $altTextMap = [
@@ -50,7 +54,7 @@ $altTextMap = [
 $imageAlt = $altTextMap[$slug] ?? $title . ' event';
 
 // Button text from CMS database (e.g., "Explore Jazz Events")
-$buttonLabel = htmlspecialchars($eventType['button']);
+$buttonLabel = CmsOutputHelper::text($eventType->button);
 ?>
 
 <article class="self-stretch p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 2xl:p-10 <?php echo $bgClass; ?> rounded-[12px] sm:rounded-[15px] md:rounded-[25px] lg:rounded-[40px] flex flex-col lg:flex-row justify-center items-center gap-2 sm:gap-3 lg:gap-4 xl:gap-8 2xl:gap-12" aria-labelledby="<?php echo $cardId; ?>-heading">
@@ -61,7 +65,7 @@ $buttonLabel = htmlspecialchars($eventType['button']);
 
         <div class="w-full lg:flex-1 flex flex-col justify-center items-start gap-1 sm:gap-1.5 lg:gap-2 xl:gap-2.5">
             <h3 id="<?php echo $cardId; ?>-heading" class="<?php echo $titleClass; ?> text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold leading-tight"><?php echo $title; ?></h3>
-            <p class="self-stretch <?php echo $textClass; ?> text-[11px] sm:text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-normal leading-4 sm:leading-5 md:leading-6 lg:leading-7"><?php echo $description; ?></p>
+            <div class="self-stretch <?php echo $textClass; ?> text-[11px] sm:text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-normal leading-4 sm:leading-5 md:leading-6 lg:leading-7 [&>p]:mb-2 last:[&>p]:mb-0"><?php echo $description; ?></div>
 
             <a href="/<?php echo $slug; ?>"
                class="p-1 sm:p-1.5 md:p-2 lg:p-2.5 xl:p-3 2xl:p-3.5 <?php echo $buttonBg; ?> hover:bg-royal-blue
@@ -78,7 +82,7 @@ $buttonLabel = htmlspecialchars($eventType['button']);
     <?php else: ?>
         <div class="w-full lg:flex-1 flex flex-col justify-center items-start gap-1 sm:gap-1.5 lg:gap-2 xl:gap-2.5 order-2 lg:order-1">
             <h3 id="<?php echo $cardId; ?>-heading" class="<?php echo $titleClass; ?> text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold leading-tight"><?php echo $title; ?></h3>
-            <p class="self-stretch <?php echo $textClass; ?> text-[11px] sm:text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-normal leading-4 sm:leading-5 md:leading-6 lg:leading-7"><?php echo $description; ?></p>
+            <div class="self-stretch <?php echo $textClass; ?> text-[11px] sm:text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-normal leading-4 sm:leading-5 md:leading-6 lg:leading-7 [&>p]:mb-2 last:[&>p]:mb-0"><?php echo $description; ?></div>
 
             <a href="/<?php echo $slug; ?>"
                class="p-1 sm:p-1.5 md:p-2 lg:p-2.5 xl:p-3 2xl:p-3.5 <?php echo $buttonBg; ?> hover:bg-royal-blue

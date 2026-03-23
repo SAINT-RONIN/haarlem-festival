@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+/**
+ * Typed filter parameters from URL query strings for schedule filtering.
+ * Read by Controllers, passed to ScheduleService.
+ */
+final readonly class ScheduleFilterParams
+{
+    public function __construct(
+        public ?string $day = null,
+        public ?string $timeRange = null,
+        public ?string $priceType = null,
+        public ?string $venue = null,
+        public ?string $language = null,
+        public ?int $age = null,
+    ) {
+    }
+
+    public function hasAnyFilter(): bool
+    {
+        return $this->day !== null
+            || $this->timeRange !== null
+            || $this->priceType !== null
+            || $this->venue !== null
+            || $this->language !== null
+            || $this->age !== null;
+    }
+}

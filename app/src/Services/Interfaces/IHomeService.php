@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\HomePageViewModel;
+use App\Models\HomePageData;
 
 /**
  * Interface for Home page service.
@@ -12,9 +12,7 @@ use App\ViewModels\HomePageViewModel;
 interface IHomeService
 {
     /**
-     * Builds the homepage view model with all required data.
-     *
-     * @return HomePageViewModel Prepared data for the home view
+     * Returns all data needed to build the home page.
      */
-    public function getHomePageData(): HomePageViewModel;
+    public function getHomePageData(): HomePageData;
 }

@@ -18,11 +18,11 @@ class ScheduleDay
      */
 
     public function __construct(
-        public int $scheduleDayId,
-        public int $eventTypeId,
-        public \DateTimeImmutable $date,
-        public bool $isDeleted,
-        public ?\DateTimeImmutable $deletedAtUtc,
+        public readonly int                 $scheduleDayId,
+        public readonly int                 $eventTypeId,
+        public readonly \DateTimeImmutable  $date,
+        public readonly bool                $isDeleted,
+        public readonly ?\DateTimeImmutable $deletedAtUtc,
     ) {
     }
 
@@ -33,10 +33,10 @@ class ScheduleDay
     public static function fromRow(array $row): self
     {
         return new self(
-            scheduleDayId: (int) $row['ScheduleDayId'],
-            eventTypeId: (int) $row['EventTypeId'],
+            scheduleDayId: (int)$row['ScheduleDayId'],
+            eventTypeId: (int)$row['EventTypeId'],
             date: new \DateTimeImmutable($row['Date']),
-            isDeleted: (bool) $row['IsDeleted'],
+            isDeleted: (bool)$row['IsDeleted'],
             deletedAtUtc: isset($row['DeletedAtUtc']) ? new \DateTimeImmutable($row['DeletedAtUtc']) : null,
         );
     }

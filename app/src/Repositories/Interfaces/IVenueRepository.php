@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-/**
- * Interface for Venue repository.
- */
+use App\Models\Venue;
+use App\Models\VenueFilter;
+
 interface IVenueRepository
 {
     /**
-     * Returns all active venues.
-     *
-     * @return array Array of Venue data
+     * @return Venue[]
      */
-    public function findAllActive(): array;
+    public function findVenues(VenueFilter $filter = new VenueFilter()): array;
+
+    public function create(string $name, string $addressLine, string $city = 'Haarlem'): int;
 }
