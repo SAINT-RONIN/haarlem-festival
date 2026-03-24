@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 /**
- * Defines persistence operations for individual line items within an order.
+ * Contract for managing order line items. Each item links to exactly one purchasable
+ * entity (event session, history tour, or pass) via mutually exclusive nullable foreign keys.
  */
 interface IOrderItemRepository
 {

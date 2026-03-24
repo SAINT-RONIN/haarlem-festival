@@ -7,7 +7,8 @@ namespace App\Repositories\Interfaces;
 use App\Models\MediaAsset;
 
 /**
- * Interface for MediaAsset repository operations.
+ * Contract for CRUD operations on uploaded media files (images, documents).
+ * Also supports linking assets to CMS content items.
  */
 interface IMediaAssetRepository
 {

@@ -8,10 +8,13 @@ use App\Enums\UserRoleId;
 use App\Services\Interfaces\ISessionService;
 
 /**
- * Service for managing PHP sessions.
+ * Centralised wrapper around PHP's native session handling.
  *
- * Handles session lifecycle, user login state, and role-based access checks.
- * All session operations are centralized here for consistency and security.
+ * Owns session lifecycle (start/destroy), authenticated-user state (userId + roleId),
+ * flash messages (single-read values for post-redirect-get), and per-scope CSRF
+ * tokens (timing-safe comparison). Controllers and middleware use this instead of
+ * touching $_SESSION directly, which keeps session key names consistent and
+ * security measures (session fixation prevention, cookie cleanup) in one place.
  */
 class SessionService implements ISessionService
 {
@@ -132,6 +135,7 @@ class SessionService implements ISessionService
         $value = $_SESSION[self::FLASH_KEY][$key] ?? null;
         unset($_SESSION[self::FLASH_KEY][$key]);
 
+        // Remove the flash container entirely when empty to keep $_SESSION clean
         if (($_SESSION[self::FLASH_KEY] ?? []) === []) {
             unset($_SESSION[self::FLASH_KEY]);
         }

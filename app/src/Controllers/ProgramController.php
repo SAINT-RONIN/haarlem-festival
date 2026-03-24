@@ -153,6 +153,7 @@ class ProgramController extends BaseController
         }
     }
 
+    /** Re-fetches program data to return freshly calculated subtotal, tax, and total after a mutation. */
     private function respondJsonWithTotals(string $sessionKey, ?int $userId): void
     {
         $programData = $this->programService->getProgramData($sessionKey, $userId);
@@ -167,6 +168,7 @@ class ProgramController extends BaseController
         ]);
     }
 
+    /** Ensures a PHP session exists and returns its ID, used as the anonymous cart key. */
     private function getSessionKey(): string
     {
         $this->sessionService->start();

@@ -8,7 +8,8 @@ use App\Exceptions\ValidationException;
 use App\Models\MediaAsset;
 
 /**
- * Interface for Media asset service.
+ * Contract for media asset CRUD: uploading images (with validation and physical file storage),
+ * linking them to CMS content items, and exposing validation limits for client-side checks.
  */
 interface IMediaAssetService
 {

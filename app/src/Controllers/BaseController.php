@@ -147,6 +147,7 @@ abstract class BaseController
 
     /**
      * @return array<string,mixed>
+     * @throws \InvalidArgumentException if the body is missing, unparseable, or not a JSON object
      */
     protected function readJsonBody(): array
     {

@@ -12,8 +12,10 @@ use App\Services\Interfaces\ISessionService;
 /**
  * CMS controller for viewing customer orders.
  *
- * Provides a read-only list of orders with optional status filtering
- * for admin review and support purposes.
+ * Provides a read-only list of orders with optional payment-status filtering
+ * for admin review and support purposes. Intentionally read-only: order
+ * mutations (payment confirmation, refunds) happen through the payment
+ * provider webhooks, not through this controller.
  */
 class CmsOrdersController extends CmsBaseController
 {

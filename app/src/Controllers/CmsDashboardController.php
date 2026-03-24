@@ -16,12 +16,18 @@ use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsPageEditViewModel;
 
 /**
- * Controller for the CMS Dashboard.
+ * Controller for the CMS Dashboard, page listing, and inline page editor.
  *
- * HTTP orchestration only:
- * - auth checks
- * - service calls
- * - selecting views / redirects / response codes
+ * Manages three main flows:
+ * 1. Dashboard overview — recent pages and activity log.
+ * 2. Pages list — searchable CMS page inventory.
+ * 3. Page edit — section-level content editing with AJAX image upload.
+ *
+ * Image uploads support two modes: linking an existing media-library asset
+ * or uploading a new file (which creates the asset and links it in one step).
+ *
+ * Uses extract() for view rendering to keep view files decoupled from
+ * controller internals (variables appear as locals in the template).
  */
 class CmsDashboardController extends CmsBaseController
 {
@@ -165,8 +171,12 @@ class CmsDashboardController extends CmsBaseController
     }
 
     /**
-     * Handles page content update.
+     * Handles page content update via a three-step validation pipeline:
+     * CSRF check -> items presence check -> persist and redirect.
+     * Each step short-circuits with a redirect if validation fails.
      * POST /cms/pages/{id}/edit
+     *
+     * @throws CmsEditException Caught internally; redirects with error flash.
      */
     public function update(string $id): void
     {
@@ -236,8 +246,12 @@ class CmsDashboardController extends CmsBaseController
     }
 
     /**
-     * Handles image upload via AJAX.
+     * Handles image upload via AJAX for the page editor's image sections.
+     * Supports two flows: linking an existing media-library asset by ID,
+     * or uploading a brand-new file (multipart form data).
      * POST /cms/pages/{id}/upload-image
+     *
+     * @throws CmsEditException Caught internally; returns JSON error.
      */
     public function uploadImage(string $id): void
     {

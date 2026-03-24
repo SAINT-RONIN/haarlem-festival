@@ -21,6 +21,13 @@ use App\ViewModels\Cms\CmsScheduleDaysViewModel;
  *
  * Handles full event CRUD, session (time-slot) management, label assignment,
  * per-session pricing, venue creation, and schedule-day visibility toggles.
+ *
+ * Events own Sessions (bookable time-slots), each session can carry Labels
+ * (e.g. "Sold Out") and per-tier Prices (Adult, Child, etc.). The schedule-day
+ * feature controls which days appear on the public schedule for each event type.
+ *
+ * Collaborates with ICmsArtistsService and ICmsRestaurantsService because the
+ * event edit form needs artist/restaurant dropdowns for Jazz and Dining events.
  */
 class CmsEventsController extends CmsBaseController
 {
@@ -76,13 +83,17 @@ class CmsEventsController extends CmsBaseController
     }
 
     /**
-     * Validates and persists a new event, then redirects to its edit page.
+     * Validates and persists a new event, then redirects to its edit page
+     * so the admin can immediately add sessions and pricing.
      * POST /cms/events
+     *
+     * @throws ValidationException Redirects with error flash on validation failure.
      */
     public function store(): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
+            // Raw $_POST is passed to the service which handles extraction and validation
             $eventId = $this->eventsService->createEvent($_POST);
             $this->redirectWithFlash('Event created successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
@@ -234,7 +245,11 @@ class CmsEventsController extends CmsBaseController
 
     /**
      * Creates a new venue via AJAX and returns the new venue ID as JSON.
+     * Called from the event-create form's inline "add venue" modal so the admin
+     * doesn't have to leave the page.
      * POST /cms/venues
+     *
+     * @throws ValidationException Returns 400 JSON on validation failure.
      */
     public function createVenue(): void
     {
@@ -289,8 +304,12 @@ class CmsEventsController extends CmsBaseController
     }
 
     /**
-     * Toggles a specific day's visibility on the public schedule (global or per event type).
+     * Toggles a specific day's visibility on the public schedule.
+     * Can be global (all event types) or scoped to a single event type,
+     * depending on whether EventTypeId is posted as 0/null or a real ID.
      * POST /cms/schedule-days
+     *
+     * @throws ValidationException Redirects with error flash on validation failure.
      */
     public function toggleScheduleDay(): void
     {
@@ -364,6 +383,7 @@ class CmsEventsController extends CmsBaseController
         );
     }
 
+    /** Defaults to the Adult price tier if none is specified in the form. */
     private function handleSetPrice(int $sessionId, int $eventId): void
     {
         $priceTierId = (int)($_POST['PriceTierId'] ?? PriceTierId::Adult->value);
@@ -371,6 +391,10 @@ class CmsEventsController extends CmsBaseController
         $this->redirectWithFlash('Price updated successfully.', 'success', "/cms/events/{$eventId}/edit");
     }
 
+    /**
+     * Session/label/price forms include a hidden EventId field so the controller
+     * can redirect back to the correct event edit page after the action.
+     */
     private function getEventIdFromPost(): int
     {
         return (int)($_POST['EventId'] ?? 0);

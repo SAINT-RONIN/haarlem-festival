@@ -41,7 +41,9 @@ class StorytellingDetailService implements IStorytellingDetailService
 
     /**
      * Assembles the full domain payload for a storytelling event detail page.
-     * The reason for this is because all repository calls and resolution logic must stay in the service so the controller stays thin and the mapper receives a ready-to-use model.
+     *
+     * Centralises all repository calls and resolution logic so the controller
+     * stays thin and the mapper receives a ready-to-use model.
      *
      * @throws StorytellingEventNotFoundException if the event is not found or slug is invalid
      */
@@ -108,8 +110,8 @@ class StorytellingDetailService implements IStorytellingDetailService
     }
 
     /**
-     * Resolves the file path for the event's featured image asset.
-     * The reason for this is because the image asset ID stored on the event must be converted to a path before the mapper can use it.
+     * Converts the event's featured image asset ID into a file path
+     * that the mapper can use for rendering.
      */
     private function fetchFeaturedImagePath(StorytellingDetailEvent $event): ?string
     {
@@ -123,8 +125,11 @@ class StorytellingDetailService implements IStorytellingDetailService
     }
 
     /**
-     * Returns the best available about-section body text, falling back from CMS to event descriptions.
-     * The reason for this is because content editors may not always fill the CMS field, so the service provides a sensible fallback chain before the mapper receives the data.
+     * Returns the best available about-section body text.
+     *
+     * Fallback chain: CMS aboutBody -> longDescriptionHtml -> shortDescription.
+     * Content editors don't always fill the CMS field, so the service provides
+     * a sensible default before the mapper receives the data.
      */
     private function resolveAboutBody(StorytellingEventCmsData $cms, StorytellingDetailEvent $event): string
     {
@@ -136,7 +141,9 @@ class StorytellingDetailService implements IStorytellingDetailService
 
     /**
      * Fetches label texts for the first active session of an event.
-     * The reason for this is because labels (e.g. "English", "Beginner") live on sessions, not on the event itself, so they must be fetched separately and attached to the page payload.
+     *
+     * Labels (e.g. "English", "Beginner") live on sessions, not on the event
+     * itself, so they must be fetched separately and attached to the page payload.
      *
      * @return string[]
      */

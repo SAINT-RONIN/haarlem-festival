@@ -30,7 +30,9 @@ class StorytellingService implements IStorytellingService
 
     /**
      * Fetches all CMS sections needed to render the storytelling overview page.
-     * The reason for this is because the service is the only layer allowed to call repositories and assemble the raw domain payload the mapper will later format.
+     *
+     * The service layer is the only place allowed to call repositories;
+     * the returned payload is passed to the mapper layer for UI formatting.
      */
     public function getStorytellingPageData(): StorytellingPageData
     {

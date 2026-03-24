@@ -11,7 +11,9 @@ use App\Models\JazzArtistDetailEvent;
 use App\Models\StorytellingDetailEvent;
 
 /**
- * Defines persistence operations for festival events.
+ * Contract for CRUD operations on the Event table. Supports filtered listing with
+ * joined Venue/EventType data, slug-based lookups for public Jazz and Storytelling
+ * detail pages, and soft-delete for deactivation without losing historical data.
  */
 interface IEventRepository
 {

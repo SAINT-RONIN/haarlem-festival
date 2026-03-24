@@ -8,42 +8,37 @@ use App\Models\EventSessionPrice;
 use App\Models\EventSessionRelatedFilter;
 
 /**
- * Interface for EventSessionPrice repository operations.
+ * Contract for managing per-session pricing by tier (e.g. standard, VIP, pay-what-you-like).
+ * Each price row links a session to a price tier with an amount, currency, and VAT rate.
+ * Supports bulk lookup keyed by session ID for efficiently hydrating session listings.
  */
 interface IEventSessionPriceRepository
 {
     /**
-     * Find prices using optional filters.
+     * Retrieves prices with optional filtering by session ID.
      *
      * @return EventSessionPrice[]
      */
     public function findPrices(EventSessionRelatedFilter $filters = new EventSessionRelatedFilter()): array;
 
     /**
-     * Find prices grouped by session ID for a set of session IDs.
+     * Batch-fetches prices for multiple sessions in one query, grouped by session ID.
+     * Used to efficiently attach price data when rendering session lists.
      *
      * @param int[] $sessionIds
-     * @return array<int, EventSessionPrice[]>
+     * @return array<int, EventSessionPrice[]> Keyed by EventSessionId.
      */
     public function findPricesBySessionIds(array $sessionIds): array;
 
     /**
-     * Create or update a price for a session and tier.
-     *
-     * @param int $sessionId
-     * @param int $priceTierId
-     * @param float $price
-     * @param string $currencyCode
-     * @return bool Success status
+     * Creates or updates a price entry for a session+tier combination. New rows
+     * default to 21% VAT. Uses the composite key (EventSessionId, PriceTierId)
+     * to determine whether to insert or update.
      */
     public function upsert(int $sessionId, int $priceTierId, float $price, string $currencyCode = 'EUR'): bool;
 
     /**
-     * Delete a price by session and tier.
-     *
-     * @param int $sessionId
-     * @param int $priceTierId
-     * @return bool Success status
+     * Removes a specific price tier from a session (e.g. when an admin removes VIP pricing).
      */
     public function deleteBySessionAndTier(int $sessionId, int $priceTierId): bool;
 }

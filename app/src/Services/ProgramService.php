@@ -181,6 +181,11 @@ class ProgramService implements IProgramService
         );
     }
 
+    /**
+     * Guards against cross-user item manipulation by confirming the item belongs to the caller's active program.
+     *
+     * @throws \InvalidArgumentException When the program doesn't exist or the item isn't in it
+     */
     private function verifyItemOwnership(string $sessionKey, ?int $userAccountId, int $programItemId): void
     {
         $program = $this->findActiveProgram($sessionKey, $userAccountId);
@@ -379,6 +384,7 @@ class ProgramService implements IProgramService
             }
         }
 
+        // PWYL events have no fixed base price; donation covers the amount
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
                 return 0.0;

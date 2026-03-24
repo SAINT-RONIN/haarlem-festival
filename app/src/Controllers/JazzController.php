@@ -19,8 +19,15 @@ use App\Controllers\Support\ControllerErrorResponder;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
- * Serves the Jazz event listing page and individual artist detail pages,
- * including schedule sections with day/time/venue filtering.
+ * Public-facing controller for the Jazz festival section.
+ *
+ * Serves the Jazz event listing page (all artists + filterable schedule)
+ * and individual artist detail pages (bio + that artist's performances).
+ *
+ * Schedule data is fetched via IScheduleService which applies CMS-configured
+ * day visibility rules and optional query-string filters (day, time range,
+ * price type, venue). The schedule is scoped to EventTypeId::Jazz so only
+ * jazz events appear.
  */
 class JazzController extends BaseController
 {
@@ -75,15 +82,18 @@ class JazzController extends BaseController
         }
     }
 
+    /** Loads artist data by slug and their scheduled performances, then renders the detail view. */
     private function renderDetailPage(string $slug): void
     {
         $pageData = $this->jazzArtistDetailService->getArtistPageDataBySlug($slug);
+        // Fetch schedule scoped to this specific artist's event, so only their performances show
         $scheduleData = $this->scheduleService->getScheduleData(
             JazzArtistDetailConstants::SCHEDULE_PAGE_SLUG,
             EventTypeId::Jazz->value,
             ScheduleConstants::MAX_DAYS,
             $pageData->eventId,
         );
+        // Flatten day-grouped schedule into a flat list of performance view-models for the detail layout
         $performances = ScheduleMapper::flattenEventsAsViewModels($scheduleData);
         $viewModel = JazzMapper::toArtistDetailViewModel($pageData, $performances);
         $this->renderView(__DIR__ . '/../Views/pages/jazz-artist-detail.php', $viewModel);

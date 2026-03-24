@@ -15,7 +15,12 @@ use App\ViewModels\Cms\CmsMediaLibraryViewModel;
  * CMS controller for the media asset library.
  *
  * Handles browsing, uploading, and deleting image assets used across
- * the festival site. Provides both page-rendered and JSON endpoints.
+ * the festival site. Provides both page-rendered views (index) and JSON
+ * endpoints (upload, delete, list) consumed by AJAX pickers in the
+ * page editor and event forms.
+ *
+ * Media assets are context-tagged (currently all "cms") so they can be
+ * filtered or scoped in the future.
  */
 class CmsMediaController extends CmsBaseController
 {
@@ -78,7 +83,8 @@ class CmsMediaController extends CmsBaseController
     }
 
     /**
-     * Returns all media assets as a JSON array for use by client-side pickers.
+     * Returns all media assets as a JSON array for use by client-side pickers
+     * (e.g. the image-selection modal in the page editor).
      * GET /cms/media/list
      */
     public function list(): void
@@ -87,6 +93,7 @@ class CmsMediaController extends CmsBaseController
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $allAssets = $this->mediaAssetService->getAllAssets();
+            // Reuses CmsEventsMapper for JSON serialization — shared DTO shape across media consumers
             $data = array_map([CmsEventsMapper::class, 'toMediaJsonData'], $allAssets);
             echo json_encode(['success' => true, 'assets' => $data]);
         } catch (\Throwable $e) {

@@ -13,10 +13,14 @@ use App\Services\Interfaces\IAuthService;
 use App\Utils\PasswordHasher;
 
 /**
- * Service for authentication business logic.
+ * Owns all credential-related business logic: login (customer + admin), new-account
+ * registration with field-level validation, and the full password-reset flow
+ * (token generation, token validation, password update).
  *
- * Handles login validation, registration, and password reset flows.
- * All password hashing uses Argon2id via PasswordHasher utility.
+ * Security notes:
+ * - All password hashing uses Argon2id via PasswordHasher.
+ * - Login and reset endpoints return generic errors to prevent account enumeration.
+ * - Reset tokens are SHA-256 hashed before storage; only the raw token travels via email.
  */
 class AuthService implements IAuthService
 {
@@ -186,6 +190,7 @@ class AuthService implements IAuthService
 
         // If user exists, create token and send email
         if ($user !== null) {
+            // Generate a CSPRNG token; only the SHA-256 hash is persisted (the raw token travels via email)
             $rawToken = bin2hex(random_bytes(32));
             $tokenHash = hash('sha256', $rawToken);
             $expiresAt = new \DateTimeImmutable('+' . self::RESET_TOKEN_EXPIRY_HOURS . ' hour');

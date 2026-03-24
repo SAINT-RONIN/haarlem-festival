@@ -57,7 +57,8 @@ class ScheduleApiController extends BaseController
     }
 
     /**
-     * @throws SchedulePageNotFoundException
+     * Maps a URL slug to event-type-specific configuration. New event types require a new case here.
+     * @throws SchedulePageNotFoundException if the slug doesn't match any known event page
      */
     private function resolveConfig(string $pageSlug): ScheduleRouteConfig
     {

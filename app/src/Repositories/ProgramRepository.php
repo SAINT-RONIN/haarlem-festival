@@ -111,6 +111,7 @@ class ProgramRepository implements IProgramRepository
      *
      * @param string $sessionKey Browser session identifier for anonymous users.
      * @param int|null $userAccountId Null for guest users, set for authenticated users.
+     * @throws \RuntimeException If the inserted row cannot be read back.
      */
     public function createProgram(string $sessionKey, ?int $userAccountId): Program
     {
@@ -138,6 +139,8 @@ class ProgramRepository implements IProgramRepository
     /**
      * Adds an event session to the program cart and returns the newly created item
      * with server-generated fields populated.
+     *
+     * @throws \RuntimeException If the inserted row cannot be read back.
      */
     public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {

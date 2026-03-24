@@ -8,12 +8,13 @@ use App\Models\EventType;
 use App\Models\EventTypeFilter;
 
 /**
- * Interface for EventType repository.
+ * Contract for accessing the EventType lookup table. Event types categorise festival
+ * events (e.g. "Jazz", "Dance", "Food") and are referenced by Event rows and schedule config.
  */
 interface IEventTypeRepository
 {
     /**
-     * Returns event types using optional filters.
+     * Retrieves event types with optional ID filter and configurable sort order.
      *
      * @return EventType[]
      */

@@ -11,16 +11,15 @@ use App\Models\GroupedScheduleDayConfigs;
 use App\Models\ScheduleDaysPageData;
 
 /**
- * Interface for CMS Events management service.
+ * Contract for CMS event lifecycle: CRUD for events, sessions, labels, and prices,
+ * plus schedule day visibility management and composite page-data assembly.
  */
 interface ICmsEventsService
 {
     /**
-     * Gets all events with details for listing.
+     * Returns active events enriched with session counts, for the CMS events list.
      *
-     * @param int|null $eventTypeId Filter by event type
-     * @param string|null $dayOfWeek Filter by day
-     * @return array Events with details
+     * @return \App\Models\Event[]
      */
     public function getAllEventsWithDetails(?int $eventTypeId = null, ?string $dayOfWeek = null): array;
 
@@ -99,7 +98,9 @@ interface ICmsEventsService
     public function updateSession(int $sessionId, array $data): bool;
 
     /**
-     * Deletes an event session.
+     * Hard-deletes an event session. Blocked if tickets have been sold for this session.
+     *
+     * @throws ValidationException
      */
     public function deleteSession(int $sessionId): bool;
 
@@ -123,7 +124,7 @@ interface ICmsEventsService
     public function setSessionPrice(int $sessionId, int $priceTierId, string $rawPrice): bool;
 
     /**
-     * Deletes an event (soft delete).
+     * Soft-deletes an event and cascades deactivation to all its sessions.
      *
      * @throws ValidationException
      */
@@ -147,7 +148,10 @@ interface ICmsEventsService
     public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
 
     /**
-     * Gets visible days for an event type.
+     * Returns the day-of-week numbers visible for a given event type,
+     * merging global defaults with type-specific overrides.
+     *
+     * @return int[] Day numbers (0=Sunday through 6=Saturday)
      */
     public function getVisibleDays(?int $eventTypeId = null): array;
 }

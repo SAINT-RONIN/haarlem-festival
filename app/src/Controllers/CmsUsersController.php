@@ -15,6 +15,8 @@ use App\Services\Interfaces\ISessionService;
  *
  * Handles listing (with role/search/sort filters), creating, editing,
  * and soft-deleting user accounts through the admin panel.
+ * Includes a safety guard preventing admins from deactivating their own account.
+ * Password is required on create but optional on update (empty = keep current).
  */
 class CmsUsersController extends CmsBaseController
 {
@@ -114,9 +116,10 @@ class CmsUsersController extends CmsBaseController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
+            // Per-user CSRF scope prevents token reuse across different edit forms
             $this->validateCsrf('cms_user_edit_' . $id, '/cms/users/' . $id . '/edit');
             $data   = $this->extractUserFormData();
-            // Re-render the form with errors if validation fails
+            // Empty password string is coerced to null so the service preserves the existing hash
             $errors = $this->usersService->validateForUpdate($id, $data['username'], $data['email'], $data['password'] ?: null, $data['firstName'], $data['lastName']);
             if (!empty($errors)) {
                 $this->renderEditForm($id, $data['username'], $data['email'], $data['firstName'], $data['lastName'], $data['roleId'], $errors);

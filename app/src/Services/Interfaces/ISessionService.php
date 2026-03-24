@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 /**
- * Interface for Session management service.
+ * Contract for PHP session lifecycle, user authentication state, flash messages,
+ * and per-scope CSRF token management. All session reads/writes go through this
+ * interface so controllers never touch $_SESSION directly.
  */
 interface ISessionService
 {

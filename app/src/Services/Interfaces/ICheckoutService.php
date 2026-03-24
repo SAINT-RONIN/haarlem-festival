@@ -7,7 +7,9 @@ namespace App\Services\Interfaces;
 use App\Models\ProgramData;
 
 /**
- * Defines the contract for the checkout and payment processing workflow.
+ * Contract for the full checkout lifecycle: creating Stripe-backed checkout sessions,
+ * handling user cancellations, processing Stripe webhook callbacks, and retrieving
+ * session summaries for confirmation pages.
  */
 interface ICheckoutService
 {

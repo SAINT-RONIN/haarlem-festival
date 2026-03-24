@@ -12,9 +12,12 @@ use App\Services\Interfaces\IMediaAssetService;
 use App\Utils\CmsContentLimits;
 
 /**
- * Service for handling media asset operations.
+ * Manages the full lifecycle of uploaded media assets (images).
  *
- * Manages image uploads, validation, and storage.
+ * Handles validation (MIME type, file size, dimensions via CmsContentLimits),
+ * physical file storage under /assets/Image/{folder}/, database record creation
+ * via IMediaAssetRepository, and cleanup (file + record) on deletion.
+ * Also exposes validation limits so the admin frontend can mirror them client-side.
  */
 class MediaAssetService implements IMediaAssetService
 {

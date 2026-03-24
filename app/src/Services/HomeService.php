@@ -25,10 +25,12 @@ use App\Services\Interfaces\IHomeService;
 use App\Constants\HomeUiConfig;
 
 /**
- * Service for preparing homepage data.
+ * Assembles all data needed to render the festival homepage into a single HomePageData object.
  *
- * Returns plain arrays with raw data.
- * Mapping to ViewModels happens in HomeMapper.
+ * Combines five data sources: CMS key-value content, hero/global-UI sections,
+ * event-type showcase cards (ordered by HomeUiConfig), venue + restaurant map
+ * locations, and a schedule preview limited to the next 4 days of active sessions.
+ * Returns raw domain data only -- view model mapping happens in HomeMapper.
  */
 class HomeService implements IHomeService
 {

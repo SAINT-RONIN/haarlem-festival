@@ -145,6 +145,7 @@ class CheckoutController extends BaseController
         }
     }
 
+    /** Returns the PHP session ID, which doubles as the anonymous cart identifier. */
     private function getSessionKey(): string
     {
         return $this->sessionService->getSessionId();
@@ -155,6 +156,9 @@ class CheckoutController extends BaseController
         return $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
     }
 
+    /**
+     * @throws CheckoutException if no user is logged in
+     */
     private function requireAuthenticatedUserId(): int
     {
         $userId = $this->getLoggedInUserId();

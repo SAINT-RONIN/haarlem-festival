@@ -7,7 +7,8 @@ namespace App\Repositories\Interfaces;
 use App\Models\ScheduleDayConfigFilter;
 
 /**
- * Interface for ScheduleDayConfig repository.
+ * Contract for managing per-day visibility settings on the public schedule.
+ * Configs can be global (all event types) or scoped to a specific event type.
  */
 interface IScheduleDayConfigRepository
 {

@@ -9,7 +9,10 @@ use App\Repositories\Interfaces\ICmsOrdersRepository;
 use App\Services\Interfaces\ICmsOrdersService;
 
 /**
- * Service for the CMS Orders list page.
+ * CMS-side order management: read-only listing with joined user, item, and payment data.
+ *
+ * Delegates entirely to the orders repository; exists so controllers depend on a
+ * service interface rather than a repository directly.
  */
 class CmsOrdersService implements ICmsOrdersService
 {

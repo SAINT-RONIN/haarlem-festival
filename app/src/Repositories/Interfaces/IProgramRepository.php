@@ -30,11 +30,15 @@ interface IProgramRepository
 
     /**
      * Creates a new program for a session key and optional user, returning the Program model.
+     *
+     * @throws \RuntimeException If the inserted row cannot be read back.
      */
     public function createProgram(string $sessionKey, ?int $userAccountId): Program;
 
     /**
      * Adds a line item to a program and returns the created ProgramItem.
+     *
+     * @throws \RuntimeException If the inserted row cannot be read back.
      */
     public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem;
 

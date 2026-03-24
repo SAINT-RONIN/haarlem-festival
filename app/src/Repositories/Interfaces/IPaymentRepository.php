@@ -8,7 +8,9 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 
 /**
- * Defines persistence operations for payment records linked to orders.
+ * Contract for managing payment records linked to orders. Each order can have one
+ * payment record tracking its Stripe checkout session/payment intent. Supports
+ * conditional status transitions to safely handle concurrent webhook deliveries.
  */
 interface IPaymentRepository
 {
@@ -38,8 +40,9 @@ interface IPaymentRepository
     public function updateProviderRef(int $paymentId, string $providerRef): void;
 
     /**
-     * Updates payment status only when its current status is in the allowed list.
-     * Also clears PaidAtUtc when the new status is not Paid.
+     * Atomically transitions payment status only if the current status is in the allowed set.
+     * Automatically sets PaidAtUtc to now when transitioning to Paid. Prevents invalid
+     * transitions when webhooks and expiration jobs race against each other.
      *
      * @param PaymentStatus[] $allowedCurrentStatuses
      */

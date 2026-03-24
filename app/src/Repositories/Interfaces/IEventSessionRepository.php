@@ -9,7 +9,9 @@ use App\Models\ScheduleDayData;
 use App\Models\SessionQueryResult;
 
 /**
- * Defines persistence operations for event sessions (time slots).
+ * Contract for managing event sessions (individual bookable time slots within an event).
+ * Supports heavily-filtered queries with joins to Event, EventType, Venue, and Artist,
+ * plus day-grouped results for the public schedule UI.
  */
 interface IEventSessionRepository
 {

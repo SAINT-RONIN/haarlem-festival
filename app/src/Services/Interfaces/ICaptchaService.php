@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 /**
- * Interface for Captcha verification service.
+ * Contract for CAPTCHA verification on public forms (registration, contact, etc.).
+ * When keys are not configured (development), verification is silently bypassed.
  */
 interface ICaptchaService
 {

@@ -254,13 +254,10 @@ class ScheduleService implements IScheduleService
     }
 
     /**
-     * Builds a plain event card array from session data.
-     *
-     * @return array<string, mixed>
-     */
-    /**
      * Assembles a single event card array by resolving age range, labels,
      * pricing, and CTA for one session.
+     *
+     * @return array<string, mixed>
      */
     private function buildEventCard(
         \App\Models\SessionWithEvent $session,
@@ -334,6 +331,8 @@ class ScheduleService implements IScheduleService
     }
 
     /**
+     * Assembles the final associative array representing one event card in the schedule grid.
+     *
      * @return array<string, mixed>
      */
     private function buildCardArray(
