@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\CmsItemFilter;
+use App\Models\CmsPageFilter;
 use App\Repositories\CmsRepository;
 use App\Services\Interfaces\IDanceService;
 
@@ -40,14 +42,15 @@ final class DanceService implements IDanceService
             ],
         ];
 
-        $page = $this->cmsRepository->getPageBySlug('dance');
+        $pages = $this->cmsRepository->findPages(new CmsPageFilter(slug: 'dance'));
+        $page = $pages[0] ?? null;
 
         if ($page !== null) {
-            $pageId = $page->CmsPageId;
+            $pageId = $page->cmsPageId;
 
-            $heroItems = $this->mapItemsByKey($this->cmsRepository->getItemsBySectionKey($pageId, 'hero_section'));
-            $gradientItems = $this->mapItemsByKey($this->cmsRepository->getItemsBySectionKey($pageId, 'gradient_section'));
-            $introItems = $this->mapItemsByKey($this->cmsRepository->getItemsBySectionKey($pageId, 'intro_split_section'));
+            $heroItems = $this->mapItemsByKey($this->cmsRepository->findItems(new CmsItemFilter(cmsPageId: $pageId, sectionKey: 'hero_section')));
+            $gradientItems = $this->mapItemsByKey($this->cmsRepository->findItems(new CmsItemFilter(cmsPageId: $pageId, sectionKey: 'gradient_section')));
+            $introItems = $this->mapItemsByKey($this->cmsRepository->findItems(new CmsItemFilter(cmsPageId: $pageId, sectionKey: 'intro_split_section')));
 
             $fallback['hero'] = [
                 'title' => $heroItems['hero_main_title'] ?? $fallback['hero']['title'],
@@ -95,13 +98,13 @@ final class DanceService implements IDanceService
         $mapped = [];
 
         foreach ($items as $item) {
-            $itemKey = $item->ItemKey ?? null;
+            $itemKey = $item->itemKey ?? null;
 
             if (!is_string($itemKey) || $itemKey === '') {
                 continue;
             }
 
-            $value = $item->TextValue ?? $item->HtmlValue ?? null;
+            $value = $item->textValue ?? $item->htmlValue ?? null;
 
             if ($value !== null) {
                 $mapped[$itemKey] = (string) $value;
