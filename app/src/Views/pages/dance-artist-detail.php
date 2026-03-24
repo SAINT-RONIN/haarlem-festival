@@ -3,118 +3,120 @@
  * @var array<string, mixed> $viewModel
  */
 
-$heroData = $viewModel['heroData'] ?? [];
-$globalUi = $viewModel['globalUi'] ?? [];
-$gradientSection = $viewModel['gradientSection'] ?? [];
-$introSplitSection = $viewModel['introSplitSection'] ?? [];
-$artists = $viewModel['artists'] ?? [];
+$artist = $viewModel;
 
 $currentPage = 'dance';
 $includeNav = false;
 
 $cms = [
-    'hero_section' => [
-        'hero_main_title' => $heroData['mainTitle'] ?? 'HAARLEM DANCE',
-        'hero_subtitle' => $heroData['subtitle'] ?? '',
-        'hero_button_primary' => $heroData['primaryButtonText'] ?? 'Discover all performances',
-        'hero_button_primary_link' => $heroData['primaryButtonLink'] ?? '/dance#artists',
-        'hero_button_secondary' => $heroData['secondaryButtonText'] ?? 'What is Haarlem Dance?',
-        'hero_button_secondary_link' => $heroData['secondaryButtonLink'] ?? '/dance#about',
-        'hero_background_image' => $heroData['backgroundImageUrl'] ?? '/assets/Image/Image (Dance).png',
-    ],
-    'global_ui' => [
-        'site_name' => $globalUi['siteName'] ?? 'Haarlem Festival',
-        'nav_home' => $globalUi['navHome'] ?? 'Home',
-        'nav_jazz' => $globalUi['navJazz'] ?? 'Jazz',
-        'nav_dance' => $globalUi['navDance'] ?? 'Dance',
-        'nav_history' => $globalUi['navHistory'] ?? 'History',
-        'nav_restaurant' => $globalUi['navRestaurant'] ?? 'Restaurant',
-        'nav_storytelling' => $globalUi['navStorytelling'] ?? 'Storytelling',
-        'btn_my_program' => $globalUi['btnMyProgram'] ?? 'My Program',
-        'is_logged_in' => $globalUi['isLoggedIn'] ?? false,
-    ],
+        'global_ui' => [
+                'site_name' => 'Haarlem Festival',
+                'nav_home' => 'Home',
+                'nav_jazz' => 'Jazz',
+                'nav_dance' => 'Dance',
+                'nav_history' => 'History',
+                'nav_restaurant' => 'Restaurant',
+                'nav_storytelling' => 'Storytelling',
+                'btn_my_program' => 'My Program',
+                'is_logged_in' => false,
+        ],
 ];
 ?>
 <?php require __DIR__ . '/../partials/header.php'; ?>
 
     <main class="w-full bg-sand inline-flex flex-col justify-start items-center">
 
-        <?php require __DIR__ . '/../partials/hero.php'; ?>
-
-        <section class="w-full bg-white py-16 md:py-24">
+        <section class="w-full bg-white py-12 md:py-20">
             <div class="max-w-6xl mx-auto px-6">
-                <div class="relative rounded-[32px] overflow-hidden min-h-[360px] md:min-h-[420px]">
-                    <img
-                        src="<?= htmlspecialchars($gradientSection['backgroundImageUrl'] ?? '/assets/Image/dance/banner.jpg') ?>"
-                        alt="Dance atmosphere"
-                        class="absolute inset-0 w-full h-full object-cover"
-                    >
-                    <div class="absolute inset-0 bg-black/50"></div>
+                <a href="/dance" class="text-rose-500 font-semibold mb-6 inline-block">← Back to home page</a>
 
-                    <div class="relative z-10 h-full flex flex-col justify-center px-8 md:px-16 py-12 text-white">
-                        <h2 class="text-4xl md:text-6xl font-extrabold leading-tight max-w-4xl mb-6">
-                            <?= htmlspecialchars($gradientSection['headingText'] ?? 'Every beat carries energy, movement, and connection beyond what is heard.') ?>
-                        </h2>
+                <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 mb-2">
+                    <?= htmlspecialchars($artist['name']) ?>
+                </h1>
 
-                        <p class="text-xl md:text-3xl leading-snug max-w-3xl">
-                            <?= htmlspecialchars($gradientSection['subheadingText'] ?? 'A place where dance is experienced, not just played.') ?>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
+                <p class="text-lg md:text-xl text-slate-600 font-semibold mb-8">
+                    <?= htmlspecialchars($artist['genre']) ?>
+                </p>
 
-        <section id="about" class="w-full bg-white py-16 md:py-24">
-            <div class="max-w-6xl mx-auto px-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+                <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
                     <div>
-                        <h2 class="text-[42px] md:text-[64px] font-extrabold leading-[0.95] text-slate-900 mb-8">
-                            <?= nl2br(htmlspecialchars($introSplitSection['headingText'] ?? 'Move to the rhythm of Haarlem Dance')) ?>
-                        </h2>
+                        <img
+                                src="<?= htmlspecialchars($artist['heroImage']) ?>"
+                                alt="<?= htmlspecialchars($artist['name']) ?>"
+                                class="w-full h-[360px] md:h-[430px] object-cover rounded-2xl"
+                        >
 
-                        <div class="text-lg md:text-2xl leading-9 text-slate-700 space-y-6">
-                            <?php
-                            $bodyText = $introSplitSection['bodyText'] ?? '';
-                            foreach (preg_split("/\n\s*\n/", trim((string) $bodyText)) as $paragraph):
-                                if ($paragraph === '') {
-                                    continue;
-                                }
-                                ?>
-                                <p><?= htmlspecialchars($paragraph) ?></p>
+                        <div class="grid grid-cols-3 gap-4 mt-4">
+                            <?php foreach ($artist['gallery'] as $image): ?>
+                                <img
+                                        src="<?= htmlspecialchars($image) ?>"
+                                        alt="<?= htmlspecialchars($artist['name']) ?>"
+                                        class="w-full h-24 md:h-28 object-cover rounded-xl"
+                                >
                             <?php endforeach; ?>
                         </div>
                     </div>
 
-                    <div>
-                        <img
-                            src="<?= htmlspecialchars($introSplitSection['imageUrl'] ?? '/assets/Image/dance/dance.jpg') ?>"
-                            alt="<?= htmlspecialchars($introSplitSection['imageAltText'] ?? 'Dance festival performance') ?>"
-                            class="w-full h-full max-h-[760px] object-cover rounded-[28px]"
-                        >
+                    <div class="grid gap-4">
+                        <?php foreach ($artist['videos'] as $videoLabel): ?>
+                            <div class="bg-white border rounded-xl shadow-sm p-3">
+                                <div class="w-full h-40 bg-slate-200 rounded-lg flex items-center justify-center text-slate-600 text-sm">
+                                    <?= htmlspecialchars($videoLabel) ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="artists" class="w-full py-20 bg-slate-50 text-slate-900">
+        <section class="w-full bg-slate-50 py-10">
             <div class="max-w-6xl mx-auto px-6">
-                <h2 class="text-4xl md:text-5xl font-bold mb-10">Featured Dance Artists</h2>
+                <h2 class="text-4xl font-extrabold text-slate-900 mb-6">CAREER HIGHLIGHTS</h2>
+
+                <div class="bg-white rounded-2xl shadow p-8">
+                    <ul class="list-disc pl-6 space-y-4 text-lg text-slate-700">
+                        <?php foreach ($artist['highlights'] as $highlight): ?>
+                            <li><?= htmlspecialchars($highlight) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="w-full bg-white py-10">
+            <div class="max-w-6xl mx-auto px-6">
+                <h2 class="text-4xl font-extrabold text-slate-900 mb-8">ESSENTIAL ALBUMS & EPS</h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <?php foreach ($artists as $artist): ?>
-                        <a href="/dance/<?= htmlspecialchars($artist['slug']) ?>" class="block bg-white rounded-3xl shadow hover:shadow-lg transition overflow-hidden">
+                    <?php foreach ($artist['albums'] as $album): ?>
+                        <div class="bg-slate-50 rounded-2xl shadow p-4">
                             <img
-                                src="<?= htmlspecialchars($artist['image']) ?>"
-                                alt="<?= htmlspecialchars($artist['name']) ?>"
-                                class="w-full h-80 object-cover"
+                                    src="<?= htmlspecialchars($album['image']) ?>"
+                                    alt="<?= htmlspecialchars($album['title']) ?>"
+                                    class="w-full h-80 object-cover rounded-xl mb-4"
                             >
+                            <h3 class="text-2xl font-bold text-slate-900">
+                                <?= htmlspecialchars($album['title']) ?>
+                            </h3>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </section>
 
-                            <div class="p-6">
-                                <h3 class="text-3xl font-bold mb-2"><?= htmlspecialchars($artist['name']) ?></h3>
-                                <p class="text-rose-500 font-semibold mb-4"><?= htmlspecialchars($artist['genre']) ?></p>
-                                <p class="text-slate-700 text-lg leading-7"><?= htmlspecialchars($artist['description']) ?></p>
-                            </div>
-                        </a>
+        <section class="w-full bg-slate-50 py-10">
+            <div class="max-w-6xl mx-auto px-6">
+                <h2 class="text-4xl font-extrabold text-slate-900 mb-8">FESTIVAL SCHEDULE & PRICES</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <?php foreach ($artist['schedule'] as $slot): ?>
+                        <div class="bg-white rounded-2xl shadow p-6">
+                            <p class="text-lg font-bold text-slate-900"><?= htmlspecialchars($slot['day']) ?></p>
+                            <p class="text-slate-700 mt-2"><?= htmlspecialchars($slot['time']) ?></p>
+                            <p class="text-slate-700"><?= htmlspecialchars($slot['venue']) ?></p>
+                            <p class="text-rose-500 font-semibold mt-4"><?= htmlspecialchars($slot['price']) ?></p>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             </div>

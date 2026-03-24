@@ -6,7 +6,7 @@ namespace App\Services\Interfaces;
 
 interface IDanceService
 {
-    public function getDancePageData(): array;
+    public function getPageData(): array;
 
     public function getArtistDetailBySlug(string $slug): ?array;
 }
