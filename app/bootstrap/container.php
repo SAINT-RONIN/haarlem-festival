@@ -238,6 +238,7 @@ return static function (string $controllerClass): object {
                 $orderRepo(),
                 $orderItemRepo(),
                 $paymentRepo(),
+                new EventSessionRepository(),
                 new StripeWebhookEventRepository(),
                 new StripeService(
                     (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),

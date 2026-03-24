@@ -8,6 +8,7 @@ use App\Enums\PriceTierId;
 use App\Infrastructure\Database;
 use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
+use App\Models\SessionCapacityInfo;
 use App\Models\SessionQueryResult;
 use App\Models\SessionWithEvent;
 use App\Helpers\FormatHelper;
@@ -462,5 +463,84 @@ class EventSessionRepository implements IEventSessionRepository
     {
         $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
         return $stmt->execute(['eventId' => $eventId]);
+    }
+
+    /**
+     * Returns the number of remaining seats for a session.
+     * Computes available = CapacityTotal - SoldSingleTickets - SoldReservedSeats.
+     */
+    public function getAvailableSeats(int $sessionId): int
+    {
+        // Remaining seats = total capacity minus all sold tickets (single + reserved)
+        $sql = 'SELECT (CapacityTotal - SoldSingleTickets - SoldReservedSeats) AS available
+                FROM EventSession
+                WHERE EventSessionId = :sessionId';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':sessionId' => $sessionId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? max(0, (int)$row['available']) : 0;
+    }
+
+    /**
+     * Atomically increments SoldSingleTickets for a session. The WHERE condition
+     * ensures the update only applies when enough capacity remains, preventing
+     * overselling under concurrent checkouts.
+     *
+     * @return bool True if the reservation succeeded, false if insufficient capacity.
+     */
+    public function decrementCapacity(int $sessionId, int $quantity): bool
+    {
+        // Atomic seat reservation — only succeeds if enough capacity remains
+        $sql = 'UPDATE EventSession
+                SET SoldSingleTickets = SoldSingleTickets + :quantity
+                WHERE EventSessionId = :sessionId
+                  AND (CapacityTotal - SoldSingleTickets - SoldReservedSeats) >= :quantityCheck';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':sessionId' => $sessionId,
+            ':quantity' => $quantity,
+            ':quantityCheck' => $quantity,
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Returns capacity and ticket-sale counts for a session.
+     * Used for pre-checkout validation including the single-ticket cap.
+     */
+    public function getCapacityInfo(int $sessionId): ?SessionCapacityInfo
+    {
+        // Fetch the capacity snapshot for a single session
+        $sql = 'SELECT EventSessionId, CapacityTotal, SoldSingleTickets, SoldReservedSeats
+                FROM EventSession
+                WHERE EventSessionId = :sessionId';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':sessionId' => $sessionId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row !== false ? SessionCapacityInfo::fromRow($row) : null;
+    }
+
+    /**
+     * Restores reserved capacity when an order is cancelled or expires.
+     * Decrements SoldSingleTickets by the given quantity.
+     */
+    public function restoreCapacity(int $sessionId, int $quantity): void
+    {
+        // Restore seats that were previously reserved for a cancelled/expired order
+        $sql = 'UPDATE EventSession
+                SET SoldSingleTickets = GREATEST(0, SoldSingleTickets - :quantity)
+                WHERE EventSessionId = :sessionId';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':sessionId' => $sessionId,
+            ':quantity' => $quantity,
+        ]);
     }
 }

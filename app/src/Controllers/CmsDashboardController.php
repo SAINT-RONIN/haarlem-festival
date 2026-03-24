@@ -302,6 +302,25 @@ class CmsDashboardController extends CmsBaseController
         $this->handleNewFileUpload($itemId);
     }
 
+    /**
+     * Handles TinyMCE inline image uploads where no CMS item needs linking.
+     * Uploads the file and returns the URL without updating any content item.
+     */
+    private function handleTinyMceUpload(): void
+    {
+        if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::NO_FILE_UPLOADED]);
+            return;
+        }
+
+        try {
+            $mediaAsset = $this->mediaAssetService->uploadImage($_FILES['image'], self::MEDIA_CONTEXT_CMS);
+            echo json_encode(['success' => true, 'filePath' => $mediaAsset->filePath]);
+        } catch (ValidationException $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
     /** Links an already-uploaded media asset to a page content item. */
     private function handleExistingAssetLink(int $itemId, int $mediaAssetId): void
     {
@@ -372,9 +391,20 @@ class CmsDashboardController extends CmsBaseController
 
     private function processUploadRequest(): void
     {
-        if (!$this->isUploadRequestValid()) {
+        // Validate CSRF token first for all upload types
+        $csrfToken = $_POST['csrf_token'] ?? null;
+        if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, is_string($csrfToken) ? $csrfToken : null)) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_CSRF]);
             return;
         }
+
+        // TinyMCE inline uploads send item_id=0 — upload only, no CMS item linking
+        $itemId = (int)($_POST['item_id'] ?? 0);
+        if ($itemId <= 0) {
+            $this->handleTinyMceUpload();
+            return;
+        }
+
         $this->dispatchUploadAction();
     }
 

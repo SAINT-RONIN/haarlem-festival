@@ -6,6 +6,7 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
+use App\Models\SessionCapacityInfo;
 use App\Models\SessionQueryResult;
 
 /**
@@ -48,4 +49,29 @@ interface IEventSessionRepository
      * Bulk-deactivates all sessions belonging to an event.
      */
     public function deactivateByEventId(int $eventId): bool;
+
+    /**
+     * Returns the number of remaining seats for a session (total capacity minus sold tickets).
+     * Used for availability display and pre-checkout validation.
+     */
+    public function getAvailableSeats(int $sessionId): int;
+
+    /**
+     * Returns capacity and ticket-sale counts for a session.
+     * Used for pre-checkout validation including the single-ticket cap.
+     */
+    public function getCapacityInfo(int $sessionId): ?SessionCapacityInfo;
+
+    /**
+     * Atomically increments SoldSingleTickets for a session. Uses a WHERE guard to prevent
+     * overselling: the UPDATE only succeeds if enough capacity remains. Returns true if the
+     * reservation succeeded, false if insufficient capacity.
+     */
+    public function decrementCapacity(int $sessionId, int $quantity): bool;
+
+    /**
+     * Restores reserved capacity when an order is cancelled or expires.
+     * Called during payment failure webhook or manual cancellation.
+     */
+    public function restoreCapacity(int $sessionId, int $quantity): void;
 }

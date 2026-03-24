@@ -124,4 +124,11 @@ $video = $viewModel->videoSection;
             </div>
         <?php endif; ?>
     </div>
+
+    <?php
+    // Social sharing buttons — placed below the video for discoverability
+    $shareUrl = rtrim((string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl'), '/') . $_SERVER['REQUEST_URI'];
+    $shareTitle = $viewModel->detailHero->title;
+    require __DIR__ . '/../sections/_social-share.php';
+    ?>
 </section>

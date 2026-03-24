@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\CheckoutConstraints;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Infrastructure\Interfaces\IStripeService;
 use App\Models\ProgramData;
+use App\Models\ProgramItemData;
+use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
@@ -33,6 +36,7 @@ class CheckoutService implements ICheckoutService
         private readonly IOrderRepository $orderRepository,
         private readonly IOrderItemRepository $orderItemRepository,
         private readonly IPaymentRepository $paymentRepository,
+        private readonly IEventSessionRepository $eventSessionRepository,
         private readonly IStripeWebhookEventRepository $webhookEventRepository,
         private readonly IStripeService $stripeService,
         private readonly ICheckoutRuntimeConfig $runtimeConfig,
@@ -71,6 +75,9 @@ class CheckoutService implements ICheckoutService
             throw new CheckoutException('Total amount must be greater than zero.');
         }
 
+        // Validate availability for every session before starting the checkout transaction
+        $this->validateItemAvailability($items);
+
         $appUrl = $this->runtimeConfig->getAppUrl();
         $orderId = 0;
         $paymentId = 0;
@@ -104,6 +111,24 @@ class CheckoutService implements ICheckoutService
                     vatRate: $this->toMoneyString($this->runtimeConfig->getVatRate() * 100),
                     donationAmount: $this->toMoneyString($item->donationAmount),
                 );
+            }
+
+            // Atomically reserve seats — prevents overselling under concurrent checkouts
+            foreach ($items as $item) {
+                if ($item->eventSessionId <= 0) {
+                    continue;
+                }
+
+                $reserved = $this->eventSessionRepository->decrementCapacity(
+                    $item->eventSessionId,
+                    $item->quantity,
+                );
+
+                if (!$reserved) {
+                    throw new CheckoutException(
+                        "Seats no longer available for '{$item->eventTitle}'. Please update your program."
+                    );
+                }
             }
 
             // Create a pending payment record before calling Stripe
@@ -181,6 +206,8 @@ class CheckoutService implements ICheckoutService
     public function handleCancel(?int $orderId, ?int $paymentId): array
     {
         if ($orderId !== null) {
+            // Restore reserved capacity for each session in the cancelled order
+            $this->restoreOrderCapacity($orderId);
             $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Cancelled, [OrderStatus::Pending]);
         }
 
@@ -262,7 +289,9 @@ class CheckoutService implements ICheckoutService
 
                 case 'checkout.session.expired':
                 case 'checkout.session.async_payment_failed':
+                    // Restore reserved capacity for expired/failed orders
                     if ($orderId !== null) {
+                        $this->restoreOrderCapacity($orderId);
                         $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
                     }
                     if ($paymentId !== null) {
@@ -351,6 +380,70 @@ class CheckoutService implements ICheckoutService
             PaymentMethod::Ideal => ['ideal'],
             default => ['card'],
         };
+    }
+
+    /**
+     * Validates that every session in the cart has enough capacity.
+     * Enforces sold-out prevention, quantity limits, and the 90% single-ticket cap.
+     *
+     * @param ProgramItemData[] $items
+     * @throws CheckoutException When any session lacks sufficient capacity
+     */
+    private function validateItemAvailability(array $items): void
+    {
+        foreach ($items as $item) {
+            if ($item->eventSessionId <= 0) {
+                continue;
+            }
+
+            $capacity = $this->eventSessionRepository->getCapacityInfo($item->eventSessionId);
+
+            if ($capacity === null) {
+                throw new CheckoutException("Session for '{$item->eventTitle}' no longer exists.");
+            }
+
+            $available = $capacity->getAvailableSeats();
+
+            // Block checkout if the session has no remaining seats
+            if ($available <= 0) {
+                throw new CheckoutException("'{$item->eventTitle}' is sold out.");
+            }
+
+            // Ensure requested quantity doesn't exceed available seats
+            if ($item->quantity > $available) {
+                throw new CheckoutException(
+                    "Only {$available} seats remaining for '{$item->eventTitle}'. You requested {$item->quantity}."
+                );
+            }
+
+            // Festival policy: reserve 10% of capacity for pass holders
+            $singleTicketCap = (int)floor($capacity->capacityTotal * CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO);
+
+            if (($capacity->soldSingleTickets + $item->quantity) > $singleTicketCap) {
+                $remaining = max(0, $singleTicketCap - $capacity->soldSingleTickets);
+                throw new CheckoutException(
+                    "Single-ticket limit reached for '{$item->eventTitle}'. "
+                    . ($remaining > 0
+                        ? "Only {$remaining} single tickets remaining."
+                        : 'Passes may still be available.')
+                );
+            }
+        }
+    }
+
+    /**
+     * Restores reserved capacity for all sessions in an order.
+     * Called when an order is cancelled or a payment fails/expires.
+     */
+    private function restoreOrderCapacity(int $orderId): void
+    {
+        $orderItems = $this->orderItemRepository->findByOrderId($orderId);
+
+        foreach ($orderItems as $item) {
+            if ($item->eventSessionId !== null && $item->eventSessionId > 0) {
+                $this->eventSessionRepository->restoreCapacity($item->eventSessionId, $item->quantity);
+            }
+        }
     }
 
     private function toMoneyString(float $value): string

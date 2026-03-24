@@ -29,5 +29,13 @@ interface IOrderItemRepository
      * Checks whether any order item references the given event session (used to guard session deletion).
      */
     public function existsForSession(int $sessionId): bool;
+
+    /**
+     * Returns all order items belonging to the given order.
+     * Used to restore session capacity when an order is cancelled or expires.
+     *
+     * @return \App\Models\OrderItem[]
+     */
+    public function findByOrderId(int $orderId): array;
 }
 

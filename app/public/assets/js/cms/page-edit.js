@@ -4,17 +4,55 @@ function initTinyMCE() {
         return;
     }
 
+    // Resolve the image upload URL from page context (set in page-edit.php)
+    var uploadUrl = (typeof pageId !== 'undefined' && typeof pageSlug !== 'undefined')
+        ? '/cms/pages/' + pageId + '/' + encodeURIComponent(pageSlug) + '/upload-image'
+        : null;
+
     tinymce.init({
         selector: 'textarea[data-tinymce]',
         height: 300,
         menubar: false,
-        plugins: 'lists link',
-        toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
+        plugins: 'lists link image',
+        toolbar: 'undo redo | bold italic underline | bullist numlist | link image | removeformat',
         content_style: 'body { font-family: Montserrat, sans-serif; font-size: 14px; line-height: 1.6; }',
         forced_root_block: '',
         force_br_newlines: true,
         convert_newlines_to_brs: true,
         remove_linebreaks: false,
+        // Enable image insertion via the TinyMCE toolbar with drag-and-drop upload
+        images_upload_handler: function (blobInfo) {
+            return new Promise(function (resolve, reject) {
+                if (!uploadUrl || typeof csrfToken === 'undefined') {
+                    reject('Upload configuration not available.');
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('image', blobInfo.blob(), blobInfo.filename());
+                // item_id is not needed for inline TinyMCE uploads — pass 0 as a placeholder
+                formData.append('item_id', '0');
+                formData.append('csrf_token', csrfToken);
+
+                fetch(uploadUrl, { method: 'POST', body: formData })
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('Server returned ' + response.status);
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data.success && data.filePath) {
+                            resolve(data.filePath);
+                        } else {
+                            reject(data.error || 'Image upload failed.');
+                        }
+                    })
+                    .catch(function (error) {
+                        reject('Upload error: ' + error.message);
+                    });
+            });
+        },
+        automatic_uploads: true,
+        file_picker_types: 'image',
         setup: function (editor) {
             editor.on('keydown', function (e) {
                 if (e.keyCode === 13 && !e.shiftKey) {

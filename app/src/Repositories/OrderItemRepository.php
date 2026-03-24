@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Infrastructure\Database;
+use App\Models\OrderItem;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use PDO;
 
@@ -86,6 +87,21 @@ class OrderItemRepository implements IOrderItemRepository
         );
         $stmt->execute([':sessionId' => $sessionId]);
         return $stmt->fetchColumn() !== false;
+    }
+
+    /**
+     * Returns all order items belonging to the given order.
+     * Used to restore session capacity when an order is cancelled or expires.
+     *
+     * @return OrderItem[]
+     */
+    public function findByOrderId(int $orderId): array
+    {
+        // Fetch all line items for a specific order
+        $stmt = $this->pdo->prepare('SELECT * FROM OrderItem WHERE OrderId = :orderId');
+        $stmt->execute([':orderId' => $orderId]);
+
+        return array_map([OrderItem::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 }
 
