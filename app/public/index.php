@@ -12,6 +12,9 @@ declare(strict_types=1);
 // Load Composer autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Load lightweight controller factory (manual DI bootstrap)
+$controllerFactory = require __DIR__ . '/../bootstrap/container.php';
+
 // Load environment variables from .env file (fallback for local development)
 // In Docker, environment variables are set directly via docker-compose.yml
 $envPath = __DIR__ . '/../../.env';
@@ -152,7 +155,7 @@ switch ($routeInfo[0]) {
 
         // Handle controller routes
         [$controllerClass, $method] = $handler;
-        $controller = new $controllerClass();
+        $controller = $controllerFactory($controllerClass);
         $controller->$method(...array_values($vars));
         break;
 }
