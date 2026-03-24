@@ -82,7 +82,10 @@ class PasswordResetTokenRepository implements IPasswordResetTokenRepository
     }
 
     /**
-     * Deletes expired tokens (cleanup utility).
+     * Deletes expired tokens (cleanup utility). Not part of the interface contract
+     * because it is only called by maintenance/cron tasks, not by the reset flow.
+     *
+     * @return int Number of deleted rows.
      */
     public function deleteExpiredTokens(): int
     {

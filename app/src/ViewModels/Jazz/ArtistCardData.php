@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for single artist card data.
+ * A single artist card on the jazz landing page — photo, name, style, and profile link.
  */
 final readonly class ArtistCardData
 {
@@ -17,6 +17,7 @@ final readonly class ArtistCardData
         public int $performanceCount,
         public string $firstPerformance,
         public string $morePerformancesText,
+        public ?string $profileUrl = null,
     ) {
     }
 }

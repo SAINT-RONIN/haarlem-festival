@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\HomePageViewModel;
+use App\Models\HomePageData;
 
 /**
- * Interface for Home page service.
+ * Contract for assembling the homepage's composite data model.
+ * The returned HomePageData bundles CMS content, event types, map locations,
+ * and a schedule preview so the controller can pass it straight to the mapper.
  */
 interface IHomeService
 {
     /**
-     * Builds the homepage view model with all required data.
-     *
-     * @return HomePageViewModel Prepared data for the home view
+     * Returns all data needed to build the home page.
      */
-    public function getHomePageData(): HomePageViewModel;
+    public function getHomePageData(): HomePageData;
 }

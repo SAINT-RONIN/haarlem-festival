@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class InvoiceLine
+final readonly class InvoiceLine
 {
     /*
      * Purpose: Stores individual line items on an invoice with
@@ -18,16 +18,16 @@ class InvoiceLine
      */
 
     public function __construct(
-        public readonly int     $invoiceLineId,
-        public readonly int     $invoiceId,
-        public readonly string  $lineDescription,
-        public readonly int     $quantity,
-        public readonly string  $unitPrice,
-        public readonly string  $vatRate,
-        public readonly string  $lineSubtotal,
-        public readonly string  $lineVatAmount,
-        public readonly string  $lineTotal,
-        public readonly ?string $donationAmount,
+        public int     $invoiceLineId,
+        public int     $invoiceId,
+        public string  $lineDescription,
+        public int     $quantity,
+        public string  $unitPrice,
+        public string  $vatRate,
+        public string  $lineSubtotal,
+        public string  $lineVatAmount,
+        public string  $lineTotal,
+        public ?string $donationAmount,
     ) {
     }
 

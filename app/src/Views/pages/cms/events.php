@@ -15,8 +15,6 @@ $weeklySchedule = $viewModel->weeklySchedule;
 $venues = $viewModel->venues;
 $selectedType = $viewModel->selectedType;
 $selectedDay = $viewModel->selectedDay;
-$successMessage = $viewModel->successMessage;
-$errorMessage = $viewModel->errorMessage;
 
 // Define type colors for badges
 $typeColors = [
@@ -56,18 +54,7 @@ $typeColors = [
             </div>
         </header>
 
-        <!-- Messages -->
-        <?php if (!empty($successMessage)): ?>
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                <?= htmlspecialchars($successMessage) ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (!empty($errorMessage)): ?>
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <?= htmlspecialchars($errorMessage) ?>
-            </div>
-        <?php endif; ?>
+        <?php require __DIR__ . '/../../partials/cms/_flash-messages.php'; ?>
 
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">
@@ -195,6 +182,9 @@ $typeColors = [
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Sessions
                     </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tickets
+                    </th>
                     <th scope="col"
                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -204,7 +194,7 @@ $typeColors = [
                 <tbody class="bg-white divide-y divide-gray-200">
                 <?php if (empty($events)): ?>
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                             <p>No events found</p>
                             <a href="/cms/events/create" class="text-blue-600 hover:text-blue-800 mt-2 inline-block">
                                 Create your first event
@@ -238,6 +228,13 @@ $typeColors = [
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <?= $event->sessionCount ?> session(s)
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <?php if ($event->totalCapacity > 0): ?>
+                                    <?= $event->totalSoldTickets ?> / <?= $event->totalCapacity ?> sold
+                                <?php else: ?>
+                                    —
+                                <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a href="/cms/events/<?= $event->eventId ?>/edit"

@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `EmailConfirmationToken` SQL table.
+ * Represents a row in the EmailConfirmationToken table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Used for email verification during the registration flow.
  */
-class EmailConfirmationToken
+final readonly class EmailConfirmationToken
 {
     /*
      * Purpose: Stores tokens for email verification during user registration,
@@ -18,11 +17,11 @@ class EmailConfirmationToken
      */
 
     public function __construct(
-        public readonly int                 $emailConfirmationTokenId,
-        public readonly int                 $userAccountId,
-        public readonly string              $token,
-        public readonly \DateTimeImmutable  $expiresAtUtc,
-        public readonly ?\DateTimeImmutable $usedAtUtc,
+        public int                 $emailConfirmationTokenId,
+        public int                 $userAccountId,
+        public string              $token,
+        public \DateTimeImmutable  $expiresAtUtc,
+        public ?\DateTimeImmutable $usedAtUtc,
     ) {
     }
 

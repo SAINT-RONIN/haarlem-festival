@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels;
 
 /**
- * DTO for global UI elements (navigation, branding).
- *
- * All fields are guaranteed to be populated by the Service layer.
- * Views should render without conditionals.
+ * Global UI state passed to all public page layouts — login status, navigation labels.
  */
 final readonly class GlobalUiData
 {
@@ -21,6 +18,11 @@ final readonly class GlobalUiData
         public string $navRestaurant,
         public string $navStorytelling,
         public string $btnMyProgram,
+        public string $loginLabel,
+        public string $logoutLabel,
+        public string $labelEventsCount,
+        public string $labelNoEvents,
+        public string $btnExploreTemplate,
         public bool   $isLoggedIn = false,
     ) {
     }

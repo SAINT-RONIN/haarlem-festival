@@ -35,7 +35,6 @@ use App\Controllers\CmsEventsController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
-use App\Controllers\DanceController;
 use App\Controllers\RestaurantController;
 use App\Controllers\StorytellingController;
 use FastRoute\Dispatcher;
@@ -59,11 +58,6 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
 
-    // Dance page
-    $r->addRoute('GET', '/dance', [DanceController::class, 'index']);
-    $r->addRoute('GET', '/dance/', [DanceController::class, 'index']);
-    $r->addRoute('GET', '/dance/{slug:[A-Za-z0-9-]+}', [DanceController::class, 'detail']);
-    $r->addRoute('GET', '/dance/{slug:[A-Za-z0-9-]+}/', [DanceController::class, 'detail']);
 
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);

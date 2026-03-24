@@ -6,12 +6,12 @@
  * @var array $cms CMS content including global_ui section
  */
 
-$dayName = htmlspecialchars($day['dayName']);
-$dayNumber = htmlspecialchars((string)$day['dayNumber']);
-$monthShort = htmlspecialchars($day['monthShort']);
-$isoDate = htmlspecialchars($day['isoDate']);
-$eventCount = (int)$day['eventCount'];
-$sessions = $day['sessions'];
+$dayName = htmlspecialchars($day->dayName);
+$dayNumber = htmlspecialchars((string)$day->dayNumber);
+$monthShort = htmlspecialchars($day->monthShort);
+$isoDate = htmlspecialchars($day->isoDate);
+$eventCount = (int)$day->eventCount;
+$sessions = $day->sessions;
 $global = $cms['global_ui'];
 
 // Generate unique ID for accessibility

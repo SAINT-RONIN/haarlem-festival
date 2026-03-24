@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for single pricing card data.
+ * A single pricing tier card — name, price, feature list, and highlight flag for the recommended tier.
  */
 final readonly class PricingCardData
 {

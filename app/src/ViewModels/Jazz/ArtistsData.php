@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for artists section data.
+ * Section data for the jazz page artists carousel — section title and array of artist cards.
  */
 final readonly class ArtistsData
 {

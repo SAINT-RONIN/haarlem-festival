@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class SessionDiscountRule
+final readonly class SessionDiscountRule
 {
     /*
      * Purpose: Defines discount rules for event sessions,
@@ -18,11 +18,11 @@ class SessionDiscountRule
      */
 
     public function __construct(
-        public readonly int    $sessionDiscountRuleId,
-        public readonly int    $eventSessionId,
-        public readonly string $ruleName,
-        public readonly string $discountPercent,
-        public readonly ?int   $appliesToPriceTierId,
+        public int    $sessionDiscountRuleId,
+        public int    $eventSessionId,
+        public string $ruleName,
+        public string $discountPercent,
+        public ?int   $appliesToPriceTierId,
     ) {
     }
 

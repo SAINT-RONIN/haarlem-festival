@@ -5,60 +5,17 @@
  * @var \App\ViewModels\History\HistoryPageViewModel $viewModel
  */
 
-$heroData = $viewModel->heroData;
-$globalUi = $viewModel->globalUi;
-$gradientSection = $viewModel->gradientSection;
-$introSplitSection = $viewModel->introSplitSection;
-$routeData = $viewModel->routeData;
-$venuesData = $viewModel->venuesData;
-$ticketOptionsData = $viewModel->ticketOptionsData;
-$infoAboutTourData = $viewModel->infoAboutTourData;
-$scheduleData = $viewModel->scheduleData;
-$currentPage = 'history';
-$includeNav = false;
-
-// Build $cms array for hero.php partial compatibility
-$cms = [
-        'hero_section' => [
-                'hero_main_title' => $heroData->mainTitle,
-                'hero_subtitle' => $heroData->subtitle,
-                'hero_button_primary' => $heroData->primaryButtonText,
-                'hero_button_primary_link' => $heroData->primaryButtonLink,
-                'hero_button_secondary' => $heroData->secondaryButtonText,
-                'hero_button_secondary_link' => $heroData->secondaryButtonLink,
-                'hero_background_image' => $heroData->backgroundImageUrl,
-        ],
-        'global_ui' => [
-                'site_name' => $globalUi->siteName,
-                'nav_home' => $globalUi->navHome,
-                'nav_jazz' => $globalUi->navJazz,
-                'nav_dance' => $globalUi->navDance,
-                'nav_history' => $globalUi->navHistory,
-                'nav_restaurant' => $globalUi->navRestaurant,
-                'nav_storytelling' => $globalUi->navStorytelling,
-                'btn_my_program' => $globalUi->btnMyProgram,
-                'is_logged_in' => $globalUi->isLoggedIn,
-        ],
+$includeEventSections = true;
+$pageContentPartials = [
+    __DIR__ . '/../partials/history/route-section.php',
+    __DIR__ . '/../partials/history/locations-section.php',
+    __DIR__ . '/../partials/history/ticket-options.php',
+    __DIR__ . '/../partials/history/info-about-tour.php',
+//    __DIR__ . '/../partials/history/schedule-section.php',
+    __DIR__ . '/../partials/sections/schedule/schedule-section.php',
 ];
+//if ($viewModel->scheduleSection !== null) {
+//    $pageContentPartials[] = __DIR__ . '/../partials/sections/schedule/schedule-section.php';
+//}
 ?>
-<?php require __DIR__ . '/../partials/header.php'; ?>
-
-<main class="w-full bg-sand inline-flex flex-col justify-start items-center">
-
-    <?php require __DIR__ . '/../partials/hero.php'; ?>
-
-    <?php require __DIR__ . '/../partials/sections/gradient-section.php'; ?>
-
-    <?php require __DIR__ . '/../partials/sections/intro-split-section.php'; ?>
-
-    <?php require __DIR__ . '/../partials/history/route-section.php'; ?>
-
-    <?php require __DIR__ . '/../partials/history/locations-section.php'; ?>
-
-    <?php require __DIR__ . '/../partials/history/ticket-options.php'; ?>
-
-    <?php require __DIR__ . '/../partials/history/info-about-tour.php'; ?>
-
-    <?php require __DIR__ . '/../partials/history/schedule-section.php'; ?>
-</main>
-<?php require __DIR__ . '/../partials/footer.php'; ?>
+<?php require __DIR__ . '/../partials/_shell.php'; ?>

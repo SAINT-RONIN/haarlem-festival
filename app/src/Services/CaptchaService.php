@@ -7,25 +7,28 @@ namespace App\Services;
 use App\Services\Interfaces\ICaptchaService;
 
 /**
- * Service for Google reCAPTCHA v2 verification.
+ * Google reCAPTCHA v2 verification via the siteverify REST API.
  *
- * Validates reCAPTCHA responses from form submissions.
- * Configure your keys via environment variables:
- *   - RECAPTCHA_SITE_KEY: The public site key (used in frontend)
- *   - RECAPTCHA_SECRET_KEY: The private secret key (used for verification)
+ * Validates reCAPTCHA tokens submitted with public forms (registration, contact).
+ * When RECAPTCHA_SITE_KEY or RECAPTCHA_SECRET_KEY is missing, verification is
+ * silently bypassed (returns true) so development environments work without keys.
+ * In production, verification fails closed: if Google is unreachable the request is rejected.
  *
- * Get your keys at: https://www.google.com/recaptcha/admin
+ * Environment variables:
+ *   RECAPTCHA_SITE_KEY   - public key embedded in the frontend widget
+ *   RECAPTCHA_SECRET_KEY - private key used for server-side verification
  */
 class CaptchaService implements ICaptchaService
 {
-    private string $siteKey;
-    private string $secretKey;
-    private string $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
+    private readonly string $siteKey;
+    private readonly string $secretKey;
+    private readonly string $verifyUrl;
 
     public function __construct()
     {
         $this->siteKey = getenv('RECAPTCHA_SITE_KEY') ?: '';
         $this->secretKey = getenv('RECAPTCHA_SECRET_KEY') ?: '';
+        $this->verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
     }
 
     /**
@@ -48,9 +51,10 @@ class CaptchaService implements ICaptchaService
      * Verifies the reCAPTCHA response from the form submission.
      *
      * @param string|null $recaptchaResponse The g-recaptcha-response from POST
+     * @param string|null $remoteAddr The client IP address from $_SERVER['REMOTE_ADDR']
      * @return bool True if verification passed, false otherwise
      */
-    public function verify(?string $recaptchaResponse): bool
+    public function verify(?string $recaptchaResponse, ?string $remoteAddr): bool
     {
         // If reCAPTCHA is not configured, skip verification (dev mode)
         if (!$this->isEnabled()) {
@@ -65,7 +69,7 @@ class CaptchaService implements ICaptchaService
         $data = [
             'secret' => $this->secretKey,
             'response' => $recaptchaResponse,
-            'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '',
+            'remoteip' => $remoteAddr ?? '',
         ];
 
         $options = [
@@ -91,12 +95,4 @@ class CaptchaService implements ICaptchaService
         return isset($responseData['success']) && $responseData['success'] === true;
     }
 
-    /**
-     * Legacy method for backwards compatibility.
-     * Now returns empty string since we use reCAPTCHA widget.
-     */
-    public function getQuestion(): string
-    {
-        return '';
-    }
 }

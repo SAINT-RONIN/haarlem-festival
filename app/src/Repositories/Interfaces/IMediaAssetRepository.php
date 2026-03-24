@@ -7,7 +7,8 @@ namespace App\Repositories\Interfaces;
 use App\Models\MediaAsset;
 
 /**
- * Interface for MediaAsset repository operations.
+ * Contract for CRUD operations on uploaded media files (images, documents).
+ * Also supports linking assets to CMS content items.
  */
 interface IMediaAssetRepository
 {
@@ -19,10 +20,25 @@ interface IMediaAssetRepository
      */
     public function findById(int $mediaAssetId): ?MediaAsset;
 
+    /**
+     * @param int[] $ids
+     * @return array<int, MediaAsset> Keyed by MediaAssetId
+     */
+    public function findByIds(array $ids): array;
+
+    /**
+     * Inserts a new media asset record and returns the generated ID.
+     */
     public function create(array $data): int;
 
+    /**
+     * Updates a media asset's columns and returns whether any row was affected.
+     */
     public function update(int $mediaAssetId, array $data): bool;
 
+    /**
+     * Deletes a media asset by its ID.
+     */
     public function delete(int $mediaAssetId): bool;
 
     /**
@@ -33,4 +49,11 @@ interface IMediaAssetRepository
      * @return bool Success status
      */
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool;
+
+    /**
+     * Returns all media assets ordered by newest first.
+     *
+     * @return MediaAsset[]
+     */
+    public function findAll(): array;
 }

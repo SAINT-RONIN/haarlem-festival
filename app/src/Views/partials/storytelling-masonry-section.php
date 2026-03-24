@@ -1,13 +1,14 @@
 <?php
 /**
- * Masonry section partial for storytelling page.
+ * Renders the masonry image grid section on the Storytelling overview page.
+ * The reason for this is because the masonry layout is a visually distinct,
+ * self-contained section that would make the overview page template harder to
+ * read if its column and image logic were inlined there.
  *
- * True masonry-style layout using CSS multi-column.
- * Responsive: 1 column mobile, 2 columns tablet, 4 columns desktop.
- *
- * Required variable (set before including this partial):
- * @var \App\ViewModels\Storytelling\MasonrySectionData $masonrySection
+ * @var \App\ViewModels\Storytelling\StorytellingPageViewModel $viewModel
  */
+
+$masonrySection = $viewModel->masonrySection;
 ?>
 
 <!-- Masonry Grid Section -->
@@ -19,18 +20,7 @@
 
     <!-- Masonry Grid: CSS multi-column layout -->
     <div class="columns-1 md:columns-2 xl:columns-4 gap-4 [column-fill:balance]">
-        <?php
-        // Flatten columns into a single list so the browser can naturally
-        // flow items into CSS multi-columns without our PHP grouping
-        $allImages = [];
-foreach ($masonrySection->columns as $columnImages) {
-    foreach ($columnImages as $image) {
-        $allImages[] = $image;
-    }
-}
-?>
-
-        <?php foreach ($allImages as $image): ?>
+        <?php foreach ($masonrySection->images as $image): ?>
             <figure class="break-inside-avoid mb-4 overflow-hidden rounded-2xl">
                 <img
                     class="w-full h-auto object-cover align-top <?= htmlspecialchars($image->sizeClass) ?>"
@@ -41,4 +31,3 @@ foreach ($masonrySection->columns as $columnImages) {
         <?php endforeach; ?>
     </div>
 </section>
-

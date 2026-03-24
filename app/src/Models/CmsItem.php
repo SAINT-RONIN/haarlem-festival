@@ -7,12 +7,12 @@ namespace App\Models;
 use App\Enums\CmsItemType;
 
 /**
- * Represents a single row from the `CmsItem` SQL table.
+ * Represents a row in the CmsItem table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * The atomic unit of CMS content — a single editable field (heading, text block, image, URL)
+ * within a section.
  */
-class CmsItem
+final readonly class CmsItem
 {
     /*
      * Purpose: Holds individual CMS content items (text, HTML, or media)
@@ -20,14 +20,14 @@ class CmsItem
      */
 
     public function __construct(
-        public readonly int                $cmsItemId,
-        public readonly int                $cmsSectionId,
-        public readonly string             $itemKey,
-        public readonly CmsItemType        $itemType,
-        public readonly ?string            $textValue,
-        public readonly ?string            $htmlValue,
-        public readonly ?int               $mediaAssetId,
-        public readonly \DateTimeImmutable $updatedAtUtc,
+        public int                $cmsItemId,
+        public int                $cmsSectionId,
+        public string             $itemKey,
+        public CmsItemType        $itemType,
+        public ?string            $textValue,
+        public ?string            $htmlValue,
+        public ?int               $mediaAssetId,
+        public \DateTimeImmutable $updatedAtUtc,
     ) {
     }
 
@@ -38,14 +38,14 @@ class CmsItem
     public static function fromRow(array $row): self
     {
         return new self(
-            cmsItemId: (int)$row['CmsItemId'],
-            cmsSectionId: (int)$row['CmsSectionId'],
-            itemKey: (string)$row['ItemKey'],
-            itemType: CmsItemType::from($row['ItemType']),
+            cmsItemId: (int)($row['CmsItemId'] ?? throw new \InvalidArgumentException('Missing required field: CmsItemId')),
+            cmsSectionId: (int)($row['CmsSectionId'] ?? throw new \InvalidArgumentException('Missing required field: CmsSectionId')),
+            itemKey: (string)($row['ItemKey'] ?? throw new \InvalidArgumentException('Missing required field: ItemKey')),
+            itemType: CmsItemType::from($row['ItemType'] ?? throw new \InvalidArgumentException('Missing required field: ItemType')),
             textValue: $row['TextValue'] ?? null,
             htmlValue: $row['HtmlValue'] ?? null,
             mediaAssetId: isset($row['MediaAssetId']) ? (int)$row['MediaAssetId'] : null,
-            updatedAtUtc: new \DateTimeImmutable($row['UpdatedAtUtc']),
+            updatedAtUtc: new \DateTimeImmutable($row['UpdatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: UpdatedAtUtc')),
         );
     }
 

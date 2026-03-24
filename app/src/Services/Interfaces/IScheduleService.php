@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\Schedule\ScheduleSectionViewModel;
+use App\Models\ScheduleFilterParams;
 
 /**
- * Interface for Schedule building service.
+ * Defines the contract for building schedule page data for any event type.
  */
 interface IScheduleService
 {
     /**
-     * Builds a schedule section ViewModel for any event type.
+     * Returns raw schedule data for any event type.
+     * The ViewModel layer maps this to ScheduleSectionViewModel.
      *
-     * @param string $pageSlug Page slug for CMS content
-     * @param int $eventTypeId Event type ID to filter sessions
-     * @param int $maxDays Maximum number of days to show
-     * @return ScheduleSectionViewModel
+     * @return array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: array, filterGroupTypes: string[], priceTypeOptions: string[]}
      */
-    public function buildScheduleSection(string $pageSlug, int $eventTypeId, int $maxDays = 4): ScheduleSectionViewModel;
+    public function getScheduleData(
+        string $pageSlug,
+        int $eventTypeId,
+        int $maxDays = 4,
+        ?int $eventId = null,
+        ?string $ctaTextOverride = null,
+        ?ScheduleFilterParams $filterParams = null,
+    ): array;
 }

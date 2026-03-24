@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\Storytelling\StorytellingPageViewModel;
+use App\Models\StorytellingPageData;
 
 /**
- * Interface for Storytelling page service.
+ * Defines the contract for assembling the Storytelling overview page data.
  */
 interface IStorytellingService
 {
     /**
-     * Builds the storytelling page view model with all required data.
-     *
-     * @return StorytellingPageViewModel Prepared data for the storytelling view
+     * Builds the Storytelling overview page domain payload, including CMS content, events, and sessions.
      */
-    public function getStorytellingPageData(): StorytellingPageViewModel;
+    public function getStorytellingPageData(): StorytellingPageData;
 }

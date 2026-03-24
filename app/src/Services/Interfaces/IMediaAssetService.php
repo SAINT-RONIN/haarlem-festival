@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Exceptions\ValidationException;
+use App\Models\MediaAsset;
 
 /**
- * Interface for Media asset service.
+ * Contract for media asset CRUD: uploading images (with validation and physical file storage),
+ * linking them to CMS content items, and exposing validation limits for client-side checks.
  */
 interface IMediaAssetService
 {
@@ -16,10 +18,10 @@ interface IMediaAssetService
      *
      * @param array $file The $_FILES array element
      * @param string $folder Subfolder within Image directory
-     * @return array The created MediaAsset record
+     * @return MediaAsset The created MediaAsset record
      * @throws ValidationException If validation fails
      */
-    public function uploadImage(array $file, string $folder = 'cms'): array;
+    public function uploadImage(array $file, string $folder = 'cms'): MediaAsset;
 
     /**
      * Links an uploaded media asset to a CMS item.
@@ -36,4 +38,26 @@ interface IMediaAssetService
      * @return array Validation limits
      */
     public function getImageLimits(): array;
+
+    /**
+     * Returns all media assets.
+     *
+     * @return MediaAsset[]
+     */
+    public function getAllAssets(): array;
+
+    /**
+     * Deletes a media asset by its ID.
+     */
+    public function deleteAsset(int $mediaAssetId): bool;
+
+    /**
+     * Returns a single media asset by ID, or null if not found.
+     */
+    public function getAssetById(int $mediaAssetId): ?MediaAsset;
+
+    /**
+     * Updates the alt text for a media asset.
+     */
+    public function updateAltText(int $mediaAssetId, string $altText): bool;
 }

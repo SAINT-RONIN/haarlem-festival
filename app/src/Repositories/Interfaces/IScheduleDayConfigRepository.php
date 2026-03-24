@@ -4,39 +4,27 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\ScheduleDayConfigFilter;
+
 /**
- * Interface for ScheduleDayConfig repository.
+ * Contract for managing per-day visibility settings on the public schedule.
+ * Configs can be global (all event types) or scoped to a specific event type.
  */
 interface IScheduleDayConfigRepository
 {
     /**
-     * Returns all schedule day configurations.
+     * Returns schedule day configurations using optional filters.
      *
-     * @return array List of all configurations
+     * @return \App\Models\ScheduleDayConfig[] List of matching configurations
      */
-    public function findAll(): array;
-
-    /**
-     * Gets global settings (EventTypeId = 0).
-     *
-     * @return array List of global day settings
-     */
-    public function findGlobalSettings(): array;
-
-    /**
-     * Gets settings for a specific event type.
-     *
-     * @param int $eventTypeId The event type ID
-     * @return array List of day settings for the event type
-     */
-    public function findByEventTypeId(int $eventTypeId): array;
+    public function findConfigs(ScheduleDayConfigFilter $filter = new ScheduleDayConfigFilter()): array;
 
     /**
      * Upserts a schedule day visibility setting.
      *
-     * @param int $eventTypeId 0 for global, >0 for specific event type
+     * @param ?int $eventTypeId null for global, >0 for specific event type
      * @param int $dayOfWeek 0=Sunday through 6=Saturday
      * @param bool $isVisible Whether the day is visible
      */
-    public function upsert(int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
+    public function upsert(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
 }

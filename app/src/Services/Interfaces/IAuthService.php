@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 /**
- * Interface for Authentication service.
+ * Contract for user authentication and credential management.
+ * Covers login (customer and admin), registration with validation,
+ * and the full password-reset flow (request, validate token, reset).
  */
 interface IAuthService
 {
@@ -17,6 +19,15 @@ interface IAuthService
      * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
      */
     public function attemptLogin(string $login, string $password): array;
+
+    /**
+     * Attempts to authenticate and verifies the user has Administrator role.
+     *
+     * @param string $login Username or email
+     * @param string $password Plain text password
+     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     */
+    public function attemptAdminLogin(string $login, string $password): array;
 
     /**
      * Validates registration data and returns any errors.

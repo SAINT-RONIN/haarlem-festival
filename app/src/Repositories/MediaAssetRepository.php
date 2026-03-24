@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IMediaAssetRepository;
 use PDO;
 
 /**
- * Repository for MediaAsset database operations.
+ * CRUD operations for the MediaAsset table, which stores metadata
+ * (file path, MIME type, size, alt text) for every uploaded image/file.
+ *
+ * Also provides a helper to link an asset to a CmsItem record.
  */
 class MediaAssetRepository implements IMediaAssetRepository
 {
@@ -29,10 +32,45 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function findById(int $mediaAssetId): ?MediaAsset
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM MediaAsset WHERE MediaAssetId = ?');
-        $stmt->execute([$mediaAssetId]);
+        $stmt = $this->pdo->prepare('SELECT * FROM MediaAsset WHERE MediaAssetId = :mediaAssetId');
+        $stmt->execute([':mediaAssetId' => $mediaAssetId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? MediaAsset::fromRow($result) : null;
+    }
+
+    /**
+     * Batch-fetches multiple media assets in a single query, keyed by ID for easy lookup.
+     *
+     * @param int[] $ids
+     * @return array<int, MediaAsset> Keyed by MediaAssetId
+     */
+    public function findByIds(array $ids): array
+    {
+        $ids = array_filter($ids, fn(int $id) => $id > 0);
+        if ($ids === []) {
+            return [];
+        }
+
+        // Build numbered placeholders (:id0, :id1, ...) for a safe IN clause
+        $paramKeys = [];
+        $paramValues = [];
+        foreach (array_values($ids) as $index => $id) {
+            $key = ':id' . $index;
+            $paramKeys[] = $key;
+            $paramValues[$key] = $id;
+        }
+        $sql = "SELECT * FROM MediaAsset WHERE MediaAssetId IN (" . implode(',', $paramKeys) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($paramValues);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $assets = [];
+        foreach ($rows as $row) {
+            $asset = MediaAsset::fromRow($row);
+            $assets[$asset->mediaAssetId] = $asset;
+        }
+
+        return $assets;
     }
 
     /**
@@ -43,31 +81,35 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function create(array $data): int
     {
-        $sql = 'INSERT INTO MediaAsset (FilePath, OriginalFileName, MimeType, FileSizeBytes, AltText) 
-                VALUES (?, ?, ?, ?, ?)';
+        $sql = 'INSERT INTO MediaAsset (FilePath, OriginalFileName, MimeType, FileSizeBytes, AltText)
+                VALUES (:filePath, :originalFileName, :mimeType, :fileSizeBytes, :altText)';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            $data['FilePath'],
-            $data['OriginalFileName'],
-            $data['MimeType'],
-            $data['FileSizeBytes'],
-            $data['AltText'] ?? ''
+            ':filePath'         => $data['FilePath'],
+            ':originalFileName' => $data['OriginalFileName'],
+            ':mimeType'         => $data['MimeType'],
+            ':fileSizeBytes'    => $data['FileSizeBytes'],
+            ':altText'          => $data['AltText'] ?? '',
         ]);
         return (int)$this->pdo->lastInsertId();
     }
 
     /**
-     * Updates a media asset record.
+     * Partially updates a media asset -- only columns present in $data are changed.
+     *
+     * @return bool False if $data contained no recognised columns, true on successful execute.
      */
     public function update(int $mediaAssetId, array $data): bool
     {
+        // Dynamically build SET clause from whichever fields the caller provided
         $fields = [];
-        $values = [];
+        $params = [':mediaAssetId' => $mediaAssetId];
 
         foreach (['FilePath', 'OriginalFileName', 'MimeType', 'FileSizeBytes', 'AltText'] as $field) {
             if (array_key_exists($field, $data)) {
-                $fields[] = "$field = ?";
-                $values[] = $data[$field];
+                $key = ':' . lcfirst($field);
+                $fields[] = "$field = $key";
+                $params[$key] = $data[$field];
             }
         }
 
@@ -75,10 +117,9 @@ class MediaAssetRepository implements IMediaAssetRepository
             return false;
         }
 
-        $values[] = $mediaAssetId;
-        $sql = 'UPDATE MediaAsset SET ' . implode(', ', $fields) . ' WHERE MediaAssetId = ?';
+        $sql = 'UPDATE MediaAsset SET ' . implode(', ', $fields) . ' WHERE MediaAssetId = :mediaAssetId';
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($values);
+        return $stmt->execute($params);
     }
 
     /**
@@ -86,8 +127,8 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function delete(int $mediaAssetId): bool
     {
-        $stmt = $this->pdo->prepare('DELETE FROM MediaAsset WHERE MediaAssetId = ?');
-        return $stmt->execute([$mediaAssetId]);
+        $stmt = $this->pdo->prepare('DELETE FROM MediaAsset WHERE MediaAssetId = :mediaAssetId');
+        return $stmt->execute([':mediaAssetId' => $mediaAssetId]);
     }
 
     /**
@@ -99,7 +140,20 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
     {
-        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = ? WHERE CmsItemId = ?');
-        return $stmt->execute([$mediaAssetId, $cmsItemId]);
+        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = :mediaAssetId WHERE CmsItemId = :cmsItemId');
+        return $stmt->execute([':mediaAssetId' => $mediaAssetId, ':cmsItemId' => $cmsItemId]);
+    }
+
+    /**
+     * Returns all media assets ordered by newest first.
+     *
+     * @return MediaAsset[]
+     */
+    public function findAll(): array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM MediaAsset ORDER BY CreatedAtUtc DESC');
+        $stmt->execute([]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([MediaAsset::class, 'fromRow'], $rows);
     }
 }

@@ -7,22 +7,23 @@ namespace App\Services;
 use App\Exceptions\ValidationException;
 use App\Infrastructure\PathResolver;
 use App\Models\MediaAsset;
-use App\Repositories\MediaAssetRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\IMediaAssetService;
 use App\Utils\CmsContentLimits;
 
 /**
- * Service for handling media asset operations.
+ * Manages the full lifecycle of uploaded media assets (images).
  *
- * Manages image uploads, validation, and storage.
+ * Handles validation (MIME type, file size, dimensions via CmsContentLimits),
+ * physical file storage under /assets/Image/{folder}/, database record creation
+ * via IMediaAssetRepository, and cleanup (file + record) on deletion.
+ * Also exposes validation limits so the admin frontend can mirror them client-side.
  */
 class MediaAssetService implements IMediaAssetService
 {
-    private MediaAssetRepository $mediaAssetRepository;
-
-    public function __construct()
-    {
-        $this->mediaAssetRepository = new MediaAssetRepository();
+    public function __construct(
+        private readonly IMediaAssetRepository $mediaAssetRepository,
+    ) {
     }
 
     /**
@@ -30,13 +31,15 @@ class MediaAssetService implements IMediaAssetService
      *
      * @param array $file The $_FILES array element
      * @param string $folder Subfolder within Image directory
-     * @return array The created MediaAsset record
+     * @return MediaAsset The created MediaAsset record
      * @throws ValidationException If validation fails
      */
-    public function uploadImage(array $file, string $folder = 'cms'): array
+    public function uploadImage(array $file, string $folder = 'cms'): MediaAsset
     {
+        // Validate MIME type, file size, and image dimensions
         $this->validateFile($file);
 
+        // Resolve and ensure the target upload directory exists and is writable
         $targetDir = PathResolver::getUploadPath($folder);
 
         // Create directory if it doesn't exist
@@ -51,6 +54,7 @@ class MediaAssetService implements IMediaAssetService
             throw new ValidationException('Upload directory is not writable');
         }
 
+        // Generate a unique filename and move the uploaded file to its final location
         $extension = $this->getExtensionFromMime($file['type']);
         $fileName = $this->generateFileName($extension);
         $filePath = $targetDir . '/' . $fileName;
@@ -60,6 +64,7 @@ class MediaAssetService implements IMediaAssetService
             throw new ValidationException('Failed to move uploaded file');
         }
 
+        // Persist the asset metadata in the database and return the full record
         $mediaAssetId = $this->mediaAssetRepository->create([
             'FilePath' => $relativePath,
             'OriginalFileName' => $file['name'],
@@ -72,7 +77,8 @@ class MediaAssetService implements IMediaAssetService
     }
 
     /**
-     * Deletes a media asset and its file.
+     * Deletes a media asset record and removes the physical file from disk.
+     * Returns false if the asset does not exist.
      */
     public function deleteAsset(int $mediaAssetId): bool
     {
@@ -211,6 +217,16 @@ class MediaAssetService implements IMediaAssetService
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
     {
         return $this->mediaAssetRepository->linkToCmsItem($mediaAssetId, $cmsItemId);
+    }
+
+    /**
+     * Returns all media assets.
+     *
+     * @return MediaAsset[]
+     */
+    public function getAllAssets(): array
+    {
+        return $this->mediaAssetRepository->findAll();
     }
 
     /**

@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `EventSessionPrice` SQL table.
+ * Represents a row in the EventSessionPrice table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Links a session to a price tier (Adult, Child, Family, etc.) with an amount and currency code.
  */
-class EventSessionPrice
+final readonly class EventSessionPrice
 {
     /*
      * Purpose: Links a price tier to an event session with specific
@@ -18,12 +17,12 @@ class EventSessionPrice
      */
 
     public function __construct(
-        public readonly int    $eventSessionPriceId,
-        public readonly int    $eventSessionId,
-        public readonly int    $priceTierId,
-        public readonly string $price,
-        public readonly string $currencyCode,
-        public readonly string $vatRate,
+        public int    $eventSessionPriceId,
+        public int    $eventSessionId,
+        public int    $priceTierId,
+        public string $price,
+        public string $currencyCode,
+        public string $vatRate,
     ) {
     }
 

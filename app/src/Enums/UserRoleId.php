@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * Backed enum for user role IDs matching database values.
+ * Integer IDs for user roles: Customer (1), Employee (2), Administrator (3).
+ *
+ * Used for access control in CMS.
  */
 enum UserRoleId: int
 {

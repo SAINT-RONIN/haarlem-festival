@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class ScheduleDay
+final readonly class ScheduleDay
 {
     /*
      * Purpose: Defines which days each event type runs during
@@ -18,11 +18,11 @@ class ScheduleDay
      */
 
     public function __construct(
-        public readonly int                 $scheduleDayId,
-        public readonly int                 $eventTypeId,
-        public readonly \DateTimeImmutable  $date,
-        public readonly bool                $isDeleted,
-        public readonly ?\DateTimeImmutable $deletedAtUtc,
+        public int                 $scheduleDayId,
+        public int                 $eventTypeId,
+        public \DateTimeImmutable  $date,
+        public bool                $isDeleted,
+        public ?\DateTimeImmutable $deletedAtUtc,
     ) {
     }
 

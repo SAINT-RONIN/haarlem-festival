@@ -3,6 +3,12 @@
  * Footer partial - Site footer with navigation and copyright.
  */
 ?>
+<?php
+use App\ViewModels\GlobalUiData;
+$footerGlobalUi = (isset($viewModel) && property_exists($viewModel, 'globalUi') && $viewModel->globalUi instanceof GlobalUiData)
+    ? $viewModel->globalUi
+    : null;
+?>
 <!-- Footer -->
 <div class="w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 flex flex-col justify-end items-center gap-2.5 overflow-hidden">
     <div class="self-stretch pt-4 sm:pt-6 md:pt-8 lg:pt-10 border-t-2 border-royal-blue flex flex-col justify-start items-start gap-4 sm:gap-6 md:gap-8 lg:gap-10">
@@ -11,27 +17,27 @@
             <div class="flex flex-wrap justify-start items-center gap-1 sm:gap-2 md:gap-3 lg:gap-5">
                 <a href="/"
                    class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-royal-blue flex justify-center items-center gap-2.5 transition-colors duration-200">
-                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal">Home</span>
+                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navHome ?? 'Home') ?></span>
                 </a>
                 <a href="/jazz"
                    class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
-                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal">Jazz</span>
+                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navJazz ?? 'Jazz') ?></span>
                 </a>
                 <a href="/dance"
                    class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
-                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal">Dance</span>
+                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navDance ?? 'Dance') ?></span>
                 </a>
                 <a href="/history"
                    class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
-                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal">History</span>
+                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navHistory ?? 'History') ?></span>
                 </a>
                 <a href="/restaurant"
                    class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
-                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal">Restaurants</span>
+                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navRestaurant ?? 'Restaurants') ?></span>
                 </a>
                 <a href="/storytelling"
                    class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
-                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal">Storytelling</span>
+                    <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navStorytelling ?? 'Storytelling') ?></span>
                 </a>
             </div>
             <!-- Social Links -->

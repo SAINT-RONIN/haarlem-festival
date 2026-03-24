@@ -5,31 +5,18 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\EventType;
+use App\Models\EventTypeFilter;
 
 /**
- * Interface for EventType repository.
+ * Contract for accessing the EventType lookup table. Event types categorise festival
+ * events (e.g. "Jazz", "Dance", "Food") and are referenced by Event rows and schedule config.
  */
 interface IEventTypeRepository
 {
     /**
-     * Returns all event types.
+     * Retrieves event types with optional ID filter and configurable sort order.
      *
      * @return EventType[]
      */
-    public function findAll(): array;
-
-    /**
-     * Returns a single event type by ID.
-     *
-     * @param int $eventTypeId
-     * @return EventType|null
-     */
-    public function findById(int $eventTypeId): ?EventType;
-
-    /**
-     * Returns all event types for dropdown.
-     *
-     * @return EventType[]
-     */
-    public function findAllForDropdown(): array;
+    public function findEventTypes(EventTypeFilter $filter = new EventTypeFilter()): array;
 }

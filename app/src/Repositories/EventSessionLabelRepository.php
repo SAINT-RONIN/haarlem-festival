@@ -6,11 +6,14 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionLabel;
+use App\Models\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use PDO;
 
 /**
- * Repository for EventSessionLabel database operations.
+ * Manages the EventSessionLabel table, which stores free-text tags attached to sessions
+ * (e.g. "Sold Out", "Last Tickets", "New"). Labels are displayed on session cards in the
+ * public schedule. Supports batch retrieval grouped by session ID for list views.
  */
 class EventSessionLabelRepository implements IEventSessionLabelRepository
 {
@@ -22,61 +25,81 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
     }
 
     /**
-     * Find all labels for a session.
+     * Retrieves labels with optional filtering by session ID.
      *
-     * @param int $sessionId
-     * @return EventSessionLabel[]
+     * @return EventSessionLabel[] Ordered by session then label ID. Empty array if no matches.
      */
-    public function findBySessionId(int $sessionId): array
+    public function findLabels(EventSessionRelatedFilter $filters = new EventSessionRelatedFilter()): array
     {
-        $stmt = $this->pdo->prepare('
+        $sql = '
             SELECT EventSessionLabelId, EventSessionId, LabelText
             FROM EventSessionLabel
-            WHERE EventSessionId = :sessionId
-            ORDER BY EventSessionLabelId ASC
-        ');
-        $stmt->execute(['sessionId' => $sessionId]);
+            WHERE 1 = 1
+        ';
+        $params = [];
+
+        if ($filters->sessionId !== null) {
+            $sql .= ' AND EventSessionId = :sessionId';
+            $params['sessionId'] = $filters->sessionId;
+        }
+
+        $sql .= ' ORDER BY EventSessionId ASC, EventSessionLabelId ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return array_map([EventSessionLabel::class, 'fromRow'], $rows);
     }
 
     /**
-     * Find all labels for multiple sessions.
+     * Batch-fetches labels for multiple sessions in a single query, then groups them
+     * by session ID. Used to efficiently attach label badges when rendering session lists.
      *
-     * @param array<int> $sessionIds
-     * @return array<int, EventSessionLabel[]>
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionLabel[]> Keyed by EventSessionId. Missing IDs are absent (not empty arrays).
      */
-    public function findBySessionIds(array $sessionIds): array
+    public function findLabelsBySessionIds(array $sessionIds): array
     {
-        if (empty($sessionIds)) {
+        // Deduplicate and cast IDs to int before building the IN clause
+        $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
+        if ($normalizedIds === []) {
             return [];
         }
 
-        $placeholders = implode(',', array_fill(0, count($sessionIds), '?'));
-        $stmt = $this->pdo->prepare("
+        // Build numbered placeholders (:sessionId0, :sessionId1, ...) for the IN clause
+        $params = [];
+        $inPlaceholders = [];
+        foreach ($normalizedIds as $index => $sessionId) {
+            $paramName = 'sessionId' . $index;
+            $inPlaceholders[] = ':' . $paramName;
+            $params[$paramName] = $sessionId;
+        }
+
+        $sql = '
             SELECT EventSessionLabelId, EventSessionId, LabelText
             FROM EventSessionLabel
-            WHERE EventSessionId IN ($placeholders)
-            ORDER BY EventSessionId, EventSessionLabelId ASC
-        ");
-        $stmt->execute($sessionIds);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            WHERE EventSessionId IN (' . implode(', ', $inPlaceholders) . ')
+            ORDER BY EventSessionId ASC, EventSessionLabelId ASC
+        ';
 
-        // Group by session ID
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $labels = array_map([EventSessionLabel::class, 'fromRow'], $rows);
+
         $grouped = [];
-        foreach ($rows as $row) {
-            $sid = (int)$row['EventSessionId'];
-            if (!isset($grouped[$sid])) {
-                $grouped[$sid] = [];
-            }
-            $grouped[$sid][] = EventSessionLabel::fromRow($row);
+        foreach ($labels as $label) {
+            $grouped[$label->eventSessionId][] = $label;
         }
 
         return $grouped;
     }
 
     /**
+     * Attaches a new label to a session.
+     *
+     * @return int The auto-incremented EventSessionLabelId.
      * @inheritDoc
      */
     public function create(int $sessionId, string $labelText): int
@@ -107,6 +130,9 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
     }
 
     /**
+     * Removes all labels from a session. Useful when replacing the full label set during
+     * an admin edit (delete-all then re-create pattern).
+     *
      * @inheritDoc
      */
     public function deleteAllForSession(int $sessionId): bool

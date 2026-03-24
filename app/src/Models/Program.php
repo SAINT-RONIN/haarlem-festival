@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `Program` SQL table.
+ * Represents a row in the Program table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * A program is a visitor's shopping cart — it collects selected event sessions before checkout.
+ * Linked to either a session key (anonymous) or a user account (logged in).
  */
-class Program
+final readonly class Program
 {
     /*
      * Purpose: Represents a user's shopping cart/program containing
@@ -18,11 +18,11 @@ class Program
      */
 
     public function __construct(
-        public readonly int                $programId,
-        public readonly ?int               $userAccountId,
-        public readonly ?string            $sessionKey,
-        public readonly \DateTimeImmutable $createdAtUtc,
-        public readonly bool               $isCheckedOut,
+        public int                $programId,
+        public ?int               $userAccountId,
+        public ?string            $sessionKey,
+        public \DateTimeImmutable $createdAtUtc,
+        public bool               $isCheckedOut,
     ) {
     }
 

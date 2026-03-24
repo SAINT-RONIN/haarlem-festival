@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `EventType` SQL table.
+ * Represents a row in the EventType table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Defines the festival categories (Jazz, Storytelling, History, Dance, Restaurant) that
+ * determine which public page an event appears on.
  */
-class EventType
+final readonly class EventType
 {
     /*
      * Purpose: Categorizes events by type (Jazz, Dance, History, etc.)
@@ -18,9 +18,9 @@ class EventType
      */
 
     public function __construct(
-        public readonly int    $eventTypeId,
-        public readonly string $name,
-        public readonly string $slug,
+        public int    $eventTypeId,
+        public string $name,
+        public string $slug,
     ) {
     }
 

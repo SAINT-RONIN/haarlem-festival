@@ -3,10 +3,7 @@
  * CMS Event create page.
  *
  * @var string $currentView
- * @var array $eventTypes
- * @var \App\Models\Venue[] $venues
- * @var string|null $errorMessage
- * @var string $preselectedDay Pre-selected day from URL (passed from controller)
+ * @var \App\ViewModels\Cms\CmsEventCreateViewModel $viewModel
  */
 ?>
 <!DOCTYPE html>
@@ -33,15 +30,13 @@
             <h1 class="text-2xl font-bold text-gray-900">Create New Event</h1>
         </header>
 
-        <!-- Error Message -->
-        <?php if (!empty($errorMessage)): ?>
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <?= htmlspecialchars($errorMessage) ?>
-            </div>
-        <?php endif; ?>
+        <!-- Flash Messages -->
+        <?php require __DIR__ . '/../../partials/cms/_flash-messages.php'; ?>
 
         <!-- Create Form -->
-        <form action="/cms/events" method="POST" class="max-w-2xl">
+        <form action="/cms/events" method="POST" class="max-w-2xl"
+              data-jazz-type-id="<?= \App\Enums\EventTypeId::Jazz->value ?>"
+              data-restaurant-type-id="<?= \App\Enums\EventTypeId::Restaurant->value ?>">
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900">Event Details</h2>
@@ -57,7 +52,7 @@
                         <select name="EventTypeId" id="EventTypeId" required
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                             <option value="">Select event type...</option>
-                            <?php foreach ($eventTypes as $type): ?>
+                            <?php foreach ($viewModel->eventTypes as $type): ?>
                                 <option value="<?= $type->eventTypeId ?>">
                                     <?= htmlspecialchars($type->name) ?>
                                 </option>
@@ -113,7 +108,7 @@
                             <select name="VenueId" id="VenueId"
                                     class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                                 <option value="">No venue selected</option>
-                                <?php foreach ($venues as $venue): ?>
+                                <?php foreach ($viewModel->venues as $venue): ?>
                                     <?php /** @var \App\Models\Venue $venue */ ?>
                                     <option value="<?= $venue->venueId ?>">
                                         <?= htmlspecialchars($venue->name) ?>
@@ -163,6 +158,54 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Artist (shown for Jazz events only) -->
+                    <div id="artistField" class="hidden">
+                        <label for="ArtistId" class="block text-sm font-medium text-gray-700 mb-1">
+                            Artist
+                        </label>
+                        <select name="ArtistId" id="ArtistId"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                            <option value="">No artist selected</option>
+                            <?php foreach ($viewModel->artists as $artist): ?>
+                                <?php /** @var \App\Models\Artist $artist */ ?>
+                                <option value="<?= $artist->artistId ?>">
+                                    <?= htmlspecialchars($artist->name) ?>
+                                    <?php if ($artist->style !== ''): ?>
+                                        — <?= htmlspecialchars($artist->style) ?>
+                                    <?php endif; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Select the artist performing at this Jazz event.
+                            <a href="/cms/artists/create" class="text-blue-600 hover:underline" target="_blank">Create a new artist</a>
+                        </p>
+                    </div>
+
+                    <!-- Restaurant (shown for Restaurant events only) -->
+                    <div id="restaurantField" class="hidden">
+                        <label for="RestaurantId" class="block text-sm font-medium text-gray-700 mb-1">
+                            Restaurant
+                        </label>
+                        <select name="RestaurantId" id="RestaurantId"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                            <option value="">No restaurant selected</option>
+                            <?php foreach ($viewModel->restaurants as $restaurant): ?>
+                                <?php /** @var \App\Models\Restaurant $restaurant */ ?>
+                                <option value="<?= $restaurant->restaurantId ?>">
+                                    <?= htmlspecialchars($restaurant->name) ?>
+                                    <?php if ($restaurant->city !== ''): ?>
+                                        — <?= htmlspecialchars($restaurant->city) ?>
+                                    <?php endif; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Select the restaurant for this Restaurant event.
+                            <a href="/cms/restaurants/create" class="text-blue-600 hover:underline" target="_blank">Create a new restaurant</a>
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Form Actions -->
@@ -194,12 +237,8 @@
                         <li>Set pricing for each session</li>
                         <li>Add labels/badges (e.g., "In Dutch", "Age 16+")</li>
                         <li>Configure the CTA button text and link</li>
-                        <?php if (true): // Jazz type specific?>
-                            <li>For Jazz: Set available seats per session</li>
-                        <?php endif; ?>
-                        <?php if (true): // History type specific?>
-                            <li>For History: Set ticket type labels</li>
-                        <?php endif; ?>
+                        <li>For Jazz: Set available seats per session</li>
+                        <li>For History: Set ticket type labels</li>
                     </ul>
                 </div>
             </div>
@@ -209,6 +248,25 @@
 
 <script src="/assets/js/cms/cms-common.js"></script>
 <script src="/assets/js/cms/event-create.js"></script>
+<script>
+(function () {
+    var form = document.querySelector('form[data-jazz-type-id]');
+    var typeSelect = document.getElementById('EventTypeId');
+    var artistField = document.getElementById('artistField');
+    var restaurantField = document.getElementById('restaurantField');
+    var JAZZ_TYPE = parseInt(form.dataset.jazzTypeId, 10);
+    var RESTAURANT_TYPE = parseInt(form.dataset.restaurantTypeId, 10);
+
+    function updateVisibility() {
+        var val = parseInt(typeSelect.value, 10);
+        artistField.classList.toggle('hidden', val !== JAZZ_TYPE);
+        restaurantField.classList.toggle('hidden', val !== RESTAURANT_TYPE);
+    }
+
+    typeSelect.addEventListener('change', updateVisibility);
+    updateVisibility();
+}());
+</script>
 </body>
 </html>
 

@@ -4,25 +4,48 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\EventSession;
+use App\Models\EventSessionFilter;
+use App\Models\ScheduleDayData;
+use App\Models\SessionQueryResult;
 
 /**
- * Interface for EventSession repository.
+ * Contract for managing event sessions (individual bookable time slots within an event).
+ * Supports heavily-filtered queries with joins to Event, EventType, Venue, and Artist,
+ * plus day-grouped results for the public schedule UI.
  */
 interface IEventSessionRepository
 {
     /**
-     * Returns upcoming sessions with event and type details.
+     * Queries sessions with optional filters, returning a result set that includes pagination metadata.
      *
-     * @return array Array of session data with joined event/type info
+     * @return SessionQueryResult
      */
-    public function findUpcomingWithDetails(): array;
+    public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult;
 
     /**
-     * Returns all sessions for an event.
+     * Returns distinct session dates for building filter UI.
      *
-     * @param int $eventId
-     * @return EventSession[]
+     * @return ScheduleDayData[]
      */
-    public function findByEventId(int $eventId): array;
+    public function findDistinctDays(EventSessionFilter $filter): array;
+
+    /**
+     * Inserts a new event session and returns the generated ID.
+     */
+    public function create(array $data): int;
+
+    /**
+     * Updates an event session's columns and returns whether any row was affected.
+     */
+    public function update(int $sessionId, array $data): bool;
+
+    /**
+     * Deletes an event session by its ID.
+     */
+    public function delete(int $sessionId): bool;
+
+    /**
+     * Bulk-deactivates all sessions belonging to an event.
+     */
+    public function deactivateByEventId(int $eventId): bool;
 }

@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\Cms\DashboardViewModel;
-use App\ViewModels\Cms\PagesListViewModel;
+use App\Models\CmsDashboardData;
 
 /**
- * Interface for CMS Dashboard service operations.
+ * Defines the contract for assembling CMS dashboard and page overview data.
  */
 interface ICmsDashboardService
 {
     /**
-     * Gets dashboard data including recent pages and activities.
+     * Aggregates statistics and recent activity into a single dashboard payload.
      */
-    public function getDashboardData(string $userName): DashboardViewModel;
+    public function getDashboardData(): CmsDashboardData;
 
     /**
-     * Gets pages list data for the pages management view.
+     * Returns all CMS pages for the pages management list.
+     *
+     * @return \App\Models\CmsPage[]
      */
-    public function getPagesListData(string $searchQuery, string $userName): PagesListViewModel;
+    public function getPagesListData(): array;
 }

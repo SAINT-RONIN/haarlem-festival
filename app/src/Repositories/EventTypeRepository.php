@@ -6,11 +6,15 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventType;
+use App\Models\EventTypeFilter;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use PDO;
 
 /**
- * Repository for EventType database operations.
+ * Read-only access to the EventType lookup table.
+ *
+ * Event types categorise festival events (e.g. "Jazz", "Dance", "Food")
+ * and are referenced by Event, ScheduleDayConfig, and PassType.
  */
 class EventTypeRepository implements IEventTypeRepository
 {
@@ -22,50 +26,31 @@ class EventTypeRepository implements IEventTypeRepository
     }
 
     /**
-     * Returns all event types.
+     * Retrieves event types with optional ID filter and configurable sort order.
      *
      * @return EventType[]
      */
-    public function findAll(): array
+    public function findEventTypes(EventTypeFilter $filter = new EventTypeFilter()): array
     {
-        $stmt = $this->pdo->prepare('
+        $sql = '
             SELECT EventTypeId, Name, Slug
             FROM EventType
-            ORDER BY EventTypeId ASC
-        ');
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            WHERE 1 = 1
+        ';
+        $params = [];
 
-        return array_map([EventType::class, 'fromRow'], $rows);
-    }
+        if ($filter->eventTypeId !== null) {
+            $sql .= ' AND EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = (int)$filter->eventTypeId;
+        }
 
-    /**
-     * Returns a single event type by ID.
-     *
-     * @param int $eventTypeId
-     * @return EventType|null
-     */
-    public function findById(int $eventTypeId): ?EventType
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT EventTypeId, Name, Slug
-            FROM EventType
-            WHERE EventTypeId = :eventTypeId
-        ');
-        $stmt->execute(['eventTypeId' => $eventTypeId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $orderBy = is_string($filter->orderBy) ? strtolower($filter->orderBy) : 'id';
+        $sql .= $orderBy === 'name'
+            ? ' ORDER BY Name ASC'
+            : ' ORDER BY EventTypeId ASC';
 
-        return $result ? EventType::fromRow($result) : null;
-    }
-
-    /**
-     * Returns all event types for dropdown.
-     *
-     * @return EventType[]
-     */
-    public function findAllForDropdown(): array
-    {
-        $stmt = $this->pdo->query('SELECT EventTypeId, Name, Slug FROM EventType ORDER BY Name ASC');
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return array_map([EventType::class, 'fromRow'], $rows);

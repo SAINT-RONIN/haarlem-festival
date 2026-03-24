@@ -4,25 +4,40 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
+use App\Models\CmsPage;
+use App\Models\CmsPageEditData;
+use App\Models\CmsSectionEditData;
+use App\Models\CmsUpdateResult;
+
 /**
- * Interface for CMS page editing service.
+ * Contract for CMS page editing: loading page/section/item trees for the editor,
+ * persisting content updates with per-type validation, and resolving preview URLs.
  */
 interface ICmsEditService
 {
     /**
-     * Gets a page with all its sections and items for editing.
-     *
-     * @param int $pageId Page ID
-     * @return array|null Array with 'page', 'sections' keys or null if not found
+     * Loads a page with all its sections and editable items (including media asset metadata).
+     * Returns null when the page ID does not exist.
      */
-    public function getPageForEditing(int $pageId): ?array;
+    public function getPageForEditing(int $pageId): ?CmsPageEditData;
 
     /**
-     * Updates multiple CMS items from form submission.
+     * Validates and persists updates for multiple CMS items in a single form submission.
      *
-     * @param int $pageId The page ID for validation
-     * @param array $items Array of item updates
-     * @return array ['success' => bool, 'errors' => array, 'updatedCount' => int]
+     * @param array<int|string, mixed> $items [itemId => value_string]
+     * @throws \App\Exceptions\CmsEditException if an item ID does not belong to the given page
      */
-    public function updatePageItems(int $pageId, array $items): array;
+    public function updatePageItems(int $pageId, array $items): CmsUpdateResult;
+
+    /**
+     * Builds a route-aware preview URL for CMS page edit screens.
+     *
+     * @param CmsSectionEditData[] $sections
+     */
+    public function resolvePreviewUrl(CmsPage $page, array $sections): string;
+
+    /**
+     * Updates a single CMS item's media asset.
+     */
+    public function updateItemImage(int $itemId, int $mediaAssetId): bool;
 }

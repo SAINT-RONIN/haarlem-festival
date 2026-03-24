@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `OrderItem` SQL table.
+ * Represents a row in the OrderItem table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Each item links an order to a specific session with quantity, unit price, and VAT rate.
+ * Supports both single tickets and reserved seats.
  */
-class OrderItem
+final readonly class OrderItem
 {
     /*
      * Purpose: Stores individual items in an order (tickets, passes, tours)
@@ -18,16 +18,16 @@ class OrderItem
      */
 
     public function __construct(
-        public readonly int     $orderItemId,
-        public readonly int     $orderId,
-        public readonly ?int    $eventSessionId,
-        public readonly ?int    $historyTourId,
-        public readonly ?int    $passPurchaseId,
-        public readonly int     $quantity,
-        public readonly string  $unitPrice,
-        public readonly string  $vatRate,
-        public readonly ?string $donationAmount,
-        public readonly string  $specialRequest,
+        public int     $orderItemId,
+        public int     $orderId,
+        public ?int    $eventSessionId,
+        public ?int    $historyTourId,
+        public ?int    $passPurchaseId,
+        public int     $quantity,
+        public string  $unitPrice,
+        public string  $vatRate,
+        public ?string $donationAmount,
+        public string  $specialRequest,
     ) {
     }
 

@@ -7,7 +7,8 @@ namespace App\Repositories\Interfaces;
 use App\Models\PasswordResetToken;
 
 /**
- * Interface for PasswordResetToken repository.
+ * Contract for managing password reset tokens.
+ * Tokens are stored as SHA-256 hashes; the raw token is only sent via email.
  */
 interface IPasswordResetTokenRepository
 {

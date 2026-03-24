@@ -10,6 +10,7 @@ use App\ViewModels\Cms\DashboardViewModel;
 use App\ViewModels\Cms\PagesListViewModel;
 
 $currentView = $currentView ?? 'dashboard';
+$viewModel = $viewModel ?? null;
 
 // Extract data from ViewModel for use in partials
 if ($viewModel instanceof DashboardViewModel) {
@@ -66,4 +67,3 @@ if ($viewModel instanceof DashboardViewModel) {
 <script src="/assets/js/cms/cms-common.js"></script>
 </body>
 </html>
-

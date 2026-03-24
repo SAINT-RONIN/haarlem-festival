@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for venues section data.
+ * Section data for the jazz page venues section — section heading and array of venue blocks.
  */
 final readonly class VenuesData
 {

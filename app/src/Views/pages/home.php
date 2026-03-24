@@ -3,37 +3,15 @@
  * @var \App\ViewModels\HomePageViewModel $viewModel
  */
 
-$heroData = $viewModel->heroData;
-$globalUi = $viewModel->globalUi;
 $eventTypes = $viewModel->eventTypes;
 $locations = $viewModel->locations;
 $scheduleDays = $viewModel->scheduleDays;
-$cms = $viewModel->cmsContent;
-$currentPage = 'home';
-$includeNav = false;
-
-// Ensure isLoggedIn is available in cms global_ui for hero.php partial
-if (isset($cms['global_ui'])) {
-    $cms['global_ui']['is_logged_in'] = $globalUi->isLoggedIn;
-}
+$pageContentPartials = [
+    __DIR__ . '/../partials/explore-banner.php',
+    __DIR__ . '/../partials/intro-section.php',
+    __DIR__ . '/../partials/events-showcase-section.php',
+    __DIR__ . '/../partials/locations-section.php',
+    __DIR__ . '/../partials/schedule-section.php',
+];
 ?>
-<?php require __DIR__ . '/../partials/header.php'; ?>
-
-<main class="w-full bg-sand inline-flex flex-col justify-start items-center">
-
-    <?php require __DIR__ . '/../partials/hero.php'; ?>
-
-    <?php require __DIR__ . '/../partials/explore-banner.php'; ?>
-
-    <?php require __DIR__ . '/../partials/intro-section.php'; ?>
-
-    <?php require __DIR__ . '/../partials/events-showcase-section.php'; ?>
-
-    <?php require __DIR__ . '/../partials/locations-section.php'; ?>
-
-    <?php require __DIR__ . '/../partials/schedule-section.php'; ?>
-
-</main>
-
-<?php require __DIR__ . '/../partials/footer.php'; ?>
-
+<?php require __DIR__ . '/../partials/_shell.php'; ?>

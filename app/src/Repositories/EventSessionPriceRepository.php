@@ -6,11 +6,15 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionPrice;
+use App\Models\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use PDO;
 
 /**
- * Repository for EventSessionPrice database operations.
+ * Manages the EventSessionPrice table, which stores per-session pricing by tier
+ * (e.g. standard, VIP, pay-what-you-like). Each row links a session to a price tier
+ * with an amount, currency, and VAT rate. Supports bulk lookup keyed by session ID
+ * for efficiently hydrating session listings with their price options.
  */
 class EventSessionPriceRepository implements IEventSessionPriceRepository
 {
@@ -22,75 +26,88 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
     }
 
     /**
-     * Find all prices for a session with tier names (joined query).
+     * Retrieves prices with optional filtering by session ID. Uses a 'WHERE 1=1' base
+     * to simplify dynamic condition appending.
      *
-     * @return array<int, array{
-     *     EventSessionPriceId: int,
-     *     EventSessionId: int,
-     *     PriceTierId: int,
-     *     Price: string,
-     *     CurrencyCode: string,
-     *     VatRate: string,
-     *     PriceTierName: string
-     * }>
+     * @return EventSessionPrice[] Ordered by session then tier. Empty array if no matches.
      */
-    public function findBySessionId(int $sessionId): array
+    public function findPrices(EventSessionRelatedFilter $filters = new EventSessionRelatedFilter()): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT esp.EventSessionPriceId, esp.EventSessionId, esp.PriceTierId,
-                   esp.Price, esp.CurrencyCode, esp.VatRate,
-                   pt.Name AS PriceTierName
-            FROM EventSessionPrice esp
-            INNER JOIN PriceTier pt ON esp.PriceTierId = pt.PriceTierId
-            WHERE esp.EventSessionId = :sessionId
-            ORDER BY esp.PriceTierId ASC
-        ');
-        $stmt->execute(['sessionId' => $sessionId]);
+        $sql = '
+            SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate
+            FROM EventSessionPrice
+            WHERE 1 = 1
+        ';
+        $params = [];
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($filters->sessionId !== null) {
+            $sql .= ' AND EventSessionId = :sessionId';
+            $params['sessionId'] = $filters->sessionId;
+        }
+
+        $sql .= ' ORDER BY EventSessionId ASC, PriceTierId ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map([EventSessionPrice::class, 'fromRow'], $rows);
     }
 
     /**
-     * Find all prices for multiple sessions.
+     * Batch-fetches prices for multiple sessions in a single query, then groups them
+     * by session ID. Used to efficiently attach price data when rendering session lists.
      *
-     * @param array<int> $sessionIds
-     * @return array<int, EventSessionPrice[]>
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionPrice[]> Keyed by EventSessionId. Missing IDs are absent (not empty arrays).
      */
-    public function findBySessionIds(array $sessionIds): array
+    public function findPricesBySessionIds(array $sessionIds): array
     {
-        if (empty($sessionIds)) {
+        // Deduplicate and cast IDs to int before building the IN clause
+        $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
+        if ($normalizedIds === []) {
             return [];
         }
 
-        $placeholders = implode(',', array_fill(0, count($sessionIds), '?'));
-        $stmt = $this->pdo->prepare("
+        // Build numbered placeholders (:sessionId0, :sessionId1, ...) for the IN clause
+        $params = [];
+        $inPlaceholders = [];
+        foreach ($normalizedIds as $index => $sessionId) {
+            $paramName = 'sessionId' . $index;
+            $inPlaceholders[] = ':' . $paramName;
+            $params[$paramName] = $sessionId;
+        }
+
+        $sql = '
             SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate
             FROM EventSessionPrice
-            WHERE EventSessionId IN ($placeholders)
-            ORDER BY EventSessionId, PriceTierId ASC
-        ");
-        $stmt->execute($sessionIds);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            WHERE EventSessionId IN (' . implode(', ', $inPlaceholders) . ')
+            ORDER BY EventSessionId ASC, PriceTierId ASC
+        ';
 
-        // Group by session ID
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $prices = array_map([EventSessionPrice::class, 'fromRow'], $rows);
+
         $grouped = [];
-        foreach ($rows as $row) {
-            $sid = (int)$row['EventSessionId'];
-            if (!isset($grouped[$sid])) {
-                $grouped[$sid] = [];
-            }
-            $grouped[$sid][] = EventSessionPrice::fromRow($row);
+        foreach ($prices as $price) {
+            $grouped[$price->eventSessionId][] = $price;
         }
 
         return $grouped;
     }
 
     /**
+     * Creates or updates a price entry for a session+tier combination. New rows
+     * default to 21% VAT. The composite key (EventSessionId, PriceTierId) determines
+     * whether to insert or update.
+     *
      * @inheritDoc
      */
     public function upsert(int $sessionId, int $priceTierId, float $price, string $currencyCode = 'EUR'): bool
     {
-        // Check if exists
+        // Check if a price row already exists for this session+tier pair
         $stmt = $this->pdo->prepare('
             SELECT EventSessionPriceId FROM EventSessionPrice
             WHERE EventSessionId = :sessionId AND PriceTierId = :priceTierId
@@ -122,6 +139,8 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
     }
 
     /**
+     * Removes a specific price tier from a session (e.g. when an admin removes VIP pricing).
+     *
      * @inheritDoc
      */
     public function deleteBySessionAndTier(int $sessionId, int $priceTierId): bool

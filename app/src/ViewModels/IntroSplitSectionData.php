@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels;
 
 /**
- * DTO for the intro text + image split section.
- *
- * All fields are guaranteed to be populated by the Service layer.
+ * Split-layout intro section data shared across landing pages.
  */
 final readonly class IntroSplitSectionData
 {

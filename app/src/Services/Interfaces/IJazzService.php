@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\ViewModels\Jazz\JazzPageViewModel;
+use App\Models\JazzPageData;
 
 /**
  * Interface for Jazz page service.
@@ -12,9 +12,7 @@ use App\ViewModels\Jazz\JazzPageViewModel;
 interface IJazzService
 {
     /**
-     * Builds the Jazz page view model with all required data.
-     *
-     * @return JazzPageViewModel Prepared data for the Jazz view
+     * Assembles the complete domain payload for the Jazz overview page, including CMS content, artists, and sessions.
      */
-    public function getJazzPageData(): JazzPageViewModel;
+    public function getJazzPageData(): JazzPageData;
 }
