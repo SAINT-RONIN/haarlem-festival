@@ -318,7 +318,6 @@ final class ScheduleMapper
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_all_ages_label', 'All ages'),
                     value: 'all',
-                    isDefault: true,
                     isActive: $active === null,
                 ),
                 new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_4_label', '4+'), value: '4', isActive: $active === '4'),
