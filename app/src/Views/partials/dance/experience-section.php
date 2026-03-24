@@ -1,15 +1,17 @@
-<section class="container mx-auto px-4 py-12">
-    <h2 class="text-3xl font-bold mb-8">
-        <?= htmlspecialchars($viewModel->experienceData->title) ?>
-    </h2>
+<section class="w-full py-20 bg-slate-50 text-slate-900">
+    <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-4xl font-bold mb-10">
+            <?= htmlspecialchars($experienceData['title'] ?? 'The Festival Experience') ?>
+        </h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <?php foreach ($viewModel->experienceData->imageUrls as $imageUrl): ?>
-            <img
-                src="<?= htmlspecialchars($imageUrl) ?>"
-                alt="Dance festival experience"
-                class="w-full rounded-xl object-cover"
-            >
-        <?php endforeach; ?>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <?php foreach (($experienceData['images'] ?? []) as $image): ?>
+                <img
+                        src="<?= htmlspecialchars((string)$image) ?>"
+                        alt="Dance experience"
+                        class="w-full h-72 object-cover rounded-2xl shadow"
+                >
+            <?php endforeach; ?>
+        </div>
     </div>
 </section>
