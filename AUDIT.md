@@ -52,7 +52,7 @@
 | 15 | **Day pass** | ⚠️ PARTIAL | Same as above — DB models ready, **no frontend UI.** |
 | 16 | **Edit general event info** (CMS) | ✅ IMPLEMENTED | CMS page editor supports editing event overview pages. |
 | 17 | **Manage event entities (CRUD)** | ✅ IMPLEMENTED | Full CRUD for Artists, Restaurants, Events, Sessions, Venues via CMS. |
-| 18 | **Manage tickets and availabilities** | ⚠️ PARTIAL | Admin can set capacity/limits per session. **No enforcement during checkout** (capacity not checked before payment). |
+| 18 | **Manage tickets and availabilities** | ✅ IMPLEMENTED | Admin can set capacity/limits per session. Enforced at checkout via `validateItemAvailability()` with atomic seat reservation in `CheckoutService`. |
 
 ---
 
@@ -83,13 +83,13 @@
 | # | Requirement | Status | Notes |
 |---|------------|--------|-------|
 | 27 | **WYSIWYG editor on HTML fields** | ✅ IMPLEMENTED | TinyMCE 6 integrated for HTML content items in CMS page editor. |
-| 28 | **Image upload in WYSIWYG editor** | ❌ MISSING | TinyMCE configured with `lists` and `link` plugins only. No `image` plugin. |
+| 28 | **Image upload in WYSIWYG editor** | ✅ IMPLEMENTED | TinyMCE `image` plugin added with `images_upload_handler` that uploads to existing CMS endpoint. Supports toolbar button and drag-and-drop. |
 | 29 | **Featured image management** | ✅ IMPLEMENTED | Media library at `/cms/media` with upload/delete. Events have `FeaturedImageAssetId`. Separate image picker in CMS forms. |
 | 30 | **All pages are dynamic** (no static content) | ✅ IMPLEMENTED | All page content loaded from DB via `CmsContentRepository`. Views are structural templates; text comes from database. |
-| 31 | **Social media sharing** | ❌ MISSING | No share buttons on event pages. No Open Graph meta tags. Only an Instagram link in footer. |
-| 32 | **Ticket availability enforcement** | ❌ MISSING | Capacity fields exist in DB, admin can set limits, but no runtime enforcement during checkout. |
-| 33 | **Sold-out prevention** | ❌ MISSING | No check preventing orders when max capacity reached. |
-| 34 | **90% single-ticket cap** | ❌ MISSING | Not implemented anywhere. |
+| 31 | **Social media sharing** | ✅ IMPLEMENTED | Share buttons (Facebook, X, WhatsApp) on jazz artist detail and storytelling detail pages via reusable `_social-share.php` partial. |
+| 32 | **Ticket availability enforcement** | ✅ IMPLEMENTED | `CheckoutService::validateItemAvailability()` checks quantity vs available seats. Atomic `decrementCapacity()` in DB transaction prevents overselling. Capacity restored on cancel/expiry. |
+| 33 | **Sold-out prevention** | ✅ IMPLEMENTED | Checkout blocked when `getAvailableSeats() <= 0`. Atomic WHERE guard in `decrementCapacity()` prevents going below zero under concurrency. |
+| 34 | **90% single-ticket cap** | ✅ IMPLEMENTED | `CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO = 0.9` enforced in `validateItemAvailability()`. Remaining 10% reserved for pass holders. |
 | 35 | **Payment status verification** | ✅ IMPLEMENTED | Stripe webhook verifies payment status. Idempotent processing. Status transitions properly tracked. |
 | 36 | **Invoice required fields** | ⚠️ PARTIAL | DB schema has all required fields (invoice number, date, client info, subtotals, VAT rates). No generation logic. |
 | 37 | **Ticket required fields** | ⚠️ PARTIAL | DB schema has `ticketCode`, scanning fields. No ticket creation, no QR code generation. |
@@ -111,11 +111,11 @@
 |---------|:-:|:-:|:-:|
 | 1. Users | 4 | 0 | 1 |
 | 2. General Information | 2 | 0 | 0 |
-| 3. Events | 3 | 5 | 0 |
+| 3. Events | 4 | 4 | 0 |
 | 4. Shopping Cart | 1 | 0 | 0 |
 | 5. Orders | 2 | 1 | 3 |
-| 6. Additional Requirements | 10 | 2 | 6 |
-| **TOTAL** | **22** | **8** | **10** |
+| 6. Additional Requirements | 15 | 2 | 1 |
+| **TOTAL** | **28** | **7** | **5** |
 
 ---
 
@@ -126,9 +126,9 @@
 | Must | Ticket PDF generation + email | ❌ | No PDF lib, no QR lib, no ticket creation logic, no email sending |
 | Must | Invoice PDF generation + email | ❌ | No PDF generation, no invoice creation after payment |
 | Must | QR code (secure, not guessable) | ❌ | No QR library installed, no generation code |
-| Must | Ticket availability enforcement | ❌ | Capacity fields in DB but no runtime check during checkout |
-| Must | Sold-out prevention | ❌ | No check before order confirmation |
-| Must | 90% single-ticket cap | ❌ | Not implemented |
+| ~~Must~~ | ~~Ticket availability enforcement~~ | ✅ | ~~Implemented in `CheckoutService` with atomic `decrementCapacity()`~~ |
+| ~~Must~~ | ~~Sold-out prevention~~ | ✅ | ~~Checkout blocked when available seats <= 0~~ |
+| ~~Must~~ | ~~90% single-ticket cap~~ | ✅ | ~~Enforced via `CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO`~~ |
 | Must | Ticket scanner (employee) | ❌ | No controller, no UI, no camera integration |
 | Must | Customer account management | ❌ | No routes/views for customers to edit their profile |
 | Must | Pay later flow | ⚠️ | 24h deadline stored but no retry/resume payment mechanism |
@@ -136,11 +136,10 @@
 | Must | Passes (all-access + day) UI | ⚠️ | DB models exist, no frontend to purchase |
 | Must | Dance event pages | ⚠️ | Enum + config exist, no controller/view/route |
 | Must | Post-purchase personal program | ⚠️ | Cart exists, no order history page for customers |
-| Must | Ticket/availability enforcement at checkout | ⚠️ | Admin can set limits, not enforced at purchase time |
-| Should | Image upload in WYSIWYG | ❌ | TinyMCE lacks `image` plugin |
+| ~~Should~~ | ~~Image upload in WYSIWYG~~ | ✅ | ~~TinyMCE `image` plugin with upload handler added~~ |
 | Should | Invoice schema completion | ⚠️ | DB fields ready, no generation logic |
 | Should | Ticket schema completion | ⚠️ | DB fields ready, no creation logic |
-| Could | Social media sharing | ❌ | No share buttons or OG meta tags |
+| ~~Could~~ | ~~Social media sharing~~ | ✅ | ~~Share buttons on jazz and storytelling detail pages~~ |
 
 ---
 
@@ -150,7 +149,7 @@
 
 1. **Ticket + Invoice generation pipeline** — Install a PDF library (e.g. TCPDF or Dompdf), QR code library (e.g. `endroid/qr-code`). After successful Stripe webhook, generate Ticket rows with secure random codes, create QR codes, build PDF tickets and invoices, email them via `EmailService`.
 
-2. **Availability enforcement** — Add capacity checks in `CheckoutService` before creating Stripe session. Implement sold-out prevention and the 90% single-ticket cap. Use DB transactions to prevent race conditions.
+2. ~~**Availability enforcement**~~ ✅ DONE — Capacity checks in `CheckoutService::validateItemAvailability()`, atomic `decrementCapacity()` in transaction, capacity restored on cancel/expiry. 90% single-ticket cap enforced via `CheckoutConstraints`.
 
 3. **Ticket scanner** — Create `ScannerController` with mobile-friendly page. Integrate camera-based QR scanning (e.g. `html5-qrcode` JS library). Add `POST /api/scan` endpoint to mark tickets as scanned with duplicate-scan warnings.
 
@@ -164,7 +163,7 @@
 
 ### Priority 2 — Should-Have
 
-8. **WYSIWYG image upload** — Add `image` plugin to TinyMCE config and wire `images_upload_handler` to the existing media upload endpoint.
+8. ~~**WYSIWYG image upload**~~ ✅ DONE — TinyMCE `image` plugin added with `images_upload_handler` pointing to existing CMS upload endpoint. Supports toolbar button and drag-and-drop.
 
 9. **Pass purchase UI** — Build frontend for adding all-access and day passes to cart, leveraging existing `PassType`/`PassPurchase` models.
 
@@ -172,4 +171,4 @@
 
 ### Priority 3 — Could-Have
 
-11. **Social media sharing** — Add share buttons (Facebook, Twitter/X, WhatsApp) to event detail pages. Add Open Graph meta tags.
+11. ~~**Social media sharing**~~ ✅ DONE — Share buttons (Facebook, X, WhatsApp) added to jazz artist detail and storytelling detail pages via reusable `_social-share.php` partial.
