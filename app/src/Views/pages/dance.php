@@ -51,7 +51,7 @@ $cms = [
 
                     <?php foreach ($artists as $artist): ?>
 
-                        <!-- ✅ THIS IS THE IMPORTANT CLICKABLE CARD -->
+                        <!--  THIS IS THE IMPORTANT CLICKABLE CARD -->
                         <a href="/dance/<?= htmlspecialchars($artist['slug']) ?>"
                            class="block bg-white rounded-3xl shadow hover:shadow-xl transition overflow-hidden">
 

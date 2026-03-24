@@ -13,10 +13,11 @@ final class DanceArtistContentProvider
                 'name' => 'Hardwell',
                 'slug' => 'hardwell',
                 'genre' => 'Dance | EDM',
-                'heroImage' => '/assets/Image/dance/dance.jpg',
+                'image' => '/assets/Image/Dance/hardwelllll.jpg',
+                'heroImage' => '/assets/Image/Dance/hardwell h2.jpg',
                 'gallery' => [
-                    '/assets/Image/dance/dance.jpg',
-                    '/assets/Image/dance/banner.jpg',
+                    '/assets/Image/Dance/hardwell h2.jpg',
+                    '/assets/Image/Dance/hardwelllll.jpg',
                     '/assets/Image/Image (Dance).png',
                 ],
                 'videos' => [
@@ -29,8 +30,8 @@ final class DanceArtistContentProvider
                     'Known for his high-energy live sets and melodic drops.',
                 ],
                 'albums' => [
-                    ['title' => 'United We Are', 'image' => '/assets/Image/dance/dance.jpg'],
-                    ['title' => 'Rebels Never Die', 'image' => '/assets/Image/dance/banner.jpg'],
+                    ['title' => 'United We Are', 'image' => '/assets/Image/Dance/hardwelllll.jpg'],
+                    ['title' => 'Rebels Never Die', 'image' => '/assets/Image/Dance/hardwell h2.jpg'],
                 ],
                 'schedule' => [
                     ['day' => 'Friday', 'time' => '20:00', 'venue' => 'XO the Club', 'price' => '€29.50'],
@@ -43,11 +44,12 @@ final class DanceArtistContentProvider
                 'name' => 'Armin van Buuren',
                 'slug' => 'armin-van-buuren',
                 'genre' => 'Trance | Techno',
-                'heroImage' => '/assets/Image/dance/dance.jpg',
+                'image' => '/assets/Image/Dance/arminnn header.jpg',
+                'heroImage' => '/assets/Image/Dance/arminnn header.jpg',
                 'gallery' => [
-                    '/assets/Image/dance/dance.jpg',
-                    '/assets/Image/dance/banner.jpg',
+                    '/assets/Image/Dance/arminnn header.jpg',
                     '/assets/Image/Image (Dance).png',
+                    '/assets/Image/Dance/hardwell h2.jpg',
                 ],
                 'videos' => [
                     'Main stage clip',
@@ -59,8 +61,8 @@ final class DanceArtistContentProvider
                     'He continues to innovate through his label Armada Music.',
                 ],
                 'albums' => [
-                    ['title' => 'Shivers', 'image' => '/assets/Image/dance/dance.jpg'],
-                    ['title' => '76', 'image' => '/assets/Image/dance/banner.jpg'],
+                    ['title' => 'Shivers', 'image' => '/assets/Image/Dance/arminnn header.jpg'],
+                    ['title' => '76', 'image' => '/assets/Image/Dance/arminnn header.jpg'],
                 ],
                 'schedule' => [
                     ['day' => 'Friday', 'time' => '21:30', 'venue' => 'Caprera Openluchttheater', 'price' => '€32.50'],
@@ -73,11 +75,12 @@ final class DanceArtistContentProvider
                 'name' => 'Martin Garrix',
                 'slug' => 'martin-garrix',
                 'genre' => 'Dance | Electronic',
-                'heroImage' => '/assets/Image/dance/dance.jpg',
+                'image' => '/assets/Image/Dance/martin h1.jpg',
+                'heroImage' => '/assets/Image/Dance/martin h1.jpg',
                 'gallery' => [
-                    '/assets/Image/dance/dance.jpg',
-                    '/assets/Image/dance/banner.jpg',
+                    '/assets/Image/Dance/martin h1.jpg',
                     '/assets/Image/Image (Dance).png',
+                    '/assets/Image/Dance/hardwelllll.jpg',
                 ],
                 'videos' => [
                     'Festival anthem clip',
@@ -89,8 +92,8 @@ final class DanceArtistContentProvider
                     'Performs on major international stages.',
                 ],
                 'albums' => [
-                    ['title' => 'Sentio', 'image' => '/assets/Image/dance/dance.jpg'],
-                    ['title' => 'IDEM', 'image' => '/assets/Image/dance/banner.jpg'],
+                    ['title' => 'Sentio', 'image' => '/assets/Image/Dance/martin h1.jpg'],
+                    ['title' => 'IDEM', 'image' => '/assets/Image/Dance/martin h1.jpg'],
                 ],
                 'schedule' => [
                     ['day' => 'Saturday', 'time' => '21:00', 'venue' => 'Slachthuis', 'price' => '€34.50'],
@@ -102,11 +105,12 @@ final class DanceArtistContentProvider
                 'name' => 'Tiësto',
                 'slug' => 'tiesto',
                 'genre' => 'Trance | Techno | Minimal | House',
-                'heroImage' => '/assets/Image/dance/dance.jpg',
+                'image' => '/assets/Image/Dance/tiesto.jpg',
+                'heroImage' => '/assets/Image/Dance/tiesto.jpg',
                 'gallery' => [
-                    '/assets/Image/dance/dance.jpg',
-                    '/assets/Image/dance/banner.jpg',
+                    '/assets/Image/Dance/tiesto.jpg',
                     '/assets/Image/Image (Dance).png',
+                    '/assets/Image/Dance/martin h1.jpg',
                 ],
                 'videos' => [
                     'Arena clip',
@@ -118,8 +122,8 @@ final class DanceArtistContentProvider
                     'Long-standing influence on dance music culture.',
                 ],
                 'albums' => [
-                    ['title' => 'Drive', 'image' => '/assets/Image/dance/dance.jpg'],
-                    ['title' => 'A Town Called Paradise', 'image' => '/assets/Image/dance/banner.jpg'],
+                    ['title' => 'Drive', 'image' => '/assets/Image/Dance/tiesto.jpg'],
+                    ['title' => 'A Town Called Paradise', 'image' => '/assets/Image/Dance/tiesto.jpg'],
                 ],
                 'schedule' => [
                     ['day' => 'Saturday', 'time' => '23:00', 'venue' => 'Lichtfabriek', 'price' => '€36.00'],
@@ -131,11 +135,12 @@ final class DanceArtistContentProvider
                 'name' => 'Nicky Romero',
                 'slug' => 'nicky-romero',
                 'genre' => 'Electrohouse | Progressive House',
-                'heroImage' => '/assets/Image/dance/dance.jpg',
+                'image' => '/assets/Image/Image (Dance).png',
+                'heroImage' => '/assets/Image/Image (Dance).png',
                 'gallery' => [
-                    '/assets/Image/dance/dance.jpg',
-                    '/assets/Image/dance/banner.jpg',
                     '/assets/Image/Image (Dance).png',
+                    '/assets/Image/Dance/martin h1.jpg',
+                    '/assets/Image/Dance/tiesto.jpg',
                 ],
                 'videos' => [
                     'Progressive house set clip',
@@ -147,8 +152,8 @@ final class DanceArtistContentProvider
                     'Frequent performer on major dance stages.',
                 ],
                 'albums' => [
-                    ['title' => 'Redefine', 'image' => '/assets/Image/dance/dance.jpg'],
-                    ['title' => 'Protocol Highlights', 'image' => '/assets/Image/dance/banner.jpg'],
+                    ['title' => 'Redefine', 'image' => '/assets/Image/Image (Dance).png'],
+                    ['title' => 'Protocol Highlights', 'image' => '/assets/Image/Image (Dance).png'],
                 ],
                 'schedule' => [
                     ['day' => 'Friday', 'time' => '19:30', 'venue' => 'Patronaat', 'price' => '€24.50'],
@@ -160,11 +165,12 @@ final class DanceArtistContentProvider
                 'name' => 'Afrojack',
                 'slug' => 'afrojack',
                 'genre' => 'House',
-                'heroImage' => '/assets/Image/dance/dance.jpg',
+                'image' => '/assets/Image/Dance/afrojack.jpg',
+                'heroImage' => '/assets/Image/Dance/afrojack.jpg',
                 'gallery' => [
-                    '/assets/Image/dance/dance.jpg',
-                    '/assets/Image/dance/banner.jpg',
+                    '/assets/Image/Dance/afrojack.jpg',
                     '/assets/Image/Image (Dance).png',
+                    '/assets/Image/Dance/tiesto.jpg',
                 ],
                 'videos' => [
                     'House festival clip',
@@ -176,8 +182,8 @@ final class DanceArtistContentProvider
                     'Strong influence on modern festival sound.',
                 ],
                 'albums' => [
-                    ['title' => 'Forget the World', 'image' => '/assets/Image/dance/dance.jpg'],
-                    ['title' => 'Press Play', 'image' => '/assets/Image/dance/banner.jpg'],
+                    ['title' => 'Forget the World', 'image' => '/assets/Image/Dance/afrojack.jpg'],
+                    ['title' => 'Press Play', 'image' => '/assets/Image/Dance/afrojack.jpg'],
                 ],
                 'schedule' => [
                     ['day' => 'Sunday', 'time' => '20:00', 'venue' => 'Lichtfabriek', 'price' => '€27.00'],
