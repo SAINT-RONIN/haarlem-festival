@@ -59,9 +59,11 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
 
-    //Dance Page
+    // Dance page
     $r->addRoute('GET', '/dance', [DanceController::class, 'index']);
-    $r->addRoute('GET', '/dance/{slug:[a-z0-9-]+}', [DanceController::class, 'detail']);
+    $r->addRoute('GET', '/dance/', [DanceController::class, 'index']);
+    $r->addRoute('GET', '/dance/{slug:[A-Za-z0-9-]+}', [DanceController::class, 'detail']);
+    $r->addRoute('GET', '/dance/{slug:[A-Za-z0-9-]+}/', [DanceController::class, 'detail']);
 
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
