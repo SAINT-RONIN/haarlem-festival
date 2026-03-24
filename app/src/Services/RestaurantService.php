@@ -90,6 +90,10 @@ class RestaurantService implements IRestaurantService
             cms: RestaurantDetailSectionContent::fromRawArray(
                 $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_DETAIL),
             ),
+
+
+
+
             globalUiContent: GlobalUiContent::fromRawArray(
                 $this->cmsService->getSectionContent('home', 'global_ui'),
             ),

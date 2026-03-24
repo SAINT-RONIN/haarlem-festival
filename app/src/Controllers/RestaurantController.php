@@ -92,38 +92,38 @@ class RestaurantController extends BaseController
      *
      * POST /restaurant/{id}/reservation
      */
-    public function submitReservation(string $id): void
-    {
-        $restaurantId = (int) $id;
-        $redirectUrl  = '/restaurant/' . $restaurantId . '/reservation';
-
-        $diningDate    = trim($_POST['dining_date'] ?? '');
-        $timeSlot      = trim($_POST['time_slot']   ?? '');
-        $adultsCount   = (int) ($_POST['adults_count']   ?? 0);
-        $childrenCount = (int) ($_POST['children_count'] ?? 0);
-
-        $errors = [];
-        if (!in_array($diningDate, self::VALID_DATES, true)) {
-            $errors[] = 'Please select a valid date.';
-        }
-        if ($timeSlot === '') {
-            $errors[] = 'Please select a time slot.';
-        }
-        if ($adultsCount + $childrenCount < 1) {
-            $errors[] = 'Please add at least one guest.';
-        }
-
-        if ($errors !== []) {
-            $_SESSION['reservation_errors']    = $errors;
-            $_SESSION['reservation_old_input'] = $_POST;
-            header('Location: ' . $redirectUrl);
-            return;
-        }
-
-        $this->reservationRepository->insert(
-            RestaurantMapper::toReservation($_POST, $restaurantId, self::RESERVATION_FEE)
-        );
-
-        header('Location: ' . $redirectUrl . '?success=1');
-    }
+//    public function submitReservation(string $id): void
+//    {
+//        $restaurantId = (int) $id;
+//        $redirectUrl  = '/restaurant/' . $restaurantId . '/reservation';
+//
+//        $diningDate    = trim($_POST['dining_date'] ?? '');
+//        $timeSlot      = trim($_POST['time_slot']   ?? '');
+//        $adultsCount   = (int) ($_POST['adults_count']   ?? 0);
+//        $childrenCount = (int) ($_POST['children_count'] ?? 0);
+//
+//        $errors = [];
+//        if (!in_array($diningDate, self::VALID_DATES, true)) {
+//            $errors[] = 'Please select a valid date.';
+//        }
+//        if ($timeSlot === '') {
+//            $errors[] = 'Please select a time slot.';
+//        }
+//        if ($adultsCount + $childrenCount < 1) {
+//            $errors[] = 'Please add at least one guest.';
+//        }
+//
+//        if ($errors !== []) {
+//            $_SESSION['reservation_errors']    = $errors;
+//            $_SESSION['reservation_old_input'] = $_POST;
+//            header('Location: ' . $redirectUrl);
+//            return;
+//        }
+//
+//        $this->reservationRepository->insert(
+//            RestaurantMapper::toReservation($_POST, $restaurantId, self::RESERVATION_FEE)
+//        );
+//
+//        header('Location: ' . $redirectUrl . '?success=1');
+//    }
 }
