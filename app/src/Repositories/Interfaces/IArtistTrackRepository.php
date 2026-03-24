@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\ArtistTrack;
 
+/**
+ * Defines persistence operations for artist tracks linked to events.
+ */
 interface IArtistTrackRepository
 {
     /**

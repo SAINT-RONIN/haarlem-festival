@@ -14,8 +14,8 @@ final readonly class JazzPageData
      */
     public function __construct(
         public HeroSectionContent $heroSection,
-        public JazzGradientSectionContent $gradientSection,
-        public JazzIntroSectionContent $introSection,
+        public GradientSectionContent $gradientSection,
+        public IntroSectionContent $introSection,
         public JazzVenuesSectionContent $venuesSection,
         public JazzPricingSectionContent $pricingSection,
         public JazzScheduleCtaSectionContent $scheduleCtaSection,

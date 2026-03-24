@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `PageGalleryImage` table.
+ * Represents a row in the PageGalleryImage table.
+ *
+ * Gallery images associated with CMS pages rather than specific events.
  */
-class PageGalleryImage
+final readonly class PageGalleryImage
 {
     public function __construct(
-        public readonly int    $pageGalleryImageId,
-        public readonly int    $cmsPageId,
-        public readonly string $imagePath,
-        public readonly string $imageType,
-        public readonly int    $sortOrder,
+        public int    $pageGalleryImageId,
+        public int    $cmsPageId,
+        public string $imagePath,
+        public string $imageType,
+        public int    $sortOrder,
     ) {}
 
     public static function fromRow(array $row): self

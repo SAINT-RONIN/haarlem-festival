@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IEventGalleryImageRepository;
 use PDO;
 
 /**
- * Repository for EventGalleryImage database operations.
+ * Read-only access to the EventGalleryImage table.
+ *
+ * Stores gallery/carousel images for an event detail page, with an optional
+ * ImageType discriminator (e.g. "hero", "gallery") to separate different usages.
  */
 class EventGalleryImageRepository implements IEventGalleryImageRepository
 {
@@ -28,24 +31,20 @@ class EventGalleryImageRepository implements IEventGalleryImageRepository
      */
     public function findByEventId(int $eventId, ?string $imageType = null): array
     {
-        try {
-            $sql = 'SELECT * FROM EventGalleryImage WHERE EventId = :eventId';
-            $params = ['eventId' => $eventId];
+        $sql = 'SELECT * FROM EventGalleryImage WHERE EventId = :eventId';
+        $params = ['eventId' => $eventId];
 
-            if ($imageType !== null) {
-                $sql .= ' AND ImageType = :imageType';
-                $params['imageType'] = $imageType;
-            }
-
-            $sql .= ' ORDER BY SortOrder ASC';
-
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            return array_map([EventGalleryImage::class, 'fromRow'], $rows);
-        } catch (\PDOException) {
-            return [];
+        if ($imageType !== null) {
+            $sql .= ' AND ImageType = :imageType';
+            $params['imageType'] = $imageType;
         }
+
+        $sql .= ' ORDER BY SortOrder ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map([EventGalleryImage::class, 'fromRow'], $rows);
     }
 }

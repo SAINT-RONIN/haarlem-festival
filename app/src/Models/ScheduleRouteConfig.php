@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Resolved configuration for a schedule API request.
+ * Routing configuration for a schedule page — maps URL slugs to event type IDs
+ * and page titles. Used by ScheduleService to determine which events to show.
  */
 final readonly class ScheduleRouteConfig
 {

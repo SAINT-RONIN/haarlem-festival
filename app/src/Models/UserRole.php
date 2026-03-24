@@ -12,7 +12,7 @@ use App\Enums\UserRoleName;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class UserRole
+final readonly class UserRole
 {
     /*
      * Purpose: Defines user roles (Customer, Employee, Administrator)
@@ -20,8 +20,8 @@ class UserRole
      */
 
     public function __construct(
-        public readonly int          $userRoleId,
-        public readonly UserRoleName $roleName,
+        public int          $userRoleId,
+        public UserRoleName $roleName,
     ) {
     }
 

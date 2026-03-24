@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
+use App\Helpers\ScheduleDayVisibilityResolver;
 use App\Exceptions\ValidationException;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
@@ -16,39 +16,47 @@ use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Repositories\Interfaces\IVenueRepository;
+use App\Models\EventEditBundle;
 use App\Models\EventFilter;
 use App\Models\EventSessionFilter;
+use App\Models\EventsListPageData;
+use App\Models\GroupedScheduleDayConfigs;
 use App\Models\EventTypeFilter;
+use App\Models\ScheduleDaysPageData;
 use App\Models\ScheduleDayConfigFilter;
 use App\Models\VenueFilter;
 use App\Services\Interfaces\ICmsEventsService;
-use App\Utils\CmsEventConstraints;
+use App\Constants\CmsEventConstraints;
 
 /**
- * Service for CMS Events management.
+ * CMS-side event and session management: CRUD, pricing, labels, and schedule visibility.
  *
- * Contains business logic and validation for event/session CRUD operations.
+ * Orchestrates ten+ repositories to provide event lifecycle operations. Key design decisions:
+ * - Events are soft-deleted (IsActive = 0) so historical order references remain valid.
+ * - Sessions with sold tickets cannot be hard-deleted; they must be cancelled instead.
+ * - Schedule day visibility uses a two-tier system: global defaults that can be overridden per event type.
+ * - Price input accepts European comma-decimal format (e.g. "12,50") and normalizes to float.
  */
 class CmsEventsService implements ICmsEventsService
 {
     public function __construct(
-        private IEventRepository $eventRepository,
-        private IEventSessionRepository $sessionRepository,
-        private IEventSessionLabelRepository $labelRepository,
-        private IEventSessionPriceRepository $priceRepository,
-        private IEventTypeRepository $eventTypeRepository,
-        private IVenueRepository $venueRepository,
-        private IPriceTierRepository $priceTierRepository,
-        private IScheduleDayConfigRepository $scheduleDayConfigRepository,
-        private IOrderItemRepository $orderItemRepository,
+        private readonly IEventRepository $eventRepository,
+        private readonly IEventSessionRepository $sessionRepository,
+        private readonly IEventSessionLabelRepository $labelRepository,
+        private readonly IEventSessionPriceRepository $priceRepository,
+        private readonly IEventTypeRepository $eventTypeRepository,
+        private readonly IVenueRepository $venueRepository,
+        private readonly IPriceTierRepository $priceTierRepository,
+        private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private readonly IOrderItemRepository $orderItemRepository,
+        private readonly ScheduleDayVisibilityResolver $visibilityResolver,
     ) {
     }
 
     /**
-     * Gets all events with details for listing, with optional filtering.
+     * Returns active events enriched with session counts, for the CMS events list.
      *
-     * @param int|null $eventTypeId Filter by event type
-     * @param string|null $dayOfWeek Filter by day (e.g., 'Monday')
+     * @return \App\Models\Event[]
      */
     public function getAllEventsWithDetails(?int $eventTypeId = null, ?string $dayOfWeek = null): array
     {
@@ -61,9 +69,7 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets all event types for dropdown.
-     *
-     * @return \App\Models\EventType[]
+     * @return \App\Models\EventType[] Ordered by name, for populating filter/form dropdowns.
      */
     public function getEventTypes(): array
     {
@@ -71,13 +77,36 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets all venues for dropdown.
-     *
-     * @return \App\Models\Venue[]
+     * @return \App\Models\Venue[] Active venues only, for populating form dropdowns.
      */
     public function getVenues(): array
     {
         return $this->venueRepository->findVenues(new VenueFilter(isActive: true));
+    }
+
+    /**
+     * Assembles events, event types, venues, and weekly schedule into a single page payload,
+     * so the controller only needs one service call to render the events list view.
+     */
+    public function getEventsListPageData(?int $eventTypeId = null, ?string $dayOfWeek = null): EventsListPageData
+    {
+        return new EventsListPageData(
+            events: $this->getAllEventsWithDetails($eventTypeId, $dayOfWeek),
+            eventTypes: $this->getEventTypes(),
+            venues: $this->getVenues(),
+            weeklySchedule: $this->getWeeklyScheduleOverview($eventTypeId),
+        );
+    }
+
+    /**
+     * Assembles all data needed for the CMS schedule days management page.
+     */
+    public function getScheduleDaysPageData(): ScheduleDaysPageData
+    {
+        return new ScheduleDaysPageData(
+            eventTypes: $this->getEventTypes(),
+            grouped: $this->getGroupedScheduleDayConfigs(),
+        );
     }
 
     /**
@@ -119,8 +148,9 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets weekly schedule overview for CMS.
-     * Returns SessionWithEvent models grouped by day of week across all 7 days.
+     * Builds a Mon-Sun schedule grid by fetching active, non-cancelled sessions
+     * and bucketing them by day name. Empty days are included so the UI can render
+     * a full 7-day grid without null checks.
      *
      * @return array<string, \App\Models\SessionWithEvent[]>
      */
@@ -189,15 +219,12 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets a single event with all related data for editing.
-     *
-     * Returns an array with keys: event, sessions, pricesMap, labelsMap.
-     * Returns null when the event does not exist.
-     *
-     * @return array{event: \App\Models\EventWithDetails, sessions: \App\Models\SessionWithEvent[], pricesMap: array, labelsMap: array}|null
+     * Assembles a single event together with its sessions, prices, and labels
+     * into an EventEditBundle for the CMS edit form. Returns null when the event does not exist.
      */
-    public function getEventForEdit(int $eventId): ?array
+    public function getEventForEdit(int $eventId): ?EventEditBundle
     {
+        // Load the event with its session count
         $event = $this->eventRepository->findEvents(new EventFilter(
             eventId: $eventId,
             includeSessionCount: true,
@@ -206,20 +233,22 @@ class CmsEventsService implements ICmsEventsService
             return null;
         }
 
+        // Load all sessions (including cancelled) for the edit view
         $sessions = $this->sessionRepository->findSessions(new EventSessionFilter(
             eventId: $eventId,
             includeCancelled: true,
             orderBy: 'es.StartDateTime ASC',
         ))->sessions;
 
+        // Batch-load prices and labels for all sessions
         [$pricesMap, $labelsMap] = $this->loadSessionPricesAndLabels($sessions);
 
-        return [
-            'event'     => $event,
-            'sessions'  => $sessions,
-            'pricesMap' => $pricesMap,
-            'labelsMap' => $labelsMap,
-        ];
+        return new EventEditBundle(
+            event: $event,
+            sessions: $sessions,
+            pricesMap: $pricesMap,
+            labelsMap: $labelsMap,
+        );
     }
 
     /**
@@ -290,9 +319,10 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Deletes an event session.
+     * Hard-deletes an event session. Blocked if any order items reference this session
+     * (sessions with sold tickets must be cancelled instead).
      *
-     * @throws ValidationException
+     * @throws ValidationException When tickets have already been sold for this session
      */
     public function deleteSession(int $sessionId): bool
     {
@@ -330,8 +360,10 @@ class CmsEventsService implements ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function setSessionPrice(int $sessionId, int $priceTierId, float $price): bool
+    public function setSessionPrice(int $sessionId, int $priceTierId, string $rawPrice): bool
     {
+        // Normalize comma decimal separators (e.g. "12,50" -> "12.50") for European input
+        $price = (float) str_replace(',', '.', $rawPrice);
         $errors = $this->validatePrice($priceTierId, $price);
         if (!empty($errors)) {
             throw new ValidationException($errors);
@@ -373,7 +405,7 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Validates session data.
+     * Validates session data: required dates, chronological order, URL format, and numeric constraints.
      */
     private function validateSession(array $data): array
     {
@@ -402,7 +434,7 @@ class CmsEventsService implements ICmsEventsService
             }
         }
 
-        // CtaUrl validation
+        // CTA URLs can be absolute (https://...) or site-relative (/path, #anchor)
         if (!empty($data['CtaUrl'])) {
             $url = trim($data['CtaUrl']);
             $isAbsolute = filter_var($url, FILTER_VALIDATE_URL) !== false;
@@ -479,7 +511,7 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Validates a label.
+     * Validates label text (non-empty, length limit) and enforces a maximum labels-per-session cap.
      */
     private function validateLabel(int $sessionId, string $labelText): array
     {
@@ -505,7 +537,7 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Validates price data.
+     * Validates price: must be non-negative, and PayWhatYouLike tier must have a zero price.
      */
     private function validatePrice(int $priceTierId, float $price): array
     {
@@ -524,9 +556,10 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Deletes an event (soft delete - sets IsActive = 0).
+     * Soft-deletes an event and deactivates all its sessions.
+     * The event remains in the database (IsActive = 0) for historical order references.
      *
-     * @throws ValidationException
+     * @throws ValidationException When the event does not exist
      */
     public function deleteEvent(int $eventId): void
     {
@@ -534,12 +567,13 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException(['Event not found']);
         }
 
+        // Soft-delete the event, then cascade-deactivate its sessions
         $this->eventRepository->softDelete($eventId);
-        $this->eventRepository->deactivateSessions($eventId);
+        $this->sessionRepository->deactivateByEventId($eventId);
     }
 
     /**
-     * Gets all schedule day visibility configurations.
+     * Returns all schedule day configs (both global and per-event-type), sorted by scope.
      */
     public function getScheduleDayConfigs(): array
     {
@@ -547,15 +581,15 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets schedule day configs grouped into 'global' and 'byType' buckets.
-     *
-     * @return array{global: array<int, mixed>, byType: array<int, array<int, mixed>>}
+     * Partitions schedule day configs into global defaults vs. per-event-type overrides,
+     * keyed by day-of-week number, for rendering the two-tier visibility grid in the CMS.
      */
-    public function getGroupedScheduleDayConfigs(): array
+    public function getGroupedScheduleDayConfigs(): GroupedScheduleDayConfigs
     {
         $dayConfigs = $this->getScheduleDayConfigs();
         $globalConfigs = [];
         $typeConfigs   = [];
+        // Configs without an eventTypeId are global defaults; those with one are type-specific overrides
         foreach ($dayConfigs as $config) {
             if (!$config->eventTypeId) {
                 $globalConfigs[(int)$config->dayOfWeek] = $config;
@@ -563,7 +597,7 @@ class CmsEventsService implements ICmsEventsService
                 $typeConfigs[(int)$config->eventTypeId][(int)$config->dayOfWeek] = $config;
             }
         }
-        return ['global' => $globalConfigs, 'byType' => $typeConfigs];
+        return new GroupedScheduleDayConfigs(global: $globalConfigs, byType: $typeConfigs);
     }
 
     /**
@@ -585,59 +619,13 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Gets visible days for an event type.
-     * Returns array of day numbers (0-6) that are visible.
+     * Determines which days of the week are visible for a given event type by merging
+     * global defaults with type-specific overrides. Type settings take precedence.
+     *
+     * @return int[] Day numbers (0=Sunday through 6=Saturday) that should be shown
      */
     public function getVisibleDays(?int $eventTypeId = null): array
     {
-        $globalSettings = $this->loadGlobalDaySettings();
-        $typeSettings = $this->loadTypeDaySettings($eventTypeId);
-
-        return $this->mergeVisibilitySettings($globalSettings, $typeSettings);
-    }
-
-    /**
-     * Loads global day visibility settings.
-     */
-    private function loadGlobalDaySettings(): array
-    {
-        $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: 0, orderBy: 'day')) as $row) {
-            $settings[$row->dayOfWeek] = $row->isVisible;
-        }
-        return $settings;
-    }
-
-    /**
-     * Loads type-specific day visibility settings.
-     */
-    private function loadTypeDaySettings(?int $eventTypeId): array
-    {
-        if ($eventTypeId === null) {
-            return [];
-        }
-
-        $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: $eventTypeId, orderBy: 'day')) as $row) {
-            $settings[$row->dayOfWeek] = $row->isVisible;
-        }
-        return $settings;
-    }
-
-    /**
-     * Merges global and type settings to get visible days.
-     */
-    private function mergeVisibilitySettings(array $globalSettings, array $typeSettings): array
-    {
-        $visibleDays = [];
-        foreach (DayOfWeek::cases() as $day) {
-            $dayValue = $day->value;
-            $isVisible = $typeSettings[$dayValue] ?? $globalSettings[$dayValue] ?? true;
-            if ($isVisible) {
-                $visibleDays[] = $dayValue;
-            }
-        }
-
-        return $visibleDays;
+        return $this->visibilityResolver->getVisibleDays($eventTypeId);
     }
 }

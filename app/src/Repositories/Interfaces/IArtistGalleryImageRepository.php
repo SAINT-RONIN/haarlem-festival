@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\ArtistGalleryImage;
 
+/**
+ * Defines persistence operations for artist gallery images linked to events.
+ */
 interface IArtistGalleryImageRepository
 {
     /**

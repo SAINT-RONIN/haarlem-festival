@@ -21,12 +21,6 @@ if (!isset($viewModel) || !$viewModel instanceof BaseViewModel) {
 }
 
 $cms = $viewModel->cms;
-
-// Keep compatibility with pages that still provide extra CMS blocks (for example HomePageViewModel::$cmsContent).
-if (property_exists($viewModel, 'cmsContent') && is_array($viewModel->cmsContent) && $viewModel->cmsContent !== []) {
-    $cms = array_merge($viewModel->cmsContent, $cms);
-}
-
 $currentPage = $viewModel->currentPage;
 $includeNav = $viewModel->includeNav;
 $isLoggedIn = $viewModel->globalUi->isLoggedIn;

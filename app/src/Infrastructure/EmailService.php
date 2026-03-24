@@ -90,7 +90,9 @@ EMAIL;
     }
 
     /**
-     * Sends an email via SMTP or logs it in development mode.
+     * Guards against accidental email delivery in development, then dispatches via SMTP.
+     *
+     * @throws \RuntimeException When SMTP is not configured or local sending is blocked
      */
     private function send(string $to, string $subject, string $body): bool
     {
@@ -155,7 +157,8 @@ EMAIL;
     }
 
     /**
-     * Resolves SMTP encryption based on MAIL_ENCRYPTION or port.
+     * Resolves SMTP encryption: honours explicit MAIL_ENCRYPTION env var,
+     * otherwise infers from port (465 = SMTPS, anything else = STARTTLS).
      */
     private function resolveEncryption(): string
     {

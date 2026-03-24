@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Constants\CmsMessages;
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\CmsEditException;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsDashboardMapper;
@@ -15,24 +16,31 @@ use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsPageEditViewModel;
 
 /**
- * Controller for the CMS Dashboard.
+ * Controller for the CMS Dashboard, page listing, and inline page editor.
  *
- * HTTP orchestration only:
- * - auth checks
- * - service calls
- * - selecting views / redirects / response codes
+ * Manages three main flows:
+ * 1. Dashboard overview — recent pages and activity log.
+ * 2. Pages list — searchable CMS page inventory.
+ * 3. Page edit — section-level content editing with AJAX image upload.
+ *
+ * Image uploads support two modes: linking an existing media-library asset
+ * or uploading a new file (which creates the asset and links it in one step).
+ *
+ * Uses extract() for view rendering to keep view files decoupled from
+ * controller internals (variables appear as locals in the template).
  */
-class CmsDashboardController
+class CmsDashboardController extends CmsBaseController
 {
     private const MEDIA_CONTEXT_CMS = 'cms';
     private const CSRF_SCOPE_PAGE_EDIT = 'cms_page_edit';
 
     public function __construct(
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
         private readonly ICmsDashboardService $cmsDashboardService,
         private readonly ICmsEditService $cmsEditService,
         private readonly IMediaAssetService $mediaAssetService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -41,20 +49,24 @@ class CmsDashboardController
      */
     public function index(): void
     {
-        CmsAuthController::requireAdmin($this->sessionService);
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
 
-        $currentView = 'dashboard';
-        $domainData = $this->cmsDashboardService->getDashboardData();
-        $viewModel = CmsDashboardMapper::toDashboardViewModel(
-            $domainData->recentPages,
-            $domainData->activities,
-            $this->getUserDisplayName(),
-        );
+            $currentView = 'dashboard';
+            $domainData = $this->cmsDashboardService->getDashboardData();
+            $viewModel = CmsDashboardMapper::toDashboardViewModel(
+                $domainData->recentPages,
+                $domainData->activities,
+                $this->getUserDisplayName(),
+            );
 
-        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
-            'currentView' => $currentView,
-            'viewModel' => $viewModel,
-        ]);
+            $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+                'currentView' => $currentView,
+                'viewModel' => $viewModel,
+            ]);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
     /**
@@ -63,18 +75,22 @@ class CmsDashboardController
      */
     public function pages(): void
     {
-        CmsAuthController::requireAdmin($this->sessionService);
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
 
-        $currentView = 'pages';
-        $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
-        $allPages = $this->cmsDashboardService->getPagesListData();
-        $viewModel = CmsDashboardMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
+            $currentView = 'pages';
+            $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
+            $allPages = $this->cmsDashboardService->getPagesListData();
+            $viewModel = CmsDashboardMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
 
-        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
-            'currentView' => $currentView,
-            'searchQuery' => $searchQuery,
-            'viewModel' => $viewModel,
-        ]);
+            $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+                'currentView' => $currentView,
+                'searchQuery' => $searchQuery,
+                'viewModel' => $viewModel,
+            ]);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
     /**
@@ -85,19 +101,20 @@ class CmsDashboardController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $pageId = $this->parsePositiveIntId($id);
+            $pageId = $this->parsePageId($id);
             if ($pageId === null) {
-                http_response_code(400);
-                echo CmsMessages::INVALID_PAGE_ID;
                 return;
             }
             $this->renderEditPage($pageId);
         } catch (CmsEditException $e) {
             http_response_code(500);
             require __DIR__ . '/../Views/pages/errors/500.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
+    /** Loads page data and renders the full edit view, or returns 404 if the page does not exist. */
     private function renderEditPage(int $pageId): void
     {
         $pageData = $this->cmsEditService->getPageForEditing($pageId);
@@ -154,17 +171,19 @@ class CmsDashboardController
     }
 
     /**
-     * Handles page content update.
+     * Handles page content update via a three-step validation pipeline:
+     * CSRF check -> items presence check -> persist and redirect.
+     * Each step short-circuits with a redirect if validation fails.
      * POST /cms/pages/{id}/edit
+     *
+     * @throws CmsEditException Caught internally; redirects with error flash.
      */
     public function update(string $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $pageId = $this->parsePositiveIntId($id);
+            $pageId = $this->parsePageId($id);
             if ($pageId === null) {
-                http_response_code(400);
-                echo CmsMessages::INVALID_PAGE_ID;
                 return;
             }
             $this->validateCsrfOrRedirect($pageId);
@@ -172,6 +191,8 @@ class CmsDashboardController
             $this->performUpdateAndRedirect($pageId);
         } catch (CmsEditException $e) {
             $this->handleUpdateError($e, $this->parsePositiveIntId($id));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
@@ -182,6 +203,7 @@ class CmsDashboardController
         exit;
     }
 
+    /** Validates the CSRF token from POST; redirects back to the edit page if invalid. */
     private function validateCsrfOrRedirect(int $pageId): void
     {
         $csrfToken = $_POST['csrf_token'] ?? null;
@@ -196,6 +218,7 @@ class CmsDashboardController
         }
     }
 
+    /** Ensures the submitted items array is non-empty; redirects if there is nothing to update. */
     private function validateItemsOrRedirect(int $pageId): void
     {
         $items = $_POST['items'] ?? [];
@@ -206,6 +229,7 @@ class CmsDashboardController
         }
     }
 
+    /** Persists the page item changes and redirects with a success or error flash. */
     private function performUpdateAndRedirect(int $pageId): void
     {
         $result = $this->cmsEditService->updatePageItems($pageId, $_POST['items']);
@@ -222,31 +246,31 @@ class CmsDashboardController
     }
 
     /**
-     * Handles image upload via AJAX.
+     * Handles image upload via AJAX for the page editor's image sections.
+     * Supports two flows: linking an existing media-library asset by ID,
+     * or uploading a brand-new file (multipart form data).
      * POST /cms/pages/{id}/upload-image
+     *
+     * @throws CmsEditException Caught internally; returns JSON error.
      */
     public function uploadImage(string $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             header('Content-Type: application/json');
-
-            $pageId = $this->parsePositiveIntId($id);
+            $pageId = $this->parsePageIdJson($id);
             if ($pageId === null) {
-                echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_PAGE_ID]);
                 return;
             }
-
-            if (!$this->isUploadRequestValid()) {
-                return;
-            }
-
-            $this->dispatchUploadAction();
+            $this->processUploadRequest();
         } catch (CmsEditException $e) {
             echo json_encode(['success' => false, 'error' => CmsMessages::UPDATE_UNEXPECTED_ERROR]);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
     }
 
+    /** Checks CSRF token and item ID for an upload request; outputs JSON errors and returns false if invalid. */
     private function isUploadRequestValid(): bool
     {
         $csrfToken = $_POST['csrf_token'] ?? null;
@@ -264,6 +288,7 @@ class CmsDashboardController
         return true;
     }
 
+    /** Routes the upload request to either link an existing asset or handle a new file upload. */
     private function dispatchUploadAction(): void
     {
         $itemId = (int)($_POST['item_id'] ?? 0);
@@ -277,6 +302,7 @@ class CmsDashboardController
         $this->handleNewFileUpload($itemId);
     }
 
+    /** Links an already-uploaded media asset to a page content item. */
     private function handleExistingAssetLink(int $itemId, int $mediaAssetId): void
     {
         try {
@@ -296,6 +322,7 @@ class CmsDashboardController
         return ['success' => true, 'mediaAssetId' => $mediaAssetId, 'filePath' => $filePath, 'message' => CmsMessages::IMAGE_LINK_SUCCESS];
     }
 
+    /** Validates that a file was submitted, then delegates to the upload-and-link flow. */
     private function handleNewFileUpload(int $itemId): void
     {
         if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
@@ -306,6 +333,7 @@ class CmsDashboardController
         $this->uploadAndLinkImage($itemId);
     }
 
+    /** Uploads the file to storage, creates a media asset record, and links it to the content item. */
     private function uploadAndLinkImage(int $itemId): void
     {
         try {
@@ -321,6 +349,33 @@ class CmsDashboardController
     {
         $name = $this->sessionService->get('user_display_name', CmsMessages::DEFAULT_ADMIN_NAME);
         return is_string($name) && $name !== '' ? $name : CmsMessages::DEFAULT_ADMIN_NAME;
+    }
+
+    private function parsePageId(string $id): ?int
+    {
+        $pageId = $this->parsePositiveIntId($id);
+        if ($pageId === null) {
+            http_response_code(400);
+            echo CmsMessages::INVALID_PAGE_ID;
+        }
+        return $pageId;
+    }
+
+    private function parsePageIdJson(string $id): ?int
+    {
+        $pageId = $this->parsePositiveIntId($id);
+        if ($pageId === null) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_PAGE_ID]);
+        }
+        return $pageId;
+    }
+
+    private function processUploadRequest(): void
+    {
+        if (!$this->isUploadRequestValid()) {
+            return;
+        }
+        $this->dispatchUploadAction();
     }
 
     private function parsePositiveIntId(string $id): ?int

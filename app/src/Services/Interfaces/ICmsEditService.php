@@ -10,19 +10,22 @@ use App\Models\CmsSectionEditData;
 use App\Models\CmsUpdateResult;
 
 /**
- * Interface for CMS page editing service.
+ * Contract for CMS page editing: loading page/section/item trees for the editor,
+ * persisting content updates with per-type validation, and resolving preview URLs.
  */
 interface ICmsEditService
 {
     /**
-     * Gets a page with all its sections and items for editing.
+     * Loads a page with all its sections and editable items (including media asset metadata).
+     * Returns null when the page ID does not exist.
      */
     public function getPageForEditing(int $pageId): ?CmsPageEditData;
 
     /**
-     * Updates multiple CMS items from form submission.
+     * Validates and persists updates for multiple CMS items in a single form submission.
      *
-     * @param array<int|string, mixed> $items Array of item updates: [itemId => value_string]
+     * @param array<int|string, mixed> $items [itemId => value_string]
+     * @throws \App\Exceptions\CmsEditException if an item ID does not belong to the given page
      */
     public function updatePageItems(int $pageId, array $items): CmsUpdateResult;
 

@@ -6,6 +6,11 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\EventGalleryImage;
 
+/**
+ * Contract for read-only access to gallery/carousel images linked to events.
+ * Images have an optional ImageType discriminator (e.g. "hero", "gallery")
+ * to separate different usages on the event detail page.
+ */
 interface IEventGalleryImageRepository
 {
     /**

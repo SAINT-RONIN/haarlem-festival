@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries CMS item values for the Storytelling masonry_section.
- * Image paths are stored in order as a typed array instead of 12 individual properties.
+ * CMS content for the storytelling page masonry image grid section.
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class StorytellingMasonrySectionContent
 {

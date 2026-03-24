@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 /**
- * Interface for Session management service.
+ * Contract for PHP session lifecycle, user authentication state, flash messages,
+ * and per-scope CSRF token management. All session reads/writes go through this
+ * interface so controllers never touch $_SESSION directly.
  */
 interface ISessionService
 {
@@ -40,11 +42,6 @@ interface ISessionService
     public function getUserId(): ?int;
 
     /**
-     * Gets the current user's role ID.
-     */
-    public function getRoleId(): ?int;
-
-    /**
      * Sets a session key to a scalar/array value.
      */
     public function set(string $key, mixed $value): void;
@@ -55,14 +52,14 @@ interface ISessionService
     public function get(string $key, mixed $default = null): mixed;
 
     /**
-     * Stores a flash message available for the next request.
+     * Stores a flash value available for the next request.
      */
-    public function setFlash(string $key, string $message): void;
+    public function setFlash(string $key, mixed $value): void;
 
     /**
-     * Retrieves and removes a flash message.
+     * Retrieves and removes a flash value.
      */
-    public function consumeFlash(string $key): ?string;
+    public function consumeFlash(string $key): mixed;
 
     /**
      * Generates (or returns existing) CSRF token for a form scope.

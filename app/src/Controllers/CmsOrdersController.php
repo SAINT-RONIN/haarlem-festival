@@ -9,14 +9,27 @@ use App\Mappers\CmsOrdersMapper;
 use App\Services\Interfaces\ICmsOrdersService;
 use App\Services\Interfaces\ISessionService;
 
-class CmsOrdersController
+/**
+ * CMS controller for viewing customer orders.
+ *
+ * Provides a read-only list of orders with optional payment-status filtering
+ * for admin review and support purposes. Intentionally read-only: order
+ * mutations (payment confirmation, refunds) happen through the payment
+ * provider webhooks, not through this controller.
+ */
+class CmsOrdersController extends CmsBaseController
 {
     public function __construct(
         private readonly ICmsOrdersService $ordersService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
     ) {
+        parent::__construct($sessionService);
     }
 
+    /**
+     * Displays the orders list with optional payment-status filtering.
+     * GET /cms/orders
+     */
     public function index(): void
     {
         try {
@@ -30,8 +43,8 @@ class CmsOrdersController
             $viewModel = CmsOrdersMapper::toListViewModel(
                 $ordersData,
                 $_GET['status'] ?? '',
-                $_GET['success'] ?? null,
-                $_GET['error'] ?? null,
+                $this->sessionService->consumeFlash('success'),
+                $this->sessionService->consumeFlash('error'),
             );
 
             require __DIR__ . '/../Views/pages/cms/orders.php';

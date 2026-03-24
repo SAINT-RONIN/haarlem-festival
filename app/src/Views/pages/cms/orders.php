@@ -30,18 +30,7 @@
             </div>
         </header>
 
-        <!-- Messages -->
-        <?php if (!empty($viewModel->successMessage)): ?>
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                <?= htmlspecialchars($viewModel->successMessage) ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (!empty($viewModel->errorMessage)): ?>
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <?= htmlspecialchars($viewModel->errorMessage) ?>
-            </div>
-        <?php endif; ?>
+        <?php require __DIR__ . '/../../partials/cms/_flash-messages.php'; ?>
 
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">
@@ -51,10 +40,10 @@
                     <select name="status" id="status"
                             class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                         <option value="">All Statuses</option>
-                        <?php foreach (['Pending', 'Paid', 'Cancelled', 'Expired', 'Refunded'] as $statusOption): ?>
-                            <option value="<?= htmlspecialchars($statusOption) ?>"
-                                    <?= $viewModel->selectedStatus === $statusOption ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($statusOption) ?>
+                        <?php foreach (\App\Enums\OrderStatus::cases() as $status): ?>
+                            <option value="<?= htmlspecialchars($status->value) ?>"
+                                    <?= $viewModel->selectedStatus === $status->value ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($status->value) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

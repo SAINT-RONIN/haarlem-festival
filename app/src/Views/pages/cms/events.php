@@ -15,8 +15,6 @@ $weeklySchedule = $viewModel->weeklySchedule;
 $venues = $viewModel->venues;
 $selectedType = $viewModel->selectedType;
 $selectedDay = $viewModel->selectedDay;
-$successMessage = $viewModel->successMessage;
-$errorMessage = $viewModel->errorMessage;
 
 // Define type colors for badges
 $typeColors = [
@@ -56,18 +54,7 @@ $typeColors = [
             </div>
         </header>
 
-        <!-- Messages -->
-        <?php if (!empty($successMessage)): ?>
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                <?= htmlspecialchars($successMessage) ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (!empty($errorMessage)): ?>
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <?= htmlspecialchars($errorMessage) ?>
-            </div>
-        <?php endif; ?>
+        <?php require __DIR__ . '/../../partials/cms/_flash-messages.php'; ?>
 
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">

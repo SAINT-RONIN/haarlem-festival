@@ -11,7 +11,6 @@ final class JazzArtistDetailConstants
 
     public const EVENT_SECTION_PREFIX = 'event_';
 
-    public const SCHEDULE_MAX_DAYS = 7;
     public const PAGE_CACHE_TTL_SECONDS = 300;
 
     public static function eventSectionKey(int $eventId): string

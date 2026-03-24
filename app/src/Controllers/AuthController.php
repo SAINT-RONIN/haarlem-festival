@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Models\RegistrationFormData;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ICaptchaService;
 use App\Services\Interfaces\ISessionService;
 
+/**
+ * Manages user authentication flows: login, registration, password reset, and logout.
+ * All form submissions use flash messages for error/success feedback across redirects.
+ */
 class AuthController
 {
     public function __construct(
@@ -18,6 +23,10 @@ class AuthController
     ) {
     }
 
+    /**
+     * Renders the login page with any flash error/success messages.
+     * GET /login
+     */
     public function showLogin(): void
     {
         try {
@@ -26,17 +35,19 @@ class AuthController
                 exit;
             }
 
-            $this->sessionService->start();
-            $error = $_SESSION['login_error'] ?? null;
-            $success = $_SESSION['login_success'] ?? null;
-            unset($_SESSION['login_error'], $_SESSION['login_success']);
+            $error = $this->sessionService->consumeFlash('login_error');
+            $success = $this->sessionService->consumeFlash('login_success');
 
             require __DIR__ . '/../Views/pages/login.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
+        } catch (\Throwable $throwable) {
+            ControllerErrorResponder::respond($throwable);
         }
     }
 
+    /**
+     * Authenticates the user with submitted credentials and starts a session on success.
+     * POST /login
+     */
     public function login(): void
     {
         try {
@@ -58,6 +69,10 @@ class AuthController
         }
     }
 
+    /**
+     * Destroys the user session and redirects to the homepage.
+     * POST /logout
+     */
     public function logout(): void
     {
         try {
@@ -69,6 +84,10 @@ class AuthController
         }
     }
 
+    /**
+     * Renders the registration form with reCAPTCHA, repopulating fields from flash on validation failure.
+     * GET /register
+     */
     public function showRegister(): void
     {
         try {
@@ -77,11 +96,9 @@ class AuthController
                 exit;
             }
 
-            $this->sessionService->start();
             $recaptchaSiteKey = $this->captchaService->getSiteKey();
-            $errors = $_SESSION['register_errors'] ?? [];
-            $oldInput = $_SESSION['register_input'] ?? [];
-            unset($_SESSION['register_errors'], $_SESSION['register_input']);
+            $errors = $this->sessionService->consumeFlash('register_errors') ?? [];
+            $oldInput = $this->sessionService->consumeFlash('register_input') ?? [];
 
             require __DIR__ . '/../Views/pages/register.php';
         } catch (\Throwable $error) {
@@ -89,60 +106,51 @@ class AuthController
         }
     }
 
+    /**
+     * Validates CAPTCHA and registration data, then creates a new user account.
+     * POST /register
+     */
     public function register(): void
     {
         try {
-            $data = [
-                'username' => $_POST['username'] ?? '',
-                'email' => $_POST['email'] ?? '',
-                'password' => $_POST['password'] ?? '',
-                'confirmPassword' => $_POST['confirm_password'] ?? '',
-                'firstName' => $_POST['first_name'] ?? '',
-                'lastName' => $_POST['last_name'] ?? '',
-            ];
-
+            // Extract form fields, then verify CAPTCHA before any further validation
+            $data = $this->extractRegistrationData();
             if (!$this->captchaService->verify($_POST['g-recaptcha-response'] ?? null, $_SERVER['REMOTE_ADDR'] ?? null)) {
-                $this->redirectWithErrors('/register', ['captcha' => 'Please complete the CAPTCHA verification.'], $data);
+                $this->redirectWithErrors('/register', ['captcha' => 'Please complete the CAPTCHA verification.'], $data->toArray());
                 return;
             }
-
-            $errors = $this->authService->validateRegistration($data);
-            if ($errors !== []) {
-                $this->redirectWithErrors('/register', $errors, $data);
-                return;
-            }
-
-            $this->authService->register($data);
-            $this->sessionService->start();
-            $_SESSION['login_success'] = 'Registration successful! Please log in.';
-            header('Location: /login');
-            exit;
+            $this->processRegistration($data);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
     }
 
+    /**
+     * Renders the forgot-password form with flash feedback.
+     * GET /forgot-password
+     */
     public function showForgotPassword(): void
     {
         try {
-            $this->sessionService->start();
-            $success = $_SESSION['forgot_success'] ?? null;
-            $error = $_SESSION['forgot_error'] ?? null;
-            unset($_SESSION['forgot_success'], $_SESSION['forgot_error']);
+            $success = $this->sessionService->consumeFlash('forgot_success');
+            $error = $this->sessionService->consumeFlash('forgot_error');
 
             require __DIR__ . '/../Views/pages/forgot-password.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
+        } catch (\Throwable $throwable) {
+            ControllerErrorResponder::respond($throwable);
         }
     }
 
+    /**
+     * Triggers a password-reset email (always shows success to prevent user enumeration).
+     * POST /forgot-password
+     */
     public function forgotPassword(): void
     {
         try {
             $email = trim($_POST['email'] ?? '');
             $this->authService->requestPasswordReset($email);
-            $this->sessionService->start();
-            $_SESSION['forgot_success'] = 'If an account exists with that email, you will receive a password reset link.';
+            $this->sessionService->setFlash('forgot_success', 'If an account exists with that email, you will receive a password reset link.');
             header('Location: /forgot-password');
             exit;
         } catch (\Throwable $error) {
@@ -150,66 +158,98 @@ class AuthController
         }
     }
 
+    /**
+     * Validates the reset token from the query string and renders the password-reset form.
+     * GET /reset-password?token=...
+     */
     public function showResetPassword(): void
     {
         try {
             $token = $_GET['token'] ?? '';
             $result = $this->authService->validateResetToken($token);
-
             $this->sessionService->start();
-            if (!$result['valid']) {
-                $error = $result['error'];
-                $validToken = false;
-            } else {
-                $error = $_SESSION['reset_error'] ?? null;
-                $validToken = true;
-                unset($_SESSION['reset_error']);
-            }
-
+            [$error, $validToken] = $this->resolveResetTokenState($result);
             require __DIR__ . '/../Views/pages/reset-password.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
     }
 
+    /**
+     * Processes the new password submission and redirects to login on success.
+     * POST /reset-password
+     */
     public function resetPassword(): void
     {
         try {
             $token = $_POST['token'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $confirmPassword = $_POST['confirm_password'] ?? '';
-            $result = $this->authService->resetPassword($token, $password, $confirmPassword);
-
-            if (!$result['success']) {
-                $this->sessionService->start();
-                $_SESSION['reset_error'] = $result['error'];
-                header('Location: /reset-password?token=' . urlencode($token));
-                exit;
-            }
-
-            $this->sessionService->start();
-            $_SESSION['login_success'] = 'Your password has been reset. Please log in with your new password.';
-            header('Location: /login');
-            exit;
+            $result = $this->authService->resetPassword($token, $_POST['password'] ?? '', $_POST['confirm_password'] ?? '');
+            $this->handleResetPasswordResult($result, $token);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
     }
 
+    private function extractRegistrationData(): RegistrationFormData
+    {
+        return new RegistrationFormData(
+            username: $_POST['username'] ?? '',
+            email: $_POST['email'] ?? '',
+            password: $_POST['password'] ?? '',
+            confirmPassword: $_POST['confirm_password'] ?? '',
+            firstName: $_POST['first_name'] ?? '',
+            lastName: $_POST['last_name'] ?? '',
+        );
+    }
+
+    private function processRegistration(RegistrationFormData $data): void
+    {
+        $dataArray = $data->toArray();
+        $errors = $this->authService->validateRegistration($dataArray);
+        if ($errors !== []) {
+            $this->redirectWithErrors('/register', $errors, $dataArray);
+            return;
+        }
+        $this->authService->register($dataArray);
+        $this->sessionService->setFlash('login_success', 'Registration successful! Please log in.');
+        header('Location: /login');
+        exit;
+    }
+
+    private function resolveResetTokenState(array $result): array
+    {
+        if (!$result['valid']) {
+            return [$result['error'], false];
+        }
+        $error = $this->sessionService->consumeFlash('reset_error');
+        return [$error, true];
+    }
+
+    private function handleResetPasswordResult(array $result, string $token): void
+    {
+        if (!$result['success']) {
+            $this->sessionService->setFlash('reset_error', $result['error']);
+            header('Location: /reset-password?token=' . urlencode($token));
+            exit;
+        }
+        $this->sessionService->setFlash('login_success', 'Your password has been reset. Please log in with your new password.');
+        header('Location: /login');
+        exit;
+    }
+
     private function redirectWithError(string $url, string $error): void
     {
-        $this->sessionService->start();
-        $_SESSION['login_error'] = $error;
+        $this->sessionService->setFlash('login_error', $error);
         header('Location: ' . $url);
         exit;
     }
 
     private function redirectWithErrors(string $url, array $errors, array $input): void
     {
-        $this->sessionService->start();
-        $_SESSION['register_errors'] = $errors;
+        // Strip sensitive fields before storing input in flash for form repopulation
         unset($input['password'], $input['confirmPassword']);
-        $_SESSION['register_input'] = $input;
+        $this->sessionService->setFlash('register_errors', $errors);
+        $this->sessionService->setFlash('register_input', $input);
         header('Location: ' . $url);
         exit;
     }

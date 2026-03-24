@@ -11,7 +11,10 @@ use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use PDO;
 
 /**
- * Repository for ScheduleDayConfig database operations.
+ * Manages the ScheduleDayConfig table, which controls which days of the week
+ * are visible on the public schedule for each event type.
+ *
+ * Rows can be global (EventTypeId = 0) or scoped to a specific event type.
  */
 class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
 {
@@ -23,12 +26,19 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
     }
 
     /**
+     * Retrieves schedule-day visibility configs, optionally including event type names.
+     *
+     * Supports two sort orders:
+     * - "scope": global configs first (EventTypeId = 0), then by event type and day
+     * - "day": purely by day of week
+     *
      * @return ScheduleDayConfig[]
      */
     public function findConfigs(ScheduleDayConfigFilter $filter = new ScheduleDayConfigFilter()): array
     {
         $includeEventTypeName = (bool)($filter->includeEventTypeName ?? false);
 
+        // When event type name is needed, join EventType to resolve the display label
         $sql = $includeEventTypeName
             ? '
                 SELECT
@@ -72,7 +82,9 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
     }
 
     /**
-     * Upserts a visibility setting.
+     * Inserts or updates a day-visibility setting using MySQL ON DUPLICATE KEY UPDATE.
+     * The unique key is (EventTypeId, DayOfWeek), so repeated calls for the same
+     * combination simply flip the IsVisible flag.
      */
     public function upsert(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {

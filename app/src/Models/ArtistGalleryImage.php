@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `ArtistGalleryImage` table.
+ * Represents a row in the ArtistGalleryImage table.
+ *
+ * Photo gallery images for jazz artist detail pages.
  */
-class ArtistGalleryImage
+final readonly class ArtistGalleryImage
 {
     public function __construct(
-        public readonly int    $artistGalleryImageId,
-        public readonly int    $eventId,
-        public readonly string $imagePath,
-        public readonly int    $sortOrder,
+        public int    $artistGalleryImageId,
+        public int    $eventId,
+        public string $imagePath,
+        public int    $sortOrder,
     ) {}
 
     public static function fromRow(array $row): self

@@ -45,6 +45,8 @@ final readonly class CmsEventEditViewModel
         public readonly array   $sessions,
         public readonly array   $sessionPrices,
         public readonly array   $sessionLabels,
+        public readonly ?string $successMessage = null,
+        public readonly ?string $errorMessage = null,
     ) {
     }
 

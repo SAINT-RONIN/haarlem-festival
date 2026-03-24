@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries CMS item values for the Jazz pricing_section.
+ * CMS content for the jazz page pricing cards section (tier names, descriptions, feature lists).
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class JazzPricingSectionContent
 {

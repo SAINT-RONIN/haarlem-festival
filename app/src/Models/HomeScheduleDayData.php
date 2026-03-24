@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * Data for a single day in the homepage schedule preview -- date label and session list.
+ */
 final readonly class HomeScheduleDayData
 {
     /**

@@ -9,15 +9,23 @@ use App\Models\HomeLocationData;
 use App\Models\HomePageData;
 use App\Models\HomeScheduleDayData;
 use App\Models\HomeScheduleSessionData;
-use App\Utils\HomeUiConfig;
+use App\Constants\HomeUiConfig;
 use App\ViewModels\HomeEventTypeViewModel;
 use App\ViewModels\HomeLocationViewModel;
 use App\ViewModels\HomePageViewModel;
 use App\ViewModels\HomeScheduleDayViewModel;
 use App\ViewModels\HomeScheduleSessionViewModel;
 
+/**
+ * Transforms HomePageData domain models into the HomePageViewModel consumed by the
+ * public home page, including hero, event-type cards, venue map locations, and the schedule grid.
+ */
 final class HomeMapper
 {
+    /**
+     * Builds the full home-page ViewModel by combining CMS hero/global-UI data
+     * with event types, map locations, and the weekly schedule.
+     */
     public static function toPageViewModel(HomePageData $data, bool $isLoggedIn): HomePageViewModel
     {
         $heroData = CmsMapper::toHeroData($data->heroContent, 'home');
@@ -47,7 +55,7 @@ final class HomeMapper
             button:      $t->button,
             image:       $t->image,
             darkBg:      $t->darkBg,
-            badgeClass:  $t->badgeClass,
+            badgeClass:  HomeUiConfig::BADGE_COLORS[$t->slug] ?? 'bg-gray-500',
         ), $eventTypes);
     }
 
@@ -61,7 +69,7 @@ final class HomeMapper
             name:       $l->name,
             address:    $l->address,
             category:   $l->category,
-            badgeClass: $l->badgeClass,
+            badgeClass: HomeUiConfig::BADGE_COLORS[$l->category] ?? 'bg-gray-500',
         ), $locations);
     }
 
@@ -100,6 +108,10 @@ final class HomeMapper
         return array_map([self::class, 'formatSingleSession'], $rawSessions);
     }
 
+    /**
+     * Converts a single schedule session into a ViewModel, looking up its display
+     * title and border color from HomeUiConfig constants keyed by event-type slug.
+     */
     private static function formatSingleSession(HomeScheduleSessionData $session): HomeScheduleSessionViewModel
     {
         $slug = $session->eventTypeSlug;
@@ -112,6 +124,7 @@ final class HomeMapper
         );
     }
 
+    /** Formats a start-end timestamp pair into "HH:MM -- HH:MM" using an en-dash separator. */
     private static function formatSessionTimes(int $earliestStart, int $latestEnd): string
     {
         return date('H:i', $earliestStart) . " \u{2013} " . date('H:i', $latestEnd);

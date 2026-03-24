@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries the CMS item values for the schedule_section of any event type page.
+ * CMS content for the schedule filter section.
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class ScheduleSectionContent
 {

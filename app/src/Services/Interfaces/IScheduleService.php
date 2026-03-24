@@ -6,6 +6,9 @@ namespace App\Services\Interfaces;
 
 use App\Models\ScheduleFilterParams;
 
+/**
+ * Defines the contract for building schedule page data for any event type.
+ */
 interface IScheduleService
 {
     /**

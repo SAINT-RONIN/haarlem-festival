@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for single venue data.
+ * A single venue block on the jazz page — name, description, image, and hall details.
  */
 final readonly class VenueData
 {

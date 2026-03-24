@@ -11,9 +11,15 @@ use App\Models\EventFilter;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\StorytellingDetailEvent;
+use App\Helpers\FormatHelper;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
 
+/**
+ * Manages CRUD operations on the Event table, with support for filtered listing
+ * that joins Venue, EventType, and aggregated EventSession data.
+ * Also provides slug-based lookups for public-facing Jazz and Storytelling detail pages.
+ */
 class EventRepository implements IEventRepository
 {
     private PDO $pdo;
@@ -23,6 +29,13 @@ class EventRepository implements IEventRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * Retrieves events with optional filtering by active status, event type, specific event,
+     * and day of week. Joins Venue and EventType for display names. When includeSessionCount
+     * is set, attaches aggregate session/ticket counts via a subquery on EventSession.
+     *
+     * @return EventWithDetails[] Sorted by event type name, then event title. Empty array if no matches.
+     */
     public function findEvents(EventFilter $filters = new EventFilter()): array
     {
         $includeSessionCount = (bool)($filters->includeSessionCount ?? false);
@@ -39,6 +52,7 @@ class EventRepository implements IEventRepository
                 et.Slug AS EventTypeSlug
         ';
 
+        // Append aggregate columns: number of sessions, total sold tickets, and total capacity per event
         if ($includeSessionCount) {
             $select .= ', COALESCE(es_count.SessionCount, 0) AS SessionCount, COALESCE(es_count.TotalSoldTickets, 0) AS TotalSoldTickets, COALESCE(es_count.TotalCapacity, 0) AS TotalCapacity';
         }
@@ -49,6 +63,7 @@ class EventRepository implements IEventRepository
             INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
         ';
 
+        // Left-join a derived table that aggregates session counts and ticket totals per event
         if ($includeSessionCount) {
             $sql .= '
             LEFT JOIN (
@@ -65,8 +80,9 @@ class EventRepository implements IEventRepository
         $conditions = [];
         $params = [];
 
+        // Filter events to only those with at least one session on the requested day of week
         if ($dayOfWeek !== null && $dayOfWeek !== '') {
-            $dayNumber = $this->dayNameToNumber($dayOfWeek);
+            $dayNumber = FormatHelper::dayNameToMysqlDayOfWeek($dayOfWeek);
             if ($dayNumber !== null) {
                 $sql .= '
                     INNER JOIN EventSession es_day
@@ -104,6 +120,11 @@ class EventRepository implements IEventRepository
         return array_map([EventWithDetails::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    /**
+     * Looks up a single active event by its URL slug and event type.
+     *
+     * @return array<string, mixed>|null Raw row data, or null if not found.
+     */
     private function queryActiveEventBySlug(string $slug, EventTypeId $eventType): ?array
     {
         $stmt = $this->pdo->prepare('
@@ -124,27 +145,31 @@ class EventRepository implements IEventRepository
         return is_array($row) ? $row : null;
     }
 
+    /**
+     * Finds an active Jazz event by its URL slug for the artist detail page.
+     *
+     * @return JazzArtistDetailEvent|null Null when no active Jazz event matches the slug.
+     */
     public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Jazz);
         return $row !== null ? JazzArtistDetailEvent::fromRow($row) : null;
     }
 
+    /**
+     * Finds an active Storytelling event by its URL slug for the detail page.
+     *
+     * @return StorytellingDetailEvent|null Null when no active Storytelling event matches the slug.
+     */
     public function findActiveStorytellingBySlug(string $slug): ?StorytellingDetailEvent
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
         return $row !== null ? StorytellingDetailEvent::fromRow($row) : null;
     }
 
-    private function dayNameToNumber(string $dayName): ?int
-    {
-        $map = [
-            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
-            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
-        ];
-        return $map[strtolower($dayName)] ?? null;
-    }
-
+    /**
+     * @return Event|null Null if no event exists with the given ID.
+     */
     public function findById(int $eventId): ?Event
     {
         $stmt = $this->pdo->prepare('SELECT * FROM Event WHERE EventId = :eventId');
@@ -153,6 +178,14 @@ class EventRepository implements IEventRepository
         return $result ? Event::fromRow($result) : null;
     }
 
+    /**
+     * Inserts a new event with IsActive defaulting to 1 (active).
+     * Nullable foreign keys (VenueId, ArtistId, RestaurantId) allow events
+     * that aren't tied to a specific venue, artist, or restaurant.
+     *
+     * @param array<string, mixed> $data Event fields keyed by column name.
+     * @return int The auto-incremented EventId of the new row.
+     */
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare('
@@ -194,6 +227,12 @@ class EventRepository implements IEventRepository
         return (int)$this->pdo->lastInsertId();
     }
 
+    /**
+     * Updates all mutable fields of an event. Numeric foreign keys are coerced to int
+     * or set to null when missing/non-numeric, preventing invalid FK references.
+     *
+     * @param array<string, mixed> $data Event fields keyed by column name.
+     */
     public function update(int $eventId, array $data): bool
     {
         $stmt = $this->pdo->prepare('
@@ -223,12 +262,19 @@ class EventRepository implements IEventRepository
         ]);
     }
 
+    /**
+     * Hard-deletes an event. Will fail if foreign key constraints exist on related rows.
+     * Prefer softDelete() for user-facing deactivation.
+     */
     public function delete(int $eventId): bool
     {
         $stmt = $this->pdo->prepare('DELETE FROM Event WHERE EventId = :eventId');
         return $stmt->execute(['eventId' => $eventId]);
     }
 
+    /**
+     * Checks whether an event row exists (regardless of active status).
+     */
     public function exists(int $eventId): bool
     {
         $stmt = $this->pdo->prepare('SELECT EventId FROM Event WHERE EventId = :eventId');
@@ -236,15 +282,14 @@ class EventRepository implements IEventRepository
         return $stmt->fetch() !== false;
     }
 
+    /**
+     * Soft-deletes an event by setting IsActive = 0. The row remains in the database
+     * for historical reference. Typically paired with deactivateSessions().
+     */
     public function softDelete(int $eventId): bool
     {
         $stmt = $this->pdo->prepare('UPDATE Event SET IsActive = 0 WHERE EventId = :eventId');
         return $stmt->execute(['eventId' => $eventId]);
     }
 
-    public function deactivateSessions(int $eventId): bool
-    {
-        $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
-        return $stmt->execute(['eventId' => $eventId]);
-    }
 }

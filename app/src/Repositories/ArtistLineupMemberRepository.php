@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IArtistLineupMemberRepository;
 use PDO;
 
 /**
- * Repository for ArtistLineupMember database operations.
+ * Read-only access to the ArtistLineupMember table.
+ *
+ * Lineup members represent individual band/ensemble members for a Jazz event,
+ * displayed on the artist detail page in SortOrder.
  */
 class ArtistLineupMemberRepository implements IArtistLineupMemberRepository
 {

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+/**
+ * View data for the CMS media library page (media.php).
+ *
+ * Carries asset list, upload limits, and CSRF token.
+ */
 final readonly class CmsMediaLibraryViewModel
 {
     /**

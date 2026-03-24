@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\OrderWithDetails;
+use App\Repositories\Interfaces\ICmsOrdersRepository;
 use PDO;
 
 /**
  * Fetches orders joined with user email, item summary, and latest payment status
  * for the CMS orders list page.
  */
-class CmsOrdersRepository
+class CmsOrdersRepository implements ICmsOrdersRepository
 {
     public function __construct(
         private readonly PDO $pdo,
@@ -37,6 +38,11 @@ class CmsOrdersRepository
         );
     }
 
+    /**
+     * Builds the orders listing query with two correlated subqueries:
+     * - ItemsSummary: concatenates each order's line items (event title, tour, or pass)
+     * - PaymentStatus: picks the most recent payment status for the order
+     */
     private function buildQuery(bool $withStatusFilter): string
     {
         $statusClause = $withStatusFilter ? ' AND o.Status = :status' : '';
@@ -51,6 +57,8 @@ class CmsOrdersRepository
                 o.CreatedAtUtc,
                 ua.Email,
                 (
+                    /* Build a comma-separated summary like '2x Jazz Night, 1x History Tour #5'.
+                       COALESCE picks the first non-null label among event session, tour, or pass. */
                     SELECT GROUP_CONCAT(
                         CONCAT(oi.Quantity, 'x ',
                             COALESCE(
@@ -67,6 +75,7 @@ class CmsOrdersRepository
                     WHERE oi.OrderId = o.OrderId
                 ) AS ItemsSummary,
                 (
+                    /* Latest payment status -- an order may have multiple payment attempts */
                     SELECT p.Status
                     FROM Payment p
                     WHERE p.OrderId = o.OrderId

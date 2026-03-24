@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Jazz;
 
+/**
+ * Band lineup section for a jazz artist detail page — section title and member list.
+ */
 final readonly class JazzArtistLineupData
 {
     /**

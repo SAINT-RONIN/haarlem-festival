@@ -6,12 +6,14 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionLabel;
-use App\Models\EventSessionLabelFilter;
+use App\Models\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use PDO;
 
 /**
- * Repository for EventSessionLabel database operations.
+ * Manages the EventSessionLabel table, which stores free-text tags attached to sessions
+ * (e.g. "Sold Out", "Last Tickets", "New"). Labels are displayed on session cards in the
+ * public schedule. Supports batch retrieval grouped by session ID for list views.
  */
 class EventSessionLabelRepository implements IEventSessionLabelRepository
 {
@@ -23,9 +25,11 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
     }
 
     /**
-     * @return EventSessionLabel[]
+     * Retrieves labels with optional filtering by session ID.
+     *
+     * @return EventSessionLabel[] Ordered by session then label ID. Empty array if no matches.
      */
-    public function findLabels(EventSessionLabelFilter $filters = new EventSessionLabelFilter()): array
+    public function findLabels(EventSessionRelatedFilter $filters = new EventSessionRelatedFilter()): array
     {
         $sql = '
             SELECT EventSessionLabelId, EventSessionId, LabelText
@@ -49,16 +53,21 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
     }
 
     /**
+     * Batch-fetches labels for multiple sessions in a single query, then groups them
+     * by session ID. Used to efficiently attach label badges when rendering session lists.
+     *
      * @param int[] $sessionIds
-     * @return array<int, EventSessionLabel[]>
+     * @return array<int, EventSessionLabel[]> Keyed by EventSessionId. Missing IDs are absent (not empty arrays).
      */
     public function findLabelsBySessionIds(array $sessionIds): array
     {
+        // Deduplicate and cast IDs to int before building the IN clause
         $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
         if ($normalizedIds === []) {
             return [];
         }
 
+        // Build numbered placeholders (:sessionId0, :sessionId1, ...) for the IN clause
         $params = [];
         $inPlaceholders = [];
         foreach ($normalizedIds as $index => $sessionId) {
@@ -88,6 +97,9 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
     }
 
     /**
+     * Attaches a new label to a session.
+     *
+     * @return int The auto-incremented EventSessionLabelId.
      * @inheritDoc
      */
     public function create(int $sessionId, string $labelText): int
@@ -118,6 +130,9 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
     }
 
     /**
+     * Removes all labels from a session. Useful when replacing the full label set during
+     * an admin edit (delete-all then re-create pattern).
+     *
      * @inheritDoc
      */
     public function deleteAllForSession(int $sessionId): bool

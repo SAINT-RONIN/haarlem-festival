@@ -9,6 +9,12 @@ use App\Models\PassType;
 use App\Repositories\Interfaces\IPassTypeRepository;
 use PDO;
 
+/**
+ * Read-only access to the PassType table.
+ *
+ * Pass types define multi-event or day passes that can be purchased for a
+ * specific event type (e.g. a "Jazz All-Access" day pass).
+ */
 class PassTypeRepository implements IPassTypeRepository
 {
     private PDO $pdo;
@@ -18,7 +24,11 @@ class PassTypeRepository implements IPassTypeRepository
         $this->pdo = Database::getConnection();
     }
 
-    /** @return PassType[] */
+    /**
+     * Returns all active pass types for the given event type, ordered by ID.
+     *
+     * @return PassType[]
+     */
     public function findByEventType(int $eventTypeId): array
     {
         $stmt = $this->pdo->prepare(

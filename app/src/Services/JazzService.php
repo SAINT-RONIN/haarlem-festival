@@ -11,8 +11,8 @@ use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
 use App\Models\JazzArtistsSectionContent;
 use App\Models\JazzBookingCtaSectionContent;
-use App\Models\JazzGradientSectionContent;
-use App\Models\JazzIntroSectionContent;
+use App\Models\GradientSectionContent;
+use App\Models\IntroSectionContent;
 use App\Models\JazzPageData;
 use App\Models\JazzPricingSectionContent;
 use App\Models\JazzScheduleCtaSectionContent;
@@ -35,17 +35,25 @@ class JazzService implements IJazzService
     ) {
     }
 
+    /**
+     * Returns the complete domain payload for the Jazz overview page,
+     * including all CMS sections and Jazz pass prices.
+     */
     public function getJazzPageData(): JazzPageData
     {
         return $this->buildPageData(JazzPageConstants::PAGE_SLUG);
     }
 
+    /**
+     * Fetches every CMS section for the Jazz page and combines them
+     * with pass-type pricing and shared global-UI content.
+     */
     private function buildPageData(string $pageSlug): JazzPageData
     {
         return new JazzPageData(
             heroSection:        HeroSectionContent::fromRawArray($this->cmsService->getHeroSectionContent($pageSlug)),
-            gradientSection:    JazzGradientSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_GRADIENT)),
-            introSection:       JazzIntroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_INTRO)),
+            gradientSection:    GradientSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_GRADIENT)),
+            introSection:       IntroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_INTRO)),
             venuesSection:      JazzVenuesSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_VENUES)),
             pricingSection:     JazzPricingSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_PRICING)),
             scheduleCtaSection: JazzScheduleCtaSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_SCHEDULE_CTA)),

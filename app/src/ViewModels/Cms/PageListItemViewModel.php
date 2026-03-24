@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Cms;
 
 /**
- * ViewModel for a page item in the CMS pages list.
+ * A single page row in the CMS pages list table.
  */
 final readonly class PageListItemViewModel
 {

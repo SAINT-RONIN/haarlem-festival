@@ -7,7 +7,8 @@ namespace App\Repositories\Interfaces;
 use App\Models\PriceTier;
 
 /**
- * Interface for PriceTier repository.
+ * Contract for reading price tier lookup data (e.g. "Regular", "VIP").
+ * Price tiers categorize ticket prices within event sessions.
  */
 interface IPriceTierRepository
 {

@@ -12,6 +12,13 @@ use Stripe\Stripe;
 use Stripe\StripeClient;
 use Stripe\Webhook;
 
+/**
+ * Thin adapter around the Stripe PHP SDK for payment processing.
+ *
+ * Wraps Stripe Checkout Sessions and Webhook signature verification,
+ * converting SDK exceptions into standard RuntimeException/InvalidArgumentException.
+ * All responses are returned as plain arrays so callers never depend on Stripe SDK types.
+ */
 final class StripeService implements IStripeService
 {
     private StripeClient $client;
@@ -37,8 +44,11 @@ final class StripeService implements IStripeService
     }
 
     /**
-     * @param array<string,mixed> $params
-     * @return array<string,mixed>
+     * Creates a Stripe Checkout Session and returns its full payload as an array.
+     *
+     * @param array<string,mixed> $params Stripe-native session parameters (mode, line_items, success_url, etc.)
+     * @return array<string,mixed> The created session payload including 'id' and 'url' keys
+     * @throws \RuntimeException When the Stripe API rejects the request
      */
     public function createCheckoutSession(array $params): array
     {
@@ -50,7 +60,12 @@ final class StripeService implements IStripeService
     }
 
     /**
+     * Fetches an existing Checkout Session from Stripe, expanding the payment_intent
+     * so the caller gets payment status without a second API call.
+     *
      * @return array<string,mixed>
+     * @throws \InvalidArgumentException When sessionId is blank
+     * @throws \RuntimeException When the Stripe API call fails
      */
     public function retrieveCheckoutSession(string $sessionId): array
     {
@@ -70,7 +85,12 @@ final class StripeService implements IStripeService
     }
 
     /**
-     * @return array<string,mixed>
+     * Verifies the Stripe-Signature header and parses the webhook payload into an event array.
+     *
+     * @param int $toleranceSeconds Maximum age of the event before rejecting it (guards against replay attacks)
+     * @return array<string,mixed> Parsed event with 'id', 'type', and 'data.object' keys
+     * @throws \RuntimeException When the webhook secret is not configured
+     * @throws \InvalidArgumentException When the signature is missing, invalid, or the payload is malformed
      */
     public function constructWebhookEvent(string $payload, ?string $signatureHeader, int $toleranceSeconds = 300): array
     {

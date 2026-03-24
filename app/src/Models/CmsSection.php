@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `CmsSection` SQL table.
+ * Represents a row in the CmsSection table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Groups related CMS items within a page (e.g., 'hero', 'intro', 'pricing') for structured
+ * content editing.
  */
-class CmsSection
+final readonly class CmsSection
 {
     /*
      * Purpose: Groups CMS items into logical sections within a page
@@ -18,9 +18,9 @@ class CmsSection
      */
 
     public function __construct(
-        public readonly int    $cmsSectionId,
-        public readonly int    $cmsPageId,
-        public readonly string $sectionKey,
+        public int    $cmsSectionId,
+        public int    $cmsPageId,
+        public string $sectionKey,
     ) {
     }
 

@@ -8,13 +8,19 @@ use App\Constants\GlobalUiConstants;
 use App\Constants\StorytellingPageConstants;
 use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
-use App\Models\StorytellingGradientSectionContent;
-use App\Models\StorytellingIntroSplitSectionContent;
+use App\Models\GradientSectionContent;
+use App\Models\IntroSectionContent;
 use App\Models\StorytellingMasonrySectionContent;
 use App\Models\StorytellingPageData;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IStorytellingService;
 
+/**
+ * Composes the CMS-driven domain payload for the Storytelling overview page.
+ *
+ * Fetches hero, gradient, intro-split, masonry, and global-UI sections
+ * from the CMS repository and bundles them into a StorytellingPageData object.
+ */
 class StorytellingService implements IStorytellingService
 {
     public function __construct(
@@ -24,15 +30,17 @@ class StorytellingService implements IStorytellingService
 
     /**
      * Fetches all CMS sections needed to render the storytelling overview page.
-     * The reason for this is because the service is the only layer allowed to call repositories and assemble the raw domain payload the mapper will later format.
+     *
+     * The service layer is the only place allowed to call repositories;
+     * the returned payload is passed to the mapper layer for UI formatting.
      */
     public function getStorytellingPageData(): StorytellingPageData
     {
         $slug = StorytellingPageConstants::PAGE_SLUG;
         return new StorytellingPageData(
             heroSection:       HeroSectionContent::fromRawArray($this->cmsService->getHeroSectionContent($slug)),
-            gradientSection:   StorytellingGradientSectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_GRADIENT)),
-            introSplitSection: StorytellingIntroSplitSectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_INTRO_SPLIT)),
+            gradientSection:   GradientSectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_GRADIENT)),
+            introSplitSection: IntroSectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_INTRO_SPLIT)),
             masonrySection:    StorytellingMasonrySectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_MASONRY)),
             globalUiContent:   GlobalUiContent::fromRawArray($this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY)),
         );

@@ -22,30 +22,37 @@ use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Services\Interfaces\IHomeService;
-use App\Utils\HomeUiConfig;
+use App\Constants\HomeUiConfig;
 
 /**
- * Service for preparing homepage data.
+ * Assembles all data needed to render the festival homepage into a single HomePageData object.
  *
- * Returns plain arrays with raw data.
- * Mapping to ViewModels happens in HomeMapper.
+ * Combines five data sources: CMS key-value content, hero/global-UI sections,
+ * event-type showcase cards (ordered by HomeUiConfig), venue + restaurant map
+ * locations, and a schedule preview limited to the next 4 days of active sessions.
+ * Returns raw domain data only -- view model mapping happens in HomeMapper.
  */
 class HomeService implements IHomeService
 {
     public function __construct(
-        private IEventTypeRepository $eventTypeRepository,
-        private IVenueRepository $venueRepository,
-        private IRestaurantRepository $restaurantRepository,
-        private IEventSessionRepository $eventSessionRepository,
-        private ICmsContentRepository $cmsService,
+        private readonly IEventTypeRepository $eventTypeRepository,
+        private readonly IVenueRepository $venueRepository,
+        private readonly IRestaurantRepository $restaurantRepository,
+        private readonly IEventSessionRepository $eventSessionRepository,
+        private readonly ICmsContentRepository $cmsService,
     ) {
     }
 
     /**
      * Returns all raw data needed to render the home page.
+     *
+     * Combines CMS content, hero/global-UI sections, event-type showcase
+     * cards, venue/restaurant map locations, and a schedule preview
+     * (up to 4 days) into a single HomePageData object.
      */
     public function getHomePageData(): HomePageData
     {
+        // Load all CMS key-value content for the home page (used by event-type cards)
         $cmsContent = $this->cmsService->getHomePageContent();
 
         return new HomePageData(
@@ -125,7 +132,6 @@ class HomeService implements IHomeService
             button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
             image: $section[$slug . '_image'] ?? null,
             darkBg: HomeUiConfig::DARK_BG_MAP[$slug] ?? false,
-            badgeClass: HomeUiConfig::BADGE_COLORS[$slug] ?? 'bg-gray-500',
         );
     }
 
@@ -160,7 +166,6 @@ class HomeService implements IHomeService
             name: $venue->name,
             address: $venue->addressLine,
             category: $category,
-            badgeClass: HomeUiConfig::BADGE_COLORS[$category] ?? 'bg-gray-500',
             lat: null,
             lng: null,
         );
@@ -175,14 +180,15 @@ class HomeService implements IHomeService
             name: $restaurant->name,
             address: $restaurant->addressLine,
             category: 'restaurant',
-            badgeClass: HomeUiConfig::BADGE_COLORS['restaurant'],
             lat: null,
             lng: null,
         );
     }
 
     /**
-     * Determines venue category based on venue name/type.
+     * Maps a venue to an event-type category by matching known keywords in
+     * the venue name. Falls back to 'history' for unrecognised venues
+     * (walking-tour locations).
      */
     private function determineVenueCategory(string $venueName): string
     {
@@ -331,16 +337,6 @@ class HomeService implements IHomeService
         }
 
         return $result;
-    }
-
-    /**
-     * Gets summary title for event type sessions.
-     *
-     * @param \App\Models\SessionWithEvent[] $sessions
-     */
-    private function getEventSummaryTitle(string $slug, array $sessions): string
-    {
-        return HomeUiConfig::EVENT_SUMMARY_TITLES[$slug] ?? ($sessions[0]->eventTitle ?? '');
     }
 
     /**

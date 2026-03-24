@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 /**
- * Interface for Authentication service.
+ * Contract for user authentication and credential management.
+ * Covers login (customer and admin), registration with validation,
+ * and the full password-reset flow (request, validate token, reset).
  */
 interface IAuthService
 {

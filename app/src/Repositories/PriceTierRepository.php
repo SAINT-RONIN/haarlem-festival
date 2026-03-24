@@ -10,7 +10,9 @@ use App\Repositories\Interfaces\IPriceTierRepository;
 use PDO;
 
 /**
- * Repository for PriceTier database operations.
+ * Read-only access to the PriceTier lookup table (e.g. "Regular", "VIP").
+ *
+ * Price tiers are assigned to event session prices to distinguish ticket categories.
  */
 class PriceTierRepository implements IPriceTierRepository
 {

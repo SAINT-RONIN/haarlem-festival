@@ -12,7 +12,6 @@ final readonly class ScheduleFilterOptionData
     public function __construct(
         public string $label,
         public string $value,
-        public bool $isDefault = false,
         public bool $isActive = false,
     ) {
     }

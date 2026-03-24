@@ -225,7 +225,6 @@ $isLoggedIn = $isLoggedIn ?? ($global['is_logged_in'] ?? false);
         </div>
 
         <!-- CTA Buttons - Bottom RIGHT -->
-        <!-- TODO: If I remove overflow-hidden the navbar becomes sticky but withing the section only. I need to find a way of making it sticky for the entire page. -->
         <div class="self-stretch flex flex-col justify-start items-end">
             <div class="self-stretch h-4 sm:h-6 md:h-10 lg:h-16 xl:h-20" aria-hidden="true"></div>
             <div class="pr-2 sm:pr-3 md:pr-4 lg:pr-12 xl:pr-24 pl-2 sm:pl-3 md:pl-4 py-2 sm:py-3 md:py-4 lg:py-5 bg-sand rounded-tl-[12px] sm:rounded-tl-[15px] md:rounded-tl-[25px] lg:rounded-tl-[35px] flex justify-end items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-5">

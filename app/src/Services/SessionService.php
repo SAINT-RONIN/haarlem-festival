@@ -8,10 +8,13 @@ use App\Enums\UserRoleId;
 use App\Services\Interfaces\ISessionService;
 
 /**
- * Service for managing PHP sessions.
+ * Centralised wrapper around PHP's native session handling.
  *
- * Handles session lifecycle, user login state, and role-based access checks.
- * All session operations are centralized here for consistency and security.
+ * Owns session lifecycle (start/destroy), authenticated-user state (userId + roleId),
+ * flash messages (single-read values for post-redirect-get), and per-scope CSRF
+ * tokens (timing-safe comparison). Controllers and middleware use this instead of
+ * touching $_SESSION directly, which keeps session key names consistent and
+ * security measures (session fixation prevention, cookie cleanup) in one place.
  */
 class SessionService implements ISessionService
 {
@@ -101,15 +104,6 @@ class SessionService implements ISessionService
         return $_SESSION[self::USER_ID_KEY] ?? null;
     }
 
-    /**
-     * Gets the current user's role ID, or null if not logged in.
-     */
-    public function getRoleId(): ?int
-    {
-        $this->start();
-        return $_SESSION[self::ROLE_ID_KEY] ?? null;
-    }
-
     public function set(string $key, mixed $value): void
     {
         $this->start();
@@ -122,28 +116,37 @@ class SessionService implements ISessionService
         return $_SESSION[$key] ?? $default;
     }
 
-    public function setFlash(string $key, string $message): void
+    /**
+     * Stores a flash message that survives exactly one subsequent read via consumeFlash().
+     */
+    public function setFlash(string $key, mixed $value): void
     {
         $this->start();
-        $_SESSION[self::FLASH_KEY][$key] = $message;
+        $_SESSION[self::FLASH_KEY][$key] = $value;
     }
 
-    public function consumeFlash(string $key): ?string
+    /**
+     * Reads and removes a flash message in one step. Returns null if the key does not exist.
+     */
+    public function consumeFlash(string $key): mixed
     {
         $this->start();
 
-        $message = $_SESSION[self::FLASH_KEY][$key] ?? null;
-        if (isset($_SESSION[self::FLASH_KEY][$key])) {
-            unset($_SESSION[self::FLASH_KEY][$key]);
-        }
+        $value = $_SESSION[self::FLASH_KEY][$key] ?? null;
+        unset($_SESSION[self::FLASH_KEY][$key]);
 
-        if (isset($_SESSION[self::FLASH_KEY]) && $_SESSION[self::FLASH_KEY] === []) {
+        // Remove the flash container entirely when empty to keep $_SESSION clean
+        if (($_SESSION[self::FLASH_KEY] ?? []) === []) {
             unset($_SESSION[self::FLASH_KEY]);
         }
 
-        return is_string($message) ? $message : null;
+        return $value;
     }
 
+    /**
+     * Returns an existing CSRF token for the given scope, or generates and stores a new one.
+     * Tokens are scoped so different forms cannot reuse each other's tokens.
+     */
     public function getCsrfToken(string $scope): string
     {
         $this->start();
@@ -158,6 +161,10 @@ class SessionService implements ISessionService
         return $token;
     }
 
+    /**
+     * Validates a submitted CSRF token against the stored token for the given scope.
+     * Uses timing-safe comparison to prevent timing attacks.
+     */
     public function isValidCsrfToken(string $scope, ?string $token): bool
     {
         $this->start();
@@ -170,6 +177,11 @@ class SessionService implements ISessionService
         return is_string($expected) && hash_equals($expected, $token);
     }
 
+    /**
+     * Returns the current PHP session ID. Used as a key to associate anonymous programs with a browser.
+     *
+     * @throws \RuntimeException When called before a session has been started
+     */
     public function getSessionId(): string
     {
         $this->start();

@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\UserValidationHelper;
 use App\Models\UserAccount;
 use App\Models\UserWithRole;
 use App\Repositories\Interfaces\ICmsUsersRepository;
 use App\Services\Interfaces\ICmsUsersService;
 use App\Utils\PasswordHasher;
 
+/**
+ * CMS-side user management: listing, creating, updating, and deleting user accounts.
+ *
+ * Applies field-level validation (username/email uniqueness, password strength, name format)
+ * before delegating persistence to the repository. Password hashing uses Argon2id.
+ */
 class CmsUsersService implements ICmsUsersService
 {
-    private const USERNAME_MIN_LENGTH = 3;
-    private const USERNAME_MAX_LENGTH = 60;
-    private const PASSWORD_MIN_LENGTH = 8;
 
     public function __construct(
         private readonly ICmsUsersRepository $usersRepository,
@@ -22,6 +26,8 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
+     * Returns all user accounts joined with their role names, with optional filtering and sorting.
+     *
      * @return UserWithRole[]
      */
     public function getUsersWithRoles(
@@ -39,7 +45,9 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
-     * @return array<string, string>
+     * Validates all fields required when creating a new user (password is mandatory).
+     *
+     * @return array<string, string> Field name => error message (empty if valid)
      */
     public function validateForCreate(
         string $username,
@@ -55,7 +63,10 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
-     * @return array<string, string>
+     * Validates fields for an existing user update. Password is optional (only validated if provided).
+     * Uniqueness checks exclude the user being edited.
+     *
+     * @return array<string, string> Field name => error message (empty if valid)
      */
     public function validateForUpdate(
         int $id,
@@ -71,6 +82,11 @@ class CmsUsersService implements ICmsUsersService
         return $this->validateNames($firstName, $lastName, $errors);
     }
 
+    /**
+     * Creates a new user account with a hashed password and the specified role.
+     *
+     * @return int The newly created user's ID
+     */
     public function createUser(
         string $username,
         string $email,
@@ -84,6 +100,9 @@ class CmsUsersService implements ICmsUsersService
         return $this->usersRepository->createUser($username, $email, $hash, $firstName, $lastName, $roleId);
     }
 
+    /**
+     * Updates a user's profile fields and role. Password is only re-hashed if a new one is provided.
+     */
     public function updateUser(
         int $id,
         string $username,
@@ -111,11 +130,12 @@ class CmsUsersService implements ICmsUsersService
      */
     private function checkUsername(string $username, array $errors, ?int $excludeId = null): array
     {
-        $fmtError = $this->checkUsernameFormat($username);
+        $fmtError = UserValidationHelper::checkUsernameFormat($username);
         if ($fmtError !== null) {
             $errors['username'] = $fmtError;
             return $errors;
         }
+        // On update, exclude the current user from uniqueness checks so they can keep their own username
         $taken = $excludeId !== null
             ? $this->usersRepository->existsByUsernameExcluding($username, $excludeId)
             : $this->usersRepository->existsByUsername($username);
@@ -131,10 +151,12 @@ class CmsUsersService implements ICmsUsersService
      */
     private function checkEmail(string $email, array $errors, ?int $excludeId = null): array
     {
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address.';
+        $formatError = UserValidationHelper::checkEmail($email);
+        if ($formatError !== null) {
+            $errors['email'] = $formatError;
             return $errors;
         }
+        // On update, exclude the current user so they can keep their own email
         $taken = $excludeId !== null
             ? $this->usersRepository->existsByEmailExcluding($email, $excludeId)
             : $this->usersRepository->existsByEmail($email);
@@ -144,35 +166,15 @@ class CmsUsersService implements ICmsUsersService
         return $errors;
     }
 
-    private function checkUsernameFormat(string $username): ?string
-    {
-        if ($username === '') {
-            return 'Username is required.';
-        }
-        if (strlen($username) < self::USERNAME_MIN_LENGTH) {
-            return 'Username must be at least ' . self::USERNAME_MIN_LENGTH . ' characters.';
-        }
-        if (strlen($username) > self::USERNAME_MAX_LENGTH) {
-            return 'Username must be no more than ' . self::USERNAME_MAX_LENGTH . ' characters.';
-        }
-        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $username)) {
-            return 'Username can only contain letters, numbers, underscores, and hyphens.';
-        }
-        return null;
-    }
-
     /**
      * @param array<string, string> $errors
      * @return array<string, string>
      */
     private function validatePasswordRequired(string $password, array $errors): array
     {
-        if ($password === '') {
-            $errors['password'] = 'Password is required.';
-            return $errors;
-        }
-        if (strlen($password) < self::PASSWORD_MIN_LENGTH) {
-            $errors['password'] = 'Password must be at least ' . self::PASSWORD_MIN_LENGTH . ' characters.';
+        $lengthError = UserValidationHelper::checkPasswordLength($password);
+        if ($lengthError !== null) {
+            $errors['password'] = $lengthError;
         }
 
         return $errors;
@@ -184,8 +186,11 @@ class CmsUsersService implements ICmsUsersService
      */
     private function validatePasswordOptional(?string $password, array $errors): array
     {
-        if ($password !== null && $password !== '' && strlen($password) < self::PASSWORD_MIN_LENGTH) {
-            $errors['password'] = 'Password must be at least ' . self::PASSWORD_MIN_LENGTH . ' characters.';
+        if ($password !== null && $password !== '') {
+            $lengthError = UserValidationHelper::checkPasswordLength($password);
+            if ($lengthError !== null) {
+                $errors['password'] = $lengthError;
+            }
         }
 
         return $errors;
@@ -197,13 +202,6 @@ class CmsUsersService implements ICmsUsersService
      */
     private function validateNames(string $firstName, string $lastName, array $errors): array
     {
-        if (trim($firstName) === '') {
-            $errors['firstName'] = 'First name is required.';
-        }
-        if (trim($lastName) === '') {
-            $errors['lastName'] = 'Last name is required.';
-        }
-
-        return $errors;
+        return array_merge($errors, UserValidationHelper::checkNames($firstName, $lastName));
     }
 }

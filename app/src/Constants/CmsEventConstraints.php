@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Utils;
+namespace App\Constants;
 
+/**
+ * Validation limits for CMS event and session management operations.
+ */
 final class CmsEventConstraints
 {
     public const MAX_LABELS_PER_SESSION = 6;

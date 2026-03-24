@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `PasswordResetToken` SQL table.
+ * Represents a row in the PasswordResetToken table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Stores hashed tokens with expiry timestamps for the forgot-password flow.
  */
-class PasswordResetToken
+final readonly class PasswordResetToken
 {
     /*
      * Purpose: Stores tokens for password reset requests,
@@ -18,11 +17,11 @@ class PasswordResetToken
      */
 
     public function __construct(
-        public readonly int                 $passwordResetTokenId,
-        public readonly int                 $userAccountId,
-        public readonly string              $token,
-        public readonly \DateTimeImmutable  $expiresAtUtc,
-        public readonly ?\DateTimeImmutable $usedAtUtc,
+        public int                 $passwordResetTokenId,
+        public int                 $userAccountId,
+        public string              $token,
+        public \DateTimeImmutable  $expiresAtUtc,
+        public ?\DateTimeImmutable $usedAtUtc,
     ) {
     }
 

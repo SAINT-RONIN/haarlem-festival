@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
+/**
+ * Base class for public page ViewModels that need global UI data (navigation, footer) and hero section content.
+ */
 abstract readonly class BaseViewModel
 {
     /**

@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IArtistAlbumRepository;
 use PDO;
 
 /**
- * Repository for ArtistAlbum database operations.
+ * Read-only access to the ArtistAlbum table.
+ *
+ * Albums are linked to a Jazz event and displayed on the artist detail page
+ * in the order defined by SortOrder.
  */
 class ArtistAlbumRepository implements IArtistAlbumRepository
 {

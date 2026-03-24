@@ -7,8 +7,6 @@
  * @var \App\Models\PriceTier[] $priceTiers
  * @var \App\Models\Artist[] $artists
  * @var \App\Models\Restaurant[] $restaurants
- * @var string|null $successMessage
- * @var string|null $errorMessage
  */
 ?>
 <!DOCTYPE html>
@@ -35,18 +33,7 @@
             <h1 class="text-2xl font-bold text-gray-900">Edit Event</h1>
         </header>
 
-        <!-- Messages -->
-        <?php if ($successMessage): ?>
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                <?= htmlspecialchars($successMessage) ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($errorMessage): ?>
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <?= htmlspecialchars($errorMessage) ?>
-            </div>
-        <?php endif; ?>
+        <?php require __DIR__ . '/../../partials/cms/_flash-messages.php'; ?>
 
         <!-- Event Details Card -->
         <div class="bg-white rounded-lg shadow mb-8">
@@ -484,16 +471,7 @@
                                 <div class="flex flex-wrap gap-2 mb-3">
                                     <?php foreach ($sessionPrices as $price): ?>
                                         <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
-                                            <?php
-                                                $tierName = 'Unknown';
-                                                foreach ($priceTiers as $tier) {
-                                                    if ($tier->priceTierId === $price->priceTierId) {
-                                                        $tierName = $tier->name;
-                                                        break;
-                                                    }
-                                                }
-                                            ?>
-                                            <?= htmlspecialchars($tierName) ?>:
+                                            <?= htmlspecialchars($price->tierName) ?>:
                                             <?= htmlspecialchars($price->currencyCode) ?> <?= number_format((float)$price->price, 2) ?>
                                         </span>
                                     <?php endforeach; ?>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Enums\PageStatus;
+use App\Helpers\FormatHelper;
 use App\Models\ActivityData;
 use App\Models\CmsItemEditData;
 use App\Models\CmsMediaAssetData;
@@ -26,9 +27,16 @@ use App\ViewModels\Cms\PageListItemViewModel;
 use App\ViewModels\Cms\PagesListViewModel;
 use App\ViewModels\Cms\RecentPageViewModel;
 
-class CmsDashboardMapper
+/**
+ * Transforms CMS page and activity domain models into ViewModels for the CMS dashboard,
+ * page list, and page-edit screens. Also handles section/item grouping logic for the
+ * CMS content editor (sub-groups, input-type ordering, image limits).
+ */
+final class CmsDashboardMapper
 {
     /**
+     * Builds the CMS dashboard ViewModel showing recently-edited pages and activity feed.
+     *
      * @param CmsPage[]      $recentPages
      * @param ActivityData[] $activities
      */
@@ -42,6 +50,8 @@ class CmsDashboardMapper
     }
 
     /**
+     * Builds the CMS pages-list ViewModel used on the "All Pages" management screen.
+     *
      * @param CmsPage[] $allPages
      */
     public static function toPagesListViewModel(array $allPages, string $searchQuery, string $userName): PagesListViewModel
@@ -53,6 +63,7 @@ class CmsDashboardMapper
         );
     }
 
+    /** Converts a CmsPage into a dashboard "recent page" card with a relative time-ago label. */
     public static function toRecentPageViewModel(CmsPage $page): RecentPageViewModel
     {
         return new RecentPageViewModel(
@@ -62,6 +73,7 @@ class CmsDashboardMapper
         );
     }
 
+    /** Converts a CmsPage into a list-row ViewModel for the pages-list table. */
     public static function toPageListItemViewModel(CmsPage $page): PageListItemViewModel
     {
         return new PageListItemViewModel(
@@ -73,6 +85,7 @@ class CmsDashboardMapper
         );
     }
 
+    /** Derives Published/Draft status: a page with an updatedAt timestamp is considered published. */
     private static function resolvePageStatus(CmsPage $page): PageStatus
     {
         return $page->updatedAtUtc !== null ? PageStatus::Published : PageStatus::Draft;
@@ -88,11 +101,15 @@ class CmsDashboardMapper
         );
     }
 
+    /**
+     * Builds the full page-editor ViewModel: page info, grouped sections/items,
+     * and content/image upload limits. Consumed by the CMS page-edit view.
+     */
     public static function toPageEditViewData(CmsPageEditData $pageData): CmsPageEditViewModel
     {
         return new CmsPageEditViewModel(
             page: self::formatPage($pageData->page),
-            sections: self::formatSections($pageData->sections),
+            sections: array_map([self::class, 'formatSingleSection'], $pageData->sections),
             contentLimits: self::getContentLimits(),
             imageLimits: self::getImageLimits(),
         );
@@ -105,15 +122,6 @@ class CmsDashboardMapper
             title: $page->title,
             slug:  $page->slug,
         );
-    }
-
-    /**
-     * @param CmsSectionEditData[] $sections
-     * @return CmsSectionDisplayViewModel[]
-     */
-    private static function formatSections(array $sections): array
-    {
-        return array_map([self::class, 'formatSingleSection'], $sections);
     }
 
     private static function formatSingleSection(CmsSectionEditData $section): CmsSectionDisplayViewModel
@@ -164,13 +172,7 @@ class CmsDashboardMapper
      */
     private static function flattenOrderedBuckets(array $grouped): array
     {
-        $result = [];
-        foreach (['text', 'tinymce', 'file'] as $type) {
-            foreach ($grouped[$type] as $item) {
-                $result[] = $item;
-            }
-        }
-        return $result;
+        return array_merge($grouped['text'] ?? [], $grouped['tinymce'] ?? [], $grouped['file'] ?? []);
     }
 
     private static function toItemViewModel(CmsItemEditData $item): CmsItemDisplayViewModel
@@ -614,6 +616,7 @@ class CmsDashboardMapper
         return 'extra';
     }
 
+    /** Sections in the deny-list (e.g. global_ui) are rendered read-only in the editor. */
     private static function isSectionEditable(string $sectionKey): bool
     {
         $nonEditableSections = ['global_ui'];
@@ -639,17 +642,10 @@ class CmsDashboardMapper
             maxWidth:             CmsContentLimits::IMAGE_MAX_WIDTH,
             maxHeight:            CmsContentLimits::IMAGE_MAX_HEIGHT,
             maxFileSize:          CmsContentLimits::IMAGE_MAX_FILE_SIZE,
-            maxFileSizeFormatted: self::formatFileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
+            maxFileSizeFormatted: FormatHelper::fileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
             allowedMimes:         CmsContentLimits::IMAGE_ALLOWED_MIMES,
             allowedExtensions:    ['jpg', 'jpeg', 'png', 'webp'],
         );
     }
 
-    private static function formatFileSize(int $bytes): string
-    {
-        if ($bytes >= 1048576) {
-            return round($bytes / 1048576, 1) . ' MB';
-        }
-        return round($bytes / 1024, 1) . ' KB';
-    }
 }

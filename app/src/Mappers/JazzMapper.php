@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Constants\JazzPageConstants;
+use App\Helpers\FormatHelper;
 use App\Enums\PassScope;
 use App\Models\ArtistAlbum;
 use App\Models\ArtistGalleryImage;
@@ -15,8 +16,8 @@ use App\Models\JazzArtistDetailEvent;
 use App\Models\JazzArtistDetailPageData;
 use App\Models\JazzArtistsSectionContent;
 use App\Models\JazzBookingCtaSectionContent;
-use App\Models\JazzGradientSectionContent;
-use App\Models\JazzIntroSectionContent;
+use App\Models\GradientSectionContent;
+use App\Models\IntroSectionContent;
 use App\Models\JazzPageData;
 use App\Models\JazzPricingSectionContent;
 use App\Models\JazzScheduleCtaSectionContent;
@@ -42,14 +43,22 @@ use App\ViewModels\Jazz\JazzPageViewModel;
 use App\ViewModels\Jazz\PricingCardData;
 use App\ViewModels\Jazz\PricingData;
 use App\ViewModels\Jazz\ScheduleCallToActionData;
-use App\ViewModels\Jazz\ScheduleData;
 use App\ViewModels\Jazz\VenueData;
 use App\ViewModels\Jazz\VenuesData;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
+/**
+ * Transforms JazzPageData and JazzArtistDetailPageData domain models into ViewModels
+ * for the public Jazz landing page and individual artist detail pages, assembling
+ * hero, gradient, venues, pricing cards, artist cards, and schedule sections.
+ */
 final class JazzMapper
 {
+    /**
+     * Builds the full Jazz landing page ViewModel from CMS section models, pass prices,
+     * and an optional pre-built schedule section.
+     */
     public static function toPageViewModel(JazzPageData $domain, ?ScheduleSectionViewModel $scheduleSection = null, bool $isLoggedIn = false): JazzPageViewModel
     {
         $heroData = CmsMapper::toHeroData($domain->heroSection, JazzPageConstants::CURRENT_PAGE);
@@ -76,12 +85,15 @@ final class JazzMapper
             venuesData: self::buildVenuesData($domain->venuesSection),
             pricingData: self::buildPricingData($domain->pricingSection, $domain->passPrices),
             scheduleCtaData: self::buildScheduleCtaData($domain->scheduleCtaSection),
-            artistsData: self::buildArtistsData($domain->artistsSection), scheduleData: self::buildEmptyScheduleData((string) date('Y')),
+            artistsData: self::buildArtistsData($domain->artistsSection),
             bookingCtaData: self::buildBookingCtaData($domain->bookingCtaSection), scheduleSection: $scheduleSection,
         );
     }
 
     /**
+     * Builds the Jazz artist detail page ViewModel from CMS content, event data,
+     * lineup members, albums, tracks, and pre-mapped performance cards.
+     *
      * @param ScheduleEventCardViewModel[] $performances
      */
     public static function toArtistDetailViewModel(JazzArtistDetailPageData $pageData, array $performances): JazzArtistDetailPageViewModel
@@ -102,7 +114,7 @@ final class JazzMapper
         $cms   = $pageData->cms;
 
         return new JazzArtistHeroData(
-            heroTitle: $event->title, heroSubtitle: self::coalesce($cms->heroSubtitle ?? '', $event->shortDescription),
+            heroTitle: $event->title, heroSubtitle: self::firstNonEmpty($cms->heroSubtitle ?? '', $event->shortDescription),
             heroBackgroundImageUrl: $cms->heroBackgroundImage ?? '',
             originText: $cms->originText ?? '', formedText: $cms->formedText ?? '', performancesText: $cms->performancesText ?? '',
             heroBackButtonText: $cms->heroBackButtonText ?? '', heroBackButtonUrl: $cms->heroBackButtonUrl ?? '',
@@ -114,11 +126,11 @@ final class JazzMapper
     {
         $event   = $pageData->event;
         $cms     = $pageData->cms;
-        $primary = self::coalesce($cms->overviewBodyPrimary ?? '', self::buildPrimaryOverviewFallbackFromModel($event));
+        $primary = self::firstNonEmpty($cms->overviewBodyPrimary ?? '', self::buildPrimaryOverviewFallbackFromModel($event));
 
         return new JazzArtistOverviewData(
-            overviewHeading: self::coalesce($cms->overviewHeading ?? '', $event->title),
-            overviewLead: self::coalesce($cms->overviewLead ?? '', $event->shortDescription),
+            overviewHeading: self::firstNonEmpty($cms->overviewHeading ?? '', $event->title),
+            overviewLead: self::firstNonEmpty($cms->overviewLead ?? '', $event->shortDescription),
             overviewBodyPrimary: $primary,
             overviewBodySecondary: $cms->overviewBodySecondary ?? '',
         );
@@ -168,7 +180,7 @@ final class JazzMapper
         );
     }
 
-    private static function buildGradientSection(JazzGradientSectionContent $section): GradientSectionData
+    private static function buildGradientSection(GradientSectionContent $section): GradientSectionData
     {
         return new GradientSectionData(
             headingText: $section->gradientHeading ?? '',
@@ -177,7 +189,7 @@ final class JazzMapper
         );
     }
 
-    private static function buildIntroSection(JazzIntroSectionContent $section): IntroSplitSectionData
+    private static function buildIntroSection(IntroSectionContent $section): IntroSplitSectionData
     {
         return new IntroSplitSectionData(
             headingText: $section->introHeading ?? '',
@@ -282,6 +294,9 @@ final class JazzMapper
     }
 
     /**
+     * Builds the pricing section with three cards (individual, day pass, all-access).
+     * Pass prices from the DB override CMS fallback values when available.
+     *
      * @param PassType[] $passPrices
      */
     private static function buildPricingData(JazzPricingSectionContent $section, array $passPrices): PricingData
@@ -388,13 +403,16 @@ final class JazzMapper
     }
 
     /**
+     * Searches the PassType array for a matching scope (Day or Range) and formats
+     * its price; falls back to the CMS-authored string if no DB record exists.
+     *
      * @param PassType[] $passPrices
      */
     private static function findPassPrice(array $passPrices, string $scope, ?string $cmsFallback): string
     {
         foreach ($passPrices as $pass) {
             if ($pass->passScope->value === $scope) {
-                return '€' . number_format((float) $pass->price, 2);
+                return FormatHelper::price((float) $pass->price);
             }
         }
 
@@ -444,7 +462,7 @@ final class JazzMapper
             performanceCount: (int) ($section->artistsGumboKingsPerformanceCount ?? 0),
             firstPerformance: $section->artistsGumboKingsFirstPerformance ?? '',
             morePerformancesText: $section->artistsGumboKingsMorePerformancesText ?? '',
-            profileUrl: $section->artistsGumboKingsProfileUrl ?? '',
+            profileUrl: self::resolveProfileUrl($section->artistsGumboKingsProfileUrl, 'gumbo-kings'),
         );
     }
 
@@ -458,7 +476,7 @@ final class JazzMapper
             performanceCount: (int) ($section->artistsEvolvePerformanceCount ?? 0),
             firstPerformance: $section->artistsEvolveFirstPerformance ?? '',
             morePerformancesText: $section->artistsEvolveMorePerformancesText ?? '',
-            profileUrl: ($section->artistsEvolveProfileUrl !== '' && $section->artistsEvolveProfileUrl !== null) ? $section->artistsEvolveProfileUrl : null,
+            profileUrl: self::resolveProfileUrl($section->artistsEvolveProfileUrl, 'evolve'),
         );
     }
 
@@ -472,8 +490,20 @@ final class JazzMapper
             performanceCount: (int) ($section->artistsNtjamPerformanceCount ?? 0),
             firstPerformance: $section->artistsNtjamFirstPerformance ?? '',
             morePerformancesText: $section->artistsNtjamMorePerformancesText ?? '',
-            profileUrl: $section->artistsNtjamProfileUrl ?? '',
+            profileUrl: self::resolveProfileUrl($section->artistsNtjamProfileUrl, 'ntjam-rosie'),
         );
+    }
+
+    /**
+     * Returns the CMS-provided profile URL if set, otherwise generates
+     * the default detail page URL from the event slug (e.g., /jazz/gumbo-kings).
+     */
+    private static function resolveProfileUrl(?string $cmsUrl, string $eventSlug): string
+    {
+        if ($cmsUrl !== null && $cmsUrl !== '') {
+            return $cmsUrl;
+        }
+        return '/jazz/' . $eventSlug;
     }
 
     private static function buildBookingCtaData(JazzBookingCtaSectionContent $section): BookingCallToActionData
@@ -481,17 +511,6 @@ final class JazzMapper
         return new BookingCallToActionData(
             headingText: $section->bookingCtaHeading ?? '',
             descriptionText: $section->bookingCtaDescription ?? '',
-        );
-    }
-
-    private static function buildEmptyScheduleData(string $year): ScheduleData
-    {
-        return new ScheduleData(
-            headingText: '',
-            year: $year,
-            filterLabel: '',
-            totalEventsText: '',
-            days: [],
         );
     }
 
@@ -535,8 +554,9 @@ final class JazzMapper
         return trim(strip_tags($event->longDescriptionHtml));
     }
 
-    private static function coalesce(string $value, string $fallback): string
+    /** Returns the first non-empty string, used to prefer CMS content over model fallbacks. */
+    private static function firstNonEmpty(string $value, string $fallback): string
     {
-        return $value !== '' ? $value : $fallback;
+        return $value ?: $fallback;
     }
 }

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single Storytelling event as returned by the event repository.
- * The reason for this is because the detail service needs only a subset of event fields, so this model captures exactly those fields rather than reusing a generic Event model with unneeded properties.
+ * Read-only projection for the storytelling detail page.
+ *
+ * JOINs Event with Venue to provide event title, slug, venue, and featured image
+ * for a specific storytelling event.
  */
 final readonly class StorytellingDetailEvent
 {

@@ -10,13 +10,30 @@ use App\Models\ArtistUpsertData;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ISessionService;
 
-class CmsArtistsController
+/**
+ * CMS controller for managing festival artists.
+ *
+ * Handles listing, creating, editing, and soft-deleting artist records
+ * through the admin panel. All mutations delegate to ICmsArtistsService
+ * for validation and persistence; this controller owns only HTTP flow
+ * (auth gating, CSRF checks, form re-rendering on validation failure,
+ * and flash-message redirects via PRG pattern).
+ */
+class CmsArtistsController extends CmsBaseController
 {
     public function __construct(
         private readonly ICmsArtistsService $artistsService,
-        private readonly ISessionService $sessionService,
-    ) {}
+        ISessionService $sessionService,
+    ) {
+        parent::__construct($sessionService);
+    }
 
+    /**
+     * Displays the paginated artist list with optional search filtering.
+     * GET /cms/artists
+     *
+     * @throws \Throwable Caught internally; rendered via ControllerErrorResponder.
+     */
     public function index(): void
     {
         try {
@@ -36,6 +53,10 @@ class CmsArtistsController
         }
     }
 
+    /**
+     * Renders the blank artist creation form.
+     * GET /cms/artists/create
+     */
     public function create(): void
     {
         try {
@@ -48,12 +69,17 @@ class CmsArtistsController
         }
     }
 
+    /**
+     * Validates and persists a new artist from the creation form.
+     * POST /cms/artists
+     */
     public function store(): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_artist_create', '/cms/artists/create');
             $data   = $this->extractFormData();
+            // Re-render the form with errors if validation fails
             $errors = $this->artistsService->validateForCreate($data);
             if (!empty($errors)) {
                 $this->renderCreateForm($data, $errors);
@@ -66,6 +92,10 @@ class CmsArtistsController
         }
     }
 
+    /**
+     * Renders the edit form for an existing artist, pre-filled with current data.
+     * GET /cms/artists/{id}/edit
+     */
     public function edit(int $id): void
     {
         try {
@@ -84,12 +114,17 @@ class CmsArtistsController
         }
     }
 
+    /**
+     * Validates and applies updates to an existing artist.
+     * POST /cms/artists/{id}/edit
+     */
     public function update(int $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_artist_edit_' . $id, '/cms/artists/' . $id . '/edit');
             $data   = $this->extractFormData();
+            // Re-render the form with errors if validation fails
             $errors = $this->artistsService->validateForUpdate($id, $data);
             if (!empty($errors)) {
                 $this->renderEditForm($id, $data, $errors);
@@ -102,6 +137,13 @@ class CmsArtistsController
         }
     }
 
+    /**
+     * Soft-deletes (deactivates) an artist by ID.
+     * POST /cms/artists/{id}/delete
+     *
+     * Uses a single shared CSRF scope for all delete actions on the list page,
+     * because the token is generated once for the whole list rather than per row.
+     */
     public function delete(int $id): void
     {
         try {
@@ -112,22 +154,6 @@ class CmsArtistsController
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
-    }
-
-    private function validateCsrf(string $scope, string $redirectUrl): void
-    {
-        if (!$this->sessionService->isValidCsrfToken($scope, $_POST['_csrf'] ?? null)) {
-            $this->sessionService->setFlash('error', 'Invalid CSRF token. Please try again.');
-            header('Location: ' . $redirectUrl);
-            exit;
-        }
-    }
-
-    private function redirectWithFlash(string $message, string $type, string $url): void
-    {
-        $this->sessionService->setFlash($type, $message);
-        header('Location: ' . $url);
-        exit;
     }
 
     private function extractFormData(): ArtistUpsertData
@@ -141,9 +167,15 @@ class CmsArtistsController
         );
     }
 
-    /** @param array<string, string> $errors */
+    /**
+     * Builds a shared form view-model for both create and edit, switching CSRF scope,
+     * form action URL, and page title based on whether an artist ID is present.
+     *
+     * @param array<string, string> $errors
+     */
     private function buildFormViewModel(?int $artistId, ArtistUpsertData $data, array $errors): \App\ViewModels\Cms\CmsArtistFormViewModel
     {
+        // null artistId = create mode; non-null = edit mode — drives scope, action, and title
         $scope  = $artistId === null ? 'cms_artist_create' : 'cms_artist_edit_' . $artistId;
         $action = $artistId === null ? '/cms/artists' : '/cms/artists/' . $artistId . '/edit';
         $title  = $artistId === null ? 'Create Artist' : 'Edit Artist';

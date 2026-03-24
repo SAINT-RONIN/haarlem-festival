@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-$errorMessage = $_SESSION['error'] ?? 'Unexpected error occurred.';
-unset($_SESSION['error']);
+$errorMessage = $errorMessage ?? 'Unexpected error occurred.';
 ?>
 <!doctype html>
 <html lang="en">

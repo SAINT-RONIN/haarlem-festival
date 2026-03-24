@@ -18,6 +18,13 @@ use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Services\Interfaces\IProgramService;
 
+/**
+ * Manages the user's personal festival program (shopping cart).
+ *
+ * A program is tied to either a session key (anonymous visitors) or a user account.
+ * This service handles adding/removing event sessions, adjusting quantities and
+ * donations, and enriching program items with session details and pricing for display.
+ */
 class ProgramService implements IProgramService
 {
     private const VAT_RATE = 0.21;
@@ -29,6 +36,9 @@ class ProgramService implements IProgramService
     ) {
     }
 
+    /**
+     * Returns the user's active (non-checked-out) program, creating one if none exists.
+     */
     public function getOrCreateProgram(string $sessionKey, ?int $userAccountId): Program
     {
         $program = $this->findActiveProgram($sessionKey, $userAccountId);
@@ -40,6 +50,11 @@ class ProgramService implements IProgramService
         return $this->programRepository->createProgram($sessionKey, $userAccountId);
     }
 
+    /**
+     * Adds an event session to the program, or increases quantity if already present.
+     *
+     * @throws \InvalidArgumentException When eventSessionId or quantity is invalid
+     */
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
         if ($eventSessionId <= 0) {
@@ -63,6 +78,11 @@ class ProgramService implements IProgramService
         return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $donationAmount);
     }
 
+    /**
+     * Updates the ticket quantity for a program item. Removes the item if quantity drops to zero.
+     *
+     * @throws \InvalidArgumentException When the item does not belong to the user's program
+     */
     public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void
     {
         if ($programItemId <= 0) {
@@ -78,6 +98,11 @@ class ProgramService implements IProgramService
         $this->programRepository->updateItemQuantity($programItemId, $quantity);
     }
 
+    /**
+     * Updates the optional donation amount on a program item. Negative values are clamped to zero.
+     *
+     * @throws \InvalidArgumentException When the item does not belong to the user's program
+     */
     public function updateDonation(string $sessionKey, ?int $userAccountId, int $programItemId, float $donationAmount): void
     {
         if ($programItemId <= 0) {
@@ -92,6 +117,11 @@ class ProgramService implements IProgramService
         $this->programRepository->updateItemDonation($programItemId, $donationAmount);
     }
 
+    /**
+     * Removes a single item from the user's program after verifying ownership.
+     *
+     * @throws \InvalidArgumentException When the item does not belong to the user's program
+     */
     public function removeItem(string $sessionKey, ?int $userAccountId, int $programItemId): void
     {
         if ($programItemId <= 0) {
@@ -102,6 +132,9 @@ class ProgramService implements IProgramService
         $this->programRepository->removeItem($programItemId);
     }
 
+    /**
+     * Removes all items from the user's active program, effectively emptying the cart.
+     */
     public function clearProgram(string $sessionKey, ?int $userAccountId): void
     {
         $program = $this->findActiveProgram($sessionKey, $userAccountId);
@@ -113,6 +146,10 @@ class ProgramService implements IProgramService
         $this->programRepository->clearProgram($program->programId);
     }
 
+    /**
+     * Builds the full program view model with enriched item details, subtotal, VAT, and total.
+     * Returns an empty ProgramData when no active program exists.
+     */
     public function getProgramData(string $sessionKey, ?int $userAccountId): ProgramData
     {
         $program = $this->findActiveProgram($sessionKey, $userAccountId);
@@ -121,13 +158,17 @@ class ProgramService implements IProgramService
             return new ProgramData(program: null, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
         }
 
+        // Load raw program items from the database
         $programItems = $this->programRepository->findProgramItems(new ProgramItemFilter(programId: $program->programId));
 
         if ($programItems === []) {
             return new ProgramData(program: $program, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
         }
 
+        // Enrich each item with event session metadata and pricing
         $enrichedItems = $this->enrichItemsWithSessionData($programItems);
+
+        // Calculate financial totals
         $subtotal = $this->calculateSubtotal($enrichedItems);
         $taxAmount = $subtotal * self::VAT_RATE;
 
@@ -140,6 +181,11 @@ class ProgramService implements IProgramService
         );
     }
 
+    /**
+     * Guards against cross-user item manipulation by confirming the item belongs to the caller's active program.
+     *
+     * @throws \InvalidArgumentException When the program doesn't exist or the item isn't in it
+     */
     private function verifyItemOwnership(string $sessionKey, ?int $userAccountId, int $programItemId): void
     {
         $program = $this->findActiveProgram($sessionKey, $userAccountId);
@@ -158,6 +204,10 @@ class ProgramService implements IProgramService
         }
     }
 
+    /**
+     * Looks up the user's active program, preferring user-account match over session-key match.
+     * This allows programs to survive across devices once the user logs in.
+     */
     private function findActiveProgram(string $sessionKey, ?int $userAccountId): ?Program
     {
         if ($userAccountId !== null) {
@@ -195,6 +245,7 @@ class ProgramService implements IProgramService
      */
     private function enrichItemsWithSessionData(array $programItems): array
     {
+        // Batch-load session details and prices to avoid N+1 queries
         $sessionIds = $this->extractSessionIds($programItems);
         $sessionsById = $this->fetchSessionsById($sessionIds);
         $pricesBySession = $this->fetchPricesBySession($sessionIds);
@@ -333,14 +384,11 @@ class ProgramService implements IProgramService
             }
         }
 
+        // PWYL events have no fixed base price; donation covers the amount
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
                 return 0.0;
             }
-        }
-
-        if ($prices !== []) {
-            return (float)$prices[0]->price;
         }
 
         return 0.0;

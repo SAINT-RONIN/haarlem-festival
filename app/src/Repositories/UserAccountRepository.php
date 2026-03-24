@@ -25,7 +25,8 @@ class UserAccountRepository implements IUserAccountRepository
     }
 
     /**
-     * Finds a user by username OR email (for login).
+     * Finds an active user matching by either username or email.
+     * Used at login time so users can sign in with either credential.
      */
     public function findByUsernameOrEmail(string $login): ?UserAccount
     {
@@ -95,7 +96,8 @@ class UserAccountRepository implements IUserAccountRepository
     }
 
     /**
-     * Creates a new user account.
+     * Creates a new user account. PasswordSalt is always NULL because the app uses
+     * bcrypt/argon2 (salt is embedded in the hash). The column exists for legacy compatibility.
      *
      * @param array $data Must contain: username, email, passwordHash, firstName, lastName
      * @return int The new user's ID

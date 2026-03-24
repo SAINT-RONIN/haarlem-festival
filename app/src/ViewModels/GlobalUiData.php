@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
+/**
+ * Global UI state passed to all public page layouts — login status, navigation labels.
+ */
 final readonly class GlobalUiData
 {
     public function __construct(

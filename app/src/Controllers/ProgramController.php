@@ -11,22 +11,23 @@ use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
 
+/**
+ * Manages the user's personal festival program (cart): viewing, adding, updating,
+ * removing, and clearing event items before checkout.
+ */
 class ProgramController extends BaseController
 {
-    private IProgramService $programService;
-    private ICmsPageContentService $cmsService;
-    private ISessionService $sessionService;
-
     public function __construct(
-        IProgramService $programService,
-        ICmsPageContentService $cmsService,
-        ISessionService $sessionService,
+        private readonly IProgramService $programService,
+        private readonly ICmsPageContentService $cmsService,
+        private readonly ISessionService $sessionService,
     ) {
-        $this->programService = $programService;
-        $this->cmsService = $cmsService;
-        $this->sessionService = $sessionService;
     }
 
+    /**
+     * Displays the "My Program" page listing all items the user has added.
+     * GET /my-program
+     */
     public function index(): void
     {
         try {
@@ -46,6 +47,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Adds an event session to the user's program with a given quantity and optional donation.
+     * POST /my-program/add (JSON)
+     */
     public function add(): void
     {
         try {
@@ -65,6 +70,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Updates the ticket quantity for a program item and returns recalculated totals.
+     * PATCH /my-program/update-quantity (JSON)
+     */
     public function updateQuantity(): void
     {
         try {
@@ -83,6 +92,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Updates the donation amount for a program item and returns recalculated totals.
+     * PATCH /my-program/update-donation (JSON)
+     */
     public function updateDonation(): void
     {
         try {
@@ -101,6 +114,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Removes a single item from the program and returns recalculated totals.
+     * DELETE /my-program/remove (JSON)
+     */
     public function remove(): void
     {
         try {
@@ -118,6 +135,10 @@ class ProgramController extends BaseController
         }
     }
 
+    /**
+     * Removes all items from the user's program.
+     * DELETE /my-program/clear (JSON)
+     */
     public function clear(): void
     {
         try {
@@ -132,6 +153,7 @@ class ProgramController extends BaseController
         }
     }
 
+    /** Re-fetches program data to return freshly calculated subtotal, tax, and total after a mutation. */
     private function respondJsonWithTotals(string $sessionKey, ?int $userId): void
     {
         $programData = $this->programService->getProgramData($sessionKey, $userId);
@@ -146,6 +168,7 @@ class ProgramController extends BaseController
         ]);
     }
 
+    /** Ensures a PHP session exists and returns its ID, used as the anonymous cart key. */
     private function getSessionKey(): string
     {
         $this->sessionService->start();

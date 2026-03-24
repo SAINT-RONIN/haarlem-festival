@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Schedule;
 
+/**
+ * View data for the schedule filter/list section used across Jazz, Storytelling, and History pages.
+ *
+ * Carries day tabs, filter groups, event cards, and active filter state.
+ */
 final readonly class ScheduleSectionViewModel
 {
     /**

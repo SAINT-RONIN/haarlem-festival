@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\ArtistHighlight;
 
+/**
+ * Defines persistence operations for artist highlights linked to events.
+ */
 interface IArtistHighlightRepository
 {
     /**

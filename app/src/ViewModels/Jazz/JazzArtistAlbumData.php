@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for a Jazz artist featured album card.
+ * A single album on the jazz artist detail page — title, cover art, and Spotify link.
  */
 final readonly class JazzArtistAlbumData
 {

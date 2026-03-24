@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Typed filter parameters for EventSessionPrice repository queries.
- *
- * @see \App\Repositories\Interfaces\IEventSessionPriceRepository::findPrices()
+ * Shared filter parameters for EventSessionLabel and EventSessionPrice repository queries.
+ * Both repositories use the same filter shape: optional single session ID, batch session IDs,
+ * and a group-by-session flag.
  */
-final readonly class EventSessionPriceFilter
+final readonly class EventSessionRelatedFilter
 {
     /**
      * @param int[]|null $sessionIds

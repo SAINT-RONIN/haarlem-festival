@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Domain payload for Jazz artist detail lookups.
+ * Read-only projection for the jazz artist detail page.
+ *
+ * JOINs Event with Venue to provide event title, slug, venue name, and featured image
+ * for a specific jazz artist.
  */
 final readonly class JazzArtistDetailEvent
 {

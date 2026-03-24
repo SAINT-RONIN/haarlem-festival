@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+/**
+ * Days of the week (Sunday=0 through Saturday=6) matching PHP's date('w') convention.
+ *
+ * Used in schedule day visibility configuration.
+ */
 enum DayOfWeek: int
 {
     case Sunday = 0;

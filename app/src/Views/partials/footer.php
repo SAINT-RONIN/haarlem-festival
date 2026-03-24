@@ -5,9 +5,13 @@
 ?>
 <?php
 use App\ViewModels\GlobalUiData;
-$footerGlobalUi = (isset($viewModel) && property_exists($viewModel, 'globalUi') && $viewModel->globalUi instanceof GlobalUiData)
-    ? $viewModel->globalUi
-    : null;
+
+$footerGlobalUi = null;
+if (isset($viewModel) && is_object($viewModel) && property_exists($viewModel, 'globalUi') && $viewModel->globalUi instanceof GlobalUiData) {
+    $footerGlobalUi = $viewModel->globalUi;
+} elseif (isset($viewModel) && is_array($viewModel) && isset($viewModel['globalUi']) && is_array($viewModel['globalUi'])) {
+    $footerGlobalUi = (object) $viewModel['globalUi'];
+}
 ?>
 <!-- Footer -->
 <div class="w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 flex flex-col justify-end items-center gap-2.5 overflow-hidden">

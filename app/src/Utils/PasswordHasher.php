@@ -52,27 +52,4 @@ class PasswordHasher
         return password_verify($password, $hash);
     }
 
-    /**
-     * Checks if a hash needs to be rehashed (e.g., if options changed).
-     *
-     * @param string $hash Stored password hash
-     * @param array $options Optional Argon2id options
-     * @return bool True if rehash is recommended
-     */
-    public static function needsRehash(string $hash, array $options = []): bool
-    {
-        $mergedOptions = array_merge(self::DEFAULT_OPTIONS, $options);
-        return password_needs_rehash($hash, PASSWORD_ARGON2ID, $mergedOptions);
-    }
-
-    /**
-     * Gets info about a password hash.
-     *
-     * @param string $hash Password hash
-     * @return array Hash information
-     */
-    public static function getInfo(string $hash): array
-    {
-        return password_get_info($hash);
-    }
 }

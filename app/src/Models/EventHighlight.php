@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `EventHighlight` table.
+ * Represents a row in the EventHighlight table.
+ *
+ * Featured highlights for events, displayed on detail pages.
  */
-class EventHighlight
+final readonly class EventHighlight
 {
     public function __construct(
-        public readonly int    $eventHighlightId,
-        public readonly int    $eventId,
-        public readonly string $title,
-        public readonly string $description,
-        public readonly string $imagePath,
-        public readonly int    $sortOrder,
+        public int    $eventHighlightId,
+        public int    $eventId,
+        public string $title,
+        public string $description,
+        public string $imagePath,
+        public int    $sortOrder,
     ) {}
 
     public static function fromRow(array $row): self

@@ -6,6 +6,9 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\CuisineType;
 
+/**
+ * Defines persistence operations for cuisine types linked to restaurants.
+ */
 interface ICuisineTypeRepository
 {
     /**

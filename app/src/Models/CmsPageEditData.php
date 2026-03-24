@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Typed result returned by CmsEditService::getPageForEditing().
- * Carries the page model and enriched section data for the CMS editor view.
+ * All data needed to render the CMS page editor — page metadata, sections with items,
+ * content/image limits. Assembled by CmsEditService.
  */
 final readonly class CmsPageEditData
 {

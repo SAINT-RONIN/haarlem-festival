@@ -10,6 +10,12 @@ use App\Models\VenueFilter;
 use App\Repositories\Interfaces\IVenueRepository;
 use PDO;
 
+/**
+ * Reads and creates records in the Venue table.
+ *
+ * Venues represent physical locations in Haarlem where festival events take place.
+ * Supports optional active/inactive filtering for the venue list.
+ */
 class VenueRepository implements IVenueRepository
 {
     private PDO $pdo;
@@ -19,6 +25,11 @@ class VenueRepository implements IVenueRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * Returns venues ordered by name, optionally filtered by active status.
+     *
+     * @return Venue[]
+     */
     public function findVenues(VenueFilter $filter = new VenueFilter()): array
     {
         $sql = '
@@ -43,6 +54,9 @@ class VenueRepository implements IVenueRepository
         return array_map([Venue::class, 'fromRow'], $rows);
     }
 
+    /**
+     * Inserts a new venue (defaults to Haarlem) and returns the new VenueId.
+     */
     public function create(string $name, string $addressLine, string $city = 'Haarlem'): int
     {
         $stmt = $this->pdo->prepare('

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries CMS item values for the Jazz venues_section.
+ * CMS content for the jazz page venues section (venue names, descriptions, images, hall details).
+ * Hydrated from CMS key-value pairs.
  */
 final readonly class JazzVenuesSectionContent
 {

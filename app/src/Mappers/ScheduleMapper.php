@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Helpers\FormatHelper;
 use App\Models\ScheduleFilterParams;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
@@ -11,6 +12,12 @@ use App\ViewModels\Schedule\ScheduleFilterGroupData;
 use App\ViewModels\Schedule\ScheduleFilterOptionData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
+/**
+ * Transforms raw schedule data arrays (from ScheduleService) into typed
+ * ScheduleSectionViewModel trees used by every event-type page's schedule component.
+ * Handles day/time/price/language/age/venue filter construction, CMS label resolution,
+ * and event-card formatting.
+ */
 final class ScheduleMapper
 {
     private const HISTORY_PAGE_SLUG = 'history';
@@ -48,6 +55,10 @@ final class ScheduleMapper
     /**
      * @param array<string, mixed> $cmsContent
      * @return array{title: string, year: ?string, eventCountLabel: ?string, showEventCount: bool}
+     */
+    /**
+     * Resolves the schedule section header (title, year, event count label).
+     * The history page suppresses the year and event count by design.
      */
     private static function resolveHeaderTexts(array $cmsContent, string $pageSlug): array
     {
@@ -189,7 +200,7 @@ final class ScheduleMapper
         ?ScheduleFilterParams $activeFilters,
     ): ScheduleFilterGroupData {
         $activeDay = $activeFilters?->day;
-        $options   = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $activeDay === null)];
+        $options   = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $activeDay === null)];
         foreach ($availableDays as $dayData) {
             $dayName   = $dayData->dayOfWeek;
             $dayValue  = strtolower($dayName);
@@ -217,7 +228,7 @@ final class ScheduleMapper
             label: self::str($cmsContent, 'schedule_filter_time_range_label', 'Time Range'),
             key: 'timeRange',
             options: [
-                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null),
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_morning_label', 'Morning (before 12:00)'),
                     value: 'morning',
@@ -247,7 +258,7 @@ final class ScheduleMapper
         ?ScheduleFilterParams $activeFilters,
     ): ScheduleFilterGroupData {
         $active  = $activeFilters?->priceType;
-        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null)];
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null)];
 
         foreach ($priceTypeOptions as $value) {
             [$labelKey, $defaultLabel] = match ($value) {
@@ -280,7 +291,7 @@ final class ScheduleMapper
             label: self::str($cmsContent, 'schedule_filter_language_label', 'Language'),
             key: 'language',
             options: [
-                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null),
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_english_label', 'English'),
                     value: 'english',
@@ -307,7 +318,6 @@ final class ScheduleMapper
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_all_ages_label', 'All ages'),
                     value: 'all',
-                    isDefault: true,
                     isActive: $active === null,
                 ),
                 new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_4_label', '4+'), value: '4', isActive: $active === '4'),
@@ -340,7 +350,7 @@ final class ScheduleMapper
             }
         }
 
-        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null)];
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null)];
         foreach (array_keys($venues) as $venue) {
             $options[] = new ScheduleFilterOptionData(
                 label: $venue,
@@ -383,6 +393,10 @@ final class ScheduleMapper
         return $days;
     }
 
+    /**
+     * Converts a raw event array into a ScheduleEventCardViewModel, formatting
+     * price display, time range, and location string with hall/capacity details.
+     */
     public static function toEventCardViewModel(
         array $event,
         string $confirmText,
@@ -437,6 +451,7 @@ final class ScheduleMapper
     {
         $rawPriceDisplay = self::buildPriceDisplay($event);
 
+        // History tours show "from <price>" because prices vary by group size
         return ($event['isHistory'] ?? false) && $rawPriceDisplay !== ''
             ? 'from ' . $rawPriceDisplay
             : $rawPriceDisplay;
@@ -461,9 +476,13 @@ final class ScheduleMapper
         }
 
         $symbol = (string)($event['currencySymbol'] ?? '€');
-        return $symbol . ' ' . number_format((float)$amount, 2);
+        return FormatHelper::price((float)$amount, $symbol . ' ');
     }
 
+    /**
+     * Builds the location string. Jazz events include hall name and seat capacity
+     * (e.g. "Patronaat - Main Hall - 300 seats"); other types show only the venue name.
+     */
     private static function buildLocationDisplay(array $event): string
     {
         $eventTypeSlug = (string)($event['eventTypeSlug'] ?? '');
@@ -514,6 +533,7 @@ final class ScheduleMapper
         return $viewModels;
     }
 
+    /** Reads a non-empty string from the CMS content array, returning a default when missing. */
     private static function str(array $content, string $key, string $default): string
     {
         $value = $content[$key] ?? null;

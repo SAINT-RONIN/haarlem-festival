@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `ArtistLineupMember` table.
+ * Represents a row in the ArtistLineupMember table.
+ *
+ * Band/ensemble members shown on jazz artist detail pages.
  */
-class ArtistLineupMember
+final readonly class ArtistLineupMember
 {
     public function __construct(
-        public readonly int    $artistLineupMemberId,
-        public readonly int    $eventId,
-        public readonly string $memberText,
-        public readonly int    $sortOrder,
+        public int    $artistLineupMemberId,
+        public int    $eventId,
+        public string $memberText,
+        public int    $sortOrder,
     ) {}
 
     public static function fromRow(array $row): self

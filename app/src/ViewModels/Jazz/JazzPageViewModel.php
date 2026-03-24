@@ -11,6 +11,11 @@ use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
+/**
+ * View data for the public jazz landing page (jazz.php).
+ *
+ * Carries all section data: hero, intro, artists, venues, schedule, pricing.
+ */
 final readonly class JazzPageViewModel extends BaseViewModel
 {
     public function __construct(
@@ -23,7 +28,6 @@ final readonly class JazzPageViewModel extends BaseViewModel
         public PricingData $pricingData,
         public ScheduleCallToActionData $scheduleCtaData,
         public ArtistsData $artistsData,
-        public ScheduleData $scheduleData,
         public BookingCallToActionData $bookingCtaData,
         public ?ScheduleSectionViewModel $scheduleSection = null,
     ) {

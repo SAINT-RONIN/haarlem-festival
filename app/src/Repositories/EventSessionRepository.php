@@ -10,9 +10,15 @@ use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
 use App\Models\SessionQueryResult;
 use App\Models\SessionWithEvent;
+use App\Helpers\FormatHelper;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
+/**
+ * Queries and manages rows in the EventSession table. Supports heavily-filtered session
+ * listing with joins to Event, EventType, Venue, Artist, and MediaAsset. Provides both
+ * flat session lists and day-grouped results for the public schedule UI.
+ */
 class EventSessionRepository implements IEventSessionRepository
 {
     private PDO $pdo;
@@ -22,6 +28,18 @@ class EventSessionRepository implements IEventSessionRepository
         $this->pdo = Database::getConnection();
     }
 
+    /**
+     * Builds and executes a dynamic query for event sessions with extensive filter support:
+     * event type, date range, day of week, time of day, price type (free/fixed/pay-what-you-like),
+     * venue, language, minimum age, and visible-days whitelist.
+     *
+     * When groupByDay is enabled, runs a two-pass query: first fetches distinct dates (capped
+     * by maxDays), then retrieves sessions only within those dates. This powers the paginated
+     * day-tab schedule UI.
+     *
+     * @return SessionQueryResult Contains sessions and optionally day metadata. Returns empty
+     *                            collections when no sessions match.
+     */
     public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult
     {
         $conditions = [];
@@ -42,6 +60,7 @@ class EventSessionRepository implements IEventSessionRepository
             $params['sessionId'] = $filters->sessionId;
         }
 
+        // Build dynamic IN clause with numbered placeholders to filter by multiple session IDs
         if ($filters->sessionIds !== null && $filters->sessionIds !== []) {
             $sessionIdPlaceholders = [];
             foreach ($filters->sessionIds as $index => $sid) {
@@ -78,13 +97,15 @@ class EventSessionRepository implements IEventSessionRepository
         }
 
         if ($filters->dayOfWeek !== null && $filters->dayOfWeek !== '') {
-            $dayNumber = $this->dayNameToNumber($filters->dayOfWeek);
+            $dayNumber = FormatHelper::dayNameToMysqlDayOfWeek($filters->dayOfWeek);
             if ($dayNumber !== null) {
                 $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
                 $params['dayOfWeekNum'] = $dayNumber;
             }
         }
 
+        // visibleDays restricts results to specific weekdays (0=Sunday..6=Saturday).
+        // Uses DAYOFWEEK()-1 to convert MySQL's 1-based numbering to 0-based.
         $visibleDays = $filters->visibleDays;
         if (is_array($visibleDays)) {
             if ($visibleDays === []) {
@@ -109,6 +130,8 @@ class EventSessionRepository implements IEventSessionRepository
             };
         }
 
+        // Price type filter uses correlated subqueries against EventSessionPrice to classify
+        // sessions as free, fixed-price, or pay-what-you-like
         if ($filters->priceType !== null) {
             $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
             match ($filters->priceType) {
@@ -135,6 +158,7 @@ class EventSessionRepository implements IEventSessionRepository
         }
 
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
+        // Whitelist-based ORDER BY to prevent SQL injection via user-supplied sort values
         $requestedOrderBy = is_string($filters->orderBy) ? $filters->orderBy : '';
         $allowedOrderBy = [
             'es.StartDateTime ASC',
@@ -145,6 +169,8 @@ class EventSessionRepository implements IEventSessionRepository
             ? $requestedOrderBy
             : 'es.StartDateTime ASC';
 
+        // Base FROM clause joins session -> event -> event type, plus optional venue, artist,
+        // and artist image. LEFT JOINs allow sessions whose events lack a venue or artist.
         $baseFrom = '
             FROM EventSession es
             INNER JOIN Event e ON es.EventId = e.EventId
@@ -154,6 +180,8 @@ class EventSessionRepository implements IEventSessionRepository
             LEFT JOIN MediaAsset ma ON a.ImageAssetId = ma.MediaAssetId
         ';
 
+        // Two-pass day-grouped mode: first query fetches distinct dates, second fetches sessions
+        // only within those dates. This enables the schedule UI to show a limited number of day tabs.
         $groupByDay = (bool)($filters->groupByDay ?? false);
         if ($groupByDay) {
             $maxDays = (int)($filters->maxDays ?? 7);
@@ -251,6 +279,12 @@ class EventSessionRepository implements IEventSessionRepository
         );
     }
 
+    /**
+     * Inserts a new session with IsCancelled=0 and IsActive=1 by default.
+     *
+     * @param array<string, mixed> $data Session fields keyed by column name.
+     * @return int The auto-incremented EventSessionId.
+     */
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare('
@@ -292,6 +326,13 @@ class EventSessionRepository implements IEventSessionRepository
         return (int)$this->pdo->lastInsertId();
     }
 
+    /**
+     * Updates all mutable session fields. Checkbox-style booleans (ReservationRequired, IsFree,
+     * IsCancelled, IsActive) are derived from key presence via isset(), matching HTML form behavior
+     * where unchecked checkboxes are absent from POST data.
+     *
+     * @param array<string, mixed> $data Session fields keyed by column name.
+     */
     public function update(int $sessionId, array $data): bool
     {
         $stmt = $this->pdo->prepare('
@@ -340,6 +381,9 @@ class EventSessionRepository implements IEventSessionRepository
         ]);
     }
 
+    /**
+     * Hard-deletes a session row. Will fail if order items reference this session.
+     */
     public function delete(int $sessionId): bool
     {
         $stmt = $this->pdo->prepare('DELETE FROM EventSession WHERE EventSessionId = :sessionId');
@@ -410,12 +454,13 @@ class EventSessionRepository implements IEventSessionRepository
         return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
-    private function dayNameToNumber(string $dayName): ?int
+    /**
+     * Bulk-deactivates all sessions belonging to an event. Called when the parent event
+     * is deactivated to ensure no sessions remain bookable.
+     */
+    public function deactivateByEventId(int $eventId): bool
     {
-        $map = [
-            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
-            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
-        ];
-        return $map[strtolower($dayName)] ?? null;
+        $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
+        return $stmt->execute(['eventId' => $eventId]);
     }
 }

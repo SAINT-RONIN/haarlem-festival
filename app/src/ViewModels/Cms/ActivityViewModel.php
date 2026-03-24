@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Cms;
 
 /**
- * ViewModel for a recent activity item in the CMS dashboard.
+ * A single activity entry in the CMS dashboard feed — icon, text, timestamp, and color.
  */
 final readonly class ActivityViewModel
 {

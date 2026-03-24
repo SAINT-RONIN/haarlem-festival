@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+/**
+ * Query parameters for CmsRepository item queries.
+ */
 final readonly class CmsItemFilter
 {
     public function __construct(

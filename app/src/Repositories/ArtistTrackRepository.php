@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IArtistTrackRepository;
 use PDO;
 
 /**
- * Repository for ArtistTrack database operations.
+ * Read-only access to the ArtistTrack table.
+ *
+ * Tracks are featured songs for a Jazz artist, shown on the artist detail
+ * page in SortOrder (typically embedded Spotify/audio links).
  */
 class ArtistTrackRepository implements IArtistTrackRepository
 {

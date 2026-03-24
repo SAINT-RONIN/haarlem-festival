@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+/**
+ * A single CMS section in the page editor — section title, editable items, and sub-groups.
+ */
 final readonly class CmsSectionDisplayViewModel
 {
     /**

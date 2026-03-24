@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `Artist` SQL table.
+ * Represents a row in the Artist table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Artists are performers associated with Jazz events, displayed on both the jazz landing
+ * page and individual artist detail pages.
  */
-final class Artist
+final readonly class Artist
 {
     /*
      * Purpose: Holds artist information (name, style, bio) for performers
@@ -18,13 +18,13 @@ final class Artist
      */
 
     public function __construct(
-        public readonly int                $artistId,
-        public readonly string             $name,
-        public readonly string             $style,
-        public readonly string             $bioHtml,
-        public readonly ?int               $imageAssetId,
-        public readonly bool               $isActive,
-        public readonly \DateTimeImmutable $createdAtUtc,
+        public int                $artistId,
+        public string             $name,
+        public string             $style,
+        public string             $bioHtml,
+        public ?int               $imageAssetId,
+        public bool               $isActive,
+        public \DateTimeImmutable $createdAtUtc,
     ) {
     }
 

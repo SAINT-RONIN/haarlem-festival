@@ -10,14 +10,27 @@ use App\Mappers\CmsUsersMapper;
 use App\Services\Interfaces\ICmsUsersService;
 use App\Services\Interfaces\ISessionService;
 
-class CmsUsersController
+/**
+ * CMS controller for managing user accounts.
+ *
+ * Handles listing (with role/search/sort filters), creating, editing,
+ * and soft-deleting user accounts through the admin panel.
+ * Includes a safety guard preventing admins from deactivating their own account.
+ * Password is required on create but optional on update (empty = keep current).
+ */
+class CmsUsersController extends CmsBaseController
 {
     public function __construct(
         private readonly ICmsUsersService $usersService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
     ) {
+        parent::__construct($sessionService);
     }
 
+    /**
+     * Displays the user list with optional role, search, and sort filters.
+     * GET /cms/users
+     */
     public function index(): void
     {
         try {
@@ -32,6 +45,10 @@ class CmsUsersController
         }
     }
 
+    /**
+     * Renders the blank user creation form with default role set to Customer.
+     * GET /cms/users/create
+     */
     public function create(): void
     {
         try {
@@ -48,12 +65,17 @@ class CmsUsersController
         }
     }
 
+    /**
+     * Validates and persists a new user account from the creation form.
+     * POST /cms/users
+     */
     public function store(): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_user_create', '/cms/users/create');
             $data   = $this->extractUserFormData();
+            // Re-render the form with errors if validation fails
             $errors = $this->usersService->validateForCreate($data['username'], $data['email'], $data['password'], $data['firstName'], $data['lastName']);
             if (!empty($errors)) {
                 $this->renderCreateForm($data['username'], $data['email'], $data['firstName'], $data['lastName'], $data['roleId'], $errors);
@@ -66,6 +88,10 @@ class CmsUsersController
         }
     }
 
+    /**
+     * Renders the edit form for an existing user, pre-filled with current data.
+     * GET /cms/users/{id}/edit
+     */
     public function edit(int $id): void
     {
         try {
@@ -82,12 +108,18 @@ class CmsUsersController
         }
     }
 
+    /**
+     * Validates and applies updates to an existing user account. Password is optional on update.
+     * POST /cms/users/{id}/edit
+     */
     public function update(int $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
+            // Per-user CSRF scope prevents token reuse across different edit forms
             $this->validateCsrf('cms_user_edit_' . $id, '/cms/users/' . $id . '/edit');
             $data   = $this->extractUserFormData();
+            // Empty password string is coerced to null so the service preserves the existing hash
             $errors = $this->usersService->validateForUpdate($id, $data['username'], $data['email'], $data['password'] ?: null, $data['firstName'], $data['lastName']);
             if (!empty($errors)) {
                 $this->renderEditForm($id, $data['username'], $data['email'], $data['firstName'], $data['lastName'], $data['roleId'], $errors);
@@ -100,37 +132,25 @@ class CmsUsersController
         }
     }
 
+    /**
+     * Soft-deletes (deactivates) a user account. Prevents admins from deactivating themselves.
+     * POST /cms/users/{id}/delete
+     */
     public function delete(int $id): void
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_user_delete', '/cms/users');
+            // Guard: prevent self-deactivation
             if ($this->sessionService->getUserId() === $id) {
                 $this->redirectWithFlash('You cannot deactivate your own account.', 'error', '/cms/users');
+                return;
             }
             $this->usersService->deleteUser($id);
             $this->redirectWithFlash('User deactivated successfully.', 'success', '/cms/users');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
-    }
-
-    /** Validates CSRF or redirects with error flash. */
-    private function validateCsrf(string $scope, string $redirectUrl): void
-    {
-        if (!$this->sessionService->isValidCsrfToken($scope, $_POST['_csrf'] ?? null)) {
-            $this->sessionService->setFlash('error', 'Invalid CSRF token. Please try again.');
-            header('Location: ' . $redirectUrl);
-            exit;
-        }
-    }
-
-    /** Flashes a message and redirects. */
-    private function redirectWithFlash(string $message, string $type, string $url): void
-    {
-        $this->sessionService->setFlash($type, $message);
-        header('Location: ' . $url);
-        exit;
     }
 
     /** Extracts and returns list filter params from GET. */

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Program;
 
+/**
+ * View data for the my-program (cart) page.
+ *
+ * Carries line items, totals, checkout eligibility, and CMS content.
+ */
 final readonly class MyProgramPageViewModel
 {
     public function __construct(

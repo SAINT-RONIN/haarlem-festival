@@ -29,31 +29,17 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
 }
 
 use App\Controllers\AuthController;
-use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
-use App\Controllers\CmsMediaController;
-use App\Controllers\CmsArtistsController;
-use App\Controllers\CmsOrdersController;
-use App\Controllers\CmsRestaurantsController;
-use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
-use App\Controllers\ProgramController;
+use App\Controllers\DanceController;
 use App\Controllers\RestaurantController;
-use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
-use App\Services\SessionService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
-
-// Start session once per request during bootstrap.
-(new SessionService())->start();
-
-// Load controller factory — returns a closure keyed by controller class name.
-$container = require __DIR__ . '/../bootstrap/container.php';
 
 // Define routes
 $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
@@ -61,39 +47,23 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', [HomeController::class, 'index']);
 
 
-    // History pages
+    // History Routes
     $r->addRoute('GET', '/history', [HistoryController::class, 'index']);
-    $r->addRoute('GET', '/history/{name}', [HistoryController::class, 'location']);
 
     // Jazz page
     $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);
-    $r->addRoute('GET', '/jazz/{slug:[a-z0-9-]+}', [JazzController::class, 'detail']);
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
-    $r->addRoute('GET', '/storytelling/{slug:[a-z0-9-]+}', [StorytellingController::class, 'detail']);
 
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
-    $r->addRoute('GET', '/restaurant/{id:\d+}', [RestaurantController::class, 'detail']);
 
-    // My Program (cart) Routes
-    $r->addRoute('GET', '/my-program', [ProgramController::class, 'index']);
-    // Route aliases to prevent user-facing 404s from variant links.
-    $r->addRoute('GET', '/my program', [ProgramController::class, 'index']);
-    $r->addRoute('GET', '/program', [ProgramController::class, 'index']);
-    $r->addRoute('POST', '/api/program/add', [ProgramController::class, 'add']);
-    $r->addRoute('POST', '/api/program/update-quantity', [ProgramController::class, 'updateQuantity']);
-    $r->addRoute('POST', '/api/program/update-donation', [ProgramController::class, 'updateDonation']);
-    $r->addRoute('POST', '/api/program/remove', [ProgramController::class, 'remove']);
-    $r->addRoute('POST', '/api/program/clear', [ProgramController::class, 'clear']);
-
-    // Checkout Routes
-    $r->addRoute('GET', '/checkout', [CheckoutController::class, 'index']);
-    $r->addRoute('POST', '/api/checkout/create-session', [CheckoutController::class, 'createSession']);
-    $r->addRoute('GET', '/checkout/success', [CheckoutController::class, 'success']);
-    $r->addRoute('GET', '/checkout/cancel', [CheckoutController::class, 'cancel']);
-    $r->addRoute('POST', '/api/stripe/webhook', [CheckoutController::class, 'webhook']);
+    // Dance page
+    $r->addRoute('GET', '/dance', [DanceController::class, 'index']);
+    $r->addRoute('GET', '/dance/', [DanceController::class, 'index']);
+    $r->addRoute('GET', '/dance/{slug:[A-Za-z0-9-]+}', [DanceController::class, 'detail']);
+    $r->addRoute('GET', '/dance/{slug:[A-Za-z0-9-]+}/', [DanceController::class, 'detail']);
 
 
     // Website Authentication Routes
@@ -134,42 +104,6 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
     $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
 
-    // Schedule API
-    $r->addRoute('GET', '/api/schedule/{pageSlug:[a-z]+}', [ScheduleApiController::class, 'getScheduleHtml']);
-
-    // CMS Media Routes
-    $r->addRoute('GET', '/cms/media', [CmsMediaController::class, 'index']);
-    $r->addRoute('POST', '/cms/media/upload', [CmsMediaController::class, 'upload']);
-    $r->addRoute('POST', '/cms/media/delete', [CmsMediaController::class, 'delete']);
-    $r->addRoute('GET', '/api/cms/media', [CmsMediaController::class, 'list']);
-
-    // CMS Orders Routes
-    $r->addRoute('GET', '/cms/orders', [CmsOrdersController::class, 'index']);
-
-    // CMS Users Routes
-    $r->addRoute('GET',  '/cms/users',                    [CmsUsersController::class, 'index']);
-    $r->addRoute('GET',  '/cms/users/create',             [CmsUsersController::class, 'create']);
-    $r->addRoute('POST', '/cms/users',                    [CmsUsersController::class, 'store']);
-    $r->addRoute('GET',  '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'edit']);
-    $r->addRoute('POST', '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'update']);
-    $r->addRoute('POST', '/cms/users/{id:\d+}/delete',    [CmsUsersController::class, 'delete']);
-
-    // CMS Restaurants Routes
-    $r->addRoute('GET',  '/cms/restaurants',                       [CmsRestaurantsController::class, 'index']);
-    $r->addRoute('GET',  '/cms/restaurants/create',                [CmsRestaurantsController::class, 'create']);
-    $r->addRoute('POST', '/cms/restaurants',                       [CmsRestaurantsController::class, 'store']);
-    $r->addRoute('GET',  '/cms/restaurants/{id:\d+}/edit',         [CmsRestaurantsController::class, 'edit']);
-    $r->addRoute('POST', '/cms/restaurants/{id:\d+}/edit',         [CmsRestaurantsController::class, 'update']);
-    $r->addRoute('POST', '/cms/restaurants/{id:\d+}/delete',       [CmsRestaurantsController::class, 'delete']);
-
-    // CMS Artists Routes
-    $r->addRoute('GET',  '/cms/artists',                           [CmsArtistsController::class, 'index']);
-    $r->addRoute('GET',  '/cms/artists/create',                    [CmsArtistsController::class, 'create']);
-    $r->addRoute('POST', '/cms/artists',                           [CmsArtistsController::class, 'store']);
-    $r->addRoute('GET',  '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'edit']);
-    $r->addRoute('POST', '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'update']);
-    $r->addRoute('POST', '/cms/artists/{id:\d+}/delete',           [CmsArtistsController::class, 'delete']);
-
     // Slug-aware routes (preferred)
     $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);
     $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'update']);
@@ -191,11 +125,6 @@ if (false !== $pos = strpos($uri, '?')) {
     $uri = substr($uri, 0, $pos);
 }
 $uri = rawurldecode($uri);
-
-// Normalize trailing slashes so /my-program/ matches /my-program.
-if ($uri !== '/' && str_ends_with($uri, '/')) {
-    $uri = rtrim($uri, '/');
-}
 
 // Dispatch the route
 $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
@@ -223,7 +152,7 @@ switch ($routeInfo[0]) {
 
         // Handle controller routes
         [$controllerClass, $method] = $handler;
-        $controller = $container($controllerClass);
+        $controller = new $controllerClass();
         $controller->$method(...array_values($vars));
         break;
 }

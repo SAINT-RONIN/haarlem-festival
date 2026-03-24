@@ -10,7 +10,10 @@ use App\Repositories\Interfaces\IArtistHighlightRepository;
 use PDO;
 
 /**
- * Repository for ArtistHighlight database operations.
+ * Read-only access to the ArtistHighlight table.
+ *
+ * Highlights are short "fun fact" or career-milestone blurbs displayed on
+ * the artist detail page, ordered by SortOrder.
  */
 class ArtistHighlightRepository implements IArtistHighlightRepository
 {

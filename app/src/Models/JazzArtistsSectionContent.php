@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Carries CMS item values for the Jazz artists_section.
+ * CMS content for the jazz page artists carousel section (section title, artist card labels,
+ * carousel settings). Hydrated from CMS key-value pairs.
  */
 final readonly class JazzArtistsSectionContent
 {

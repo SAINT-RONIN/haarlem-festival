@@ -8,7 +8,8 @@ use App\Exceptions\ValidationException;
 use App\Models\MediaAsset;
 
 /**
- * Interface for Media asset service.
+ * Contract for media asset CRUD: uploading images (with validation and physical file storage),
+ * linking them to CMS content items, and exposing validation limits for client-side checks.
  */
 interface IMediaAssetService
 {
@@ -44,4 +45,19 @@ interface IMediaAssetService
      * @return MediaAsset[]
      */
     public function getAllAssets(): array;
+
+    /**
+     * Deletes a media asset by its ID.
+     */
+    public function deleteAsset(int $mediaAssetId): bool;
+
+    /**
+     * Returns a single media asset by ID, or null if not found.
+     */
+    public function getAssetById(int $mediaAssetId): ?MediaAsset;
+
+    /**
+     * Updates the alt text for a media asset.
+     */
+    public function updateAltText(int $mediaAssetId, string $altText): bool;
 }

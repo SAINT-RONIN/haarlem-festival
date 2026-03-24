@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Represents a single row from the `EventSessionLabel` SQL table.
+ * Represents a row in the EventSessionLabel table.
  *
- * Used as a typed data object between PDO/repositories and the rest of the application.
- * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
+ * Labels are display badges shown on session cards (e.g., 'In Dutch', 'Age 16+', 'Sold Out').
  */
-class EventSessionLabel
+final readonly class EventSessionLabel
 {
     /*
      * Purpose: Stores display labels/tags for event sessions
@@ -18,9 +17,9 @@ class EventSessionLabel
      */
 
     public function __construct(
-        public readonly int    $eventSessionLabelId,
-        public readonly int    $eventSessionId,
-        public readonly string $labelText,
+        public int    $eventSessionLabelId,
+        public int    $eventSessionId,
+        public string $labelText,
     ) {
     }
 

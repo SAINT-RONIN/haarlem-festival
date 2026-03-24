@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for pricing section data.
+ * Section data for the jazz page pricing section — heading and array of pricing cards.
  */
 final readonly class PricingData
 {

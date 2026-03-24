@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Jazz;
 
 /**
- * DTO for booking call-to-action section.
+ * CTA banner data for the jazz page booking section.
  */
 final readonly class BookingCallToActionData
 {

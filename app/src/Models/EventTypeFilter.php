@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * Typed filter parameters for EventType repository queries.
+ * Query parameters for EventTypeRepository.
+ * Optionally filters to a specific event type ID.
  */
 final readonly class EventTypeFilter
 {
