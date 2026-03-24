@@ -1,19 +1,3 @@
-/**
- * CMS Page Edit JavaScript.
- *
- * Handles page content editing functionality including:
- * - TinyMCE initialization
- * - Character counters
- * - Accordion toggles
- * - Image uploads
- */
-
-// Configuration passed from PHP (must be set before this script loads)
-// Expected globals: contentLimits, imageLimits, pageId, pageSlug
-
-/**
- * Initialize TinyMCE for HTML editor fields.
- */
 function initTinyMCE() {
     if (typeof tinymce === 'undefined') {
         console.warn('TinyMCE not loaded');
@@ -105,7 +89,7 @@ function initAccordionToggles() {
  * @param {HTMLInputElement} fileInput - The file input element
  */
 function uploadImage(itemId, fileInput) {
-    if (typeof imageLimits === 'undefined' || typeof pageId === 'undefined' || typeof pageSlug === 'undefined') {
+    if (typeof imageLimits === 'undefined' || typeof pageId === 'undefined' || typeof pageSlug === 'undefined' || typeof csrfToken === 'undefined') {
         console.error('Required configuration not set');
         return;
     }
@@ -127,6 +111,7 @@ function uploadImage(itemId, fileInput) {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('item_id', itemId);
+    formData.append('csrf_token', csrfToken);
 
     const previewContainer = document.getElementById('preview-' + itemId);
     previewContainer.innerHTML = '<div class="text-gray-500">Uploading...</div>';
@@ -143,14 +128,170 @@ function uploadImage(itemId, fileInput) {
         })
         .then(data => {
             if (data.success) {
-                previewContainer.innerHTML = '<img src="' + data.filePath + '" class="max-h-40 rounded-lg" alt="Uploaded image">';
+                previewContainer.innerHTML = '<img src="' + escapeAttr(data.filePath) + '" class="max-h-40 rounded-lg" alt="Uploaded image">';
             } else {
-                previewContainer.innerHTML = '<div class="text-red-500">' + (data.error || 'Unknown error') + '</div>';
+                previewContainer.innerHTML = '<div class="text-red-500">' + escapeHtml(data.error || 'Unknown error') + '</div>';
             }
         })
         .catch(error => {
             console.error('Upload error:', error);
             previewContainer.innerHTML = '<div class="text-red-500">Upload failed: ' + error.message + '</div>';
+        });
+}
+
+/**
+ * Escape HTML for safe insertion into innerHTML.
+ * @param {string} str - Raw string to escape
+ * @returns {string} HTML-escaped string
+ */
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+/**
+ * Escape a string for safe use inside an HTML attribute value.
+ * @param {string} str - Raw string to escape
+ * @returns {string} Attribute-safe escaped string
+ */
+function escapeAttr(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+/**
+ * Opens the media library modal for selecting an existing image.
+ * @param {number} itemId - The CMS item ID to link the selected image to
+ */
+function openMediaLibrary(itemId) {
+    let modal = document.getElementById('media-library-modal');
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.id = 'media-library-modal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = [
+        '<div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col mx-4">',
+            '<div class="flex items-center justify-between p-4 border-b border-gray-200">',
+                '<h2 class="text-lg font-semibold text-gray-900">Select from Media Library</h2>',
+                '<button type="button" onclick="closeMediaLibrary()" class="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors">',
+                    '<i data-lucide="x" class="w-5 h-5"></i>',
+                '</button>',
+            '</div>',
+            '<div id="media-library-grid" class="flex-1 overflow-y-auto p-4">',
+                '<div class="text-center text-gray-400 py-8">Loading...</div>',
+            '</div>',
+        '</div>'
+    ].join('');
+    document.body.appendChild(modal);
+
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeMediaLibrary();
+    });
+
+    document.addEventListener('keydown', function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeMediaLibrary();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    });
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    fetch('/api/cms/media')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            const grid = document.getElementById('media-library-grid');
+            if (!grid) return;
+
+            if (!data.success || !data.assets || data.assets.length === 0) {
+                grid.innerHTML = '<div class="text-center text-gray-400 py-8">No images in library. Upload images from the Media page first.</div>';
+                return;
+            }
+
+            const cards = data.assets.map(function (asset) {
+                return [
+                    '<button type="button"',
+                    '    onclick="selectMediaAsset(' + asset.mediaAssetId + ', \'' + escapeAttr(asset.filePath) + '\', ' + itemId + ')"',
+                    '    class="group rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-500 transition-colors focus:outline-none focus:border-blue-500 text-left w-full">',
+                    '    <div class="aspect-square bg-gray-100 overflow-hidden">',
+                    '        <img src="' + escapeAttr(asset.filePath) + '" alt="' + escapeAttr(asset.originalFileName) + '" class="w-full h-full object-cover">',
+                    '    </div>',
+                    '    <div class="p-1.5">',
+                    '        <p class="text-xs text-gray-600 truncate">' + escapeHtml(asset.originalFileName) + '</p>',
+                    '    </div>',
+                    '</button>'
+                ].join('');
+            });
+
+            grid.innerHTML = '<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">' + cards.join('') + '</div>';
+        })
+        .catch(function () {
+            const grid = document.getElementById('media-library-grid');
+            if (grid) {
+                grid.innerHTML = '<div class="text-center text-red-500 py-8">Failed to load media library.</div>';
+            }
+        });
+}
+
+/**
+ * Closes and removes the media library modal.
+ */
+function closeMediaLibrary() {
+    const modal = document.getElementById('media-library-modal');
+    if (modal) modal.remove();
+}
+
+/**
+ * Links an existing media asset to a CMS item via the upload endpoint.
+ * @param {number} mediaAssetId - The media asset ID to link
+ * @param {string} filePath - The file path for updating the preview
+ * @param {number} itemId - The CMS item ID to link the asset to
+ */
+function selectMediaAsset(mediaAssetId, filePath, itemId) {
+    if (typeof pageId === 'undefined' || typeof pageSlug === 'undefined' || typeof csrfToken === 'undefined') {
+        console.error('Required page configuration not set');
+        return;
+    }
+
+    closeMediaLibrary();
+
+    const previewContainer = document.getElementById('preview-' + itemId);
+    if (previewContainer) {
+        previewContainer.innerHTML = '<div class="text-gray-500">Linking...</div>';
+    }
+
+    const formData = new FormData();
+    formData.append('item_id', itemId);
+    formData.append('media_asset_id', mediaAssetId);
+    formData.append('csrf_token', csrfToken);
+
+    fetch('/cms/pages/' + pageId + '/' + encodeURIComponent(pageSlug) + '/upload-image', {
+        method: 'POST',
+        body: formData
+    })
+        .then(function (response) {
+            if (!response.ok) throw new Error('Server returned ' + response.status);
+            return response.json();
+        })
+        .then(function (data) {
+            if (!previewContainer) return;
+            if (data.success) {
+                previewContainer.innerHTML = '<img src="' + escapeAttr(filePath) + '" class="max-h-40 rounded-lg" alt="Selected image">';
+            } else {
+                previewContainer.innerHTML = '<div class="text-red-500">' + escapeHtml(data.error || 'Failed to link image') + '</div>';
+            }
+        })
+        .catch(function (error) {
+            console.error('Link error:', error);
+            if (previewContainer) {
+                previewContainer.innerHTML = '<div class="text-red-500">Failed to link image.</div>';
+            }
         });
 }
 

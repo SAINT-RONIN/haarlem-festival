@@ -4,6 +4,14 @@
  *
  * @var \App\ViewModels\ArtistsData $artistsData
  */
+
+if (!isset($artistsData) && isset($viewModel) && property_exists($viewModel, 'artistsData')) {
+    $artistsData = $viewModel->artistsData;
+}
+
+if (!isset($artistsData)) {
+    return;
+}
 ?>
 
 <!-- Artists Section -->
@@ -51,4 +59,3 @@
         </button>
     </div>
 </section>
-

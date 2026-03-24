@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionPrice;
+use App\Models\EventSessionPriceFilter;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use PDO;
 
@@ -22,64 +23,65 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
     }
 
     /**
-     * Find all prices for a session with tier names (joined query).
-     *
-     * @return array<int, array{
-     *     EventSessionPriceId: int,
-     *     EventSessionId: int,
-     *     PriceTierId: int,
-     *     Price: string,
-     *     CurrencyCode: string,
-     *     VatRate: string,
-     *     PriceTierName: string
-     * }>
+     * @return EventSessionPrice[]
      */
-    public function findBySessionId(int $sessionId): array
+    public function findPrices(EventSessionPriceFilter $filters = new EventSessionPriceFilter()): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT esp.EventSessionPriceId, esp.EventSessionId, esp.PriceTierId,
-                   esp.Price, esp.CurrencyCode, esp.VatRate,
-                   pt.Name AS PriceTierName
-            FROM EventSessionPrice esp
-            INNER JOIN PriceTier pt ON esp.PriceTierId = pt.PriceTierId
-            WHERE esp.EventSessionId = :sessionId
-            ORDER BY esp.PriceTierId ASC
-        ');
-        $stmt->execute(['sessionId' => $sessionId]);
+        $sql = '
+            SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate
+            FROM EventSessionPrice
+            WHERE 1 = 1
+        ';
+        $params = [];
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($filters->sessionId !== null) {
+            $sql .= ' AND EventSessionId = :sessionId';
+            $params['sessionId'] = $filters->sessionId;
+        }
+
+        $sql .= ' ORDER BY EventSessionId ASC, PriceTierId ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map([EventSessionPrice::class, 'fromRow'], $rows);
     }
 
     /**
-     * Find all prices for multiple sessions.
-     *
-     * @param array<int> $sessionIds
+     * @param int[] $sessionIds
      * @return array<int, EventSessionPrice[]>
      */
-    public function findBySessionIds(array $sessionIds): array
+    public function findPricesBySessionIds(array $sessionIds): array
     {
-        if (empty($sessionIds)) {
+        $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
+        if ($normalizedIds === []) {
             return [];
         }
 
-        $placeholders = implode(',', array_fill(0, count($sessionIds), '?'));
-        $stmt = $this->pdo->prepare("
+        $params = [];
+        $inPlaceholders = [];
+        foreach ($normalizedIds as $index => $sessionId) {
+            $paramName = 'sessionId' . $index;
+            $inPlaceholders[] = ':' . $paramName;
+            $params[$paramName] = $sessionId;
+        }
+
+        $sql = '
             SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate
             FROM EventSessionPrice
-            WHERE EventSessionId IN ($placeholders)
-            ORDER BY EventSessionId, PriceTierId ASC
-        ");
-        $stmt->execute($sessionIds);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            WHERE EventSessionId IN (' . implode(', ', $inPlaceholders) . ')
+            ORDER BY EventSessionId ASC, PriceTierId ASC
+        ';
 
-        // Group by session ID
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $prices = array_map([EventSessionPrice::class, 'fromRow'], $rows);
+
         $grouped = [];
-        foreach ($rows as $row) {
-            $sid = (int)$row['EventSessionId'];
-            if (!isset($grouped[$sid])) {
-                $grouped[$sid] = [];
-            }
-            $grouped[$sid][] = EventSessionPrice::fromRow($row);
+        foreach ($prices as $price) {
+            $grouped[$price->eventSessionId][] = $price;
         }
 
         return $grouped;

@@ -19,6 +19,12 @@ interface IMediaAssetRepository
      */
     public function findById(int $mediaAssetId): ?MediaAsset;
 
+    /**
+     * @param int[] $ids
+     * @return array<int, MediaAsset> Keyed by MediaAssetId
+     */
+    public function findByIds(array $ids): array;
+
     public function create(array $data): int;
 
     public function update(int $mediaAssetId, array $data): bool;
@@ -33,4 +39,11 @@ interface IMediaAssetRepository
      * @return bool Success status
      */
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool;
+
+    /**
+     * Returns all media assets ordered by newest first.
+     *
+     * @return MediaAsset[]
+     */
+    public function findAll(): array;
 }

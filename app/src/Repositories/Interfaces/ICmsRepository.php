@@ -5,37 +5,32 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\CmsItem;
+use App\Models\CmsItemFilter;
 use App\Models\CmsPage;
+use App\Models\CmsPageFilter;
 use App\Models\CmsSection;
+use App\Models\CmsSectionFilter;
 
 interface ICmsRepository
 {
-    public function getPageBySlug(string $slug): ?CmsPage;
-
-    public function getPageById(int $cmsPageId): ?CmsPage;
+    /**
+     * @return CmsPage[]
+     */
+    public function findPages(CmsPageFilter $filter): array;
 
     /**
      * @return CmsSection[]
      */
-    public function getSectionsByPageId(int $cmsPageId): array;
+    public function findSections(CmsSectionFilter $filter): array;
 
     /**
      * @return CmsItem[]
      */
-    public function getItemsBySectionId(int $cmsSectionId): array;
+    public function findItems(CmsItemFilter $filter): array;
 
     /**
-     * @return CmsItem[]
+     * @param array<string, mixed> $data
      */
-    public function getItemsBySectionKey(int $cmsPageId, string $sectionKey): array;
-
-    /**
-     * @return array<int, array{CmsPageId: int, Title: string, Slug: string, UpdatedAtUtc: ?string}>
-     */
-    public function findAllPages(): array;
-
-    public function getItemById(int $cmsItemId): ?CmsItem;
-
     public function updateItem(int $cmsItemId, array $data): bool;
 
     public function updateItemMediaAsset(int $cmsItemId, ?int $mediaAssetId): bool;

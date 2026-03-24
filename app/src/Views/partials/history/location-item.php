@@ -3,8 +3,10 @@
  * Partial for rendering a single location card in the History locations section.
  *
  * Expects a \App\ViewModels\History\VenueCardData instance as $venue.
+ * Expects a string $viewMoreLabel set by the caller before including this partial.
  *
  * @var \App\ViewModels\History\VenueCardData $venue
+ * @var string $viewMoreLabel
  */
 
 use App\ViewModels\History\VenueCardData;
@@ -25,10 +27,12 @@ use App\ViewModels\History\VenueCardData;
         <div class="w-full text-slate-800 text-lg font-normal font-['Montserrat']">
             <?= htmlspecialchars($venue->description) ?>
         </div>
-        <div class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center">
-            <div class="flex-1 text-white text-xl font-normal font-['Montserrat'] leading-5">
-                View more
-            </div>
-        </div>
+
+            <a href="<?= htmlspecialchars($venue->venueUrl) ?>" class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center">
+                <div class="flex-1 text-white text-xl font-normal font-['Montserrat'] leading-5">
+                    <?= htmlspecialchars($viewMoreLabel) ?>
+                </div>
+            </a>
+
     </div>
 </article>

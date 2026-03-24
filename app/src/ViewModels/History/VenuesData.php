@@ -14,6 +14,7 @@ final readonly class VenuesData
      */
     public function __construct(
         public string $headingText,
+        public string $viewMoreLabel,
         public array $venues,
     ) {
     }

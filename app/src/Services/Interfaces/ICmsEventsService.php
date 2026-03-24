@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Exceptions\ValidationException;
-use App\ViewModels\Cms\CmsEventEditViewModel;
 
 /**
  * Interface for CMS Events management service.
@@ -45,6 +44,9 @@ interface ICmsEventsService
 
     /**
      * Gets weekly schedule overview for CMS.
+     * Returns SessionWithEvent models grouped by day name.
+     *
+     * @return array<string, \App\Models\SessionWithEvent[]>
      */
     public function getWeeklyScheduleOverview(?int $eventTypeId = null): array;
 
@@ -57,8 +59,11 @@ interface ICmsEventsService
 
     /**
      * Gets a single event with all related data for editing.
+     * Returns null when the event does not exist.
+     *
+     * @return array{event: \App\Models\EventWithDetails, sessions: \App\Models\SessionWithEvent[], pricesMap: array, labelsMap: array}|null
      */
-    public function getEventForEdit(int $eventId): ?CmsEventEditViewModel;
+    public function getEventForEdit(int $eventId): ?array;
 
     /**
      * Updates an event's basic information.
@@ -87,6 +92,25 @@ interface ICmsEventsService
     public function deleteSession(int $sessionId): bool;
 
     /**
+     * Adds a label to a session.
+     *
+     * @throws ValidationException
+     */
+    public function addLabel(int $sessionId, string $labelText): int;
+
+    /**
+     * Deletes a label.
+     */
+    public function deleteLabel(int $labelId): bool;
+
+    /**
+     * Sets the price for a session.
+     *
+     * @throws ValidationException
+     */
+    public function setSessionPrice(int $sessionId, int $priceTierId, float $price): bool;
+
+    /**
      * Deletes an event (soft delete).
      *
      * @throws ValidationException
@@ -99,11 +123,18 @@ interface ICmsEventsService
     public function getScheduleDayConfigs(): array;
 
     /**
+     * Gets schedule day configs grouped into 'global' and 'byType' buckets.
+     *
+     * @return array{global: array<int, mixed>, byType: array<int, array<int, mixed>>}
+     */
+    public function getGroupedScheduleDayConfigs(): array;
+
+    /**
      * Sets the visibility of a schedule day.
      *
      * @throws ValidationException
      */
-    public function setScheduleDayVisibility(int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
+    public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
 
     /**
      * Gets visible days for an event type.

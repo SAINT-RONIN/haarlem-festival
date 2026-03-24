@@ -4,24 +4,13 @@
  *
  * @var string $currentView
  * @var array $eventTypes
- * @var array $dayConfigs
+ * @var array $globalConfigs
+ * @var array $typeConfigs
  * @var string|null $successMessage
  * @var string|null $errorMessage
  */
 
 $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-// Group configs by event type (0 = global)
-$globalConfigs = [];
-$typeConfigs = [];
-foreach ($dayConfigs as $config) {
-    $eventTypeId = (int)$config['EventTypeId'];
-    if ($eventTypeId === 0) {
-        $globalConfigs[(int)$config['DayOfWeek']] = $config;
-    } else {
-        $typeConfigs[$eventTypeId][(int)$config['DayOfWeek']] = $config;
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -63,9 +52,9 @@ foreach ($dayConfigs as $config) {
             <div class="p-6">
                 <div class="grid grid-cols-7 gap-3">
                     <?php for ($day = 0; $day <= 6; $day++): ?>
-                        <?php $isVisible = (bool)($globalConfigs[$day]['IsVisible'] ?? 1); ?>
+                        <?php $isVisible = isset($globalConfigs[$day]) ? (bool)$globalConfigs[$day]->isVisible : true; ?>
                         <form method="POST" action="/cms/schedule-days/toggle" class="text-center">
-                            <input type="hidden" name="EventTypeId" value="0">
+                            <input type="hidden" name="EventTypeId" value="">
                             <input type="hidden" name="DayOfWeek" value="<?= $day ?>">
                             <input type="hidden" name="IsVisible" value="<?= $isVisible ? 0 : 1 ?>">
                             <button type="submit"
@@ -94,8 +83,8 @@ foreach ($dayConfigs as $config) {
                         <?php for ($day = 0; $day <= 6; $day++): ?>
                             <?php
                             $typeConfig = $typeConfigs[$etId][$day] ?? null;
-                            $globalVisible = (bool)($globalConfigs[$day]['IsVisible'] ?? 1);
-                            $isVisible = $typeConfig !== null ? (bool)$typeConfig['IsVisible'] : $globalVisible;
+                            $globalVisible = isset($globalConfigs[$day]) ? (bool)$globalConfigs[$day]->isVisible : true;
+                            $isVisible = $typeConfig !== null ? (bool)$typeConfig->isVisible : $globalVisible;
                             $isOverridden = $typeConfig !== null;
                             ?>
                             <form method="POST" action="/cms/schedule-days/toggle" class="text-center">

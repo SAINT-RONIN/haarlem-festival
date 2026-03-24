@@ -5,10 +5,10 @@
  * @var array $session Session data with keys: timeLabel, title, categoryLabel, borderClass
  */
 
-$timeLabel = htmlspecialchars($session['timeLabel']);
-$title = htmlspecialchars($session['title']);
-$categoryLabel = htmlspecialchars($session['categoryLabel']);
-$borderClass = htmlspecialchars($session['borderClass']);
+$timeLabel = htmlspecialchars($session->timeLabel);
+$title = htmlspecialchars($session->title);
+$categoryLabel = htmlspecialchars($session->categoryLabel);
+$borderClass = htmlspecialchars($session->borderClass);
 ?>
 
 <li class="self-stretch p-3 sm:p-4 md:p-5 bg-white rounded-[12px] sm:rounded-[16px] md:rounded-[20px] flex justify-start items-start gap-2 sm:gap-2.5">

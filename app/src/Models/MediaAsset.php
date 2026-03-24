@@ -35,13 +35,13 @@ class MediaAsset
     public static function fromRow(array $row): self
     {
         return new self(
-            mediaAssetId: (int)$row['MediaAssetId'],
-            filePath: (string)$row['FilePath'],
-            originalFileName: (string)$row['OriginalFileName'],
-            mimeType: (string)$row['MimeType'],
-            fileSizeBytes: (int)$row['FileSizeBytes'],
-            altText: (string)$row['AltText'],
-            createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
+            mediaAssetId: (int)($row['MediaAssetId'] ?? throw new \InvalidArgumentException('Missing required field: MediaAssetId')),
+            filePath: (string)($row['FilePath'] ?? throw new \InvalidArgumentException('Missing required field: FilePath')),
+            originalFileName: (string)($row['OriginalFileName'] ?? throw new \InvalidArgumentException('Missing required field: OriginalFileName')),
+            mimeType: (string)($row['MimeType'] ?? throw new \InvalidArgumentException('Missing required field: MimeType')),
+            fileSizeBytes: (int)($row['FileSizeBytes'] ?? throw new \InvalidArgumentException('Missing required field: FileSizeBytes')),
+            altText: (string)($row['AltText'] ?? throw new \InvalidArgumentException('Missing required field: AltText')),
+            createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: CreatedAtUtc')),
         );
     }
 

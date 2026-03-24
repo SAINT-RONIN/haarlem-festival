@@ -4,25 +4,27 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\EventSession;
+use App\Models\EventSessionFilter;
+use App\Models\ScheduleDayData;
+use App\Models\SessionQueryResult;
 
-/**
- * Interface for EventSession repository.
- */
 interface IEventSessionRepository
 {
     /**
-     * Returns upcoming sessions with event and type details.
-     *
-     * @return array Array of session data with joined event/type info
+     * @return SessionQueryResult
      */
-    public function findUpcomingWithDetails(): array;
+    public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult;
 
     /**
-     * Returns all sessions for an event.
+     * Returns distinct session dates for building filter UI.
      *
-     * @param int $eventId
-     * @return EventSession[]
+     * @return ScheduleDayData[]
      */
-    public function findByEventId(int $eventId): array;
+    public function findDistinctDays(EventSessionFilter $filter): array;
+
+    public function create(array $data): int;
+
+    public function update(int $sessionId, array $data): bool;
+
+    public function delete(int $sessionId): bool;
 }

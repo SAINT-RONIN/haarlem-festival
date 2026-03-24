@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\EventSessionLabel;
+use App\Models\EventSessionLabelFilter;
 
 /**
  * Interface for EventSessionLabel repository operations.
@@ -12,20 +13,19 @@ use App\Models\EventSessionLabel;
 interface IEventSessionLabelRepository
 {
     /**
-     * Find all labels for a session.
+     * Find labels using optional filters.
      *
-     * @param int $sessionId
      * @return EventSessionLabel[]
      */
-    public function findBySessionId(int $sessionId): array;
+    public function findLabels(EventSessionLabelFilter $filters = new EventSessionLabelFilter()): array;
 
     /**
-     * Find all labels for multiple sessions.
+     * Find labels grouped by session ID for a set of session IDs.
      *
-     * @param array<int> $sessionIds
-     * @return array<int, EventSessionLabel[]> Labels keyed by session ID
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionLabel[]>
      */
-    public function findBySessionIds(array $sessionIds): array;
+    public function findLabelsBySessionIds(array $sessionIds): array;
 
     /**
      * Create a new label for a session.

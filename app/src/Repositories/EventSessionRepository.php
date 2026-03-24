@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Enums\PriceTierId;
 use App\Infrastructure\Database;
-use App\Models\EventSession;
+use App\Models\EventSessionFilter;
+use App\Models\ScheduleDayData;
+use App\Models\SessionQueryResult;
+use App\Models\SessionWithEvent;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
-/**
- * Repository for EventSession database operations.
- */
 class EventSessionRepository implements IEventSessionRepository
 {
     private PDO $pdo;
@@ -21,223 +22,235 @@ class EventSessionRepository implements IEventSessionRepository
         $this->pdo = Database::getConnection();
     }
 
-    /**
-     * Returns upcoming sessions with event and type details.
-     *
-     * Joins EventSession with Event and EventType to get all needed data
-     * for the homepage schedule display.
-     *
-     * @return array Array of session data with event title and type slug
-     */
-    public function findUpcomingWithDetails(): array
+    public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult
     {
-        $stmt = $this->pdo->prepare('
-            SELECT 
-                es.EventSessionId,
-                es.StartDateTime,
-                es.EndDateTime,
-                e.Title AS EventTitle,
-                et.Name AS EventTypeName,
-                et.Slug AS EventTypeSlug
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
-            WHERE es.IsActive = 1 
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-            ORDER BY es.StartDateTime ASC
-        ');
-        $stmt->execute();
+        $conditions = [];
+        $params = [];
 
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Returns schedule data for any event type.
-     * Auto-discovers days from sessions, optionally filtered by date range.
-     *
-     * @param int $eventTypeId Event type to filter by
-     * @param int $maxDays Maximum number of days to return (default 7)
-     * @param string|null $startDate Optional start date filter (Y-m-d format)
-     * @param string|null $endDate Optional end date filter (Y-m-d format)
-     * @param array|null $visibleDays Optional array of visible day numbers (0=Sun, 1=Mon, etc.)
-     * @return array Array with 'days' and 'sessions' keys
-     */
-    public function findScheduleDataByEventType(
-        int     $eventTypeId,
-        int     $maxDays = 7,
-        ?string $startDate = null,
-        ?string $endDate = null,
-        ?array  $visibleDays = null
-    ): array {
-        // Build date filter clause
-        $dateFilter = '';
-        $dateParams = [];
-
-        if ($startDate !== null) {
-            $dateFilter .= ' AND DATE(es.StartDateTime) >= :startDate';
-            $dateParams['startDate'] = $startDate;
-        }
-        if ($endDate !== null) {
-            $dateFilter .= ' AND DATE(es.StartDateTime) <= :endDate';
-            $dateParams['endDate'] = $endDate;
+        if ($filters->eventId !== null) {
+            $conditions[] = 'es.EventId = :eventId';
+            $params['eventId'] = $filters->eventId;
         }
 
-        // Filter by visible days of week
-        $dayOfWeekFilter = '';
-        if ($visibleDays !== null && count($visibleDays) < 7) {
-            $dayPlaceholders = implode(',', array_map(fn ($d) => (int)$d, $visibleDays));
-            $dayOfWeekFilter = " AND DAYOFWEEK(es.StartDateTime) - 1 IN ({$dayPlaceholders})";
+        if ($filters->eventTypeId !== null) {
+            $conditions[] = 'e.EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = $filters->eventTypeId;
         }
 
-        // Step 1: Get distinct dates that have sessions for this event type (auto-discover days)
-        $daysStmt = $this->pdo->prepare("
-            SELECT DISTINCT DATE(es.StartDateTime) AS Date
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            WHERE e.EventTypeId = :eventTypeId
-              AND es.IsActive = 1
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-              {$dateFilter}
-              {$dayOfWeekFilter}
-            ORDER BY Date ASC
-            LIMIT :maxDays
-        ");
-        $daysStmt->bindValue(':eventTypeId', $eventTypeId, \PDO::PARAM_INT);
-        $daysStmt->bindValue(':maxDays', $maxDays, \PDO::PARAM_INT);
-        foreach ($dateParams as $key => $value) {
-            $daysStmt->bindValue(':' . $key, $value);
-        }
-        $daysStmt->execute();
-        $days = $daysStmt->fetchAll();
-
-        if (empty($days)) {
-            return ['days' => [], 'sessions' => []];
+        if ($filters->sessionId !== null) {
+            $conditions[] = 'es.EventSessionId = :sessionId';
+            $params['sessionId'] = $filters->sessionId;
         }
 
-        // Extract dates for the query
-        $dates = array_column($days, 'Date');
-        $datePlaceholders = implode(',', array_fill(0, count($dates), '?'));
+        if ($filters->sessionIds !== null && $filters->sessionIds !== []) {
+            $sessionIdPlaceholders = [];
+            foreach ($filters->sessionIds as $index => $sid) {
+                $key = 'sessionId_' . $index;
+                $sessionIdPlaceholders[] = ':' . $key;
+                $params[$key] = (int)$sid;
+            }
+            $conditions[] = 'es.EventSessionId IN (' . implode(',', $sessionIdPlaceholders) . ')';
+        }
 
-        // Step 2: Get sessions for those dates with all required fields
-        $sessionsStmt = $this->pdo->prepare("
-            SELECT 
-                es.EventSessionId,
-                es.EventId,
-                es.StartDateTime,
-                es.EndDateTime,
-                es.CtaLabel,
-                es.CtaUrl,
-                es.CapacityTotal,
-                es.SoldSingleTickets,
-                es.SoldReservedSeats,
-                es.HallName,
-                es.HistoryTicketLabel,
-                DATE(es.StartDateTime) AS SessionDate,
-                e.Title AS EventTitle,
-                e.EventTypeId,
-                et.Slug AS EventTypeSlug,
-                v.Name AS VenueName,
-                a.Name AS ArtistName,
-                ma.FilePath AS ArtistImageUrl
+        if ($filters->isActive !== null) {
+            $conditions[] = 'es.IsActive = :isActive';
+            $params['isActive'] = $filters->isActive ? 1 : 0;
+        }
+
+        $includeCancelled = (bool)($filters->includeCancelled ?? false);
+        if (!$includeCancelled) {
+            $conditions[] = 'es.IsCancelled = 0';
+        }
+
+        if ($filters->eventIsActive !== null) {
+            $conditions[] = 'e.IsActive = :eventIsActive';
+            $params['eventIsActive'] = $filters->eventIsActive ? 1 : 0;
+        }
+
+        if ($filters->startDate !== null) {
+            $conditions[] = 'DATE(es.StartDateTime) >= :startDate';
+            $params['startDate'] = $filters->startDate;
+        }
+
+        if ($filters->endDate !== null) {
+            $conditions[] = 'DATE(es.StartDateTime) <= :endDate';
+            $params['endDate'] = $filters->endDate;
+        }
+
+        if ($filters->dayOfWeek !== null && $filters->dayOfWeek !== '') {
+            $dayNumber = $this->dayNameToNumber($filters->dayOfWeek);
+            if ($dayNumber !== null) {
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
+                $params['dayOfWeekNum'] = $dayNumber;
+            }
+        }
+
+        $visibleDays = $filters->visibleDays;
+        if (is_array($visibleDays)) {
+            if ($visibleDays === []) {
+                // Explicitly no visible days configured: force an empty result set.
+                $conditions[] = '1 = 0';
+            } elseif (count($visibleDays) < 7) {
+                $dayParams = [];
+                foreach (array_values($visibleDays) as $index => $day) {
+                    $key = 'visibleDay' . $index;
+                    $dayParams[] = ':' . $key;
+                    $params[$key] = (int)$day;
+                }
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
+            }
+        }
+
+        if ($filters->timeRange !== null) {
+            match ($filters->timeRange) {
+                'morning'   => $conditions[] = 'HOUR(es.StartDateTime) < 12',
+                'afternoon' => $conditions[] = '(HOUR(es.StartDateTime) >= 12 AND HOUR(es.StartDateTime) < 17)',
+                'evening'   => $conditions[] = 'HOUR(es.StartDateTime) >= 17',
+            };
+        }
+
+        if ($filters->priceType !== null) {
+            $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
+            match ($filters->priceType) {
+                'pay-what-you-like' => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = :pwylTierId)',
+                'free'              => $conditions[] = '(es.IsFree = 1 OR NOT EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0))',
+                'fixed'             => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != :pwylTierId)',
+                default             => null,
+            };
+        }
+
+        if ($filters->venueName !== null && $filters->venueName !== '') {
+            $conditions[] = 'LOWER(v.Name) = :venueName';
+            $params['venueName'] = strtolower($filters->venueName);
+        }
+
+        if ($filters->languageCode !== null && $filters->languageCode !== '') {
+            $conditions[] = 'LOWER(es.LanguageCode) = :languageCode';
+            $params['languageCode'] = strtolower($filters->languageCode);
+        }
+
+        if ($filters->filterMinAge !== null && $filters->filterMinAge > 0) {
+            $conditions[] = '(es.MinAge IS NOT NULL AND es.MinAge >= :filterMinAge)';
+            $params['filterMinAge'] = $filters->filterMinAge;
+        }
+
+        $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
+        $requestedOrderBy = is_string($filters->orderBy) ? $filters->orderBy : '';
+        $allowedOrderBy = [
+            'es.StartDateTime ASC',
+            'es.StartDateTime DESC',
+            'DATE(es.StartDateTime) ASC, es.StartDateTime ASC',
+        ];
+        $orderBy = in_array($requestedOrderBy, $allowedOrderBy, true)
+            ? $requestedOrderBy
+            : 'es.StartDateTime ASC';
+
+        $baseFrom = '
             FROM EventSession es
             INNER JOIN Event e ON es.EventId = e.EventId
             INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
             LEFT JOIN Venue v ON e.VenueId = v.VenueId
             LEFT JOIN Artist a ON e.ArtistId = a.ArtistId
             LEFT JOIN MediaAsset ma ON a.ImageAssetId = ma.MediaAssetId
-            WHERE e.EventTypeId = ?
-              AND es.IsActive = 1
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-              AND DATE(es.StartDateTime) IN ($datePlaceholders)
-            ORDER BY DATE(es.StartDateTime) ASC, es.StartDateTime ASC
-        ");
+        ';
 
-        // Bind event type ID first, then dates
-        $params = array_merge([$eventTypeId], $dates);
-        $sessionsStmt->execute($params);
-        $sessions = $sessionsStmt->fetchAll();
+        $groupByDay = (bool)($filters->groupByDay ?? false);
+        if ($groupByDay) {
+            $maxDays = (int)($filters->maxDays ?? 7);
+            if ($maxDays <= 0) {
+                $maxDays = 7;
+            }
 
-        return [
-            'days' => $days,
-            'sessions' => $sessions,
-        ];
-    }
+            $daysSql = '
+                SELECT DISTINCT DATE(es.StartDateTime) AS Date
+                ' . $baseFrom . '
+                ' . $whereClause . '
+                ORDER BY Date ASC
+                LIMIT :maxDays
+            ';
+            $daysStmt = $this->pdo->prepare($daysSql);
+            foreach ($params as $key => $value) {
+                $daysStmt->bindValue(':' . $key, $value);
+            }
+            $daysStmt->bindValue(':maxDays', $maxDays, PDO::PARAM_INT);
+            $daysStmt->execute();
+            $days = $daysStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    /**
-     * Returns storytelling schedule data.
-     *
-     * Fetches up to 7 active days for storytelling (EventTypeId = 4).
-     *
-     * @param array|null $visibleDays Optional array of visible day numbers (0=Sun, 1=Mon, etc.)
-     * @return array Array with 'days' and 'sessions' keys
-     */
-    public function findStorytellingScheduleData(?array $visibleDays = null): array
-    {
-        // Show all storytelling sessions, up to 7 days
-        // Filter by visible days if specified
-        return $this->findScheduleDataByEventType(
-            eventTypeId: 4,
-            maxDays: 7,
-            visibleDays: $visibleDays
+            if ($days === []) {
+                return new SessionQueryResult(sessions: [], days: []);
+            }
+
+            $dates = array_column($days, 'Date');
+            $dateBindings = [];
+            $datePlaceholders = [];
+            foreach ($dates as $index => $date) {
+                $placeholder = 'sessionDate' . $index;
+                $datePlaceholders[] = ':' . $placeholder;
+                $dateBindings[$placeholder] = $date;
+            }
+            $sessionDateCondition = 'DATE(es.StartDateTime) IN (' . implode(',', $datePlaceholders) . ')';
+            $sessionsWhereClause = $whereClause === ''
+                ? 'WHERE ' . $sessionDateCondition
+                : $whereClause . ' AND ' . $sessionDateCondition;
+            $sessionsSql = '
+                SELECT
+                    es.*,
+                    DATE(es.StartDateTime) AS SessionDate,
+                    DAYNAME(es.StartDateTime) AS DayOfWeek,
+                    e.Title AS EventTitle,
+                    e.Slug AS EventSlug,
+                    e.EventTypeId,
+                    et.Name AS EventTypeName,
+                    et.Slug AS EventTypeSlug,
+                    v.Name AS VenueName,
+                    a.Name AS ArtistName,
+                    ma.FilePath AS ArtistImageUrl
+                ' . $baseFrom . '
+                ' . $sessionsWhereClause . '
+                ORDER BY ' . $orderBy;
+
+            if ($filters->limit !== null && $filters->limit > 0) {
+                $sessionsSql .= ' LIMIT ' . (int) $filters->limit;
+            }
+
+            $prepared = $this->pdo->prepare($sessionsSql);
+            $prepared->execute(array_merge($params, $dateBindings));
+            $sessionRows = $prepared->fetchAll(PDO::FETCH_ASSOC);
+
+            return new SessionQueryResult(
+                sessions: array_map([SessionWithEvent::class, 'fromRow'], $sessionRows),
+                days: array_map([ScheduleDayData::class, 'fromRow'], $days),
+            );
+        }
+
+        $sessionsSql = '
+            SELECT
+                es.*,
+                DATE(es.StartDateTime) AS SessionDate,
+                DAYNAME(es.StartDateTime) AS DayOfWeek,
+                e.Title AS EventTitle,
+                e.Slug AS EventSlug,
+                e.EventTypeId,
+                et.Name AS EventTypeName,
+                et.Slug AS EventTypeSlug,
+                v.Name AS VenueName,
+                a.Name AS ArtistName,
+                ma.FilePath AS ArtistImageUrl
+            ' . $baseFrom . '
+            ' . $whereClause . '
+            ORDER BY ' . $orderBy;
+
+        if ($filters->limit !== null && $filters->limit > 0) {
+            $sessionsSql .= ' LIMIT ' . (int) $filters->limit;
+        }
+
+        $stmt = $this->pdo->prepare($sessionsSql);
+        $stmt->execute($params);
+        return new SessionQueryResult(
+            sessions: array_map([SessionWithEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC)),
         );
     }
 
-    /**
-     * Find a session by ID with event and venue details.
-     *
-     * @param int $sessionId
-     * @return array|null Session data or null if not found
-     */
-    public function findByIdWithDetails(int $sessionId): ?array
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT 
-                es.*,
-                e.Title AS EventTitle,
-                e.EventTypeId,
-                v.Name AS VenueName
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            LEFT JOIN Venue v ON e.VenueId = v.VenueId
-            WHERE es.EventSessionId = :sessionId
-        ');
-        $stmt->execute(['sessionId' => $sessionId]);
-        $result = $stmt->fetch();
-
-        return $result ?: null;
-    }
-
-    /**
-     * Find all sessions for an event.
-     * /**
-     * Finds all sessions for an event.
-     *
-     * @param int $eventId
-     * @return EventSession[]
-     */
-    public function findByEventId(int $eventId): array
-    {
-        $stmt = $this->pdo->prepare('
-            SELECT *
-            FROM EventSession
-            WHERE EventId = :eventId
-            ORDER BY StartDateTime ASC
-        ');
-        $stmt->execute(['eventId' => $eventId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([EventSession::class, 'fromRow'], $rows);
-    }
-
-    /**
-     * Create a new event session.
-     *
-     * @param array $data Session data
-     * @return int The new session ID
-     */
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare('
@@ -279,13 +292,6 @@ class EventSessionRepository implements IEventSessionRepository
         return (int)$this->pdo->lastInsertId();
     }
 
-    /**
-     * Update an event session.
-     *
-     * @param int $sessionId
-     * @param array $data Session data to update
-     * @return bool Success status
-     */
     public function update(int $sessionId, array $data): bool
     {
         $stmt = $this->pdo->prepare('
@@ -293,90 +299,123 @@ class EventSessionRepository implements IEventSessionRepository
                 StartDateTime = :startDateTime,
                 EndDateTime = :endDateTime,
                 CapacityTotal = :capacityTotal,
+                CapacitySingleTicketLimit = :capacitySingleTicketLimit,
                 HallName = :hallName,
+                SessionType = :sessionType,
+                DurationMinutes = :durationMinutes,
                 LanguageCode = :languageCode,
                 MinAge = :minAge,
+                MaxAge = :maxAge,
+                ReservationRequired = :reservationRequired,
+                IsFree = :isFree,
                 Notes = :notes,
                 HistoryTicketLabel = :historyTicketLabel,
                 CtaLabel = :ctaLabel,
-                CtaUrl = :ctaUrl
+                CtaUrl = :ctaUrl,
+                IsCancelled = :isCancelled,
+                IsActive = :isActive
             WHERE EventSessionId = :sessionId
         ');
 
         return $stmt->execute([
-            'sessionId' => $sessionId,
-            'startDateTime' => $data['StartDateTime'],
-            'endDateTime' => $data['EndDateTime'],
-            'capacityTotal' => $data['CapacityTotal'] ?? 100,
-            'hallName' => $data['HallName'] ?? null,
-            'languageCode' => $data['LanguageCode'] ?? null,
-            'minAge' => $data['MinAge'] ?? null,
-            'notes' => $data['Notes'] ?? '',
-            'historyTicketLabel' => $data['HistoryTicketLabel'] ?? null,
-            'ctaLabel' => $data['CtaLabel'] ?? null,
-            'ctaUrl' => $data['CtaUrl'] ?? null,
+            'sessionId'                 => $sessionId,
+            'startDateTime'             => $data['StartDateTime'],
+            'endDateTime'               => $data['EndDateTime'],
+            'capacityTotal'             => (int)($data['CapacityTotal'] ?? 100),
+            'capacitySingleTicketLimit' => (int)($data['CapacitySingleTicketLimit'] ?? 100),
+            'hallName'                  => $data['HallName'] ?? null,
+            'sessionType'               => $data['SessionType'] ?? null,
+            'durationMinutes'           => isset($data['DurationMinutes']) && $data['DurationMinutes'] !== '' ? (int)$data['DurationMinutes'] : null,
+            'languageCode'              => $data['LanguageCode'] ?? null,
+            'minAge'                    => $data['MinAge'] ?? null,
+            'maxAge'                    => isset($data['MaxAge']) && $data['MaxAge'] !== '' ? (int)$data['MaxAge'] : null,
+            'reservationRequired'       => isset($data['ReservationRequired']) ? 1 : 0,
+            'isFree'                    => isset($data['IsFree']) ? 1 : 0,
+            'notes'                     => $data['Notes'] ?? '',
+            'historyTicketLabel'        => $data['HistoryTicketLabel'] ?? null,
+            'ctaLabel'                  => $data['CtaLabel'] ?? null,
+            'ctaUrl'                    => $data['CtaUrl'] ?? null,
+            'isCancelled'               => isset($data['IsCancelled']) ? 1 : 0,
+            'isActive'                  => isset($data['IsActive']) ? 1 : 0,
         ]);
     }
 
-    /**
-     * Delete an event session.
-     *
-     * @param int $sessionId
-     * @return bool Success status
-     */
     public function delete(int $sessionId): bool
     {
-        $stmt = $this->pdo->prepare('
-            DELETE FROM EventSession
-            WHERE EventSessionId = :sessionId
-        ');
-
+        $stmt = $this->pdo->prepare('DELETE FROM EventSession WHERE EventSessionId = :sessionId');
         return $stmt->execute(['sessionId' => $sessionId]);
     }
 
     /**
-     * Returns sessions grouped by day of week for CMS weekly overview.
+     * Returns distinct session dates matching the base filters (ignoring user-facing schedule filters).
+     * Used to build the day filter UI with all available days, even when other filters narrow results.
      *
-     * @param int|null $eventTypeId Optional filter by event type
-     * @return array Sessions with event details
+     * @return ScheduleDayData[]
      */
-    public function findWeeklyScheduleOverview(?int $eventTypeId = null): array
+    public function findDistinctDays(EventSessionFilter $filter): array
     {
-        $typeFilter = $eventTypeId ? 'AND e.EventTypeId = :eventTypeId' : '';
+        $conditions = [];
+        $params = [];
 
-        $stmt = $this->pdo->prepare("
-            SELECT 
-                es.EventSessionId,
-                es.EventId,
-                es.StartDateTime,
-                es.EndDateTime,
-                es.CapacityTotal,
-                es.SoldSingleTickets,
-                es.SoldReservedSeats,
-                DAYNAME(es.StartDateTime) AS DayOfWeek,
-                DATE(es.StartDateTime) AS SessionDate,
-                e.Title AS EventTitle,
-                e.EventTypeId,
-                et.Name AS EventTypeName,
-                et.Slug AS EventTypeSlug,
-                v.Name AS VenueName
-            FROM EventSession es
-            INNER JOIN Event e ON es.EventId = e.EventId
-            INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
-            LEFT JOIN Venue v ON e.VenueId = v.VenueId
-            WHERE es.IsActive = 1
-              AND es.IsCancelled = 0
-              AND e.IsActive = 1
-              {$typeFilter}
-            ORDER BY es.StartDateTime ASC
-        ");
-
-        if ($eventTypeId) {
-            $stmt->execute(['eventTypeId' => $eventTypeId]);
-        } else {
-            $stmt->execute();
+        if ($filter->eventTypeId !== null) {
+            $conditions[] = 'e.EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = $filter->eventTypeId;
         }
 
-        return $stmt->fetchAll();
+        if ($filter->isActive !== null) {
+            $conditions[] = 'es.IsActive = :isActive';
+            $params['isActive'] = $filter->isActive ? 1 : 0;
+        }
+
+        if ($filter->eventIsActive !== null) {
+            $conditions[] = 'e.IsActive = :eventIsActive';
+            $params['eventIsActive'] = $filter->eventIsActive ? 1 : 0;
+        }
+
+        $conditions[] = 'es.IsCancelled = 0';
+
+        if ($filter->eventId !== null) {
+            $conditions[] = 'es.EventId = :eventId';
+            $params['eventId'] = $filter->eventId;
+        }
+
+        if ($filter->visibleDays !== null && $filter->visibleDays !== []) {
+            if (count($filter->visibleDays) < 7) {
+                $dayParams = [];
+                foreach (array_values($filter->visibleDays) as $index => $day) {
+                    $key = 'visDay' . $index;
+                    $dayParams[] = ':' . $key;
+                    $params[$key] = (int) $day;
+                }
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
+            }
+        }
+
+        $whereClause = $conditions !== [] ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+        $sql = "
+            SELECT DISTINCT DATE(es.StartDateTime) AS date, DAYNAME(es.StartDateTime) AS dayName
+            FROM EventSession es
+            INNER JOIN Event e ON es.EventId = e.EventId
+            {$whereClause}
+            ORDER BY date ASC
+        ";
+
+        $maxDays = $filter->maxDays ?? 7;
+        $sql .= ' LIMIT ' . (int) $maxDays;
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    private function dayNameToNumber(string $dayName): ?int
+    {
+        $map = [
+            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
+            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
+        ];
+        return $map[strtolower($dayName)] ?? null;
     }
 }

@@ -4,339 +4,301 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
+use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
-use App\Services\CmsEventsService;
-use App\ViewModels\Cms\CmsEventListItemViewModel;
-use App\ViewModels\Cms\CmsEventsListViewModel;
+use App\Mappers\CmsEventsMapper;
+use App\Services\Interfaces\ICmsArtistsService;
+use App\Services\Interfaces\ICmsEventsService;
+use App\Services\Interfaces\ICmsRestaurantsService;
+use App\Services\Interfaces\ISessionService;
 
-/**
- * Controller for CMS Events management.
- *
- * Handles HTTP requests for event and session CRUD operations.
- * Thin controller - delegates business logic to CmsEventsService.
- */
 class CmsEventsController
 {
-    private CmsEventsService $eventsService;
-
-    public function __construct()
-    {
-        $this->eventsService = new CmsEventsService();
+    public function __construct(
+        private ICmsEventsService $eventsService,
+        private readonly ISessionService $sessionService,
+        private readonly ICmsArtistsService $artistsService,
+        private readonly ICmsRestaurantsService $restaurantsService,
+    ) {
     }
 
-    /**
-     * Lists all events with weekly schedule overview.
-     * GET /cms/events
-     */
     public function index(): void
     {
-        CmsAuthController::requireAdmin();
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
 
-        $currentView = 'events';
+            $currentView = 'events';
+            $eventTypeId = isset($_GET['type']) && is_numeric($_GET['type']) ? (int)$_GET['type'] : null;
+            $dayOfWeek = isset($_GET['day']) && $_GET['day'] !== '' ? $_GET['day'] : null;
 
-        // Get filter parameters
-        $eventTypeId = isset($_GET['type']) && is_numeric($_GET['type']) ? (int)$_GET['type'] : null;
-        $dayOfWeek = isset($_GET['day']) && !empty($_GET['day']) ? $_GET['day'] : null;
+            $eventsData = $this->eventsService->getAllEventsWithDetails($eventTypeId, $dayOfWeek);
+            $eventTypes = $this->eventsService->getEventTypes();
+            $weeklyScheduleDomain = $this->eventsService->getWeeklyScheduleOverview($eventTypeId);
+            $venues = $this->eventsService->getVenues();
 
-        // Get data from service
-        $eventsData = $this->eventsService->getAllEventsWithDetails($eventTypeId, $dayOfWeek);
-        $eventTypes = $this->eventsService->getEventTypes();
-        $weeklySchedule = $this->eventsService->getWeeklyScheduleOverview($eventTypeId);
-        $venues = $this->eventsService->getVenues();
+            $viewModel = CmsEventsMapper::toEventsListViewModel(
+                $eventsData,
+                $eventTypes,
+                $venues,
+                $weeklyScheduleDomain,
+                $_GET['type'] ?? '',
+                $_GET['day'] ?? '',
+                $_GET['success'] ?? null,
+                $_GET['error'] ?? null,
+            );
 
-        // Transform events to ViewModels
-        $events = array_map(
-            fn (array $event) => CmsEventListItemViewModel::fromArray($event),
-            $eventsData
-        );
-
-        // Build ViewModel
-        $viewModel = new CmsEventsListViewModel(
-            events: $events,
-            eventTypes: $eventTypes,
-            venues: $venues,
-            weeklySchedule: $weeklySchedule,
-            selectedType: $_GET['type'] ?? '',
-            selectedDay: $_GET['day'] ?? '',
-            successMessage: $_GET['success'] ?? null,
-            errorMessage: $_GET['error'] ?? null,
-        );
-
-        require __DIR__ . '/../Views/pages/cms/events.php';
+            require __DIR__ . '/../Views/pages/cms/events.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
-    /**
-     * Shows create event form.
-     * GET /cms/events/create
-     */
     public function create(): void
     {
-        CmsAuthController::requireAdmin();
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
 
-        $currentView = 'events';
-        $eventTypes = $this->eventsService->getEventTypes();
-        $venues = $this->eventsService->getVenues();
-        $errorMessage = $_GET['error'] ?? null;
-        $preselectedDay = $_GET['day'] ?? '';
+            $currentView    = 'events';
+            $eventTypes     = $this->eventsService->getEventTypes();
+            $venues         = $this->eventsService->getVenues();
+            $artists        = $this->artistsService->getArtists(null);
+            $restaurants    = $this->restaurantsService->getRestaurants(null);
+            $errorMessage   = $_GET['error'] ?? null;
+            $preselectedDay = $_GET['day'] ?? '';
 
-        require __DIR__ . '/../Views/pages/cms/event-create.php';
+            require __DIR__ . '/../Views/pages/cms/event-create.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
-    /**
-     * Stores a new event.
-     * POST /cms/events
-     */
     public function store(): void
     {
-        CmsAuthController::requireAdmin();
-
         try {
+            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = $this->eventsService->createEvent($_POST);
             $this->redirect("/cms/events/{$eventId}/edit?success=Event+created+successfully");
-        } catch (ValidationException $e) {
-            $this->redirect("/cms/events/create?error=" . urlencode(implode(', ', $e->getErrors())));
+        } catch (ValidationException $error) {
+            $this->redirect('/cms/events/create?error=' . urlencode(implode(', ', $error->getErrors())));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Shows edit form for an event.
-     * GET /cms/events/{id}/edit
-     */
     public function edit(string $id): void
     {
-        CmsAuthController::requireAdmin();
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
 
-        $eventId = (int)$id;
-        $currentView = 'events';
-        $viewModel = $this->eventsService->getEventForEdit($eventId);
+            $eventId = (int)$id;
+            $currentView = 'events';
+            $editData = $this->eventsService->getEventForEdit($eventId);
 
-        if (!$viewModel) {
-            http_response_code(404);
-            echo 'Event not found';
-            return;
+            if ($editData === null) {
+                http_response_code(404);
+                require __DIR__ . '/../Views/pages/errors/404.php';
+                return;
+            }
+
+            $viewModel = CmsEventsMapper::toEventEditViewModel(
+                $editData['event'],
+                $editData['sessions'],
+                $editData['pricesMap'],
+                $editData['labelsMap'],
+            );
+
+            $priceTiers  = $this->eventsService->getPriceTiers();
+            $artists     = $this->artistsService->getArtists(null);
+            $restaurants = $this->restaurantsService->getRestaurants(null);
+            $successMessage = $_GET['success'] ?? null;
+            $errorMessage = $_GET['error'] ?? null;
+
+            require __DIR__ . '/../Views/pages/cms/event-edit.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
-
-        $priceTiers = $this->eventsService->getPriceTiers();
-        $successMessage = $_GET['success'] ?? null;
-        $errorMessage = $_GET['error'] ?? null;
-
-        require __DIR__ . '/../Views/pages/cms/event-edit.php';
     }
 
-    /**
-     * Updates an event.
-     * POST /cms/events/{id}/edit
-     */
     public function update(string $id): void
     {
-        CmsAuthController::requireAdmin();
-
-        $eventId = (int)$id;
-
         try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $eventId = (int)$id;
             $this->eventsService->updateEvent($eventId, $_POST);
             $this->redirect("/cms/events/{$eventId}/edit?success=Event+updated+successfully");
-        } catch (ValidationException $e) {
-            $this->redirect("/cms/events/{$eventId}/edit?error=" . urlencode(implode(', ', $e->getErrors())));
+        } catch (ValidationException $error) {
+            $eventId = (int)$id;
+            $this->redirect("/cms/events/{$eventId}/edit?error=" . urlencode(implode(', ', $error->getErrors())));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Creates a new session for an event.
-     * POST /cms/events/{eventId}/sessions
-     */
     public function createSession(string $eventId): void
     {
-        CmsAuthController::requireAdmin();
-
-        $eventIdInt = (int)$eventId;
-
         try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $eventIdInt = (int)$eventId;
             $this->eventsService->createSession($eventIdInt, $_POST);
             $this->redirect("/cms/events/{$eventIdInt}/edit?success=Session+created+successfully");
-        } catch (ValidationException $e) {
-            $this->redirect("/cms/events/{$eventIdInt}/edit?error=" . urlencode(implode(', ', $e->getErrors())));
+        } catch (ValidationException $error) {
+            $eventIdInt = (int)$eventId;
+            $this->redirect("/cms/events/{$eventIdInt}/edit?error=" . urlencode(implode(', ', $error->getErrors())));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Updates a session.
-     * POST /cms/sessions/{id}
-     */
     public function updateSession(string $id): void
     {
-        CmsAuthController::requireAdmin();
-
-        $sessionId = (int)$id;
-        $eventId = (int)($_POST['EventId'] ?? 0);
-
         try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $sessionId = (int)$id;
+            $eventId = (int)($_POST['EventId'] ?? 0);
             $this->eventsService->updateSession($sessionId, $_POST);
             $this->redirect("/cms/events/{$eventId}/edit?success=Session+updated+successfully");
-        } catch (ValidationException $e) {
-            $this->redirect("/cms/events/{$eventId}/edit?error=" . urlencode(implode(', ', $e->getErrors())));
+        } catch (ValidationException $error) {
+            $eventId = (int)($_POST['EventId'] ?? 0);
+            $this->redirect("/cms/events/{$eventId}/edit?error=" . urlencode(implode(', ', $error->getErrors())));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Deletes a session.
-     * POST /cms/sessions/{id}/delete
-     */
     public function deleteSession(string $id): void
     {
-        CmsAuthController::requireAdmin();
-
-        $sessionId = (int)$id;
-        $eventId = (int)($_POST['EventId'] ?? 0);
-
-        $this->eventsService->deleteSession($sessionId);
-        $this->redirect("/cms/events/{$eventId}/edit?success=Session+deleted+successfully");
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $sessionId = (int)$id;
+            $eventId = (int)($_POST['EventId'] ?? 0);
+            $this->eventsService->deleteSession($sessionId);
+            $this->redirect("/cms/events/{$eventId}/edit?success=Session+deleted+successfully");
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
-    /**
-     * Adds a label to a session.
-     * POST /cms/sessions/{id}/labels
-     */
     public function addLabel(string $id): void
     {
-        CmsAuthController::requireAdmin();
-
-        $sessionId = (int)$id;
-        $eventId = (int)($_POST['EventId'] ?? 0);
-        $labelText = trim($_POST['LabelText'] ?? '');
-
         try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $sessionId = (int)$id;
+            $eventId = (int)($_POST['EventId'] ?? 0);
+            $labelText = trim($_POST['LabelText'] ?? '');
             $this->eventsService->addLabel($sessionId, $labelText);
             $this->redirect("/cms/events/{$eventId}/edit?success=Label+added+successfully");
-        } catch (ValidationException $e) {
-            $this->redirect("/cms/events/{$eventId}/edit?error=" . urlencode(implode(', ', $e->getErrors())));
+        } catch (ValidationException $error) {
+            $eventId = (int)($_POST['EventId'] ?? 0);
+            $this->redirect("/cms/events/{$eventId}/edit?error=" . urlencode(implode(', ', $error->getErrors())));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Deletes a label.
-     * POST /cms/labels/{id}/delete
-     */
     public function deleteLabel(string $id): void
     {
-        CmsAuthController::requireAdmin();
-
-        $labelId = (int)$id;
-        $eventId = (int)($_POST['EventId'] ?? 0);
-
-        $this->eventsService->deleteLabel($labelId);
-        $this->redirect("/cms/events/{$eventId}/edit?success=Label+deleted+successfully");
-    }
-
-    /**
-     * Sets/updates a session price.
-     * POST /cms/sessions/{id}/price
-     */
-    public function setPrice(string $id): void
-    {
-        CmsAuthController::requireAdmin();
-
-        $sessionId = (int)$id;
-        $eventId = (int)($_POST['EventId'] ?? 0);
-        $priceTierId = (int)($_POST['PriceTierId'] ?? 1);
-
-        // Handle both comma and dot as decimal separator
-        $priceInput = $_POST['Price'] ?? '0';
-        $priceInput = str_replace(',', '.', $priceInput);
-        $price = (float)$priceInput;
-
         try {
-            $this->eventsService->setSessionPrice($sessionId, $priceTierId, $price);
-            $this->redirect("/cms/events/{$eventId}/edit?success=Price+updated+successfully");
-        } catch (ValidationException $e) {
-            $this->redirect("/cms/events/{$eventId}/edit?error=" . urlencode(implode(', ', $e->getErrors())));
+            CmsAuthController::requireAdmin($this->sessionService);
+            $labelId = (int)$id;
+            $eventId = (int)($_POST['EventId'] ?? 0);
+            $this->eventsService->deleteLabel($labelId);
+            $this->redirect("/cms/events/{$eventId}/edit?success=Label+deleted+successfully");
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Creates a new venue.
-     * POST /cms/venues
-     */
+    public function setPrice(string $id): void
+    {
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $sessionId = (int)$id;
+            $eventId = (int)($_POST['EventId'] ?? 0);
+            $priceTierId = (int)($_POST['PriceTierId'] ?? PriceTierId::Adult->value);
+            $priceInput = str_replace(',', '.', $_POST['Price'] ?? '0');
+            $price = (float)$priceInput;
+            $this->eventsService->setSessionPrice($sessionId, $priceTierId, $price);
+            $this->redirect("/cms/events/{$eventId}/edit?success=Price+updated+successfully");
+        } catch (ValidationException $error) {
+            $eventId = (int)($_POST['EventId'] ?? 0);
+            $this->redirect("/cms/events/{$eventId}/edit?error=" . urlencode(implode(', ', $error->getErrors())));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
+
     public function createVenue(): void
     {
-        CmsAuthController::requireAdmin();
-
-        $name = trim($_POST['VenueName'] ?? '');
-        $addressLine = trim($_POST['AddressLine'] ?? '');
-
         try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $name = trim($_POST['VenueName'] ?? '');
+            $addressLine = trim($_POST['AddressLine'] ?? '');
             $venueId = $this->eventsService->createVenue($name, $addressLine);
-            // Return JSON for AJAX requests
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'venueId' => $venueId, 'name' => $name]);
             exit;
-        } catch (ValidationException $e) {
-            header('Content-Type: application/json');
+        } catch (ValidationException $error) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'errors' => $e->getErrors()]);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'errors' => $error->getErrors()]);
             exit;
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
     }
 
-    /**
-     * Deletes an event (soft delete - sets IsActive = 0).
-     * POST /cms/events/{id}/delete
-     */
     public function delete(string $id): void
     {
-        CmsAuthController::requireAdmin();
-
-        $eventId = (int)$id;
-
         try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $eventId = (int)$id;
             $this->eventsService->deleteEvent($eventId);
             $this->redirect('/cms/events?success=Event+deleted+successfully');
-        } catch (ValidationException $e) {
-            $this->redirect('/cms/events?error=' . urlencode(implode(', ', $e->getErrors())));
+        } catch (ValidationException $error) {
+            $this->redirect('/cms/events?error=' . urlencode(implode(', ', $error->getErrors())));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Shows schedule day visibility management page.
-     * GET /cms/schedule-days
-     */
     public function scheduleDays(): void
     {
-        CmsAuthController::requireAdmin();
-
-        $currentView = 'schedule-days';
-        $eventTypes = $this->eventsService->getEventTypes();
-        $dayConfigs = $this->eventsService->getScheduleDayConfigs();
-        $successMessage = $_GET['success'] ?? null;
-        $errorMessage = $_GET['error'] ?? null;
-
-        require __DIR__ . '/../Views/pages/cms/schedule-days.php';
-    }
-
-    /**
-     * Toggles a schedule day visibility.
-     * POST /cms/schedule-days/toggle
-     */
-    public function toggleScheduleDay(): void
-    {
-        CmsAuthController::requireAdmin();
-
-        // EventTypeId: 0 = global, >0 = specific event type
-        $eventTypeId = (int)($_POST['EventTypeId'] ?? 0);
-        $dayOfWeek = (int)($_POST['DayOfWeek'] ?? 0);
-        $isVisible = (int)($_POST['IsVisible'] ?? 1);
-
         try {
-            $this->eventsService->setScheduleDayVisibility($eventTypeId, $dayOfWeek, $isVisible === 1);
-            $this->redirect('/cms/schedule-days?success=Day+visibility+updated');
-        } catch (ValidationException $e) {
-            $this->redirect('/cms/schedule-days?error=' . urlencode(implode(', ', $e->getErrors())));
+            CmsAuthController::requireAdmin($this->sessionService);
+            $currentView = 'schedule-days';
+            $eventTypes = $this->eventsService->getEventTypes();
+            $grouped      = $this->eventsService->getGroupedScheduleDayConfigs();
+            $globalConfigs = $grouped['global'];
+            $typeConfigs   = $grouped['byType'];
+
+            $successMessage = $_GET['success'] ?? null;
+            $errorMessage = $_GET['error'] ?? null;
+            require __DIR__ . '/../Views/pages/cms/schedule-days.php';
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
-    /**
-     * Redirects to a URL.
-     */
+    public function toggleScheduleDay(): void
+    {
+        try {
+            CmsAuthController::requireAdmin($this->sessionService);
+            $rawEventTypeId = $_POST['EventTypeId'] ?? null;
+            $eventTypeId = ($rawEventTypeId !== null && $rawEventTypeId !== '' && $rawEventTypeId !== '0')
+                ? (int)$rawEventTypeId
+                : null;
+            $dayOfWeek = (int)($_POST['DayOfWeek'] ?? 0);
+            $isVisible = (int)($_POST['IsVisible'] ?? 1);
+            $this->eventsService->setScheduleDayVisibility($eventTypeId, $dayOfWeek, $isVisible === 1);
+            $this->redirect('/cms/schedule-days?success=Day+visibility+updated');
+        } catch (ValidationException $error) {
+            $this->redirect('/cms/schedule-days?error=' . urlencode(implode(', ', $error->getErrors())));
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
+
     private function redirect(string $url): void
     {
         header("Location: {$url}");

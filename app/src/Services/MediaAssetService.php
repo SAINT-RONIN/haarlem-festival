@@ -18,11 +18,9 @@ use App\Utils\CmsContentLimits;
  */
 class MediaAssetService implements IMediaAssetService
 {
-    private MediaAssetRepository $mediaAssetRepository;
-
-    public function __construct()
-    {
-        $this->mediaAssetRepository = new MediaAssetRepository();
+    public function __construct(
+        private readonly MediaAssetRepository $mediaAssetRepository,
+    ) {
     }
 
     /**
@@ -30,10 +28,10 @@ class MediaAssetService implements IMediaAssetService
      *
      * @param array $file The $_FILES array element
      * @param string $folder Subfolder within Image directory
-     * @return array The created MediaAsset record
+     * @return MediaAsset The created MediaAsset record
      * @throws ValidationException If validation fails
      */
-    public function uploadImage(array $file, string $folder = 'cms'): array
+    public function uploadImage(array $file, string $folder = 'cms'): MediaAsset
     {
         $this->validateFile($file);
 
@@ -211,6 +209,16 @@ class MediaAssetService implements IMediaAssetService
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
     {
         return $this->mediaAssetRepository->linkToCmsItem($mediaAssetId, $cmsItemId);
+    }
+
+    /**
+     * Returns all media assets.
+     *
+     * @return MediaAsset[]
+     */
+    public function getAllAssets(): array
+    {
+        return $this->mediaAssetRepository->findAll();
     }
 
     /**

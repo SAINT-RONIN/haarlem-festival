@@ -4,6 +4,14 @@
  *
  * @var \App\ViewModels\ScheduleCallToActionData $scheduleCtaData
  */
+
+if (!isset($scheduleCtaData) && isset($viewModel) && property_exists($viewModel, 'scheduleCtaData')) {
+    $scheduleCtaData = $viewModel->scheduleCtaData;
+}
+
+if (!isset($scheduleCtaData)) {
+    return;
+}
 ?>
 
 <!-- Schedule CTA Section -->
@@ -28,4 +36,3 @@
         </a>
     </div>
 </section>
-

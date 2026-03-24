@@ -195,6 +195,9 @@ $typeColors = [
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Sessions
                     </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tickets
+                    </th>
                     <th scope="col"
                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -204,7 +207,7 @@ $typeColors = [
                 <tbody class="bg-white divide-y divide-gray-200">
                 <?php if (empty($events)): ?>
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                             <p>No events found</p>
                             <a href="/cms/events/create" class="text-blue-600 hover:text-blue-800 mt-2 inline-block">
                                 Create your first event
@@ -238,6 +241,13 @@ $typeColors = [
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <?= $event->sessionCount ?> session(s)
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <?php if ($event->totalCapacity > 0): ?>
+                                    <?= $event->totalSoldTickets ?> / <?= $event->totalCapacity ?> sold
+                                <?php else: ?>
+                                    —
+                                <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a href="/cms/events/<?= $event->eventId ?>/edit"
