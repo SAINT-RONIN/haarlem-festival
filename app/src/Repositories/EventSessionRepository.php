@@ -10,6 +10,7 @@ use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
 use App\Models\SessionQueryResult;
 use App\Models\SessionWithEvent;
+use App\Helpers\FormatHelper;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
@@ -96,7 +97,7 @@ class EventSessionRepository implements IEventSessionRepository
         }
 
         if ($filters->dayOfWeek !== null && $filters->dayOfWeek !== '') {
-            $dayNumber = $this->dayNameToNumber($filters->dayOfWeek);
+            $dayNumber = FormatHelper::dayNameToMysqlDayOfWeek($filters->dayOfWeek);
             if ($dayNumber !== null) {
                 $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
                 $params['dayOfWeekNum'] = $dayNumber;
@@ -454,16 +455,12 @@ class EventSessionRepository implements IEventSessionRepository
     }
 
     /**
-     * Converts an English day name to MySQL DAYOFWEEK() numbering (1=Sunday through 7=Saturday).
-     *
-     * @return int|null Null if the day name is not recognized.
+     * Bulk-deactivates all sessions belonging to an event. Called when the parent event
+     * is deactivated to ensure no sessions remain bookable.
      */
-    private function dayNameToNumber(string $dayName): ?int
+    public function deactivateByEventId(int $eventId): bool
     {
-        $map = [
-            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
-            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
-        ];
-        return $map[strtolower($dayName)] ?? null;
+        $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
+        return $stmt->execute(['eventId' => $eventId]);
     }
 }

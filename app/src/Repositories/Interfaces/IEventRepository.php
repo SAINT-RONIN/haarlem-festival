@@ -61,9 +61,4 @@ interface IEventRepository
      * Marks an event as deleted without removing the row (sets IsActive to false).
      */
     public function softDelete(int $eventId): bool;
-
-    /**
-     * Deactivates all sessions belonging to the given event.
-     */
-    public function deactivateSessions(int $eventId): bool;
 }

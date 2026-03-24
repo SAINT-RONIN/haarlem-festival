@@ -128,6 +128,10 @@ class ProgramRepository implements IProgramRepository
 
         $programs = $this->findPrograms(new ProgramFilter(programId: $programId));
 
+        if ($programs === []) {
+            throw new \RuntimeException("Failed to retrieve program after creation (ID: {$programId})");
+        }
+
         return $programs[0];
     }
 
@@ -152,6 +156,10 @@ class ProgramRepository implements IProgramRepository
         $itemId = (int)$this->pdo->lastInsertId();
 
         $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
+
+        if ($items === []) {
+            throw new \RuntimeException("Failed to retrieve program item after creation (ID: {$itemId})");
+        }
 
         return $items[0];
     }

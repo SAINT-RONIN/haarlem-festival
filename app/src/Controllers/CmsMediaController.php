@@ -7,10 +7,9 @@ namespace App\Controllers;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsEventsMapper;
-use App\Models\MediaAsset;
 use App\Services\Interfaces\IMediaAssetService;
 use App\Services\Interfaces\ISessionService;
-use App\ViewModels\Cms\CmsMediaListItemViewModel;
+use App\ViewModels\Cms\CmsMediaLibraryViewModel;
 
 /**
  * CMS controller for the media asset library.
@@ -95,16 +94,16 @@ class CmsMediaController extends CmsBaseController
         }
     }
 
-    private function buildMediaListViewModel(): \App\ViewModels\Cms\CmsMediaLibraryViewModel
+    private function buildMediaListViewModel(): CmsMediaLibraryViewModel
     {
         $allAssets = $this->mediaAssetService->getAllAssets();
         $assets = array_map([CmsEventsMapper::class, 'toMediaListItemViewModel'], $allAssets);
-        return CmsEventsMapper::toMediaLibraryViewModel(
-            $assets,
-            $this->mediaAssetService->getImageLimits(),
-            $this->sessionService->getCsrfToken('cms_media'),
-            $this->sessionService->consumeFlash('success'),
-            $this->sessionService->consumeFlash('error'),
+        return new CmsMediaLibraryViewModel(
+            assets: $assets,
+            imageLimits: $this->mediaAssetService->getImageLimits(),
+            csrfToken: $this->sessionService->getCsrfToken('cms_media'),
+            successMessage: $this->sessionService->consumeFlash('success'),
+            errorMessage: $this->sessionService->consumeFlash('error'),
         );
     }
 

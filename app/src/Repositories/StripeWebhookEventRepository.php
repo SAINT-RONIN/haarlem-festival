@@ -49,5 +49,24 @@ class StripeWebhookEventRepository implements IStripeWebhookEventRepository
             'eventType' => $eventType,
         ]);
     }
-}
 
+    /**
+     * Atomically marks a Stripe event as processed. Returns false if already processed
+     * (duplicate delivery). Uses INSERT IGNORE to handle the race condition where
+     * concurrent webhook requests pass hasProcessed() simultaneously.
+     */
+    public function markProcessedIfNew(string $eventId, string $eventType): bool
+    {
+        $stmt = $this->pdo->prepare('
+            INSERT IGNORE INTO StripeWebhookEvent (StripeEventId, EventType)
+            VALUES (:eventId, :eventType)
+        ');
+
+        $stmt->execute([
+            'eventId' => $eventId,
+            'eventType' => $eventType,
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+}

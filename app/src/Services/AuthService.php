@@ -111,7 +111,7 @@ class AuthService implements IAuthService
     private function validateUsername(string $username, array $errors): array
     {
         $username = trim($username);
-        $formatError = $this->checkUsernameFormat($username);
+        $formatError = UserValidationHelper::checkUsernameFormat($username);
 
         if ($formatError !== null) {
             $errors['username'] = $formatError;
@@ -123,11 +123,6 @@ class AuthService implements IAuthService
         }
 
         return $errors;
-    }
-
-    private function checkUsernameFormat(string $username): ?string
-    {
-        return UserValidationHelper::checkUsernameFormat($username);
     }
 
     private function validateEmail(string $email, array $errors): array

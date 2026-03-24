@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Constants\ScheduleConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Constants\StorytellingPageConstants;
 use App\Enums\EventTypeId;
@@ -53,7 +54,7 @@ class StorytellingController extends BaseController
         $scheduleData = $this->scheduleService->getScheduleData(
             StorytellingPageConstants::PAGE_SLUG,
             EventTypeId::Storytelling->value,
-            StorytellingPageConstants::SCHEDULE_MAX_DAYS,
+            ScheduleConstants::MAX_DAYS,
             filterParams: $this->readScheduleFilterParams(),
         );
         return ScheduleMapper::toScheduleSection($scheduleData);
@@ -70,6 +71,8 @@ class StorytellingController extends BaseController
         } catch (StorytellingEventNotFoundException) {
             http_response_code(404);
             require __DIR__ . '/../Views/pages/errors/404.php';
+        } catch (\Throwable $throwable) {
+            ControllerErrorResponder::respond($throwable);
         }
     }
 
@@ -87,7 +90,7 @@ class StorytellingController extends BaseController
         $scheduleData = $this->scheduleService->getScheduleData(
             StorytellingDetailConstants::SCHEDULE_PAGE_SLUG,
             EventTypeId::Storytelling->value,
-            StorytellingDetailConstants::SCHEDULE_MAX_DAYS,
+            ScheduleConstants::MAX_DAYS,
             $eventId,
             $ctaButtonText,
         );

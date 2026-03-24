@@ -163,7 +163,7 @@ class CheckoutService implements ICheckoutService
                 'orderId' => $orderId,
                 'paymentId' => $paymentId,
             ];
-        } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
+        } catch (\Throwable $error) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -215,8 +215,8 @@ class CheckoutService implements ICheckoutService
             throw new CheckoutException('Invalid Stripe event payload.');
         }
 
-        // Idempotency guard: skip already-processed events
-        if ($this->webhookEventRepository->hasProcessed($eventId)) {
+        // Atomic idempotency guard: INSERT IGNORE prevents race conditions from concurrent deliveries
+        if (!$this->webhookEventRepository->markProcessedIfNew($eventId, $eventType)) {
             return [
                 'processed' => false,
                 'eventId' => $eventId,
@@ -272,7 +272,6 @@ class CheckoutService implements ICheckoutService
                     break;
             }
 
-            $this->webhookEventRepository->markProcessed($eventId, $eventType);
             $this->pdo->commit();
         } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
             if ($this->pdo->inTransaction()) {

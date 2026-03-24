@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Constants\JazzPageConstants;
+use App\Constants\ScheduleConstants;
 use App\Constants\StorytellingPageConstants;
 use App\Enums\EventTypeId;
 use App\Exceptions\SchedulePageNotFoundException;
@@ -61,8 +62,8 @@ class ScheduleApiController extends BaseController
     private function resolveConfig(string $pageSlug): ScheduleRouteConfig
     {
         return match ($pageSlug) {
-            'storytelling' => new ScheduleRouteConfig(StorytellingPageConstants::PAGE_SLUG, EventTypeId::Storytelling->value, StorytellingPageConstants::SCHEDULE_MAX_DAYS),
-            'jazz' => new ScheduleRouteConfig(JazzPageConstants::PAGE_SLUG, EventTypeId::Jazz->value, JazzPageConstants::SCHEDULE_MAX_DAYS),
+            'storytelling' => new ScheduleRouteConfig(StorytellingPageConstants::PAGE_SLUG, EventTypeId::Storytelling->value, ScheduleConstants::MAX_DAYS),
+            'jazz' => new ScheduleRouteConfig(JazzPageConstants::PAGE_SLUG, EventTypeId::Jazz->value, ScheduleConstants::MAX_DAYS),
             default => throw new SchedulePageNotFoundException($pageSlug),
         };
     }

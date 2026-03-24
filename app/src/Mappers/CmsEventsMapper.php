@@ -17,7 +17,6 @@ use App\ViewModels\Cms\CmsEventEditViewModel;
 use App\ViewModels\Cms\CmsEventListItemViewModel;
 use App\ViewModels\Cms\CmsEventSessionViewModel;
 use App\ViewModels\Cms\CmsEventsListViewModel;
-use App\ViewModels\Cms\CmsMediaLibraryViewModel;
 use App\ViewModels\Cms\CmsMediaListItemViewModel;
 use App\ViewModels\Cms\CmsSessionPriceViewModel;
 
@@ -27,27 +26,6 @@ use App\ViewModels\Cms\CmsSessionPriceViewModel;
  */
 final class CmsEventsMapper
 {
-    /**
-     * Builds the media-library page ViewModel from raw asset data and upload constraints.
-     *
-     * @return CmsMediaLibraryViewModel Used by the CMS media-library view.
-     */
-    public static function toMediaLibraryViewModel(
-        array $assets,
-        array $imageLimits,
-        string $csrfToken,
-        ?string $successMessage,
-        ?string $errorMessage
-    ): CmsMediaLibraryViewModel {
-        return new CmsMediaLibraryViewModel(
-            assets: $assets,
-            imageLimits: $imageLimits,
-            csrfToken: $csrfToken,
-            successMessage: $successMessage,
-            errorMessage: $errorMessage,
-        );
-    }
-
     /**
      * Converts a MediaAsset into a plain array suitable for JSON API responses
      * (e.g. the media-picker AJAX endpoint in the CMS).
@@ -154,10 +132,10 @@ final class CmsEventsMapper
      */
     private static function enrichPricesWithTierNames(array $pricesData, array $priceTiers): array
     {
-        $tierNameMap = [];
-        foreach ($priceTiers as $tier) {
-            $tierNameMap[$tier->priceTierId] = $tier->name;
-        }
+        $tierNameMap = array_combine(
+            array_map(fn($t) => $t->priceTierId, $priceTiers),
+            array_map(fn($t) => $t->name, $priceTiers),
+        );
         $enriched = [];
         foreach ($pricesData as $sessionId => $prices) {
             $enriched[$sessionId] = array_map(
@@ -182,8 +160,8 @@ final class CmsEventsMapper
         string $eventTitle = '',
         string $eventTypeSlug = 'default',
     ): CmsEventSessionViewModel {
-        $startTimestamp = $session->startDateTime->getTimestamp();
-        $endTimestamp = $session->endDateTime?->getTimestamp();
+        $start = $session->startDateTime;
+        $end = $session->endDateTime;
         $ageLabel = AgeLabelFormatter::format($session->minAge, $session->maxAge);
         // Aggregate single + reserved tickets into one total for the CMS dashboard
         $soldTicketsTotal = $session->soldSingleTickets + $session->soldReservedSeats;
@@ -195,12 +173,12 @@ final class CmsEventsMapper
             eventId: $session->eventId,
             eventTitle: $eventTitle,
             eventTypeSlug: $eventTypeSlug,
-            formattedStartTime: date('H:i', $startTimestamp),
-            formattedEndTime: $endTimestamp ? date('H:i', $endTimestamp) : '',
-            formattedDate: date('Y-m-d', $startTimestamp),
-            formattedDateLong: date('l, F j, Y', $startTimestamp),
-            formattedDateTimeLocal: date('Y-m-d\TH:i', $startTimestamp),
-            formattedEndDateTimeLocal: $endTimestamp ? date('Y-m-d\TH:i', $endTimestamp) : '',
+            formattedStartTime: $start->format('H:i'),
+            formattedEndTime: $end?->format('H:i') ?? '',
+            formattedDate: $start->format('Y-m-d'),
+            formattedDateLong: $start->format('l, F j, Y'),
+            formattedDateTimeLocal: $start->format('Y-m-d\TH:i'),
+            formattedEndDateTimeLocal: $end?->format('Y-m-d\TH:i') ?? '',
             capacityTotal: $session->capacityTotal,
             soldSingleTickets: $session->soldSingleTickets,
             soldReservedSeats: $session->soldReservedSeats,
@@ -222,7 +200,7 @@ final class CmsEventsMapper
             ageLabel: $ageLabel,
             isFree: $session->isFree,
             isCancelled: $session->isCancelled,
-            sessionDate: date('Y-m-d', $startTimestamp),
+            sessionDate: $start->format('Y-m-d'),
         );
     }
 

@@ -120,7 +120,7 @@ interface ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function setSessionPrice(int $sessionId, int $priceTierId, float $price): bool;
+    public function setSessionPrice(int $sessionId, int $priceTierId, string $rawPrice): bool;
 
     /**
      * Deletes an event (soft delete).

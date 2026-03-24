@@ -200,7 +200,7 @@ final class ScheduleMapper
         ?ScheduleFilterParams $activeFilters,
     ): ScheduleFilterGroupData {
         $activeDay = $activeFilters?->day;
-        $options   = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $activeDay === null)];
+        $options   = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $activeDay === null)];
         foreach ($availableDays as $dayData) {
             $dayName   = $dayData->dayOfWeek;
             $dayValue  = strtolower($dayName);
@@ -228,7 +228,7 @@ final class ScheduleMapper
             label: self::str($cmsContent, 'schedule_filter_time_range_label', 'Time Range'),
             key: 'timeRange',
             options: [
-                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null),
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_morning_label', 'Morning (before 12:00)'),
                     value: 'morning',
@@ -258,7 +258,7 @@ final class ScheduleMapper
         ?ScheduleFilterParams $activeFilters,
     ): ScheduleFilterGroupData {
         $active  = $activeFilters?->priceType;
-        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null)];
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null)];
 
         foreach ($priceTypeOptions as $value) {
             [$labelKey, $defaultLabel] = match ($value) {
@@ -291,7 +291,7 @@ final class ScheduleMapper
             label: self::str($cmsContent, 'schedule_filter_language_label', 'Language'),
             key: 'language',
             options: [
-                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null),
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null),
                 new ScheduleFilterOptionData(
                     label: self::str($cmsContent, 'schedule_filter_english_label', 'English'),
                     value: 'english',
@@ -351,7 +351,7 @@ final class ScheduleMapper
             }
         }
 
-        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isDefault: true, isActive: $active === null)];
+        $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null)];
         foreach (array_keys($venues) as $venue) {
             $options[] = new ScheduleFilterOptionData(
                 label: $venue,

@@ -79,6 +79,7 @@ use App\Services\CaptchaService;
 use App\Services\SessionService;
 use App\Services\CmsPageContentService;
 use App\Services\StorytellingDetailService;
+use App\Helpers\ScheduleDayVisibilityResolver;
 use App\Services\StorytellingService;
 
 /**
@@ -120,6 +121,7 @@ return static function (string $controllerClass): object {
 
     $cmsContent = fn() => $make('cmsContent', fn() => new CmsContentRepository($cmsRepo(), $mediaAssetRepo()));
     $cmsPageContent = fn() => $make('cmsPageContent', fn() => new CmsPageContentService($cmsContent()));
+    $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
         $cmsContent(),
@@ -127,7 +129,7 @@ return static function (string $controllerClass): object {
         $eventSessionLabel(),
         $eventSessionPrice(),
         $eventTypeRepo(),
-        $scheduleDayConfig(),
+        $visibilityResolver(),
     ));
 
     $programService = fn() => $make('programService', fn() => new ProgramService(
@@ -206,6 +208,7 @@ return static function (string $controllerClass): object {
                 new PriceTierRepository(),
                 $scheduleDayConfig(),
                 $orderItemRepo(),
+                $visibilityResolver(),
             ),
             $sessionService,
             new CmsArtistsService(new ArtistRepository()),

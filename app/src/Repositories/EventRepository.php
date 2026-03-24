@@ -11,6 +11,7 @@ use App\Models\EventFilter;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\StorytellingDetailEvent;
+use App\Helpers\FormatHelper;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
 
@@ -81,7 +82,7 @@ class EventRepository implements IEventRepository
 
         // Filter events to only those with at least one session on the requested day of week
         if ($dayOfWeek !== null && $dayOfWeek !== '') {
-            $dayNumber = $this->dayNameToNumber($dayOfWeek);
+            $dayNumber = FormatHelper::dayNameToMysqlDayOfWeek($dayOfWeek);
             if ($dayNumber !== null) {
                 $sql .= '
                     INNER JOIN EventSession es_day
@@ -164,20 +165,6 @@ class EventRepository implements IEventRepository
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
         return $row !== null ? StorytellingDetailEvent::fromRow($row) : null;
-    }
-
-    /**
-     * Converts an English day name to MySQL DAYOFWEEK() numbering (1=Sunday through 7=Saturday).
-     *
-     * @return int|null Null if the day name is not recognized.
-     */
-    private function dayNameToNumber(string $dayName): ?int
-    {
-        $map = [
-            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
-            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
-        ];
-        return $map[strtolower($dayName)] ?? null;
     }
 
     /**
@@ -305,13 +292,4 @@ class EventRepository implements IEventRepository
         return $stmt->execute(['eventId' => $eventId]);
     }
 
-    /**
-     * Bulk-deactivates all sessions belonging to an event. Called alongside softDelete()
-     * to ensure no sessions remain bookable after the parent event is deactivated.
-     */
-    public function deactivateSessions(int $eventId): bool
-    {
-        $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
-        return $stmt->execute(['eventId' => $eventId]);
-    }
 }

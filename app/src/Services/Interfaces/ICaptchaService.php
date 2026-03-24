@@ -24,4 +24,9 @@ interface ICaptchaService
      * @return string Site key
      */
     public function getSiteKey(): string;
+
+    /**
+     * Returns whether CAPTCHA verification is enabled (i.e., keys are configured).
+     */
+    public function isEnabled(): bool;
 }

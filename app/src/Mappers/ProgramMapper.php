@@ -23,15 +23,17 @@ use App\ViewModels\Program\ProgramItemViewModel;
  */
 final class ProgramMapper
 {
+    private const LANGUAGE_LABELS = ['NL' => 'Dutch', 'ENG' => 'English', 'ZH' => 'Chinese'];
+
     /**
      * Converts a single ProgramItemData into a display-ready ViewModel for the My Program list.
      * Computes the line total (price x quantity + donation) and resolves the event-type icon URL.
      */
     public static function toItemViewModel(ProgramItemData $item): ProgramItemViewModel
     {
-        $lineTotal = ($item->basePrice * $item->quantity) + $item->donationAmount;
+        $lineTotal = self::lineTotal($item);
         // "Pay what you like" events with a zero base price display as "Free"
-        $priceDisplay = ($item->isPayWhatYouLike && $item->basePrice <= 0.0) ? 'Free' : self::formatPrice($item->basePrice);
+        $priceDisplay = ($item->isPayWhatYouLike && $item->basePrice <= 0.0) ? 'Free' : FormatHelper::price($item->basePrice);
 
         return new ProgramItemViewModel(
             programItemId: $item->programItemId,
@@ -43,8 +45,8 @@ final class ProgramMapper
             rawPrice: $item->basePrice,
             quantity: $item->quantity,
             donationAmount: $item->donationAmount,
-            donationDisplay: $item->donationAmount > 0 ? self::formatPrice($item->donationAmount) : '',
-            sumDisplay: self::formatPrice($lineTotal),
+            donationDisplay: $item->donationAmount > 0 ? FormatHelper::price($item->donationAmount) : '',
+            sumDisplay: FormatHelper::price($lineTotal),
             eventTypeSlug: $item->eventTypeSlug,
             eventTypeLabel: self::getEventTypeLabel($item->eventTypeId, $item->eventTypeName),
             eventTypeImageUrl: self::getEventTypeImageUrl($item->eventTypeId),
@@ -59,12 +61,12 @@ final class ProgramMapper
      */
     public static function toCheckoutItemViewModel(ProgramItemData $item): CheckoutItemViewModel
     {
-        $lineTotal = ($item->basePrice * $item->quantity) + $item->donationAmount;
+        $lineTotal = self::lineTotal($item);
 
         return new CheckoutItemViewModel(
             quantityDisplay: $item->quantity . '×',
             eventTitle: $item->eventTitle,
-            priceDisplay: self::formatPrice($lineTotal),
+            priceDisplay: FormatHelper::price($lineTotal),
         );
     }
 
@@ -84,10 +86,10 @@ final class ProgramMapper
             continueExploringText: $cmsContent->continueExploringText ?? '',
             paymentOverviewHeading: $cmsContent->paymentOverviewHeading ?? '',
             items: $itemViewModels,
-            subtotal: self::formatPrice($programData->subtotal),
+            subtotal: FormatHelper::price($programData->subtotal),
             taxLabel: $cmsContent->taxLabel ?? '',
-            taxAmount: self::formatPrice($programData->taxAmount),
-            total: self::formatPrice($programData->total),
+            taxAmount: FormatHelper::price($programData->taxAmount),
+            total: FormatHelper::price($programData->total),
             checkoutButtonText: $cmsContent->checkoutButtonText ?? '',
             canCheckout: $itemViewModels !== [],
             isLoggedIn: $isLoggedIn,
@@ -119,18 +121,17 @@ final class ProgramMapper
             saveDetailsSubtext: $cmsContent->saveDetailsSubtext ?? '',
             payButtonText: $cmsContent->payButtonText ?? '',
             items: $itemViewModels,
-            subtotal: self::formatPrice($programData->subtotal),
+            subtotal: FormatHelper::price($programData->subtotal),
             taxLabel: $cmsContent->taxLabel ?? '',
-            taxAmount: self::formatPrice($programData->taxAmount),
-            total: self::formatPrice($programData->total),
+            taxAmount: FormatHelper::price($programData->taxAmount),
+            total: FormatHelper::price($programData->total),
             isLoggedIn: $isLoggedIn,
         );
     }
 
-    /** Delegates to FormatHelper::price for consistent euro-formatted output. */
-    public static function formatPrice(float $amount): string
+    private static function lineTotal(ProgramItemData $item): float
     {
-        return FormatHelper::price($amount);
+        return ($item->basePrice * $item->quantity) + $item->donationAmount;
     }
 
     /**
@@ -141,9 +142,9 @@ final class ProgramMapper
     public static function formatTotals(ProgramData $programData): array
     {
         return [
-            'subtotal' => self::formatPrice($programData->subtotal),
-            'taxAmount' => self::formatPrice($programData->taxAmount),
-            'total' => self::formatPrice($programData->total),
+            'subtotal' => FormatHelper::price($programData->subtotal),
+            'taxAmount' => FormatHelper::price($programData->taxAmount),
+            'total' => FormatHelper::price($programData->total),
         ];
     }
 
@@ -209,12 +210,6 @@ final class ProgramMapper
             return null;
         }
 
-        $labels = [
-            'NL' => 'Dutch',
-            'ENG' => 'English',
-            'ZH' => 'Chinese',
-        ];
-
-        return $labels[strtoupper($languageCode)] ?? $languageCode;
+        return self::LANGUAGE_LABELS[strtoupper($languageCode)] ?? $languageCode;
     }
 }

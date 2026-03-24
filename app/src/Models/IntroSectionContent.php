@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 /**
- * CMS content for the storytelling page intro split-layout section.
- * Hydrated from CMS key-value pairs.
+ * CMS content for a page's intro section (headline, description, background image).
+ * Shared across Jazz and Storytelling pages that use the same intro layout.
+ * Hydrated from CMS key-value pairs via fromRawArray().
  */
-final readonly class StorytellingIntroSplitSectionContent
+final readonly class IntroSectionContent
 {
     public function __construct(
         public ?string $introHeading,

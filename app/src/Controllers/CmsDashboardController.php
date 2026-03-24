@@ -95,7 +95,7 @@ class CmsDashboardController extends CmsBaseController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $pageId = $this->requireValidPageId($id);
+            $pageId = $this->parsePageId($id);
             if ($pageId === null) {
                 return;
             }
@@ -172,7 +172,7 @@ class CmsDashboardController extends CmsBaseController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $pageId = $this->requireValidPageId($id);
+            $pageId = $this->parsePageId($id);
             if ($pageId === null) {
                 return;
             }
@@ -244,7 +244,7 @@ class CmsDashboardController extends CmsBaseController
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             header('Content-Type: application/json');
-            $pageId = $this->requireValidPageIdJson($id);
+            $pageId = $this->parsePageIdJson($id);
             if ($pageId === null) {
                 return;
             }
@@ -337,7 +337,7 @@ class CmsDashboardController extends CmsBaseController
         return is_string($name) && $name !== '' ? $name : CmsMessages::DEFAULT_ADMIN_NAME;
     }
 
-    private function requireValidPageId(string $id): ?int
+    private function parsePageId(string $id): ?int
     {
         $pageId = $this->parsePositiveIntId($id);
         if ($pageId === null) {
@@ -347,7 +347,7 @@ class CmsDashboardController extends CmsBaseController
         return $pageId;
     }
 
-    private function requireValidPageIdJson(string $id): ?int
+    private function parsePageIdJson(string $id): ?int
     {
         $pageId = $this->parsePositiveIntId($id);
         if ($pageId === null) {

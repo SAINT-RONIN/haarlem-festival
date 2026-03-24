@@ -8,7 +8,6 @@ final class JazzPageConstants
 {
     public const PAGE_SLUG = 'jazz';
     public const CURRENT_PAGE = 'jazz';
-    public const SCHEDULE_MAX_DAYS = 7;
 
     public const SECTION_HERO = 'hero_section';
     public const SECTION_GRADIENT = 'gradient_section';

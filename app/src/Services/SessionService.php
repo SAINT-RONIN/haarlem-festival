@@ -130,11 +130,9 @@ class SessionService implements ISessionService
         $this->start();
 
         $value = $_SESSION[self::FLASH_KEY][$key] ?? null;
-        if (isset($_SESSION[self::FLASH_KEY][$key])) {
-            unset($_SESSION[self::FLASH_KEY][$key]);
-        }
+        unset($_SESSION[self::FLASH_KEY][$key]);
 
-        if (isset($_SESSION[self::FLASH_KEY]) && $_SESSION[self::FLASH_KEY] === []) {
+        if (($_SESSION[self::FLASH_KEY] ?? []) === []) {
             unset($_SESSION[self::FLASH_KEY]);
         }
 

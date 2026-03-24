@@ -6,7 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionLabel;
-use App\Models\EventSessionLabelFilter;
+use App\Models\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use PDO;
 
@@ -29,7 +29,7 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
      *
      * @return EventSessionLabel[] Ordered by session then label ID. Empty array if no matches.
      */
-    public function findLabels(EventSessionLabelFilter $filters = new EventSessionLabelFilter()): array
+    public function findLabels(EventSessionRelatedFilter $filters = new EventSessionRelatedFilter()): array
     {
         $sql = '
             SELECT EventSessionLabelId, EventSessionId, LabelText

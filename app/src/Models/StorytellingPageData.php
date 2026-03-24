@@ -15,8 +15,8 @@ final readonly class StorytellingPageData
      */
     public function __construct(
         public HeroSectionContent $heroSection,
-        public StorytellingGradientSectionContent $gradientSection,
-        public StorytellingIntroSplitSectionContent $introSplitSection,
+        public GradientSectionContent $gradientSection,
+        public IntroSectionContent $introSplitSection,
         public StorytellingMasonrySectionContent $masonrySection,
         public GlobalUiContent $globalUiContent,
         public array $masonryImages = [],

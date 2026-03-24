@@ -28,7 +28,6 @@ final readonly class JazzPageViewModel extends BaseViewModel
         public PricingData $pricingData,
         public ScheduleCallToActionData $scheduleCtaData,
         public ArtistsData $artistsData,
-        public ScheduleData $scheduleData,
         public BookingCallToActionData $bookingCtaData,
         public ?ScheduleSectionViewModel $scheduleSection = null,
     ) {

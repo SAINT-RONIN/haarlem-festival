@@ -130,7 +130,7 @@ class CmsUsersService implements ICmsUsersService
      */
     private function checkUsername(string $username, array $errors, ?int $excludeId = null): array
     {
-        $fmtError = $this->checkUsernameFormat($username);
+        $fmtError = UserValidationHelper::checkUsernameFormat($username);
         if ($fmtError !== null) {
             $errors['username'] = $fmtError;
             return $errors;
@@ -162,11 +162,6 @@ class CmsUsersService implements ICmsUsersService
             $errors['email'] = 'This email is already registered.';
         }
         return $errors;
-    }
-
-    private function checkUsernameFormat(string $username): ?string
-    {
-        return UserValidationHelper::checkUsernameFormat($username);
     }
 
     /**

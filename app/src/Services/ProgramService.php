@@ -385,10 +385,6 @@ class ProgramService implements IProgramService
             }
         }
 
-        if ($prices !== []) {
-            return (float)$prices[0]->price;
-        }
-
         return 0.0;
     }
 }

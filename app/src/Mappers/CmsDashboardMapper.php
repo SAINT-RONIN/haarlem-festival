@@ -109,7 +109,7 @@ final class CmsDashboardMapper
     {
         return new CmsPageEditViewModel(
             page: self::formatPage($pageData->page),
-            sections: self::formatSections($pageData->sections),
+            sections: array_map([self::class, 'formatSingleSection'], $pageData->sections),
             contentLimits: self::getContentLimits(),
             imageLimits: self::getImageLimits(),
         );
@@ -122,15 +122,6 @@ final class CmsDashboardMapper
             title: $page->title,
             slug:  $page->slug,
         );
-    }
-
-    /**
-     * @param CmsSectionEditData[] $sections
-     * @return CmsSectionDisplayViewModel[]
-     */
-    private static function formatSections(array $sections): array
-    {
-        return array_map([self::class, 'formatSingleSection'], $sections);
     }
 
     private static function formatSingleSection(CmsSectionEditData $section): CmsSectionDisplayViewModel
@@ -181,13 +172,7 @@ final class CmsDashboardMapper
      */
     private static function flattenOrderedBuckets(array $grouped): array
     {
-        $result = [];
-        foreach (['text', 'tinymce', 'file'] as $type) {
-            foreach ($grouped[$type] as $item) {
-                $result[] = $item;
-            }
-        }
-        return $result;
+        return array_merge($grouped['text'] ?? [], $grouped['tinymce'] ?? [], $grouped['file'] ?? []);
     }
 
     private static function toItemViewModel(CmsItemEditData $item): CmsItemDisplayViewModel

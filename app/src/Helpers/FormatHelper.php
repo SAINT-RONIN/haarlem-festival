@@ -44,4 +44,18 @@ final class FormatHelper
     {
         return ucwords(str_replace('_', ' ', $itemKey));
     }
+
+    /**
+     * Converts an English day name to MySQL DAYOFWEEK() numbering (1=Sunday through 7=Saturday).
+     *
+     * @return int|null Null if the day name is not recognized.
+     */
+    public static function dayNameToMysqlDayOfWeek(string $dayName): ?int
+    {
+        $map = [
+            'sunday' => 1, 'monday' => 2, 'tuesday' => 3, 'wednesday' => 4,
+            'thursday' => 5, 'friday' => 6, 'saturday' => 7,
+        ];
+        return $map[strtolower($dayName)] ?? null;
+    }
 }

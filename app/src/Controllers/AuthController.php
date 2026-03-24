@@ -39,8 +39,8 @@ class AuthController
             $success = $this->sessionService->consumeFlash('login_success');
 
             require __DIR__ . '/../Views/pages/login.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
+        } catch (\Throwable $throwable) {
+            ControllerErrorResponder::respond($throwable);
         }
     }
 
@@ -136,8 +136,8 @@ class AuthController
             $error = $this->sessionService->consumeFlash('forgot_error');
 
             require __DIR__ . '/../Views/pages/forgot-password.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
+        } catch (\Throwable $throwable) {
+            ControllerErrorResponder::respond($throwable);
         }
     }
 

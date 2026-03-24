@@ -13,8 +13,8 @@ use App\Models\EventHighlight;
 use App\Models\PageGalleryImage;
 use App\Models\StorytellingDetailPageData;
 use App\Models\StorytellingEventCmsData;
-use App\Models\StorytellingGradientSectionContent;
-use App\Models\StorytellingIntroSplitSectionContent;
+use App\Models\GradientSectionContent;
+use App\Models\IntroSectionContent;
 use App\Models\StorytellingMasonrySectionContent;
 use App\Models\StorytellingPageData;
 use App\ViewModels\GlobalUiData;
@@ -128,7 +128,7 @@ final class StorytellingMapper
      * Builds the gradient banner section ViewModel from typed CMS content.
      * The reason for this is because the gradient section needs its own ViewModel shape and the mapping is extracted here to keep toPageViewModel under 10 lines.
      */
-    private static function buildGradientSection(StorytellingGradientSectionContent $section): GradientSectionData
+    private static function buildGradientSection(GradientSectionContent $section): GradientSectionData
     {
         return new GradientSectionData(
             headingText: $section->gradientHeading ?? '',
@@ -141,7 +141,7 @@ final class StorytellingMapper
      * Builds the two-column intro split section ViewModel from typed CMS content.
      * The reason for this is because the intro split section has its own image and text fields that must be validated and assembled into a typed ViewModel before reaching the view.
      */
-    private static function buildIntroSplitSection(StorytellingIntroSplitSectionContent $section): IntroSplitSectionData
+    private static function buildIntroSplitSection(IntroSectionContent $section): IntroSplitSectionData
     {
         $heading = $section->introHeading ?? '';
         return new IntroSplitSectionData(

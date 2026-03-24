@@ -6,7 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionPrice;
-use App\Models\EventSessionPriceFilter;
+use App\Models\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use PDO;
 
@@ -31,7 +31,7 @@ class EventSessionPriceRepository implements IEventSessionPriceRepository
      *
      * @return EventSessionPrice[] Ordered by session then tier. Empty array if no matches.
      */
-    public function findPrices(EventSessionPriceFilter $filters = new EventSessionPriceFilter()): array
+    public function findPrices(EventSessionRelatedFilter $filters = new EventSessionRelatedFilter()): array
     {
         $sql = '
             SELECT EventSessionPriceId, EventSessionId, PriceTierId, Price, CurrencyCode, VatRate

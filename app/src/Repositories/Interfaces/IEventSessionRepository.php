@@ -41,4 +41,9 @@ interface IEventSessionRepository
      * Deletes an event session by its ID.
      */
     public function delete(int $sessionId): bool;
+
+    /**
+     * Bulk-deactivates all sessions belonging to an event.
+     */
+    public function deactivateByEventId(int $eventId): bool;
 }

@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Constants\JazzArtistDetailConstants;
 use App\Constants\JazzPageConstants;
+use App\Constants\ScheduleConstants;
 use App\Enums\EventTypeId;
 use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Mappers\JazzMapper;
@@ -52,7 +53,7 @@ class JazzController extends BaseController
         $scheduleData = $this->scheduleService->getScheduleData(
             JazzPageConstants::PAGE_SLUG,
             EventTypeId::Jazz->value,
-            JazzPageConstants::SCHEDULE_MAX_DAYS,
+            ScheduleConstants::MAX_DAYS,
             filterParams: $this->readScheduleFilterParams(),
         );
         return ScheduleMapper::toScheduleSection($scheduleData);
@@ -80,7 +81,7 @@ class JazzController extends BaseController
         $scheduleData = $this->scheduleService->getScheduleData(
             JazzArtistDetailConstants::SCHEDULE_PAGE_SLUG,
             EventTypeId::Jazz->value,
-            JazzArtistDetailConstants::SCHEDULE_MAX_DAYS,
+            ScheduleConstants::MAX_DAYS,
             $pageData->eventId,
         );
         $performances = ScheduleMapper::flattenEventsAsViewModels($scheduleData);

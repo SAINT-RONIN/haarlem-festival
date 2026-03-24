@@ -22,7 +22,7 @@ use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Services\Interfaces\IHomeService;
-use App\Utils\HomeUiConfig;
+use App\Constants\HomeUiConfig;
 
 /**
  * Service for preparing homepage data.
@@ -130,7 +130,6 @@ class HomeService implements IHomeService
             button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
             image: $section[$slug . '_image'] ?? null,
             darkBg: HomeUiConfig::DARK_BG_MAP[$slug] ?? false,
-            badgeClass: HomeUiConfig::BADGE_COLORS[$slug] ?? 'bg-gray-500',
         );
     }
 
@@ -165,7 +164,6 @@ class HomeService implements IHomeService
             name: $venue->name,
             address: $venue->addressLine,
             category: $category,
-            badgeClass: HomeUiConfig::BADGE_COLORS[$category] ?? 'bg-gray-500',
             lat: null,
             lng: null,
         );
@@ -180,7 +178,6 @@ class HomeService implements IHomeService
             name: $restaurant->name,
             address: $restaurant->addressLine,
             category: 'restaurant',
-            badgeClass: HomeUiConfig::BADGE_COLORS['restaurant'],
             lat: null,
             lng: null,
         );
@@ -338,16 +335,6 @@ class HomeService implements IHomeService
         }
 
         return $result;
-    }
-
-    /**
-     * Gets summary title for event type sessions.
-     *
-     * @param \App\Models\SessionWithEvent[] $sessions
-     */
-    private function getEventSummaryTitle(string $slug, array $sessions): string
-    {
-        return HomeUiConfig::EVENT_SUMMARY_TITLES[$slug] ?? ($sessions[0]->eventTitle ?? '');
     }
 
     /**

@@ -16,8 +16,8 @@ use App\Models\JazzArtistDetailEvent;
 use App\Models\JazzArtistDetailPageData;
 use App\Models\JazzArtistsSectionContent;
 use App\Models\JazzBookingCtaSectionContent;
-use App\Models\JazzGradientSectionContent;
-use App\Models\JazzIntroSectionContent;
+use App\Models\GradientSectionContent;
+use App\Models\IntroSectionContent;
 use App\Models\JazzPageData;
 use App\Models\JazzPricingSectionContent;
 use App\Models\JazzScheduleCtaSectionContent;
@@ -43,7 +43,6 @@ use App\ViewModels\Jazz\JazzPageViewModel;
 use App\ViewModels\Jazz\PricingCardData;
 use App\ViewModels\Jazz\PricingData;
 use App\ViewModels\Jazz\ScheduleCallToActionData;
-use App\ViewModels\Jazz\ScheduleData;
 use App\ViewModels\Jazz\VenueData;
 use App\ViewModels\Jazz\VenuesData;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
@@ -86,7 +85,7 @@ final class JazzMapper
             venuesData: self::buildVenuesData($domain->venuesSection),
             pricingData: self::buildPricingData($domain->pricingSection, $domain->passPrices),
             scheduleCtaData: self::buildScheduleCtaData($domain->scheduleCtaSection),
-            artistsData: self::buildArtistsData($domain->artistsSection), scheduleData: self::buildEmptyScheduleData((string) date('Y')),
+            artistsData: self::buildArtistsData($domain->artistsSection),
             bookingCtaData: self::buildBookingCtaData($domain->bookingCtaSection), scheduleSection: $scheduleSection,
         );
     }
@@ -115,7 +114,7 @@ final class JazzMapper
         $cms   = $pageData->cms;
 
         return new JazzArtistHeroData(
-            heroTitle: $event->title, heroSubtitle: self::coalesce($cms->heroSubtitle ?? '', $event->shortDescription),
+            heroTitle: $event->title, heroSubtitle: self::firstNonEmpty($cms->heroSubtitle ?? '', $event->shortDescription),
             heroBackgroundImageUrl: $cms->heroBackgroundImage ?? '',
             originText: $cms->originText ?? '', formedText: $cms->formedText ?? '', performancesText: $cms->performancesText ?? '',
             heroBackButtonText: $cms->heroBackButtonText ?? '', heroBackButtonUrl: $cms->heroBackButtonUrl ?? '',
@@ -127,11 +126,11 @@ final class JazzMapper
     {
         $event   = $pageData->event;
         $cms     = $pageData->cms;
-        $primary = self::coalesce($cms->overviewBodyPrimary ?? '', self::buildPrimaryOverviewFallbackFromModel($event));
+        $primary = self::firstNonEmpty($cms->overviewBodyPrimary ?? '', self::buildPrimaryOverviewFallbackFromModel($event));
 
         return new JazzArtistOverviewData(
-            overviewHeading: self::coalesce($cms->overviewHeading ?? '', $event->title),
-            overviewLead: self::coalesce($cms->overviewLead ?? '', $event->shortDescription),
+            overviewHeading: self::firstNonEmpty($cms->overviewHeading ?? '', $event->title),
+            overviewLead: self::firstNonEmpty($cms->overviewLead ?? '', $event->shortDescription),
             overviewBodyPrimary: $primary,
             overviewBodySecondary: $cms->overviewBodySecondary ?? '',
         );
@@ -181,7 +180,7 @@ final class JazzMapper
         );
     }
 
-    private static function buildGradientSection(JazzGradientSectionContent $section): GradientSectionData
+    private static function buildGradientSection(GradientSectionContent $section): GradientSectionData
     {
         return new GradientSectionData(
             headingText: $section->gradientHeading ?? '',
@@ -190,7 +189,7 @@ final class JazzMapper
         );
     }
 
-    private static function buildIntroSection(JazzIntroSectionContent $section): IntroSplitSectionData
+    private static function buildIntroSection(IntroSectionContent $section): IntroSplitSectionData
     {
         return new IntroSplitSectionData(
             headingText: $section->introHeading ?? '',
@@ -515,18 +514,6 @@ final class JazzMapper
         );
     }
 
-    /** Creates a placeholder ScheduleData with no days; the real schedule is injected via $scheduleSection. */
-    private static function buildEmptyScheduleData(string $year): ScheduleData
-    {
-        return new ScheduleData(
-            headingText: '',
-            year: $year,
-            filterLabel: '',
-            totalEventsText: '',
-            days: [],
-        );
-    }
-
     /**
      * @param ArtistAlbum[] $albums
      * @return JazzArtistAlbumData[]
@@ -568,8 +555,8 @@ final class JazzMapper
     }
 
     /** Returns the first non-empty string, used to prefer CMS content over model fallbacks. */
-    private static function coalesce(string $value, string $fallback): string
+    private static function firstNonEmpty(string $value, string $fallback): string
     {
-        return $value !== '' ? $value : $fallback;
+        return $value ?: $fallback;
     }
 }

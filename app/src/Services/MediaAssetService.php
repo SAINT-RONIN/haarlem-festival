@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Exceptions\ValidationException;
 use App\Infrastructure\PathResolver;
 use App\Models\MediaAsset;
-use App\Repositories\MediaAssetRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\IMediaAssetService;
 use App\Utils\CmsContentLimits;
 
@@ -19,7 +19,7 @@ use App\Utils\CmsContentLimits;
 class MediaAssetService implements IMediaAssetService
 {
     public function __construct(
-        private readonly MediaAssetRepository $mediaAssetRepository,
+        private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {
     }
 

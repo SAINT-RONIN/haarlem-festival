@@ -125,8 +125,8 @@ abstract class BaseController
     ): ScheduleFilterParams {
         return new ScheduleFilterParams(
             day: $day !== null ? strtolower($day) : null,
-            timeRange: TimeRange::tryFrom($timeRange ?? '') !== null ? $timeRange : null,
-            priceType: PriceType::tryFrom($priceType ?? '') !== null ? $priceType : null,
+            timeRange: TimeRange::tryFrom($timeRange ?? '')?->value,
+            priceType: PriceType::tryFrom($priceType ?? '')?->value,
             venue: $venue,
             language: $language !== null ? strtolower($language) : null,
             age: $age,

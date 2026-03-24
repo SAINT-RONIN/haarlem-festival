@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
+use App\Helpers\ScheduleDayVisibilityResolver;
 use App\Exceptions\ValidationException;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
@@ -26,7 +26,7 @@ use App\Models\ScheduleDaysPageData;
 use App\Models\ScheduleDayConfigFilter;
 use App\Models\VenueFilter;
 use App\Services\Interfaces\ICmsEventsService;
-use App\Utils\CmsEventConstraints;
+use App\Constants\CmsEventConstraints;
 
 /**
  * Service for CMS Events management.
@@ -45,6 +45,7 @@ class CmsEventsService implements ICmsEventsService
         private readonly IPriceTierRepository $priceTierRepository,
         private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
         private readonly IOrderItemRepository $orderItemRepository,
+        private readonly ScheduleDayVisibilityResolver $visibilityResolver,
     ) {
     }
 
@@ -358,8 +359,10 @@ class CmsEventsService implements ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function setSessionPrice(int $sessionId, int $priceTierId, float $price): bool
+    public function setSessionPrice(int $sessionId, int $priceTierId, string $rawPrice): bool
     {
+        // Normalize comma decimal separators (e.g. "12,50" -> "12.50") for European input
+        $price = (float) str_replace(',', '.', $rawPrice);
         $errors = $this->validatePrice($priceTierId, $price);
         if (!empty($errors)) {
             throw new ValidationException($errors);
@@ -565,7 +568,7 @@ class CmsEventsService implements ICmsEventsService
 
         // Soft-delete the event, then cascade-deactivate its sessions
         $this->eventRepository->softDelete($eventId);
-        $this->eventRepository->deactivateSessions($eventId);
+        $this->sessionRepository->deactivateByEventId($eventId);
     }
 
     /**
@@ -620,55 +623,6 @@ class CmsEventsService implements ICmsEventsService
      */
     public function getVisibleDays(?int $eventTypeId = null): array
     {
-        // Load both layers and merge (type-specific overrides global)
-        $globalSettings = $this->loadGlobalDaySettings();
-        $typeSettings = $this->loadTypeDaySettings($eventTypeId);
-
-        return $this->mergeVisibilitySettings($globalSettings, $typeSettings);
-    }
-
-    /**
-     * Loads global day visibility settings.
-     */
-    private function loadGlobalDaySettings(): array
-    {
-        $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: 0, orderBy: 'day')) as $row) {
-            $settings[$row->dayOfWeek] = $row->isVisible;
-        }
-        return $settings;
-    }
-
-    /**
-     * Loads type-specific day visibility settings.
-     */
-    private function loadTypeDaySettings(?int $eventTypeId): array
-    {
-        if ($eventTypeId === null) {
-            return [];
-        }
-
-        $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: $eventTypeId, orderBy: 'day')) as $row) {
-            $settings[$row->dayOfWeek] = $row->isVisible;
-        }
-        return $settings;
-    }
-
-    /**
-     * Merges global and type settings to get visible days.
-     */
-    private function mergeVisibilitySettings(array $globalSettings, array $typeSettings): array
-    {
-        $visibleDays = [];
-        foreach (DayOfWeek::cases() as $day) {
-            $dayValue = $day->value;
-            $isVisible = $typeSettings[$dayValue] ?? $globalSettings[$dayValue] ?? true;
-            if ($isVisible) {
-                $visibleDays[] = $dayValue;
-            }
-        }
-
-        return $visibleDays;
+        return $this->visibilityResolver->getVisibleDays($eventTypeId);
     }
 }

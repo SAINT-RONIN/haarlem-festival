@@ -141,6 +141,7 @@ class CmsUsersController extends CmsBaseController
             // Guard: prevent self-deactivation
             if ($this->sessionService->getUserId() === $id) {
                 $this->redirectWithFlash('You cannot deactivate your own account.', 'error', '/cms/users');
+                return;
             }
             $this->usersService->deleteUser($id);
             $this->redirectWithFlash('User deactivated successfully.', 'success', '/cms/users');

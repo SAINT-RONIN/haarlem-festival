@@ -16,6 +16,5 @@ final readonly class HomeEventTypeData
         public string $button,
         public ?string $image,
         public bool $darkBg,
-        public string $badgeClass,
     ) {}
 }

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\DayOfWeek;
 use App\Enums\EventTypeId;
+use App\Helpers\ScheduleDayVisibilityResolver;
 use App\Enums\PriceTierId;
 use App\Models\EventSessionFilter;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
 use App\Models\EventTypeFilter;
-use App\Models\ScheduleDayConfigFilter;
 use App\Models\ScheduleFilterParams;
 use App\Models\ScheduleSectionContent;
 use App\Models\SessionQueryResult;
@@ -20,7 +19,6 @@ use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
-use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Services\Interfaces\IScheduleService;
 use App\Helpers\AgeLabelFormatter;
 
@@ -37,7 +35,7 @@ class ScheduleService implements IScheduleService
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly IEventTypeRepository $eventTypeRepository,
-        private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private readonly ScheduleDayVisibilityResolver $visibilityResolver,
     ) {
     }
 
@@ -461,46 +459,8 @@ class ScheduleService implements IScheduleService
             : ['pay-what-you-like', 'fixed'];
     }
 
-    /**
-     * Returns the day numbers (0–6) that are visible for the given event type.
-     * Merges global settings with type-specific overrides.
-     */
     private function getVisibleDays(int $eventTypeId): array
     {
-        $globalSettings = $this->loadGlobalDaySettings();
-        $typeSettings = $this->loadTypeDaySettings($eventTypeId);
-
-        return $this->mergeVisibilitySettings($globalSettings, $typeSettings);
-    }
-
-    private function loadGlobalDaySettings(): array
-    {
-        $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: 0, orderBy: 'day')) as $row) {
-            $settings[$row->dayOfWeek] = $row->isVisible;
-        }
-        return $settings;
-    }
-
-    private function loadTypeDaySettings(int $eventTypeId): array
-    {
-        $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: $eventTypeId, orderBy: 'day')) as $row) {
-            $settings[$row->dayOfWeek] = $row->isVisible;
-        }
-        return $settings;
-    }
-
-    private function mergeVisibilitySettings(array $globalSettings, array $typeSettings): array
-    {
-        $visibleDays = [];
-        foreach (DayOfWeek::cases() as $day) {
-            $dayValue = $day->value;
-            $isVisible = $typeSettings[$dayValue] ?? $globalSettings[$dayValue] ?? true;
-            if ($isVisible) {
-                $visibleDays[] = $dayValue;
-            }
-        }
-        return $visibleDays;
+        return $this->visibilityResolver->getVisibleDays($eventTypeId);
     }
 }

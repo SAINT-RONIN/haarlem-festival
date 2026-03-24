@@ -9,7 +9,7 @@ use App\Models\HomeLocationData;
 use App\Models\HomePageData;
 use App\Models\HomeScheduleDayData;
 use App\Models\HomeScheduleSessionData;
-use App\Utils\HomeUiConfig;
+use App\Constants\HomeUiConfig;
 use App\ViewModels\HomeEventTypeViewModel;
 use App\ViewModels\HomeLocationViewModel;
 use App\ViewModels\HomePageViewModel;
@@ -55,7 +55,7 @@ final class HomeMapper
             button:      $t->button,
             image:       $t->image,
             darkBg:      $t->darkBg,
-            badgeClass:  $t->badgeClass,
+            badgeClass:  HomeUiConfig::BADGE_COLORS[$t->slug] ?? 'bg-gray-500',
         ), $eventTypes);
     }
 
@@ -69,7 +69,7 @@ final class HomeMapper
             name:       $l->name,
             address:    $l->address,
             category:   $l->category,
-            badgeClass: $l->badgeClass,
+            badgeClass: HomeUiConfig::BADGE_COLORS[$l->category] ?? 'bg-gray-500',
         ), $locations);
     }
 

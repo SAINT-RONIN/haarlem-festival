@@ -155,11 +155,11 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $eventId = (int)($_POST['EventId'] ?? 0);
+            $eventId = $this->getEventIdFromPost();
             $this->eventsService->updateSession((int)$id, $_POST);
             $this->redirectWithFlash('Session updated successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . (int)($_POST['EventId'] ?? 0) . '/edit');
+            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . $this->getEventIdFromPost() . '/edit');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -173,7 +173,7 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $eventId = (int)($_POST['EventId'] ?? 0);
+            $eventId = $this->getEventIdFromPost();
             $this->eventsService->deleteSession((int)$id);
             $this->redirectWithFlash('Session deleted successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (\Throwable $error) {
@@ -189,11 +189,11 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $eventId = (int)($_POST['EventId'] ?? 0);
+            $eventId = $this->getEventIdFromPost();
             $this->eventsService->addLabel((int)$id, trim($_POST['LabelText'] ?? ''));
             $this->redirectWithFlash('Label added successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . (int)($_POST['EventId'] ?? 0) . '/edit');
+            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . $this->getEventIdFromPost() . '/edit');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -207,7 +207,7 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $eventId = (int)($_POST['EventId'] ?? 0);
+            $eventId = $this->getEventIdFromPost();
             $this->eventsService->deleteLabel((int)$id);
             $this->redirectWithFlash('Label deleted successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (\Throwable $error) {
@@ -223,10 +223,10 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $eventId = (int)($_POST['EventId'] ?? 0);
+            $eventId = $this->getEventIdFromPost();
             $this->handleSetPrice((int)$id, $eventId);
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . (int)($_POST['EventId'] ?? 0) . '/edit');
+            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . $this->getEventIdFromPost() . '/edit');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -367,10 +367,13 @@ class CmsEventsController extends CmsBaseController
     private function handleSetPrice(int $sessionId, int $eventId): void
     {
         $priceTierId = (int)($_POST['PriceTierId'] ?? PriceTierId::Adult->value);
-        // Normalize comma decimal separators (e.g. "12,50" -> "12.50") for European input
-        $priceInput = str_replace(',', '.', $_POST['Price'] ?? '0');
-        $this->eventsService->setSessionPrice($sessionId, $priceTierId, (float)$priceInput);
+        $this->eventsService->setSessionPrice($sessionId, $priceTierId, $_POST['Price'] ?? '0');
         $this->redirectWithFlash('Price updated successfully.', 'success', "/cms/events/{$eventId}/edit");
+    }
+
+    private function getEventIdFromPost(): int
+    {
+        return (int)($_POST['EventId'] ?? 0);
     }
 
     private function handleToggleScheduleDay(): void

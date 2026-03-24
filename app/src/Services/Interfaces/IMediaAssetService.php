@@ -44,4 +44,19 @@ interface IMediaAssetService
      * @return MediaAsset[]
      */
     public function getAllAssets(): array;
+
+    /**
+     * Deletes a media asset by its ID.
+     */
+    public function deleteAsset(int $mediaAssetId): bool;
+
+    /**
+     * Returns a single media asset by ID, or null if not found.
+     */
+    public function getAssetById(int $mediaAssetId): ?MediaAsset;
+
+    /**
+     * Updates the alt text for a media asset.
+     */
+    public function updateAltText(int $mediaAssetId, string $altText): bool;
 }
