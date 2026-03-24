@@ -19,8 +19,14 @@ use App\Controllers\Support\ControllerErrorResponder;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
- * Serves the Storytelling event listing page and individual event detail pages,
- * each with a filterable schedule section driven by CMS content.
+ * Public-facing controller for the Storytelling festival section.
+ *
+ * Serves the Storytelling event listing page (all events + filterable schedule)
+ * and individual event detail pages (description + that event's sessions).
+ *
+ * Mirrors JazzController's structure but scoped to EventTypeId::Storytelling.
+ * Detail pages support a CMS-configurable CTA button text on the schedule,
+ * allowing editors to customize the booking prompt per event.
  */
 class StorytellingController extends BaseController
 {
@@ -76,15 +82,18 @@ class StorytellingController extends BaseController
         }
     }
 
+    /** Loads event detail data by slug and composes the schedule + view model for rendering. */
     private function renderDetailPage(string $slug): void
     {
         $pageData = $this->storytellingDetailService->getDetailPageData($slug);
+        // Coerce empty CTA text to null so the schedule falls back to its default button label
         $scheduleSection = $this->buildDetailScheduleSection($pageData->event->eventId, $pageData->scheduleCtaButtonText ?: null);
         $isLoggedIn = $this->sessionService->isLoggedIn();
         $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn);
         $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
     }
 
+    /** Builds a schedule section scoped to one event, with an optional custom CTA label from the CMS. */
     private function buildDetailScheduleSection(int $eventId, ?string $ctaButtonText): ScheduleSectionViewModel
     {
         $scheduleData = $this->scheduleService->getScheduleData(

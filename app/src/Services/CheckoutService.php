@@ -215,7 +215,7 @@ class CheckoutService implements ICheckoutService
             throw new CheckoutException('Invalid Stripe event payload.');
         }
 
-        // Atomic idempotency guard: INSERT IGNORE prevents race conditions from concurrent deliveries
+        // Idempotency: INSERT IGNORE on (eventId) so concurrent Stripe retries are safe
         if (!$this->webhookEventRepository->markProcessedIfNew($eventId, $eventType)) {
             return [
                 'processed' => false,
@@ -241,6 +241,7 @@ class CheckoutService implements ICheckoutService
                 $this->paymentRepository->updateStripePaymentIntentId($paymentId, $object['payment_intent']);
             }
 
+            // Transition order/payment statuses based on the Stripe event outcome
             switch ($eventType) {
                 case 'checkout.session.completed':
                 case 'checkout.session.async_payment_succeeded':
@@ -250,6 +251,7 @@ class CheckoutService implements ICheckoutService
                     if ($paymentId !== null) {
                         $this->paymentRepository->updateStatus($paymentId, PaymentStatus::Paid, new \DateTimeImmutable());
                     }
+                    // Flag the user's program (cart) as checked out so it cannot be reused
                     if (isset($metadata['program_id'])) {
                         $programId = (int)$metadata['program_id'];
                         if ($programId > 0) {

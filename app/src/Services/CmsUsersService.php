@@ -135,6 +135,7 @@ class CmsUsersService implements ICmsUsersService
             $errors['username'] = $fmtError;
             return $errors;
         }
+        // On update, exclude the current user from uniqueness checks so they can keep their own username
         $taken = $excludeId !== null
             ? $this->usersRepository->existsByUsernameExcluding($username, $excludeId)
             : $this->usersRepository->existsByUsername($username);
@@ -155,6 +156,7 @@ class CmsUsersService implements ICmsUsersService
             $errors['email'] = $formatError;
             return $errors;
         }
+        // On update, exclude the current user so they can keep their own email
         $taken = $excludeId !== null
             ? $this->usersRepository->existsByEmailExcluding($email, $excludeId)
             : $this->usersRepository->existsByEmail($email);

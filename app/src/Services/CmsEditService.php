@@ -286,6 +286,7 @@ class CmsEditService implements ICmsEditService
             return ['HtmlValue' => $value, 'TextValue' => null];
         }
 
+        // TEXT items strip all HTML and decode entities so the stored value is always plain text
         if ($normalizedType === 'TEXT') {
             $decoded = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $plain = trim(strip_tags($decoded));
@@ -387,6 +388,7 @@ class CmsEditService implements ICmsEditService
         $type = $item->itemType->value;
         $inputType = CmsContentLimits::getInputType($type);
 
+        // Certain TEXT keys (e.g. long descriptions) are edited via TinyMCE instead of a plain input
         if (strtoupper($type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce($item->itemKey)) {
             return 'tinymce';
         }
@@ -442,7 +444,8 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
-     * Gets the appropriate value from an item.
+     * Extracts the display value for the CMS editor. HTML items use htmlValue directly;
+     * TEXT items that were accidentally stored with HTML tags get stripped back to plain text.
      */
     private function getItemValue(CmsItem $item): string
     {
