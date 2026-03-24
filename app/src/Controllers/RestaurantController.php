@@ -57,7 +57,7 @@ class RestaurantController extends BaseController
                 return;
             }
 
-            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
+            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn(), self::VALID_DATES, self::RESERVATION_FEE);
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -80,7 +80,7 @@ class RestaurantController extends BaseController
                 return;
             }
 
-            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
+            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn(), self::VALID_DATES, self::RESERVATION_FEE);
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant-reservation.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

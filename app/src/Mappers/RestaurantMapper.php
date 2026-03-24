@@ -46,7 +46,7 @@ final class RestaurantMapper
         );
     }
 
-    public static function toDetailViewModel(RestaurantDetailData $data, bool $isLoggedIn): RestaurantDetailViewModel
+    public static function toDetailViewModel(RestaurantDetailData $data, bool $isLoggedIn, array $festivalDates = [], float $reservationFeePerPerson = 0.0): RestaurantDetailViewModel
     {
         $restaurant  = $data->restaurant;
         $cms         = $data->cms;
@@ -56,7 +56,7 @@ final class RestaurantMapper
 
         return new RestaurantDetailViewModel(...array_merge(
             ['heroData' => $heroData, 'globalUi' => $globalUi, 'cms' => CmsMapper::toCmsData($heroData, $globalUi)],
-            self::buildDetailDomainFields($restaurant, $data),
+            self::buildDetailDomainFields($restaurant, $data, $festivalDates, $reservationFeePerPerson),
             self::buildDetailCmsLabels($cms),
         ));
     }
@@ -64,7 +64,7 @@ final class RestaurantMapper
     /**
      * @return array<string, mixed>
      */
-    private static function buildDetailDomainFields(Restaurant $restaurant, RestaurantDetailData $data): array
+    private static function buildDetailDomainFields(Restaurant $restaurant, RestaurantDetailData $data, array $festivalDates, float $reservationFeePerPerson): array
     {
         $cuisineTags = array_values(array_filter(array_map('trim', explode(',', $restaurant->cuisineType))));
         $imagesByType = self::groupImagesByType($data->images);
@@ -96,10 +96,12 @@ final class RestaurantMapper
             'specialRequestsNote' => $restaurant->specialRequestsNote ?? '',
             'galleryImages'   => $imagesByType['gallery'] ?? [self::DEFAULT_IMAGE],
             'reservationImage' => $imagesByType['reservation'][0] ?? self::DEFAULT_IMAGE,
-            'timeSlots'       => $data->timeSlots,
-            'priceCards'      => $data->priceCards,
-            'priceAdult'      => $restaurant->priceAdult,
-            'priceChild'      => $restaurant->priceChild,
+            'timeSlots'                => $data->timeSlots,
+            'priceCards'               => $data->priceCards,
+            'festivalDates'            => $festivalDates,
+            'reservationFeePerPerson'  => $reservationFeePerPerson,
+            'priceAdult'               => $restaurant->priceAdult,
+            'priceChild'               => $restaurant->priceChild,
         ];
     }
 
@@ -267,6 +269,7 @@ final class RestaurantMapper
                 description: self::cleanDescription($restaurant->descriptionHtml),
                 rating:      $restaurant->stars ?? 0,
                 image:       $restaurant->imagePath ?? self::DEFAULT_IMAGE,
+                isVegan:     stripos($restaurant->cuisineType, 'vegan') !== false,
             );
         }
 

@@ -73,6 +73,9 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
         public array  $timeSlots,
         /** @var array{label: string, price: string}[] price cards */
         public array  $priceCards,
+        /** @var string[] valid festival dates shown in the reservation form */
+        public array  $festivalDates,
+        public float  $reservationFeePerPerson,
 
         // ── CMS labels (admin-editable section titles & labels) ──
         public string $labelContactTitle       = '',

@@ -14,8 +14,8 @@ unset($_SESSION['reservation_errors'], $_SESSION['reservation_old_input']);
 
 $success = isset($_GET['success']);
 
-// Fixed festival dates — the same for every restaurant.
-$festivalDates = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
+$festivalDates = $viewModel->festivalDates;
+$reservationFee = $viewModel->reservationFeePerPerson;
 ?>
 
 <section id="reservation-form" class="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-10 sm:py-16 bg-white">
@@ -218,7 +218,7 @@ $festivalDates = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
                     <p class="text-slate-800 text-xl font-bold font-['Montserrat']">Total to be paid</p>
                     <p class="text-slate-800 text-base font-['Montserrat'] mt-2">
                         To complete your reservation,
-                        <strong>you pay a €10 fee per person.</strong>
+                        <strong>you pay a €<?= number_format($reservationFee, 0) ?> fee per person.</strong>
                         This <strong>amount is deducted from your final bill</strong>
                         at the restaurant, so you simply pay the remaining amount after your meal.
                     </p>
@@ -256,6 +256,7 @@ $festivalDates = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 <script>
 (function () {
+    const reservationFee = <?= (float) $reservationFee ?>;
     // +/- counter buttons
     document.querySelectorAll('[data-counter-action]').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -287,7 +288,7 @@ $festivalDates = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
     function updateTotal() {
         const adults   = parseInt(document.getElementById('adults_count').value, 10)   || 0;
         const children = parseInt(document.getElementById('children_count').value, 10) || 0;
-        const total    = (adults + children) * 10;
+        const total    = (adults + children) * reservationFee;
 
         const guestsLabel  = document.getElementById('fee-guests-label');
         const breakdown    = document.getElementById('fee-breakdown');
@@ -305,7 +306,7 @@ $festivalDates = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
         if (children > 0) parts.push(children + ' Child'   + (children > 1 ? 'ren' : ''));
 
         guestsLabel.textContent = parts.join(' + ');
-        breakdown.textContent   = '€10 reservation fee × ' + (adults + children) + ' people';
+        breakdown.textContent   = '€' + reservationFee + ' reservation fee × ' + (adults + children) + ' people';
         feeTotal.textContent    = '€ ' + total.toFixed(2).replace('.', ',');
     }
 

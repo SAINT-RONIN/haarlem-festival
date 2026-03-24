@@ -194,7 +194,7 @@
                     <!-- Website -->
                     <div>
                         <label for="website" class="block text-sm font-medium text-gray-700 mb-1">Website</label>
-                        <input type="url"
+                        <input type="text"
                                name="website"
                                id="website"
                                value="<?= htmlspecialchars($viewModel->website ?? '') ?>"
