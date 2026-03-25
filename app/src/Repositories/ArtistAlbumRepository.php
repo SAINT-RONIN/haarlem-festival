@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Infrastructure\Database;
 use App\Models\ArtistAlbum;
 use App\Repositories\Interfaces\IArtistAlbumRepository;
 use PDO;
@@ -17,11 +16,8 @@ use PDO;
  */
 class ArtistAlbumRepository implements IArtistAlbumRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**

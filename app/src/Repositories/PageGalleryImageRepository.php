@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Infrastructure\Database;
 use App\Models\PageGalleryImage;
 use App\Repositories\Interfaces\IPageGalleryImageRepository;
 use PDO;
@@ -17,11 +16,8 @@ use PDO;
  */
 class PageGalleryImageRepository implements IPageGalleryImageRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**

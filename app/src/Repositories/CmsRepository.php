@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Infrastructure\Database;
 use App\Models\CmsItem;
 use App\Models\CmsItemFilter;
 use App\Models\CmsPage;
@@ -22,11 +21,8 @@ use PDO;
  */
 class CmsRepository implements ICmsRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**

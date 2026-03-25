@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Infrastructure\Database;
 use App\Models\Program;
 use App\Models\ProgramFilter;
 use App\Models\ProgramItem;
@@ -20,11 +19,8 @@ use PDO;
  */
 class ProgramRepository implements IProgramRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**

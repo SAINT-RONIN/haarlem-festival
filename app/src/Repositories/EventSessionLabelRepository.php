@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Infrastructure\Database;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
@@ -17,11 +16,8 @@ use PDO;
  */
 class EventSessionLabelRepository implements IEventSessionLabelRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**

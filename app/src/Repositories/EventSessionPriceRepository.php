@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Infrastructure\Database;
 use App\Models\EventSessionPrice;
 use App\Models\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -18,11 +17,8 @@ use PDO;
  */
 class EventSessionPriceRepository implements IEventSessionPriceRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**

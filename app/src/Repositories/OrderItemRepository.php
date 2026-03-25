@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Infrastructure\Database;
 use App\Models\OrderItem;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use PDO;
@@ -16,11 +15,8 @@ use PDO;
  */
 class OrderItemRepository implements IOrderItemRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**

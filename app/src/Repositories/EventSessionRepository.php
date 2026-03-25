@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Enums\PriceTierId;
-use App\Infrastructure\Database;
 use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
 use App\Models\SessionCapacityInfo;
@@ -22,11 +21,8 @@ use PDO;
  */
 class EventSessionRepository implements IEventSessionRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**

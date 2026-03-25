@@ -99,24 +99,28 @@ return static function (string $controllerClass): object {
     // SessionService is needed by almost every controller
     $sessionService = new SessionService();
 
+    // ── Shared PDO connection (lazy singleton) ──
+
+    $pdo = fn() => $make('pdo', fn() => Database::getConnection());
+
     // ── Lazy repository accessors (shared across multiple controllers) ──
 
-    $cmsRepo            = fn() => $make('cmsRepo', fn() => new CmsRepository());
-    $mediaAssetRepo     = fn() => $make('mediaAssetRepo', fn() => new MediaAssetRepository());
-    $eventRepo          = fn() => $make('eventRepo', fn() => new EventRepository());
-    $eventSessionRepo   = fn() => $make('eventSessionRepo', fn() => new EventSessionRepository());
-    $eventSessionLabel  = fn() => $make('eventSessionLabel', fn() => new EventSessionLabelRepository());
-    $eventSessionPrice  = fn() => $make('eventSessionPrice', fn() => new EventSessionPriceRepository());
-    $eventTypeRepo      = fn() => $make('eventTypeRepo', fn() => new EventTypeRepository());
-    $venueRepo          = fn() => $make('venueRepo', fn() => new VenueRepository());
-    $scheduleDayConfig  = fn() => $make('scheduleDayConfig', fn() => new ScheduleDayConfigRepository());
-    $restaurantRepo     = fn() => $make('restaurantRepo', fn() => new RestaurantRepository());
-    $userAccountRepo    = fn() => $make('userAccountRepo', fn() => new UserAccountRepository());
-    $resetTokenRepo     = fn() => $make('resetTokenRepo', fn() => new PasswordResetTokenRepository());
-    $programRepo        = fn() => $make('programRepo', fn() => new ProgramRepository());
-    $orderRepo          = fn() => $make('orderRepo', fn() => new OrderRepository());
-    $orderItemRepo      = fn() => $make('orderItemRepo', fn() => new OrderItemRepository());
-    $paymentRepo        = fn() => $make('paymentRepo', fn() => new PaymentRepository());
+    $cmsRepo            = fn() => $make('cmsRepo', fn() => new CmsRepository($pdo()));
+    $mediaAssetRepo     = fn() => $make('mediaAssetRepo', fn() => new MediaAssetRepository($pdo()));
+    $eventRepo          = fn() => $make('eventRepo', fn() => new EventRepository($pdo()));
+    $eventSessionRepo   = fn() => $make('eventSessionRepo', fn() => new EventSessionRepository($pdo()));
+    $eventSessionLabel  = fn() => $make('eventSessionLabel', fn() => new EventSessionLabelRepository($pdo()));
+    $eventSessionPrice  = fn() => $make('eventSessionPrice', fn() => new EventSessionPriceRepository($pdo()));
+    $eventTypeRepo      = fn() => $make('eventTypeRepo', fn() => new EventTypeRepository($pdo()));
+    $venueRepo          = fn() => $make('venueRepo', fn() => new VenueRepository($pdo()));
+    $scheduleDayConfig  = fn() => $make('scheduleDayConfig', fn() => new ScheduleDayConfigRepository($pdo()));
+    $restaurantRepo     = fn() => $make('restaurantRepo', fn() => new RestaurantRepository($pdo()));
+    $userAccountRepo    = fn() => $make('userAccountRepo', fn() => new UserAccountRepository($pdo()));
+    $resetTokenRepo     = fn() => $make('resetTokenRepo', fn() => new PasswordResetTokenRepository($pdo()));
+    $programRepo        = fn() => $make('programRepo', fn() => new ProgramRepository($pdo()));
+    $orderRepo          = fn() => $make('orderRepo', fn() => new OrderRepository($pdo()));
+    $orderItemRepo      = fn() => $make('orderItemRepo', fn() => new OrderItemRepository($pdo()));
+    $paymentRepo        = fn() => $make('paymentRepo', fn() => new PaymentRepository($pdo()));
 
     // ── Lazy service accessors (shared across multiple controllers) ──
 
@@ -164,8 +168,8 @@ return static function (string $controllerClass): object {
             new RestaurantService(
                 $cmsContent(),
                 $restaurantRepo(),
-                new RestaurantImageRepository(),
-                new CuisineTypeRepository(),
+                new RestaurantImageRepository($pdo()),
+                new CuisineTypeRepository($pdo()),
                 $globalUiLoader(),
             ),
             $sessionService,
@@ -189,17 +193,17 @@ return static function (string $controllerClass): object {
         JazzController::class => new JazzController(
             new JazzService(
                 $cmsContent(),
-                new PassTypeRepository(),
+                new PassTypeRepository($pdo()),
                 $globalUiLoader(),
             ),
             new JazzArtistDetailService(
                 $cmsContent(),
                 $eventRepo(),
-                new ArtistAlbumRepository(),
-                new ArtistTrackRepository(),
-                new ArtistLineupMemberRepository(),
-                new ArtistHighlightRepository(),
-                new ArtistGalleryImageRepository(),
+                new ArtistAlbumRepository($pdo()),
+                new ArtistTrackRepository($pdo()),
+                new ArtistLineupMemberRepository($pdo()),
+                new ArtistHighlightRepository($pdo()),
+                new ArtistGalleryImageRepository($pdo()),
             ),
             $sessionService,
             $scheduleService(),
@@ -212,13 +216,13 @@ return static function (string $controllerClass): object {
                 $eventSessionPrice(),
                 $eventTypeRepo(),
                 $venueRepo(),
-                new PriceTierRepository(),
+                new PriceTierRepository($pdo()),
                 $scheduleDayConfig(),
                 $orderItemRepo(),
                 $visibilityResolver(),
             ),
             $sessionService,
-            new CmsArtistsService(new ArtistRepository()),
+            new CmsArtistsService(new ArtistRepository($pdo())),
             new CmsRestaurantsService($restaurantRepo()),
         ),
         AuthController::class => new AuthController(
@@ -245,8 +249,8 @@ return static function (string $controllerClass): object {
                 $orderRepo(),
                 $orderItemRepo(),
                 $paymentRepo(),
-                new EventSessionRepository(),
-                new StripeWebhookEventRepository(),
+                $eventSessionRepo(),
+                new StripeWebhookEventRepository($pdo()),
                 new StripeService(
                     (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
                     (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
@@ -255,7 +259,7 @@ return static function (string $controllerClass): object {
                     (string)getenv('APP_URL'),
                     (float)(getenv('VAT_RATE') !== false ? getenv('VAT_RATE') : 0.21),
                 ),
-                Database::getConnection(),
+                $pdo(),
             ),
             new StripeWebhookRequestFactory(),
         ),
@@ -285,11 +289,11 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         CmsOrdersController::class => new CmsOrdersController(
-            new CmsOrdersService(new CmsOrdersRepository(Database::getConnection())),
+            new CmsOrdersService(new CmsOrdersRepository($pdo())),
             $sessionService,
         ),
         CmsUsersController::class => new CmsUsersController(
-            new CmsUsersService(new CmsUsersRepository(Database::getConnection())),
+            new CmsUsersService(new CmsUsersRepository($pdo())),
             $sessionService,
         ),
         CmsRestaurantsController::class => new CmsRestaurantsController(
@@ -297,7 +301,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         CmsArtistsController::class => new CmsArtistsController(
-            new CmsArtistsService(new ArtistRepository()),
+            new CmsArtistsService(new ArtistRepository($pdo())),
             $sessionService,
         ),
         ScheduleApiController::class => new ScheduleApiController(

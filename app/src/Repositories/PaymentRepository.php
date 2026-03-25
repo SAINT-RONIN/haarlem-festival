@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
-use App\Infrastructure\Database;
 use App\Repositories\Interfaces\IPaymentRepository;
 use PDO;
 
@@ -17,11 +16,8 @@ use PDO;
  */
 class PaymentRepository implements IPaymentRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = Database::getConnection();
     }
 
     /**
