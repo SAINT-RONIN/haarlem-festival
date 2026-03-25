@@ -10,7 +10,6 @@ use App\DTOs\Schedule\ScheduleDayData;
 use App\DTOs\Events\SessionCapacityInfo;
 use App\DTOs\Schedule\SessionQueryResult;
 use App\DTOs\Schedule\SessionWithEvent;
-use App\Helpers\FormatHelper;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
@@ -130,12 +129,9 @@ class EventSessionRepository implements IEventSessionRepository
             $params['endDate'] = $filters->endDate;
         }
 
-        if ($filters->dayOfWeek !== null && $filters->dayOfWeek !== '') {
-            $dayNumber = FormatHelper::dayNameToMysqlDayOfWeek($filters->dayOfWeek);
-            if ($dayNumber !== null) {
-                $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
-                $params['dayOfWeekNum'] = $dayNumber;
-            }
+        if ($filters->dayOfWeekNumber !== null) {
+            $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
+            $params['dayOfWeekNum'] = $filters->dayOfWeekNumber;
         }
     }
 

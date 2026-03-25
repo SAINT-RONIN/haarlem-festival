@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\PriceTierId;
+use App\Helpers\FormatHelper;
 use App\Exceptions\CmsOperationException;
 use App\Exceptions\ValidationException;
 use App\Repositories\Interfaces\IEventRepository;
@@ -61,11 +62,15 @@ class CmsEventsService implements ICmsEventsService
      */
     public function getAllEventsWithDetails(?int $eventTypeId = null, ?string $dayOfWeek = null): array
     {
+        $dayNumber = ($dayOfWeek !== null && $dayOfWeek !== '')
+            ? FormatHelper::dayNameToMysqlDayOfWeek($dayOfWeek)
+            : null;
+
         return $this->eventRepository->findEvents(new EventFilter(
             isActive: true,
             includeSessionCount: true,
             eventTypeId: $eventTypeId,
-            dayOfWeek: $dayOfWeek,
+            dayOfWeekNumber: $dayNumber,
         ));
     }
 

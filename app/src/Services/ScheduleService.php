@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
+use App\Helpers\FormatHelper;
 use App\DTOs\Filters\EventSessionFilter;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
@@ -67,6 +68,16 @@ class ScheduleService implements IScheduleService
         }
     }
 
+    /** Converts a day name (e.g. "Monday") to a MySQL DAYOFWEEK number (1=Sunday..7=Saturday). */
+    private function convertDayNameToNumber(?string $dayName): ?int
+    {
+        if ($dayName === null || $dayName === '') {
+            return null;
+        }
+
+        return FormatHelper::dayNameToMysqlDayOfWeek($dayName);
+    }
+
     /** Fetches all data sources and assembles the schedule payload. */
     private function assembleScheduleData(
         string $pageSlug,
@@ -111,7 +122,7 @@ class ScheduleService implements IScheduleService
                 visibleDays: $visibleDays,
                 orderBy: 'es.StartDateTime ASC',
                 eventId: $eventId,
-                dayOfWeek: $filterParams?->day,
+                dayOfWeekNumber: $this->convertDayNameToNumber($filterParams?->day),
                 timeRange: $filterParams?->timeRange,
                 priceType: $filterParams?->priceType,
                 venueName: $filterParams?->venue,

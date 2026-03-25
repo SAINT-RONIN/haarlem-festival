@@ -13,7 +13,7 @@ final readonly class EventFilter
 {
     public function __construct(
         public ?int $eventTypeId = null,
-        public ?string $dayOfWeek = null,
+        public ?int $dayOfWeekNumber = null,
         public ?bool $isActive = null,
         public ?bool $includeSessionCount = null,
         public ?int $eventId = null,
@@ -27,7 +27,7 @@ final readonly class EventFilter
     {
         return new self(
             eventTypeId: isset($filters['eventTypeId']) ? (int) $filters['eventTypeId'] : null,
-            dayOfWeek: isset($filters['dayOfWeek']) && is_string($filters['dayOfWeek']) ? $filters['dayOfWeek'] : null,
+            dayOfWeekNumber: isset($filters['dayOfWeekNumber']) ? (int) $filters['dayOfWeekNumber'] : null,
             isActive: array_key_exists('isActive', $filters) ? (bool) $filters['isActive'] : null,
             includeSessionCount: isset($filters['includeSessionCount']) ? (bool) $filters['includeSessionCount'] : null,
             eventId: isset($filters['eventId']) ? (int) $filters['eventId'] : null,

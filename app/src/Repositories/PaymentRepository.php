@@ -102,21 +102,24 @@ class PaymentRepository implements IPaymentRepository
 
     /**
      * Atomically transitions payment status only if the current status is in the allowed set.
-     * Automatically sets PaidAtUtc to now when transitioning to Paid status. No-op if
+     * The caller supplies PaidAtUtc when transitioning to Paid. No-op if
      * allowedCurrentStatuses is empty or the current status is not in the allowed set.
      *
      * @param PaymentStatus[] $allowedCurrentStatuses
      */
-    public function updateStatusIfCurrentIn(int $paymentId, PaymentStatus $newStatus, array $allowedCurrentStatuses): void
-    {
+    public function updateStatusIfCurrentIn(
+        int $paymentId,
+        PaymentStatus $newStatus,
+        array $allowedCurrentStatuses,
+        ?\DateTimeImmutable $paidAtUtc = null,
+    ): void {
         if ($allowedCurrentStatuses === []) {
             return;
         }
-        // Auto-set paid timestamp when transitioning to Paid; leave null otherwise
-        $paidAtUtc = $newStatus === PaymentStatus::Paid ? (new \DateTimeImmutable())->format('Y-m-d H:i:s') : null;
         // Build dynamic IN clause for the allowed-status guard condition
+        $formattedPaidAt = $paidAtUtc?->format('Y-m-d H:i:s');
         $inPlaceholders = [];
-        $params = [':newStatus' => $newStatus->value, ':paidAtUtc' => $paidAtUtc, ':paymentId' => $paymentId];
+        $params = [':newStatus' => $newStatus->value, ':paidAtUtc' => $formattedPaidAt, ':paymentId' => $paymentId];
         foreach ($allowedCurrentStatuses as $i => $status) {
             $key = ':allowedStatus' . $i;
             $inPlaceholders[] = $key;

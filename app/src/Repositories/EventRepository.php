@@ -10,7 +10,6 @@ use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
 use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Events\StorytellingDetailEvent;
-use App\Helpers\FormatHelper;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
 
@@ -37,7 +36,7 @@ class EventRepository implements IEventRepository
         $includeSessionCount = (bool)($filters->includeSessionCount ?? false);
         $isActive = $filters->isActive;
         $eventTypeId = $filters->eventTypeId;
-        $dayOfWeek = $filters->dayOfWeek;
+        $dayOfWeekNumber = $filters->dayOfWeekNumber;
         $eventId = $filters->eventId;
 
         $select = '
@@ -77,16 +76,13 @@ class EventRepository implements IEventRepository
         $params = [];
 
         // Filter events to only those with at least one session on the requested day of week
-        if ($dayOfWeek !== null && $dayOfWeek !== '') {
-            $dayNumber = FormatHelper::dayNameToMysqlDayOfWeek($dayOfWeek);
-            if ($dayNumber !== null) {
-                $sql .= '
-                    INNER JOIN EventSession es_day
-                        ON es_day.EventId = e.EventId
-                        AND DAYOFWEEK(es_day.StartDateTime) = :dayOfWeekNum
-                ';
-                $params['dayOfWeekNum'] = $dayNumber;
-            }
+        if ($dayOfWeekNumber !== null) {
+            $sql .= '
+                INNER JOIN EventSession es_day
+                    ON es_day.EventId = e.EventId
+                    AND DAYOFWEEK(es_day.StartDateTime) = :dayOfWeekNum
+            ';
+            $params['dayOfWeekNum'] = $dayOfWeekNumber;
         }
 
         if ($isActive !== null) {

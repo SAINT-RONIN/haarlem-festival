@@ -41,11 +41,16 @@ interface IPaymentRepository
 
     /**
      * Atomically transitions payment status only if the current status is in the allowed set.
-     * Automatically sets PaidAtUtc to now when transitioning to Paid. Prevents invalid
+     * The caller supplies PaidAtUtc when transitioning to Paid. Prevents invalid
      * transitions when webhooks and expiration jobs race against each other.
      *
      * @param PaymentStatus[] $allowedCurrentStatuses
      */
-    public function updateStatusIfCurrentIn(int $paymentId, PaymentStatus $newStatus, array $allowedCurrentStatuses): void;
+    public function updateStatusIfCurrentIn(
+        int $paymentId,
+        PaymentStatus $newStatus,
+        array $allowedCurrentStatuses,
+        ?\DateTimeImmutable $paidAtUtc = null,
+    ): void;
 }
 
