@@ -10,7 +10,7 @@ namespace App\Models;
  */
 final readonly class StorytellingMasonrySectionContent
 {
-    private const IMAGE_COUNT = 12;
+    public const IMAGE_COUNT = 12;
 
     /**
      * @param string[] $imagePaths Up to 12 image paths in order (may contain empty strings for missing images)
