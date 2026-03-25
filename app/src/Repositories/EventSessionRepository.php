@@ -26,22 +26,52 @@ class EventSessionRepository implements IEventSessionRepository
     }
 
     /**
-     * Builds and executes a dynamic query for event sessions with extensive filter support:
-     * event type, date range, day of week, time of day, price type (free/fixed/pay-what-you-like),
-     * venue, language, minimum age, and visible-days whitelist.
+     * Builds and executes a dynamic query for event sessions with extensive filter support.
+     * When groupByDay is enabled, runs a two-pass query: first fetches distinct dates,
+     * then retrieves sessions only within those dates.
      *
-     * When groupByDay is enabled, runs a two-pass query: first fetches distinct dates (capped
-     * by maxDays), then retrieves sessions only within those dates. This powers the paginated
-     * day-tab schedule UI.
-     *
-     * @return SessionQueryResult Contains sessions and optionally day metadata. Returns empty
-     *                            collections when no sessions match.
+     * @return SessionQueryResult Contains sessions and optionally day metadata.
      */
     public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult
+    {
+        [$conditions, $params] = $this->buildFilterConditions($filters);
+
+        $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
+        $orderBy = $this->resolveOrderBy($filters->orderBy);
+
+        $groupByDay = (bool)($filters->groupByDay ?? false);
+
+        if ($groupByDay) {
+            return $this->executeGroupedDayQuery($filters, $whereClause, $params, $orderBy);
+        }
+
+        return $this->executeFlatQuery($filters, $whereClause, $params, $orderBy);
+    }
+
+    /**
+     * Builds all WHERE conditions and bound parameters from the filter DTO.
+     *
+     * @return array{0: string[], 1: array<string, mixed>}
+     */
+    private function buildFilterConditions(EventSessionFilter $filters): array
     {
         $conditions = [];
         $params = [];
 
+        $this->addIdentityFilters($filters, $conditions, $params);
+        $this->addStatusFilters($filters, $conditions, $params);
+        $this->addDateFilters($filters, $conditions, $params);
+        $this->addVisibleDaysFilter($filters, $conditions, $params);
+        $this->addTimeRangeFilter($filters, $conditions);
+        $this->addPriceTypeFilter($filters, $conditions, $params);
+        $this->addTextFilters($filters, $conditions, $params);
+
+        return [$conditions, $params];
+    }
+
+    /** Adds event ID, event type, session ID, and session ID list conditions. */
+    private function addIdentityFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
+    {
         if ($filters->eventId !== null) {
             $conditions[] = 'es.EventId = :eventId';
             $params['eventId'] = $filters->eventId;
@@ -57,7 +87,6 @@ class EventSessionRepository implements IEventSessionRepository
             $params['sessionId'] = $filters->sessionId;
         }
 
-        // Build dynamic IN clause with numbered placeholders to filter by multiple session IDs
         if ($filters->sessionIds !== null && $filters->sessionIds !== []) {
             $sessionIdPlaceholders = [];
             foreach ($filters->sessionIds as $index => $sid) {
@@ -67,7 +96,11 @@ class EventSessionRepository implements IEventSessionRepository
             }
             $conditions[] = 'es.EventSessionId IN (' . implode(',', $sessionIdPlaceholders) . ')';
         }
+    }
 
+    /** Adds active/cancelled/event-active status conditions. */
+    private function addStatusFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
+    {
         if ($filters->isActive !== null) {
             $conditions[] = 'es.IsActive = :isActive';
             $params['isActive'] = $filters->isActive ? 1 : 0;
@@ -82,7 +115,11 @@ class EventSessionRepository implements IEventSessionRepository
             $conditions[] = 'e.IsActive = :eventIsActive';
             $params['eventIsActive'] = $filters->eventIsActive ? 1 : 0;
         }
+    }
 
+    /** Adds start/end date range and day-of-week conditions. */
+    private function addDateFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
+    {
         if ($filters->startDate !== null) {
             $conditions[] = 'DATE(es.StartDateTime) >= :startDate';
             $params['startDate'] = $filters->startDate;
@@ -100,45 +137,67 @@ class EventSessionRepository implements IEventSessionRepository
                 $params['dayOfWeekNum'] = $dayNumber;
             }
         }
+    }
 
-        // visibleDays restricts results to specific weekdays (0=Sunday..6=Saturday).
-        // Uses DAYOFWEEK()-1 to convert MySQL's 1-based numbering to 0-based.
+    /** Restricts results to specific weekdays (0=Sunday..6=Saturday). */
+    private function addVisibleDaysFilter(EventSessionFilter $filters, array &$conditions, array &$params): void
+    {
         $visibleDays = $filters->visibleDays;
-        if (is_array($visibleDays)) {
-            if ($visibleDays === []) {
-                // Explicitly no visible days configured: force an empty result set.
-                $conditions[] = '1 = 0';
-            } elseif (count($visibleDays) < 7) {
-                $dayParams = [];
-                foreach (array_values($visibleDays) as $index => $day) {
-                    $key = 'visibleDay' . $index;
-                    $dayParams[] = ':' . $key;
-                    $params[$key] = (int)$day;
-                }
-                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
+
+        if (!is_array($visibleDays)) {
+            return;
+        }
+
+        if ($visibleDays === []) {
+            $conditions[] = '1 = 0';
+            return;
+        }
+
+        if (count($visibleDays) < 7) {
+            $dayParams = [];
+            foreach (array_values($visibleDays) as $index => $day) {
+                $key = 'visibleDay' . $index;
+                $dayParams[] = ':' . $key;
+                $params[$key] = (int)$day;
             }
+            $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
+        }
+    }
+
+    /** Adds morning/afternoon/evening time range condition. */
+    private function addTimeRangeFilter(EventSessionFilter $filters, array &$conditions): void
+    {
+        if ($filters->timeRange === null) {
+            return;
         }
 
-        if ($filters->timeRange !== null) {
-            match ($filters->timeRange) {
-                'morning'   => $conditions[] = 'HOUR(es.StartDateTime) < 12',
-                'afternoon' => $conditions[] = '(HOUR(es.StartDateTime) >= 12 AND HOUR(es.StartDateTime) < 17)',
-                'evening'   => $conditions[] = 'HOUR(es.StartDateTime) >= 17',
-            };
+        match ($filters->timeRange) {
+            'morning'   => $conditions[] = 'HOUR(es.StartDateTime) < 12',
+            'afternoon' => $conditions[] = '(HOUR(es.StartDateTime) >= 12 AND HOUR(es.StartDateTime) < 17)',
+            'evening'   => $conditions[] = 'HOUR(es.StartDateTime) >= 17',
+        };
+    }
+
+    /** Classifies sessions as free, fixed-price, or pay-what-you-like via subqueries. */
+    private function addPriceTypeFilter(EventSessionFilter $filters, array &$conditions, array &$params): void
+    {
+        if ($filters->priceType === null) {
+            return;
         }
 
-        // Price type filter uses correlated subqueries against EventSessionPrice to classify
-        // sessions as free, fixed-price, or pay-what-you-like
-        if ($filters->priceType !== null) {
-            $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
-            match ($filters->priceType) {
-                'pay-what-you-like' => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = :pwylTierId)',
-                'free'              => $conditions[] = '(es.IsFree = 1 OR NOT EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0))',
-                'fixed'             => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != :pwylTierId)',
-                default             => null,
-            };
-        }
+        $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
 
+        match ($filters->priceType) {
+            'pay-what-you-like' => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = :pwylTierId)',
+            'free'              => $conditions[] = '(es.IsFree = 1 OR NOT EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0))',
+            'fixed'             => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != :pwylTierId)',
+            default             => null,
+        };
+    }
+
+    /** Adds venue name, language code, and minimum age conditions. */
+    private function addTextFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
+    {
         if ($filters->venueName !== null && $filters->venueName !== '') {
             $conditions[] = 'LOWER(v.Name) = :venueName';
             $params['venueName'] = strtolower($filters->venueName);
@@ -153,22 +212,26 @@ class EventSessionRepository implements IEventSessionRepository
             $conditions[] = '(es.MinAge IS NOT NULL AND es.MinAge >= :filterMinAge)';
             $params['filterMinAge'] = $filters->filterMinAge;
         }
+    }
 
-        $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
-        // Whitelist-based ORDER BY to prevent SQL injection via user-supplied sort values
-        $requestedOrderBy = is_string($filters->orderBy) ? $filters->orderBy : '';
-        $allowedOrderBy = [
+    /** Whitelist-based ORDER BY to prevent SQL injection via user-supplied sort values. */
+    private function resolveOrderBy(?string $requestedOrderBy): string
+    {
+        $allowed = [
             'es.StartDateTime ASC',
             'es.StartDateTime DESC',
             'DATE(es.StartDateTime) ASC, es.StartDateTime ASC',
         ];
-        $orderBy = in_array($requestedOrderBy, $allowedOrderBy, true)
-            ? $requestedOrderBy
-            : 'es.StartDateTime ASC';
 
-        // Base FROM clause joins session -> event -> event type, plus optional venue, artist,
-        // and artist image. LEFT JOINs allow sessions whose events lack a venue or artist.
-        $baseFrom = '
+        $value = is_string($requestedOrderBy) ? $requestedOrderBy : '';
+
+        return in_array($value, $allowed, true) ? $value : 'es.StartDateTime ASC';
+    }
+
+    /** Returns the shared FROM clause with all necessary JOINs. */
+    private function getBaseFromClause(): string
+    {
+        return '
             FROM EventSession es
             INNER JOIN Event e ON es.EventId = e.EventId
             INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
@@ -176,79 +239,12 @@ class EventSessionRepository implements IEventSessionRepository
             LEFT JOIN Artist a ON e.ArtistId = a.ArtistId
             LEFT JOIN MediaAsset ma ON a.ImageAssetId = ma.MediaAssetId
         ';
+    }
 
-        // Two-pass day-grouped mode: first query fetches distinct dates, second fetches sessions
-        // only within those dates. This enables the schedule UI to show a limited number of day tabs.
-        $groupByDay = (bool)($filters->groupByDay ?? false);
-        if ($groupByDay) {
-            $maxDays = (int)($filters->maxDays ?? 7);
-            if ($maxDays <= 0) {
-                $maxDays = 7;
-            }
-
-            $daysSql = '
-                SELECT DISTINCT DATE(es.StartDateTime) AS Date
-                ' . $baseFrom . '
-                ' . $whereClause . '
-                ORDER BY Date ASC
-                LIMIT :maxDays
-            ';
-            $daysStmt = $this->pdo->prepare($daysSql);
-            foreach ($params as $key => $value) {
-                $daysStmt->bindValue(':' . $key, $value);
-            }
-            $daysStmt->bindValue(':maxDays', $maxDays, PDO::PARAM_INT);
-            $daysStmt->execute();
-            $days = $daysStmt->fetchAll(PDO::FETCH_ASSOC);
-
-            if ($days === []) {
-                return new SessionQueryResult(sessions: [], days: []);
-            }
-
-            $dates = array_column($days, 'Date');
-            $dateBindings = [];
-            $datePlaceholders = [];
-            foreach ($dates as $index => $date) {
-                $placeholder = 'sessionDate' . $index;
-                $datePlaceholders[] = ':' . $placeholder;
-                $dateBindings[$placeholder] = $date;
-            }
-            $sessionDateCondition = 'DATE(es.StartDateTime) IN (' . implode(',', $datePlaceholders) . ')';
-            $sessionsWhereClause = $whereClause === ''
-                ? 'WHERE ' . $sessionDateCondition
-                : $whereClause . ' AND ' . $sessionDateCondition;
-            $sessionsSql = '
-                SELECT
-                    es.*,
-                    DATE(es.StartDateTime) AS SessionDate,
-                    DAYNAME(es.StartDateTime) AS DayOfWeek,
-                    e.Title AS EventTitle,
-                    e.Slug AS EventSlug,
-                    e.EventTypeId,
-                    et.Name AS EventTypeName,
-                    et.Slug AS EventTypeSlug,
-                    v.Name AS VenueName,
-                    a.Name AS ArtistName,
-                    ma.FilePath AS ArtistImageUrl
-                ' . $baseFrom . '
-                ' . $sessionsWhereClause . '
-                ORDER BY ' . $orderBy;
-
-            if ($filters->limit !== null && $filters->limit > 0) {
-                $sessionsSql .= ' LIMIT ' . (int) $filters->limit;
-            }
-
-            $prepared = $this->pdo->prepare($sessionsSql);
-            $prepared->execute(array_merge($params, $dateBindings));
-            $sessionRows = $prepared->fetchAll(PDO::FETCH_ASSOC);
-
-            return new SessionQueryResult(
-                sessions: array_map([SessionWithEvent::class, 'fromRow'], $sessionRows),
-                days: array_map([ScheduleDayData::class, 'fromRow'], $days),
-            );
-        }
-
-        $sessionsSql = '
+    /** Returns the standard SELECT columns for session queries. */
+    private function getSessionSelectColumns(): string
+    {
+        return '
             SELECT
                 es.*,
                 DATE(es.StartDateTime) AS SessionDate,
@@ -261,16 +257,87 @@ class EventSessionRepository implements IEventSessionRepository
                 v.Name AS VenueName,
                 a.Name AS ArtistName,
                 ma.FilePath AS ArtistImageUrl
-            ' . $baseFrom . '
-            ' . $whereClause . '
-            ORDER BY ' . $orderBy;
+        ';
+    }
 
-        if ($filters->limit !== null && $filters->limit > 0) {
-            $sessionsSql .= ' LIMIT ' . (int) $filters->limit;
+    /**
+     * Two-pass grouped query: fetches distinct dates first, then sessions within those dates.
+     * Powers the paginated day-tab schedule UI.
+     */
+    private function executeGroupedDayQuery(EventSessionFilter $filters, string $whereClause, array $params, string $orderBy): SessionQueryResult
+    {
+        $maxDays = max(1, (int)($filters->maxDays ?? 7));
+        $baseFrom = $this->getBaseFromClause();
+
+        $days = $this->fetchDistinctDates($baseFrom, $whereClause, $params, $maxDays);
+
+        if ($days === []) {
+            return new SessionQueryResult(sessions: [], days: []);
         }
 
-        $stmt = $this->pdo->prepare($sessionsSql);
+        $sessions = $this->fetchSessionsForDates($days, $baseFrom, $whereClause, $params, $orderBy, $filters->limit);
+
+        return new SessionQueryResult(
+            sessions: array_map([SessionWithEvent::class, 'fromRow'], $sessions),
+            days: array_map([ScheduleDayData::class, 'fromRow'], $days),
+        );
+    }
+
+    /** Fetches distinct session dates matching the current filters. */
+    private function fetchDistinctDates(string $baseFrom, string $whereClause, array $params, int $maxDays): array
+    {
+        $sql = 'SELECT DISTINCT DATE(es.StartDateTime) AS Date ' . $baseFrom . ' ' . $whereClause . ' ORDER BY Date ASC LIMIT :maxDays';
+
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->bindValue(':maxDays', $maxDays, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** Fetches sessions limited to the given set of dates. */
+    private function fetchSessionsForDates(array $days, string $baseFrom, string $whereClause, array $params, string $orderBy, ?int $limit): array
+    {
+        $dates = array_column($days, 'Date');
+        $dateBindings = [];
+        $datePlaceholders = [];
+
+        foreach ($dates as $index => $date) {
+            $placeholder = 'sessionDate' . $index;
+            $datePlaceholders[] = ':' . $placeholder;
+            $dateBindings[$placeholder] = $date;
+        }
+
+        $dateCondition = 'DATE(es.StartDateTime) IN (' . implode(',', $datePlaceholders) . ')';
+        $fullWhere = $whereClause === '' ? 'WHERE ' . $dateCondition : $whereClause . ' AND ' . $dateCondition;
+
+        $sql = $this->getSessionSelectColumns() . ' ' . $baseFrom . ' ' . $fullWhere . ' ORDER BY ' . $orderBy;
+
+        if ($limit !== null && $limit > 0) {
+            $sql .= ' LIMIT ' . (int)$limit;
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(array_merge($params, $dateBindings));
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** Executes a simple flat session query (no day grouping). */
+    private function executeFlatQuery(EventSessionFilter $filters, string $whereClause, array $params, string $orderBy): SessionQueryResult
+    {
+        $sql = $this->getSessionSelectColumns() . ' ' . $this->getBaseFromClause() . ' ' . $whereClause . ' ORDER BY ' . $orderBy;
+
+        if ($filters->limit !== null && $filters->limit > 0) {
+            $sql .= ' LIMIT ' . (int)$filters->limit;
+        }
+
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
+
         return new SessionQueryResult(
             sessions: array_map([SessionWithEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC)),
         );
