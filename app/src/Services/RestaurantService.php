@@ -8,9 +8,9 @@ use App\DTOs\Pages\RestaurantDetailData;
 use App\DTOs\Pages\RestaurantPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\ICuisineTypeRepository;
+use App\Repositories\Interfaces\IRestaurantImageRepository;
+use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Repositories\RestaurantContentRepository;
-use App\Repositories\RestaurantImageRepository;
-use App\Repositories\RestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
 
 /**
@@ -37,8 +37,8 @@ class RestaurantService implements IRestaurantService
     public function __construct(
         private readonly GlobalContentRepository $globalContentRepo,
         private readonly RestaurantContentRepository $restaurantContentRepo,
-        private readonly RestaurantRepository $restaurantRepository,
-        private readonly RestaurantImageRepository $restaurantImageRepository,
+        private readonly IRestaurantRepository $restaurantRepository,
+        private readonly IRestaurantImageRepository $restaurantImageRepository,
         private readonly ICuisineTypeRepository $cuisineTypeRepository,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {

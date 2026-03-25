@@ -7,8 +7,8 @@ namespace App\Services;
 use App\Enums\UserRoleId;
 use App\Helpers\UserValidationHelper;
 use App\Infrastructure\Interfaces\IEmailService;
-use App\Repositories\PasswordResetTokenRepository;
-use App\Repositories\UserAccountRepository;
+use App\Repositories\Interfaces\IPasswordResetTokenRepository;
+use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\IAuthService;
 use App\Utils\PasswordHasher;
 
@@ -27,8 +27,8 @@ class AuthService implements IAuthService
     private const RESET_TOKEN_EXPIRY_HOURS = 1;
 
     public function __construct(
-        private readonly UserAccountRepository $userRepository,
-        private readonly PasswordResetTokenRepository $resetTokenRepository,
+        private readonly IUserAccountRepository $userRepository,
+        private readonly IPasswordResetTokenRepository $resetTokenRepository,
         private readonly IEmailService $emailService,
     ) {
     }
