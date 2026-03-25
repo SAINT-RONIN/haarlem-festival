@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\GlobalUiConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Exceptions\StorytellingEventNotFoundException;
 use App\Helpers\SlugHelper;
 use App\Models\EventSessionFilter;
 use App\Models\EventSessionLabel;
-use App\Models\GlobalUiContent;
 use App\Models\StorytellingDetailEvent;
 use App\Models\StorytellingDetailPageData;
 use App\Models\StorytellingEventCmsData;
@@ -36,6 +34,7 @@ class StorytellingDetailService implements IStorytellingDetailService
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IMediaAssetRepository $mediaAssetRepository,
+        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
 
@@ -73,15 +72,8 @@ class StorytellingDetailService implements IStorytellingDetailService
             featuredImagePath: $this->fetchFeaturedImagePath($event),
             labels: $this->fetchEventLabels($event->eventId),
             aboutBody: $this->resolveAboutBody($cms, $event),
-            globalUiContent: $this->fetchGlobalUiContent(),
+            globalUiContent: $this->globalUiLoader->load(),
             scheduleCtaButtonText: $cms->scheduleCtaButtonText ?? '',
-        );
-    }
-
-    private function fetchGlobalUiContent(): GlobalUiContent
-    {
-        return GlobalUiContent::fromRawArray(
-            $this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY),
         );
     }
 
@@ -166,7 +158,7 @@ class StorytellingDetailService implements IStorytellingDetailService
     {
         $labelsMap = $this->labelRepository->findLabelsBySessionIds([$sessionId]);
         return array_map(
-            fn(EventSessionLabel $label) => $label->labelText,
+            fn (EventSessionLabel $label) => $label->labelText,
             $labelsMap[$sessionId] ?? [],
         );
     }

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\GlobalUiConstants;
 use App\Constants\JazzPageConstants;
 use App\Enums\EventTypeId;
-use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
 use App\Models\JazzArtistsSectionContent;
 use App\Models\JazzBookingCtaSectionContent;
@@ -32,6 +30,7 @@ class JazzService implements IJazzService
     public function __construct(
         private readonly ICmsContentRepository $cmsService,
         private readonly IPassTypeRepository $passTypeRepository,
+        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
 
@@ -57,15 +56,10 @@ class JazzService implements IJazzService
             venuesSection:      JazzVenuesSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_VENUES)),
             pricingSection:     JazzPricingSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_PRICING)),
             scheduleCtaSection: JazzScheduleCtaSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_SCHEDULE_CTA)),
-            artistsSection:     JazzArtistsSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_ARTISTS)), bookingCtaSection: JazzBookingCtaSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_BOOKING_CTA)),
-            passPrices: $this->passTypeRepository->findByEventType(EventTypeId::Jazz->value), globalUiContent: $this->fetchGlobalUiContent(),
-        );
-    }
-
-    private function fetchGlobalUiContent(): GlobalUiContent
-    {
-        return GlobalUiContent::fromRawArray(
-            $this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY),
+            artistsSection:     JazzArtistsSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_ARTISTS)),
+            bookingCtaSection: JazzBookingCtaSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_BOOKING_CTA)),
+            passPrices: $this->passTypeRepository->findByEventType(EventTypeId::Jazz->value),
+            globalUiContent: $this->globalUiLoader->load(),
         );
     }
 }

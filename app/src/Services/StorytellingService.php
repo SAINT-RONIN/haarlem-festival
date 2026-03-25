@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\GlobalUiConstants;
 use App\Constants\StorytellingPageConstants;
-use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
 use App\Models\GradientSectionContent;
 use App\Models\IntroSectionContent;
@@ -25,6 +23,7 @@ class StorytellingService implements IStorytellingService
 {
     public function __construct(
         private readonly ICmsContentRepository $cmsService,
+        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
 
@@ -42,7 +41,7 @@ class StorytellingService implements IStorytellingService
             gradientSection:   GradientSectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_GRADIENT)),
             introSplitSection: IntroSectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_INTRO_SPLIT)),
             masonrySection:    StorytellingMasonrySectionContent::fromRawArray($this->cmsService->getSectionContent($slug, StorytellingPageConstants::SECTION_MASONRY)),
-            globalUiContent:   GlobalUiContent::fromRawArray($this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY)),
+            globalUiContent:   $this->globalUiLoader->load(),
         );
     }
 }

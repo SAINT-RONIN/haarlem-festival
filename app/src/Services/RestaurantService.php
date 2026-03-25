@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
 use App\Models\RestaurantCardsSectionContent;
 use App\Models\RestaurantDetailData;
@@ -46,6 +45,7 @@ class RestaurantService implements IRestaurantService
         private RestaurantRepository $restaurantRepository,
         private RestaurantImageRepository $restaurantImageRepository,
         private ICuisineTypeRepository $cuisineTypeRepository,
+        private GlobalUiContentLoader $globalUiLoader,
     ) {
     }
 
@@ -58,9 +58,7 @@ class RestaurantService implements IRestaurantService
             heroContent: HeroSectionContent::fromRawArray(
                 $this->cmsService->getHeroSectionContent(self::PAGE_SLUG),
             ),
-            globalUiContent: GlobalUiContent::fromRawArray(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
-            ),
+            globalUiContent: $this->globalUiLoader->load(),
             gradientSection: GradientSectionContent::fromRawArray(
                 $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_GRADIENT),
             ),
@@ -99,9 +97,7 @@ class RestaurantService implements IRestaurantService
             cms: RestaurantDetailSectionContent::fromRawArray(
                 $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_DETAIL),
             ),
-            globalUiContent: GlobalUiContent::fromRawArray(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
-            ),
+            globalUiContent: $this->globalUiLoader->load(),
             timeSlots: $scheduleData['timeSlots'],
             priceCards: $scheduleData['priceCards'],
             cuisineTypes: $cuisineTypes,
@@ -116,7 +112,7 @@ class RestaurantService implements IRestaurantService
      */
     private function buildCuisineMap(array $restaurants): array
     {
-        $ids = array_map(fn($r) => $r->restaurantId, $restaurants);
+        $ids = array_map(fn ($r) => $r->restaurantId, $restaurants);
         return $this->cuisineTypeRepository->findByRestaurantIds($ids);
     }
 

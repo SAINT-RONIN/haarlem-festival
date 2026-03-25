@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\GlobalUiConstants;
 use App\Constants\HistoricalLocationPageConstants;
 use App\Exceptions\HistoricalLocationNotFoundException;
-use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
 use App\Models\HistoricalLocationFactsContent;
 use App\Models\HistoricalLocationHeroContent;
@@ -21,6 +19,7 @@ class HistoricalLocationService implements IHistoricalLocationService
 {
     public function __construct(
         private readonly ICmsPageContentService $cmsService,
+        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
 
@@ -44,7 +43,7 @@ class HistoricalLocationService implements IHistoricalLocationService
             introSection:        HistoricalLocationIntroContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_INTRO)),
             factsSection:        HistoricalLocationFactsContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_FACTS)),
             significanceSection: HistoricalLocationSignificanceContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_SIGNIFICANCE)),
-            globalUiContent:     GlobalUiContent::fromRawArray($this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY)),
+            globalUiContent:     $this->globalUiLoader->load(),
         );
     }
 }

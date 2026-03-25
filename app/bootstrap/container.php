@@ -80,6 +80,7 @@ use App\Services\SessionService;
 use App\Services\CmsPageContentService;
 use App\Services\StorytellingDetailService;
 use App\Helpers\ScheduleDayVisibilityResolver;
+use App\Services\GlobalUiContentLoader;
 use App\Services\StorytellingService;
 
 /**
@@ -121,6 +122,7 @@ return static function (string $controllerClass): object {
 
     $cmsContent = fn() => $make('cmsContent', fn() => new CmsContentRepository($cmsRepo(), $mediaAssetRepo()));
     $cmsPageContent = fn() => $make('cmsPageContent', fn() => new CmsPageContentService($cmsContent()));
+    $globalUiLoader = fn() => $make('globalUiLoader', fn() => new GlobalUiContentLoader($cmsContent()));
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
@@ -154,6 +156,7 @@ return static function (string $controllerClass): object {
                 $restaurantRepo(),
                 $eventSessionRepo(),
                 $cmsContent(),
+                $globalUiLoader(),
             ),
             $sessionService,
         ),
@@ -163,12 +166,14 @@ return static function (string $controllerClass): object {
                 $restaurantRepo(),
                 new RestaurantImageRepository(),
                 new CuisineTypeRepository(),
+                $globalUiLoader(),
             ),
             $sessionService,
         ),
         StorytellingController::class => new StorytellingController(
             new StorytellingService(
                 $cmsContent(),
+                $globalUiLoader(),
             ),
             new StorytellingDetailService(
                 $cmsContent(),
@@ -176,6 +181,7 @@ return static function (string $controllerClass): object {
                 $eventSessionRepo(),
                 $eventSessionLabel(),
                 $mediaAssetRepo(),
+                $globalUiLoader(),
             ),
             $sessionService,
             $scheduleService(),
@@ -184,6 +190,7 @@ return static function (string $controllerClass): object {
             new JazzService(
                 $cmsContent(),
                 new PassTypeRepository(),
+                $globalUiLoader(),
             ),
             new JazzArtistDetailService(
                 $cmsContent(),
@@ -255,9 +262,11 @@ return static function (string $controllerClass): object {
         HistoryController::class => new HistoryController(
             new HistoryService(
                 $cmsPageContent(),
+                $globalUiLoader(),
             ),
             new HistoricalLocationService(
                 $cmsPageContent(),
+                $globalUiLoader(),
             ),
             $sessionService,
             $scheduleService(),

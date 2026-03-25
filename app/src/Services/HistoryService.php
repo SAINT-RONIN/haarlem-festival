@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\GlobalUiConstants;
 use App\Constants\HistoryPageConstants;
-use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
 use App\Models\GradientSectionContent;
 use App\Models\IntroSectionContent;
@@ -22,6 +20,7 @@ class HistoryService implements IHistoryService
 {
     public function __construct(
         private readonly ICmsPageContentService $cmsService,
+        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
 
@@ -40,7 +39,7 @@ class HistoryService implements IHistoryService
             venuesSection:        HistoryVenuesSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_VENUES)),
             ticketOptionsSection: HistoryTicketOptionsSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS)),
             tourInfoSection:      HistoryTourInfoSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_TOUR_INFO)),
-            globalUiContent:      GlobalUiContent::fromRawArray($this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY)),
+            globalUiContent:      $this->globalUiLoader->load(),
         );
     }
 }
