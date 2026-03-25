@@ -6,7 +6,6 @@ namespace App\Services;
 
 use App\Models\EventSessionFilter;
 use App\Models\EventType;
-use App\Models\HeroSectionContent;
 use App\Models\HomeEventTypeData;
 use App\Models\HomeLocationData;
 use App\Models\HomePageData;
@@ -15,6 +14,7 @@ use App\Models\HomeScheduleSessionData;
 use App\Models\Restaurant;
 use App\Models\Venue;
 use App\Models\VenueFilter;
+use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
@@ -39,6 +39,7 @@ class HomeService implements IHomeService
         private readonly IRestaurantRepository $restaurantRepository,
         private readonly IEventSessionRepository $eventSessionRepository,
         private readonly ICmsContentRepository $cmsService,
+        private readonly GlobalContentRepository $globalContentRepo,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
@@ -57,9 +58,7 @@ class HomeService implements IHomeService
 
         return new HomePageData(
             cmsContent: $cmsContent,
-            heroContent: HeroSectionContent::fromRawArray(
-                $this->cmsService->getHeroSectionContent('home'),
-            ),
+            heroContent: $this->globalContentRepo->findHeroContent('home'),
             globalUiContent: $this->globalUiLoader->load(),
             eventTypes: $this->buildEventTypes($cmsContent),
             locations: $this->buildLocations(),

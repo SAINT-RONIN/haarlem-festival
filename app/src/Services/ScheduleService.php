@@ -14,7 +14,7 @@ use App\Models\EventTypeFilter;
 use App\Models\ScheduleFilterParams;
 use App\Models\ScheduleSectionContent;
 use App\Models\SessionQueryResult;
-use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\ScheduleContentRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
@@ -30,7 +30,7 @@ use App\Helpers\AgeLabelFormatter;
 class ScheduleService implements IScheduleService
 {
     public function __construct(
-        private readonly ICmsContentRepository $cmsService,
+        private readonly ScheduleContentRepository $scheduleContentRepo,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
@@ -62,8 +62,7 @@ class ScheduleService implements IScheduleService
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
 
         // Load CMS-managed labels (button text, currency symbol, etc.)
-        $cmsRaw = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
-        $cmsSection = ScheduleSectionContent::fromRawArray($cmsRaw);
+        $cmsSection = $this->scheduleContentRepo->findScheduleSectionContent($pageSlug, 'schedule_section');
 
         // Determine which weekdays are visible based on global + type overrides
         $visibleDays = $this->getVisibleDays($eventTypeId);

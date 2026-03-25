@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Constants\GlobalUiConstants;
 use App\Models\GlobalUiContent;
-use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\GlobalContentRepository;
 
 /**
  * Centralises the loading of GlobalUiContent so every service
@@ -15,7 +15,7 @@ use App\Repositories\Interfaces\ICmsContentRepository;
 class GlobalUiContentLoader
 {
     public function __construct(
-        private readonly ICmsContentRepository $cmsContentRepository,
+        private readonly GlobalContentRepository $globalContentRepo,
     ) {
     }
 
@@ -24,11 +24,9 @@ class GlobalUiContentLoader
      */
     public function load(): GlobalUiContent
     {
-        $raw = $this->cmsContentRepository->getSectionContent(
+        return $this->globalContentRepo->findGlobalUiContent(
             GlobalUiConstants::PAGE_SLUG,
             GlobalUiConstants::SECTION_KEY,
         );
-
-        return GlobalUiContent::fromRawArray($raw);
     }
 }

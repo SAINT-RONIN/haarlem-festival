@@ -10,9 +10,8 @@ use App\Exceptions\CheckoutException;
 use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
 use App\Mappers\CheckoutMapper;
 use App\Mappers\ProgramMapper;
-use App\Models\CheckoutMainContent;
+use App\Repositories\CheckoutContentRepository;
 use App\Services\Interfaces\ICheckoutService;
-use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
 
@@ -24,7 +23,7 @@ class CheckoutController extends BaseController
 {
     public function __construct(
         private readonly IProgramService $programService,
-        private readonly ICmsPageContentService $cmsService,
+        private readonly CheckoutContentRepository $checkoutContentRepo,
         private readonly ISessionService $sessionService,
         private readonly ICheckoutService $checkoutService,
         private readonly IStripeWebhookRequestFactory $stripeWebhookRequestFactory,
@@ -48,9 +47,7 @@ class CheckoutController extends BaseController
                 return;
             }
 
-            $cmsContent = CheckoutMainContent::fromRawArray(
-                $this->cmsService->getSectionContent('checkout', 'main'),
-            );
+            $cmsContent = $this->checkoutContentRepo->findCheckoutMainContent('checkout', 'main');
             $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $context->isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);

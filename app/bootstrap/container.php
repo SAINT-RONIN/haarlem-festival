@@ -134,7 +134,7 @@ return static function (string $controllerClass): object {
 
     $cmsContent = fn() => $make('cmsContent', fn() => new CmsContentRepository($cmsRepo(), $mediaAssetRepo()));
     $cmsPageContent = fn() => $make('cmsPageContent', fn() => new CmsPageContentService($cmsContent()));
-    $globalUiLoader = fn() => $make('globalUiLoader', fn() => new GlobalUiContentLoader($cmsContent()));
+    $globalUiLoader = fn() => $make('globalUiLoader', fn() => new GlobalUiContentLoader($globalContentRepo()));
 
     // ── Domain content repositories (wrap CmsContentRepository with typed returns) ──
 
@@ -150,7 +150,7 @@ return static function (string $controllerClass): object {
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
-        $cmsContent(),
+        $scheduleContentRepo(),
         $eventSessionRepo(),
         $eventSessionLabel(),
         $eventSessionPrice(),
@@ -180,6 +180,7 @@ return static function (string $controllerClass): object {
                 $restaurantRepo(),
                 $eventSessionRepo(),
                 $cmsContent(),
+                $globalContentRepo(),
                 $globalUiLoader(),
             ),
             $sessionService,
@@ -265,7 +266,7 @@ return static function (string $controllerClass): object {
         ),
         CheckoutController::class => new CheckoutController(
             $programService(),
-            $cmsPageContent(),
+            $checkoutContentRepo(),
             $sessionService,
             new CheckoutService(
                 $programRepo(),
@@ -311,7 +312,7 @@ return static function (string $controllerClass): object {
         ),
         ProgramController::class => new ProgramController(
             $programService(),
-            $cmsPageContent(),
+            $checkoutContentRepo(),
             $sessionService,
         ),
         CmsOrdersController::class => new CmsOrdersController(
