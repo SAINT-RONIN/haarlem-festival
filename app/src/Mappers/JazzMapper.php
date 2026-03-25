@@ -229,44 +229,29 @@ final class JazzMapper
     /**
      * @return HallData[]
      */
+    /** @return HallData[] */
     private static function buildPatronaatHalls(JazzVenuesSectionContent $section): array
     {
         return [
-            self::buildPatronaatHall1($section),
-            self::buildPatronaatHall2($section),
-            self::buildPatronaatHall3($section),
+            self::buildPatronaatHall($section, 1),
+            self::buildPatronaatHall($section, 2),
+            self::buildPatronaatHall($section, 3),
         ];
     }
 
-    private static function buildPatronaatHall1(JazzVenuesSectionContent $section): HallData
+    /** Builds a single Patronaat hall by index (1, 2, or 3). */
+    private static function buildPatronaatHall(JazzVenuesSectionContent $section, int $index): HallData
     {
-        return new HallData(
-            name: $section->venuePatronaatHall1Name ?? '',
-            description: $section->venuePatronaatHall1Desc ?? '',
-            price: $section->venuePatronaatHall1Price ?? '',
-            capacity: $section->venuePatronaatHall1Capacity ?? '',
-            isFree: false,
-        );
-    }
+        $name = 'venuePatronaatHall' . $index . 'Name';
+        $desc = 'venuePatronaatHall' . $index . 'Desc';
+        $price = 'venuePatronaatHall' . $index . 'Price';
+        $capacity = 'venuePatronaatHall' . $index . 'Capacity';
 
-    private static function buildPatronaatHall2(JazzVenuesSectionContent $section): HallData
-    {
         return new HallData(
-            name: $section->venuePatronaatHall2Name ?? '',
-            description: $section->venuePatronaatHall2Desc ?? '',
-            price: $section->venuePatronaatHall2Price ?? '',
-            capacity: $section->venuePatronaatHall2Capacity ?? '',
-            isFree: false,
-        );
-    }
-
-    private static function buildPatronaatHall3(JazzVenuesSectionContent $section): HallData
-    {
-        return new HallData(
-            name: $section->venuePatronaatHall3Name ?? '',
-            description: $section->venuePatronaatHall3Desc ?? '',
-            price: $section->venuePatronaatHall3Price ?? '',
-            capacity: $section->venuePatronaatHall3Capacity ?? '',
+            name: $section->$name ?? '',
+            description: $section->$desc ?? '',
+            price: $section->$price ?? '',
+            capacity: $section->$capacity ?? '',
             isFree: false,
         );
     }
@@ -457,57 +442,42 @@ final class JazzMapper
         );
     }
 
-    /**
-     * @return ArtistCardData[]
-     */
+    /** @return ArtistCardData[] */
     private static function buildArtistCards(JazzArtistsSectionContent $section): array
     {
-        return [
-            self::buildGumboKingsCard($section),
-            self::buildEvolveCard($section),
-            self::buildNtjamCard($section),
+        $artists = [
+            ['prefix' => 'GumboKings', 'slug' => 'gumbo-kings', 'defaultImage' => JazzPageConstants::DEFAULT_GUMBO_KINGS_IMAGE],
+            ['prefix' => 'Evolve',     'slug' => 'evolve',      'defaultImage' => JazzPageConstants::DEFAULT_EVOLVE_IMAGE],
+            ['prefix' => 'Ntjam',      'slug' => 'ntjam-rosie', 'defaultImage' => JazzPageConstants::DEFAULT_NTJAM_IMAGE],
         ];
-    }
 
-    private static function buildGumboKingsCard(JazzArtistsSectionContent $section): ArtistCardData
-    {
-        return new ArtistCardData(
-            name: $section->artistsGumboKingsName ?? '',
-            genre: $section->artistsGumboKingsGenre ?? '',
-            description: $section->artistsGumboKingsDescription ?? '',
-            imageUrl: $section->artistsGumboKingsImage ?? JazzPageConstants::DEFAULT_GUMBO_KINGS_IMAGE,
-            performanceCount: (int) ($section->artistsGumboKingsPerformanceCount ?? 0),
-            firstPerformance: $section->artistsGumboKingsFirstPerformance ?? '',
-            morePerformancesText: $section->artistsGumboKingsMorePerformancesText ?? '',
-            profileUrl: self::resolveProfileUrl($section->artistsGumboKingsProfileUrl, 'gumbo-kings'),
+        return array_map(
+            fn(array $a) => self::buildArtistCard($section, $a['prefix'], $a['slug'], $a['defaultImage']),
+            $artists,
         );
     }
 
-    private static function buildEvolveCard(JazzArtistsSectionContent $section): ArtistCardData
+    /** Builds a single artist card from CMS content using the property prefix pattern. */
+    private static function buildArtistCard(JazzArtistsSectionContent $section, string $prefix, string $slug, string $defaultImage): ArtistCardData
     {
-        return new ArtistCardData(
-            name: $section->artistsEvolveName ?? '',
-            genre: $section->artistsEvolveGenre ?? '',
-            description: $section->artistsEvolveDescription ?? '',
-            imageUrl: $section->artistsEvolveImage ?? JazzPageConstants::DEFAULT_EVOLVE_IMAGE,
-            performanceCount: (int) ($section->artistsEvolvePerformanceCount ?? 0),
-            firstPerformance: $section->artistsEvolveFirstPerformance ?? '',
-            morePerformancesText: $section->artistsEvolveMorePerformancesText ?? '',
-            profileUrl: self::resolveProfileUrl($section->artistsEvolveProfileUrl, 'evolve'),
-        );
-    }
+        $name = 'artists' . $prefix . 'Name';
+        $genre = 'artists' . $prefix . 'Genre';
+        $desc = 'artists' . $prefix . 'Description';
+        $image = 'artists' . $prefix . 'Image';
+        $count = 'artists' . $prefix . 'PerformanceCount';
+        $first = 'artists' . $prefix . 'FirstPerformance';
+        $more = 'artists' . $prefix . 'MorePerformancesText';
+        $url = 'artists' . $prefix . 'ProfileUrl';
 
-    private static function buildNtjamCard(JazzArtistsSectionContent $section): ArtistCardData
-    {
         return new ArtistCardData(
-            name: $section->artistsNtjamName ?? '',
-            genre: $section->artistsNtjamGenre ?? '',
-            description: $section->artistsNtjamDescription ?? '',
-            imageUrl: $section->artistsNtjamImage ?? JazzPageConstants::DEFAULT_NTJAM_IMAGE,
-            performanceCount: (int) ($section->artistsNtjamPerformanceCount ?? 0),
-            firstPerformance: $section->artistsNtjamFirstPerformance ?? '',
-            morePerformancesText: $section->artistsNtjamMorePerformancesText ?? '',
-            profileUrl: self::resolveProfileUrl($section->artistsNtjamProfileUrl, 'ntjam-rosie'),
+            name: $section->$name ?? '',
+            genre: $section->$genre ?? '',
+            description: $section->$desc ?? '',
+            imageUrl: $section->$image ?? $defaultImage,
+            performanceCount: (int)($section->$count ?? 0),
+            firstPerformance: $section->$first ?? '',
+            morePerformancesText: $section->$more ?? '',
+            profileUrl: self::resolveProfileUrl($section->$url, $slug),
         );
     }
 
