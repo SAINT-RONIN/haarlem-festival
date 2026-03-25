@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\ProgramData;
+use App\DTOs\Program\ProgramData;
 
 /**
  * Contract for the full checkout lifecycle: creating Stripe-backed checkout sessions,

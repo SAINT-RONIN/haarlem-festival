@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\EventSessionFilter;
+use App\DTOs\Filters\EventSessionFilter;
 use App\Models\EventType;
-use App\Models\HomeEventTypeData;
-use App\Models\HomeLocationData;
-use App\Models\HomePageData;
-use App\Models\HomeScheduleDayData;
-use App\Models\HomeScheduleSessionData;
+use App\DTOs\Pages\HomeEventTypeData;
+use App\DTOs\Pages\HomeLocationData;
+use App\DTOs\Pages\HomePageData;
+use App\DTOs\Pages\HomeScheduleDayData;
+use App\DTOs\Pages\HomeScheduleSessionData;
 use App\Models\Restaurant;
 use App\Models\Venue;
-use App\Models\VenueFilter;
+use App\DTOs\Filters\VenueFilter;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
@@ -236,8 +236,8 @@ class HomeService implements IHomeService
     /**
      * Groups sessions by date string (Y-m-d).
      *
-     * @param \App\Models\SessionWithEvent[] $sessions
-     * @return array<string, \App\Models\SessionWithEvent[]>
+     * @param \App\DTOs\Schedule\SessionWithEvent[] $sessions
+     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
      */
     private function groupSessionsByDate(array $sessions): array
     {
@@ -252,7 +252,7 @@ class HomeService implements IHomeService
     /**
      * Builds schedule days from grouped session data.
      *
-     * @param array<string, \App\Models\SessionWithEvent[]> $grouped
+     * @param array<string, \App\DTOs\Schedule\SessionWithEvent[]> $grouped
      * @return HomeScheduleDayData[]
      */
     private function buildScheduleDaysFromGrouped(array $grouped): array
@@ -272,7 +272,7 @@ class HomeService implements IHomeService
     /**
      * Builds data for a single schedule day.
      *
-     * @param \App\Models\SessionWithEvent[] $sessions
+     * @param \App\DTOs\Schedule\SessionWithEvent[] $sessions
      */
     private function buildDayData(string $date, array $sessions): HomeScheduleDayData
     {
@@ -288,8 +288,8 @@ class HomeService implements IHomeService
     /**
      * Groups sessions by event type slug.
      *
-     * @param \App\Models\SessionWithEvent[] $sessions
-     * @return array<string, array{typeName: string, typeSlug: string, sessions: \App\Models\SessionWithEvent[]}>
+     * @param \App\DTOs\Schedule\SessionWithEvent[] $sessions
+     * @return array<string, array{typeName: string, typeSlug: string, sessions: \App\DTOs\Schedule\SessionWithEvent[]}>
      */
     private function groupSessionsByType(array $sessions): array
     {
@@ -312,7 +312,7 @@ class HomeService implements IHomeService
     /**
      * Collects session data grouped by type for mapper formatting.
      *
-     * @param array<string, array{typeName: string, typeSlug: string, sessions: \App\Models\SessionWithEvent[]}> $byType
+     * @param array<string, array{typeName: string, typeSlug: string, sessions: \App\DTOs\Schedule\SessionWithEvent[]}> $byType
      * @return HomeScheduleSessionData[]
      */
     private function collectSessionsForDisplay(array $byType): array

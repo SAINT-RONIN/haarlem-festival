@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\CmsDashboardData;
+use App\DTOs\Cms\CmsDashboardData;
 
 /**
  * Defines the contract for assembling CMS dashboard and page overview data.

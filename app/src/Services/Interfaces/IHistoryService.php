@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\HistoryPageData;
+use App\DTOs\Pages\HistoryPageData;
 
 /**
  * Interface for History page service.

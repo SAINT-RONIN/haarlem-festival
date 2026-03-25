@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Exceptions\ValidationException;
-use App\Models\EventEditBundle;
-use App\Models\EventsListPageData;
-use App\Models\GroupedScheduleDayConfigs;
-use App\Models\ScheduleDaysPageData;
+use App\DTOs\Events\EventEditBundle;
+use App\DTOs\Events\EventsListPageData;
+use App\DTOs\Schedule\GroupedScheduleDayConfigs;
+use App\DTOs\Pages\ScheduleDaysPageData;
 
 /**
  * Contract for CMS event lifecycle: CRUD for events, sessions, labels, and prices,
@@ -59,7 +59,7 @@ interface ICmsEventsService
      * Gets weekly schedule overview for CMS.
      * Returns SessionWithEvent models grouped by day name.
      *
-     * @return array<string, \App\Models\SessionWithEvent[]>
+     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
      */
     public function getWeeklyScheduleOverview(?int $eventTypeId = null): array;
 

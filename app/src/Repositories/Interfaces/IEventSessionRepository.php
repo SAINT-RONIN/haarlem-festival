@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\EventSessionFilter;
-use App\Models\ScheduleDayData;
-use App\Models\SessionCapacityInfo;
-use App\Models\SessionQueryResult;
+use App\DTOs\Filters\EventSessionFilter;
+use App\DTOs\Schedule\ScheduleDayData;
+use App\DTOs\Events\SessionCapacityInfo;
+use App\DTOs\Schedule\SessionQueryResult;
 
 /**
  * Contract for managing event sessions (individual bookable time slots within an event).

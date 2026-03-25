@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\ScheduleDayConfigFilter;
+use App\DTOs\Filters\ScheduleDayConfigFilter;
 
 /**
  * Contract for managing per-day visibility settings on the public schedule.

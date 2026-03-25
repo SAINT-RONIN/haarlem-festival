@@ -6,7 +6,7 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\CmsArtistsMapper;
-use App\Models\ArtistUpsertData;
+use App\DTOs\Cms\ArtistUpsertData;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ISessionService;
 

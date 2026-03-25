@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Helpers\FormatHelper;
-use App\Models\ScheduleFilterParams;
+use App\DTOs\Filters\ScheduleFilterParams;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleFilterGroupData;
@@ -82,11 +82,11 @@ final class ScheduleMapper
     }
 
     /**
-     * @param array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: \App\Models\ScheduleDayData[]} $scheduleData
+     * @param array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: \App\DTOs\Schedule\ScheduleDayData[]} $scheduleData
      * @param array<string, mixed> $cmsContent
      * @param ScheduleDayViewModel[] $days
      * @param array{confirm: string, adding: string, success: string} $buttonTexts
-     * @param \App\Models\ScheduleDayData[] $availableDays
+     * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
      */
     private static function buildSectionViewModel(
         array $scheduleData,
@@ -158,7 +158,7 @@ final class ScheduleMapper
      * @param string[] $filterGroupTypes
      * @param string[] $priceTypeOptions
      * @param ScheduleDayViewModel[] $days
-     * @param \App\Models\ScheduleDayData[] $availableDays
+     * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
      * @return ScheduleFilterGroupData[]
      */
     private static function buildFilterGroups(
@@ -191,7 +191,7 @@ final class ScheduleMapper
     }
 
     /**
-     * @param \App\Models\ScheduleDayData[] $availableDays
+     * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
      */
     private static function buildDayFilterGroup(
         array $cmsContent,

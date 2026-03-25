@@ -6,7 +6,7 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\CmsRestaurantsMapper;
-use App\Models\RestaurantUpsertData;
+use App\DTOs\Cms\RestaurantUpsertData;
 use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsRestaurantFormViewModel;

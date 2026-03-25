@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Helpers;
 
 use App\Enums\DayOfWeek;
-use App\Models\ScheduleDayConfigFilter;
+use App\DTOs\Filters\ScheduleDayConfigFilter;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 
 /**

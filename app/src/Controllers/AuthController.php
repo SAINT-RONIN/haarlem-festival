@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Models\RegistrationFormData;
+use App\DTOs\Auth\RegistrationFormData;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ICaptchaService;
 use App\Services\Interfaces\ISessionService;

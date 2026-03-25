@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\EventType;
-use App\Models\EventTypeFilter;
+use App\DTOs\Filters\EventTypeFilter;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use PDO;
 

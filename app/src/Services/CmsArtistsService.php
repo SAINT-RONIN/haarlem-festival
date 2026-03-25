@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Artist;
-use App\Models\ArtistUpsertData;
+use App\DTOs\Cms\ArtistUpsertData;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Services\Interfaces\ICmsArtistsService;
 

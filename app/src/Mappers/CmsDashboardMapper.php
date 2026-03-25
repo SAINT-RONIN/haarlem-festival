@@ -6,12 +6,12 @@ namespace App\Mappers;
 
 use App\Enums\PageStatus;
 use App\Helpers\FormatHelper;
-use App\Models\ActivityData;
-use App\Models\CmsItemEditData;
-use App\Models\CmsMediaAssetData;
+use App\DTOs\Cms\ActivityData;
+use App\DTOs\Cms\CmsItemEditData;
+use App\DTOs\Cms\CmsMediaAssetData;
 use App\Models\CmsPage;
-use App\Models\CmsPageEditData;
-use App\Models\CmsSectionEditData;
+use App\DTOs\Cms\CmsPageEditData;
+use App\DTOs\Cms\CmsSectionEditData;
 use App\Utils\CmsContentLimits;
 use App\Utils\TimeFormatter;
 use App\ViewModels\Cms\ActivityViewModel;

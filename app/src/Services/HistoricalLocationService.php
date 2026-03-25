@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Constants\HistoricalLocationPageConstants;
 use App\Exceptions\HistoricalLocationNotFoundException;
-use App\Models\HistoricalLocationPageData;
+use App\DTOs\Pages\HistoricalLocationPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\HistoricalLocationContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;

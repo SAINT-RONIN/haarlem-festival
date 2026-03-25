@@ -6,7 +6,7 @@ namespace App\Controllers;
 
 use App\Enums\PriceType;
 use App\Enums\TimeRange;
-use App\Models\ScheduleFilterParams;
+use App\DTOs\Filters\ScheduleFilterParams;
 use App\ViewModels\BaseViewModel;
 
 /**

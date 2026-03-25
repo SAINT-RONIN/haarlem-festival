@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\OrderWithDetails;
+use App\DTOs\Checkout\OrderWithDetails;
 
 /**
  * Defines read-only queries for retrieving orders with joined details for CMS display.

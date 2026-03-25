@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\OrderWithDetails;
+use App\DTOs\Checkout\OrderWithDetails;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
 use App\Services\Interfaces\ICmsOrdersService;
 

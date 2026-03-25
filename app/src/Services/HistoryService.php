@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\HistoryPageConstants;
-use App\Models\HistoryPageData;
+use App\DTOs\Pages\HistoryPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\HistoryContentRepository;
 use App\Services\Interfaces\IHistoryService;

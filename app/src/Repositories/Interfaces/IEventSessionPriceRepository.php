@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\EventSessionPrice;
-use App\Models\EventSessionRelatedFilter;
+use App\DTOs\Filters\EventSessionRelatedFilter;
 
 /**
  * Contract for managing per-session pricing by tier (e.g. standard, VIP, pay-what-you-like).

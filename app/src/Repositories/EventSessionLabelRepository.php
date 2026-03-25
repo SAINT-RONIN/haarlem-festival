@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\EventSessionLabel;
-use App\Models\EventSessionRelatedFilter;
+use App\DTOs\Filters\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use PDO;
 

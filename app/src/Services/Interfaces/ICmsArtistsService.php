@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Models\Artist;
-use App\Models\ArtistUpsertData;
+use App\DTOs\Cms\ArtistUpsertData;
 
 /**
  * Defines the contract for CMS artist management (CRUD and validation).

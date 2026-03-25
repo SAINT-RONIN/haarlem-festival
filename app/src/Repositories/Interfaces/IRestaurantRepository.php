@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Restaurant;
-use App\Models\RestaurantUpsertData;
+use App\DTOs\Cms\RestaurantUpsertData;
 
 /**
  * Interface for Restaurant repository.

@@ -6,7 +6,7 @@ namespace App\Mappers;
 
 use App\Helpers\FormatHelper;
 use App\Models\Artist;
-use App\Models\ArtistUpsertData;
+use App\DTOs\Cms\ArtistUpsertData;
 use App\ViewModels\Cms\CmsArtistFormViewModel;
 use App\ViewModels\Cms\CmsArtistListItemViewModel;
 use App\ViewModels\Cms\CmsArtistsListViewModel;

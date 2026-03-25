@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\RestaurantDetailData;
-use App\Models\RestaurantPageData;
+use App\DTOs\Pages\RestaurantDetailData;
+use App\DTOs\Pages\RestaurantPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\ICuisineTypeRepository;
 use App\Repositories\RestaurantContentRepository;

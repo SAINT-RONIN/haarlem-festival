@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Models\Restaurant;
-use App\Models\RestaurantUpsertData;
+use App\DTOs\Cms\RestaurantUpsertData;
 use App\ViewModels\Cms\CmsRestaurantFormViewModel;
 use App\ViewModels\Cms\CmsRestaurantListItemViewModel;
 use App\ViewModels\Cms\CmsRestaurantsListViewModel;

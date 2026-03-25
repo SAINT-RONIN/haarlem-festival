@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Program;
-use App\Models\ProgramFilter;
+use App\DTOs\Filters\ProgramFilter;
 use App\Models\ProgramItem;
-use App\Models\ProgramItemFilter;
+use App\DTOs\Filters\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
 use PDO;
 

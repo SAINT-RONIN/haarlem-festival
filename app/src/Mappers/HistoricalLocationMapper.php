@@ -7,7 +7,7 @@ namespace App\Mappers;
 use App\Models\HistoricalLocationFactsContent;
 use App\Models\HistoricalLocationHeroContent;
 use App\Models\HistoricalLocationIntroContent;
-use App\Models\HistoricalLocationPageData;
+use App\DTOs\Pages\HistoricalLocationPageData;
 use App\Models\HistoricalLocationSignificanceContent;
 use App\Constants\HistoryPageConstants;
 use App\ViewModels\GlobalUiData;

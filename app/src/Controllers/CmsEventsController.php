@@ -8,7 +8,7 @@ use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsEventsMapper;
-use App\Models\EventEditBundle;
+use App\DTOs\Events\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Services\Interfaces\ICmsRestaurantsService;

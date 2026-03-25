@@ -6,10 +6,10 @@ namespace App\Repositories;
 
 use App\Enums\EventTypeId;
 use App\Models\Event;
-use App\Models\EventFilter;
-use App\Models\EventWithDetails;
-use App\Models\JazzArtistDetailEvent;
-use App\Models\StorytellingDetailEvent;
+use App\DTOs\Filters\EventFilter;
+use App\DTOs\Events\EventWithDetails;
+use App\DTOs\Events\JazzArtistDetailEvent;
+use App\DTOs\Events\StorytellingDetailEvent;
 use App\Helpers\FormatHelper;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;

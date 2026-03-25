@@ -6,7 +6,7 @@ namespace App\Mappers;
 
 use App\Models\GradientSectionContent;
 use App\Models\IntroSectionContent;
-use App\Models\HistoryPageData;
+use App\DTOs\Pages\HistoryPageData;
 use App\Models\HistoryRouteSectionContent;
 use App\Models\HistoryTicketOptionsSectionContent;
 use App\Models\HistoryTourInfoSectionContent;

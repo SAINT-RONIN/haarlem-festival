@@ -16,15 +16,15 @@ use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Repositories\Interfaces\IVenueRepository;
-use App\Models\EventEditBundle;
-use App\Models\EventFilter;
-use App\Models\EventSessionFilter;
-use App\Models\EventsListPageData;
-use App\Models\GroupedScheduleDayConfigs;
-use App\Models\EventTypeFilter;
-use App\Models\ScheduleDaysPageData;
-use App\Models\ScheduleDayConfigFilter;
-use App\Models\VenueFilter;
+use App\DTOs\Events\EventEditBundle;
+use App\DTOs\Filters\EventFilter;
+use App\DTOs\Filters\EventSessionFilter;
+use App\DTOs\Events\EventsListPageData;
+use App\DTOs\Schedule\GroupedScheduleDayConfigs;
+use App\DTOs\Filters\EventTypeFilter;
+use App\DTOs\Pages\ScheduleDaysPageData;
+use App\DTOs\Filters\ScheduleDayConfigFilter;
+use App\DTOs\Filters\VenueFilter;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Constants\CmsEventConstraints;
 
@@ -152,7 +152,7 @@ class CmsEventsService implements ICmsEventsService
      * and bucketing them by day name. Empty days are included so the UI can render
      * a full 7-day grid without null checks.
      *
-     * @return array<string, \App\Models\SessionWithEvent[]>
+     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
      */
     public function getWeeklyScheduleOverview(?int $eventTypeId = null): array
     {
@@ -171,7 +171,7 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Initializes empty schedule array for all week days.
      *
-     * @return array<string, \App\Models\SessionWithEvent[]>
+     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
      */
     private function initializeWeekSchedule(): array
     {
@@ -190,7 +190,7 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Groups SessionWithEvent models by their day of week name.
      *
-     * @return array<string, \App\Models\SessionWithEvent[]>
+     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
      */
     private function groupSessionsByDay(array $sessions, array $schedule): array
     {
@@ -252,13 +252,13 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * @param \App\Models\SessionWithEvent[] $sessions
+     * @param \App\DTOs\Schedule\SessionWithEvent[] $sessions
      * @return array{0: array, 1: array}
      */
     private function loadSessionPricesAndLabels(array $sessions): array
     {
         $sessionIds = array_map(
-            static fn (\App\Models\SessionWithEvent $s): int => $s->eventSessionId,
+            static fn (\App\DTOs\Schedule\SessionWithEvent $s): int => $s->eventSessionId,
             $sessions,
         );
 

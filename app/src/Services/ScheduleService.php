@@ -7,13 +7,13 @@ namespace App\Services;
 use App\Enums\EventTypeId;
 use App\Helpers\ScheduleDayVisibilityResolver;
 use App\Enums\PriceTierId;
-use App\Models\EventSessionFilter;
+use App\DTOs\Filters\EventSessionFilter;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
-use App\Models\EventTypeFilter;
-use App\Models\ScheduleFilterParams;
+use App\DTOs\Filters\EventTypeFilter;
+use App\DTOs\Filters\ScheduleFilterParams;
 use App\Models\ScheduleSectionContent;
-use App\Models\SessionQueryResult;
+use App\DTOs\Schedule\SessionQueryResult;
 use App\Repositories\ScheduleContentRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -259,7 +259,7 @@ class ScheduleService implements IScheduleService
      * @return array<string, mixed>
      */
     private function buildEventCard(
-        \App\Models\SessionWithEvent $session,
+        \App\DTOs\Schedule\SessionWithEvent $session,
         string $eventTypeSlug,
         int    $eventTypeId,
         array  $labelsMap,
@@ -286,7 +286,7 @@ class ScheduleService implements IScheduleService
      *
      * @return array{0: ?int, 1: ?int}
      */
-    private function resolveAgeRange(\App\Models\SessionWithEvent $session): array
+    private function resolveAgeRange(\App\DTOs\Schedule\SessionWithEvent $session): array
     {
         $minAge = $session->minAge !== null && $session->minAge > 0 ? $session->minAge : null;
         $maxAge = $session->maxAge !== null && $session->maxAge > 0 ? $session->maxAge : null;
@@ -322,7 +322,7 @@ class ScheduleService implements IScheduleService
      *
      * @return array{label: string, url: string}
      */
-    private function resolveCta(\App\Models\SessionWithEvent $session, string $eventTypeSlug, string $defaultCtaText): array
+    private function resolveCta(\App\DTOs\Schedule\SessionWithEvent $session, string $eventTypeSlug, string $defaultCtaText): array
     {
         $label = !empty($session->ctaLabel) ? $session->ctaLabel : $defaultCtaText;
         $url = !empty($session->ctaUrl) ? $session->ctaUrl : '/' . $eventTypeSlug . '/' . $session->eventSlug;
@@ -335,7 +335,7 @@ class ScheduleService implements IScheduleService
      * @return array<string, mixed>
      */
     private function buildCardArray(
-        \App\Models\SessionWithEvent $session,
+        \App\DTOs\Schedule\SessionWithEvent $session,
         string $eventTypeSlug,
         int $eventTypeId,
         array $labels,

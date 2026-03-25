@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Constants\JazzPageConstants;
 use App\Enums\EventTypeId;
-use App\Models\JazzPageData;
+use App\DTOs\Pages\JazzPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
 use App\Repositories\JazzContentRepository;

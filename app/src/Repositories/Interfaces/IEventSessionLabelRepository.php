@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\EventSessionLabel;
-use App\Models\EventSessionRelatedFilter;
+use App\DTOs\Filters\EventSessionRelatedFilter;
 
 /**
  * Contract for managing free-text labels (tags/badges) attached to event sessions.

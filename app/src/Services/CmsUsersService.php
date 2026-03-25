@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Helpers\UserValidationHelper;
 use App\Models\UserAccount;
-use App\Models\UserWithRole;
+use App\DTOs\User\UserWithRole;
 use App\Repositories\Interfaces\ICmsUsersRepository;
 use App\Services\Interfaces\ICmsUsersService;
 use App\Utils\PasswordHasher;

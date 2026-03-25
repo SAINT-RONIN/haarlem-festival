@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Enums\PriceTierId;
-use App\Models\EventSessionFilter;
-use App\Models\ScheduleDayData;
-use App\Models\SessionCapacityInfo;
-use App\Models\SessionQueryResult;
-use App\Models\SessionWithEvent;
+use App\DTOs\Filters\EventSessionFilter;
+use App\DTOs\Schedule\ScheduleDayData;
+use App\DTOs\Events\SessionCapacityInfo;
+use App\DTOs\Schedule\SessionQueryResult;
+use App\DTOs\Schedule\SessionWithEvent;
 use App\Helpers\FormatHelper;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;

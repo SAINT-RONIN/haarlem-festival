@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\StorytellingDetailPageData;
+use App\DTOs\Pages\StorytellingDetailPageData;
 
 /**
  * Defines the contract for assembling storytelling event detail page data.

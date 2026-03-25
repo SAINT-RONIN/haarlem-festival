@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\JazzArtistDetailPageData;
+use App\DTOs\Pages\JazzArtistDetailPageData;
 
 /**
  * Defines the contract for assembling jazz artist detail page data.

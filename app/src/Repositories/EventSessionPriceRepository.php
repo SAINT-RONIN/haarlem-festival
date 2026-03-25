@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\EventSessionPrice;
-use App\Models\EventSessionRelatedFilter;
+use App\DTOs\Filters\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use PDO;
 

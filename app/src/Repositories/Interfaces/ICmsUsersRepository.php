@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\UserAccount;
-use App\Models\UserWithRole;
+use App\DTOs\User\UserWithRole;
 
 /**
  * Defines persistence operations for CMS user account management.

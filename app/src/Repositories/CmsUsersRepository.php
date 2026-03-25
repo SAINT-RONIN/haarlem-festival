@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\UserAccount;
-use App\Models\UserWithRole;
+use App\DTOs\User\UserWithRole;
 use App\Repositories\Interfaces\ICmsUsersRepository;
 use PDO;
 

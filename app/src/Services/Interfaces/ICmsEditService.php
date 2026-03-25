@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Models\CmsPage;
-use App\Models\CmsPageEditData;
-use App\Models\CmsSectionEditData;
-use App\Models\CmsUpdateResult;
+use App\DTOs\Cms\CmsPageEditData;
+use App\DTOs\Cms\CmsSectionEditData;
+use App\DTOs\Cms\CmsUpdateResult;
 
 /**
  * Contract for CMS page editing: loading page/section/item trees for the editor,

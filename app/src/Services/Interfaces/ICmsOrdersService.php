@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\OrderWithDetails;
+use App\DTOs\Checkout\OrderWithDetails;
 
 /**
  * Defines the contract for CMS order listing and filtering.

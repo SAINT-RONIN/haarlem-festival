@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\StorytellingPageConstants;
-use App\Models\StorytellingPageData;
+use App\DTOs\Pages\StorytellingPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\StorytellingContentRepository;
 use App\Services\Interfaces\IStorytellingService;

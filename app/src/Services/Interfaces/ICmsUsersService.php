@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Models\UserAccount;
-use App\Models\UserWithRole;
+use App\DTOs\User\UserWithRole;
 
 /**
  * Defines the contract for CMS user account management (CRUD and validation).

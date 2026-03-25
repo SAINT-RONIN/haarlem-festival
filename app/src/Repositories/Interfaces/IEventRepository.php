@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Event;
-use App\Models\EventFilter;
-use App\Models\EventWithDetails;
-use App\Models\JazzArtistDetailEvent;
-use App\Models\StorytellingDetailEvent;
+use App\DTOs\Filters\EventFilter;
+use App\DTOs\Events\EventWithDetails;
+use App\DTOs\Events\JazzArtistDetailEvent;
+use App\DTOs\Events\StorytellingDetailEvent;
 
 /**
  * Contract for CRUD operations on the Event table. Supports filtered listing with

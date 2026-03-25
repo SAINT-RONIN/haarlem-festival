@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\RestaurantDetailData;
-use App\Models\RestaurantPageData;
+use App\DTOs\Pages\RestaurantDetailData;
+use App\DTOs\Pages\RestaurantPageData;
 
 /**
  * Interface for Restaurant page service.

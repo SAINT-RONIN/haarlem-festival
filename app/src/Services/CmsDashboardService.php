@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\CmsDashboardData;
-use App\Models\CmsPageFilter;
+use App\DTOs\Cms\CmsDashboardData;
+use App\DTOs\Filters\CmsPageFilter;
 use App\Repositories\Interfaces\ICmsRepository;
 use App\Services\Interfaces\ICmsDashboardService;
 

@@ -7,7 +7,7 @@ namespace App\Mappers;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Helpers\FormatHelper;
-use App\Models\OrderWithDetails;
+use App\DTOs\Checkout\OrderWithDetails;
 use App\ViewModels\Cms\CmsOrderListItemViewModel;
 use App\ViewModels\Cms\CmsOrdersListViewModel;
 

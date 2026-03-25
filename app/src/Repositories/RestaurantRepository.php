@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Restaurant;
-use App\Models\RestaurantUpsertData;
+use App\DTOs\Cms\RestaurantUpsertData;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use PDO;
 

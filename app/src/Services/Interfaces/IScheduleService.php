@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\ScheduleFilterParams;
+use App\DTOs\Filters\ScheduleFilterParams;
 
 /**
  * Defines the contract for building schedule page data for any event type.
