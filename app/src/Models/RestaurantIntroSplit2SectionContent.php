@@ -15,17 +15,4 @@ final readonly class RestaurantIntroSplit2SectionContent
         public ?string $intro2Image,
         public ?string $intro2ImageAlt,
     ) {}
-
-    /**
-     * @param array<string, ?string> $raw CMS item values keyed by item key
-     */
-    public static function fromRawArray(array $raw): self
-    {
-        return new self(
-            intro2Heading: $raw['intro2_heading'] ?? null,
-            intro2Body: $raw['intro2_body'] ?? null,
-            intro2Image: $raw['intro2_image'] ?? null,
-            intro2ImageAlt: $raw['intro2_image_alt'] ?? null,
-        );
-    }
 }

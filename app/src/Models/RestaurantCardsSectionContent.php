@@ -13,15 +13,4 @@ final readonly class RestaurantCardsSectionContent
         public ?string $cardsTitle,
         public ?string $cardsSubtitle,
     ) {}
-
-    /**
-     * @param array<string, ?string> $raw CMS item values keyed by item key
-     */
-    public static function fromRawArray(array $raw): self
-    {
-        return new self(
-            cardsTitle: $raw['cards_title'] ?? null,
-            cardsSubtitle: $raw['cards_subtitle'] ?? null,
-        );
-    }
 }

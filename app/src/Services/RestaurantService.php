@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\HeroSectionContent;
-use App\Models\RestaurantCardsSectionContent;
 use App\Models\RestaurantDetailData;
-use App\Models\RestaurantDetailSectionContent;
-use App\Models\GradientSectionContent;
-use App\Models\RestaurantInstructionsSectionContent;
-use App\Models\RestaurantIntroSectionContent;
-use App\Models\RestaurantIntroSplit2SectionContent;
 use App\Models\RestaurantPageData;
-use App\Repositories\CmsContentRepository;
+use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\ICuisineTypeRepository;
+use App\Repositories\RestaurantContentRepository;
 use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
@@ -41,11 +35,12 @@ class RestaurantService implements IRestaurantService
     private const SECTION_DETAIL       = 'detail_section';
 
     public function __construct(
-        private CmsContentRepository $cmsService,
-        private RestaurantRepository $restaurantRepository,
-        private RestaurantImageRepository $restaurantImageRepository,
-        private ICuisineTypeRepository $cuisineTypeRepository,
-        private GlobalUiContentLoader $globalUiLoader,
+        private readonly GlobalContentRepository $globalContentRepo,
+        private readonly RestaurantContentRepository $restaurantContentRepo,
+        private readonly RestaurantRepository $restaurantRepository,
+        private readonly RestaurantImageRepository $restaurantImageRepository,
+        private readonly ICuisineTypeRepository $cuisineTypeRepository,
+        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
 
@@ -55,25 +50,13 @@ class RestaurantService implements IRestaurantService
         $cuisinesByRestaurant = $this->buildCuisineMap($restaurants);
 
         return new RestaurantPageData(
-            heroContent: HeroSectionContent::fromRawArray(
-                $this->cmsService->getHeroSectionContent(self::PAGE_SLUG),
-            ),
+            heroContent: $this->globalContentRepo->findHeroContent(self::PAGE_SLUG),
             globalUiContent: $this->globalUiLoader->load(),
-            gradientSection: GradientSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_GRADIENT),
-            ),
-            introSplitSection: RestaurantIntroSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT),
-            ),
-            introSplit2Section: RestaurantIntroSplit2SectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT2),
-            ),
-            instructionsSection: RestaurantInstructionsSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INSTRUCTIONS),
-            ),
-            cardsSection: RestaurantCardsSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_CARDS),
-            ),
+            gradientSection: $this->globalContentRepo->findGradientContent(self::PAGE_SLUG, self::SECTION_GRADIENT),
+            introSplitSection: $this->restaurantContentRepo->findIntroContent(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT),
+            introSplit2Section: $this->restaurantContentRepo->findIntroSplit2Content(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT2),
+            instructionsSection: $this->restaurantContentRepo->findInstructionsContent(self::PAGE_SLUG, self::SECTION_INSTRUCTIONS),
+            cardsSection: $this->restaurantContentRepo->findCardsContent(self::PAGE_SLUG, self::SECTION_CARDS),
             restaurants: $restaurants,
             cuisinesByRestaurant: $cuisinesByRestaurant,
         );
@@ -94,9 +77,7 @@ class RestaurantService implements IRestaurantService
         return new RestaurantDetailData(
             restaurant: $restaurant,
             imagesByType: $this->groupImagesByType($images),
-            cms: RestaurantDetailSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_DETAIL),
-            ),
+            cms: $this->restaurantContentRepo->findDetailContent(self::PAGE_SLUG, self::SECTION_DETAIL),
             globalUiContent: $this->globalUiLoader->load(),
             timeSlots: $scheduleData['timeSlots'],
             priceCards: $scheduleData['priceCards'],

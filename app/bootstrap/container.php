@@ -186,7 +186,8 @@ return static function (string $controllerClass): object {
         ),
         RestaurantController::class => new RestaurantController(
             new RestaurantService(
-                $cmsContent(),
+                $globalContentRepo(),
+                $restaurantContentRepo(),
                 $restaurantRepo(),
                 new RestaurantImageRepository($pdo()),
                 new CuisineTypeRepository($pdo()),
