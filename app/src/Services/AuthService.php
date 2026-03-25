@@ -28,6 +28,7 @@ class AuthService implements IAuthService
     private const RESET_TOKEN_EXPIRY_HOURS = 1;
 
     public function __construct(
+        private readonly \PDO $pdo,
         private readonly IUserAccountRepository $userRepository,
         private readonly IPasswordResetTokenRepository $resetTokenRepository,
         private readonly IEmailService $emailService,
@@ -268,12 +269,15 @@ class AuthService implements IAuthService
             return ['success' => false, 'error' => 'Passwords do not match.'];
         }
 
-        // Write operations — catch unexpected failures
+        // Wrap both writes in a transaction — password update + token invalidation must both succeed
         try {
+            $this->pdo->beginTransaction();
             $passwordHash = PasswordHasher::hash($newPassword);
             $this->userRepository->updatePasswordHash($tokenResult['userId'], $passwordHash);
             $this->resetTokenRepository->markAsUsed($tokenResult['tokenId']);
+            $this->pdo->commit();
         } catch (\Throwable $error) {
+            $this->pdo->rollBack();
             throw new AuthenticationException('Failed to reset password.', 0, $error);
         }
 

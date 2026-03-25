@@ -41,6 +41,7 @@ use App\Constants\CmsEventConstraints;
 class CmsEventsService implements ICmsEventsService
 {
     public function __construct(
+        private readonly \PDO $pdo,
         private readonly IEventRepository $eventRepository,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
@@ -583,10 +584,13 @@ class CmsEventsService implements ICmsEventsService
         }
 
         try {
-            // Soft-delete the event, then cascade-deactivate its sessions
+            // Wrap in transaction — both writes must succeed or neither does
+            $this->pdo->beginTransaction();
             $this->eventRepository->softDelete($eventId);
             $this->sessionRepository->deactivateByEventId($eventId);
+            $this->pdo->commit();
         } catch (\Throwable $error) {
+            $this->pdo->rollBack();
             throw new CmsOperationException('Failed to delete event.', 0, $error);
         }
     }

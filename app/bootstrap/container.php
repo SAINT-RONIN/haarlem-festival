@@ -165,6 +165,7 @@ return static function (string $controllerClass): object {
     ));
 
     $authService = fn() => $make('authService', fn() => new AuthService(
+        $pdo(),
         $userAccountRepo(),
         $resetTokenRepo(),
         new EmailService(),
@@ -234,6 +235,7 @@ return static function (string $controllerClass): object {
         ),
         CmsEventsController::class => new CmsEventsController(
             new CmsEventsService(
+                $pdo(),
                 $eventRepo(),
                 $eventSessionRepo(),
                 $eventSessionLabel(),
