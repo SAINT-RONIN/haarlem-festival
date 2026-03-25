@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\JazzArtistDetailConstants;
+use App\Constants\SharedSectionKeys;
 use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Helpers\SlugHelper;
 use App\Models\JazzArtistDetailCmsData;
@@ -72,7 +73,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     {
         return $this->jazzContentRepo->findArtistDetailCmsData(
             JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
-            JazzArtistDetailConstants::eventSectionKey($eventId),
+            SharedSectionKeys::eventSectionKey($eventId),
         );
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\SharedSectionKeys;
 use App\Constants\StorytellingDetailConstants;
 use App\Exceptions\StorytellingEventNotFoundException;
 use App\Helpers\SlugHelper;
@@ -59,7 +60,7 @@ class StorytellingDetailService implements IStorytellingDetailService
     {
         return $this->storyContentRepo->findEventCmsData(
             StorytellingDetailConstants::DETAIL_PAGE_SLUG,
-            StorytellingDetailConstants::eventSectionKey($eventId),
+            SharedSectionKeys::eventSectionKey($eventId),
         );
     }
 

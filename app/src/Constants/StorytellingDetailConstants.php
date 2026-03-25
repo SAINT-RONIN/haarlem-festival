@@ -12,12 +12,6 @@ final class StorytellingDetailConstants
 {
     public const DETAIL_PAGE_SLUG = 'storytelling-detail';
     public const SCHEDULE_PAGE_SLUG = 'storytelling';
-    public const EVENT_SECTION_PREFIX = 'event_';
-
-    public static function eventSectionKey(int $eventId): string
-    {
-        return self::EVENT_SECTION_PREFIX . $eventId;
-    }
 
     private function __construct()
     {
