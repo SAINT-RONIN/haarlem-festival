@@ -19,20 +19,4 @@ final readonly class StorytellingMasonrySectionContent
         public ?string $masonryHeading,
         public array $imagePaths,
     ) {}
-
-    /**
-     * @param array<string, ?string> $raw CMS item values keyed by item key
-     */
-    public static function fromRawArray(array $raw): self
-    {
-        $paths = [];
-        for ($i = 1; $i <= self::IMAGE_COUNT; $i++) {
-            $paths[] = $raw[sprintf('masonry_image_%02d', $i)] ?? '';
-        }
-
-        return new self(
-            masonryHeading: $raw['masonry_heading'] ?? null,
-            imagePaths: $paths,
-        );
-    }
 }

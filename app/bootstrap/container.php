@@ -196,11 +196,12 @@ return static function (string $controllerClass): object {
         ),
         StorytellingController::class => new StorytellingController(
             new StorytellingService(
-                $cmsContent(),
+                $globalContentRepo(),
+                $storyContentRepo(),
                 $globalUiLoader(),
             ),
             new StorytellingDetailService(
-                $cmsContent(),
+                $storyContentRepo(),
                 $eventRepo(),
                 $eventSessionRepo(),
                 $eventSessionLabel(),

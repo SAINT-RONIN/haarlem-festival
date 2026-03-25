@@ -12,7 +12,7 @@ use App\Models\EventSessionLabel;
 use App\Models\StorytellingDetailEvent;
 use App\Models\StorytellingDetailPageData;
 use App\Models\StorytellingEventCmsData;
-use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\StorytellingContentRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
@@ -29,7 +29,7 @@ use App\Services\Interfaces\IStorytellingDetailService;
 class StorytellingDetailService implements IStorytellingDetailService
 {
     public function __construct(
-        private readonly ICmsContentRepository $cmsService,
+        private readonly StorytellingContentRepository $storyContentRepo,
         private readonly IEventRepository $eventRepository,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
@@ -57,11 +57,10 @@ class StorytellingDetailService implements IStorytellingDetailService
 
     private function fetchCmsContent(int $eventId): StorytellingEventCmsData
     {
-        $raw = $this->cmsService->getSectionContent(
+        return $this->storyContentRepo->findEventCmsData(
             StorytellingDetailConstants::DETAIL_PAGE_SLUG,
             StorytellingDetailConstants::eventSectionKey($eventId),
         );
-        return StorytellingEventCmsData::fromRawArray($raw);
     }
 
     private function buildPageData(StorytellingDetailEvent $event, StorytellingEventCmsData $cms): StorytellingDetailPageData
