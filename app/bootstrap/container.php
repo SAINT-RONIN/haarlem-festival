@@ -70,6 +70,8 @@ use App\Services\CmsDashboardService;
 use App\Services\CmsRestaurantsService;
 use App\Services\CmsEventsService;
 use App\Services\CmsEditService;
+use App\Services\CmsItemEnricher;
+use App\Services\CmsPreviewUrlResolver;
 use App\Services\CmsOrdersService;
 use App\Services\CmsUsersService;
 use App\Services\CheckoutService;
@@ -261,8 +263,9 @@ return static function (string $controllerClass): object {
             new CmsDashboardService($cmsRepo()),
             new CmsEditService(
                 $cmsRepo(),
-                $mediaAssetRepo(),
                 $eventRepo(),
+                new CmsItemEnricher($mediaAssetRepo()),
+                new CmsPreviewUrlResolver(),
             ),
             new MediaAssetService($mediaAssetRepo()),
         ),

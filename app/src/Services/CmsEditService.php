@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\CmsMessages;
 use App\Enums\EventTypeId;
 use App\Helpers\FormatHelper;
 use App\Models\CmsItem;
-use App\DTOs\Cms\CmsItemEditData;
 use App\DTOs\Filters\CmsItemFilter;
-use App\DTOs\Cms\CmsMediaAssetData;
 use App\Models\CmsPage;
 use App\DTOs\Cms\CmsPageEditData;
 use App\DTOs\Filters\CmsPageFilter;
@@ -21,7 +18,6 @@ use App\DTOs\Cms\CmsUpdateResult;
 use App\DTOs\Filters\EventFilter;
 use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IEventRepository;
-use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Exceptions\CmsOperationException;
 use App\Services\Interfaces\ICmsEditService;
 use App\Utils\CmsContentLimits;
@@ -36,8 +32,9 @@ class CmsEditService implements ICmsEditService
 {
     public function __construct(
         private readonly ICmsRepository $cmsRepository,
-        private readonly IMediaAssetRepository $mediaAssetRepository,
         private readonly IEventRepository $eventRepository,
+        private readonly CmsItemEnricher $itemEnricher,
+        private readonly CmsPreviewUrlResolver $previewUrlResolver,
     ) {
     }
 
@@ -118,7 +115,7 @@ class CmsEditService implements ICmsEditService
             sectionId: $section->cmsSectionId,
             sectionKey: $section->sectionKey,
             displayName: $displayName,
-            items: $this->enrichItemsWithMetadata($sectionItems),
+            items: $this->itemEnricher->enrichItems($sectionItems),
         );
     }
 
@@ -230,43 +227,11 @@ class CmsEditService implements ICmsEditService
     /**
      * Builds a route-aware preview URL for CMS page edit screens.
      *
-     * For detail pages (storytelling-detail, jazz-artist-detail, restaurant-detail)
-     * it extracts the first event name/ID from the sections to build a slug-based URL.
-     * For all other pages it returns /{pageSlug} (or "/" for "home").
-     *
      * @param CmsSectionEditData[] $sections
      */
     public function resolvePreviewUrl(CmsPage $page, array $sections): string
     {
-        if ($page->slug === 'home') {
-            return '/';
-        }
-
-        $detailUrl = $this->resolveDetailPageUrl($page->slug, $sections);
-        return $detailUrl ?? '/' . $page->slug;
-    }
-
-    /**
-     * @param CmsSectionEditData[] $sections
-     */
-    private function resolveDetailPageUrl(string $slug, array $sections): ?string
-    {
-        if ($slug === 'storytelling-detail') {
-            $eventName = $this->extractFirstEventDisplayName($sections);
-            return $eventName !== null ? '/storytelling/' . $this->toSlug($eventName) : '/storytelling';
-        }
-
-        if ($slug === 'jazz-artist-detail') {
-            $eventName = $this->extractFirstEventDisplayName($sections);
-            return $eventName !== null ? '/jazz/' . $this->toSlug($eventName) : '/jazz';
-        }
-
-        if ($slug === 'restaurant-detail') {
-            $eventId = $this->extractFirstEventId($sections);
-            return $eventId !== null ? '/restaurant/' . $eventId : '/restaurant';
-        }
-
-        return null;
+        return $this->previewUrlResolver->resolve($page, $sections);
     }
 
     /**
@@ -342,147 +307,6 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
-     * @param CmsItem[] $items
-     * @return CmsItemEditData[]
-     */
-    private function enrichItemsWithMetadata(array $items): array
-    {
-        $mediaAssets = $this->loadMediaAssetsForItems($items);
-        $enriched = [];
-
-        foreach ($items as $item) {
-            $enriched[] = $this->enrichSingleItem($item, $mediaAssets);
-        }
-
-        return $enriched;
-    }
-
-    /**
-     * @param array<int, \App\Models\MediaAsset> $mediaAssets
-     */
-    private function enrichSingleItem(CmsItem $item, array $mediaAssets): CmsItemEditData
-    {
-        $mediaAsset = $this->resolveMediaAsset($item, $mediaAssets);
-        $resolvedFilePath = $this->resolveFilePath($item, $mediaAsset);
-        $inputType = $this->resolveInputType($item);
-
-        return $this->buildEnrichedItem($item, $mediaAsset, $resolvedFilePath, $inputType);
-    }
-
-    /**
-     * Batch-loads media assets for all items that reference one.
-     *
-     * @param CmsItem[] $items
-     * @return array<int, \App\Models\MediaAsset>
-     */
-    private function loadMediaAssetsForItems(array $items): array
-    {
-        $mediaAssetIds = array_values(array_filter(
-            array_map(fn(CmsItem $item) => $item->mediaAssetId, $items)
-        ));
-
-        return $mediaAssetIds !== [] ? $this->mediaAssetRepository->findByIds($mediaAssetIds) : [];
-    }
-
-    private function resolveMediaAsset(CmsItem $item, array $mediaAssets): ?\App\Models\MediaAsset
-    {
-        return $item->mediaAssetId !== null ? ($mediaAssets[$item->mediaAssetId] ?? null) : null;
-    }
-
-    private function resolveFilePath(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset): ?string
-    {
-        if ($mediaAsset !== null && $mediaAsset->filePath !== '') {
-            return $mediaAsset->filePath;
-        }
-
-        if (!empty($item->textValue)) {
-            return (string)$item->textValue;
-        }
-
-        return null;
-    }
-
-    private function resolveInputType(CmsItem $item): string
-    {
-        $type = $item->itemType->value;
-        $inputType = CmsContentLimits::getInputType($type);
-
-        // Certain TEXT keys (e.g. long descriptions) are edited via TinyMCE instead of a plain input
-        if (strtoupper($type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce($item->itemKey)) {
-            return 'tinymce';
-        }
-
-        return $inputType;
-    }
-
-    private function buildEnrichedItem(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset, ?string $resolvedFilePath, string $inputType): CmsItemEditData
-    {
-        $type = $item->itemType->value;
-
-        return new CmsItemEditData(
-            itemId: $item->cmsItemId,
-            itemKey: $item->itemKey,
-            displayName: $item->itemKey,
-            type: $type,
-            typeLabel: CmsContentLimits::getLabelForType($type),
-            inputType: $inputType,
-            maxChars: CmsContentLimits::getCharLimitForType($type),
-            value: $this->getItemValue($item),
-            mediaAssetId: $item->mediaAssetId,
-            mediaAsset: $this->buildMediaAssetData($item, $mediaAsset, $resolvedFilePath, $type),
-        );
-    }
-
-    private function buildMediaAssetData(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset, ?string $resolvedFilePath, string $type): ?CmsMediaAssetData
-    {
-        if ($mediaAsset !== null) {
-            return $this->mediaAssetDataFromAsset($mediaAsset);
-        }
-        if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH') {
-            return $this->mediaAssetDataFromFilePath($item->itemKey, $resolvedFilePath);
-        }
-        return null;
-    }
-
-    private function mediaAssetDataFromAsset(\App\Models\MediaAsset $mediaAsset): CmsMediaAssetData
-    {
-        return new CmsMediaAssetData(
-            filePath: $mediaAsset->filePath,
-            originalFileName: $mediaAsset->originalFileName,
-            altText: $mediaAsset->altText,
-        );
-    }
-
-    private function mediaAssetDataFromFilePath(string $itemKey, string $filePath): CmsMediaAssetData
-    {
-        return new CmsMediaAssetData(
-            filePath: $filePath,
-            originalFileName: basename($filePath),
-            altText: $itemKey,
-        );
-    }
-
-    /**
-     * Extracts the display value for the CMS editor. HTML items use htmlValue directly;
-     * TEXT items that were accidentally stored with HTML tags get stripped back to plain text.
-     */
-    private function getItemValue(CmsItem $item): string
-    {
-        $type = strtoupper($item->itemType->value);
-
-        if ($type === 'HTML') {
-            return (string)($item->htmlValue ?? '');
-        }
-
-        $value = (string)($item->textValue ?? '');
-        if ($type === 'TEXT' && $value !== '' && preg_match('/<[^>]+>/', $value) === 1) {
-            return trim(strip_tags(html_entity_decode($value)));
-        }
-
-        return $value;
-    }
-
-    /**
      * Builds a map of section key → event title for storytelling events.
      * e.g., ['event_34' => 'Winnie de Poeh (4+)', ...]
      *
@@ -496,46 +320,6 @@ class CmsEditService implements ICmsEditService
             $map['event_' . $event->eventId] = $event->title;
         }
         return $map;
-    }
-
-    /**
-     * @param CmsSectionEditData[] $sections
-     */
-    private function extractFirstEventId(array $sections): ?int
-    {
-        foreach ($sections as $section) {
-            if (preg_match('/^event_(\d+)$/', $section->sectionKey, $matches) === 1) {
-                return (int)$matches[1];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param CmsSectionEditData[] $sections
-     */
-    private function extractFirstEventDisplayName(array $sections): ?string
-    {
-        foreach ($sections as $section) {
-            if (!str_starts_with($section->sectionKey, 'event_')) {
-                continue;
-            }
-
-            $displayName = trim($section->displayName);
-            if ($displayName !== '') {
-                return $displayName;
-            }
-        }
-
-        return null;
-    }
-
-    private function toSlug(string $value): string
-    {
-        $lower = strtolower(trim($value));
-        $slug = preg_replace('/[^a-z0-9]+/', '-', $lower);
-        return trim((string)$slug, '-');
     }
 
     /**
