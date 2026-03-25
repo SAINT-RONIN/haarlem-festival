@@ -36,41 +36,53 @@ class MediaAssetService implements IMediaAssetService
      */
     public function uploadImage(array $file, string $folder = 'cms'): MediaAsset
     {
-        // Validate MIME type, file size, and image dimensions
         $this->validateFile($file);
 
-        // Resolve and ensure the target upload directory exists and is writable
+        $targetDir = $this->ensureUploadDirectory($folder);
+        $relativePath = $this->moveUploadedFile($file, $targetDir, $folder);
+
+        return $this->persistMediaRecord($file, $relativePath);
+    }
+
+    /** Ensures the target upload directory exists and is writable. */
+    private function ensureUploadDirectory(string $folder): string
+    {
         $targetDir = PathResolver::getUploadPath($folder);
 
-        // Create directory if it doesn't exist
-        if (!is_dir($targetDir)) {
-            if (!mkdir($targetDir, 0755, true)) {
-                throw new ValidationException('Failed to create upload directory');
-            }
+        if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true)) {
+            throw new ValidationException('Failed to create upload directory');
         }
 
-        // Check if directory is writable
         if (!is_writable($targetDir)) {
             throw new ValidationException('Upload directory is not writable');
         }
 
-        // Generate a unique filename and move the uploaded file to its final location
+        return $targetDir;
+    }
+
+    /** Generates a unique filename, moves the uploaded file, and returns the relative path. */
+    private function moveUploadedFile(array $file, string $targetDir, string $folder): string
+    {
         $extension = $this->getExtensionFromMime($file['type']);
         $fileName = $this->generateFileName($extension);
         $filePath = $targetDir . '/' . $fileName;
-        $relativePath = '/assets/Image/' . $folder . '/' . $fileName;
 
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {
             throw new ValidationException('Failed to move uploaded file');
         }
 
-        // Persist the asset metadata in the database and return the full record
+        return '/assets/Image/' . $folder . '/' . $fileName;
+    }
+
+    /** Persists the asset metadata in the database and returns the full record. */
+    private function persistMediaRecord(array $file, string $relativePath): MediaAsset
+    {
         $mediaAssetId = $this->mediaAssetRepository->create([
             'FilePath' => $relativePath,
             'OriginalFileName' => $file['name'],
             'MimeType' => $file['type'],
             'FileSizeBytes' => $file['size'],
-            'AltText' => ''
+            'AltText' => '',
         ]);
 
         return $this->mediaAssetRepository->findById($mediaAssetId);
@@ -118,43 +130,65 @@ class MediaAssetService implements IMediaAssetService
      *
      * @throws ValidationException If validation fails
      */
+    /**
+     * Validates an uploaded file for errors, MIME type, file size, and image dimensions.
+     *
+     * @throws ValidationException If validation fails
+     */
     private function validateFile(array $file): void
+    {
+        $this->checkUploadError($file);
+        $this->checkMimeType($file['type']);
+        $this->checkFileSize($file['size']);
+        $this->checkImageDimensions($file['tmp_name']);
+    }
+
+    /** Rejects files with upload errors. */
+    private function checkUploadError(array $file): void
     {
         if ($file['error'] !== UPLOAD_ERR_OK) {
             throw new ValidationException($this->getUploadErrorMessage($file['error']));
         }
+    }
 
-        if (!in_array($file['type'], CmsContentLimits::IMAGE_ALLOWED_MIMES, true)) {
+    /** Rejects files with disallowed MIME types. */
+    private function checkMimeType(string $mimeType): void
+    {
+        if (!in_array($mimeType, CmsContentLimits::IMAGE_ALLOWED_MIMES, true)) {
+            throw new ValidationException('Invalid file type. Allowed: JPG, PNG, WebP');
+        }
+    }
+
+    /** Rejects files exceeding the maximum file size. */
+    private function checkFileSize(int $size): void
+    {
+        if ($size > CmsContentLimits::IMAGE_MAX_FILE_SIZE) {
             throw new ValidationException(
-                'Invalid file type. Allowed: JPG, PNG, WebP'
+                'File too large. Maximum size: ' . $this->formatFileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE)
+            );
+        }
+    }
+
+    /** Rejects images exceeding the maximum width or height. Skips if dimensions cannot be read. */
+    private function checkImageDimensions(string $tmpName): void
+    {
+        $imageInfo = @getimagesize($tmpName);
+        if ($imageInfo === false) {
+            return;
+        }
+
+        [$width, $height] = $imageInfo;
+
+        if ($width > CmsContentLimits::IMAGE_MAX_WIDTH) {
+            throw new ValidationException(
+                "Image width ({$width}px) exceeds maximum of " . CmsContentLimits::IMAGE_MAX_WIDTH . 'px'
             );
         }
 
-        if ($file['size'] > CmsContentLimits::IMAGE_MAX_FILE_SIZE) {
+        if ($height > CmsContentLimits::IMAGE_MAX_HEIGHT) {
             throw new ValidationException(
-                'File too large. Maximum size: ' .
-                $this->formatFileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE)
+                "Image height ({$height}px) exceeds maximum of " . CmsContentLimits::IMAGE_MAX_HEIGHT . 'px'
             );
-        }
-
-        // Try to get image dimensions - if this fails, skip dimension validation
-        // getimagesize works without GD for most image formats
-        $imageInfo = @getimagesize($file['tmp_name']);
-        if ($imageInfo !== false) {
-            [$width, $height] = $imageInfo;
-            if ($width > CmsContentLimits::IMAGE_MAX_WIDTH) {
-                throw new ValidationException(
-                    "Image width ({$width}px) exceeds maximum of " .
-                    CmsContentLimits::IMAGE_MAX_WIDTH . 'px'
-                );
-            }
-
-            if ($height > CmsContentLimits::IMAGE_MAX_HEIGHT) {
-                throw new ValidationException(
-                    "Image height ({$height}px) exceeds maximum of " .
-                    CmsContentLimits::IMAGE_MAX_HEIGHT . 'px'
-                );
-            }
         }
     }
 

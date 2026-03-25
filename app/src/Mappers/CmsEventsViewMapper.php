@@ -126,48 +126,98 @@ final class CmsEventsViewMapper
         string $eventTitle = '',
         string $eventTypeSlug = 'default',
     ): CmsEventSessionViewModel {
-        $start = $session->startDateTime;
-        $end = $session->endDateTime;
-        $ageLabel = AgeLabelFormatter::format($session->minAge, $session->maxAge);
-        // Aggregate single + reserved tickets into one total for the CMS dashboard
-        $soldTicketsTotal = $session->soldSingleTickets + $session->soldReservedSeats;
-        // Fall back to computing availability when the DB column is null
-        $seatsAvailable = $session->seatsAvailable ?? ($session->capacityTotal - $soldTicketsTotal);
+        $soldTicketsTotal = self::computeSoldTotal($session);
+        $seatsAvailable = self::computeAvailableSeats($session, $soldTicketsTotal);
 
         return new CmsEventSessionViewModel(
-            eventSessionId: $session->eventSessionId,
-            eventId: $session->eventId,
-            eventTitle: $eventTitle,
-            eventTypeSlug: $eventTypeSlug,
-            formattedStartTime: $start->format('H:i'),
-            formattedEndTime: $end?->format('H:i') ?? '',
-            formattedDate: $start->format('Y-m-d'),
-            formattedDateLong: $start->format('l, F j, Y'),
-            formattedDateTimeLocal: $start->format('Y-m-d\TH:i'),
-            formattedEndDateTimeLocal: $end?->format('Y-m-d\TH:i') ?? '',
-            capacityTotal: $session->capacityTotal,
-            soldSingleTickets: $session->soldSingleTickets,
-            soldReservedSeats: $session->soldReservedSeats,
-            soldTicketsTotal: $soldTicketsTotal,
-            seatsAvailable: $seatsAvailable,
-            capacitySingleTicketLimit: $session->capacitySingleTicketLimit,
-            languageCode: $session->languageCode,
-            minAge: $session->minAge,
-            maxAge: $session->maxAge,
-            reservationRequired: $session->reservationRequired,
-            notes: $session->notes,
-            historyTicketLabel: $session->historyTicketLabel,
-            ctaLabel: $session->ctaLabel,
-            ctaUrl: $session->ctaUrl,
-            isActive: $session->isActive,
-            hallName: $session->hallName,
-            sessionType: $session->sessionType,
-            durationMinutes: $session->durationMinutes,
-            ageLabel: $ageLabel,
-            isFree: $session->isFree,
-            isCancelled: $session->isCancelled,
-            sessionDate: $start->format('Y-m-d'),
+            ...self::buildSessionIdentityFields($session, $eventTitle, $eventTypeSlug),
+            ...self::buildSessionDateFields($session),
+            ...self::buildSessionCapacityFields($session, $soldTicketsTotal, $seatsAvailable),
+            ...self::buildSessionMetadataFields($session),
         );
+    }
+
+    /** Aggregate single + reserved tickets into one total for the CMS dashboard. */
+    private static function computeSoldTotal(EventSession $session): int
+    {
+        return $session->soldSingleTickets + $session->soldReservedSeats;
+    }
+
+    /** Fall back to computing availability when the DB column is null. */
+    private static function computeAvailableSeats(EventSession $session, int $soldTotal): int
+    {
+        return $session->seatsAvailable ?? ($session->capacityTotal - $soldTotal);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function buildSessionIdentityFields(EventSession $session, string $eventTitle, string $eventTypeSlug): array
+    {
+        return [
+            'eventSessionId' => $session->eventSessionId,
+            'eventId' => $session->eventId,
+            'eventTitle' => $eventTitle,
+            'eventTypeSlug' => $eventTypeSlug,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function buildSessionDateFields(EventSession $session): array
+    {
+        $start = $session->startDateTime;
+        $end = $session->endDateTime;
+
+        return [
+            'formattedStartTime' => $start->format('H:i'),
+            'formattedEndTime' => $end?->format('H:i') ?? '',
+            'formattedDate' => $start->format('Y-m-d'),
+            'formattedDateLong' => $start->format('l, F j, Y'),
+            'formattedDateTimeLocal' => $start->format('Y-m-d\TH:i'),
+            'formattedEndDateTimeLocal' => $end?->format('Y-m-d\TH:i') ?? '',
+            'sessionDate' => $start->format('Y-m-d'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function buildSessionCapacityFields(EventSession $session, int $soldTotal, int $seatsAvailable): array
+    {
+        return [
+            'capacityTotal' => $session->capacityTotal,
+            'soldSingleTickets' => $session->soldSingleTickets,
+            'soldReservedSeats' => $session->soldReservedSeats,
+            'soldTicketsTotal' => $soldTotal,
+            'seatsAvailable' => $seatsAvailable,
+            'capacitySingleTicketLimit' => $session->capacitySingleTicketLimit,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function buildSessionMetadataFields(EventSession $session): array
+    {
+        return [
+            'languageCode' => $session->languageCode,
+            'minAge' => $session->minAge,
+            'maxAge' => $session->maxAge,
+            'reservationRequired' => $session->reservationRequired,
+            'notes' => $session->notes,
+            'historyTicketLabel' => $session->historyTicketLabel,
+            'ctaLabel' => $session->ctaLabel,
+            'ctaUrl' => $session->ctaUrl,
+            'isActive' => $session->isActive,
+            'hallName' => $session->hallName,
+            'sessionType' => $session->sessionType,
+            'durationMinutes' => $session->durationMinutes,
+            'ageLabel' => AgeLabelFormatter::format($session->minAge, $session->maxAge),
+            'isFree' => $session->isFree,
+            'isCancelled' => $session->isCancelled,
+        ];
     }
 
     /**

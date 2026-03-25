@@ -122,7 +122,7 @@ class ScheduleService implements IScheduleService
         );
 
         return [
-            'cmsContent' => $cmsRaw,
+            'cmsContent' => $cmsSection,
             'pageSlug' => $pageSlug,
             'eventTypeSlug' => $eventTypeSlug,
             'eventTypeId' => $eventTypeId,
@@ -147,69 +147,103 @@ class ScheduleService implements IScheduleService
         string             $startPoint = '',
         string             $groupTicketFallback = ''
     ): array {
-        $days = $scheduleData->days;
-        $sessions = $scheduleData->sessions;
-
-        if (empty($days)) {
+        if (empty($scheduleData->days)) {
             return [];
         }
 
-        // Get session IDs for batch loading labels and prices
-        $sessionIds = array_map(static fn ($s) => $s->eventSessionId, $sessions);
-        $labelsMap = !empty($sessionIds)
-            ? $this->labelRepository->findLabelsBySessionIds($sessionIds)
-            : [];
-        $pricesMap = !empty($sessionIds)
-            ? $this->priceRepository->findPricesBySessionIds($sessionIds)
-            : [];
-
-        // Group sessions by date
-        $sessionsByDate = [];
-        foreach ($sessions as $session) {
-            $date = $session->sessionDate;
-            if (!isset($sessionsByDate[$date])) {
-                $sessionsByDate[$date] = [];
-            }
-            $sessionsByDate[$date][] = $session;
-        }
+        $sessionIds = array_map(static fn ($s) => $s->eventSessionId, $scheduleData->sessions);
+        $labelsMap = $this->batchLoadLabels($sessionIds);
+        $pricesMap = $this->batchLoadPrices($sessionIds);
+        $sessionsByDate = $this->groupSessionsByDate($scheduleData->sessions);
 
         $dayArrays = [];
-        foreach ($days as $day) {
-            $date = $day->date;
-            $dateObj = new \DateTimeImmutable($date);
-            $daySessions = $sessionsByDate[$date] ?? [];
-
-            $events = [];
-
-            // For History, group sessions by time slot and merge language labels
-            if ($eventTypeId === EventTypeId::History->value) {
-                [$daySessions, $labelsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap);
-            }
-
-            foreach ($daySessions as $session) {
-                $events[] = $this->buildEventCard(
-                    $session,
-                    $eventTypeSlug,
-                    $eventTypeId,
-                    $labelsMap,
-                    $pricesMap,
-                    $defaultCtaText,
-                    $payWhatYouLikeText,
-                    $currencySymbol,
-                    $startPoint,
-                    $groupTicketFallback
-                );
-            }
-
-            $dayArrays[] = [
-                'dayName'  => $dateObj->format('l'),
-                'isoDate'  => $date,
-                'events'   => $events,
-                'isEmpty'  => empty($events),
-            ];
+        foreach ($scheduleData->days as $day) {
+            $dayArrays[] = $this->buildSingleDay(
+                $day, $sessionsByDate, $eventTypeSlug, $eventTypeId,
+                $labelsMap, $pricesMap, $defaultCtaText, $payWhatYouLikeText,
+                $currencySymbol, $startPoint, $groupTicketFallback
+            );
         }
 
         return $dayArrays;
+    }
+
+    /**
+     * Batch-loads session labels for all session IDs.
+     *
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionLabel[]>
+     */
+    private function batchLoadLabels(array $sessionIds): array
+    {
+        return !empty($sessionIds)
+            ? $this->labelRepository->findLabelsBySessionIds($sessionIds)
+            : [];
+    }
+
+    /**
+     * Batch-loads session prices for all session IDs.
+     *
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionPrice[]>
+     */
+    private function batchLoadPrices(array $sessionIds): array
+    {
+        return !empty($sessionIds)
+            ? $this->priceRepository->findPricesBySessionIds($sessionIds)
+            : [];
+    }
+
+    /**
+     * Groups sessions by their date string.
+     *
+     * @param \App\DTOs\Schedule\SessionWithEvent[] $sessions
+     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
+     */
+    private function groupSessionsByDate(array $sessions): array
+    {
+        $sessionsByDate = [];
+        foreach ($sessions as $session) {
+            $sessionsByDate[$session->sessionDate][] = $session;
+        }
+        return $sessionsByDate;
+    }
+
+    /** Assembles a single day's event cards, applying History time-slot grouping if needed. */
+    private function buildSingleDay(
+        object $day,
+        array $sessionsByDate,
+        string $eventTypeSlug,
+        int $eventTypeId,
+        array &$labelsMap,
+        array $pricesMap,
+        string $defaultCtaText,
+        string $payWhatYouLikeText,
+        string $currencySymbol,
+        string $startPoint,
+        string $groupTicketFallback,
+    ): array {
+        $date = $day->date;
+        $daySessions = $sessionsByDate[$date] ?? [];
+
+        if ($eventTypeId === EventTypeId::History->value) {
+            [$daySessions, $labelsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap);
+        }
+
+        $events = [];
+        foreach ($daySessions as $session) {
+            $events[] = $this->buildEventCard(
+                $session, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap,
+                $defaultCtaText, $payWhatYouLikeText, $currencySymbol, $startPoint, $groupTicketFallback
+            );
+        }
+
+        return [
+            'dayName'  => (new \DateTimeImmutable($date))->format('l'),
+            'isoDate'  => $date,
+            'events'   => $events,
+            'isEmpty'  => empty($events),
+        ];
     }
 
     /**

@@ -157,43 +157,69 @@ final class RestaurantContentParser
      */
     public static function parseIntroBody(string $rawBody): array
     {
-        $result = [
-            'bodyText'    => '',
-            'subsections' => null,
-            'closingLine' => null,
-        ];
-
         $rawBody = trim($rawBody);
         if ($rawBody === '') {
-            return $result;
+            return ['bodyText' => '', 'subsections' => null, 'closingLine' => null];
         }
 
+        $blocks = self::splitIntoBlocks($rawBody);
+        if ($blocks === []) {
+            return ['bodyText' => $rawBody, 'subsections' => null, 'closingLine' => null];
+        }
+
+        $bodyText = self::extractBodyText($blocks, $headingStartIndex);
+        $parsed = self::extractSubsections($blocks, $headingStartIndex);
+
+        return [
+            'bodyText'    => $bodyText,
+            'subsections' => $parsed['subsections'] !== [] ? $parsed['subsections'] : null,
+            'closingLine' => $parsed['closingLine'],
+        ];
+    }
+
+    /** Normalises line endings and splits into double-newline-separated blocks. */
+    private static function splitIntoBlocks(string $rawBody): array
+    {
         $rawBody = str_replace(["\r\n", "\r"], "\n", $rawBody);
-        $blocks  = preg_split("/\n\n+/", $rawBody);
+        $blocks = preg_split("/\n\n+/", $rawBody);
 
-        if ($blocks === false || $blocks === []) {
-            $result['bodyText'] = $rawBody;
-            return $result;
-        }
+        return ($blocks !== false && $blocks !== []) ? $blocks : [];
+    }
 
-        $bodyParts   = [];
-        $subsections = [];
-        $i = 0;
+    /**
+     * Collects body text before any heading block.
+     * Sets $headingStartIndex to the first heading block's position.
+     */
+    private static function extractBodyText(array $blocks, ?int &$headingStartIndex): string
+    {
+        $bodyParts = [];
+        $headingStartIndex = count($blocks);
 
-        // Collect body text before any heading
-        for (; $i < count($blocks); $i++) {
+        for ($i = 0; $i < count($blocks); $i++) {
             $b = trim((string)$blocks[$i]);
             if (str_starts_with($b, '## ')) {
+                $headingStartIndex = $i;
                 break;
             }
             if ($b !== '') {
                 $bodyParts[] = $b;
             }
         }
-        $result['bodyText'] = implode("\n\n", $bodyParts);
 
-        // Collect subsections and closing line
-        for (; $i < count($blocks); $i++) {
+        return implode("\n\n", $bodyParts);
+    }
+
+    /**
+     * Collects subsections (## headings with optional body) and any trailing closing line.
+     *
+     * @return array{subsections: array, closingLine: ?string}
+     */
+    private static function extractSubsections(array $blocks, int $startIndex): array
+    {
+        $subsections = [];
+        $closingLine = null;
+
+        for ($i = $startIndex; $i < count($blocks); $i++) {
             $b = trim((string)$blocks[$i]);
             if ($b === '') {
                 continue;
@@ -201,7 +227,7 @@ final class RestaurantContentParser
 
             if (str_starts_with($b, '## ')) {
                 $heading = trim(substr($b, 3));
-                $text    = '';
+                $text = '';
 
                 if (($i + 1) < count($blocks)) {
                     $next = trim((string)$blocks[$i + 1]);
@@ -215,13 +241,9 @@ final class RestaurantContentParser
                 continue;
             }
 
-            $result['closingLine'] = $b;
+            $closingLine = $b;
         }
 
-        if ($subsections !== []) {
-            $result['subsections'] = $subsections;
-        }
-
-        return $result;
+        return ['subsections' => $subsections, 'closingLine' => $closingLine];
     }
 }

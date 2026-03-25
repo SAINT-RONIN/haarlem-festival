@@ -243,47 +243,60 @@ class ProgramService implements IProgramService
      * @param ProgramItem[] $programItems
      * @return ProgramItemData[]
      */
+    /**
+     * @param ProgramItem[] $programItems
+     * @return ProgramItemData[]
+     */
     private function enrichItemsWithSessionData(array $programItems): array
     {
-        // Batch-load session details and prices to avoid N+1 queries
         $sessionIds = $this->extractSessionIds($programItems);
         $sessionsById = $this->fetchSessionsById($sessionIds);
         $pricesBySession = $this->fetchPricesBySession($sessionIds);
 
         $enrichedItems = [];
         foreach ($programItems as $item) {
-            if ($item->eventSessionId === null) {
-                continue;
+            $enriched = $this->enrichSingleItem($item, $sessionsById, $pricesBySession);
+            if ($enriched !== null) {
+                $enrichedItems[] = $enriched;
             }
-
-            $session = $sessionsById[$item->eventSessionId] ?? null;
-            if ($session === null) {
-                continue;
-            }
-
-            $prices = $pricesBySession[$item->eventSessionId] ?? [];
-            $enrichedItems[] = new ProgramItemData(
-                programItemId: $item->programItemId,
-                eventSessionId: $item->eventSessionId,
-                quantity: $item->quantity,
-                donationAmount: (float)($item->donationAmount ?? '0.00'),
-                eventTitle: $session->eventTitle,
-                venueName: $session->venueName,
-                hallName: $session->hallName,
-                startDateTime: $session->startDateTime->format('Y-m-d H:i:s'),
-                endDateTime: $session->endDateTime?->format('Y-m-d H:i:s'),
-                eventTypeId: $session->eventTypeId,
-                eventTypeName: $session->eventTypeName,
-                eventTypeSlug: $session->eventTypeSlug,
-                languageCode: $session->languageCode,
-                minAge: $session->minAge,
-                maxAge: $session->maxAge,
-                isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
-                basePrice: $this->getBasePrice($prices),
-            );
         }
 
         return $enrichedItems;
+    }
+
+    /** Enriches a single program item with session metadata and pricing. */
+    private function enrichSingleItem(ProgramItem $item, array $sessionsById, array $pricesBySession): ?ProgramItemData
+    {
+        if ($item->eventSessionId === null) {
+            return null;
+        }
+
+        $session = $sessionsById[$item->eventSessionId] ?? null;
+        if ($session === null) {
+            return null;
+        }
+
+        $prices = $pricesBySession[$item->eventSessionId] ?? [];
+
+        return new ProgramItemData(
+            programItemId: $item->programItemId,
+            eventSessionId: $item->eventSessionId,
+            quantity: $item->quantity,
+            donationAmount: (float)($item->donationAmount ?? '0.00'),
+            eventTitle: $session->eventTitle,
+            venueName: $session->venueName,
+            hallName: $session->hallName,
+            startDateTime: $session->startDateTime->format('Y-m-d H:i:s'),
+            endDateTime: $session->endDateTime?->format('Y-m-d H:i:s'),
+            eventTypeId: $session->eventTypeId,
+            eventTypeName: $session->eventTypeName,
+            eventTypeSlug: $session->eventTypeSlug,
+            languageCode: $session->languageCode,
+            minAge: $session->minAge,
+            maxAge: $session->maxAge,
+            isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
+            basePrice: $this->getBasePrice($prices),
+        );
     }
 
     /**

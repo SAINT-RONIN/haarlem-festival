@@ -55,145 +55,174 @@ class CheckoutService implements ICheckoutService
      */
     public function createCheckoutSession(ProgramData $programData, int $userId, array $payload): array
     {
-        // Validate required fields and payment method before starting any DB work
         $this->validatePayload($payload);
+        $this->validateProgramNotEmpty($programData);
 
-        $program = $programData->program;
-        $items = $programData->items;
-
-        if ($program === null || $items === []) {
-            throw new CheckoutException('Your program is empty.');
-        }
-
-        // Resolve pricing and payment method from the enriched program data
         $method = $this->mapPaymentMethod((string)$payload['paymentMethod']);
-        $subtotal = $programData->subtotal;
-        $vatTotal = $programData->taxAmount;
         $total = $programData->total;
 
         if ($total <= 0) {
             throw new CheckoutException('Total amount must be greater than zero.');
         }
 
-        // Validate availability for every session before starting the checkout transaction
-        $this->validateItemAvailability($items);
-
-        $appUrl = $this->runtimeConfig->getAppUrl();
-        $orderId = 0;
-        $paymentId = 0;
+        $this->validateItemAvailability($programData->items);
 
         $this->pdo->beginTransaction();
 
         try {
-            // Persist the order header with a unique order number
             $orderNumber = $this->generateOrderNumber();
-            $payBeforeUtc = new \DateTimeImmutable('+24 hours');
+            $orderId = $this->persistOrder($programData, $userId, $orderNumber);
+            $this->persistOrderLineItems($programData->items, $orderId);
+            $this->reserveSessionSeats($programData->items);
 
-            $orderId = $this->orderRepository->create(
-                userAccountId: $userId,
-                programId: $program->programId,
-                orderNumber: $orderNumber,
-                subtotal: $this->toMoneyString($subtotal),
-                vatTotal: $this->toMoneyString($vatTotal),
-                totalAmount: $this->toMoneyString($total),
-                payBeforeUtc: $payBeforeUtc,
-            );
-
-            // Persist each program item as an order line item
-            foreach ($items as $item) {
-                $this->orderItemRepository->create(
-                    orderId: $orderId,
-                    eventSessionId: $item->eventSessionId,
-                    historyTourId: null,
-                    passPurchaseId: null,
-                    quantity: $item->quantity,
-                    unitPrice: $this->toMoneyString($item->basePrice),
-                    vatRate: $this->toMoneyString($this->runtimeConfig->getVatRate() * 100),
-                    donationAmount: $this->toMoneyString($item->donationAmount),
-                );
-            }
-
-            // Atomically reserve seats — prevents overselling under concurrent checkouts
-            foreach ($items as $item) {
-                if ($item->eventSessionId <= 0) {
-                    continue;
-                }
-
-                $reserved = $this->eventSessionRepository->decrementCapacity(
-                    $item->eventSessionId,
-                    $item->quantity,
-                );
-
-                if (!$reserved) {
-                    throw new CheckoutException(
-                        "Seats no longer available for '{$item->eventTitle}'. Please update your program."
-                    );
-                }
-            }
-
-            // Create a pending payment record before calling Stripe
             $paymentId = $this->paymentRepository->create($orderId, $method, PaymentStatus::Pending);
-
-            // Build the Stripe line items (single consolidated line for the full total)
-            $lineItems = [[
-                'price_data' => [
-                    'currency' => 'eur',
-                    'unit_amount' => (int)round($total * 100),
-                    'product_data' => [
-                        'name' => 'Haarlem Festival order ' . $orderNumber,
-                    ],
-                ],
-                'quantity' => 1,
-            ]];
-
-            // Create the Stripe checkout session with order metadata for webhook reconciliation
-            $session = $this->stripeService->createCheckoutSession([
-                'mode' => 'payment',
-                'success_url' => $appUrl . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => $appUrl . '/checkout/cancel?order_id=' . $orderId . '&payment_id=' . $paymentId,
-                'payment_method_types' => $this->mapStripePaymentMethodTypes($method),
-                'line_items' => $lineItems,
-                'customer_email' => (string)$payload['email'],
-                'client_reference_id' => $orderNumber,
-                'metadata' => [
-                    'order_id' => (string)$orderId,
-                    'payment_id' => (string)$paymentId,
-                    'program_id' => (string)$program->programId,
-                    'user_id' => (string)$userId,
-                    'first_name' => (string)$payload['firstName'],
-                    'last_name' => (string)$payload['lastName'],
-                ],
-            ]);
-
-            $sessionId = (string)($session['id'] ?? '');
-            $checkoutUrl = (string)($session['url'] ?? '');
-
-            if ($sessionId === '' || $checkoutUrl === '') {
-                throw new CheckoutException('Stripe checkout session could not be created.');
-            }
-
-            // Link Stripe identifiers back to our payment record for later webhook matching
-            $this->paymentRepository->updateStripeSessionId($paymentId, $sessionId);
-            $this->paymentRepository->updateProviderRef($paymentId, $sessionId);
-
-            $paymentIntentId = $session['payment_intent'] ?? null;
-            if (is_string($paymentIntentId) && $paymentIntentId !== '') {
-                $this->paymentRepository->updateStripePaymentIntentId($paymentId, $paymentIntentId);
-            }
+            $checkoutUrl = $this->createAndLinkStripeSession($programData, $userId, $payload, $orderId, $paymentId, $orderNumber, $method);
 
             $this->pdo->commit();
 
-            return [
-                'redirectUrl' => $checkoutUrl,
-                'orderId' => $orderId,
-                'paymentId' => $paymentId,
-            ];
+            return ['redirectUrl' => $checkoutUrl, 'orderId' => $orderId, 'paymentId' => $paymentId];
         } catch (\Throwable $error) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-
             throw $error;
+        }
+    }
+
+    /** Validates that the program has items before checkout. */
+    private function validateProgramNotEmpty(ProgramData $programData): void
+    {
+        if ($programData->program === null || $programData->items === []) {
+            throw new CheckoutException('Your program is empty.');
+        }
+    }
+
+    /** Persists the order header with a unique order number. */
+    private function persistOrder(ProgramData $programData, int $userId, string $orderNumber): int
+    {
+        return $this->orderRepository->create(
+            userAccountId: $userId,
+            programId: $programData->program->programId,
+            orderNumber: $orderNumber,
+            subtotal: $this->toMoneyString($programData->subtotal),
+            vatTotal: $this->toMoneyString($programData->taxAmount),
+            totalAmount: $this->toMoneyString($programData->total),
+            payBeforeUtc: new \DateTimeImmutable('+24 hours'),
+        );
+    }
+
+    /**
+     * Persists each program item as an order line item.
+     *
+     * @param ProgramItemData[] $items
+     */
+    private function persistOrderLineItems(array $items, int $orderId): void
+    {
+        foreach ($items as $item) {
+            $this->orderItemRepository->create(
+                orderId: $orderId,
+                eventSessionId: $item->eventSessionId,
+                historyTourId: null,
+                passPurchaseId: null,
+                quantity: $item->quantity,
+                unitPrice: $this->toMoneyString($item->basePrice),
+                vatRate: $this->toMoneyString($this->runtimeConfig->getVatRate() * 100),
+                donationAmount: $this->toMoneyString($item->donationAmount),
+            );
+        }
+    }
+
+    /**
+     * Atomically reserves seats for all items — prevents overselling under concurrent checkouts.
+     *
+     * @param ProgramItemData[] $items
+     */
+    private function reserveSessionSeats(array $items): void
+    {
+        foreach ($items as $item) {
+            if ($item->eventSessionId <= 0) {
+                continue;
+            }
+
+            $reserved = $this->eventSessionRepository->decrementCapacity($item->eventSessionId, $item->quantity);
+
+            if (!$reserved) {
+                throw new CheckoutException(
+                    "Seats no longer available for '{$item->eventTitle}'. Please update your program."
+                );
+            }
+        }
+    }
+
+    /**
+     * Creates a Stripe checkout session, links its identifiers to the payment record,
+     * and returns the redirect URL.
+     *
+     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
+     */
+    private function createAndLinkStripeSession(
+        ProgramData $programData,
+        int $userId,
+        array $payload,
+        int $orderId,
+        int $paymentId,
+        string $orderNumber,
+        PaymentMethod $method,
+    ): string {
+        $appUrl = $this->runtimeConfig->getAppUrl();
+
+        $session = $this->stripeService->createCheckoutSession([
+            'mode' => 'payment',
+            'success_url' => $appUrl . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $appUrl . '/checkout/cancel?order_id=' . $orderId . '&payment_id=' . $paymentId,
+            'payment_method_types' => $this->mapStripePaymentMethodTypes($method),
+            'line_items' => $this->buildStripeLineItems($programData->total, $orderNumber),
+            'customer_email' => (string)$payload['email'],
+            'client_reference_id' => $orderNumber,
+            'metadata' => [
+                'order_id' => (string)$orderId,
+                'payment_id' => (string)$paymentId,
+                'program_id' => (string)$programData->program->programId,
+                'user_id' => (string)$userId,
+                'first_name' => (string)$payload['firstName'],
+                'last_name' => (string)$payload['lastName'],
+            ],
+        ]);
+
+        $sessionId = (string)($session['id'] ?? '');
+        $checkoutUrl = (string)($session['url'] ?? '');
+
+        if ($sessionId === '' || $checkoutUrl === '') {
+            throw new CheckoutException('Stripe checkout session could not be created.');
+        }
+
+        $this->linkStripeIds($paymentId, $session, $sessionId);
+
+        return $checkoutUrl;
+    }
+
+    /** Builds a single consolidated Stripe line item for the full order total. */
+    private function buildStripeLineItems(float $total, string $orderNumber): array
+    {
+        return [[
+            'price_data' => [
+                'currency' => 'eur',
+                'unit_amount' => (int)round($total * 100),
+                'product_data' => ['name' => 'Haarlem Festival order ' . $orderNumber],
+            ],
+            'quantity' => 1,
+        ]];
+    }
+
+    /** Links Stripe session and payment intent identifiers back to the payment record. */
+    private function linkStripeIds(int $paymentId, array $session, string $sessionId): void
+    {
+        $this->paymentRepository->updateStripeSessionId($paymentId, $sessionId);
+        $this->paymentRepository->updateProviderRef($paymentId, $sessionId);
+
+        $paymentIntentId = $session['payment_intent'] ?? null;
+        if (is_string($paymentIntentId) && $paymentIntentId !== '') {
+            $this->paymentRepository->updateStripePaymentIntentId($paymentId, $paymentIntentId);
         }
     }
 
@@ -232,77 +261,52 @@ class CheckoutService implements ICheckoutService
      */
     public function handleWebhook(string $payload, ?string $signatureHeader): array
     {
-        // Verify signature and decode the Stripe event
         $event = $this->stripeService->constructWebhookEvent($payload, $signatureHeader);
-
         $eventId = (string)($event['id'] ?? '');
         $eventType = (string)($event['type'] ?? '');
 
-        if ($eventId === '' || $eventType === '') {
-            throw new CheckoutException('Invalid Stripe event payload.');
-        }
+        $this->validateWebhookEvent($eventId, $eventType);
 
-        // Idempotency: INSERT IGNORE on (eventId) so concurrent Stripe retries are safe
         if (!$this->webhookEventRepository->markProcessedIfNew($eventId, $eventType)) {
-            return [
-                'processed' => false,
-                'eventId' => $eventId,
-                'eventType' => $eventType,
-            ];
+            return ['processed' => false, 'eventId' => $eventId, 'eventType' => $eventType];
         }
 
-        // Extract order/payment IDs from the event metadata for status transitions
-        $object = $event['data']['object'] ?? null;
-        if (!is_array($object)) {
-            throw new CheckoutException('Stripe event object is missing.');
-        }
-
+        $object = $this->extractWebhookObject($event);
         $metadata = isset($object['metadata']) && is_array($object['metadata']) ? $object['metadata'] : [];
         $orderId = isset($metadata['order_id']) ? (int)$metadata['order_id'] : null;
         $paymentId = isset($metadata['payment_id']) ? (int)$metadata['payment_id'] : null;
 
+        $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
+
+        return ['processed' => true, 'eventId' => $eventId, 'eventType' => $eventType];
+    }
+
+    /** Validates that a webhook event has required fields. */
+    private function validateWebhookEvent(string $eventId, string $eventType): void
+    {
+        if ($eventId === '' || $eventType === '') {
+            throw new CheckoutException('Invalid Stripe event payload.');
+        }
+    }
+
+    /** Extracts the event object from a Stripe webhook event. */
+    private function extractWebhookObject(array $event): array
+    {
+        $object = $event['data']['object'] ?? null;
+        if (!is_array($object)) {
+            throw new CheckoutException('Stripe event object is missing.');
+        }
+        return $object;
+    }
+
+    /** Wraps webhook status transitions in a database transaction. */
+    private function processWebhookTransaction(string $eventType, array $object, array $metadata, ?int $orderId, ?int $paymentId): void
+    {
         $this->pdo->beginTransaction();
 
         try {
-            if ($paymentId !== null && isset($object['payment_intent']) && is_string($object['payment_intent']) && $object['payment_intent'] !== '') {
-                $this->paymentRepository->updateStripePaymentIntentId($paymentId, $object['payment_intent']);
-            }
-
-            // Transition order/payment statuses based on the Stripe event outcome
-            switch ($eventType) {
-                case 'checkout.session.completed':
-                case 'checkout.session.async_payment_succeeded':
-                    if ($orderId !== null) {
-                        $this->orderRepository->updateStatus($orderId, OrderStatus::Paid);
-                    }
-                    if ($paymentId !== null) {
-                        $this->paymentRepository->updateStatus($paymentId, PaymentStatus::Paid, new \DateTimeImmutable());
-                    }
-                    // Flag the user's program (cart) as checked out so it cannot be reused
-                    if (isset($metadata['program_id'])) {
-                        $programId = (int)$metadata['program_id'];
-                        if ($programId > 0) {
-                            $this->programRepository->markCheckedOut($programId);
-                        }
-                    }
-                    break;
-
-                case 'checkout.session.expired':
-                case 'checkout.session.async_payment_failed':
-                    // Restore reserved capacity for expired/failed orders
-                    if ($orderId !== null) {
-                        $this->restoreOrderCapacity($orderId);
-                        $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
-                    }
-                    if ($paymentId !== null) {
-                        $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
+            $this->updatePaymentIntentIfPresent($paymentId, $object);
+            $this->applyWebhookStatusTransition($eventType, $metadata, $orderId, $paymentId);
             $this->pdo->commit();
         } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
             if ($this->pdo->inTransaction()) {
@@ -310,12 +314,61 @@ class CheckoutService implements ICheckoutService
             }
             throw $error;
         }
+    }
 
-        return [
-            'processed' => true,
-            'eventId' => $eventId,
-            'eventType' => $eventType,
-        ];
+    /** Links the Stripe payment intent ID to the payment record if present. */
+    private function updatePaymentIntentIfPresent(?int $paymentId, array $object): void
+    {
+        if ($paymentId === null) {
+            return;
+        }
+        $intentId = $object['payment_intent'] ?? null;
+        if (is_string($intentId) && $intentId !== '') {
+            $this->paymentRepository->updateStripePaymentIntentId($paymentId, $intentId);
+        }
+    }
+
+    /** Routes the webhook event type to the appropriate status transition handler. */
+    private function applyWebhookStatusTransition(string $eventType, array $metadata, ?int $orderId, ?int $paymentId): void
+    {
+        switch ($eventType) {
+            case 'checkout.session.completed':
+            case 'checkout.session.async_payment_succeeded':
+                $this->processPaymentCompleted($metadata, $orderId, $paymentId);
+                break;
+
+            case 'checkout.session.expired':
+            case 'checkout.session.async_payment_failed':
+                $this->processPaymentFailed($orderId, $paymentId);
+                break;
+        }
+    }
+
+    /** Marks order as paid, payment as paid, and flags the program as checked out. */
+    private function processPaymentCompleted(array $metadata, ?int $orderId, ?int $paymentId): void
+    {
+        if ($orderId !== null) {
+            $this->orderRepository->updateStatus($orderId, OrderStatus::Paid);
+        }
+        if ($paymentId !== null) {
+            $this->paymentRepository->updateStatus($paymentId, PaymentStatus::Paid, new \DateTimeImmutable());
+        }
+        $programId = isset($metadata['program_id']) ? (int)$metadata['program_id'] : 0;
+        if ($programId > 0) {
+            $this->programRepository->markCheckedOut($programId);
+        }
+    }
+
+    /** Restores capacity and marks order as expired / payment as failed. */
+    private function processPaymentFailed(?int $orderId, ?int $paymentId): void
+    {
+        if ($orderId !== null) {
+            $this->restoreOrderCapacity($orderId);
+            $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
+        }
+        if ($paymentId !== null) {
+            $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
+        }
     }
 
     /**
