@@ -8,7 +8,7 @@ use App\Constants\CmsMessages;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\CmsEditException;
 use App\Exceptions\ValidationException;
-use App\Mappers\CmsDashboardMapper;
+use App\Mappers\CmsDashboardViewMapper;
 use App\Services\Interfaces\ICmsDashboardService;
 use App\Services\Interfaces\ICmsEditService;
 use App\Services\Interfaces\IMediaAssetService;
@@ -53,7 +53,7 @@ class CmsDashboardController extends CmsBaseController
 
             $currentView = 'dashboard';
             $domainData = $this->cmsDashboardService->getDashboardData();
-            $viewModel = CmsDashboardMapper::toDashboardViewModel(
+            $viewModel = CmsDashboardViewMapper::toDashboardViewModel(
                 $domainData->recentPages,
                 $domainData->activities,
                 $this->getUserDisplayName(),
@@ -79,7 +79,7 @@ class CmsDashboardController extends CmsBaseController
             $currentView = 'pages';
             $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
             $allPages = $this->cmsDashboardService->getPagesListData();
-            $viewModel = CmsDashboardMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
+            $viewModel = CmsDashboardViewMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
 
             $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
                 'currentView' => $currentView,
@@ -122,7 +122,7 @@ class CmsDashboardController extends CmsBaseController
         }
 
         $previewUrl = $this->cmsEditService->resolvePreviewUrl($pageData->page, $pageData->sections);
-        $viewData = CmsDashboardMapper::toPageEditViewData($pageData);
+        $viewData = CmsDashboardViewMapper::toPageEditViewData($pageData);
         $this->sessionService->start();
         $csrfToken = $this->sessionService->getCsrfToken(self::CSRF_SCOPE_PAGE_EDIT);
 

@@ -4,211 +4,20 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Enums\PageStatus;
-use App\Helpers\FormatHelper;
-use App\DTOs\Cms\ActivityData;
 use App\DTOs\Cms\CmsItemEditData;
-use App\DTOs\Cms\CmsMediaAssetData;
-use App\Models\CmsPage;
-use App\DTOs\Cms\CmsPageEditData;
-use App\DTOs\Cms\CmsSectionEditData;
-use App\Utils\CmsContentLimits;
-use App\Utils\TimeFormatter;
-use App\ViewModels\Cms\ActivityViewModel;
-use App\ViewModels\Cms\CmsImageLimitsViewModel;
-use App\ViewModels\Cms\CmsItemDisplayViewModel;
-use App\ViewModels\Cms\CmsMediaAssetDisplayViewModel;
-use App\ViewModels\Cms\CmsPageEditViewModel;
-use App\ViewModels\Cms\CmsPageInfoViewModel;
-use App\ViewModels\Cms\CmsSectionDisplayViewModel;
 use App\ViewModels\Cms\CmsSubGroupViewModel;
-use App\ViewModels\Cms\DashboardViewModel;
-use App\ViewModels\Cms\PageListItemViewModel;
-use App\ViewModels\Cms\PagesListViewModel;
-use App\ViewModels\Cms\RecentPageViewModel;
 
 /**
- * Transforms CMS page and activity domain models into ViewModels for the CMS dashboard,
- * page list, and page-edit screens. Also handles section/item grouping logic for the
- * CMS content editor (sub-groups, input-type ordering, image limits).
+ * Routes CMS section items into logical sub-groups for the page editor.
+ *
+ * Each section type has its own group definitions (e.g. "Hero Content",
+ * "Call-to-Action Buttons") and routing rules that decide which group
+ * an item belongs to based on its item key.
+ *
+ * Called by CmsDashboardViewMapper when building section ViewModels.
  */
-final class CmsDashboardMapper
+final class CmsSectionGroupRouter
 {
-    /**
-     * Builds the CMS dashboard ViewModel showing recently-edited pages and activity feed.
-     *
-     * @param CmsPage[]      $recentPages
-     * @param ActivityData[] $activities
-     */
-    public static function toDashboardViewModel(array $recentPages, array $activities, string $userName): DashboardViewModel
-    {
-        return new DashboardViewModel(
-            recentPages: array_map([self::class, 'toRecentPageViewModel'], $recentPages),
-            activities: array_map([self::class, 'toActivityViewModel'], $activities),
-            userName: $userName,
-        );
-    }
-
-    /**
-     * Builds the CMS pages-list ViewModel used on the "All Pages" management screen.
-     *
-     * @param CmsPage[] $allPages
-     */
-    public static function toPagesListViewModel(array $allPages, string $searchQuery, string $userName): PagesListViewModel
-    {
-        return new PagesListViewModel(
-            pages: array_map([self::class, 'toPageListItemViewModel'], $allPages),
-            searchQuery: $searchQuery,
-            userName: $userName,
-        );
-    }
-
-    /** Converts a CmsPage into a dashboard "recent page" card with a relative time-ago label. */
-    public static function toRecentPageViewModel(CmsPage $page): RecentPageViewModel
-    {
-        return new RecentPageViewModel(
-            title: $page->title,
-            status: self::resolvePageStatus($page)->value,
-            timeAgo: TimeFormatter::formatTimeAgo($page->updatedAtUtc?->format('Y-m-d H:i:s')),
-        );
-    }
-
-    /** Converts a CmsPage into a list-row ViewModel for the pages-list table. */
-    public static function toPageListItemViewModel(CmsPage $page): PageListItemViewModel
-    {
-        return new PageListItemViewModel(
-            id: $page->cmsPageId,
-            title: $page->title,
-            slug: $page->slug,
-            status: self::resolvePageStatus($page)->value,
-            updatedAt: TimeFormatter::formatTimeAgo($page->updatedAtUtc?->format('Y-m-d H:i:s')),
-        );
-    }
-
-    /** Derives Published/Draft status: a page with an updatedAt timestamp is considered published. */
-    private static function resolvePageStatus(CmsPage $page): PageStatus
-    {
-        return $page->updatedAtUtc !== null ? PageStatus::Published : PageStatus::Draft;
-    }
-
-    private static function toActivityViewModel(ActivityData $activity): ActivityViewModel
-    {
-        return new ActivityViewModel(
-            icon: $activity->icon,
-            text: $activity->text,
-            time: $activity->time,
-            color: $activity->color,
-        );
-    }
-
-    /**
-     * Builds the full page-editor ViewModel: page info, grouped sections/items,
-     * and content/image upload limits. Consumed by the CMS page-edit view.
-     */
-    public static function toPageEditViewData(CmsPageEditData $pageData): CmsPageEditViewModel
-    {
-        return new CmsPageEditViewModel(
-            page: self::formatPage($pageData->page),
-            sections: array_map([self::class, 'formatSingleSection'], $pageData->sections),
-            contentLimits: self::getContentLimits(),
-            imageLimits: self::getImageLimits(),
-        );
-    }
-
-    private static function formatPage(CmsPage $page): CmsPageInfoViewModel
-    {
-        return new CmsPageInfoViewModel(
-            id:    $page->cmsPageId,
-            title: $page->title,
-            slug:  $page->slug,
-        );
-    }
-
-    private static function formatSingleSection(CmsSectionEditData $section): CmsSectionDisplayViewModel
-    {
-        return new CmsSectionDisplayViewModel(
-            id:          $section->sectionId,
-            key:         $section->sectionKey,
-            displayName: self::resolveSectionDisplayName($section->displayName),
-            isEditable:  self::isSectionEditable($section->sectionKey),
-            items:       self::groupItemsByType($section->items),
-            subGroups:   self::buildSubGroups($section->sectionKey, $section->items),
-        );
-    }
-
-    private static function resolveSectionDisplayName(string $displayName): string
-    {
-        return str_contains($displayName, '_') ? self::formatItemKeyName($displayName) : $displayName;
-    }
-
-    /**
-     * @param CmsItemEditData[] $items
-     * @return CmsItemDisplayViewModel[]
-     */
-    private static function groupItemsByType(array $items): array
-    {
-        $grouped = self::bucketItemsByInputType($items);
-        return self::flattenOrderedBuckets($grouped);
-    }
-
-    /**
-     * @param CmsItemEditData[] $items
-     * @return array<string, CmsItemDisplayViewModel[]>
-     */
-    private static function bucketItemsByInputType(array $items): array
-    {
-        $grouped = ['text' => [], 'tinymce' => [], 'file' => []];
-        foreach ($items as $item) {
-            $inputType = $item->inputType;
-            $bucket = isset($grouped[$inputType]) ? $inputType : 'text';
-            $grouped[$bucket][] = self::toItemViewModel($item);
-        }
-        return $grouped;
-    }
-
-    /**
-     * @param array<string, CmsItemDisplayViewModel[]> $grouped
-     * @return CmsItemDisplayViewModel[]
-     */
-    private static function flattenOrderedBuckets(array $grouped): array
-    {
-        return array_merge($grouped['text'] ?? [], $grouped['tinymce'] ?? [], $grouped['file'] ?? []);
-    }
-
-    private static function toItemViewModel(CmsItemEditData $item): CmsItemDisplayViewModel
-    {
-        return new CmsItemDisplayViewModel(
-            itemId:       $item->itemId,
-            itemKey:      $item->itemKey,
-            displayName:  self::formatItemKeyName($item->displayName),
-            type:         $item->type,
-            typeLabel:    $item->typeLabel,
-            inputType:    $item->inputType,
-            maxChars:     $item->maxChars,
-            value:        $item->value,
-            mediaAssetId: $item->mediaAssetId,
-            mediaAsset:   self::toMediaAssetViewModel($item->mediaAsset),
-        );
-    }
-
-    private static function toMediaAssetViewModel(?CmsMediaAssetData $asset): ?CmsMediaAssetDisplayViewModel
-    {
-        if ($asset === null) {
-            return null;
-        }
-
-        return new CmsMediaAssetDisplayViewModel(
-            filePath:         $asset->filePath,
-            originalFileName: $asset->originalFileName,
-            altText:          self::formatItemKeyName($asset->altText),
-        );
-    }
-
-    private static function formatItemKeyName(string $itemKey): string
-    {
-        return ucwords(str_replace('_', ' ', $itemKey));
-    }
-
     /**
      * Groups section items into logical sub-categories for a cleaner CMS editor.
      * Returns null for small sections that don't need grouping.
@@ -216,7 +25,7 @@ final class CmsDashboardMapper
      * @param CmsItemEditData[] $items
      * @return CmsSubGroupViewModel[]|null
      */
-    private static function buildSubGroups(string $sectionKey, array $items): ?array
+    public static function buildSubGroups(string $sectionKey, array $items): ?array
     {
         if (count($items) < 6) {
             return null;
@@ -232,7 +41,7 @@ final class CmsDashboardMapper
 
     /**
      * @param CmsItemEditData[] $items
-     * @param array<string, array{label: string, icon: string, color: string, columns: int, items: CmsItemDisplayViewModel[]}> $groupDefs
+     * @param array<string, array{label: string, icon: string, color: string, columns: int, items: \App\ViewModels\Cms\CmsItemDisplayViewModel[]}> $groupDefs
      * @return CmsSubGroupViewModel[]
      */
     private static function distributeItemsIntoGroups(string $sectionKey, array $items, array $groupDefs): array
@@ -242,13 +51,13 @@ final class CmsDashboardMapper
             if (!isset($groupDefs[$target])) {
                 continue;
             }
-            $groupDefs[$target]['items'][] = self::toItemViewModel($item);
+            $groupDefs[$target]['items'][] = CmsDashboardViewMapper::toItemViewModel($item);
         }
         return self::buildSubGroupViewModels($groupDefs);
     }
 
     /**
-     * @param array<string, array{label: string, icon: string, color: string, columns: int, items: CmsItemDisplayViewModel[]}> $groupDefs
+     * @param array<string, array{label: string, icon: string, color: string, columns: int, items: \App\ViewModels\Cms\CmsItemDisplayViewModel[]}> $groupDefs
      * @return CmsSubGroupViewModel[]
      */
     private static function buildSubGroupViewModels(array $groupDefs): array
@@ -266,10 +75,12 @@ final class CmsDashboardMapper
         ));
     }
 
+    // ── Group Definition Routing ──
+
     /**
      * Returns the group definitions for a section, or null if no grouping is defined.
      *
-     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: CmsItemDisplayViewModel[]}>|null
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: \App\ViewModels\Cms\CmsItemDisplayViewModel[]}>|null
      */
     private static function getGroupDefinitions(string $sectionKey): ?array
     {
@@ -277,7 +88,7 @@ final class CmsDashboardMapper
     }
 
     /**
-     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: CmsItemDisplayViewModel[]}>|null
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: \App\ViewModels\Cms\CmsItemDisplayViewModel[]}>|null
      */
     private static function getNamedSectionGroups(string $sectionKey): ?array
     {
@@ -285,7 +96,7 @@ final class CmsDashboardMapper
     }
 
     /**
-     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: CmsItemDisplayViewModel[]}>|null
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: \App\ViewModels\Cms\CmsItemDisplayViewModel[]}>|null
      */
     private static function getJazzPageSectionGroups(string $sectionKey): ?array
     {
@@ -302,7 +113,7 @@ final class CmsDashboardMapper
     }
 
     /**
-     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: CmsItemDisplayViewModel[]}>|null
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: \App\ViewModels\Cms\CmsItemDisplayViewModel[]}>|null
      */
     private static function getOtherPageSectionGroups(string $sectionKey): ?array
     {
@@ -319,17 +130,19 @@ final class CmsDashboardMapper
     }
 
     /**
-     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: CmsItemDisplayViewModel[]}>|null
+     * @return array<string, array{label: string, icon: string, color: string, columns: int, items: \App\ViewModels\Cms\CmsItemDisplayViewModel[]}>|null
      */
     private static function getFallbackSectionGroups(string $sectionKey): ?array
     {
         return str_starts_with($sectionKey, 'event_') ? self::eventDetailGroups() : null;
     }
 
+    // ── Item Routing ──
+
     /**
      * Routes an item to its group based on section and item key.
      *
-     * @param array<string, array{label: string, icon: string, color: string, columns: int, items: CmsItemDisplayViewModel[]}> $groupDefs
+     * @param array<string, array{label: string, icon: string, color: string, columns: int, items: \App\ViewModels\Cms\CmsItemDisplayViewModel[]}> $groupDefs
      */
     private static function routeItemToGroup(string $sectionKey, string $itemKey, array $groupDefs): string
     {
@@ -615,37 +428,4 @@ final class CmsDashboardMapper
         if (str_contains($itemKey, 'schedule') || str_contains($itemKey, 'cta')) return 'schedule';
         return 'extra';
     }
-
-    /** Sections in the deny-list (e.g. global_ui) are rendered read-only in the editor. */
-    private static function isSectionEditable(string $sectionKey): bool
-    {
-        $nonEditableSections = ['global_ui'];
-        return !in_array($sectionKey, $nonEditableSections, true);
-    }
-
-    /**
-     * @return array{HEADING: int, TEXT: int, HTML: int, BUTTON_TEXT: int}
-     */
-    private static function getContentLimits(): array
-    {
-        return [
-            'HEADING' => CmsContentLimits::HEADING_MAX_CHARS,
-            'TEXT' => CmsContentLimits::TEXT_MAX_CHARS,
-            'HTML' => CmsContentLimits::HTML_MAX_CHARS,
-            'BUTTON_TEXT' => CmsContentLimits::BUTTON_MAX_CHARS,
-        ];
-    }
-
-    private static function getImageLimits(): CmsImageLimitsViewModel
-    {
-        return new CmsImageLimitsViewModel(
-            maxWidth:             CmsContentLimits::IMAGE_MAX_WIDTH,
-            maxHeight:            CmsContentLimits::IMAGE_MAX_HEIGHT,
-            maxFileSize:          CmsContentLimits::IMAGE_MAX_FILE_SIZE,
-            maxFileSizeFormatted: FormatHelper::fileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
-            allowedMimes:         CmsContentLimits::IMAGE_ALLOWED_MIMES,
-            allowedExtensions:    ['jpg', 'jpeg', 'png', 'webp'],
-        );
-    }
-
 }

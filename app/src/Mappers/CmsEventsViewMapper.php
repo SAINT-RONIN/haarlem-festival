@@ -10,53 +10,19 @@ use App\Models\EventSession;
 use App\DTOs\Events\EventsListPageData;
 use App\Models\EventType;
 use App\DTOs\Events\EventWithDetails;
-use App\Models\MediaAsset;
 use App\DTOs\Schedule\SessionWithEvent;
-use App\Models\Venue;
 use App\ViewModels\Cms\CmsEventEditViewModel;
 use App\ViewModels\Cms\CmsEventListItemViewModel;
 use App\ViewModels\Cms\CmsEventSessionViewModel;
 use App\ViewModels\Cms\CmsEventsListViewModel;
-use App\ViewModels\Cms\CmsMediaListItemViewModel;
 use App\ViewModels\Cms\CmsSessionPriceViewModel;
 
 /**
- * Transforms event, session, and media-asset domain models into ViewModels
- * consumed by the CMS event-management pages (event list, event edit, media library).
+ * Transforms event and session domain models into ViewModels
+ * consumed by the CMS event-management pages (event list, event edit).
  */
-final class CmsEventsMapper
+final class CmsEventsViewMapper
 {
-    /**
-     * Converts a MediaAsset into a plain array suitable for JSON API responses
-     * (e.g. the media-picker AJAX endpoint in the CMS).
-     */
-    public static function toMediaJsonData(MediaAsset $asset): array
-    {
-        return [
-            'mediaAssetId'     => $asset->mediaAssetId,
-            'filePath'         => $asset->filePath,
-            'originalFileName' => $asset->originalFileName,
-            'mimeType'         => $asset->mimeType,
-        ];
-    }
-
-    /**
-     * Converts a MediaAsset into a display-ready list-item ViewModel for the CMS media grid,
-     * formatting the file size and creation date for human readability.
-     */
-    public static function toMediaListItemViewModel(MediaAsset $asset): CmsMediaListItemViewModel
-    {
-        return new CmsMediaListItemViewModel(
-            mediaAssetId: $asset->mediaAssetId,
-            filePath: $asset->filePath,
-            originalFileName: $asset->originalFileName,
-            mimeType: $asset->mimeType,
-            fileSize: FormatHelper::fileSize($asset->fileSizeBytes),
-            altText: $asset->altText,
-            createdAt: $asset->createdAtUtc->format(FormatHelper::CMS_DATE_FORMAT),
-        );
-    }
-
     /**
      * Transforms an EventWithDetails domain model into a CMS list-row ViewModel,
      * resolving the active/inactive status badge class and the event-type CSS class.

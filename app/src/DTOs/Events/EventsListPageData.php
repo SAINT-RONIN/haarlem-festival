@@ -7,7 +7,7 @@ namespace App\DTOs\Events;
 /**
  * All data needed to render the CMS events list page.
  *
- * Assembled by CmsEventsService, consumed by CmsEventsMapper.
+ * Assembled by CmsEventsService, consumed by CmsEventsViewMapper.
  */
 final readonly class EventsListPageData
 {

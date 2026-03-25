@@ -17,7 +17,7 @@ use App\Services\Interfaces\IRestaurantService;
  * Service for preparing all data needed by the Restaurant page.
  *
  * Returns typed data models.
- * Mapping to ViewModels happens in RestaurantMapper.
+ * Mapping to ViewModels happens in RestaurantViewMapper.
  *
  * Uses TWO different data sources:
  *  1. CMS (CmsItem table) — for page copy: titles, descriptions, images

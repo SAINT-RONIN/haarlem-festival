@@ -8,7 +8,7 @@ namespace App\DTOs\Events;
  * Typed bundle of data for the event edit page.
  *
  * Returned by CmsEventsService::getEventForEdit() and consumed
- * by CmsEventsController and CmsEventsMapper.
+ * by CmsEventsController and CmsEventsViewMapper.
  */
 final readonly class EventEditBundle
 {

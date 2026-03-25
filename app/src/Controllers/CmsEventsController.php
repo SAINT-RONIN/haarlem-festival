@@ -7,7 +7,7 @@ namespace App\Controllers;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
-use App\Mappers\CmsEventsMapper;
+use App\Mappers\CmsEventsViewMapper;
 use App\DTOs\Events\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
@@ -326,7 +326,7 @@ class CmsEventsController extends CmsBaseController
         $eventTypeId = isset($_GET['type']) && is_numeric($_GET['type']) ? (int)$_GET['type'] : null;
         $dayOfWeek = isset($_GET['day']) && $_GET['day'] !== '' ? $_GET['day'] : null;
 
-        return CmsEventsMapper::toEventsListViewModel(
+        return CmsEventsViewMapper::toEventsListViewModel(
             $this->eventsService->getEventsListPageData($eventTypeId, $dayOfWeek),
             $_GET['type'] ?? '',
             $_GET['day'] ?? '',
@@ -357,7 +357,7 @@ class CmsEventsController extends CmsBaseController
 
     private function buildEventEditViewModel(EventEditBundle $editData, array $priceTiers = []): \App\ViewModels\Cms\CmsEventEditViewModel
     {
-        return CmsEventsMapper::toEventEditViewModel(
+        return CmsEventsViewMapper::toEventEditViewModel(
             $editData->event,
             $editData->sessions,
             $editData->pricesMap,

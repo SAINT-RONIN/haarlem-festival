@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\Mappers\RestaurantMapper;
+use App\Mappers\RestaurantViewMapper;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\ISessionService;
 
@@ -29,7 +29,7 @@ class RestaurantController extends BaseController
     {
         try {
             $data = $this->restaurantService->getRestaurantPageData();
-            $viewModel = RestaurantMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
+            $viewModel = RestaurantViewMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -52,7 +52,7 @@ class RestaurantController extends BaseController
                 return;
             }
 
-            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
+            $viewModel = RestaurantViewMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

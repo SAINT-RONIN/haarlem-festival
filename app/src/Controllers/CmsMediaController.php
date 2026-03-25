@@ -6,7 +6,7 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\ValidationException;
-use App\Mappers\CmsEventsMapper;
+use App\Mappers\CmsMediaMapper;
 use App\Services\Interfaces\IMediaAssetService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsMediaLibraryViewModel;
@@ -89,8 +89,8 @@ class CmsMediaController extends CmsBaseController
         header('Content-Type: application/json');
         try {
             $allAssets = $this->mediaAssetService->getAllAssets();
-            // Reuses CmsEventsMapper for JSON serialization — shared DTO shape across media consumers
-            $data = array_map([CmsEventsMapper::class, 'toMediaJsonData'], $allAssets);
+            // Uses CmsMediaMapper for JSON serialization
+            $data = array_map([CmsMediaMapper::class, 'toMediaJsonData'], $allAssets);
             echo json_encode(['success' => true, 'assets' => $data]);
         } catch (\Throwable $e) {
             echo json_encode(['success' => false, 'error' => 'Failed to load media']);
@@ -100,7 +100,7 @@ class CmsMediaController extends CmsBaseController
     private function buildMediaListViewModel(): CmsMediaLibraryViewModel
     {
         $allAssets = $this->mediaAssetService->getAllAssets();
-        $assets = array_map([CmsEventsMapper::class, 'toMediaListItemViewModel'], $allAssets);
+        $assets = array_map([CmsMediaMapper::class, 'toMediaListItemViewModel'], $allAssets);
         return new CmsMediaLibraryViewModel(
             assets: $assets,
             imageLimits: $this->mediaAssetService->getImageLimits(),
