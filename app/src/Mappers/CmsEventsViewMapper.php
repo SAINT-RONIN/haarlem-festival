@@ -60,16 +60,34 @@ final class CmsEventsViewMapper
         ?string $errorMessage = null,
         array $priceTiers = [],
     ): CmsEventEditViewModel {
-        $eventTitle = $event->title;
-        $eventTypeSlug = $event->eventTypeSlug;
+        $sessionViewModels = self::buildSessionViewModels($sessions, $event->title, $event->eventTypeSlug);
+        $enrichedPrices = self::enrichPricesWithTierNames($pricesData, $priceTiers);
 
-        $sessionViewModels = array_map(
+        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $successMessage, $errorMessage);
+    }
+
+    /**
+     * Converts raw session models into CMS session ViewModels.
+     *
+     * @return CmsEventSessionViewModel[]
+     */
+    private static function buildSessionViewModels(array $sessions, string $eventTitle, string $eventTypeSlug): array
+    {
+        return array_map(
             static fn(mixed $session): CmsEventSessionViewModel => self::resolveSessionViewModel($session, $eventTitle, $eventTypeSlug),
             $sessions,
         );
+    }
 
-        $enrichedPrices = self::enrichPricesWithTierNames($pricesData, $priceTiers);
-
+    /** Assembles the full event-edit ViewModel from prepared sub-data. */
+    private static function assembleEditViewModel(
+        EventWithDetails $event,
+        array $sessionViewModels,
+        array $enrichedPrices,
+        array $labelsData,
+        ?string $successMessage,
+        ?string $errorMessage,
+    ): CmsEventEditViewModel {
         return new CmsEventEditViewModel(
             eventId: $event->eventId,
             title: $event->title,

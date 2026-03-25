@@ -87,18 +87,40 @@ class ScheduleService implements IScheduleService
         ?string $ctaTextOverride,
         ?ScheduleFilterParams $filterParams,
     ): array {
-        // Resolve the event type slug used for URLs and filter logic
-        $eventType = $this->eventTypeRepository->findEventTypes(new EventTypeFilter(eventTypeId: $eventTypeId))[0] ?? null;
-        $eventTypeSlug = $eventType?->slug ?? $pageSlug;
-
-        // Load CMS-managed labels (button text, currency symbol, etc.)
+        $eventTypeSlug = $this->resolveEventTypeSlug($eventTypeId, $pageSlug);
         $cmsSection = $this->scheduleContentRepo->findScheduleSectionContent($pageSlug, 'schedule_section');
-
-        // Determine which weekdays are visible based on global + type overrides
         $visibleDays = $this->getVisibleDays($eventTypeId);
 
-        // Fetch distinct calendar days that have matching sessions (for day-tab navigation)
-        $availableDays = $this->sessionRepository->findDistinctDays(
+        $availableDays = $this->fetchAvailableDays($eventTypeId, $visibleDays, $eventId, $maxDays);
+        $scheduleData = $this->fetchFilteredSessions($eventTypeId, $visibleDays, $eventId, $maxDays, $filterParams);
+        $displayStrings = $this->resolveCmsDisplayStrings($cmsSection, $ctaTextOverride);
+
+        $days = $this->buildScheduleDays($scheduleData, $eventTypeSlug, $eventTypeId, $displayStrings);
+
+        return [
+            'cmsContent' => $cmsSection,
+            'pageSlug' => $pageSlug,
+            'eventTypeSlug' => $eventTypeSlug,
+            'eventTypeId' => $eventTypeId,
+            'days' => $days,
+            'activeFilters' => $filterParams,
+            'availableDays' => $availableDays,
+            'filterGroupTypes' => $this->resolveFilterGroupTypes($eventTypeSlug),
+            'priceTypeOptions' => $this->resolvePriceTypeOptions($eventTypeSlug),
+        ];
+    }
+
+    /** Resolves the event type slug used for URLs and filter logic. */
+    private function resolveEventTypeSlug(int $eventTypeId, string $fallback): string
+    {
+        $eventType = $this->eventTypeRepository->findEventTypes(new EventTypeFilter(eventTypeId: $eventTypeId))[0] ?? null;
+        return $eventType?->slug ?? $fallback;
+    }
+
+    /** Fetches distinct calendar days that have matching sessions (for day-tab navigation). */
+    private function fetchAvailableDays(int $eventTypeId, array $visibleDays, ?int $eventId, int $maxDays): array
+    {
+        return $this->sessionRepository->findDistinctDays(
             new EventSessionFilter(
                 eventTypeId: $eventTypeId,
                 isActive: true,
@@ -109,9 +131,17 @@ class ScheduleService implements IScheduleService
                 maxDays: $maxDays,
             ),
         );
+    }
 
-        // Fetch the actual sessions, applying all user-selected filters
-        $scheduleData = $this->sessionRepository->findSessions(
+    /** Fetches sessions applying all user-selected filters. */
+    private function fetchFilteredSessions(
+        int $eventTypeId,
+        array $visibleDays,
+        ?int $eventId,
+        int $maxDays,
+        ?ScheduleFilterParams $filterParams,
+    ): SessionQueryResult {
+        return $this->sessionRepository->findSessions(
             new EventSessionFilter(
                 eventTypeId: $eventTypeId,
                 isActive: true,
@@ -131,70 +161,68 @@ class ScheduleService implements IScheduleService
                 limit: 50,
             ),
         );
-
-        // Apply CMS defaults for display strings, with hardcoded fallbacks
-        $ctaButtonText = $ctaTextOverride ?? ($cmsSection->scheduleCtaButtonText ?? 'Discover');
-        $payWhatYouLikeText = $cmsSection->schedulePayWhatYouLikeText ?? 'Pay as you like';
-        $currencySymbol = $cmsSection->scheduleCurrencySymbol ?? '€';
-        $startPoint = $cmsSection->scheduleStartPoint ?? 'A giant flag near Church of St. Bavo at Grote Markt';
-        $groupTicketFallback = $cmsSection->scheduleHistoryGroupTicket ?? 'Group ticket- best value for 4 people';
-
-        // Build the day-grouped event card arrays with batch-loaded labels and prices
-        $days = $this->buildScheduleDays(
-            $scheduleData,
-            $eventTypeSlug,
-            $eventTypeId,
-            $ctaButtonText,
-            $payWhatYouLikeText,
-            $currencySymbol,
-            $startPoint,
-            $groupTicketFallback
-        );
-
-        return [
-            'cmsContent' => $cmsSection,
-            'pageSlug' => $pageSlug,
-            'eventTypeSlug' => $eventTypeSlug,
-            'eventTypeId' => $eventTypeId,
-            'days' => $days,
-            'activeFilters' => $filterParams,
-            'availableDays' => $availableDays,
-            'filterGroupTypes' => $this->resolveFilterGroupTypes($eventTypeSlug),
-            'priceTypeOptions' => $this->resolvePriceTypeOptions($eventTypeSlug),
-        ];
     }
 
     /**
-     * Builds day ViewModels from schedule data.
+     * Resolves CMS display strings with hardcoded fallbacks.
+     *
+     * @return array{ctaButtonText: string, payWhatYouLikeText: string, currencySymbol: string, startPoint: string, groupTicketFallback: string}
      */
+    private function resolveCmsDisplayStrings(ScheduleSectionContent $cmsSection, ?string $ctaTextOverride): array
+    {
+        return [
+            'ctaButtonText' => $ctaTextOverride ?? ($cmsSection->scheduleCtaButtonText ?? 'Discover'),
+            'payWhatYouLikeText' => $cmsSection->schedulePayWhatYouLikeText ?? 'Pay as you like',
+            'currencySymbol' => $cmsSection->scheduleCurrencySymbol ?? '€',
+            'startPoint' => $cmsSection->scheduleStartPoint ?? 'A giant flag near Church of St. Bavo at Grote Markt',
+            'groupTicketFallback' => $cmsSection->scheduleHistoryGroupTicket ?? 'Group ticket- best value for 4 people',
+        ];
+    }
+
+    /** Builds day ViewModels from schedule data with batch-loaded labels and prices. */
     private function buildScheduleDays(
         SessionQueryResult $scheduleData,
-        string             $eventTypeSlug,
-        int                $eventTypeId,
-        string             $defaultCtaText,
-        string             $payWhatYouLikeText,
-        string             $currencySymbol,
-        string             $startPoint = '',
-        string             $groupTicketFallback = ''
+        string $eventTypeSlug,
+        int $eventTypeId,
+        array $displayStrings,
     ): array {
         if (empty($scheduleData->days)) {
             return [];
         }
 
-        $sessionIds = array_map(static fn ($s) => $s->eventSessionId, $scheduleData->sessions);
+        $sessionIds = $this->collectSessionIds($scheduleData->sessions);
         $labelsMap = $this->batchLoadLabels($sessionIds);
         $pricesMap = $this->batchLoadPrices($sessionIds);
         $sessionsByDate = $this->groupSessionsByDate($scheduleData->sessions);
 
-        $dayArrays = [];
-        foreach ($scheduleData->days as $day) {
-            $dayArrays[] = $this->buildSingleDay(
-                $day, $sessionsByDate, $eventTypeSlug, $eventTypeId,
-                $labelsMap, $pricesMap, $defaultCtaText, $payWhatYouLikeText,
-                $currencySymbol, $startPoint, $groupTicketFallback
-            );
-        }
+        return $this->buildDayArrays($scheduleData->days, $sessionsByDate, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings);
+    }
 
+    /**
+     * Extracts session IDs from a list of sessions.
+     *
+     * @param \App\DTOs\Schedule\SessionWithEvent[] $sessions
+     * @return int[]
+     */
+    private function collectSessionIds(array $sessions): array
+    {
+        return array_map(static fn($s) => $s->eventSessionId, $sessions);
+    }
+
+    /** Iterates days and builds event card arrays for each. */
+    private function buildDayArrays(
+        array $days,
+        array $sessionsByDate,
+        string $eventTypeSlug,
+        int $eventTypeId,
+        array &$labelsMap,
+        array $pricesMap,
+        array $displayStrings,
+    ): array {
+        $dayArrays = [];
+        foreach ($days as $day) {
+            $dayArrays[] = $this->buildSingleDay($day, $sessionsByDate, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings);
+        }
         return $dayArrays;
     }
 
@@ -247,11 +275,7 @@ class ScheduleService implements IScheduleService
         int $eventTypeId,
         array &$labelsMap,
         array $pricesMap,
-        string $defaultCtaText,
-        string $payWhatYouLikeText,
-        string $currencySymbol,
-        string $startPoint,
-        string $groupTicketFallback,
+        array $displayStrings,
     ): array {
         $date = $day->date;
         $daySessions = $sessionsByDate[$date] ?? [];
@@ -262,10 +286,7 @@ class ScheduleService implements IScheduleService
 
         $events = [];
         foreach ($daySessions as $session) {
-            $events[] = $this->buildEventCard(
-                $session, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap,
-                $defaultCtaText, $payWhatYouLikeText, $currencySymbol, $startPoint, $groupTicketFallback
-            );
+            $events[] = $this->buildEventCard($session, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings);
         }
 
         return [
@@ -294,26 +315,30 @@ class ScheduleService implements IScheduleService
             if (!isset($grouped[$timeKey])) {
                 $grouped[$timeKey] = $session;
             } else {
-                // Merge labels from this session into the primary session's labels
-                $primaryId = $grouped[$timeKey]->eventSessionId;
-                $currentId = $session->eventSessionId;
-                $currentLabels = $labelsMap[$currentId] ?? [];
-                if (!isset($labelsMap[$primaryId])) {
-                    $labelsMap[$primaryId] = [];
-                }
-                $existingTexts = array_map(
-                    fn(EventSessionLabel $l) => $l->labelText,
-                    $labelsMap[$primaryId]
-                );
-                foreach ($currentLabels as $label) {
-                    if (!in_array($label->labelText, $existingTexts, true)) {
-                        $labelsMap[$primaryId][] = $label;
-                        $existingTexts[] = $label->labelText;
-                    }
-                }
+                $labelsMap = $this->mergeSessionLabels($labelsMap, $grouped[$timeKey]->eventSessionId, $session->eventSessionId);
             }
         }
         return [array_values($grouped), $labelsMap];
+    }
+
+    /** Merges unique labels from a secondary session into the primary session's label list. */
+    private function mergeSessionLabels(array $labelsMap, int $primaryId, int $sourceId): array
+    {
+        $sourceLabels = $labelsMap[$sourceId] ?? [];
+        if (!isset($labelsMap[$primaryId])) {
+            $labelsMap[$primaryId] = [];
+        }
+
+        $existingTexts = array_map(fn(EventSessionLabel $l) => $l->labelText, $labelsMap[$primaryId]);
+
+        foreach ($sourceLabels as $label) {
+            if (!in_array($label->labelText, $existingTexts, true)) {
+                $labelsMap[$primaryId][] = $label;
+                $existingTexts[] = $label->labelText;
+            }
+        }
+
+        return $labelsMap;
     }
 
     /**
@@ -325,24 +350,19 @@ class ScheduleService implements IScheduleService
     private function buildEventCard(
         \App\DTOs\Schedule\SessionWithEvent $session,
         string $eventTypeSlug,
-        int    $eventTypeId,
-        array  $labelsMap,
-        array  $pricesMap,
-        string $defaultCtaText,
-        string $payWhatYouLikeText,
-        string $currencySymbol,
-        string $startPoint = '',
-        string $groupTicketFallback = ''
+        int $eventTypeId,
+        array $labelsMap,
+        array $pricesMap,
+        array $displayStrings,
     ): array {
         $sessionId = $session->eventSessionId;
 
-        // Resolve derived display fields from the session + pre-loaded maps
         [$minAge, $maxAge] = $this->resolveAgeRange($session);
         $labels = $this->extractLabels($labelsMap[$sessionId] ?? [], $minAge, $maxAge, $eventTypeId);
         $priceData = $this->resolvePrice($pricesMap[$sessionId] ?? []);
-        $cta = $this->resolveCta($session, $eventTypeSlug, $defaultCtaText);
+        $cta = $this->resolveCta($session, $eventTypeSlug, $displayStrings['ctaButtonText']);
 
-        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $payWhatYouLikeText, $currencySymbol, $startPoint, $groupTicketFallback);
+        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $displayStrings);
     }
 
     /**
@@ -407,36 +427,78 @@ class ScheduleService implements IScheduleService
         ?int $maxAge,
         array $priceData,
         array $cta,
-        string $payWhatYouLikeText,
-        string $currencySymbol,
-        string $startPoint = '',
-        string $groupTicketFallback = ''
+        array $displayStrings,
     ): array {
-        $startDateTime = $session->startDateTime;
-        $endDateTime = $session->endDateTime;
+        return array_merge(
+            $this->buildCardIdentityFields($session, $eventTypeSlug, $eventTypeId),
+            $this->buildCardPriceFields($priceData, $cta, $displayStrings),
+            $this->buildCardLocationFields($session, $displayStrings['startPoint']),
+            $this->buildCardTimeFields($session),
+            $this->buildCardDetailFields($session, $labels, $minAge, $maxAge, $priceData, $displayStrings['groupTicketFallback']),
+        );
+    }
 
+    /** Core identity fields for the event card. */
+    private function buildCardIdentityFields(\App\DTOs\Schedule\SessionWithEvent $session, string $eventTypeSlug, int $eventTypeId): array
+    {
         return [
             'eventSessionId' => $session->eventSessionId,
             'eventId' => $session->eventId,
             'eventTypeSlug' => $eventTypeSlug,
             'eventTypeId' => $eventTypeId,
             'title' => $session->eventTitle,
+            'isHistory' => ($eventTypeId === EventTypeId::History->value),
+        ];
+    }
+
+    /** Pricing and CTA fields for the event card. */
+    private function buildCardPriceFields(array $priceData, array $cta, array $displayStrings): array
+    {
+        return [
             'priceAmount' => $priceData['amount'],
             'isPayWhatYouLike' => $priceData['isPayWhatYouLike'],
-            'isHistory' => ($eventTypeId === EventTypeId::History->value),
-            'payWhatYouLikeText' => $payWhatYouLikeText,
-            'currencySymbol' => $currencySymbol,
+            'payWhatYouLikeText' => $displayStrings['payWhatYouLikeText'],
+            'currencySymbol' => $displayStrings['currencySymbol'],
             'ctaLabel' => $cta['label'],
             'ctaUrl' => $cta['url'],
+            'priceType' => $this->resolvePriceType($priceData),
+        ];
+    }
+
+    /** Location fields for the event card. */
+    private function buildCardLocationFields(\App\DTOs\Schedule\SessionWithEvent $session, string $startPoint): array
+    {
+        return [
             'locationName' => $session->venueName ?? $startPoint,
             'hallName' => $session->hallName ?? '',
-            'startDateTime' => $startDateTime,
-            'endDateTime' => $endDateTime,
-            'isoDate' => $startDateTime->format('Y-m-d'),
-            'startTimeIso' => $startDateTime->format('H:i'),
-            'endTimeIso' => $endDateTime ? $endDateTime->format('H:i') : '',
-            'labels' => $labels,
             'venueName' => $session->venueName ?? '',
+        ];
+    }
+
+    /** DateTime fields for the event card. */
+    private function buildCardTimeFields(\App\DTOs\Schedule\SessionWithEvent $session): array
+    {
+        return [
+            'startDateTime' => $session->startDateTime,
+            'endDateTime' => $session->endDateTime,
+            'isoDate' => $session->startDateTime->format('Y-m-d'),
+            'startTimeIso' => $session->startDateTime->format('H:i'),
+            'endTimeIso' => $session->endDateTime ? $session->endDateTime->format('H:i') : '',
+            'timeRange' => $this->computeTimeRange($session->startDateTime),
+        ];
+    }
+
+    /** Remaining detail fields for the event card: labels, capacity, age, artist, history. */
+    private function buildCardDetailFields(
+        \App\DTOs\Schedule\SessionWithEvent $session,
+        array $labels,
+        ?int $minAge,
+        ?int $maxAge,
+        array $priceData,
+        string $groupTicketFallback,
+    ): array {
+        return [
+            'labels' => $labels,
             'capacityTotal' => $session->capacityTotal,
             'seatsAvailable' => $session->seatsAvailable,
             'minAge' => $minAge,
@@ -445,9 +507,17 @@ class ScheduleService implements IScheduleService
             'artistName' => $session->artistName,
             'artistImageUrl' => $session->artistImageUrl,
             'historyTicketLabel' => $session->historyTicketLabel ?? $groupTicketFallback ?: null,
-            'timeRange' => $this->computeTimeRange($startDateTime),
-            'priceType' => $priceData['isPayWhatYouLike'] ? 'pay-what-you-like' : ($priceData['amount'] === null || $priceData['amount'] == 0 ? 'free' : 'fixed'),
         ];
+    }
+
+    /** Maps price data to a human-readable price type string. */
+    private function resolvePriceType(array $priceData): string
+    {
+        if ($priceData['isPayWhatYouLike']) {
+            return 'pay-what-you-like';
+        }
+
+        return ($priceData['amount'] === null || $priceData['amount'] == 0) ? 'free' : 'fixed';
     }
 
     /**

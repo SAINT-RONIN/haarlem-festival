@@ -60,16 +60,25 @@ class CheckoutService implements ICheckoutService
     {
         $this->validatePayload($payload);
         $this->validateProgramNotEmpty($programData);
+        $this->validatePositiveTotal($programData->total);
+        $this->validateItemAvailability($programData->items);
 
         $method = $this->mapPaymentMethod((string)$payload['paymentMethod']);
-        $total = $programData->total;
 
+        return $this->executeCheckoutTransaction($programData, $userId, $payload, $method);
+    }
+
+    /** Validates that the order total is greater than zero. */
+    private function validatePositiveTotal(float $total): void
+    {
         if ($total <= 0) {
             throw new CheckoutException('Total amount must be greater than zero.');
         }
+    }
 
-        $this->validateItemAvailability($programData->items);
-
+    /** Persists order, reserves seats, creates Stripe session inside a transaction. */
+    private function executeCheckoutTransaction(ProgramData $programData, int $userId, array $payload, PaymentMethod $method): CheckoutSessionResult
+    {
         $this->pdo->beginTransaction();
 
         try {
@@ -83,11 +92,7 @@ class CheckoutService implements ICheckoutService
 
             $this->pdo->commit();
 
-            return new CheckoutSessionResult(
-                redirectUrl: $checkoutUrl,
-                orderId: $orderId,
-                paymentId: $paymentId,
-            );
+            return new CheckoutSessionResult(redirectUrl: $checkoutUrl, orderId: $orderId, paymentId: $paymentId);
         } catch (\Throwable $error) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
@@ -277,13 +282,24 @@ class CheckoutService implements ICheckoutService
         }
 
         $object = $this->extractWebhookObject($event);
+        [$metadata, $orderId, $paymentId] = $this->extractWebhookMetadata($object);
+        $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
+
+        return new WebhookHandlerResult(processed: true, eventId: $eventId, eventType: $eventType);
+    }
+
+    /**
+     * Extracts order/payment metadata from the Stripe webhook object.
+     *
+     * @return array{0: array, 1: ?int, 2: ?int}
+     */
+    private function extractWebhookMetadata(array $object): array
+    {
         $metadata = isset($object['metadata']) && is_array($object['metadata']) ? $object['metadata'] : [];
         $orderId = isset($metadata['order_id']) ? (int)$metadata['order_id'] : null;
         $paymentId = isset($metadata['payment_id']) ? (int)$metadata['payment_id'] : null;
 
-        $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
-
-        return new WebhookHandlerResult(processed: true, eventId: $eventId, eventType: $eventType);
+        return [$metadata, $orderId, $paymentId];
     }
 
     /** Validates that a webhook event has required fields. */
@@ -452,40 +468,52 @@ class CheckoutService implements ICheckoutService
             if ($item->eventSessionId <= 0) {
                 continue;
             }
-
-            $capacity = $this->eventSessionRepository->getCapacityInfo($item->eventSessionId);
-
-            if ($capacity === null) {
-                throw new CheckoutException("Session for '{$item->eventTitle}' no longer exists.");
-            }
-
-            $available = $capacity->getAvailableSeats();
-
-            // Block checkout if the session has no remaining seats
-            if ($available <= 0) {
-                throw new CheckoutException("'{$item->eventTitle}' is sold out.");
-            }
-
-            // Ensure requested quantity doesn't exceed available seats
-            if ($item->quantity > $available) {
-                throw new CheckoutException(
-                    "Only {$available} seats remaining for '{$item->eventTitle}'. You requested {$item->quantity}."
-                );
-            }
-
-            // Festival policy: reserve 10% of capacity for pass holders
-            $singleTicketCap = (int)floor($capacity->capacityTotal * CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO);
-
-            if (($capacity->soldSingleTickets + $item->quantity) > $singleTicketCap) {
-                $remaining = max(0, $singleTicketCap - $capacity->soldSingleTickets);
-                throw new CheckoutException(
-                    "Single-ticket limit reached for '{$item->eventTitle}'. "
-                    . ($remaining > 0
-                        ? "Only {$remaining} single tickets remaining."
-                        : 'Passes may still be available.')
-                );
-            }
+            $this->validateSingleItemAvailability($item);
         }
+    }
+
+    /** Validates capacity, quantity, and single-ticket policy for one cart item. */
+    private function validateSingleItemAvailability(ProgramItemData $item): void
+    {
+        $capacity = $this->eventSessionRepository->getCapacityInfo($item->eventSessionId);
+
+        if ($capacity === null) {
+            throw new CheckoutException("Session for '{$item->eventTitle}' no longer exists.");
+        }
+
+        $available = $capacity->getAvailableSeats();
+        $this->validateSeatAvailability($item, $available);
+        $this->validateSingleTicketCap($item, $capacity);
+    }
+
+    /** Ensures the session has enough seats for the requested quantity. */
+    private function validateSeatAvailability(ProgramItemData $item, int $available): void
+    {
+        if ($available <= 0) {
+            throw new CheckoutException("'{$item->eventTitle}' is sold out.");
+        }
+
+        if ($item->quantity > $available) {
+            throw new CheckoutException(
+                "Only {$available} seats remaining for '{$item->eventTitle}'. You requested {$item->quantity}."
+            );
+        }
+    }
+
+    /** Enforces the 90% single-ticket cap (10% reserved for pass holders). */
+    private function validateSingleTicketCap(ProgramItemData $item, object $capacity): void
+    {
+        $singleTicketCap = (int)floor($capacity->capacityTotal * CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO);
+
+        if (($capacity->soldSingleTickets + $item->quantity) <= $singleTicketCap) {
+            return;
+        }
+
+        $remaining = max(0, $singleTicketCap - $capacity->soldSingleTickets);
+        throw new CheckoutException(
+            "Single-ticket limit reached for '{$item->eventTitle}'. "
+            . ($remaining > 0 ? "Only {$remaining} single tickets remaining." : 'Passes may still be available.')
+        );
     }
 
     /**

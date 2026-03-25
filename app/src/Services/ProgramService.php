@@ -59,23 +59,14 @@ class ProgramService implements IProgramService
      */
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
-        if ($eventSessionId <= 0) {
-            throw new \InvalidArgumentException('eventSessionId is required');
-        }
-        if ($quantity <= 0) {
-            throw new \InvalidArgumentException('quantity must be at least 1');
-        }
+        $this->validateAddInput($eventSessionId, $quantity);
 
         try {
             $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
             $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
 
             if ($existingItem !== null) {
-                $newQuantity = $existingItem->quantity + $quantity;
-                $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
-
-                $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
-                return $items[0];
+                return $this->incrementExistingItem($existingItem, $quantity);
             }
 
             return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $donationAmount);
@@ -84,6 +75,27 @@ class ProgramService implements IProgramService
         } catch (\Throwable $error) {
             throw new ProgramException('Failed to add item to program.', 0, $error);
         }
+    }
+
+    /** Validates input parameters for adding an item to the program. */
+    private function validateAddInput(int $eventSessionId, int $quantity): void
+    {
+        if ($eventSessionId <= 0) {
+            throw new \InvalidArgumentException('eventSessionId is required');
+        }
+        if ($quantity <= 0) {
+            throw new \InvalidArgumentException('quantity must be at least 1');
+        }
+    }
+
+    /** Increases quantity on an existing program item and returns the updated item. */
+    private function incrementExistingItem(ProgramItem $existingItem, int $additionalQuantity): ProgramItem
+    {
+        $newQuantity = $existingItem->quantity + $additionalQuantity;
+        $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
+
+        $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
+        return $items[0];
     }
 
     /**
@@ -163,20 +175,28 @@ class ProgramService implements IProgramService
         $program = $this->findActiveProgram($sessionKey, $userAccountId);
 
         if ($program === null) {
-            return new ProgramData(program: null, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
+            return $this->buildEmptyProgramData(null);
         }
 
-        // Load raw program items from the database
         $programItems = $this->programRepository->findProgramItems(new ProgramItemFilter(programId: $program->programId));
 
         if ($programItems === []) {
-            return new ProgramData(program: $program, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
+            return $this->buildEmptyProgramData($program);
         }
 
-        // Enrich each item with event session metadata and pricing
-        $enrichedItems = $this->enrichItemsWithSessionData($programItems);
+        return $this->buildEnrichedProgramData($program, $programItems);
+    }
 
-        // Calculate financial totals
+    /** Builds a ProgramData with no items and zero totals. */
+    private function buildEmptyProgramData(?Program $program): ProgramData
+    {
+        return new ProgramData(program: $program, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
+    }
+
+    /** Enriches items and calculates financial totals for a non-empty program. */
+    private function buildEnrichedProgramData(Program $program, array $programItems): ProgramData
+    {
+        $enrichedItems = $this->enrichItemsWithSessionData($programItems);
         $subtotal = $this->calculateSubtotal($enrichedItems);
         $taxAmount = $subtotal * self::VAT_RATE;
 
@@ -391,27 +411,39 @@ class ProgramService implements IProgramService
      */
     private function getBasePrice(array $prices): float
     {
-        // Prefer fixed adult pricing when available; fall back to pay-what-you-like only if needed.
-        foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::Adult->value) {
-                return (float)$price->price;
-            }
+        $adultPrice = $this->findPriceByTier($prices, PriceTierId::Adult->value);
+        if ($adultPrice !== null) {
+            return (float)$adultPrice->price;
         }
 
-        // If there's any non-PWYL tier (e.g. reservation fee), use it as the base ticket price.
-        foreach ($prices as $price) {
-            if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
-                return (float)$price->price;
-            }
+        $nonPwylPrice = $this->findFirstNonPwylPrice($prices);
+        if ($nonPwylPrice !== null) {
+            return (float)$nonPwylPrice->price;
         }
 
         // PWYL events have no fixed base price; donation covers the amount
+        return 0.0;
+    }
+
+    /** Finds the first price matching a specific tier ID. */
+    private function findPriceByTier(array $prices, int $tierId): ?EventSessionPrice
+    {
         foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
-                return 0.0;
+            if ($price->priceTierId === $tierId) {
+                return $price;
             }
         }
+        return null;
+    }
 
-        return 0.0;
+    /** Finds the first price that is not pay-what-you-like. */
+    private function findFirstNonPwylPrice(array $prices): ?EventSessionPrice
+    {
+        foreach ($prices as $price) {
+            if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
+                return $price;
+            }
+        }
+        return null;
     }
 }

@@ -126,13 +126,29 @@ class HomeService implements IHomeService
             return null;
         }
 
+        $section = $this->findCmsSection($slug, $cmsContent);
+        if ($section === null) {
+            return null;
+        }
+
+        return $this->mapEventTypeFromSection($slug, $section);
+    }
+
+    /** Looks up the CMS section data for an event type slug. */
+    private function findCmsSection(string $slug, array $cmsContent): ?array
+    {
         $sectionKey = HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['sectionKey'] ?? null;
+
         if (!$sectionKey || !isset($cmsContent[$sectionKey])) {
             return null;
         }
 
-        $section = $cmsContent[$sectionKey];
+        return $cmsContent[$sectionKey];
+    }
 
+    /** Maps a CMS section's key-value pairs into a HomeEventTypeData object. */
+    private function mapEventTypeFromSection(string $slug, array $section): HomeEventTypeData
+    {
         return new HomeEventTypeData(
             slug: $slug,
             title: (string)($section[$slug . '_title'] ?? ucfirst($slug)),
@@ -198,28 +214,40 @@ class HomeService implements IHomeService
      * the venue name. Falls back to 'history' for unrecognised venues
      * (walking-tour locations).
      */
+    /** Keyword-to-category map for venue classification. */
+    private const VENUE_CATEGORY_KEYWORDS = [
+        'jazz' => ['patronaat'],
+        'dance' => ['club', 'lichtfabriek', 'slachthuis', 'jopenkerk', 'caprera', 'puncher'],
+        'history' => ['bavo', 'church'],
+        'storytelling' => ['verhalen', 'schuur', 'kweek', 'boom', 'theater'],
+    ];
+
+    /**
+     * Maps a venue to an event-type category by matching known keywords in
+     * the venue name. Falls back to 'history' for unrecognised venues.
+     */
     private function determineVenueCategory(string $venueName): string
     {
         $name = strtolower($venueName);
 
-        if (str_contains($name, 'patronaat')) {
-            return 'jazz';
-        }
-        if (str_contains($name, 'club') || str_contains($name, 'lichtfabriek')
-            || str_contains($name, 'slachthuis') || str_contains($name, 'jopenkerk')
-            || str_contains($name, 'caprera') || str_contains($name, 'puncher')) {
-            return 'dance';
-        }
-        if (str_contains($name, 'bavo') || str_contains($name, 'church')) {
-            return 'history';
-        }
-        if (str_contains($name, 'verhalen') || str_contains($name, 'schuur')
-            || str_contains($name, 'kweek') || str_contains($name, 'boom')
-            || str_contains($name, 'theater')) {
-            return 'storytelling';
+        foreach (self::VENUE_CATEGORY_KEYWORDS as $category => $keywords) {
+            if ($this->nameContainsAny($name, $keywords)) {
+                return $category;
+            }
         }
 
-        return 'history'; // Default for walking tour locations
+        return 'history';
+    }
+
+    /** Checks if a name contains any of the given keywords. */
+    private function nameContainsAny(string $name, array $keywords): bool
+    {
+        foreach ($keywords as $keyword) {
+            if (str_contains($name, $keyword)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
