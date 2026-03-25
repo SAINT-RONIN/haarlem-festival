@@ -265,24 +265,6 @@ class CmsDashboardController extends CmsBaseController
         }
     }
 
-    /** Checks CSRF token and item ID for an upload request; outputs JSON errors and returns false if invalid. */
-    private function isUploadRequestValid(): bool
-    {
-        $csrfToken = $_POST['csrf_token'] ?? null;
-        if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, is_string($csrfToken) ? $csrfToken : null)) {
-            echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_CSRF]);
-            return false;
-        }
-
-        $itemId = (int)($_POST['item_id'] ?? 0);
-        if ($itemId <= 0) {
-            echo json_encode(['success' => false, 'error' => CmsMessages::MISSING_ITEM_ID]);
-            return false;
-        }
-
-        return true;
-    }
-
     /** Routes the upload request to either link an existing asset or handle a new file upload. */
     private function dispatchUploadAction(): void
     {
