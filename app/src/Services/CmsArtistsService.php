@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Artist;
 use App\DTOs\Cms\ArtistUpsertData;
+use App\Exceptions\CmsOperationException;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Services\Interfaces\ICmsArtistsService;
 
@@ -55,19 +56,34 @@ class CmsArtistsService implements ICmsArtistsService
         return $this->validate($data);
     }
 
+    /** @throws CmsOperationException When the database write fails */
     public function createArtist(ArtistUpsertData $data): int
     {
-        return $this->artistRepository->create($data);
+        try {
+            return $this->artistRepository->create($data);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to create artist.', 0, $error);
+        }
     }
 
+    /** @throws CmsOperationException When the database write fails */
     public function updateArtist(int $id, ArtistUpsertData $data): void
     {
-        $this->artistRepository->update($id, $data);
+        try {
+            $this->artistRepository->update($id, $data);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to update artist.', 0, $error);
+        }
     }
 
+    /** @throws CmsOperationException When the database write fails */
     public function deleteArtist(int $id): void
     {
-        $this->artistRepository->delete($id);
+        try {
+            $this->artistRepository->delete($id);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to delete artist.', 0, $error);
+        }
     }
 
     /** @return array<string, string> */

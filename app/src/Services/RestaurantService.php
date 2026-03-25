@@ -11,6 +11,7 @@ use App\Repositories\Interfaces\ICuisineTypeRepository;
 use App\Repositories\Interfaces\IRestaurantImageRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Repositories\RestaurantContentRepository;
+use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IRestaurantService;
 
 /**
@@ -46,6 +47,35 @@ class RestaurantService implements IRestaurantService
 
     public function getRestaurantPageData(): RestaurantPageData
     {
+        try {
+            return $this->assembleRestaurantPageData();
+        } catch (\Throwable $error) {
+            throw new PageLoadException('Failed to load the Restaurant page.', 0, $error);
+        }
+    }
+
+    /**
+     * Returns detail data for a single restaurant, or null if not found.
+     * Uses defensive null-check (foreseeable: restaurant may not exist).
+     */
+    public function getRestaurantDetailData(int $id): ?RestaurantDetailData
+    {
+        $restaurant = $this->restaurantRepository->findById($id);
+
+        if ($restaurant === null) {
+            return null;
+        }
+
+        try {
+            return $this->assembleDetailData($restaurant);
+        } catch (\Throwable $error) {
+            throw new PageLoadException('Failed to load restaurant detail page.', 0, $error);
+        }
+    }
+
+    /** Fetches all data sources and assembles the restaurant overview page payload. */
+    private function assembleRestaurantPageData(): RestaurantPageData
+    {
         $restaurants = $this->restaurantRepository->findAllActive();
         $cuisinesByRestaurant = $this->buildCuisineMap($restaurants);
 
@@ -62,14 +92,9 @@ class RestaurantService implements IRestaurantService
         );
     }
 
-    public function getRestaurantDetailData(int $id): ?RestaurantDetailData
+    /** Assembles the full detail payload for a single restaurant. */
+    private function assembleDetailData(\App\Models\Restaurant $restaurant): RestaurantDetailData
     {
-        $restaurant = $this->restaurantRepository->findById($id);
-
-        if ($restaurant === null) {
-            return null;
-        }
-
         $images = $this->restaurantImageRepository->findByRestaurantId($restaurant->restaurantId);
         $scheduleData = $this->getRestaurantScheduleData($restaurant->name);
         $cuisineTypes = $this->cuisineTypeRepository->findByRestaurantId($restaurant->restaurantId);

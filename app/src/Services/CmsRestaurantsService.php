@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Restaurant;
 use App\DTOs\Cms\RestaurantUpsertData;
+use App\Exceptions\CmsOperationException;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Services\Interfaces\ICmsRestaurantsService;
 
@@ -38,19 +39,34 @@ class CmsRestaurantsService implements ICmsRestaurantsService
         return $this->validate($data);
     }
 
+    /** @throws CmsOperationException When the database write fails */
     public function createRestaurant(RestaurantUpsertData $data): int
     {
-        return $this->restaurantRepository->create($data);
+        try {
+            return $this->restaurantRepository->create($data);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to create restaurant.', 0, $error);
+        }
     }
 
+    /** @throws CmsOperationException When the database write fails */
     public function updateRestaurant(int $id, RestaurantUpsertData $data): void
     {
-        $this->restaurantRepository->update($id, $data);
+        try {
+            $this->restaurantRepository->update($id, $data);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to update restaurant.', 0, $error);
+        }
     }
 
+    /** @throws CmsOperationException When the database write fails */
     public function deleteRestaurant(int $id): void
     {
-        $this->restaurantRepository->delete($id);
+        try {
+            $this->restaurantRepository->delete($id);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to delete restaurant.', 0, $error);
+        }
     }
 
     /** @return array<string, string> */

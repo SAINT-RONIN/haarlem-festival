@@ -19,6 +19,7 @@ use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
+use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IScheduleService;
 use App\Helpers\AgeLabelFormatter;
 
@@ -49,6 +50,9 @@ class ScheduleService implements IScheduleService
      *
      * @return array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: array, filterGroupTypes: string[], priceTypeOptions: string[]}
      */
+    /**
+     * @throws PageLoadException When an unexpected error occurs while building schedule data
+     */
     public function getScheduleData(
         string $pageSlug,
         int $eventTypeId,
@@ -56,6 +60,22 @@ class ScheduleService implements IScheduleService
         ?int $eventId = null,
         ?string $ctaTextOverride = null,
         ?ScheduleFilterParams $filterParams = null,
+    ): array {
+        try {
+            return $this->assembleScheduleData($pageSlug, $eventTypeId, $maxDays, $eventId, $ctaTextOverride, $filterParams);
+        } catch (\Throwable $error) {
+            throw new PageLoadException('Failed to load schedule data.', 0, $error);
+        }
+    }
+
+    /** Fetches all data sources and assembles the schedule payload. */
+    private function assembleScheduleData(
+        string $pageSlug,
+        int $eventTypeId,
+        int $maxDays,
+        ?int $eventId,
+        ?string $ctaTextOverride,
+        ?ScheduleFilterParams $filterParams,
     ): array {
         // Resolve the event type slug used for URLs and filter logic
         $eventType = $this->eventTypeRepository->findEventTypes(new EventTypeFilter(eventTypeId: $eventTypeId))[0] ?? null;

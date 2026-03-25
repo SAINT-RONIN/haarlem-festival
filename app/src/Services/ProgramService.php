@@ -13,6 +13,7 @@ use App\DTOs\Filters\ProgramFilter;
 use App\Models\ProgramItem;
 use App\DTOs\Program\ProgramItemData;
 use App\DTOs\Filters\ProgramItemFilter;
+use App\Exceptions\ProgramException;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -54,6 +55,7 @@ class ProgramService implements IProgramService
      * Adds an event session to the program, or increases quantity if already present.
      *
      * @throws \InvalidArgumentException When eventSessionId or quantity is invalid
+     * @throws ProgramException When the database write fails
      */
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
@@ -63,19 +65,25 @@ class ProgramService implements IProgramService
         if ($quantity <= 0) {
             throw new \InvalidArgumentException('quantity must be at least 1');
         }
-        $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
 
-        $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
+        try {
+            $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
+            $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
 
-        if ($existingItem !== null) {
-            $newQuantity = $existingItem->quantity + $quantity;
-            $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
+            if ($existingItem !== null) {
+                $newQuantity = $existingItem->quantity + $quantity;
+                $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
 
-            $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
-            return $items[0];
+                $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
+                return $items[0];
+            }
+
+            return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $donationAmount);
+        } catch (\InvalidArgumentException $error) {
+            throw $error;
+        } catch (\Throwable $error) {
+            throw new ProgramException('Failed to add item to program.', 0, $error);
         }
-
-        return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $donationAmount);
     }
 
     /**

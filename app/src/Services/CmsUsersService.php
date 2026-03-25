@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Helpers\UserValidationHelper;
 use App\Models\UserAccount;
 use App\DTOs\User\UserWithRole;
+use App\Exceptions\CmsOperationException;
 use App\Repositories\Interfaces\ICmsUsersRepository;
 use App\Services\Interfaces\ICmsUsersService;
 use App\Utils\PasswordHasher;
@@ -87,6 +88,7 @@ class CmsUsersService implements ICmsUsersService
      *
      * @return int The newly created user's ID
      */
+    /** @throws CmsOperationException When the database write fails */
     public function createUser(
         string $username,
         string $email,
@@ -95,13 +97,18 @@ class CmsUsersService implements ICmsUsersService
         string $lastName,
         int $roleId,
     ): int {
-        $hash = PasswordHasher::hash($password);
-
-        return $this->usersRepository->createUser($username, $email, $hash, $firstName, $lastName, $roleId);
+        try {
+            $hash = PasswordHasher::hash($password);
+            return $this->usersRepository->createUser($username, $email, $hash, $firstName, $lastName, $roleId);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to create user.', 0, $error);
+        }
     }
 
     /**
      * Updates a user's profile fields and role. Password is only re-hashed if a new one is provided.
+     *
+     * @throws CmsOperationException When the database write fails
      */
     public function updateUser(
         int $id,
@@ -112,16 +119,25 @@ class CmsUsersService implements ICmsUsersService
         string $lastName,
         int $roleId,
     ): void {
-        $this->usersRepository->updateUser($id, $username, $email, $firstName, $lastName, $roleId);
+        try {
+            $this->usersRepository->updateUser($id, $username, $email, $firstName, $lastName, $roleId);
 
-        if ($password !== null && $password !== '') {
-            $this->usersRepository->updateUserPassword($id, PasswordHasher::hash($password));
+            if ($password !== null && $password !== '') {
+                $this->usersRepository->updateUserPassword($id, PasswordHasher::hash($password));
+            }
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to update user.', 0, $error);
         }
     }
 
+    /** @throws CmsOperationException When the database write fails */
     public function deleteUser(int $id): void
     {
-        $this->usersRepository->deleteUser($id);
+        try {
+            $this->usersRepository->deleteUser($id);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to delete user.', 0, $error);
+        }
     }
 
     /**

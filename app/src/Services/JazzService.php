@@ -10,6 +10,7 @@ use App\DTOs\Pages\JazzPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
 use App\Repositories\JazzContentRepository;
+use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IJazzService;
 
 /**
@@ -34,7 +35,11 @@ class JazzService implements IJazzService
      */
     public function getJazzPageData(): JazzPageData
     {
-        return $this->buildPageData(JazzPageConstants::PAGE_SLUG);
+        try {
+            return $this->buildPageData(JazzPageConstants::PAGE_SLUG);
+        } catch (\Throwable $error) {
+            throw new PageLoadException('Failed to load the Jazz page.', 0, $error);
+        }
     }
 
     /**

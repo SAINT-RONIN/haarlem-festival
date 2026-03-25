@@ -20,6 +20,7 @@ use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Repositories\Interfaces\IVenueRepository;
+use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IHomeService;
 use App\Constants\HomeUiConfig;
 
@@ -52,6 +53,16 @@ class HomeService implements IHomeService
      * (up to 4 days) into a single HomePageData object.
      */
     public function getHomePageData(): HomePageData
+    {
+        try {
+            return $this->assembleHomePageData();
+        } catch (\Throwable $error) {
+            throw new PageLoadException('Failed to load the home page.', 0, $error);
+        }
+    }
+
+    /** Fetches and combines all data sources for the home page. */
+    private function assembleHomePageData(): HomePageData
     {
         // Load all CMS key-value content for the home page (used by event-type cards)
         $cmsContent = $this->cmsService->getHomePageContent();

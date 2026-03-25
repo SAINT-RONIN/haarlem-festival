@@ -8,6 +8,7 @@ use App\Constants\StorytellingPageConstants;
 use App\DTOs\Pages\StorytellingPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\StorytellingContentRepository;
+use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IStorytellingService;
 
 /**
@@ -32,6 +33,16 @@ class StorytellingService implements IStorytellingService
      * the returned payload is passed to the mapper layer for UI formatting.
      */
     public function getStorytellingPageData(): StorytellingPageData
+    {
+        try {
+            return $this->assembleStorytellingPageData();
+        } catch (\Throwable $error) {
+            throw new PageLoadException('Failed to load the Storytelling page.', 0, $error);
+        }
+    }
+
+    /** Fetches all CMS sections and assembles the storytelling page data. */
+    private function assembleStorytellingPageData(): StorytellingPageData
     {
         $slug = StorytellingPageConstants::PAGE_SLUG;
         return new StorytellingPageData(

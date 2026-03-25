@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Enums\UserRoleId;
 use App\Helpers\UserValidationHelper;
 use App\Infrastructure\Interfaces\IEmailService;
+use App\Exceptions\AuthenticationException;
 use App\Repositories\Interfaces\IPasswordResetTokenRepository;
 use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\IAuthService;
@@ -165,31 +166,43 @@ class AuthService implements IAuthService
      * Registers a new user account.
      *
      * @return int The new user's ID
+     * @throws AuthenticationException When registration persistence fails
      */
     public function register(array $data): int
     {
-        $passwordHash = PasswordHasher::hash($data['password']);
+        try {
+            $passwordHash = PasswordHasher::hash($data['password']);
 
-        return $this->userRepository->create([
-            'roleId' => UserRoleId::Customer->value,
-            'username' => trim($data['username']),
-            'email' => trim($data['email']),
-            'passwordHash' => $passwordHash,
-            'firstName' => trim($data['firstName']),
-            'lastName' => trim($data['lastName']),
-        ]);
+            return $this->userRepository->create([
+                'roleId' => UserRoleId::Customer->value,
+                'username' => trim($data['username']),
+                'email' => trim($data['email']),
+                'passwordHash' => $passwordHash,
+                'firstName' => trim($data['firstName']),
+                'lastName' => trim($data['lastName']),
+            ]);
+        } catch (\Throwable $error) {
+            throw new AuthenticationException('Failed to register user account.', 0, $error);
+        }
     }
 
     /**
      * Initiates password reset flow.
      * Always returns true to prevent account enumeration.
      */
+    /**
+     * @throws AuthenticationException When an unexpected failure occurs during the reset flow
+     */
     public function requestPasswordReset(string $email): bool
     {
         $user = $this->userRepository->findByEmail(trim($email));
 
-        // If user exists, create token and send email
-        if ($user !== null) {
+        // Defensive: if user doesn't exist, return true to prevent account enumeration
+        if ($user === null) {
+            return true;
+        }
+
+        try {
             // Generate a CSPRNG token; only the SHA-256 hash is persisted (the raw token travels via email)
             $rawToken = bin2hex(random_bytes(32));
             $tokenHash = hash('sha256', $rawToken);
@@ -197,9 +210,10 @@ class AuthService implements IAuthService
 
             $this->resetTokenRepository->create($user->userAccountId, $tokenHash, $expiresAt);
             $this->emailService->sendPasswordResetEmail($user->email, $rawToken);
+        } catch (\Throwable $error) {
+            throw new AuthenticationException('Failed to process password reset request.', 0, $error);
         }
 
-        // Always return true (don't reveal if email exists)
         return true;
     }
 
@@ -233,15 +247,18 @@ class AuthService implements IAuthService
      *
      * @return array{success: bool, error?: string}
      */
+    /**
+     * @throws AuthenticationException When the password update or token invalidation fails
+     */
     public function resetPassword(string $rawToken, string $newPassword, string $confirmPassword): array
     {
-        // Validate the token first
+        // Validate the token first (defensive: foreseeable failure)
         $tokenResult = $this->validateResetToken($rawToken);
         if (!$tokenResult['valid']) {
             return ['success' => false, 'error' => $tokenResult['error']];
         }
 
-        // Validate new password
+        // Validate new password (defensive: foreseeable failure)
         $passwordError = UserValidationHelper::checkPasswordLength($newPassword);
         if ($passwordError !== null) {
             return ['success' => false, 'error' => $passwordError];
@@ -251,12 +268,14 @@ class AuthService implements IAuthService
             return ['success' => false, 'error' => 'Passwords do not match.'];
         }
 
-        // Update password
-        $passwordHash = PasswordHasher::hash($newPassword);
-        $this->userRepository->updatePasswordHash($tokenResult['userId'], $passwordHash);
-
-        // Mark token as used
-        $this->resetTokenRepository->markAsUsed($tokenResult['tokenId']);
+        // Write operations — catch unexpected failures
+        try {
+            $passwordHash = PasswordHasher::hash($newPassword);
+            $this->userRepository->updatePasswordHash($tokenResult['userId'], $passwordHash);
+            $this->resetTokenRepository->markAsUsed($tokenResult['tokenId']);
+        } catch (\Throwable $error) {
+            throw new AuthenticationException('Failed to reset password.', 0, $error);
+        }
 
         return ['success' => true];
     }

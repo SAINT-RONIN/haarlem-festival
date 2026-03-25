@@ -22,6 +22,7 @@ use App\DTOs\Filters\EventFilter;
 use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
+use App\Exceptions\CmsOperationException;
 use App\Services\Interfaces\ICmsEditService;
 use App\Utils\CmsContentLimits;
 
@@ -148,7 +149,20 @@ class CmsEditService implements ICmsEditService
      * @param array<int|string, mixed> $items Array of item updates: [itemId => value_string]
      * @throws \App\Exceptions\CmsEditException if an item ID does not belong to the given page
      */
+    /** @throws CmsOperationException When a database write fails during batch update */
     public function updatePageItems(int $pageId, array $items): CmsUpdateResult
+    {
+        try {
+            return $this->processPageItemUpdates($pageId, $items);
+        } catch (\App\Exceptions\CmsEditException $error) {
+            throw $error;
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to update page items.', 0, $error);
+        }
+    }
+
+    /** Iterates each item, validates, and persists changes. */
+    private function processPageItemUpdates(int $pageId, array $items): CmsUpdateResult
     {
         $errors = [];
         $updatedCount = 0;
@@ -203,9 +217,14 @@ class CmsEditService implements ICmsEditService
     /**
      * Updates a single CMS item's media asset.
      */
+    /** @throws CmsOperationException When the database write fails */
     public function updateItemImage(int $itemId, int $mediaAssetId): bool
     {
-        return $this->cmsRepository->updateItemMediaAsset($itemId, $mediaAssetId);
+        try {
+            return $this->cmsRepository->updateItemMediaAsset($itemId, $mediaAssetId);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to update item image.', 0, $error);
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\PriceTierId;
 use App\Helpers\ScheduleDayVisibilityResolver;
+use App\Exceptions\CmsOperationException;
 use App\Exceptions\ValidationException;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
@@ -208,6 +209,10 @@ class CmsEventsService implements ICmsEventsService
      *
      * @throws ValidationException
      */
+    /**
+     * @throws ValidationException When validation fails
+     * @throws CmsOperationException When the database write fails
+     */
     public function createEvent(array $data): int
     {
         $errors = $this->validateEventCreate($data);
@@ -215,7 +220,11 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException($errors);
         }
 
-        return $this->eventRepository->create($data);
+        try {
+            return $this->eventRepository->create($data);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to create event.', 0, $error);
+        }
     }
 
     /**
@@ -277,6 +286,7 @@ class CmsEventsService implements ICmsEventsService
      *
      * @throws ValidationException
      */
+    /** @throws CmsOperationException When the database write fails */
     public function updateEvent(int $eventId, array $data): bool
     {
         $errors = $this->validateEvent($data);
@@ -284,7 +294,11 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException($errors);
         }
 
-        return $this->eventRepository->update($eventId, $data);
+        try {
+            return $this->eventRepository->update($eventId, $data);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to update event.', 0, $error);
+        }
     }
 
     /**
@@ -561,15 +575,20 @@ class CmsEventsService implements ICmsEventsService
      *
      * @throws ValidationException When the event does not exist
      */
+    /** @throws CmsOperationException When the database write fails */
     public function deleteEvent(int $eventId): void
     {
         if (!$this->eventRepository->exists($eventId)) {
             throw new ValidationException(['Event not found']);
         }
 
-        // Soft-delete the event, then cascade-deactivate its sessions
-        $this->eventRepository->softDelete($eventId);
-        $this->sessionRepository->deactivateByEventId($eventId);
+        try {
+            // Soft-delete the event, then cascade-deactivate its sessions
+            $this->eventRepository->softDelete($eventId);
+            $this->sessionRepository->deactivateByEventId($eventId);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to delete event.', 0, $error);
+        }
     }
 
     /**

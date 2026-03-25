@@ -8,6 +8,7 @@ use App\Constants\HistoryPageConstants;
 use App\DTOs\Pages\HistoryPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\HistoryContentRepository;
+use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IHistoryService;
 
 /**
@@ -24,7 +25,11 @@ class HistoryService implements IHistoryService
 
     public function getHistoryPageData(): HistoryPageData
     {
-        return $this->buildPageData(HistoryPageConstants::PAGE_SLUG);
+        try {
+            return $this->buildPageData(HistoryPageConstants::PAGE_SLUG);
+        } catch (\Throwable $error) {
+            throw new PageLoadException('Failed to load the History page.', 0, $error);
+        }
     }
 
     private function buildPageData(string $pageSlug): HistoryPageData
