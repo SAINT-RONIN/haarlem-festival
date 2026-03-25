@@ -126,7 +126,7 @@ class HomeService implements IHomeService
             return null;
         }
 
-        $sectionKey = HomeUiConfig::SECTION_MAP[$slug] ?? null;
+        $sectionKey = HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['sectionKey'] ?? null;
         if (!$sectionKey || !isset($cmsContent[$sectionKey])) {
             return null;
         }
@@ -139,7 +139,7 @@ class HomeService implements IHomeService
             description: (string)($section[$slug . '_description'] ?? ''),
             button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
             image: $section[$slug . '_image'] ?? null,
-            darkBg: HomeUiConfig::DARK_BG_MAP[$slug] ?? false,
+            darkBg: HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['darkBg'] ?? false,
         );
     }
 

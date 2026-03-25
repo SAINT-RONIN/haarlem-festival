@@ -55,7 +55,7 @@ final class HomeMapper
             button:      $t->button,
             image:       $t->image,
             darkBg:      $t->darkBg,
-            badgeClass:  HomeUiConfig::BADGE_COLORS[$t->slug] ?? 'bg-gray-500',
+            badgeClass:  HomeUiConfig::EVENT_TYPE_CONFIG[$t->slug]['badgeColor'] ?? 'bg-gray-500',
             imageSrc:    self::resolveEventTypeImage($t->slug, $t->image),
             imageAlt:    self::resolveEventTypeAlt($t->slug, $t->title),
         ), $eventTypes);
@@ -103,7 +103,7 @@ final class HomeMapper
             name:       $l->name,
             address:    $l->address,
             category:   $l->category,
-            badgeClass: HomeUiConfig::BADGE_COLORS[$l->category] ?? 'bg-gray-500',
+            badgeClass: HomeUiConfig::EVENT_TYPE_CONFIG[$l->category]['badgeColor'] ?? 'bg-gray-500',
         ), $locations);
     }
 
@@ -156,9 +156,9 @@ final class HomeMapper
 
         return new HomeScheduleSessionViewModel(
             timeLabel:     self::formatSessionTimes($session->earliestStart, $session->latestEnd),
-            title:         HomeUiConfig::EVENT_SUMMARY_TITLES[$slug] ?? $session->firstEventTitle,
+            title:         HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['summaryTitle'] ?? $session->firstEventTitle,
             categoryLabel: $session->typeName,
-            borderClass:   HomeUiConfig::SCHEDULE_COLORS[$slug] ?? 'bg-gray-500',
+            borderClass:   HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['scheduleColor'] ?? 'bg-gray-500',
         );
     }
 
