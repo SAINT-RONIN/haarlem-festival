@@ -12,8 +12,8 @@ final readonly class HistoryPageData
 {
     public function __construct(
         public HeroSectionContent $heroSection,
-        public HistoryGradientSectionContent $gradientSection,
-        public HistoryIntroSectionContent $introSection,
+        public GradientSectionContent $gradientSection,
+        public IntroSectionContent $introSection,
         public HistoryRouteSectionContent $routeSection,
         public HistoryVenuesSectionContent $venuesSection,
         public HistoryTicketOptionsSectionContent $ticketOptionsSection,

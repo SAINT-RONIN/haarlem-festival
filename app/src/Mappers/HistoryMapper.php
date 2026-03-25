@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\HistoryGradientSectionContent;
-use App\Models\HistoryIntroSectionContent;
+use App\Models\GradientSectionContent;
+use App\Models\IntroSectionContent;
 use App\Models\HistoryPageData;
 use App\Models\HistoryRouteSectionContent;
 use App\Models\HistoryTicketOptionsSectionContent;
@@ -57,7 +57,7 @@ final class HistoryMapper
         );
     }
 
-    private static function toGradientSection(HistoryGradientSectionContent $content): GradientSectionData
+    private static function toGradientSection(GradientSectionContent $content): GradientSectionData
     {
         return new GradientSectionData(
             headingText:        $content->gradientHeading ?? '',
@@ -66,7 +66,7 @@ final class HistoryMapper
         );
     }
 
-    private static function toIntroSplitSection(HistoryIntroSectionContent $content): IntroSplitSectionData
+    private static function toIntroSplitSection(IntroSectionContent $content): IntroSplitSectionData
     {
         return new IntroSplitSectionData(
             headingText:  $content->introHeading ?? '',

@@ -9,7 +9,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantCardsSectionContent;
 use App\Models\RestaurantDetailData;
 use App\Models\RestaurantDetailSectionContent;
-use App\Models\RestaurantGradientSectionContent;
+use App\Models\GradientSectionContent;
 use App\Models\RestaurantInstructionsSectionContent;
 use App\Models\RestaurantIntroSectionContent;
 use App\Models\RestaurantIntroSplit2SectionContent;
@@ -163,7 +163,7 @@ final class RestaurantMapper
         );
     }
 
-    private static function toGradientSection(RestaurantGradientSectionContent $cms): GradientSectionData
+    private static function toGradientSection(GradientSectionContent $cms): GradientSectionData
     {
         return new GradientSectionData(
             headingText:        $cms->gradientHeading ?? '',

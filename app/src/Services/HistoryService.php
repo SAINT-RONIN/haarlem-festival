@@ -8,8 +8,8 @@ use App\Constants\GlobalUiConstants;
 use App\Constants\HistoryPageConstants;
 use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
-use App\Models\HistoryGradientSectionContent;
-use App\Models\HistoryIntroSectionContent;
+use App\Models\GradientSectionContent;
+use App\Models\IntroSectionContent;
 use App\Models\HistoryPageData;
 use App\Models\HistoryRouteSectionContent;
 use App\Models\HistoryTicketOptionsSectionContent;
@@ -34,8 +34,8 @@ class HistoryService implements IHistoryService
     {
         return new HistoryPageData(
             heroSection:          HeroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_HERO)),
-            gradientSection:      HistoryGradientSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_GRADIENT)),
-            introSection:         HistoryIntroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_INTRO)),
+            gradientSection:      GradientSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_GRADIENT)),
+            introSection:         IntroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_INTRO)),
             routeSection:         HistoryRouteSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_ROUTE)),
             venuesSection:        HistoryVenuesSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_VENUES)),
             ticketOptionsSection: HistoryTicketOptionsSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS)),

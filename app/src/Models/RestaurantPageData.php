@@ -16,7 +16,7 @@ final readonly class RestaurantPageData
     public function __construct(
         public HeroSectionContent $heroContent,
         public GlobalUiContent $globalUiContent,
-        public RestaurantGradientSectionContent $gradientSection,
+        public GradientSectionContent $gradientSection,
         public RestaurantIntroSectionContent $introSplitSection,
         public RestaurantIntroSplit2SectionContent $introSplit2Section,
         public RestaurantInstructionsSectionContent $instructionsSection,

@@ -9,7 +9,7 @@ use App\Models\HeroSectionContent;
 use App\Models\RestaurantCardsSectionContent;
 use App\Models\RestaurantDetailData;
 use App\Models\RestaurantDetailSectionContent;
-use App\Models\RestaurantGradientSectionContent;
+use App\Models\GradientSectionContent;
 use App\Models\RestaurantInstructionsSectionContent;
 use App\Models\RestaurantIntroSectionContent;
 use App\Models\RestaurantIntroSplit2SectionContent;
@@ -61,7 +61,7 @@ class RestaurantService implements IRestaurantService
             globalUiContent: GlobalUiContent::fromRawArray(
                 $this->cmsService->getSectionContent('home', 'global_ui'),
             ),
-            gradientSection: RestaurantGradientSectionContent::fromRawArray(
+            gradientSection: GradientSectionContent::fromRawArray(
                 $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_GRADIENT),
             ),
             introSplitSection: RestaurantIntroSectionContent::fromRawArray(
