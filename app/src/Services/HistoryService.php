@@ -13,13 +13,13 @@ use App\Models\HistoryRouteSectionContent;
 use App\Models\HistoryTicketOptionsSectionContent;
 use App\Models\HistoryTourInfoSectionContent;
 use App\Models\HistoryVenuesSectionContent;
-use App\Services\Interfaces\ICmsPageContentService;
+use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IHistoryService;
 
 class HistoryService implements IHistoryService
 {
     public function __construct(
-        private readonly ICmsPageContentService $cmsService,
+        private readonly ICmsContentRepository $cmsService,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }

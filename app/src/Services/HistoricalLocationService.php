@@ -12,13 +12,13 @@ use App\Models\HistoricalLocationHeroContent;
 use App\Models\HistoricalLocationIntroContent;
 use App\Models\HistoricalLocationPageData;
 use App\Models\HistoricalLocationSignificanceContent;
-use App\Services\Interfaces\ICmsPageContentService;
+use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IHistoricalLocationService;
 
 class HistoricalLocationService implements IHistoricalLocationService
 {
     public function __construct(
-        private readonly ICmsPageContentService $cmsService,
+        private readonly ICmsContentRepository $cmsService,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }

@@ -265,11 +265,11 @@ return static function (string $controllerClass): object {
         ),
         HistoryController::class => new HistoryController(
             new HistoryService(
-                $cmsPageContent(),
+                $cmsContent(),
                 $globalUiLoader(),
             ),
             new HistoricalLocationService(
-                $cmsPageContent(),
+                $cmsContent(),
                 $globalUiLoader(),
             ),
             $sessionService,
