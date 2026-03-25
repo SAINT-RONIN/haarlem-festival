@@ -38,7 +38,6 @@ class CmsMediaController extends CmsBaseController
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'media';
             $viewModel = $this->buildMediaListViewModel();
             require __DIR__ . '/../Views/pages/cms/media.php';
@@ -55,7 +54,6 @@ class CmsMediaController extends CmsBaseController
     {
         header('Content-Type: application/json');
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateMediaCsrf();
             $this->validateFilePresent();
             $this->processMediaUpload();
@@ -74,7 +72,6 @@ class CmsMediaController extends CmsBaseController
     {
         header('Content-Type: application/json');
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateMediaCsrf();
             $this->processMediaDelete();
         } catch (\Throwable $e) {
@@ -91,7 +88,6 @@ class CmsMediaController extends CmsBaseController
     {
         header('Content-Type: application/json');
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $allAssets = $this->mediaAssetService->getAllAssets();
             // Reuses CmsEventsMapper for JSON serialization — shared DTO shape across media consumers
             $data = array_map([CmsEventsMapper::class, 'toMediaJsonData'], $allAssets);

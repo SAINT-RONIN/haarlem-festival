@@ -47,7 +47,6 @@ class CmsEventsController extends CmsBaseController
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'events';
             $viewModel = $this->buildEventsListViewModel();
             require __DIR__ . '/../Views/pages/cms/events.php';
@@ -63,7 +62,6 @@ class CmsEventsController extends CmsBaseController
     public function create(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
 
             $currentView = 'events';
             $viewModel = new CmsEventCreateViewModel(
@@ -92,7 +90,6 @@ class CmsEventsController extends CmsBaseController
     public function store(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             // Raw $_POST is passed to the service which handles extraction and validation
             $eventId = $this->eventsService->createEvent($_POST);
             $this->redirectWithFlash('Event created successfully.', 'success', "/cms/events/{$eventId}/edit");
@@ -110,7 +107,6 @@ class CmsEventsController extends CmsBaseController
     public function edit(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'events';
             $editData = $this->loadEventEditData((int)$id);
             if ($editData === null) {
@@ -129,7 +125,6 @@ class CmsEventsController extends CmsBaseController
     public function update(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = (int)$id;
             $this->eventsService->updateEvent($eventId, $_POST);
             $this->redirectWithFlash('Event updated successfully.', 'success', "/cms/events/{$eventId}/edit");
@@ -147,7 +142,6 @@ class CmsEventsController extends CmsBaseController
     public function createSession(string $eventId): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $eventIdInt = (int)$eventId;
             $this->eventsService->createSession($eventIdInt, $_POST);
             $this->redirectWithFlash('Session created successfully.', 'success', "/cms/events/{$eventIdInt}/edit");
@@ -165,7 +159,6 @@ class CmsEventsController extends CmsBaseController
     public function updateSession(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = $this->getEventIdFromPost();
             $this->eventsService->updateSession((int)$id, $_POST);
             $this->redirectWithFlash('Session updated successfully.', 'success', "/cms/events/{$eventId}/edit");
@@ -183,7 +176,6 @@ class CmsEventsController extends CmsBaseController
     public function deleteSession(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = $this->getEventIdFromPost();
             $this->eventsService->deleteSession((int)$id);
             $this->redirectWithFlash('Session deleted successfully.', 'success', "/cms/events/{$eventId}/edit");
@@ -199,7 +191,6 @@ class CmsEventsController extends CmsBaseController
     public function addLabel(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = $this->getEventIdFromPost();
             $this->eventsService->addLabel((int)$id, trim($_POST['LabelText'] ?? ''));
             $this->redirectWithFlash('Label added successfully.', 'success', "/cms/events/{$eventId}/edit");
@@ -217,7 +208,6 @@ class CmsEventsController extends CmsBaseController
     public function deleteLabel(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = $this->getEventIdFromPost();
             $this->eventsService->deleteLabel((int)$id);
             $this->redirectWithFlash('Label deleted successfully.', 'success', "/cms/events/{$eventId}/edit");
@@ -233,7 +223,6 @@ class CmsEventsController extends CmsBaseController
     public function setPrice(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $eventId = $this->getEventIdFromPost();
             $this->handleSetPrice((int)$id, $eventId);
         } catch (ValidationException $error) {
@@ -254,7 +243,6 @@ class CmsEventsController extends CmsBaseController
     public function createVenue(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $name = trim($_POST['VenueName'] ?? '');
             $addressLine = trim($_POST['AddressLine'] ?? '');
             $venueId = $this->eventsService->createVenue($name, $addressLine);
@@ -278,7 +266,6 @@ class CmsEventsController extends CmsBaseController
     public function delete(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->eventsService->deleteEvent((int)$id);
             $this->redirectWithFlash('Event deleted successfully.', 'success', '/cms/events');
         } catch (ValidationException $error) {
@@ -295,7 +282,6 @@ class CmsEventsController extends CmsBaseController
     public function scheduleDays(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'schedule-days';
             $this->renderScheduleDaysPage();
         } catch (\Throwable $error) {
@@ -314,7 +300,6 @@ class CmsEventsController extends CmsBaseController
     public function toggleScheduleDay(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->handleToggleScheduleDay();
         } catch (ValidationException $error) {
             $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/schedule-days');

@@ -4,19 +4,41 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\Interfaces\ISessionService;
 
 /**
  * Base controller for CMS entity controllers.
  *
- * Provides shared CSRF validation and flash-redirect helpers
- * so individual CMS controllers don't duplicate this logic.
+ * Provides the admin authentication guard (called automatically in the constructor),
+ * shared CSRF validation, and flash-redirect helpers so individual CMS controllers
+ * don't duplicate this logic.
  */
-abstract class CmsBaseController
+abstract class CmsBaseController extends BaseController
 {
     public function __construct(
         protected readonly ISessionService $sessionService,
     ) {
+        $this->requireAdmin();
+    }
+
+    /**
+     * Resolves the admin guard for all CMS controllers.
+     * Called automatically in the constructor so child controllers
+     * do not need to repeat the check.
+     */
+    private function requireAdmin(): void
+    {
+        try {
+            $this->sessionService->start();
+
+            if (!$this->sessionService->isLoggedIn() || !$this->sessionService->isAdmin()) {
+                header('Location: /cms/login');
+                exit;
+            }
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
     }
 
     /**

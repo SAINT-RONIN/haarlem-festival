@@ -50,7 +50,6 @@ class CmsDashboardController extends CmsBaseController
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
 
             $currentView = 'dashboard';
             $domainData = $this->cmsDashboardService->getDashboardData();
@@ -76,7 +75,6 @@ class CmsDashboardController extends CmsBaseController
     public function pages(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
 
             $currentView = 'pages';
             $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
@@ -100,7 +98,6 @@ class CmsDashboardController extends CmsBaseController
     public function edit(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $pageId = $this->parsePageId($id);
             if ($pageId === null) {
                 return;
@@ -181,7 +178,6 @@ class CmsDashboardController extends CmsBaseController
     public function update(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $pageId = $this->parsePageId($id);
             if ($pageId === null) {
                 return;
@@ -256,7 +252,6 @@ class CmsDashboardController extends CmsBaseController
     public function uploadImage(string $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             header('Content-Type: application/json');
             $pageId = $this->parsePageIdJson($id);
             if ($pageId === null) {

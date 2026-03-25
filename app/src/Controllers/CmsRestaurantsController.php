@@ -23,7 +23,6 @@ class CmsRestaurantsController extends CmsBaseController
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'restaurants';
             $search = trim($_GET['search'] ?? '');
             $restaurants = $this->restaurantsService->getRestaurants($search ?: null);
@@ -43,7 +42,6 @@ class CmsRestaurantsController extends CmsBaseController
     public function create(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'restaurants';
             $emptyData   = new RestaurantUpsertData('', '', '', null, '', '', null, true, null, null, null, null, null, null, null, null, null, null, null, null, null);
             $viewModel   = $this->buildFormViewModel(null, $emptyData, []);
@@ -56,7 +54,6 @@ class CmsRestaurantsController extends CmsBaseController
     public function store(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_restaurant_create', '/cms/restaurants/create');
             $data   = $this->extractFormData();
             $errors = $this->restaurantsService->validateForCreate($data);
@@ -74,7 +71,6 @@ class CmsRestaurantsController extends CmsBaseController
     public function edit(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $restaurant = $this->restaurantsService->findById($id);
             if ($restaurant === null) {
                 http_response_code(404);
@@ -93,7 +89,6 @@ class CmsRestaurantsController extends CmsBaseController
     public function update(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_restaurant_edit_' . $id, '/cms/restaurants/' . $id . '/edit');
             $data   = $this->extractFormData();
             $errors = $this->restaurantsService->validateForUpdate($id, $data);
@@ -111,7 +106,6 @@ class CmsRestaurantsController extends CmsBaseController
     public function delete(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_restaurant_delete', '/cms/restaurants');
             $this->restaurantsService->deleteRestaurant($id);
             $this->redirectWithFlash('Restaurant deactivated successfully.', 'success', '/cms/restaurants');

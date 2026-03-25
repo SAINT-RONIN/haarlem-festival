@@ -34,7 +34,6 @@ class CmsUsersController extends CmsBaseController
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'users';
             $f           = $this->extractListFilters();
             $usersData   = $this->usersService->getUsersWithRoles($f['roleFilter'], $f['search'] ?: null, $f['sortBy'], $f['sortDir']);
@@ -52,12 +51,18 @@ class CmsUsersController extends CmsBaseController
     public function create(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'users';
             $viewModel   = CmsUsersMapper::toFormViewModel(
-                null, '', '', '', '', UserRoleId::Customer->value,
+                null,
+                '',
+                '',
+                '',
+                '',
+                UserRoleId::Customer->value,
                 $this->sessionService->getCsrfToken('cms_user_create'),
-                '/cms/users', 'Create User', [],
+                '/cms/users',
+                'Create User',
+                [],
             );
             require __DIR__ . '/../Views/pages/cms/user-create.php';
         } catch (\Throwable $error) {
@@ -72,7 +77,6 @@ class CmsUsersController extends CmsBaseController
     public function store(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_user_create', '/cms/users/create');
             $data   = $this->extractUserFormData();
             // Re-render the form with errors if validation fails
@@ -95,7 +99,6 @@ class CmsUsersController extends CmsBaseController
     public function edit(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $user = $this->usersService->findById($id);
             if ($user === null) {
                 http_response_code(404);
@@ -115,7 +118,6 @@ class CmsUsersController extends CmsBaseController
     public function update(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             // Per-user CSRF scope prevents token reuse across different edit forms
             $this->validateCsrf('cms_user_edit_' . $id, '/cms/users/' . $id . '/edit');
             $data   = $this->extractUserFormData();
@@ -139,7 +141,6 @@ class CmsUsersController extends CmsBaseController
     public function delete(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_user_delete', '/cms/users');
             // Guard: prevent self-deactivation
             if ($this->sessionService->getUserId() === $id) {
@@ -198,9 +199,16 @@ class CmsUsersController extends CmsBaseController
     {
         $currentView = 'users';
         $viewModel   = CmsUsersMapper::toFormViewModel(
-            null, $username, $email, $firstName, $lastName, $roleId,
+            null,
+            $username,
+            $email,
+            $firstName,
+            $lastName,
+            $roleId,
             $this->sessionService->getCsrfToken('cms_user_create'),
-            '/cms/users', 'Create User', $errors,
+            '/cms/users',
+            'Create User',
+            $errors,
         );
         require __DIR__ . '/../Views/pages/cms/user-create.php';
     }
@@ -213,9 +221,15 @@ class CmsUsersController extends CmsBaseController
         $currentView = 'users';
         $viewModel   = CmsUsersMapper::toFormViewModel(
             $this->usersService->findById($id),
-            $username, $email, $firstName, $lastName, $roleId,
+            $username,
+            $email,
+            $firstName,
+            $lastName,
+            $roleId,
             $this->sessionService->getCsrfToken('cms_user_edit_' . $id),
-            '/cms/users/' . $id . '/edit', 'Edit User', $errors,
+            '/cms/users/' . $id . '/edit',
+            'Edit User',
+            $errors,
         );
         require __DIR__ . '/../Views/pages/cms/user-edit.php';
     }

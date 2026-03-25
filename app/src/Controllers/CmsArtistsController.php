@@ -37,12 +37,12 @@ class CmsArtistsController extends CmsBaseController
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'artists';
             $search      = trim($_GET['search'] ?? '');
             $artists     = $this->artistsService->getArtists($search ?: null);
             $viewModel   = CmsArtistsMapper::toListViewModel(
-                $artists, $search,
+                $artists,
+                $search,
                 $this->sessionService->consumeFlash('success'),
                 $this->sessionService->consumeFlash('error'),
                 $this->sessionService->getCsrfToken('cms_artist_delete'),
@@ -60,7 +60,6 @@ class CmsArtistsController extends CmsBaseController
     public function create(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'artists';
             $viewModel   = $this->buildFormViewModel(null, new ArtistUpsertData('', '', '', null, true), []);
             require __DIR__ . '/../Views/pages/cms/artist-create.php';
@@ -76,7 +75,6 @@ class CmsArtistsController extends CmsBaseController
     public function store(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_artist_create', '/cms/artists/create');
             $data   = $this->extractFormData();
             // Re-render the form with errors if validation fails
@@ -99,7 +97,6 @@ class CmsArtistsController extends CmsBaseController
     public function edit(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $artist = $this->artistsService->findById($id);
             if ($artist === null) {
                 http_response_code(404);
@@ -121,7 +118,6 @@ class CmsArtistsController extends CmsBaseController
     public function update(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_artist_edit_' . $id, '/cms/artists/' . $id . '/edit');
             $data   = $this->extractFormData();
             // Re-render the form with errors if validation fails
@@ -147,7 +143,6 @@ class CmsArtistsController extends CmsBaseController
     public function delete(int $id): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
             $this->validateCsrf('cms_artist_delete', '/cms/artists');
             $this->artistsService->deleteArtist($id);
             $this->redirectWithFlash('Artist deactivated successfully.', 'success', '/cms/artists');

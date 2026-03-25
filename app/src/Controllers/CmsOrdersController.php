@@ -33,7 +33,6 @@ class CmsOrdersController extends CmsBaseController
     public function index(): void
     {
         try {
-            CmsAuthController::requireAdmin($this->sessionService);
 
             $currentView  = 'orders';
             $statusFilter = isset($_GET['status']) && $_GET['status'] !== '' ? $_GET['status'] : null;
