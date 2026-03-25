@@ -87,7 +87,7 @@ use App\Services\CaptchaService;
 use App\Services\SessionService;
 use App\Services\CmsPageContentService;
 use App\Services\StorytellingDetailService;
-use App\Helpers\ScheduleDayVisibilityResolver;
+use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\GlobalUiContentLoader;
 use App\Services\StorytellingService;
 

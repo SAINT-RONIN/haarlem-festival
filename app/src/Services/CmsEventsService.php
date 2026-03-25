@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\PriceTierId;
-use App\Helpers\ScheduleDayVisibilityResolver;
 use App\Exceptions\CmsOperationException;
 use App\Exceptions\ValidationException;
 use App\Repositories\Interfaces\IEventRepository;

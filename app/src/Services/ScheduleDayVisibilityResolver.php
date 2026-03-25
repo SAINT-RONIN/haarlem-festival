@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Helpers;
+namespace App\Services;
 
 use App\Enums\DayOfWeek;
 use App\DTOs\Filters\ScheduleDayConfigFilter;

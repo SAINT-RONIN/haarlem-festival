@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\EventTypeId;
-use App\Helpers\ScheduleDayVisibilityResolver;
 use App\Enums\PriceTierId;
 use App\DTOs\Filters\EventSessionFilter;
 use App\Models\EventSessionLabel;
