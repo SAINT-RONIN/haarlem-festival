@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\DTOs\Session\SessionContext;
 use App\Mappers\ProgramMapper;
 use App\Models\ProgramMainContent;
 use App\Services\Interfaces\ICmsPageContentService;
@@ -31,15 +32,13 @@ class ProgramController extends BaseController
     public function index(): void
     {
         try {
-            $sessionKey = $this->getSessionKey();
-            $userId = $this->getLoggedInUserId();
-            $isLoggedIn = $this->sessionService->isLoggedIn();
+            $context = $this->resolveSessionContext();
 
-            $programData = $this->programService->getProgramData($sessionKey, $userId);
+            $programData = $this->programService->getProgramData($context->sessionKey, $context->userId);
             $cmsContent = ProgramMainContent::fromRawArray(
                 $this->cmsService->getSectionContent('my-program', 'main'),
             );
-            $viewModel = ProgramMapper::toMyProgramViewModel($programData, $cmsContent, $isLoggedIn);
+            $viewModel = ProgramMapper::toMyProgramViewModel($programData, $cmsContent, $context->isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);
         } catch (\InvalidArgumentException $error) {
@@ -55,14 +54,13 @@ class ProgramController extends BaseController
     {
         try {
             $body = $this->readJsonBody();
-            $sessionKey = $this->getSessionKey();
-            $userId = $this->getLoggedInUserId();
+            $context = $this->resolveSessionContext();
 
             $eventSessionId = (int)($body['eventSessionId'] ?? 0);
             $quantity = (int)($body['quantity'] ?? 1);
             $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-            $item = $this->programService->addToProgram($sessionKey, $userId, $eventSessionId, $quantity, $donationAmount);
+            $item = $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $donationAmount);
 
             $this->json(['success' => true, 'programItemId' => $item->programItemId]);
         } catch (\InvalidArgumentException $error) {
@@ -78,15 +76,14 @@ class ProgramController extends BaseController
     {
         try {
             $body = $this->readJsonBody();
-            $sessionKey = $this->getSessionKey();
-            $userId = $this->getLoggedInUserId();
+            $context = $this->resolveSessionContext();
 
             $programItemId = (int)($body['programItemId'] ?? 0);
             $quantity = (int)($body['quantity'] ?? 0);
 
-            $this->programService->updateQuantity($sessionKey, $userId, $programItemId, $quantity);
+            $this->programService->updateQuantity($context->sessionKey, $context->userId, $programItemId, $quantity);
 
-            $this->respondJsonWithTotals($sessionKey, $userId);
+            $this->respondJsonWithTotals($context->sessionKey, $context->userId);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
@@ -100,15 +97,14 @@ class ProgramController extends BaseController
     {
         try {
             $body = $this->readJsonBody();
-            $sessionKey = $this->getSessionKey();
-            $userId = $this->getLoggedInUserId();
+            $context = $this->resolveSessionContext();
 
             $programItemId = (int)($body['programItemId'] ?? 0);
             $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-            $this->programService->updateDonation($sessionKey, $userId, $programItemId, $donationAmount);
+            $this->programService->updateDonation($context->sessionKey, $context->userId, $programItemId, $donationAmount);
 
-            $this->respondJsonWithTotals($sessionKey, $userId);
+            $this->respondJsonWithTotals($context->sessionKey, $context->userId);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
@@ -122,14 +118,13 @@ class ProgramController extends BaseController
     {
         try {
             $body = $this->readJsonBody();
-            $sessionKey = $this->getSessionKey();
-            $userId = $this->getLoggedInUserId();
+            $context = $this->resolveSessionContext();
 
             $programItemId = (int)($body['programItemId'] ?? 0);
 
-            $this->programService->removeItem($sessionKey, $userId, $programItemId);
+            $this->programService->removeItem($context->sessionKey, $context->userId, $programItemId);
 
-            $this->respondJsonWithTotals($sessionKey, $userId);
+            $this->respondJsonWithTotals($context->sessionKey, $context->userId);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
@@ -142,10 +137,9 @@ class ProgramController extends BaseController
     public function clear(): void
     {
         try {
-            $sessionKey = $this->getSessionKey();
-            $userId = $this->getLoggedInUserId();
+            $context = $this->resolveSessionContext();
 
-            $this->programService->clearProgram($sessionKey, $userId);
+            $this->programService->clearProgram($context->sessionKey, $context->userId);
 
             $this->json(['success' => true]);
         } catch (\InvalidArgumentException $error) {
@@ -168,16 +162,16 @@ class ProgramController extends BaseController
         ]);
     }
 
-    /** Ensures a PHP session exists and returns its ID, used as the anonymous cart key. */
-    private function getSessionKey(): string
+    /** Builds a SessionContext from the current session state for cart operations. */
+    private function resolveSessionContext(): SessionContext
     {
-        $this->sessionService->start();
-        return session_id();
-    }
+        $sessionKey = $this->sessionService->getSessionId();
+        $userId = $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
 
-    private function getLoggedInUserId(): ?int
-    {
-        return $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
+        return new SessionContext(
+            sessionKey: $sessionKey,
+            userId: $userId,
+            isLoggedIn: $userId !== null,
+        );
     }
-
 }
