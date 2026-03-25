@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\JsonBodyParseException;
 use App\Enums\PriceType;
 use App\Enums\TimeRange;
 use App\DTOs\Filters\ScheduleFilterParams;
@@ -153,17 +154,17 @@ abstract class BaseController
     {
         $raw = $this->readRawBody();
         if (trim($raw) === '') {
-            throw new \InvalidArgumentException('Missing JSON body.');
+            throw new JsonBodyParseException('Missing JSON body.');
         }
 
         try {
             $body = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $error) {
-            throw new \InvalidArgumentException('Invalid JSON body.', 0, $error);
+            throw new JsonBodyParseException('Invalid JSON body.', 0, $error);
         }
 
         if (!is_array($body)) {
-            throw new \InvalidArgumentException('Invalid JSON body.');
+            throw new JsonBodyParseException('Invalid JSON body.');
         }
 
         return $body;

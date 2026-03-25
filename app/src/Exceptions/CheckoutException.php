@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-class CheckoutException extends \Exception
+/**
+ * Exception thrown during checkout processing (empty cart, overselling, Stripe failures).
+ */
+class CheckoutException extends AppException
 {
 }

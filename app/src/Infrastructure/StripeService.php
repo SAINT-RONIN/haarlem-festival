@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
+use App\Exceptions\PaymentSessionCreationException;
+use App\Exceptions\StripeNotConfiguredException;
 use App\Infrastructure\Interfaces\IStripeService;
 use Stripe\Checkout\Session;
 use Stripe\Exception\ApiErrorException;
@@ -32,7 +34,7 @@ final class StripeService implements IStripeService
         $normalizedWebhookSecret = trim($webhookSecret);
 
         if ($normalizedSecretKey === '') {
-            throw new \RuntimeException('Stripe secret key is not configured.');
+            throw new StripeNotConfiguredException('Stripe secret key is not configured.');
         }
 
         $this->client = new StripeClient($normalizedSecretKey);
@@ -55,7 +57,7 @@ final class StripeService implements IStripeService
         try {
             return Session::create($params)->toArray();
         } catch (ApiErrorException $error) {
-            throw new \RuntimeException('Stripe checkout session creation failed: ' . $error->getMessage(), 0, $error);
+            throw new PaymentSessionCreationException('Stripe checkout session creation failed: ' . $error->getMessage(), 0, $error);
         }
     }
 
@@ -80,7 +82,7 @@ final class StripeService implements IStripeService
 
             return $session->toArray();
         } catch (ApiErrorException $error) {
-            throw new \RuntimeException('Stripe checkout session retrieval failed: ' . $error->getMessage(), 0, $error);
+            throw new PaymentSessionCreationException('Stripe checkout session retrieval failed: ' . $error->getMessage(), 0, $error);
         }
     }
 
@@ -95,7 +97,7 @@ final class StripeService implements IStripeService
     public function constructWebhookEvent(string $payload, ?string $signatureHeader, int $toleranceSeconds = 300): array
     {
         if ($this->webhookSecret === '') {
-            throw new \RuntimeException('Stripe webhook secret is not configured.');
+            throw new StripeNotConfiguredException('Stripe webhook secret is not configured.');
         }
 
         if (!is_string($signatureHeader) || trim($signatureHeader) === '') {

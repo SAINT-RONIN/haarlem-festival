@@ -10,7 +10,7 @@ namespace App\Exceptions;
  * Thrown by Services when a required entity does not exist.
  * Controllers should catch this and render a 404 page.
  */
-class NotFoundException extends \Exception
+class NotFoundException extends AppException
 {
     private string $entity;
     private int|string $entityId;

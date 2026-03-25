@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
+use App\Exceptions\MissingConfigurationException;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
 
 final class CheckoutRuntimeConfig implements ICheckoutRuntimeConfig
@@ -17,11 +18,11 @@ final class CheckoutRuntimeConfig implements ICheckoutRuntimeConfig
     ) {
         $normalizedAppUrl = rtrim($appUrl, '/');
         if ($normalizedAppUrl === '') {
-            throw new \RuntimeException('APP_URL environment variable is required for Stripe checkout redirects.');
+            throw new MissingConfigurationException('APP_URL environment variable is required for Stripe checkout redirects.');
         }
 
         if ($vatRate < 0 || $vatRate > 1) {
-            throw new \RuntimeException('VAT_RATE must be between 0 and 1.');
+            throw new MissingConfigurationException('VAT_RATE must be between 0 and 1.');
         }
 
         $this->appUrl = $normalizedAppUrl;

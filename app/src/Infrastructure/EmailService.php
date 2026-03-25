@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
+use App\Exceptions\SmtpNotConfiguredException;
 use App\Infrastructure\Interfaces\IEmailService;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -97,11 +98,11 @@ EMAIL;
     private function send(string $to, string $subject, string $body): bool
     {
         if (!$this->isSmtpConfigured()) {
-            throw new \RuntimeException("SMTP not configured. Email to {$to} with subject '{$subject}' was not sent.");
+            throw new SmtpNotConfiguredException("SMTP not configured. Email to {$to} with subject '{$subject}' was not sent.");
         }
 
         if ($this->isLocalEnvironment() && !$this->forceSend) {
-            throw new \RuntimeException("Cannot send mail to local email address '{$to}'.");
+            throw new SmtpNotConfiguredException("Cannot send mail to local email address '{$to}'.");
         }
 
         // Email has been sent successfully if we reach this point, even if it fails to send, we log the error and return false

@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * Exception thrown when validation fails.
  */
-class ValidationException extends \Exception
+class ValidationException extends AppException
 {
     /** @var array<string> */
     private array $errors;
