@@ -22,18 +22,6 @@ enum CmsItemType: string
     case Url = 'URL';
 
     /**
-     * Attempts to create an enum from a nullable value.
-     */
-    public static function tryFromValue(?string $value): ?self
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return self::tryFrom($value);
-    }
-
-    /**
      * Checks if this item type contains text content.
      */
     public function isTextBased(): bool

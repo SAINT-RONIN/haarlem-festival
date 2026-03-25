@@ -15,13 +15,4 @@ enum PaymentMethod: string
     case CreditCard = 'CreditCard';
     case Stripe = 'Stripe';
     case BankTransfer = 'BankTransfer';
-
-    public static function tryFromValue(?string $value): ?self
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return self::tryFrom($value);
-    }
 }

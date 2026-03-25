@@ -16,18 +16,6 @@ enum UserRoleId: int
     case Administrator = 3;
 
     /**
-     * Attempts to create an enum from a nullable value.
-     */
-    public static function tryFromValue(?int $value): ?self
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return self::tryFrom($value);
-    }
-
-    /**
      * Gets the display name for the role.
      */
     public function getDisplayName(): string

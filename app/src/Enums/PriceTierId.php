@@ -23,16 +23,4 @@ enum PriceTierId: int
     case ReservationFee = 4;
     case PayWhatYouLike = 5;
     case Single = 6;
-
-    /**
-     * Attempts to create an enum from a nullable value.
-     */
-    public static function tryFromValue(?int $value): ?self
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return self::tryFrom($value);
-    }
 }

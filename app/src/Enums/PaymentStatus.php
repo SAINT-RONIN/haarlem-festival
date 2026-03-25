@@ -16,13 +16,4 @@ enum PaymentStatus: string
     case Failed = 'Failed';
     case Cancelled = 'Cancelled';
     case Refunded = 'Refunded';
-
-    public static function tryFromValue(?string $value): ?self
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return self::tryFrom($value);
-    }
 }
