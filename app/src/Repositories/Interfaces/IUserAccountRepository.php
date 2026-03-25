@@ -44,26 +44,41 @@ interface IUserAccountRepository
     public function existsByEmail(string $email): bool;
 
     /**
-     * Creates a new user account.
-     *
-     * @param array $data User data
-     * @return int The new user's ID
+     * Creates a new user account and returns the generated ID.
      */
-    public function create(array $data): int;
+    public function createUser(
+        string $username,
+        string $email,
+        string $passwordHash,
+        string $firstName,
+        string $lastName,
+        int $roleId,
+    ): int;
 
     /**
      * Finds a user by ID.
-     *
-     * @param int $id User ID
-     * @return UserAccount|null User model or null if not found
      */
     public function findById(int $id): ?UserAccount;
 
     /**
      * Updates a user's password hash.
-     *
-     * @param int $userId User ID
-     * @param string $passwordHash New password hash
      */
     public function updatePasswordHash(int $userId, string $passwordHash): void;
+
+    /**
+     * Updates a user account's profile fields (does not change the password).
+     */
+    public function updateUser(
+        int $id,
+        string $username,
+        string $email,
+        string $firstName,
+        string $lastName,
+        int $roleId,
+    ): void;
+
+    /**
+     * Soft-deletes a user by setting IsActive = 0.
+     */
+    public function deleteUser(int $id): void;
 }

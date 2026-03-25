@@ -322,7 +322,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         CmsUsersController::class => new CmsUsersController(
-            new CmsUsersService(new CmsUsersRepository($pdo())),
+            new CmsUsersService(new CmsUsersRepository($pdo()), $userAccountRepo()),
             $sessionService,
         ),
         CmsRestaurantsController::class => new CmsRestaurantsController(

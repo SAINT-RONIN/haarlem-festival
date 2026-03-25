@@ -9,6 +9,7 @@ use App\Models\UserAccount;
 use App\DTOs\User\UserWithRole;
 use App\Exceptions\CmsOperationException;
 use App\Repositories\Interfaces\ICmsUsersRepository;
+use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\ICmsUsersService;
 use App\Utils\PasswordHasher;
 
@@ -23,6 +24,7 @@ class CmsUsersService implements ICmsUsersService
 
     public function __construct(
         private readonly ICmsUsersRepository $usersRepository,
+        private readonly IUserAccountRepository $userAccountRepository,
     ) {
     }
 
@@ -99,7 +101,7 @@ class CmsUsersService implements ICmsUsersService
     ): int {
         try {
             $hash = PasswordHasher::hash($password);
-            return $this->usersRepository->createUser($username, $email, $hash, $firstName, $lastName, $roleId);
+            return $this->userAccountRepository->createUser($username, $email, $hash, $firstName, $lastName, $roleId);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to create user.', 0, $error);
         }
@@ -120,10 +122,10 @@ class CmsUsersService implements ICmsUsersService
         int $roleId,
     ): void {
         try {
-            $this->usersRepository->updateUser($id, $username, $email, $firstName, $lastName, $roleId);
+            $this->userAccountRepository->updateUser($id, $username, $email, $firstName, $lastName, $roleId);
 
             if ($password !== null && $password !== '') {
-                $this->usersRepository->updateUserPassword($id, PasswordHasher::hash($password));
+                $this->userAccountRepository->updatePasswordHash($id, PasswordHasher::hash($password));
             }
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to update user.', 0, $error);
@@ -134,7 +136,7 @@ class CmsUsersService implements ICmsUsersService
     public function deleteUser(int $id): void
     {
         try {
-            $this->usersRepository->deleteUser($id);
+            $this->userAccountRepository->deleteUser($id);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to delete user.', 0, $error);
         }

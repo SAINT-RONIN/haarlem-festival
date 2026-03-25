@@ -8,7 +8,8 @@ use App\Models\UserAccount;
 use App\DTOs\User\UserWithRole;
 
 /**
- * Defines persistence operations for CMS user account management.
+ * Defines read-only persistence operations for CMS user account management.
+ * Write operations live in IUserAccountRepository.
  */
 interface ICmsUsersRepository
 {
@@ -25,43 +26,9 @@ interface ICmsUsersRepository
     ): array;
 
     /**
-     * Finds a single user account by its primary key.
+     * Finds a single user account by its primary key (includes inactive users, for admin editing).
      */
     public function findById(int $id): ?UserAccount;
-
-    /**
-     * Inserts a new user account and returns the generated ID.
-     */
-    public function createUser(
-        string $username,
-        string $email,
-        string $passwordHash,
-        string $firstName,
-        string $lastName,
-        int $roleId,
-    ): int;
-
-    /**
-     * Updates a user account's profile fields (does not change the password).
-     */
-    public function updateUser(
-        int $id,
-        string $username,
-        string $email,
-        string $firstName,
-        string $lastName,
-        int $roleId,
-    ): void;
-
-    /**
-     * Updates only the password hash for a user.
-     */
-    public function updateUserPassword(int $id, string $passwordHash): void;
-
-    /**
-     * Deletes a user account by its ID.
-     */
-    public function deleteUser(int $id): void;
 
     /**
      * Checks whether a username is already taken.

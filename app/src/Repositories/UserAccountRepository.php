@@ -95,25 +95,30 @@ class UserAccountRepository implements IUserAccountRepository
      * Creates a new user account. PasswordSalt is always NULL because the app uses
      * bcrypt/argon2 (salt is embedded in the hash). The column exists for legacy compatibility.
      *
-     * @param array $data Must contain: username, email, passwordHash, firstName, lastName
      * @return int The new user's ID
      */
-    public function create(array $data): int
-    {
+    public function createUser(
+        string $username,
+        string $email,
+        string $passwordHash,
+        string $firstName,
+        string $lastName,
+        int $roleId,
+    ): int {
         $sql = '
-            INSERT INTO UserAccount 
-            (UserRoleId, Username, Email, PasswordHash, PasswordSalt, FirstName, LastName, IsEmailConfirmed, IsActive)
-            VALUES 
-            (:roleId, :username, :email, :passwordHash, NULL, :firstName, :lastName, 0, 1)
+            INSERT INTO UserAccount
+                (UserRoleId, Username, Email, PasswordHash, PasswordSalt, FirstName, LastName, IsEmailConfirmed, IsActive)
+            VALUES
+                (:roleId, :username, :email, :passwordHash, NULL, :firstName, :lastName, 0, 1)
         ';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'roleId' => $data['roleId'] ?? 1, // Default to Customer role
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'passwordHash' => $data['passwordHash'],
-            'firstName' => $data['firstName'],
-            'lastName' => $data['lastName'],
+
+        $this->pdo->prepare($sql)->execute([
+            ':roleId'       => $roleId,
+            ':username'     => $username,
+            ':email'        => $email,
+            ':passwordHash' => $passwordHash,
+            ':firstName'    => $firstName,
+            ':lastName'     => $lastName,
         ]);
 
         return (int)$this->pdo->lastInsertId();
@@ -124,11 +129,50 @@ class UserAccountRepository implements IUserAccountRepository
      */
     public function updatePasswordHash(int $userId, string $passwordHash): void
     {
-        $sql = 'UPDATE UserAccount SET PasswordHash = :hash WHERE UserAccountId = :id';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'hash' => $passwordHash,
-            'id' => $userId,
+        $sql = 'UPDATE UserAccount SET PasswordHash = :hash, UpdatedAtUtc = NOW() WHERE UserAccountId = :id';
+
+        $this->pdo->prepare($sql)->execute([':hash' => $passwordHash, ':id' => $userId]);
+    }
+
+    /**
+     * Updates a user account's profile fields (does not change the password).
+     */
+    public function updateUser(
+        int $id,
+        string $username,
+        string $email,
+        string $firstName,
+        string $lastName,
+        int $roleId,
+    ): void {
+        $sql = '
+            UPDATE UserAccount
+            SET UserRoleId = :roleId,
+                Username   = :username,
+                Email      = :email,
+                FirstName  = :firstName,
+                LastName   = :lastName,
+                UpdatedAtUtc = NOW()
+            WHERE UserAccountId = :id
+        ';
+
+        $this->pdo->prepare($sql)->execute([
+            ':roleId'    => $roleId,
+            ':username'  => $username,
+            ':email'     => $email,
+            ':firstName' => $firstName,
+            ':lastName'  => $lastName,
+            ':id'        => $id,
         ]);
+    }
+
+    /**
+     * Soft-deletes a user by setting IsActive = 0 (preserves order/FK history).
+     */
+    public function deleteUser(int $id): void
+    {
+        $sql = 'UPDATE UserAccount SET IsActive = 0, UpdatedAtUtc = NOW() WHERE UserAccountId = :id';
+
+        $this->pdo->prepare($sql)->execute([':id' => $id]);
     }
 }

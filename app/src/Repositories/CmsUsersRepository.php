@@ -10,10 +10,11 @@ use App\Repositories\Interfaces\ICmsUsersRepository;
 use PDO;
 
 /**
- * Handles all UserAccount read/write operations for the CMS admin users section.
+ * Handles read-only UserAccount operations for the CMS admin users section.
  *
  * Queries the UserAccount table joined with UserRole for listing and filtering,
  * and provides uniqueness checks that can exclude a given user (for edit forms).
+ * Write operations (create, update, delete) live in UserAccountRepository.
  */
 class CmsUsersRepository implements ICmsUsersRepository
 {
@@ -65,90 +66,6 @@ class CmsUsersRepository implements ICmsUsersRepository
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return is_array($row) ? UserAccount::fromRow($row) : null;
-    }
-
-    /**
-     * Creates a user from the CMS admin panel (email confirmation starts unconfirmed).
-     *
-     * @return int The new UserAccountId
-     */
-    public function createUser(
-        string $username,
-        string $email,
-        string $passwordHash,
-        string $firstName,
-        string $lastName,
-        int $roleId,
-    ): int {
-        $sql = '
-            INSERT INTO UserAccount
-                (UserRoleId, Username, Email, PasswordHash, PasswordSalt, FirstName, LastName, IsEmailConfirmed, IsActive)
-            VALUES
-                (:roleId, :username, :email, :passwordHash, NULL, :firstName, :lastName, 0, 1)
-        ';
-
-        $this->pdo->prepare($sql)->execute([
-            ':roleId'       => $roleId,
-            ':username'     => $username,
-            ':email'        => $email,
-            ':passwordHash' => $passwordHash,
-            ':firstName'    => $firstName,
-            ':lastName'     => $lastName,
-        ]);
-
-        return (int)$this->pdo->lastInsertId();
-    }
-
-    /**
-     * Updates a user's profile fields (does not touch password).
-     */
-    public function updateUser(
-        int $id,
-        string $username,
-        string $email,
-        string $firstName,
-        string $lastName,
-        int $roleId,
-    ): void {
-        $sql = '
-            UPDATE UserAccount
-            SET UserRoleId = :roleId,
-                Username   = :username,
-                Email      = :email,
-                FirstName  = :firstName,
-                LastName   = :lastName,
-                UpdatedAtUtc = NOW()
-            WHERE UserAccountId = :id
-        ';
-
-        $this->pdo->prepare($sql)->execute([
-            ':roleId'    => $roleId,
-            ':username'  => $username,
-            ':email'     => $email,
-            ':firstName' => $firstName,
-            ':lastName'  => $lastName,
-            ':id'        => $id,
-        ]);
-    }
-
-    /**
-     * Replaces a user's password hash (admin reset).
-     */
-    public function updateUserPassword(int $id, string $passwordHash): void
-    {
-        $sql = 'UPDATE UserAccount SET PasswordHash = :hash, UpdatedAtUtc = NOW() WHERE UserAccountId = :id';
-
-        $this->pdo->prepare($sql)->execute([':hash' => $passwordHash, ':id' => $id]);
-    }
-
-    /**
-     * Soft-deletes a user by setting IsActive = 0 (preserves order/FK history).
-     */
-    public function deleteUser(int $id): void
-    {
-        $sql = 'UPDATE UserAccount SET IsActive = 0, UpdatedAtUtc = NOW() WHERE UserAccountId = :id';
-
-        $this->pdo->prepare($sql)->execute([':id' => $id]);
     }
 
     /**

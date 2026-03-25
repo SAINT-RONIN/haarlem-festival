@@ -174,14 +174,14 @@ class AuthService implements IAuthService
         try {
             $passwordHash = PasswordHasher::hash($data['password']);
 
-            return $this->userRepository->create([
-                'roleId' => UserRoleId::Customer->value,
-                'username' => trim($data['username']),
-                'email' => trim($data['email']),
-                'passwordHash' => $passwordHash,
-                'firstName' => trim($data['firstName']),
-                'lastName' => trim($data['lastName']),
-            ]);
+            return $this->userRepository->createUser(
+                username: trim($data['username']),
+                email: trim($data['email']),
+                passwordHash: $passwordHash,
+                firstName: trim($data['firstName']),
+                lastName: trim($data['lastName']),
+                roleId: UserRoleId::Customer->value,
+            );
         } catch (\Throwable $error) {
             throw new AuthenticationException('Failed to register user account.', 0, $error);
         }
