@@ -16,17 +16,13 @@ use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Pages\JazzArtistDetailPageData;
 use App\Models\JazzArtistsSectionContent;
 use App\Models\JazzBookingCtaSectionContent;
-use App\Models\GradientSectionContent;
-use App\Models\IntroSectionContent;
 use App\DTOs\Pages\JazzPageData;
 use App\Models\JazzPricingSectionContent;
 use App\Models\JazzScheduleCtaSectionContent;
 use App\Models\JazzVenuesSectionContent;
 use App\Models\PassType;
 use App\ViewModels\GlobalUiData;
-use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
-use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\Jazz\ArtistCardData;
 use App\ViewModels\Jazz\ArtistsData;
 use App\ViewModels\Jazz\BookingCallToActionData;
@@ -81,8 +77,8 @@ final class JazzMapper
     ): JazzPageViewModel {
         return new JazzPageViewModel(
             heroData: $heroData, globalUi: $globalUi, cms: $cms,
-            gradientSection: self::buildGradientSection($domain->gradientSection),
-            introSplitSection: self::buildIntroSection($domain->introSection),
+            gradientSection: CmsMapper::toGradientSection($domain->gradientSection, JazzPageConstants::DEFAULT_GRADIENT_BACKGROUND_IMAGE),
+            introSplitSection: CmsMapper::toIntroSplitSection($domain->introSection, JazzPageConstants::DEFAULT_INTRO_IMAGE, JazzPageConstants::DEFAULT_INTRO_IMAGE_ALT),
             venuesData: self::buildVenuesData($domain->venuesSection),
             pricingData: self::buildPricingData($domain->pricingSection, $domain->passPrices),
             scheduleCtaData: self::buildScheduleCtaData($domain->scheduleCtaSection),
@@ -178,27 +174,6 @@ final class JazzMapper
             performancesSectionId: $cms->performancesSectionId ?? '',
             performancesHeading: $cms->performancesHeading ?? '',
             performancesDescription: $cms->performancesDescription ?? '',
-        );
-    }
-
-    private static function buildGradientSection(GradientSectionContent $section): GradientSectionData
-    {
-        return new GradientSectionData(
-            headingText: $section->gradientHeading ?? '',
-            subheadingText: $section->gradientSubheading ?? '',
-            backgroundImageUrl: $section->gradientBackgroundImage ?? JazzPageConstants::DEFAULT_GRADIENT_BACKGROUND_IMAGE,
-        );
-    }
-
-    private static function buildIntroSection(IntroSectionContent $section): IntroSplitSectionData
-    {
-        return new IntroSplitSectionData(
-            headingText: $section->introHeading ?? '',
-            bodyText: $section->introBody ?? '',
-            imageUrl: $section->introImage ?? JazzPageConstants::DEFAULT_INTRO_IMAGE,
-            imageAltText: $section->introImageAlt ?? JazzPageConstants::DEFAULT_INTRO_IMAGE_ALT,
-            subsections: null,
-            closingLine: null,
         );
     }
 

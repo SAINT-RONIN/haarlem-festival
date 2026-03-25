@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\GradientSectionContent;
-use App\Models\IntroSectionContent;
 use App\DTOs\Pages\HistoryPageData;
 use App\Models\HistoryRouteSectionContent;
 use App\Models\HistoryTicketOptionsSectionContent;
 use App\Models\HistoryTourInfoSectionContent;
 use App\Models\HistoryVenuesSectionContent;
 use App\Constants\HistoryPageConstants;
-use App\ViewModels\GradientSectionData;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoryPageViewModel;
@@ -23,7 +20,6 @@ use App\ViewModels\History\RouteVenue;
 use App\ViewModels\History\TicketOptions;
 use App\ViewModels\History\VenueCardData;
 use App\ViewModels\History\VenuesData;
-use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 final class HistoryMapper
@@ -47,32 +43,13 @@ final class HistoryMapper
     ): HistoryPageViewModel {
         return new HistoryPageViewModel(
             heroData: $heroData, globalUi: $globalUi, cms: CmsMapper::toCmsData($heroData, $globalUi),
-            gradientSection:    self::toGradientSection($data->gradientSection),
-            introSplitSection:  self::toIntroSplitSection($data->introSection),
+            gradientSection:    CmsMapper::toGradientSection($data->gradientSection),
+            introSplitSection:  CmsMapper::toIntroSplitSection($data->introSection),
             routeData:          self::toRouteData($data->routeSection),
             venuesData:         self::toVenuesData($data->venuesSection),
             ticketOptionsData:  self::toTicketOptions($data->ticketOptionsSection),
             infoAboutTourData:  self::toInfoAboutTour($data->tourInfoSection),
             scheduleSection:    $scheduleSection,
-        );
-    }
-
-    private static function toGradientSection(GradientSectionContent $content): GradientSectionData
-    {
-        return new GradientSectionData(
-            headingText:        $content->gradientHeading ?? '',
-            subheadingText:     $content->gradientSubheading ?? '',
-            backgroundImageUrl: $content->gradientBackgroundImage ?? '',
-        );
-    }
-
-    private static function toIntroSplitSection(IntroSectionContent $content): IntroSplitSectionData
-    {
-        return new IntroSplitSectionData(
-            headingText:  $content->introHeading ?? '',
-            bodyText:     $content->introBody ?? '',
-            imageUrl:     $content->introImage ?? '',
-            imageAltText: $content->introImageAlt ?? '',
         );
     }
 

@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Models\GlobalUiContent;
+use App\Models\GradientSectionContent;
 use App\Models\HeroSectionContent;
+use App\Models\IntroSectionContent;
 use App\ViewModels\GlobalUiData;
+use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
+use App\ViewModels\IntroSplitSectionData;
 
 /**
  * Shared mapper that converts CMS content models (hero section, global UI) into
@@ -67,6 +71,33 @@ final class CmsMapper
             secondaryButtonLink: $content->heroButtonSecondaryLink ?? '#',
             backgroundImageUrl: $content->heroBackgroundImage ?? '/assets/Image/HeroImageHome.png',
             currentPage: $currentPage,
+        );
+    }
+
+    /**
+     * Converts a GradientSectionContent model into a GradientSectionData ViewModel.
+     * Shared by Jazz, History, and Storytelling pages.
+     */
+    public static function toGradientSection(GradientSectionContent $content, string $defaultBgImage = ''): GradientSectionData
+    {
+        return new GradientSectionData(
+            headingText: $content->gradientHeading ?? '',
+            subheadingText: $content->gradientSubheading ?? '',
+            backgroundImageUrl: $content->gradientBackgroundImage ?? $defaultBgImage,
+        );
+    }
+
+    /**
+     * Converts an IntroSectionContent model into an IntroSplitSectionData ViewModel.
+     * Shared by Jazz and History pages. Restaurant uses its own variant.
+     */
+    public static function toIntroSplitSection(IntroSectionContent $content, string $defaultImage = '', string $defaultAlt = ''): IntroSplitSectionData
+    {
+        return new IntroSplitSectionData(
+            headingText: $content->introHeading ?? '',
+            bodyText: $content->introBody ?? '',
+            imageUrl: $content->introImage ?? $defaultImage,
+            imageAltText: $content->introImageAlt ?? $defaultAlt,
         );
     }
 

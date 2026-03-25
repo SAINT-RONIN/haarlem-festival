@@ -13,14 +13,10 @@ use App\Models\EventHighlight;
 use App\Models\PageGalleryImage;
 use App\DTOs\Pages\StorytellingDetailPageData;
 use App\Models\StorytellingEventCmsData;
-use App\Models\GradientSectionContent;
-use App\Models\IntroSectionContent;
 use App\Models\StorytellingMasonrySectionContent;
 use App\DTOs\Pages\StorytellingPageData;
 use App\ViewModels\GlobalUiData;
-use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
-use App\ViewModels\IntroSplitSectionData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 use App\ViewModels\Storytelling\MasonryImageData;
 use App\ViewModels\Storytelling\MasonrySectionData;
@@ -82,8 +78,8 @@ final class StorytellingMapper
             heroData: $heroData,
             globalUi: $globalUi,
             cms: CmsMapper::toCmsData($heroData, $globalUi),
-            gradientSection: self::buildGradientSection($pageData->gradientSection),
-            introSplitSection: self::buildIntroSplitSection($pageData->introSplitSection),
+            gradientSection: CmsMapper::toGradientSection($pageData->gradientSection),
+            introSplitSection: CmsMapper::toIntroSplitSection($pageData->introSplitSection),
             masonrySection: self::buildMasonrySection($pageData->masonrySection, $pageData->masonryImages),
             scheduleSection: $scheduleSection,
         );
@@ -121,34 +117,6 @@ final class StorytellingMapper
             highlightsSection: self::buildHighlightsSection($pageData->cms, $pageData->highlights),
             gallerySection: self::buildGallerySection($pageData->cms, $pageData->galleryImages),
             videoSection: self::buildVideoSection($pageData->cms), scheduleSection: $scheduleSection,
-        );
-    }
-
-    /**
-     * Builds the gradient banner section ViewModel from typed CMS content.
-     * The reason for this is because the gradient section needs its own ViewModel shape and the mapping is extracted here to keep toPageViewModel under 10 lines.
-     */
-    private static function buildGradientSection(GradientSectionContent $section): GradientSectionData
-    {
-        return new GradientSectionData(
-            headingText: $section->gradientHeading ?? '',
-            subheadingText: $section->gradientSubheading ?? '',
-            backgroundImageUrl: ImageHelper::validatePath($section->gradientBackgroundImage ?? ''),
-        );
-    }
-
-    /**
-     * Builds the two-column intro split section ViewModel from typed CMS content.
-     * The reason for this is because the intro split section has its own image and text fields that must be validated and assembled into a typed ViewModel before reaching the view.
-     */
-    private static function buildIntroSplitSection(IntroSectionContent $section): IntroSplitSectionData
-    {
-        $heading = $section->introHeading ?? '';
-        return new IntroSplitSectionData(
-            headingText: $heading,
-            bodyText: $section->introBody ?? '',
-            imageUrl: ImageHelper::validatePath($section->introImage ?? ''),
-            imageAltText: $section->introImageAlt ?? $heading,
         );
     }
 
