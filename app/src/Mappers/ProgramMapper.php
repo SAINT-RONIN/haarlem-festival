@@ -100,8 +100,12 @@ final class ProgramMapper
      * Assembles the checkout page ViewModel with personal-info form labels,
      * payment method headings, and the order summary. Consumed by the checkout view.
      */
-    public static function toCheckoutViewModel(ProgramData $programData, CheckoutMainContent $cmsContent, bool $isLoggedIn): CheckoutPageViewModel
-    {
+    public static function toCheckoutViewModel(
+        ProgramData $programData,
+        CheckoutMainContent $cmsContent,
+        bool $isLoggedIn,
+        string $checkoutJsVersion = '',
+    ): CheckoutPageViewModel {
         $itemViewModels = array_map([self::class, 'toCheckoutItemViewModel'], $programData->items);
 
         return new CheckoutPageViewModel(
@@ -126,6 +130,7 @@ final class ProgramMapper
             taxAmount: FormatHelper::price($programData->taxAmount),
             total: FormatHelper::price($programData->total),
             isLoggedIn: $isLoggedIn,
+            checkoutJsVersion: $checkoutJsVersion,
         );
     }
 

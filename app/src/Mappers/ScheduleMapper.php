@@ -132,6 +132,8 @@ final class ScheduleMapper
             filterGroups: $filterGroups,
             resetButtonText: $resetButtonText,
             hasActiveFilters: $activeFilters !== null && $activeFilters->hasAnyFilter(),
+            gridClasses: self::resolveGridClasses(count($days)),
+            itemClasses: self::resolveItemClasses(count($days)),
         );
     }
 
@@ -382,12 +384,16 @@ final class ScheduleMapper
                 $events[] = self::toEventCardViewModel($event, $confirmText, $addingText, $successText);
             }
 
+            $dayNumber = $dateObj->format('j');
+            $htmlId = 'schedule-day-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $day['dayName'])) . '-' . $dayNumber;
+
             $days[] = new ScheduleDayViewModel(
                 dayName: $day['dayName'],
                 dateFormatted: $dateObj->format('l, F j'),
                 isoDate: $isoDate,
                 events: $events,
                 isEmpty: $day['isEmpty'],
+                htmlId: $htmlId,
             );
         }
         return $days;
@@ -435,9 +441,11 @@ final class ScheduleMapper
         $cardData['locationDisplay'] = self::buildLocationDisplay($event);
         $cardData['locationName']    = $event['locationName'];
         $cardData['priceDisplay']    = self::formatPriceDisplay($event);
-        $cardData['dateDisplay']     = $startDateTime->format('l, F j');
-        $cardData['timeDisplay']     = self::formatTimeDisplay($startDateTime, $endDateTime);
-        $cardData['confirmText']     = $confirmText;
+        $cardData['dateDisplay']       = $startDateTime->format('l, F j');
+        $cardData['timeDisplay']       = self::formatTimeDisplay($startDateTime, $endDateTime);
+        $cardData['startTimeDisplay']  = $startDateTime->format('H:i');
+        $cardData['endTimeDisplay']    = $endDateTime ? $endDateTime->format('H:i') : '';
+        $cardData['confirmText']       = $confirmText;
         $cardData['addingText']      = $addingText;
         $cardData['successText']     = $successText;
 
@@ -455,6 +463,18 @@ final class ScheduleMapper
         return ($event['isHistory'] ?? false) && $rawPriceDisplay !== ''
             ? 'from ' . $rawPriceDisplay
             : $rawPriceDisplay;
+    }
+
+    /** Returns grid wrapper classes based on how many days are shown (1-4: single row, 5+: wrap). */
+    private static function resolveGridClasses(int $dayCount): string
+    {
+        return $dayCount <= 4 ? 'lg:flex-row lg:flex-nowrap' : 'lg:flex-row lg:flex-wrap';
+    }
+
+    /** Returns per-item classes based on how many days are shown. */
+    private static function resolveItemClasses(int $dayCount): string
+    {
+        return $dayCount <= 4 ? 'lg:flex-1' : 'lg:w-[calc(25%-1.5rem)] lg:min-w-[280px]';
     }
 
     private static function formatTimeDisplay(\DateTimeInterface $start, ?\DateTimeInterface $end): string

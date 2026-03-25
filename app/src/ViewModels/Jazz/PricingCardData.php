@@ -10,7 +10,7 @@ namespace App\ViewModels\Jazz;
 final readonly class PricingCardData
 {
     /**
-     * @param string[] $items
+     * @param PricingCardItemData[] $items
      * @param string[] $includes
      */
     public function __construct(

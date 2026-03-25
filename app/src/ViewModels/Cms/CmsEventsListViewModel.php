@@ -19,6 +19,7 @@ final readonly class CmsEventsListViewModel
      * @param EventType[] $eventTypes Event types as Models
      * @param Venue[] $venues Venues as Models
      * @param array<string, CmsEventSessionViewModel[]> $weeklySchedule Sessions grouped by day name
+     * @param array<string, string> $typeColorMap Event type slug → Tailwind badge color classes
      * @param string $selectedType Current type filter
      * @param string $selectedDay Current day filter
      */
@@ -27,6 +28,7 @@ final readonly class CmsEventsListViewModel
         public array   $eventTypes,
         public array   $venues,
         public array   $weeklySchedule,
+        public array   $typeColorMap,
         public string  $selectedType,
         public string  $selectedDay,
         public ?string $successMessage,

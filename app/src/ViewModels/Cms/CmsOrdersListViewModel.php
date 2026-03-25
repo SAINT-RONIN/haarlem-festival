@@ -13,9 +13,11 @@ final readonly class CmsOrdersListViewModel
 {
     /**
      * @param CmsOrderListItemViewModel[] $orders
+     * @param string[] $statusOptions All valid order status values for the filter dropdown
      */
     public function __construct(
         public array   $orders,
+        public array   $statusOptions,
         public string  $selectedStatus,
         public ?string $successMessage,
         public ?string $errorMessage,

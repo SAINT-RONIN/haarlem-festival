@@ -15,15 +15,7 @@ $weeklySchedule = $viewModel->weeklySchedule;
 $venues = $viewModel->venues;
 $selectedType = $viewModel->selectedType;
 $selectedDay = $viewModel->selectedDay;
-
-// Define type colors for badges
-$typeColors = [
-        'jazz' => 'bg-purple-100 text-purple-800',
-        'storytelling' => 'bg-pink-100 text-pink-800',
-        'history' => 'bg-amber-100 text-amber-800',
-        'dance' => 'bg-blue-100 text-blue-800',
-        'restaurant' => 'bg-green-100 text-green-800',
-];
+$typeColors = $viewModel->typeColorMap;
 ?>
 <!DOCTYPE html>
 <html lang="en">

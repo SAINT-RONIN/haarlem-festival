@@ -14,8 +14,8 @@ $eventCount = (int)$day->eventCount;
 $sessions = $day->sessions;
 $global = $cms['global_ui'];
 
-// Generate unique ID for accessibility
-$dayId = 'schedule-day-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $dayName)) . '-' . $dayNumber;
+// Unique ID for accessibility — pre-computed in HomeMapper
+$dayId = $day->htmlId;
 ?>
 
 <article

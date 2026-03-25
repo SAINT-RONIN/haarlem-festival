@@ -41,6 +41,7 @@ use App\ViewModels\Jazz\JazzArtistOverviewData;
 use App\ViewModels\Jazz\JazzArtistTrackData;
 use App\ViewModels\Jazz\JazzPageViewModel;
 use App\ViewModels\Jazz\PricingCardData;
+use App\ViewModels\Jazz\PricingCardItemData;
 use App\ViewModels\Jazz\PricingData;
 use App\ViewModels\Jazz\ScheduleCallToActionData;
 use App\ViewModels\Jazz\VenueData;
@@ -339,15 +340,31 @@ final class JazzMapper
     }
 
     /**
-     * @return string[]
+     * Parses individual ticket item strings into structured data.
+     *
+     * @return PricingCardItemData[]
      */
     private static function buildIndividualTicketItems(JazzPricingSectionContent $section): array
     {
-        return [
+        $rawItems = [
             $section->pricingIndividualItem1 ?? '',
             $section->pricingIndividualItem2 ?? '',
             $section->pricingIndividualItem3 ?? '',
         ];
+
+        return array_map([self::class, 'parseTicketItem'], $rawItems);
+    }
+
+    /** Parses a ticket item string like "Main Hall Shows - €15.00 - 300 seats" into structured data. */
+    private static function parseTicketItem(string $rawItem): PricingCardItemData
+    {
+        $parts = explode(' - ', $rawItem);
+
+        return new PricingCardItemData(
+            name:     $parts[0] ?? '',
+            price:    $parts[1] ?? '',
+            capacity: $parts[2] ?? '',
+        );
     }
 
     private static function buildDayPassCard(JazzPricingSectionContent $section, string $price): PricingCardData

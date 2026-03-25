@@ -28,8 +28,7 @@
 
 $eventId = 'history-event-' . $dayIndex . '-' . $eventIndex;
 
-// Handle both object and array access
-$event = is_array($event) ? (object)$event : $event;
+// $event is always a ScheduleEventCardViewModel — normalized before reaching the view
 ?>
 
 <li class="w-full">
@@ -110,7 +109,7 @@ $event = is_array($event) ? (object)$event : $event;
                 </svg>
                 <time datetime="<?= htmlspecialchars($event->startTimeIso ?? '') ?>"
                       class="flex-1 text-slate-800 text-2xl font-semibold font-['Montserrat'] leading-6">
-                    <?= htmlspecialchars(explode(' - ', $event->timeDisplay ?? '')[0]) ?>
+                    <?= htmlspecialchars($event->startTimeDisplay ?? '') ?>
                 </time>
             </div>
 

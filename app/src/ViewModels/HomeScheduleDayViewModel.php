@@ -20,6 +20,7 @@ final readonly class HomeScheduleDayViewModel
         public string $isoDate,
         public int $eventCount,
         public array $sessions,
+        public string $htmlId = '',
     ) {
     }
 }

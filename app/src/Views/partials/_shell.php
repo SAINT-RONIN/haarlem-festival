@@ -16,9 +16,7 @@
 
 use App\ViewModels\BaseViewModel;
 
-if (!isset($viewModel) || !$viewModel instanceof BaseViewModel) {
-    throw new \InvalidArgumentException('The shared shell expects $viewModel to be an instance of BaseViewModel.');
-}
+/** @var BaseViewModel $viewModel — guaranteed by the controller's renderPage() method */
 
 $cms = $viewModel->cms;
 $currentPage = $viewModel->currentPage;
@@ -30,10 +28,8 @@ $eventIntroSectionId = $eventIntroSectionId ?? null;
 $eventIntroImageClass = $eventIntroImageClass ?? null;
 $mainClass = $mainClass ?? 'w-full bg-sand inline-flex flex-col justify-start items-center';
 
-$contentPartials = [];
-if (isset($pageContentPartials)) {
-    $contentPartials = is_array($pageContentPartials) ? $pageContentPartials : [$pageContentPartials];
-}
+/** @var string[] $contentPartials — always an array, pre-normalized by the controller */
+$contentPartials = (array)($pageContentPartials ?? []);
 ?>
 
 <?php require __DIR__ . '/header.php'; ?>

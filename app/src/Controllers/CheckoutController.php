@@ -48,7 +48,9 @@ class CheckoutController extends BaseController
             }
 
             $cmsContent = $this->checkoutContentRepo->findCheckoutMainContent('checkout', 'main');
-            $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $context->isLoggedIn);
+            $jsPath = __DIR__ . '/../../public/assets/js/checkout.js';
+            $jsVersion = file_exists($jsPath) ? (string)filemtime($jsPath) : '';
+            $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $context->isLoggedIn, $jsVersion);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);
         } catch (CheckoutException $error) {

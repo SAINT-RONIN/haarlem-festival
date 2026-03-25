@@ -28,6 +28,7 @@ final class CmsOrdersMapper
     ): CmsOrdersListViewModel {
         return new CmsOrdersListViewModel(
             orders: array_map([self::class, 'toListItem'], $orders),
+            statusOptions: array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
             selectedStatus: $selectedStatus,
             successMessage: $successMessage,
             errorMessage: $errorMessage,

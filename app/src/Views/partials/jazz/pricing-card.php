@@ -25,26 +25,19 @@ $borderClass = $card->isHighlighted ? 'border-black' : 'border-royal-blue';
                 <?php foreach ($card->items as $item): ?>
                     <div class="self-stretch p-2.5 bg-gray-50 rounded-md shadow-sm flex flex-col justify-start items-start">
                         <div class="self-stretch flex flex-col justify-start items-start gap-3.5">
-                            <?php
-                            // Parse item text (e.g., "Main Hall Shows - €15.00 - 300 seats available per show")
-                            $parts = explode(' - ', $item);
-                    $name = $parts[0] ?? '';
-                    $price = $parts[1] ?? '';
-                    $capacity = $parts[2] ?? '';
-                    ?>
                             <p class="self-stretch text-royal-blue text-lg sm:text-xl font-normal font-['Montserrat'] leading-5">
-                                <?= htmlspecialchars($name) ?>
+                                <?= htmlspecialchars($item->name) ?>
                             </p>
-                            <?php if ($capacity): ?>
+                            <?php if ($item->capacity !== ''): ?>
                                 <p class="self-stretch text-royal-blue text-lg sm:text-xl font-normal font-['Montserrat'] leading-tight">
-                                    <?= htmlspecialchars($capacity) ?>
+                                    <?= htmlspecialchars($item->capacity) ?>
                                 </p>
                             <?php endif; ?>
                         </div>
-                        <?php if ($price): ?>
+                        <?php if ($item->price !== ''): ?>
                             <div class="self-stretch flex justify-end items-end gap-2 mt-2">
                                 <span class="text-royal-blue text-lg sm:text-xl font-medium font-['Montserrat'] leading-tight">
-                                    <?= htmlspecialchars($price) ?>
+                                    <?= htmlspecialchars($item->price) ?>
                                 </span>
                             </div>
                         <?php endif; ?>

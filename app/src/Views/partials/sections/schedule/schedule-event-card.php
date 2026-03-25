@@ -136,9 +136,9 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                 <polyline points="12 6 12 12 16 14"></polyline>
                             </svg>
                             <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4">
-                                <time datetime="<?= htmlspecialchars($event->startTimeIso) ?>"><?= htmlspecialchars(explode(' - ', $event->timeDisplay)[0]) ?></time><?php if (!empty($event->endTimeIso)): ?> -
+                                <time datetime="<?= htmlspecialchars($event->startTimeIso) ?>"><?= htmlspecialchars($event->startTimeDisplay) ?></time><?php if (!empty($event->endTimeIso)): ?> -
                                     <time
-                                        datetime="<?= htmlspecialchars($event->endTimeIso) ?>"><?= htmlspecialchars(explode(' - ', $event->timeDisplay)[1] ?? '') ?></time><?php endif; ?>
+                                        datetime="<?= htmlspecialchars($event->endTimeIso) ?>"><?= htmlspecialchars($event->endTimeDisplay) ?></time><?php endif; ?>
                             </span>
                         </dd>
                     </div>

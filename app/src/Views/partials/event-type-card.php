@@ -31,27 +31,9 @@ $slug = htmlspecialchars($eventType->slug);
 // Generate unique ID for accessibility
 $cardId = 'event-type-' . $slug;
 
-// Fallback image map (used if CMS image not set)
-$fallbackImageMap = [
-        'jazz' => '/assets/Image/Image (Jazz).png',
-        'dance' => '/assets/Image/Image (Dance).png',
-        'history' => '/assets/Image/Image (History).png',
-        'restaurant' => '/assets/Image/Image (Yummy).png',
-        'storytelling' => '/assets/Image/Image (Story).png',
-];
-
-// Get image from CMS or use fallback
-$imageSrc = $eventType->image ?? $fallbackImageMap[$slug] ?? '/assets/Image/placeholder.png';
-
-// Alt text map for meaningful image descriptions
-$altTextMap = [
-        'jazz' => 'Jazz musicians performing live at Haarlem Festival',
-        'dance' => 'Dancers performing at Haarlem Festival dance event',
-        'history' => 'Historic buildings and walking tour in Haarlem',
-        'restaurant' => 'Delicious food served at Haarlem Festival restaurants',
-        'storytelling' => 'Storytelling performance at Haarlem Festival',
-];
-$imageAlt = $altTextMap[$slug] ?? $title . ' event';
+// Image source and alt text — pre-computed in HomeMapper
+$imageSrc = $eventType->imageSrc;
+$imageAlt = $eventType->imageAlt;
 
 // Button text from CMS database (e.g., "Explore Jazz Events")
 $buttonLabel = CmsOutputHelper::text($eventType->button);

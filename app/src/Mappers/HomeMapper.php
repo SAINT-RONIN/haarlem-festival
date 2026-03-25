@@ -56,7 +56,41 @@ final class HomeMapper
             image:       $t->image,
             darkBg:      $t->darkBg,
             badgeClass:  HomeUiConfig::BADGE_COLORS[$t->slug] ?? 'bg-gray-500',
+            imageSrc:    self::resolveEventTypeImage($t->slug, $t->image),
+            imageAlt:    self::resolveEventTypeAlt($t->slug, $t->title),
         ), $eventTypes);
+    }
+
+    /** Resolves the display image for an event type card — CMS image or fallback. */
+    private static function resolveEventTypeImage(string $slug, ?string $cmsImage): string
+    {
+        if ($cmsImage !== null && $cmsImage !== '') {
+            return $cmsImage;
+        }
+
+        $fallbacks = [
+            'jazz'         => '/assets/Image/Image (Jazz).png',
+            'dance'        => '/assets/Image/Image (Dance).png',
+            'history'      => '/assets/Image/Image (History).png',
+            'restaurant'   => '/assets/Image/Image (Yummy).png',
+            'storytelling' => '/assets/Image/Image (Story).png',
+        ];
+
+        return $fallbacks[$slug] ?? '/assets/Image/placeholder.png';
+    }
+
+    /** Resolves a meaningful alt text for an event type card image. */
+    private static function resolveEventTypeAlt(string $slug, string $title): string
+    {
+        $altTexts = [
+            'jazz'         => 'Jazz musicians performing live at Haarlem Festival',
+            'dance'        => 'Dancers performing at Haarlem Festival dance event',
+            'history'      => 'Historic buildings and walking tour in Haarlem',
+            'restaurant'   => 'Delicious food served at Haarlem Festival restaurants',
+            'storytelling' => 'Storytelling performance at Haarlem Festival',
+        ];
+
+        return $altTexts[$slug] ?? $title . ' event';
     }
 
     /**
@@ -87,15 +121,19 @@ final class HomeMapper
     private static function formatSingleDay(HomeScheduleDayData $day): HomeScheduleDayViewModel
     {
         $dateObj = new \DateTimeImmutable($day->date);
+        $dayName = $dateObj->format('l');
+        $dayNumber = $dateObj->format('j');
+        $htmlId = 'schedule-day-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $dayName)) . '-' . $dayNumber;
 
         return new HomeScheduleDayViewModel(
             date:       $day->date,
-            dayName:    $dateObj->format('l'),
-            dayNumber:  $dateObj->format('j'),
+            dayName:    $dayName,
+            dayNumber:  $dayNumber,
             monthShort: strtoupper($dateObj->format('M')),
             isoDate:    $dateObj->format('Y-m-d'),
             eventCount: $day->eventCount,
             sessions:   self::formatSessions($day->sessions),
+            htmlId:     $htmlId,
         );
     }
 

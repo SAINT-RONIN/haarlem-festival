@@ -57,4 +57,52 @@ class CmsOutputHelper
 
         return $clean;
     }
+
+    /**
+     * Strips problematic inline style attributes from HTML content.
+     * Use when cleaning raw CMS HTML for display in an editor or form input.
+     *
+     * @param string $rawHtml The raw HTML string to clean
+     * @return string The cleaned HTML with underline styles removed
+     */
+    public static function cleanHtmlStyles(string $rawHtml): string
+    {
+        $cleaned = preg_replace(
+            '/\sstyle=("|\')[^"\']*text-decoration\s*:\s*underline[^"\']*("|\')/i',
+            '',
+            $rawHtml
+        );
+
+        return $cleaned ?? $rawHtml;
+    }
+
+    /**
+     * Normalizes a raw file path for safe display in an image preview.
+     * Encodes each path segment individually and preserves the query string.
+     *
+     * @param string $rawFilePath The raw file path (may include query string)
+     * @return string The normalized, URL-encoded path ready for src attribute
+     */
+    public static function normalizeImagePath(string $rawFilePath): string
+    {
+        if ($rawFilePath === '') {
+            return '';
+        }
+
+        $path = parse_url($rawFilePath, PHP_URL_PATH);
+        $query = parse_url($rawFilePath, PHP_URL_QUERY);
+
+        if (!is_string($path) || $path === '') {
+            return '';
+        }
+
+        $segments = array_map('rawurlencode', explode('/', ltrim($path, '/')));
+        $normalized = '/' . implode('/', $segments);
+
+        if (is_string($query) && $query !== '') {
+            $normalized .= '?' . $query;
+        }
+
+        return $normalized;
+    }
 }

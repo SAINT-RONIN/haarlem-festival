@@ -22,6 +22,7 @@ final readonly class ScheduleDayViewModel
         public string $isoDate,
         public array  $events,
         public bool   $isEmpty = false,
+        public string $htmlId = '',
     ) {
     }
 }

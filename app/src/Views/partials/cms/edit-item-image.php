@@ -5,24 +5,16 @@
  * @var \App\ViewModels\Cms\CmsItemDisplayViewModel $item
  * @var \App\ViewModels\Cms\CmsImageLimitsViewModel $imageLimits
  */
+
+use App\Helpers\CmsOutputHelper;
+
 $itemId = $item->itemId;
 $inputId = 'item-' . $itemId;
 $mediaAsset = $item->mediaAsset;
 
+// Normalize image path for safe display — logic lives in CmsOutputHelper
 $rawFilePath = $mediaAsset !== null ? $mediaAsset->filePath : '';
-$previewSrc = '';
-if ($rawFilePath !== '') {
-    $path = parse_url($rawFilePath, PHP_URL_PATH);
-    $query = parse_url($rawFilePath, PHP_URL_QUERY);
-
-    if (is_string($path) && $path !== '') {
-        $segments = array_map('rawurlencode', explode('/', ltrim($path, '/')));
-        $previewSrc = '/' . implode('/', $segments);
-        if (is_string($query) && $query !== '') {
-            $previewSrc .= '?' . $query;
-        }
-    }
-}
+$previewSrc = CmsOutputHelper::normalizeImagePath($rawFilePath);
 ?>
 <div class="space-y-3">
     <div class="flex items-center justify-between">

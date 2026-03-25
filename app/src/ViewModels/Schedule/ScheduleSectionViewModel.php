@@ -40,6 +40,8 @@ final readonly class ScheduleSectionViewModel
         public array   $filterGroups = [],
         public string  $resetButtonText = '',
         public bool    $hasActiveFilters = false,
+        public string  $gridClasses = 'lg:flex-row lg:flex-nowrap',
+        public string  $itemClasses = 'lg:flex-1',
     ) {
     }
 }

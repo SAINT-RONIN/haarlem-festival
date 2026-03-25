@@ -25,6 +25,8 @@ final readonly class ScheduleEventCardViewModel
      * @param string $dateDisplay Formatted date string
      * @param string $isoDate ISO date for <time> element
      * @param string $timeDisplay Formatted time range
+     * @param string $startTimeDisplay Formatted start time only (e.g. "19:00")
+     * @param string $endTimeDisplay Formatted end time only (e.g. "21:00")
      * @param string $startTimeIso ISO time for <time> element
      * @param string $endTimeIso ISO time for <time> element
      * @param array<string> $labels Array of label texts
@@ -55,6 +57,8 @@ final readonly class ScheduleEventCardViewModel
         public string  $dateDisplay,
         public string  $isoDate,
         public string  $timeDisplay,
+        public string  $startTimeDisplay,
+        public string  $endTimeDisplay,
         public string  $startTimeIso,
         public string  $endTimeIso,
         public array   $labels,

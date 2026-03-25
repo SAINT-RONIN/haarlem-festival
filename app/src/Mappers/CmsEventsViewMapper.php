@@ -245,6 +245,7 @@ final class CmsEventsViewMapper
             eventTypes: $pageData->eventTypes,
             venues: $pageData->venues,
             weeklySchedule: self::toWeeklyOverview($pageData->weeklySchedule),
+            typeColorMap: self::buildTypeColorMap(),
             selectedType: $selectedType,
             selectedDay: $selectedDay,
             successMessage: $successMessage,
@@ -325,4 +326,19 @@ final class CmsEventsViewMapper
         );
     }
 
+    /**
+     * Returns the Tailwind badge color classes per event type slug for the CMS events list.
+     *
+     * @return array<string, string>
+     */
+    private static function buildTypeColorMap(): array
+    {
+        return [
+            'jazz' => 'bg-purple-100 text-purple-800',
+            'storytelling' => 'bg-pink-100 text-pink-800',
+            'history' => 'bg-amber-100 text-amber-800',
+            'dance' => 'bg-blue-100 text-blue-800',
+            'restaurant' => 'bg-green-100 text-green-800',
+        ];
+    }
 }

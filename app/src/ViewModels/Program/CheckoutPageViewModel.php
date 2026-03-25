@@ -34,6 +34,7 @@ final readonly class CheckoutPageViewModel
         public string $taxAmount,
         public string $total,
         public bool $isLoggedIn,
+        public string $checkoutJsVersion = '',
     ) {
     }
 }

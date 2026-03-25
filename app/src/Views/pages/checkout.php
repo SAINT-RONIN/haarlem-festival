@@ -12,5 +12,4 @@ $isLoggedIn = $viewModel->isLoggedIn;
 <?php require __DIR__ . '/../partials/checkout-main.php'; ?>
 
 <?php require __DIR__ . '/../partials/footer.php'; ?>
-<?php $checkoutJsVersion = (string)filemtime(__DIR__ . '/../../../public/assets/js/checkout.js'); ?>
-<script src="/assets/js/checkout.js?v=<?= urlencode($checkoutJsVersion) ?>"></script>
+<script src="/assets/js/checkout.js?v=<?= urlencode($viewModel->checkoutJsVersion) ?>"></script>

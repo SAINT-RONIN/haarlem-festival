@@ -5,21 +5,15 @@
  * @var \App\ViewModels\Cms\CmsItemDisplayViewModel $item
  */
 
+use App\Helpers\CmsOutputHelper;
+
 $itemId = $item->itemId;
 $inputId = 'item-' . $itemId;
 
 $rawValue = (string) $item->value;
 
-// Remove any style attributes that contain text-decoration: underline
-$cleanValue = preg_replace(
-    '/\sstyle=("|\')[^"\']*text-decoration\s*:\s*underline[^"\']*("|\')/i',
-    '',
-    $rawValue
-);
-
-if ($cleanValue === null) {
-    $cleanValue = $rawValue;
-}
+// Strip underline style attributes — logic lives in CmsOutputHelper
+$cleanValue = CmsOutputHelper::cleanHtmlStyles($rawValue);
 ?>
 
 <div class="space-y-2">

@@ -40,10 +40,10 @@
                     <select name="status" id="status"
                             class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                         <option value="">All Statuses</option>
-                        <?php foreach (\App\Enums\OrderStatus::cases() as $status): ?>
-                            <option value="<?= htmlspecialchars($status->value) ?>"
-                                    <?= $viewModel->selectedStatus === $status->value ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($status->value) ?>
+                        <?php foreach ($viewModel->statusOptions as $statusValue): ?>
+                            <option value="<?= htmlspecialchars($statusValue) ?>"
+                                    <?= $viewModel->selectedStatus === $statusValue ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($statusValue) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
