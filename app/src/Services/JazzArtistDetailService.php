@@ -10,7 +10,7 @@ use App\Helpers\SlugHelper;
 use App\Models\JazzArtistDetailCmsData;
 use App\Models\JazzArtistDetailEvent;
 use App\Models\JazzArtistDetailPageData;
-use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\JazzContentRepository;
 use App\Repositories\Interfaces\IArtistAlbumRepository;
 use App\Repositories\Interfaces\IArtistGalleryImageRepository;
 use App\Repositories\Interfaces\IArtistHighlightRepository;
@@ -33,7 +33,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     private static array $pageCache = [];
 
     public function __construct(
-        private readonly ICmsContentRepository $cmsService,
+        private readonly JazzContentRepository $jazzContentRepo,
         private readonly IEventRepository $eventRepository,
         private readonly IArtistAlbumRepository $albumRepository,
         private readonly IArtistTrackRepository $trackRepository,
@@ -70,11 +70,10 @@ class JazzArtistDetailService implements IJazzArtistDetailService
 
     private function fetchCmsContent(int $eventId): JazzArtistDetailCmsData
     {
-        $raw = $this->cmsService->getSectionContent(
+        return $this->jazzContentRepo->findArtistDetailCmsData(
             JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
             JazzArtistDetailConstants::eventSectionKey($eventId),
         );
-        return JazzArtistDetailCmsData::fromRawArray($raw);
     }
 
     /**

@@ -6,17 +6,10 @@ namespace App\Services;
 
 use App\Constants\JazzPageConstants;
 use App\Enums\EventTypeId;
-use App\Models\HeroSectionContent;
-use App\Models\JazzArtistsSectionContent;
-use App\Models\JazzBookingCtaSectionContent;
-use App\Models\GradientSectionContent;
-use App\Models\IntroSectionContent;
 use App\Models\JazzPageData;
-use App\Models\JazzPricingSectionContent;
-use App\Models\JazzScheduleCtaSectionContent;
-use App\Models\JazzVenuesSectionContent;
-use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
+use App\Repositories\JazzContentRepository;
 use App\Services\Interfaces\IJazzService;
 
 /**
@@ -28,7 +21,8 @@ use App\Services\Interfaces\IJazzService;
 class JazzService implements IJazzService
 {
     public function __construct(
-        private readonly ICmsContentRepository $cmsService,
+        private readonly GlobalContentRepository $globalContentRepo,
+        private readonly JazzContentRepository $jazzContentRepo,
         private readonly IPassTypeRepository $passTypeRepository,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
@@ -50,14 +44,14 @@ class JazzService implements IJazzService
     private function buildPageData(string $pageSlug): JazzPageData
     {
         return new JazzPageData(
-            heroSection:        HeroSectionContent::fromRawArray($this->cmsService->getHeroSectionContent($pageSlug)),
-            gradientSection:    GradientSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_GRADIENT)),
-            introSection:       IntroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_INTRO)),
-            venuesSection:      JazzVenuesSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_VENUES)),
-            pricingSection:     JazzPricingSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_PRICING)),
-            scheduleCtaSection: JazzScheduleCtaSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_SCHEDULE_CTA)),
-            artistsSection:     JazzArtistsSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_ARTISTS)),
-            bookingCtaSection: JazzBookingCtaSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, JazzPageConstants::SECTION_BOOKING_CTA)),
+            heroSection:        $this->globalContentRepo->findHeroContent($pageSlug),
+            gradientSection:    $this->globalContentRepo->findGradientContent($pageSlug, JazzPageConstants::SECTION_GRADIENT),
+            introSection:       $this->globalContentRepo->findIntroContent($pageSlug, JazzPageConstants::SECTION_INTRO),
+            venuesSection:      $this->jazzContentRepo->findVenuesContent($pageSlug, JazzPageConstants::SECTION_VENUES),
+            pricingSection:     $this->jazzContentRepo->findPricingContent($pageSlug, JazzPageConstants::SECTION_PRICING),
+            scheduleCtaSection: $this->jazzContentRepo->findScheduleCtaContent($pageSlug, JazzPageConstants::SECTION_SCHEDULE_CTA),
+            artistsSection:     $this->jazzContentRepo->findArtistsContent($pageSlug, JazzPageConstants::SECTION_ARTISTS),
+            bookingCtaSection:  $this->jazzContentRepo->findBookingCtaContent($pageSlug, JazzPageConstants::SECTION_BOOKING_CTA),
             passPrices: $this->passTypeRepository->findByEventType(EventTypeId::Jazz->value),
             globalUiContent: $this->globalUiLoader->load(),
         );

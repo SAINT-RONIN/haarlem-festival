@@ -212,12 +212,13 @@ return static function (string $controllerClass): object {
         ),
         JazzController::class => new JazzController(
             new JazzService(
-                $cmsContent(),
+                $globalContentRepo(),
+                $jazzContentRepo(),
                 new PassTypeRepository($pdo()),
                 $globalUiLoader(),
             ),
             new JazzArtistDetailService(
-                $cmsContent(),
+                $jazzContentRepo(),
                 $eventRepo(),
                 new ArtistAlbumRepository($pdo()),
                 new ArtistTrackRepository($pdo()),
