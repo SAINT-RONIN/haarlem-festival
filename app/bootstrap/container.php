@@ -285,7 +285,8 @@ return static function (string $controllerClass): object {
         ),
         HistoryController::class => new HistoryController(
             new HistoryService(
-                $cmsContent(),
+                $globalContentRepo(),
+                $historyContentRepo(),
                 $globalUiLoader(),
             ),
             new HistoricalLocationService(

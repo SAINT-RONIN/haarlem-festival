@@ -5,21 +5,19 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\HistoryPageConstants;
-use App\Models\HeroSectionContent;
-use App\Models\GradientSectionContent;
-use App\Models\IntroSectionContent;
 use App\Models\HistoryPageData;
-use App\Models\HistoryRouteSectionContent;
-use App\Models\HistoryTicketOptionsSectionContent;
-use App\Models\HistoryTourInfoSectionContent;
-use App\Models\HistoryVenuesSectionContent;
-use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\GlobalContentRepository;
+use App\Repositories\HistoryContentRepository;
 use App\Services\Interfaces\IHistoryService;
 
+/**
+ * Composes the CMS-driven domain payload for the History overview page.
+ */
 class HistoryService implements IHistoryService
 {
     public function __construct(
-        private readonly ICmsContentRepository $cmsService,
+        private readonly GlobalContentRepository $globalContentRepo,
+        private readonly HistoryContentRepository $historyContentRepo,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
@@ -32,13 +30,13 @@ class HistoryService implements IHistoryService
     private function buildPageData(string $pageSlug): HistoryPageData
     {
         return new HistoryPageData(
-            heroSection:          HeroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_HERO)),
-            gradientSection:      GradientSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_GRADIENT)),
-            introSection:         IntroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_INTRO)),
-            routeSection:         HistoryRouteSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_ROUTE)),
-            venuesSection:        HistoryVenuesSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_VENUES)),
-            ticketOptionsSection: HistoryTicketOptionsSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS)),
-            tourInfoSection:      HistoryTourInfoSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_TOUR_INFO)),
+            heroSection:          $this->globalContentRepo->findHeroContentBySection($pageSlug, HistoryPageConstants::SECTION_HERO),
+            gradientSection:      $this->globalContentRepo->findGradientContent($pageSlug, HistoryPageConstants::SECTION_GRADIENT),
+            introSection:         $this->globalContentRepo->findIntroContent($pageSlug, HistoryPageConstants::SECTION_INTRO),
+            routeSection:         $this->historyContentRepo->findRouteContent($pageSlug, HistoryPageConstants::SECTION_ROUTE),
+            venuesSection:        $this->historyContentRepo->findVenuesContent($pageSlug, HistoryPageConstants::SECTION_VENUES),
+            ticketOptionsSection: $this->historyContentRepo->findTicketOptionsContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS),
+            tourInfoSection:      $this->historyContentRepo->findTourInfoContent($pageSlug, HistoryPageConstants::SECTION_TOUR_INFO),
             globalUiContent:      $this->globalUiLoader->load(),
         );
     }
