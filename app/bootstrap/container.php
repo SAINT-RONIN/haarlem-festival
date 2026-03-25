@@ -57,6 +57,14 @@ use App\Repositories\PassTypeRepository;
 use App\Repositories\PriceTierRepository;
 use App\Repositories\ScheduleDayConfigRepository;
 use App\Repositories\VenueRepository;
+use App\Repositories\CheckoutContentRepository;
+use App\Repositories\GlobalContentRepository;
+use App\Repositories\HistoricalLocationContentRepository;
+use App\Repositories\HistoryContentRepository;
+use App\Repositories\JazzContentRepository;
+use App\Repositories\RestaurantContentRepository;
+use App\Repositories\ScheduleContentRepository;
+use App\Repositories\StorytellingContentRepository;
 use App\Services\CmsArtistsService;
 use App\Services\CmsDashboardService;
 use App\Services\CmsRestaurantsService;
@@ -127,6 +135,18 @@ return static function (string $controllerClass): object {
     $cmsContent = fn() => $make('cmsContent', fn() => new CmsContentRepository($cmsRepo(), $mediaAssetRepo()));
     $cmsPageContent = fn() => $make('cmsPageContent', fn() => new CmsPageContentService($cmsContent()));
     $globalUiLoader = fn() => $make('globalUiLoader', fn() => new GlobalUiContentLoader($cmsContent()));
+
+    // ── Domain content repositories (wrap CmsContentRepository with typed returns) ──
+
+    $globalContentRepo     = fn() => $make('globalContentRepo', fn() => new GlobalContentRepository($cmsContent()));
+    $scheduleContentRepo   = fn() => $make('scheduleContentRepo', fn() => new ScheduleContentRepository($cmsContent()));
+    $checkoutContentRepo   = fn() => $make('checkoutContentRepo', fn() => new CheckoutContentRepository($cmsContent()));
+    $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
+    $storyContentRepo      = fn() => $make('storyContentRepo', fn() => new StorytellingContentRepository($cmsContent()));
+    $restaurantContentRepo = fn() => $make('restaurantContentRepo', fn() => new RestaurantContentRepository($cmsContent()));
+    $historyContentRepo    = fn() => $make('historyContentRepo', fn() => new HistoryContentRepository($cmsContent()));
+    $histLocContentRepo    = fn() => $make('histLocContentRepo', fn() => new HistoricalLocationContentRepository($cmsContent()));
+
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
@@ -270,6 +290,8 @@ return static function (string $controllerClass): object {
             ),
             new HistoricalLocationService(
                 $cmsContent(),
+                $globalContentRepo(),
+                $histLocContentRepo(),
                 $globalUiLoader(),
             ),
             $sessionService,

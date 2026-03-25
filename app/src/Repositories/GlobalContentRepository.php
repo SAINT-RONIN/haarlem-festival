@@ -45,6 +45,17 @@ class GlobalContentRepository
         return GlobalContentMapper::mapHero($raw);
     }
 
+    /**
+     * Maps an already-fetched raw hero array to a HeroSectionContent model.
+     *
+     * Used when the raw data has already been retrieved for an existence check
+     * and should not be fetched a second time.
+     */
+    public function mapHeroFromRaw(array $raw): HeroSectionContent
+    {
+        return GlobalContentMapper::mapHero($raw);
+    }
+
     /** Fetches the gradient section content for a given page and section key. */
     public function findGradientContent(string $pageSlug, string $sectionKey): GradientSectionContent
     {

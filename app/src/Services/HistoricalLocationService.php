@@ -6,19 +6,21 @@ namespace App\Services;
 
 use App\Constants\HistoricalLocationPageConstants;
 use App\Exceptions\HistoricalLocationNotFoundException;
-use App\Models\HeroSectionContent;
-use App\Models\HistoricalLocationFactsContent;
-use App\Models\HistoricalLocationHeroContent;
-use App\Models\HistoricalLocationIntroContent;
 use App\Models\HistoricalLocationPageData;
-use App\Models\HistoricalLocationSignificanceContent;
+use App\Repositories\GlobalContentRepository;
+use App\Repositories\HistoricalLocationContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IHistoricalLocationService;
 
+/**
+ * Composes the CMS-driven domain payload for a single historical location page.
+ */
 class HistoricalLocationService implements IHistoricalLocationService
 {
     public function __construct(
         private readonly ICmsContentRepository $cmsService,
+        private readonly GlobalContentRepository $globalContentRepo,
+        private readonly HistoricalLocationContentRepository $histLocContentRepo,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
     }
@@ -38,11 +40,11 @@ class HistoricalLocationService implements IHistoricalLocationService
     private function buildPageData(string $slug, array $heroRaw): HistoricalLocationPageData
     {
         return new HistoricalLocationPageData(
-            heroSection:         HeroSectionContent::fromRawArray($heroRaw),
-            locationHeroSection: HistoricalLocationHeroContent::fromRawArray($heroRaw),
-            introSection:        HistoricalLocationIntroContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_INTRO)),
-            factsSection:        HistoricalLocationFactsContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_FACTS)),
-            significanceSection: HistoricalLocationSignificanceContent::fromRawArray($this->cmsService->getSectionContent($slug, HistoricalLocationPageConstants::SECTION_SIGNIFICANCE)),
+            heroSection:         $this->globalContentRepo->mapHeroFromRaw($heroRaw),
+            locationHeroSection: $this->histLocContentRepo->mapHeroFromRaw($heroRaw),
+            introSection:        $this->histLocContentRepo->findIntroContent($slug, HistoricalLocationPageConstants::SECTION_INTRO),
+            factsSection:        $this->histLocContentRepo->findFactsContent($slug, HistoricalLocationPageConstants::SECTION_FACTS),
+            significanceSection: $this->histLocContentRepo->findSignificanceContent($slug, HistoricalLocationPageConstants::SECTION_SIGNIFICANCE),
             globalUiContent:     $this->globalUiLoader->load(),
         );
     }
