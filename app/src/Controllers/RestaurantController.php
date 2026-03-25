@@ -15,8 +15,8 @@ use App\Services\Interfaces\ISessionService;
 class RestaurantController extends BaseController
 {
     public function __construct(
-        private IRestaurantService $restaurantService,
-        private ISessionService $sessionService,
+        private readonly IRestaurantService $restaurantService,
+        private readonly ISessionService $sessionService,
     ) {
     }
 
