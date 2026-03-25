@@ -75,7 +75,7 @@ class CheckoutController extends BaseController
 
             $this->json([
                 'success' => true,
-                'redirectUrl' => $result['redirectUrl'],
+                'redirectUrl' => $result->redirectUrl,
             ], 200);
         } catch (CheckoutException|\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
@@ -134,9 +134,9 @@ class CheckoutController extends BaseController
 
             $this->json([
                 'received' => true,
-                'processed' => $result['processed'],
-                'eventId' => $result['eventId'],
-                'eventType' => $result['eventType'],
+                'processed' => $result->processed,
+                'eventId' => $result->eventId,
+                'eventType' => $result->eventType,
             ], 200);
         } catch (CheckoutException|\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);

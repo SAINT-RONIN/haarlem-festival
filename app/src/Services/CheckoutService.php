@@ -17,6 +17,10 @@ use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
+use App\DTOs\Checkout\CheckoutCancelResult;
+use App\DTOs\Checkout\CheckoutSessionResult;
+use App\DTOs\Checkout\CheckoutSessionSummary;
+use App\DTOs\Checkout\WebhookHandlerResult;
 use App\Exceptions\CheckoutException;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
@@ -49,11 +53,10 @@ class CheckoutService implements ICheckoutService
      * checkout session, and returns the redirect URL for the payment gateway.
      *
      * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
-     * @return array{redirectUrl:string,orderId:int,paymentId:int}
      * @throws CheckoutException When the program is empty or Stripe session creation fails
      * @throws \InvalidArgumentException When required payload fields are missing or invalid
      */
-    public function createCheckoutSession(ProgramData $programData, int $userId, array $payload): array
+    public function createCheckoutSession(ProgramData $programData, int $userId, array $payload): CheckoutSessionResult
     {
         $this->validatePayload($payload);
         $this->validateProgramNotEmpty($programData);
@@ -80,7 +83,11 @@ class CheckoutService implements ICheckoutService
 
             $this->pdo->commit();
 
-            return ['redirectUrl' => $checkoutUrl, 'orderId' => $orderId, 'paymentId' => $paymentId];
+            return new CheckoutSessionResult(
+                redirectUrl: $checkoutUrl,
+                orderId: $orderId,
+                paymentId: $paymentId,
+            );
         } catch (\Throwable $error) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
@@ -230,9 +237,8 @@ class CheckoutService implements ICheckoutService
      * Marks a pending order and its payment as cancelled when the user abandons checkout.
      * Only transitions records that are still in Pending status to avoid overwriting webhook updates.
      *
-     * @return array{status:string,orderId:?int,paymentId:?int}
      */
-    public function handleCancel(?int $orderId, ?int $paymentId): array
+    public function handleCancel(?int $orderId, ?int $paymentId): CheckoutCancelResult
     {
         if ($orderId !== null) {
             // Restore reserved capacity for each session in the cancelled order
@@ -244,11 +250,11 @@ class CheckoutService implements ICheckoutService
             $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Cancelled, [PaymentStatus::Pending]);
         }
 
-        return [
-            'status' => 'cancelled',
-            'orderId' => $orderId,
-            'paymentId' => $paymentId,
-        ];
+        return new CheckoutCancelResult(
+            status: 'cancelled',
+            orderId: $orderId,
+            paymentId: $paymentId,
+        );
     }
 
     /**
@@ -256,10 +262,9 @@ class CheckoutService implements ICheckoutService
      * idempotency via the webhook event repository, and transitions order/payment
      * statuses based on the event type (completed, expired, or failed).
      *
-     * @return array{processed:bool,eventId:string,eventType:string}
      * @throws CheckoutException When the event payload is invalid or malformed
      */
-    public function handleWebhook(string $payload, ?string $signatureHeader): array
+    public function handleWebhook(string $payload, ?string $signatureHeader): WebhookHandlerResult
     {
         $event = $this->stripeService->constructWebhookEvent($payload, $signatureHeader);
         $eventId = (string)($event['id'] ?? '');
@@ -268,7 +273,7 @@ class CheckoutService implements ICheckoutService
         $this->validateWebhookEvent($eventId, $eventType);
 
         if (!$this->webhookEventRepository->markProcessedIfNew($eventId, $eventType)) {
-            return ['processed' => false, 'eventId' => $eventId, 'eventType' => $eventType];
+            return new WebhookHandlerResult(processed: false, eventId: $eventId, eventType: $eventType);
         }
 
         $object = $this->extractWebhookObject($event);
@@ -278,7 +283,7 @@ class CheckoutService implements ICheckoutService
 
         $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
 
-        return ['processed' => true, 'eventId' => $eventId, 'eventType' => $eventType];
+        return new WebhookHandlerResult(processed: true, eventId: $eventId, eventType: $eventType);
     }
 
     /** Validates that a webhook event has required fields. */
@@ -375,10 +380,9 @@ class CheckoutService implements ICheckoutService
      * Retrieves a Stripe checkout session and returns a normalized summary
      * used to display the order confirmation or failure page.
      *
-     * @return array{sessionId:string,paymentStatus:string,status:string,amountTotal:float,currency:string}
      * @throws \InvalidArgumentException When sessionId is empty
      */
-    public function getSessionSummary(string $sessionId): array
+    public function getSessionSummary(string $sessionId): CheckoutSessionSummary
     {
         if ($sessionId === '') {
             throw new \InvalidArgumentException('Missing Stripe session id.');
@@ -386,13 +390,13 @@ class CheckoutService implements ICheckoutService
 
         $session = $this->stripeService->retrieveCheckoutSession($sessionId);
 
-        return [
-            'sessionId' => $session['id'] ?? '',
-            'paymentStatus' => $session['payment_status'] ?? 'unpaid',
-            'status' => $session['status'] ?? 'open',
-            'amountTotal' => isset($session['amount_total']) ? ((int)$session['amount_total'] / 100) : 0,
-            'currency' => strtoupper((string)($session['currency'] ?? 'eur')),
-        ];
+        return new CheckoutSessionSummary(
+            sessionId: $session['id'] ?? '',
+            paymentStatus: $session['payment_status'] ?? 'unpaid',
+            status: $session['status'] ?? 'open',
+            amountTotal: isset($session['amount_total']) ? ((int)$session['amount_total'] / 100) : 0,
+            currency: strtoupper((string)($session['currency'] ?? 'eur')),
+        );
     }
 
     /**
