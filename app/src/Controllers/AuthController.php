@@ -14,7 +14,7 @@ use App\Services\Interfaces\ISessionService;
  * Manages user authentication flows: login, registration, password reset, and logout.
  * All form submissions use flash messages for error/success feedback across redirects.
  */
-class AuthController
+class AuthController extends BaseController
 {
     public function __construct(
         private readonly IAuthService $authService,
@@ -31,7 +31,7 @@ class AuthController
     {
         try {
             if ($this->sessionService->isLoggedIn()) {
-                header('Location: /');
+                $this->redirect('/');
                 exit;
             }
 
@@ -62,7 +62,7 @@ class AuthController
 
             $user = $result['user'];
             $this->sessionService->login($user->userAccountId, $user->userRoleId);
-            header('Location: /');
+            $this->redirect('/');
             exit;
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -77,7 +77,7 @@ class AuthController
     {
         try {
             $this->sessionService->logout();
-            header('Location: /');
+            $this->redirect('/');
             exit;
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -92,7 +92,7 @@ class AuthController
     {
         try {
             if ($this->sessionService->isLoggedIn()) {
-                header('Location: /');
+                $this->redirect('/');
                 exit;
             }
 
@@ -151,7 +151,7 @@ class AuthController
             $email = trim($_POST['email'] ?? '');
             $this->authService->requestPasswordReset($email);
             $this->sessionService->setFlash('forgot_success', 'If an account exists with that email, you will receive a password reset link.');
-            header('Location: /forgot-password');
+            $this->redirect('/forgot-password');
             exit;
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -212,7 +212,7 @@ class AuthController
         }
         $this->authService->register($dataArray);
         $this->sessionService->setFlash('login_success', 'Registration successful! Please log in.');
-        header('Location: /login');
+        $this->redirect('/login');
         exit;
     }
 
@@ -229,18 +229,18 @@ class AuthController
     {
         if (!$result['success']) {
             $this->sessionService->setFlash('reset_error', $result['error']);
-            header('Location: /reset-password?token=' . urlencode($token));
+            $this->redirect('/reset-password?token=' . urlencode($token));
             exit;
         }
         $this->sessionService->setFlash('login_success', 'Your password has been reset. Please log in with your new password.');
-        header('Location: /login');
+        $this->redirect('/login');
         exit;
     }
 
     private function redirectWithError(string $url, string $error): void
     {
         $this->sessionService->setFlash('login_error', $error);
-        header('Location: ' . $url);
+        $this->redirect($url);
         exit;
     }
 
@@ -250,7 +250,7 @@ class AuthController
         unset($input['password'], $input['confirmPassword']);
         $this->sessionService->setFlash('register_errors', $errors);
         $this->sessionService->setFlash('register_input', $input);
-        header('Location: ' . $url);
+        $this->redirect($url);
         exit;
     }
 }
