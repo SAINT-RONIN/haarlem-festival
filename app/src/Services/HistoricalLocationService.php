@@ -15,19 +15,20 @@ use App\Services\Interfaces\IHistoricalLocationService;
 /**
  * Composes the CMS-driven domain payload for a single historical location page.
  */
-class HistoricalLocationService implements IHistoricalLocationService
+class HistoricalLocationService extends BaseContentService implements IHistoricalLocationService
 {
     public function __construct(
-        private readonly ICmsContentRepository $cmsService,
+        ICmsContentRepository $cmsContentRepository,
         private readonly GlobalContentRepository $globalContentRepo,
         private readonly HistoricalLocationContentRepository $histLocContentRepo,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
+        parent::__construct($cmsContentRepository);
     }
 
     public function getHistoralLocationPageData(string $name): HistoricalLocationPageData
     {
-        $heroRaw = $this->cmsService->getSectionContent($name, HistoricalLocationPageConstants::SECTION_HERO);
+        $heroRaw = $this->cmsContentRepository->getSectionContent($name, HistoricalLocationPageConstants::SECTION_HERO);
 
         if (empty($heroRaw)) {
             throw new HistoricalLocationNotFoundException($name);

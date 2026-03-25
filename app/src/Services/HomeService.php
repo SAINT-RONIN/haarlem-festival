@@ -32,17 +32,18 @@ use App\Constants\HomeUiConfig;
  * locations, and a schedule preview limited to the next 4 days of active sessions.
  * Returns raw domain data only -- view model mapping happens in HomeMapper.
  */
-class HomeService implements IHomeService
+class HomeService extends BaseContentService implements IHomeService
 {
     public function __construct(
         private readonly IEventTypeRepository $eventTypeRepository,
         private readonly IVenueRepository $venueRepository,
         private readonly IRestaurantRepository $restaurantRepository,
         private readonly IEventSessionRepository $eventSessionRepository,
-        private readonly ICmsContentRepository $cmsService,
+        ICmsContentRepository $cmsContentRepository,
         private readonly GlobalContentRepository $globalContentRepo,
         private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
+        parent::__construct($cmsContentRepository);
     }
 
     /**
@@ -65,7 +66,7 @@ class HomeService implements IHomeService
     private function assembleHomePageData(): HomePageData
     {
         // Load all CMS key-value content for the home page (used by event-type cards)
-        $cmsContent = $this->cmsService->getHomePageContent();
+        $cmsContent = $this->cmsContentRepository->getHomePageContent();
 
         return new HomePageData(
             cmsContent: $cmsContent,

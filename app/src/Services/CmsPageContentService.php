@@ -13,9 +13,12 @@ use App\Services\Interfaces\ICmsPageContentService;
  * Exists so controllers depend on a service interface rather than
  * calling the CMS content repository directly.
  */
-class CmsPageContentService implements ICmsPageContentService
+class CmsPageContentService extends BaseContentService implements ICmsPageContentService
 {
-    public function __construct(private ICmsContentRepository $repository) {}
+    public function __construct(ICmsContentRepository $cmsContentRepository)
+    {
+        parent::__construct($cmsContentRepository);
+    }
 
     /**
      * Returns the key-value pairs for a single CMS section (e.g. "hero_section" on the "jazz" page).
@@ -24,6 +27,6 @@ class CmsPageContentService implements ICmsPageContentService
      */
     public function getSectionContent(string $pageSlug, string $sectionKey): array
     {
-        return $this->repository->getSectionContent($pageSlug, $sectionKey);
+        return $this->cmsContentRepository->getSectionContent($pageSlug, $sectionKey);
     }
 }
