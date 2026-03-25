@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Exceptions\ValidationException;
 use App\Services\Interfaces\ISessionService;
 
 /**
@@ -61,5 +62,13 @@ abstract class CmsBaseController extends BaseController
         $this->sessionService->setFlash($type, $message);
         header('Location: ' . $url);
         exit;
+    }
+
+    /**
+     * Redirects with a comma-separated error flash from a ValidationException.
+     */
+    protected function redirectWithValidationErrors(ValidationException $error, string $url): void
+    {
+        $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', $url);
     }
 }

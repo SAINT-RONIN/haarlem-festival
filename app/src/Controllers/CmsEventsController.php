@@ -94,7 +94,7 @@ class CmsEventsController extends CmsBaseController
             $eventId = $this->eventsService->createEvent($_POST);
             $this->redirectWithFlash('Event created successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/create');
+            $this->redirectWithValidationErrors($error, '/cms/events/create');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -129,7 +129,7 @@ class CmsEventsController extends CmsBaseController
             $this->eventsService->updateEvent($eventId, $_POST);
             $this->redirectWithFlash('Event updated successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . (int)$id . '/edit');
+            $this->redirectWithValidationErrors($error, '/cms/events/' . (int)$id . '/edit');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -146,7 +146,7 @@ class CmsEventsController extends CmsBaseController
             $this->eventsService->createSession($eventIdInt, $_POST);
             $this->redirectWithFlash('Session created successfully.', 'success', "/cms/events/{$eventIdInt}/edit");
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . (int)$eventId . '/edit');
+            $this->redirectWithValidationErrors($error, '/cms/events/' . (int)$eventId . '/edit');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -163,7 +163,7 @@ class CmsEventsController extends CmsBaseController
             $this->eventsService->updateSession((int)$id, $_POST);
             $this->redirectWithFlash('Session updated successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . $this->getEventIdFromPost() . '/edit');
+            $this->redirectWithValidationErrors($error, '/cms/events/' . $this->getEventIdFromPost() . '/edit');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -195,7 +195,7 @@ class CmsEventsController extends CmsBaseController
             $this->eventsService->addLabel((int)$id, trim($_POST['LabelText'] ?? ''));
             $this->redirectWithFlash('Label added successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . $this->getEventIdFromPost() . '/edit');
+            $this->redirectWithValidationErrors($error, '/cms/events/' . $this->getEventIdFromPost() . '/edit');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -226,7 +226,7 @@ class CmsEventsController extends CmsBaseController
             $eventId = $this->getEventIdFromPost();
             $this->handleSetPrice((int)$id, $eventId);
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events/' . $this->getEventIdFromPost() . '/edit');
+            $this->redirectWithValidationErrors($error, '/cms/events/' . $this->getEventIdFromPost() . '/edit');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -269,7 +269,7 @@ class CmsEventsController extends CmsBaseController
             $this->eventsService->deleteEvent((int)$id);
             $this->redirectWithFlash('Event deleted successfully.', 'success', '/cms/events');
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/events');
+            $this->redirectWithValidationErrors($error, '/cms/events');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -302,7 +302,7 @@ class CmsEventsController extends CmsBaseController
         try {
             $this->handleToggleScheduleDay();
         } catch (ValidationException $error) {
-            $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', '/cms/schedule-days');
+            $this->redirectWithValidationErrors($error, '/cms/schedule-days');
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
