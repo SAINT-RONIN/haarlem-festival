@@ -6,6 +6,7 @@ namespace App\Mappers;
 
 use App\Helpers\FormatHelper;
 use App\DTOs\Filters\ScheduleFilterParams;
+use App\Models\ScheduleSectionContent;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleFilterGroupData;
@@ -25,7 +26,7 @@ final class ScheduleMapper
     /**
      * Converts raw schedule data (from ScheduleService::getScheduleData) into a ScheduleSectionViewModel.
      *
-     * @param array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array} $scheduleData
+     * @param array{cmsContent: ScheduleSectionContent, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array} $scheduleData
      */
     public static function toScheduleSection(array $scheduleData): ScheduleSectionViewModel
     {
@@ -40,37 +41,35 @@ final class ScheduleMapper
     }
 
     /**
-     * @param array<string, mixed> $cmsContent
+     * Extracts CMS button labels for the add-to-program interaction.
+     *
      * @return array{confirm: string, adding: string, success: string}
      */
-    private static function extractButtonTexts(array $cmsContent): array
+    private static function extractButtonTexts(ScheduleSectionContent $cmsContent): array
     {
         return [
-            'confirm' => self::str($cmsContent, 'schedule_confirm_text', 'Confirm selection'),
-            'adding'  => self::str($cmsContent, 'schedule_adding_text', 'Adding...'),
-            'success' => self::str($cmsContent, 'schedule_success_text', 'Added to program'),
+            'confirm' => self::str($cmsContent->scheduleConfirmText, 'Confirm selection'),
+            'adding'  => self::str($cmsContent->scheduleAddingText, 'Adding...'),
+            'success' => self::str($cmsContent->scheduleSuccessText, 'Added to program'),
         ];
     }
 
     /**
-     * @param array<string, mixed> $cmsContent
-     * @return array{title: string, year: ?string, eventCountLabel: ?string, showEventCount: bool}
-     */
-    /**
      * Resolves the schedule section header (title, year, event count label).
      * The history page suppresses the year and event count by design.
+     *
+     * @return array{title: string, year: ?string, eventCountLabel: ?string, showEventCount: bool}
      */
-    private static function resolveHeaderTexts(array $cmsContent, string $pageSlug): array
+    private static function resolveHeaderTexts(ScheduleSectionContent $cmsContent, string $pageSlug): array
     {
-        $title = self::str($cmsContent, 'schedule_title', ucfirst($pageSlug) . ' schedule');
-        $year  = self::str($cmsContent, 'schedule_year', '2026');
+        $title = self::str($cmsContent->scheduleTitle, ucfirst($pageSlug) . ' schedule');
+        $year  = self::str($cmsContent->scheduleYear, '2026');
         $eventCountLabel = self::str(
-            $cmsContent,
-            'schedule_event_count_label',
-            self::str($cmsContent, 'schedule_story_count_label', 'Events')
+            $cmsContent->scheduleEventCountLabel,
+            self::str($cmsContent->scheduleStoryCountLabel, 'Events')
         );
-        $showEventCount = ($cmsContent['schedule_show_event_count'] ??
-            $cmsContent['schedule_show_story_count'] ?? '1') === '1';
+        $showEventCount = ($cmsContent->scheduleShowEventCount ??
+            $cmsContent->scheduleShowStoryCount ?? '1') === '1';
 
         if ($pageSlug === self::HISTORY_PAGE_SLUG) {
             $year            = null;
@@ -82,15 +81,16 @@ final class ScheduleMapper
     }
 
     /**
-     * @param array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: \App\DTOs\Schedule\ScheduleDayData[]} $scheduleData
-     * @param array<string, mixed> $cmsContent
+     * Assembles the full ScheduleSectionViewModel from resolved sub-components.
+     *
+     * @param array{cmsContent: ScheduleSectionContent, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: \App\DTOs\Schedule\ScheduleDayData[]} $scheduleData
      * @param ScheduleDayViewModel[] $days
      * @param array{confirm: string, adding: string, success: string} $buttonTexts
      * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
      */
     private static function buildSectionViewModel(
         array $scheduleData,
-        array $cmsContent,
+        ScheduleSectionContent $cmsContent,
         string $pageSlug,
         array $days,
         array $buttonTexts,
@@ -105,7 +105,7 @@ final class ScheduleMapper
         $filterGroupTypes = $scheduleData['filterGroupTypes'] ?? ['day'];
         $priceTypeOptions = $scheduleData['priceTypeOptions'] ?? ['pay-what-you-like', 'fixed'];
         $filterGroups    = self::buildFilterGroups($cmsContent, $filterGroupTypes, $priceTypeOptions, $days, $activeFilters, $availableDays);
-        $resetButtonText = self::str($cmsContent, 'schedule_filter_reset_text', 'Reset all filters');
+        $resetButtonText = self::str($cmsContent->scheduleFilterResetText, 'Reset all filters');
 
         return new ScheduleSectionViewModel(
             sectionId: $pageSlug . '-schedule',
@@ -138,25 +138,28 @@ final class ScheduleMapper
     }
 
     /**
-     * @param array<string, mixed> $cmsContent
+     * Extracts CMS settings for schedule section display toggles and labels.
+     *
      * @return array{filtersButtonText: string, showFilters: bool, additionalInfoTitle: string, additionalInfoBody: string, showAdditionalInfo: bool, ctaButtonText: string, payWhatYouLikeText: string, currencySymbol: string, noEventsText: string}
      */
-    private static function extractCmsSettings(array $cmsContent): array
+    private static function extractCmsSettings(ScheduleSectionContent $cmsContent): array
     {
         return [
-            'filtersButtonText'  => self::str($cmsContent, 'schedule_filters_button_text', 'Filters'),
-            'showFilters'        => ($cmsContent['schedule_show_filters'] ?? '1') === '1',
-            'additionalInfoTitle' => self::str($cmsContent, 'schedule_additional_info_title', 'Additional Information:'),
-            'additionalInfoBody' => $cmsContent['schedule_additional_info_body'] ?? '',
-            'showAdditionalInfo' => ($cmsContent['schedule_show_additional_info'] ?? '0') === '1',
-            'ctaButtonText'      => self::str($cmsContent, 'schedule_cta_button_text', 'Discover'),
-            'payWhatYouLikeText' => self::str($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like'),
-            'currencySymbol'     => self::str($cmsContent, 'schedule_currency_symbol', '€'),
-            'noEventsText'       => self::str($cmsContent, 'schedule_no_events_text', 'No events scheduled'),
+            'filtersButtonText'  => self::str($cmsContent->scheduleFiltersButtonText, 'Filters'),
+            'showFilters'        => ($cmsContent->scheduleShowFilters ?? '1') === '1',
+            'additionalInfoTitle' => self::str($cmsContent->scheduleAdditionalInfoTitle, 'Additional Information:'),
+            'additionalInfoBody' => $cmsContent->scheduleAdditionalInfoBody ?? '',
+            'showAdditionalInfo' => ($cmsContent->scheduleShowAdditionalInfo ?? '0') === '1',
+            'ctaButtonText'      => self::str($cmsContent->scheduleCtaButtonText, 'Discover'),
+            'payWhatYouLikeText' => self::str($cmsContent->schedulePayWhatYouLikeText, 'Pay as you like'),
+            'currencySymbol'     => self::str($cmsContent->scheduleCurrencySymbol, '€'),
+            'noEventsText'       => self::str($cmsContent->scheduleNoEventsText, 'No events scheduled'),
         ];
     }
 
     /**
+     * Builds all filter groups requested for this event type's schedule section.
+     *
      * @param string[] $filterGroupTypes
      * @param string[] $priceTypeOptions
      * @param ScheduleDayViewModel[] $days
@@ -164,14 +167,14 @@ final class ScheduleMapper
      * @return ScheduleFilterGroupData[]
      */
     private static function buildFilterGroups(
-        array $cmsContent,
+        ScheduleSectionContent $cmsContent,
         array $filterGroupTypes,
         array $priceTypeOptions,
         array $days,
         ?ScheduleFilterParams $activeFilters = null,
         array $availableDays = [],
     ): array {
-        $allLabel = self::str($cmsContent, 'schedule_filter_all_label', 'All');
+        $allLabel = self::str($cmsContent->scheduleFilterAllLabel, 'All');
         $groups   = [];
 
         foreach ($filterGroupTypes as $type) {
@@ -193,10 +196,12 @@ final class ScheduleMapper
     }
 
     /**
+     * Builds the day filter group from available calendar days.
+     *
      * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
      */
     private static function buildDayFilterGroup(
-        array $cmsContent,
+        ScheduleSectionContent $cmsContent,
         array $availableDays,
         string $allLabel,
         ?ScheduleFilterParams $activeFilters,
@@ -214,35 +219,36 @@ final class ScheduleMapper
         }
 
         return new ScheduleFilterGroupData(
-            label: self::str($cmsContent, 'schedule_filter_day_label', 'Day'),
+            label: self::str($cmsContent->scheduleFilterDayLabel, 'Day'),
             key: 'day',
             options: $options,
         );
     }
 
+    /** Builds the time range filter group (morning/afternoon/evening). */
     private static function buildTimeRangeFilterGroup(
-        array $cmsContent,
+        ScheduleSectionContent $cmsContent,
         string $allLabel,
         ?ScheduleFilterParams $activeFilters,
     ): ScheduleFilterGroupData {
         $active = $activeFilters?->timeRange;
         return new ScheduleFilterGroupData(
-            label: self::str($cmsContent, 'schedule_filter_time_range_label', 'Time Range'),
+            label: self::str($cmsContent->scheduleFilterTimeRangeLabel, 'Time Range'),
             key: 'timeRange',
             options: [
                 new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null),
                 new ScheduleFilterOptionData(
-                    label: self::str($cmsContent, 'schedule_filter_morning_label', 'Morning (before 12:00)'),
+                    label: self::str($cmsContent->scheduleFilterMorningLabel, 'Morning (before 12:00)'),
                     value: 'morning',
                     isActive: $active === 'morning',
                 ),
                 new ScheduleFilterOptionData(
-                    label: self::str($cmsContent, 'schedule_filter_afternoon_label', 'Afternoon (12:00 to 17:00)'),
+                    label: self::str($cmsContent->scheduleFilterAfternoonLabel, 'Afternoon (12:00 to 17:00)'),
                     value: 'afternoon',
                     isActive: $active === 'afternoon',
                 ),
                 new ScheduleFilterOptionData(
-                    label: self::str($cmsContent, 'schedule_filter_evening_label', 'Evening (after 17:00)'),
+                    label: self::str($cmsContent->scheduleFilterEveningLabel, 'Evening (after 17:00)'),
                     value: 'evening',
                     isActive: $active === 'evening',
                 ),
@@ -251,10 +257,12 @@ final class ScheduleMapper
     }
 
     /**
+     * Builds the price type filter group (free/paid/pay-what-you-like).
+     *
      * @param string[] $priceTypeOptions e.g. ['free', 'fixed'] or ['pay-what-you-like', 'fixed']
      */
     private static function buildPriceTypeFilterGroup(
-        array $cmsContent,
+        ScheduleSectionContent $cmsContent,
         string $allLabel,
         array $priceTypeOptions,
         ?ScheduleFilterParams $activeFilters,
@@ -263,44 +271,45 @@ final class ScheduleMapper
         $options = [new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null)];
 
         foreach ($priceTypeOptions as $value) {
-            [$labelKey, $defaultLabel] = match ($value) {
-                'free'              => ['schedule_filter_free_label', 'Free'],
-                'fixed'             => ['schedule_filter_paid_label', 'Paid'],
-                'pay-what-you-like' => ['schedule_filter_pay_as_you_like_label', 'Pay as you like'],
-                default             => ['schedule_filter_' . $value . '_label', $value],
+            $label = match ($value) {
+                'free'              => self::str($cmsContent->scheduleFilterFreeLabel, 'Free'),
+                'fixed'             => self::str($cmsContent->scheduleFilterPaidLabel, 'Paid'),
+                'pay-what-you-like' => self::str($cmsContent->scheduleFilterPayAsYouLikeLabel, 'Pay as you like'),
+                default             => $value,
             };
             $options[] = new ScheduleFilterOptionData(
-                label: self::str($cmsContent, $labelKey, $defaultLabel),
+                label: $label,
                 value: $value,
                 isActive: $active === $value,
             );
         }
 
         return new ScheduleFilterGroupData(
-            label: self::str($cmsContent, 'schedule_filter_price_type_label', 'Price Type'),
+            label: self::str($cmsContent->scheduleFilterPriceTypeLabel, 'Price Type'),
             key: 'priceType',
             options: $options,
         );
     }
 
+    /** Builds the language filter group (English/Dutch). */
     private static function buildLanguageFilterGroup(
-        array $cmsContent,
+        ScheduleSectionContent $cmsContent,
         string $allLabel,
         ?ScheduleFilterParams $activeFilters,
     ): ScheduleFilterGroupData {
         $active = $activeFilters?->language;
         return new ScheduleFilterGroupData(
-            label: self::str($cmsContent, 'schedule_filter_language_label', 'Language'),
+            label: self::str($cmsContent->scheduleFilterLanguageLabel, 'Language'),
             key: 'language',
             options: [
                 new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null),
                 new ScheduleFilterOptionData(
-                    label: self::str($cmsContent, 'schedule_filter_english_label', 'English'),
+                    label: self::str($cmsContent->scheduleFilterEnglishLabel, 'English'),
                     value: 'english',
                     isActive: $active === 'english',
                 ),
                 new ScheduleFilterOptionData(
-                    label: self::str($cmsContent, 'schedule_filter_dutch_label', 'Dutch'),
+                    label: self::str($cmsContent->scheduleFilterDutchLabel, 'Dutch'),
                     value: 'dutch',
                     isActive: $active === 'dutch',
                 ),
@@ -308,24 +317,25 @@ final class ScheduleMapper
         );
     }
 
+    /** Builds the age group filter group (All ages, 4+, 10+, 12+, 16+). */
     private static function buildAgeGroupFilterGroup(
-        array $cmsContent,
+        ScheduleSectionContent $cmsContent,
         ?ScheduleFilterParams $activeFilters,
     ): ScheduleFilterGroupData {
         $active = $activeFilters?->age !== null ? (string) $activeFilters->age : null;
         return new ScheduleFilterGroupData(
-            label: self::str($cmsContent, 'schedule_filter_age_group_label', 'Age Group'),
+            label: self::str($cmsContent->scheduleFilterAgeGroupLabel, 'Age Group'),
             key: 'age',
             options: [
                 new ScheduleFilterOptionData(
-                    label: self::str($cmsContent, 'schedule_filter_all_ages_label', 'All ages'),
+                    label: self::str($cmsContent->scheduleFilterAllAgesLabel, 'All ages'),
                     value: 'all',
                     isActive: $active === null,
                 ),
-                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_4_label', '4+'), value: '4', isActive: $active === '4'),
-                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_10_label', '10+'), value: '10', isActive: $active === '10'),
-                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_12_label', '12+'), value: '12', isActive: $active === '12'),
-                new ScheduleFilterOptionData(label: self::str($cmsContent, 'schedule_filter_age_16_label', '16+'), value: '16', isActive: $active === '16'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent->scheduleFilterAge4Label, '4+'), value: '4', isActive: $active === '4'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent->scheduleFilterAge10Label, '10+'), value: '10', isActive: $active === '10'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent->scheduleFilterAge12Label, '12+'), value: '12', isActive: $active === '12'),
+                new ScheduleFilterOptionData(label: self::str($cmsContent->scheduleFilterAge16Label, '16+'), value: '16', isActive: $active === '16'),
             ],
         );
     }
@@ -336,7 +346,7 @@ final class ScheduleMapper
      * @param ScheduleDayViewModel[] $days
      */
     private static function buildVenueFilterGroup(
-        array $cmsContent,
+        ScheduleSectionContent $cmsContent,
         string $allLabel,
         array $days,
         ?ScheduleFilterParams $activeFilters,
@@ -362,13 +372,15 @@ final class ScheduleMapper
         }
 
         return new ScheduleFilterGroupData(
-            label: self::str($cmsContent, 'schedule_filter_venue_label', 'Venue'),
+            label: self::str($cmsContent->scheduleFilterVenueLabel, 'Venue'),
             key: 'venue',
             options: $options,
         );
     }
 
     /**
+     * Maps raw day arrays into ScheduleDayViewModel objects.
+     *
      * @param array<array<string, mixed>> $rawDays
      * @return ScheduleDayViewModel[]
      */
@@ -553,10 +565,9 @@ final class ScheduleMapper
         return $viewModels;
     }
 
-    /** Reads a non-empty string from the CMS content array, returning a default when missing. */
-    private static function str(array $content, string $key, string $default): string
+    /** Returns a non-empty string value, or the default when null/empty. */
+    private static function str(?string $value, string $default): string
     {
-        $value = $content[$key] ?? null;
-        return is_string($value) && $value !== '' ? $value : $default;
+        return $value !== null && $value !== '' ? $value : $default;
     }
 }

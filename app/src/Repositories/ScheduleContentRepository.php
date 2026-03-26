@@ -21,7 +21,7 @@ class ScheduleContentRepository
     ) {
     }
 
-    /** Fetches the schedule section content. */
+    /** Fetches the schedule section content as a typed object. */
     public function findScheduleSectionContent(string $pageSlug, string $sectionKey): ScheduleSectionContent
     {
         $raw = $this->cmsContent->getSectionContent($pageSlug, $sectionKey);
