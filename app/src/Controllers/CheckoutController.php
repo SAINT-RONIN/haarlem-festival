@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\DTOs\Session\SessionContext;
 use App\Exceptions\CheckoutException;
+use App\Helpers\AssetVersionHelper;
 use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
 use App\Mappers\CheckoutMapper;
 use App\Mappers\ProgramMapper;
@@ -46,8 +47,7 @@ class CheckoutController extends BaseController
             }
 
             $cmsContent = $this->checkoutService->getCheckoutMainContent();
-            $jsPath = __DIR__ . '/../../public/assets/js/checkout.js';
-            $jsVersion = file_exists($jsPath) ? (string)filemtime($jsPath) : '';
+            $jsVersion = AssetVersionHelper::resolveJsVersion(__DIR__ . '/../../public/assets/js/checkout.js');
             $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $context->isLoggedIn, $jsVersion);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);
