@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
+use App\Models\GlobalUiContent;
+use App\Models\GradientSectionContent;
+use App\Models\HeroSectionContent;
+use App\Models\RestaurantCardsSectionContent;
+use App\Models\RestaurantInstructionsSectionContent;
+use App\Models\RestaurantIntroSectionContent;
+use App\Models\RestaurantIntroSplit2SectionContent;
+
 /**
  * Carries all CMS sections and domain data needed to render the Restaurant listing page.
  */

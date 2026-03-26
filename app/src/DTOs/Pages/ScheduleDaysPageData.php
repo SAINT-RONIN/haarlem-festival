@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
+use App\DTOs\Schedule\GroupedScheduleDayConfigs;
+
 /**
  * All data needed to render the CMS schedule days page.
  *

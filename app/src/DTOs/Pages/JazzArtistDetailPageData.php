@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
+use App\DTOs\Events\JazzArtistDetailEvent;
+use App\Models\JazzArtistDetailCmsData;
+
 /**
  * All data for a single jazz artist detail page — CMS content, albums, tracks,
  * lineup, gallery. Assembled by JazzArtistDetailService.
