@@ -84,7 +84,6 @@ use App\Services\ScheduleService;
 use App\Services\AuthService;
 use App\Services\CaptchaService;
 use App\Services\SessionService;
-use App\Services\CmsPageContentService;
 use App\Services\StorytellingDetailService;
 use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\StorytellingService;
@@ -131,7 +130,6 @@ return static function (string $controllerClass): object {
     // ── Lazy service accessors (shared across multiple controllers) ──
 
     $cmsContent = fn() => $make('cmsContent', fn() => new CmsContentRepository($cmsRepo(), $mediaAssetRepo()));
-    $cmsPageContent = fn() => $make('cmsPageContent', fn() => new CmsPageContentService($cmsContent()));
 
     // ── Domain content repositories (wrap CmsContentRepository with typed returns) ──
 
