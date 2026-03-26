@@ -33,6 +33,12 @@ final class RestaurantPageConstants
     // Fallback shown when no media asset is linked
     public const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
 
+    // Reservation fee charged per guest at booking time (deducted from final bill)
+    public const RESERVATION_FEE = 10.00;
+
+    // Valid festival days shown in the reservation date selector
+    public const VALID_DATES = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
+
     private function __construct()
     {
     }

@@ -12,6 +12,9 @@ final readonly class RestaurantCardsSectionContent
     public function __construct(
         public ?string $cardsTitle,
         public ?string $cardsSubtitle,
+        public ?string $cardsLabelFilters,
+        public ?string $cardsLabelAboutBtn,
+        public ?string $cardsLabelBookBtn,
     ) {}
 
     /**
@@ -20,8 +23,11 @@ final readonly class RestaurantCardsSectionContent
     public static function fromRawArray(array $raw): self
     {
         return new self(
-            cardsTitle: $raw['cards_title'] ?? null,
-            cardsSubtitle: $raw['cards_subtitle'] ?? null,
+            cardsTitle:         $raw['cards_title'] ?? null,
+            cardsSubtitle:      $raw['cards_subtitle'] ?? null,
+            cardsLabelFilters:  $raw['cards_label_filters'] ?? null,
+            cardsLabelAboutBtn: $raw['cards_label_about_btn'] ?? null,
+            cardsLabelBookBtn:  $raw['cards_label_book_btn'] ?? null,
         );
     }
 }

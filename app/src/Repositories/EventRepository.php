@@ -10,6 +10,7 @@ use App\Models\Event;
 use App\Models\EventFilter;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
+use App\Models\RestaurantDetailEvent;
 use App\Models\StorytellingDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
@@ -134,6 +135,25 @@ class EventRepository implements IEventRepository
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
         return $row !== null ? StorytellingDetailEvent::fromRow($row) : null;
+    }
+
+    public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent
+    {
+        $row = $this->queryActiveEventBySlug($slug, EventTypeId::Restaurant);
+        return $row !== null ? RestaurantDetailEvent::fromRow($row) : null;
+    }
+
+    public function findActiveRestaurantEvents(): array
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT *
+            FROM Event
+            WHERE EventTypeId = :eventTypeId
+              AND IsActive = 1
+            ORDER BY Title ASC
+        ');
+        $stmt->execute(['eventTypeId' => EventTypeId::Restaurant->value]);
+        return array_map([RestaurantDetailEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     private function dayNameToNumber(string $dayName): ?int

@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Constants\RestaurantPageConstants;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\RestaurantMapper;
-use App\Models\Reservation;
 use App\Repositories\ReservationRepository;
+use App\Models\Reservation;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\ISessionService;
 
 /**
- * Controller for Restaurant page.
+ * Controller for Restaurant pages.
  */
 class RestaurantController extends BaseController
 {
-    private const RESERVATION_FEE = 10.00;
-    private const VALID_DATES     = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
-
     public function __construct(
         private IRestaurantService    $restaurantService,
         private ISessionService       $sessionService,
@@ -27,14 +25,14 @@ class RestaurantController extends BaseController
     }
 
     /**
-     * Displays the restaurant page.
+     * Displays the restaurant listing page.
      *
      * GET /restaurant
      */
     public function index(): void
     {
         try {
-            $data = $this->restaurantService->getRestaurantPageData();
+            $data      = $this->restaurantService->getRestaurantPageData();
             $viewModel = RestaurantMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         } catch (\Throwable $error) {
@@ -45,12 +43,12 @@ class RestaurantController extends BaseController
     /**
      * Displays a single restaurant detail page.
      *
-     * GET /restaurant/{id}
+     * GET /restaurant/{slug}
      */
-    public function detail(string $id): void
+    public function detail(string $slug): void
     {
         try {
-            $data = $this->restaurantService->getRestaurantDetailData((int) $id);
+            $data = $this->restaurantService->getRestaurantDetailData($slug);
 
             if ($data === null) {
                 http_response_code(404);
@@ -58,7 +56,7 @@ class RestaurantController extends BaseController
                 return;
             }
 
-            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn(), self::VALID_DATES, self::RESERVATION_FEE);
+            $viewModel = RestaurantMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -68,12 +66,12 @@ class RestaurantController extends BaseController
     /**
      * Displays the reservation form for a restaurant.
      *
-     * GET /restaurant/{id}/reservation
+     * GET /restaurant/{slug}/reservation
      */
-    public function reservationPage(string $id): void
+    public function reservationPage(string $slug): void
     {
         try {
-            $data = $this->restaurantService->getRestaurantDetailData((int) $id);
+            $data = $this->restaurantService->getRestaurantDetailData($slug);
 
             if ($data === null) {
                 http_response_code(404);
@@ -91,22 +89,28 @@ class RestaurantController extends BaseController
     /**
      * Handles reservation form submission.
      *
-     * POST /restaurant/{id}/reservation
+     * POST /restaurant/{slug}/reservation
      */
-    public function submitReservation(string $id): void
+    public function submitReservation(string $slug): void
     {
         try {
-            $restaurantId = (int) $id;
+            $data = $this->restaurantService->getRestaurantDetailData($slug);
 
-            $date             = trim((string)($_POST['dining_date'] ?? ''));
-            $timeSlot         = trim((string)($_POST['time_slot'] ?? ''));
-            $adultsCount      = max(0, (int)($_POST['adults_count'] ?? 0));
-            $childrenCount    = max(0, (int)($_POST['children_count'] ?? 0));
-            $specialRequests  = trim((string)($_POST['special_requests'] ?? ''));
+            if ($data === null) {
+                http_response_code(404);
+                require __DIR__ . '/../Views/pages/errors/404.php';
+                return;
+            }
+
+            $date            = trim((string) ($_POST['dining_date']      ?? ''));
+            $timeSlot        = trim((string) ($_POST['time_slot']        ?? ''));
+            $adultsCount     = max(0, (int) ($_POST['adults_count']      ?? 0));
+            $childrenCount   = max(0, (int) ($_POST['children_count']    ?? 0));
+            $specialRequests = trim((string) ($_POST['special_requests'] ?? ''));
 
             $errors = [];
 
-            if (!in_array($date, self::VALID_DATES, true)) {
+            if (!in_array($date, RestaurantPageConstants::VALID_DATES, true)) {
                 $errors[] = 'Please select a valid dining date.';
             }
             if ($timeSlot === '') {
@@ -117,18 +121,16 @@ class RestaurantController extends BaseController
             }
 
             if ($errors !== []) {
-                // Store errors and old input in session, then redirect (Post-Redirect-Get pattern).
-                // This prevents the browser from re-submitting the form on refresh.
-                $_SESSION['reservation_errors']   = $errors;
+                $_SESSION['reservation_errors']    = $errors;
                 $_SESSION['reservation_old_input'] = $_POST;
-                header("Location: /restaurant/{$restaurantId}/reservation");
+                header("Location: /restaurant/{$slug}/reservation");
                 exit;
             }
 
-            $totalFee = ($adultsCount + $childrenCount) * self::RESERVATION_FEE;
+            $totalFee = ($adultsCount + $childrenCount) * RestaurantPageConstants::RESERVATION_FEE;
 
             $reservation = new Reservation(
-                restaurantId:    $restaurantId,
+                restaurantId:    $data->event->restaurantId,
                 diningDate:      $date,
                 timeSlot:        $timeSlot,
                 adultsCount:     $adultsCount,
@@ -139,7 +141,7 @@ class RestaurantController extends BaseController
 
             $this->reservationRepository->insert($reservation);
 
-            header("Location: /restaurant/{$restaurantId}/reservation?success=1");
+            header("Location: /restaurant/{$slug}/reservation?success=1");
             exit;
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

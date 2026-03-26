@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\EventFilter;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
+use App\Models\RestaurantDetailEvent;
 use App\Models\StorytellingDetailEvent;
 
 interface IEventRepository
@@ -20,6 +21,13 @@ interface IEventRepository
     public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent;
 
     public function findActiveStorytellingBySlug(string $slug): ?StorytellingDetailEvent;
+
+    public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent;
+
+    /**
+     * @return RestaurantDetailEvent[]
+     */
+    public function findActiveRestaurantEvents(): array;
 
     public function findById(int $eventId): ?Event;
 

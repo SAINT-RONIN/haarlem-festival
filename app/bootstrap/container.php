@@ -163,8 +163,8 @@ return static function (string $controllerClass): object {
         RestaurantController::class => new RestaurantController(
             new RestaurantService(
                 $cmsContent,
-                $restaurantRepository,
-                $restaurantImageRepository,
+                $eventRepository,
+                $mediaAssetRepository,
             ),
             $sessionService,
             new ReservationRepository(),

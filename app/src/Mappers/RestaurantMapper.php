@@ -4,19 +4,27 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\Reservation;
-use App\Models\Restaurant;
-use App\Models\RestaurantCardsSectionContent;
-use App\Models\RestaurantDetailData;
+use App\Constants\RestaurantPageConstants;
+use App\Models\RestaurantDetailPageData;
 use App\Models\RestaurantDetailSectionContent;
+use App\Models\RestaurantEventCmsData;
 use App\Models\RestaurantGradientSectionContent;
 use App\Models\RestaurantInstructionsSectionContent;
 use App\Models\RestaurantIntroSectionContent;
 use App\Models\RestaurantIntroSplit2SectionContent;
+use App\Models\RestaurantListingData;
 use App\Models\RestaurantPageData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
+use App\ViewModels\Restaurant\Detail\AboutSectionData;
+use App\ViewModels\Restaurant\Detail\ChefSectionData;
+use App\ViewModels\Restaurant\Detail\ContactSectionData;
+use App\ViewModels\Restaurant\Detail\GallerySectionData;
+use App\ViewModels\Restaurant\Detail\LocationSectionData;
+use App\ViewModels\Restaurant\Detail\MenuSectionData;
+use App\ViewModels\Restaurant\Detail\PracticalInfoSectionData;
+use App\ViewModels\Restaurant\Detail\ReservationSectionData;
 use App\ViewModels\Restaurant\InstructionCardData;
 use App\ViewModels\Restaurant\InstructionsSectionData;
 use App\ViewModels\Restaurant\RestaurantCardData;
@@ -26,177 +34,247 @@ use App\ViewModels\Restaurant\RestaurantPageViewModel;
 
 final class RestaurantMapper
 {
-    private const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Public entry points
+    // ─────────────────────────────────────────────────────────────────────────
 
     public static function toPageViewModel(RestaurantPageData $data, bool $isLoggedIn): RestaurantPageViewModel
     {
-        $heroData = CmsMapper::toHeroData($data->heroContent, 'restaurant');
+        $heroData = CmsMapper::toHeroData($data->heroContent, RestaurantPageConstants::CURRENT_PAGE);
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return new RestaurantPageViewModel(
             heroData:               $heroData,
             globalUi:               $globalUi,
             cms:                    CmsMapper::toCmsData($heroData, $globalUi),
-            gradientSection:        self::toGradientSection($data->gradientSection),
-            introSplitSection:      self::toIntroSplitSection($data->introSplitSection),
-            introSplit2Section:     self::toIntroSplit2Section($data->introSplit2Section),
-            instructionsSection:    self::toInstructionsSection($data->instructionsSection),
-            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsSection, $data->restaurants),
+            gradientSection:        self::buildGradientSection($data->gradientSection),
+            introSplitSection:      self::buildIntroSplitSection($data->introSplitSection),
+            introSplit2Section:     self::buildIntroSplit2Section($data->introSplit2Section),
+            instructionsSection:    self::buildInstructionsSection($data->instructionsSection),
+            restaurantCardsSection: self::buildRestaurantCardsSection($data->cardsSection, $data->restaurants),
         );
     }
 
-    /**
-     * Builds the ViewModel for the reservation form page (/restaurant/{id}/reservation).
-     * Re-uses the detail ViewModel but points the primary hero button at the form.
-     */
-    public static function toReservationViewModel(RestaurantDetailData $data, bool $isLoggedIn): RestaurantDetailViewModel
+    public static function toDetailViewModel(RestaurantDetailPageData $data, bool $isLoggedIn): RestaurantDetailViewModel
     {
-        $restaurant = $data->restaurant;
-        $cms        = $data->cms;
+        $heroData = self::buildDetailHeroData($data);
+        $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
-        $subtitleTemplate = $cms->detailHeroSubtitleTemplate ?? '';
+        return new RestaurantDetailViewModel(
+            heroData:      $heroData,
+            globalUi:      $globalUi,
+            cms:           CmsMapper::toCmsData($heroData, $globalUi),
+            slug:          $data->event->slug,
+            name:          $data->event->title,
+            contact:       self::buildContactSection($data),
+            about:         self::buildAboutSection($data),
+            chef:          self::buildChefSection($data),
+            menu:          self::buildMenuSection($data),
+            location:      self::buildLocationSection($data),
+            practicalInfo: self::buildPracticalInfoSection($data),
+            gallery:       self::buildGallerySection($data),
+            reservation:   self::buildReservationSection($data, [], 0.0),
+        );
+    }
+
+    public static function toReservationViewModel(RestaurantDetailPageData $data, bool $isLoggedIn): RestaurantDetailViewModel
+    {
+        $cms   = $data->cms;
+        $event = $data->event;
+
         $heroSubtitle = str_replace(
             ['{name}', '{cuisine}'],
-            [$restaurant->name, $restaurant->cuisineType],
-            $subtitleTemplate
+            [$event->title, $cms->cuisineType ?? ''],
+            $data->sharedCms->detailHeroSubtitleTemplate ?? '',
         );
 
         $heroData = new HeroData(
-            mainTitle:           $restaurant->name,
+            mainTitle:           $event->title,
             subtitle:            $heroSubtitle,
-            primaryButtonText:   $cms->detailHeroBtnPrimary ?? '',
+            primaryButtonText:   $data->sharedCms->detailHeroBtnPrimary ?? '',
             primaryButtonLink:   '#reservation-form',
             secondaryButtonText: '',
-            secondaryButtonLink: '/restaurant/' . $restaurant->restaurantId,
-            backgroundImageUrl:  $restaurant->imagePath ?? self::DEFAULT_IMAGE,
-            currentPage:         'restaurant',
+            secondaryButtonLink: '/restaurant/' . $event->slug,
+            backgroundImageUrl:  $data->featuredImagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
+            currentPage:         RestaurantPageConstants::CURRENT_PAGE,
         );
 
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
-        return new RestaurantDetailViewModel(...array_merge(
-            ['heroData' => $heroData, 'globalUi' => $globalUi, 'cms' => CmsMapper::toCmsData($heroData, $globalUi)],
-            self::buildDetailDomainFields($restaurant, $data, [], 0.0),
-            self::buildDetailCmsLabels($cms),
-        ));
+        return new RestaurantDetailViewModel(
+            heroData:      $heroData,
+            globalUi:      $globalUi,
+            cms:           CmsMapper::toCmsData($heroData, $globalUi),
+            slug:          $event->slug,
+            name:          $event->title,
+            contact:       self::buildContactSection($data),
+            about:         self::buildAboutSection($data),
+            chef:          self::buildChefSection($data),
+            menu:          self::buildMenuSection($data),
+            location:      self::buildLocationSection($data),
+            practicalInfo: self::buildPracticalInfoSection($data),
+            gallery:       self::buildGallerySection($data),
+            reservation:   self::buildReservationSection(
+                $data,
+                RestaurantPageConstants::VALID_DATES,
+                RestaurantPageConstants::RESERVATION_FEE,
+            ),
+        );
     }
 
-    public static function toDetailViewModel(RestaurantDetailData $data, bool $isLoggedIn, array $festivalDates = [], float $reservationFeePerPerson = 0.0): RestaurantDetailViewModel
+    // ─────────────────────────────────────────────────────────────────────────
+    // Detail section builders
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static function buildContactSection(RestaurantDetailPageData $data): ContactSectionData
     {
-        $restaurant  = $data->restaurant;
+        $cms       = $data->cms;
+        $sharedCms = $data->sharedCms;
+
+        return new ContactSectionData(
+            address:        self::buildAddress($cms),
+            phone:          $cms->phone    ?? '',
+            email:          $cms->email    ?? '',
+            website:        $cms->website  ?? '',
+            timeSlots:      $data->timeSlots,
+            labelTitle:     $sharedCms->detailContactTitle    ?? '',
+            labelAddress:   $sharedCms->detailLabelAddress    ?? '',
+            labelContact:   $sharedCms->detailLabelContact    ?? '',
+            labelOpenHours: $sharedCms->detailLabelOpenHours  ?? '',
+        );
+    }
+
+    private static function buildAboutSection(RestaurantDetailPageData $data): AboutSectionData
+    {
+        $cms = $data->cms;
+
+        return new AboutSectionData(
+            text:             str_replace('\n', "\n", $cms->aboutText ?? ''),
+            image:            self::validateImagePath($cms->aboutImage ?? ''),
+            labelTitlePrefix: $data->sharedCms->detailAboutTitlePrefix ?? '',
+        );
+    }
+
+    private static function buildChefSection(RestaurantDetailPageData $data): ChefSectionData
+    {
+        $cms = $data->cms;
+
+        return new ChefSectionData(
+            name:       $cms->chefName ?? '',
+            text:       str_replace('\n', "\n", $cms->chefText ?? ''),
+            image:      self::validateImagePath($cms->chefImage ?? ''),
+            labelTitle: $data->sharedCms->detailChefTitle ?? '',
+        );
+    }
+
+    private static function buildMenuSection(RestaurantDetailPageData $data): MenuSectionData
+    {
         $cms         = $data->cms;
-        $cuisineString = $restaurant->cuisineType;
-        $heroData    = self::toDetailHeroData($restaurant, $cms, $cuisineString);
-        $globalUi    = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
+        $cuisineTags = array_values(array_filter(array_map('trim', explode(',', $cms->cuisineType ?? ''))));
+        $images      = array_values(array_filter([
+            self::validateImagePath($cms->menuImage1 ?? ''),
+            self::validateImagePath($cms->menuImage2 ?? ''),
+        ], fn(string $p) => $p !== RestaurantPageConstants::DEFAULT_IMAGE || ($cms->menuImage1 ?? '') !== ''));
 
-        return new RestaurantDetailViewModel(...array_merge(
-            ['heroData' => $heroData, 'globalUi' => $globalUi, 'cms' => CmsMapper::toCmsData($heroData, $globalUi)],
-            self::buildDetailDomainFields($restaurant, $data, $festivalDates, $reservationFeePerPerson),
-            self::buildDetailCmsLabels($cms),
-        ));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function buildDetailDomainFields(Restaurant $restaurant, RestaurantDetailData $data, array $festivalDates, float $reservationFeePerPerson): array
-    {
-        $cuisineTags = array_values(array_filter(array_map('trim', explode(',', $restaurant->cuisineType))));
-        $imagesByType = self::groupImagesByType($data->images);
-
-        return [
-            'id'          => $restaurant->restaurantId,
-            'name'        => $restaurant->name,
-            'cuisine'     => $restaurant->cuisineType,
-            'address'     => self::buildAddress($restaurant),
-            'description' => self::cleanDescription($restaurant->descriptionHtml),
-            'rating'      => $restaurant->stars ?? 0,
-            'image'       => $restaurant->imagePath ?? self::DEFAULT_IMAGE,
-            'phone'       => $restaurant->phone ?? '',
-            'email'       => $restaurant->email ?? '',
-            'website'     => $restaurant->website ?? '',
-            'aboutText'   => str_replace('\n', "\n", $restaurant->aboutText ?? ''),
-            'aboutImage'  => $imagesByType['about'][0] ?? self::DEFAULT_IMAGE,
-            'chefName'    => $restaurant->chefName ?? '',
-            'chefText'    => str_replace('\n', "\n", $restaurant->chefText ?? ''),
-            'chefImage'   => $imagesByType['chef'][0] ?? self::DEFAULT_IMAGE,
-            'menuDescription' => $restaurant->menuDescription ?? '',
-            'cuisineTags'     => $cuisineTags,
-            'menuImages'      => $imagesByType['menu'] ?? [],
-            'locationDescription' => str_replace('\n', "\n", $restaurant->locationDescription ?? ''),
-            'mapEmbedUrl'     => $restaurant->mapEmbedUrl ?? '',
-            'michelinStars'   => $restaurant->michelinStars ?? 0,
-            'seatsPerSession' => $restaurant->seatsPerSession ?? 0,
-            'durationMinutes' => $restaurant->durationMinutes ?? 0,
-            'specialRequestsNote' => $restaurant->specialRequestsNote ?? '',
-            'galleryImages'   => $imagesByType['gallery'] ?? [self::DEFAULT_IMAGE],
-            'reservationImage' => $imagesByType['reservation'][0] ?? self::DEFAULT_IMAGE,
-            'timeSlots'                => $data->timeSlots,
-            'priceCards'               => $data->priceCards,
-            'festivalDates'            => $festivalDates,
-            'reservationFeePerPerson'  => $reservationFeePerPerson,
-            'priceAdult'               => $restaurant->priceAdult,
-            'priceChild'               => $restaurant->priceChild,
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private static function buildDetailCmsLabels(RestaurantDetailSectionContent $cms): array
-    {
-        return [
-            'labelContactTitle'    => $cms->detailContactTitle ?? '',
-            'labelAddress'         => $cms->detailLabelAddress ?? '',
-            'labelContact'         => $cms->detailLabelContact ?? '',
-            'labelOpenHours'       => $cms->detailLabelOpenHours ?? '',
-            'labelPracticalTitle'  => $cms->detailPracticalTitle ?? '',
-            'labelPriceFood'       => $cms->detailLabelPriceFood ?? '',
-            'labelRating'          => $cms->detailLabelRating ?? '',
-            'labelSpecialRequests' => $cms->detailLabelSpecialRequests ?? '',
-            'labelGalleryTitle'    => $cms->detailGalleryTitle ?? '',
-            'labelAboutPrefix'     => $cms->detailAboutTitlePrefix ?? '',
-            'labelChefTitle'       => $cms->detailChefTitle ?? '',
-            'labelMenuTitle'       => $cms->detailMenuTitle ?? '',
-            'labelCuisineType'     => $cms->detailMenuCuisineLabel ?? '',
-            'labelLocationTitle'   => $cms->detailLocationTitle ?? '',
-            'labelLocationAddress' => $cms->detailLocationAddressLabel ?? '',
-            'labelReservationTitle' => $cms->detailReservationTitle ?? '',
-            'labelReservationDesc' => $cms->detailReservationDescription ?? '',
-            'labelSlotsLabel'      => $cms->detailReservationSlotsLabel ?? '',
-            'labelReservationNote' => $cms->detailReservationNote ?? '',
-            'labelReservationBtn'  => $cms->detailReservationBtn ?? '',
-            'labelDuration'        => $cms->detailLabelDuration ?? '',
-            'labelSeats'           => $cms->detailLabelSeats ?? '',
-            'labelFestivalRated'   => $cms->detailLabelFestivalRated ?? '',
-            'labelMichelin'        => $cms->detailLabelMichelin ?? '',
-            'labelMapFallback'     => $cms->detailMapFallbackText ?? '',
-        ];
-    }
-
-    private static function toDetailHeroData(Restaurant $restaurant, RestaurantDetailSectionContent $cms, string $cuisineString): HeroData
-    {
-        $subtitleTemplate = $cms->detailHeroSubtitleTemplate ?? '';
-        $heroSubtitle = str_replace(
-            ['{name}', '{cuisine}'],
-            [$restaurant->name, $cuisineString],
-            $subtitleTemplate
-        );
-
-        return new HeroData(
-            mainTitle:           $restaurant->name,
-            subtitle:            $heroSubtitle,
-            primaryButtonText:   $cms->detailHeroBtnPrimary ?? '',
-            primaryButtonLink:   '/restaurant/' . $restaurant->restaurantId . '/reservation',
-            secondaryButtonText: '',
-            secondaryButtonLink: '',
-            backgroundImageUrl:  $restaurant->imagePath ?? self::DEFAULT_IMAGE,
-            currentPage:         'restaurant',
+        return new MenuSectionData(
+            description:      $cms->menuDescription ?? '',
+            cuisineTags:      $cuisineTags,
+            images:           $images,
+            labelTitle:       $data->sharedCms->detailMenuTitle       ?? '',
+            labelCuisineType: $data->sharedCms->detailMenuCuisineLabel ?? '',
         );
     }
 
-    private static function toGradientSection(RestaurantGradientSectionContent $cms): GradientSectionData
+    private static function buildLocationSection(RestaurantDetailPageData $data): LocationSectionData
+    {
+        $cms = $data->cms;
+
+        return new LocationSectionData(
+            description:      str_replace('\n', "\n", $cms->locationDescription ?? ''),
+            address:          self::buildAddress($cms),
+            mapEmbedUrl:      $cms->mapEmbedUrl ?? '',
+            labelTitle:       $data->sharedCms->detailLocationTitle        ?? '',
+            labelAddress:     $data->sharedCms->detailLocationAddressLabel  ?? '',
+            labelMapFallback: $data->sharedCms->detailMapFallbackText       ?? '',
+        );
+    }
+
+    private static function buildPracticalInfoSection(RestaurantDetailPageData $data): PracticalInfoSectionData
+    {
+        $cms = $data->cms;
+
+        return new PracticalInfoSectionData(
+            cuisine:              $cms->cuisineType          ?? '',
+            rating:               (int) ($cms->stars         ?? 0),
+            michelinStars:        (int) ($cms->michelinStars ?? 0),
+            specialRequestsNote:  $cms->specialRequestsNote  ?? '',
+            priceCards:           $data->priceCards,
+            labelTitle:           $data->sharedCms->detailPracticalTitle       ?? '',
+            labelPriceFood:       $data->sharedCms->detailLabelPriceFood       ?? '',
+            labelRating:          $data->sharedCms->detailLabelRating          ?? '',
+            labelSpecialRequests: $data->sharedCms->detailLabelSpecialRequests ?? '',
+            labelFestivalRated:   $data->sharedCms->detailLabelFestivalRated   ?? '',
+            labelMichelin:        $data->sharedCms->detailLabelMichelin        ?? '',
+            labelCuisineType:     $data->sharedCms->detailMenuCuisineLabel     ?? '',
+        );
+    }
+
+    private static function buildGallerySection(RestaurantDetailPageData $data): GallerySectionData
+    {
+        $cms    = $data->cms;
+        $images = array_values(array_filter([
+            self::validateImagePath($cms->galleryImage1 ?? ''),
+            self::validateImagePath($cms->galleryImage2 ?? ''),
+            self::validateImagePath($cms->galleryImage3 ?? ''),
+        ], fn(string $p) => $p !== RestaurantPageConstants::DEFAULT_IMAGE));
+
+        if ($images === []) {
+            $images = [RestaurantPageConstants::DEFAULT_IMAGE];
+        }
+
+        return new GallerySectionData(
+            images:     $images,
+            labelTitle: $data->sharedCms->detailGalleryTitle ?? '',
+        );
+    }
+
+    private static function buildReservationSection(
+        RestaurantDetailPageData $data,
+        array $festivalDates,
+        float $reservationFeePerPerson,
+    ): ReservationSectionData {
+        $cms        = $data->cms;
+        $sharedCms  = $data->sharedCms;
+        $priceAdult = $cms->priceAdult !== null ? (float) $cms->priceAdult : null;
+        $priceChild = $priceAdult !== null ? $priceAdult / 2 : null;
+
+        return new ReservationSectionData(
+            image:                   self::validateImagePath($cms->reservationImage ?? ''),
+            timeSlots:               $data->timeSlots,
+            priceCards:              $data->priceCards,
+            durationMinutes:         (int) ($cms->durationMinutes  ?? 0),
+            seatsPerSession:         (int) ($cms->seatsPerSession   ?? 0),
+            priceAdult:              $priceAdult,
+            priceChild:              $priceChild,
+            festivalDates:           $festivalDates,
+            reservationFeePerPerson: $reservationFeePerPerson,
+            labelTitle:              $sharedCms->detailReservationTitle       ?? '',
+            labelDesc:               $sharedCms->detailReservationDescription ?? '',
+            labelSlots:              $sharedCms->detailReservationSlotsLabel  ?? '',
+            labelNote:               $sharedCms->detailReservationNote        ?? '',
+            labelButton:             $sharedCms->detailReservationBtn         ?? '',
+            labelDuration:           $sharedCms->detailLabelDuration          ?? '',
+            labelSeats:              $sharedCms->detailLabelSeats             ?? '',
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Listing page section builders
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static function buildGradientSection(RestaurantGradientSectionContent $cms): GradientSectionData
     {
         return new GradientSectionData(
             headingText:        $cms->gradientHeading ?? '',
@@ -205,7 +283,7 @@ final class RestaurantMapper
         );
     }
 
-    private static function toIntroSplitSection(RestaurantIntroSectionContent $cms): IntroSplitSectionData
+    private static function buildIntroSplitSection(RestaurantIntroSectionContent $cms): IntroSplitSectionData
     {
         $heading = $cms->introHeading ?? '';
         $parsed  = self::parseIntroBody($cms->introBody ?? '');
@@ -221,7 +299,7 @@ final class RestaurantMapper
         );
     }
 
-    private static function toIntroSplit2Section(RestaurantIntroSplit2SectionContent $cms): ?IntroSplitSectionData
+    private static function buildIntroSplit2Section(RestaurantIntroSplit2SectionContent $cms): ?IntroSplitSectionData
     {
         if ($cms->intro2Heading === null && $cms->intro2Body === null) {
             return null;
@@ -237,7 +315,7 @@ final class RestaurantMapper
         );
     }
 
-    private static function toInstructionsSection(RestaurantInstructionsSectionContent $cms): ?InstructionsSectionData
+    private static function buildInstructionsSection(RestaurantInstructionsSectionContent $cms): ?InstructionsSectionData
     {
         if ($cms->instructionsTitle === null) {
             return null;
@@ -254,27 +332,61 @@ final class RestaurantMapper
     }
 
     /**
-     * @param Restaurant[] $restaurants
+     * @param RestaurantListingData[] $restaurants
      */
-    private static function toRestaurantCardsSection(RestaurantCardsSectionContent $cms, array $restaurants): RestaurantCardsSectionData
-    {
+    private static function buildRestaurantCardsSection(
+        RestaurantCardsSectionContent $cms,
+        array $restaurants,
+    ): RestaurantCardsSectionData {
         return new RestaurantCardsSectionData(
-            title:    $cms->cardsTitle ?? '',
-            subtitle: $cms->cardsSubtitle ?? '',
-            filters:  self::buildCuisineFilters($restaurants),
-            cards:    self::buildCards($restaurants),
+            title:         $cms->cardsTitle    ?? '',
+            subtitle:      $cms->cardsSubtitle ?? '',
+            filters:       self::buildCuisineFilters($restaurants),
+            cards:         self::buildCards($restaurants),
+            labelFilters:  $cms->cardsLabelFilters  ?? 'Filters',
+            labelAboutBtn: $cms->cardsLabelAboutBtn ?? 'About it',
+            labelBookBtn:  $cms->cardsLabelBookBtn  ?? 'Book table',
         );
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Hero builder for detail / reservation pages
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static function buildDetailHeroData(RestaurantDetailPageData $data): HeroData
+    {
+        $sharedCms = $data->sharedCms;
+        $heroSubtitle = str_replace(
+            ['{name}', '{cuisine}'],
+            [$data->event->title, $data->cms->cuisineType ?? ''],
+            $sharedCms->detailHeroSubtitleTemplate ?? '',
+        );
+
+        return new HeroData(
+            mainTitle:           $data->event->title,
+            subtitle:            $heroSubtitle,
+            primaryButtonText:   $sharedCms->detailHeroBtnPrimary ?? '',
+            primaryButtonLink:   '/restaurant/' . $data->event->slug . '/reservation',
+            secondaryButtonText: '',
+            secondaryButtonLink: '',
+            backgroundImageUrl:  $data->featuredImagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
+            currentPage:         RestaurantPageConstants::CURRENT_PAGE,
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Card / filter helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
     /**
-     * @param Restaurant[] $restaurants
+     * @param RestaurantListingData[] $restaurants
      */
     private static function buildCuisineFilters(array $restaurants): array
     {
         $unique = [];
 
-        foreach ($restaurants as $restaurant) {
-            foreach (array_filter(array_map('trim', explode(',', $restaurant->cuisineType))) as $part) {
+        foreach ($restaurants as $listing) {
+            foreach (array_filter(array_map('trim', explode(',', $listing->cms->cuisineType ?? ''))) as $part) {
                 $key = mb_strtolower($part);
                 if ($key !== '' && !isset($unique[$key])) {
                     $unique[$key] = $part;
@@ -289,114 +401,66 @@ final class RestaurantMapper
     }
 
     /**
-     * @param Restaurant[] $restaurants
+     * @param RestaurantListingData[] $restaurants
      * @return RestaurantCardData[]
      */
     private static function buildCards(array $restaurants): array
     {
-        $cards = [];
-
-        foreach ($restaurants as $restaurant) {
-            $cards[] = new RestaurantCardData(
-                id:          $restaurant->restaurantId,
-                name:        $restaurant->name,
-                cuisine:     $restaurant->cuisineType,
-                address:     self::buildAddress($restaurant),
-                description: self::cleanDescription($restaurant->descriptionHtml),
-                rating:      $restaurant->stars ?? 0,
-                image:       $restaurant->imagePath ?? self::DEFAULT_IMAGE,
-                isVegan:     stripos($restaurant->cuisineType, 'vegan') !== false,
-            );
-        }
-
-        return $cards;
+        return array_map(fn(RestaurantListingData $listing) => new RestaurantCardData(
+            slug:        $listing->event->slug,
+            name:        $listing->event->title,
+            cuisine:     $listing->cms->cuisineType ?? '',
+            address:     self::buildAddress($listing->cms),
+            description: self::cleanDescription($listing->event->shortDescription),
+            rating:      (int) ($listing->cms->stars ?? 0),
+            image:       $listing->imagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
+            isVegan:     stripos($listing->cms->cuisineType ?? '', 'vegan') !== false,
+        ), $restaurants);
     }
 
-    private static function buildAddress(Restaurant $restaurant): string
-    {
-        $address = trim($restaurant->addressLine);
+    // ─────────────────────────────────────────────────────────────────────────
+    // Shared helpers
+    // ─────────────────────────────────────────────────────────────────────────
 
-        if ($restaurant->city !== '') {
-            $address .= ', ' . $restaurant->city;
+    private static function buildAddress(RestaurantEventCmsData $cms): string
+    {
+        $address = trim($cms->addressLine ?? '');
+
+        if (($cms->city ?? '') !== '') {
+            $address .= ', ' . $cms->city;
         }
 
         return $address;
     }
 
-    private static function cleanDescription(string $html): string
+    private static function cleanDescription(string $text): string
     {
-        $html = trim($html);
+        $text = trim($text);
 
-        if ($html === '' || $html === '<p></p>') {
+        if ($text === '') {
             return '';
         }
 
-        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-
         return trim(preg_replace('/\s+/', ' ', $text) ?? $text);
-    }
-
-    /**
-     * Groups RestaurantImage objects by their ImageType.
-     * Returns an array keyed by type, each value being an array of image paths.
-     *
-     * @param \App\Models\RestaurantImage[] $images
-     * @return array<string, string[]>
-     */
-    private static function groupImagesByType(array $images): array
-    {
-        $grouped = [];
-        foreach ($images as $image) {
-            $grouped[$image->imageType][] = $image->imagePath;
-        }
-        return $grouped;
-    }
-
-    public static function toReservation(array $post, int $restaurantId, float $feePerPerson): Reservation
-    {
-        $adultsCount   = (int) ($post['adults_count']   ?? 0);
-        $childrenCount = (int) ($post['children_count'] ?? 0);
-
-        return new Reservation(
-            restaurantId:    $restaurantId,
-            diningDate:      trim($post['dining_date']    ?? ''),
-            timeSlot:        trim($post['time_slot']      ?? ''),
-            adultsCount:     $adultsCount,
-            childrenCount:   $childrenCount,
-            specialRequests: trim($post['special_requests'] ?? ''),
-            totalFee:        ($adultsCount + $childrenCount) * $feePerPerson,
-        );
     }
 
     private static function validateImagePath(string $path): string
     {
         if ($path === '' || !str_starts_with($path, '/assets/')) {
-            return self::DEFAULT_IMAGE;
+            return RestaurantPageConstants::DEFAULT_IMAGE;
         }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if (!in_array($extension, self::VALID_IMAGE_EXTENSIONS, true)) {
-            return self::DEFAULT_IMAGE;
+            return RestaurantPageConstants::DEFAULT_IMAGE;
         }
 
         return $path;
     }
 
-    /**
-     * Parses the intro_body blob into structured components.
-     *
-     * Restaurant convention:
-     * - First block before any "##" is bodyText
-     * - Each "## Heading" becomes a subsection
-     * - Final paragraph after the last subsection becomes closingLine
-     */
     private static function parseIntroBody(string $rawBody): array
     {
-        $result = [
-            'bodyText'    => '',
-            'subsections' => null,
-            'closingLine' => null,
-        ];
+        $result = ['bodyText' => '', 'subsections' => null, 'closingLine' => null];
 
         $rawBody = trim($rawBody);
         if ($rawBody === '') {

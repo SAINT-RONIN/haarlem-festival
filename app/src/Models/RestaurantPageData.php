@@ -10,7 +10,7 @@ namespace App\Models;
 final readonly class RestaurantPageData
 {
     /**
-     * @param Restaurant[] $restaurants
+     * @param RestaurantListingData[] $restaurants
      */
     public function __construct(
         public HeroSectionContent $heroContent,

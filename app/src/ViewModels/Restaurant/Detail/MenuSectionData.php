@@ -10,13 +10,13 @@ namespace App\ViewModels\Restaurant\Detail;
 final readonly class MenuSectionData
 {
     /**
-     * @param string[] $cuisineTags  Individual cuisine type tags (e.g. ["French", "European"])
+     * @param string[] $cuisineTags Individual cuisine type tags (e.g. ["French", "European"])
+     * @param string[] $images      Menu dish image paths
      */
     public function __construct(
         public string $description,
         public array  $cuisineTags,
-        public string $image1,
-        public string $image2,
+        public array  $images,
 
         // CMS labels
         public string $labelTitle       = 'Menu Style',

@@ -4,121 +4,170 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\GlobalUiConstants;
+use App\Constants\RestaurantDetailConstants;
+use App\Constants\RestaurantPageConstants;
 use App\Models\GlobalUiContent;
 use App\Models\HeroSectionContent;
 use App\Models\RestaurantCardsSectionContent;
-use App\Models\RestaurantDetailData;
+use App\Models\RestaurantDetailEvent;
+use App\Models\RestaurantDetailPageData;
 use App\Models\RestaurantDetailSectionContent;
+use App\Models\RestaurantEventCmsData;
 use App\Models\RestaurantGradientSectionContent;
 use App\Models\RestaurantInstructionsSectionContent;
 use App\Models\RestaurantIntroSectionContent;
 use App\Models\RestaurantIntroSplit2SectionContent;
+use App\Models\RestaurantListingData;
 use App\Models\RestaurantPageData;
-use App\Repositories\CmsContentRepository;
-use App\Repositories\RestaurantImageRepository;
-use App\Repositories\RestaurantRepository;
+use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IEventRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\IRestaurantService;
 
 /**
- * Service for preparing all data needed by the Restaurant page.
+ * Service for preparing all data needed by the Restaurant pages.
  *
- * Returns typed data models.
- * Mapping to ViewModels happens in RestaurantMapper.
+ * Follows the same pattern as StorytellingDetailService:
+ *  - IEventRepository  → finds restaurant events by slug or lists all active ones
+ *  - ICmsContentRepository → shared page CMS + per-event CMS sections
+ *  - IMediaAssetRepository → resolves featured image asset IDs to file paths
  *
- * Uses two data sources:
- *  1. CMS (CmsItem table) — for page copy: titles, descriptions, images
- *  2. Domain (Restaurant table) — for real restaurant business data
+ * No IRestaurantRepository: restaurant-specific content (address, chef, menu,
+ * pricing, etc.) lives in per-event CMS sections keyed by eventId.
  */
 class RestaurantService implements IRestaurantService
 {
-    private const PAGE_SLUG = 'restaurant';
-
-    private const SECTION_GRADIENT     = 'gradient_section';
-    private const SECTION_INTRO_SPLIT  = 'intro_split_section';
-    private const SECTION_INTRO_SPLIT2 = 'intro_split2_section';
-    private const SECTION_INSTRUCTIONS = 'instructions_section';
-    private const SECTION_CARDS        = 'restaurant_cards_section';
-    private const SECTION_DETAIL       = 'detail_section';
-
     public function __construct(
-        private CmsContentRepository     $cmsService,
-        private RestaurantRepository     $restaurantRepository,
-        private RestaurantImageRepository $restaurantImageRepository,
+        private ICmsContentRepository $cmsService,
+        private IEventRepository      $eventRepository,
+        private IMediaAssetRepository $mediaAssetRepository,
     ) {
     }
 
     public function getRestaurantPageData(): RestaurantPageData
     {
+        $events      = $this->eventRepository->findActiveRestaurantEvents();
+        $restaurants = array_map(fn(RestaurantDetailEvent $e) => $this->buildListingData($e), $events);
+
         return new RestaurantPageData(
             heroContent: HeroSectionContent::fromRawArray(
-                $this->cmsService->getHeroSectionContent(self::PAGE_SLUG),
+                $this->cmsService->getHeroSectionContent(RestaurantPageConstants::PAGE_SLUG),
             ),
             globalUiContent: GlobalUiContent::fromRawArray(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
+                $this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY),
             ),
             gradientSection: RestaurantGradientSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_GRADIENT),
+                $this->cmsService->getSectionContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_GRADIENT),
             ),
             introSplitSection: RestaurantIntroSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT),
+                $this->cmsService->getSectionContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INTRO_SPLIT),
             ),
             introSplit2Section: RestaurantIntroSplit2SectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT2),
+                $this->cmsService->getSectionContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INTRO_SPLIT2),
             ),
             instructionsSection: RestaurantInstructionsSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_INSTRUCTIONS),
+                $this->cmsService->getSectionContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INSTRUCTIONS),
             ),
             cardsSection: RestaurantCardsSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_CARDS),
+                $this->cmsService->getSectionContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_CARDS),
             ),
-            restaurants: $this->restaurantRepository->findAllActive(),
+            restaurants: $restaurants,
         );
     }
 
-    public function getRestaurantDetailData(int $id): ?RestaurantDetailData
+    public function getRestaurantDetailData(string $slug): ?RestaurantDetailPageData
     {
-        $restaurant = $this->restaurantRepository->findById($id);
+        $slug  = $this->normalizeSlug($slug);
+        $event = $this->eventRepository->findActiveRestaurantBySlug($slug);
 
-        if ($restaurant === null) {
+        if ($event === null) {
             return null;
         }
 
-        $scheduleData = $this->getRestaurantScheduleData($restaurant);
+        $cms = $this->fetchEventCmsData($event->eventId);
 
-        return new RestaurantDetailData(
-            restaurant: $restaurant,
-            cms: RestaurantDetailSectionContent::fromRawArray(
-                $this->cmsService->getSectionContent(self::PAGE_SLUG, self::SECTION_DETAIL),
+        return new RestaurantDetailPageData(
+            event:             $event,
+            cms:               $cms,
+            sharedCms:         RestaurantDetailSectionContent::fromRawArray(
+                $this->cmsService->getSectionContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_DETAIL),
             ),
-            globalUiContent: GlobalUiContent::fromRawArray(
-                $this->cmsService->getSectionContent('home', 'global_ui'),
+            globalUiContent:   GlobalUiContent::fromRawArray(
+                $this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY),
             ),
-            timeSlots: $scheduleData['timeSlots'],
-            priceCards: $scheduleData['priceCards'],
-            images: $this->restaurantImageRepository->findByRestaurantId($restaurant->restaurantId),
+            featuredImagePath: $this->resolveImagePath($event->featuredImageAssetId),
+            timeSlots:         $this->parseTimeSlots($cms->timeSlots),
+            priceCards:        $this->buildPriceCards($cms->priceAdult),
         );
     }
 
-    /**
-     * Returns per-restaurant time slots and price cards from the Restaurant row.
-     *
-     * @return array{timeSlots: string[], priceCards: array<array{label: string, price: string}>}
-     */
-    private function getRestaurantScheduleData(\App\Models\Restaurant $restaurant): array
+    // ─────────────────────────────────────────────────────────────────────────
+    // Private helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private function buildListingData(RestaurantDetailEvent $event): RestaurantListingData
     {
-        $slotsString = $restaurant->timeSlots ?? '';
-        $timeSlots   = $slotsString !== ''
-            ? array_values(array_filter(array_map('trim', explode(',', $slotsString))))
-            : [];
+        return new RestaurantListingData(
+            event:     $event,
+            cms:       $this->fetchEventCmsData($event->eventId),
+            imagePath: $this->resolveImagePath($event->featuredImageAssetId),
+        );
+    }
 
-        $priceCards = [];
-        if ($restaurant->priceAdult !== null) {
-            $priceCards[] = ['label' => 'Per adult (drinks not included)', 'price' => '€ ' . number_format($restaurant->priceAdult, 2)];
+    private function fetchEventCmsData(int $eventId): RestaurantEventCmsData
+    {
+        return RestaurantEventCmsData::fromRawArray(
+            $this->cmsService->getSectionContent(
+                RestaurantDetailConstants::PAGE_SLUG,
+                RestaurantDetailConstants::eventSectionKey($eventId),
+            ),
+        );
+    }
+
+    private function resolveImagePath(?int $assetId): ?string
+    {
+        if ($assetId === null) {
+            return null;
         }
-        if ($restaurant->priceChild !== null) {
-            $priceCards[] = ['label' => 'Under 12 (drinks not included)', 'price' => '€ ' . number_format($restaurant->priceChild, 2)];
+        return $this->mediaAssetRepository->findById($assetId)?->filePath;
+    }
+
+    private function normalizeSlug(string $slug): string
+    {
+        return trim(strtolower(rawurldecode($slug)), '-');
+    }
+
+    /**
+     * Parses a comma-separated time slots string into a clean array.
+     *
+     * @return string[]
+     */
+    private function parseTimeSlots(?string $raw): array
+    {
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+        return array_values(array_filter(array_map('trim', explode(',', $raw))));
+    }
+
+    /**
+     * Builds price cards from the adult price.
+     * Under-12 price is always half the adult price.
+     *
+     * @return array{label: string, price: string}[]
+     */
+    private function buildPriceCards(?string $priceAdultStr): array
+    {
+        if ($priceAdultStr === null || $priceAdultStr === '') {
+            return [];
         }
 
-        return ['timeSlots' => $timeSlots, 'priceCards' => $priceCards];
+        $adult = (float) $priceAdultStr;
+
+        return [
+            ['label' => 'Per adult (drinks not included)',   'price' => '€ ' . number_format($adult, 2)],
+            ['label' => 'Under 12 (drinks not included)',    'price' => '€ ' . number_format($adult / 2, 2)],
+        ];
     }
 }

@@ -9,10 +9,11 @@ namespace App\ViewModels\Restaurant\Detail;
  */
 final readonly class GallerySectionData
 {
+    /**
+     * @param string[] $images Gallery image paths
+     */
     public function __construct(
-        public string $image1,
-        public string $image2,
-        public string $image3,
+        public array  $images,
 
         // CMS label
         public string $labelTitle = 'Restaurant Gallery',

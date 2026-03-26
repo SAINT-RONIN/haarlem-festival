@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\RestaurantDetailData;
+use App\Models\RestaurantDetailPageData;
 use App\Models\RestaurantPageData;
 
 /**
@@ -14,5 +14,5 @@ interface IRestaurantService
 {
     public function getRestaurantPageData(): RestaurantPageData;
 
-    public function getRestaurantDetailData(int $id): ?RestaurantDetailData;
+    public function getRestaurantDetailData(string $slug): ?RestaurantDetailPageData;
 }
