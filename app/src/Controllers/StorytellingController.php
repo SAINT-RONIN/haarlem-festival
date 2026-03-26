@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Constants\GlobalUiConstants;
 use App\Constants\ScheduleConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Constants\StorytellingPageConstants;
@@ -90,7 +91,7 @@ class StorytellingController extends BaseController
         $scheduleSection = $this->buildDetailScheduleSection($pageData->event->eventId, $pageData->scheduleCtaButtonText ?: null);
         $isLoggedIn = $this->sessionService->isLoggedIn();
         $currentUri = $_SERVER['REQUEST_URI'] ?? '';
-        $appUrl = (string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl');
+        $appUrl = (string)(getenv('APP_URL') ?: GlobalUiConstants::DEFAULT_APP_URL);
         $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn, $currentUri, $appUrl);
         $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
     }
