@@ -10,7 +10,7 @@ namespace App\Helpers;
  * Provides functions to safely output CMS content,
  * handling both plain text and HTML content appropriately.
  */
-class CmsOutputHelper
+final class CmsOutputHelper
 {
     /**
      * Outputs plain text content, stripping any HTML tags.
