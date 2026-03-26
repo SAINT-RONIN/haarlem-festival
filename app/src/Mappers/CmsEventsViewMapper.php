@@ -11,6 +11,7 @@ use App\DTOs\Events\EventsListPageData;
 use App\Models\EventType;
 use App\DTOs\Events\EventWithDetails;
 use App\DTOs\Schedule\SessionWithEvent;
+use App\ViewModels\Cms\CmsEventCreateViewModel;
 use App\ViewModels\Cms\CmsEventEditViewModel;
 use App\ViewModels\Cms\CmsEventListItemViewModel;
 use App\ViewModels\Cms\CmsEventSessionViewModel;
@@ -23,6 +24,29 @@ use App\ViewModels\Cms\CmsSessionPriceViewModel;
  */
 final class CmsEventsViewMapper
 {
+    /**
+     * Builds the ViewModel for the event creation page from pre-loaded domain lists.
+     */
+    public static function toCreateViewModel(
+        array $eventTypes,
+        array $venues,
+        array $artists,
+        array $restaurants,
+        ?string $errorMessage,
+        ?string $successMessage,
+        string $preselectedDay,
+    ): CmsEventCreateViewModel {
+        return new CmsEventCreateViewModel(
+            eventTypes: $eventTypes,
+            venues: $venues,
+            artists: $artists,
+            restaurants: $restaurants,
+            errorMessage: $errorMessage,
+            successMessage: $successMessage,
+            preselectedDay: $preselectedDay,
+        );
+    }
+
     /**
      * Transforms an EventWithDetails domain model into a CMS list-row ViewModel,
      * resolving the active/inactive status badge class and the event-type CSS class.
