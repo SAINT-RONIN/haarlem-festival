@@ -19,14 +19,14 @@ use App\Services\Interfaces\IJazzService;
  * This service only composes raw domain/CMS data.
  * ViewModel mapping and UI defaults are handled in the ViewModel layer.
  */
-class JazzService implements IJazzService
+class JazzService extends BaseContentService implements IJazzService
 {
     public function __construct(
-        private readonly GlobalContentRepository $globalContentRepo,
+        GlobalContentRepository $globalContentRepo,
         private readonly JazzContentRepository $jazzContentRepo,
         private readonly IPassTypeRepository $passTypeRepository,
-        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
+        parent::__construct($globalContentRepo);
     }
 
     /**
@@ -58,7 +58,7 @@ class JazzService implements IJazzService
             artistsSection:     $this->jazzContentRepo->findArtistsContent($pageSlug, JazzPageConstants::SECTION_ARTISTS),
             bookingCtaSection:  $this->jazzContentRepo->findBookingCtaContent($pageSlug, JazzPageConstants::SECTION_BOOKING_CTA),
             passPrices: $this->passTypeRepository->findByEventType(EventTypeId::Jazz->value),
-            globalUiContent: $this->globalUiLoader->load(),
+            globalUiContent: $this->loadGlobalUi(),
         );
     }
 }

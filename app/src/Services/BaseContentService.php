@@ -4,18 +4,30 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Constants\GlobalUiConstants;
+use App\Models\GlobalUiContent;
+use App\Repositories\GlobalContentRepository;
 
 /**
- * Base service for services that depend on the CMS content repository.
+ * Base service for page services that need the shared global-UI CMS section.
  *
- * Provides a shared protected accessor so child services don't each
- * declare their own ICmsContentRepository dependency.
+ * Provides a shared loadGlobalUi() method so child services don't each inject
+ * and call GlobalContentRepository separately. Replaces the old GlobalUiContentLoader
+ * service, eliminating a service-to-service dependency.
  */
 abstract class BaseContentService
 {
     public function __construct(
-        protected readonly ICmsContentRepository $cmsContentRepository,
+        protected readonly GlobalContentRepository $globalContentRepo,
     ) {
+    }
+
+    /** Loads the shared global-UI CMS section used by all page headers/footers. */
+    protected function loadGlobalUi(): GlobalUiContent
+    {
+        return $this->globalContentRepo->findGlobalUiContent(
+            GlobalUiConstants::PAGE_SLUG,
+            GlobalUiConstants::SECTION_KEY,
+        );
     }
 }

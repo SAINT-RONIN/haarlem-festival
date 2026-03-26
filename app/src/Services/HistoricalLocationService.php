@@ -18,12 +18,11 @@ use App\Services\Interfaces\IHistoricalLocationService;
 class HistoricalLocationService extends BaseContentService implements IHistoricalLocationService
 {
     public function __construct(
-        ICmsContentRepository $cmsContentRepository,
-        private readonly GlobalContentRepository $globalContentRepo,
+        private readonly ICmsContentRepository $cmsContentRepository,
+        GlobalContentRepository $globalContentRepo,
         private readonly HistoricalLocationContentRepository $histLocContentRepo,
-        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
-        parent::__construct($cmsContentRepository);
+        parent::__construct($globalContentRepo);
     }
 
     public function getHistoralLocationPageData(string $name): HistoricalLocationPageData
@@ -46,7 +45,7 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
             introSection:        $this->histLocContentRepo->findIntroContent($slug, HistoricalLocationPageConstants::SECTION_INTRO),
             factsSection:        $this->histLocContentRepo->findFactsContent($slug, HistoricalLocationPageConstants::SECTION_FACTS),
             significanceSection: $this->histLocContentRepo->findSignificanceContent($slug, HistoricalLocationPageConstants::SECTION_SIGNIFICANCE),
-            globalUiContent:     $this->globalUiLoader->load(),
+            globalUiContent:     $this->loadGlobalUi(),
         );
     }
 }

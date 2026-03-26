@@ -25,16 +25,16 @@ use App\Services\Interfaces\IRestaurantService;
  *  1. CMS (CmsItem table) — for page copy: titles, descriptions, images
  *  2. Domain (Restaurant table) — for real restaurant business data
  */
-class RestaurantService implements IRestaurantService
+class RestaurantService extends BaseContentService implements IRestaurantService
 {
     public function __construct(
-        private readonly GlobalContentRepository $globalContentRepo,
+        GlobalContentRepository $globalContentRepo,
         private readonly RestaurantContentRepository $restaurantContentRepo,
         private readonly IRestaurantRepository $restaurantRepository,
         private readonly IRestaurantImageRepository $restaurantImageRepository,
         private readonly ICuisineTypeRepository $cuisineTypeRepository,
-        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
+        parent::__construct($globalContentRepo);
     }
 
     public function getRestaurantPageData(): RestaurantPageData
@@ -73,7 +73,7 @@ class RestaurantService implements IRestaurantService
 
         return new RestaurantPageData(
             heroContent: $this->globalContentRepo->findHeroContent(RestaurantPageConstants::PAGE_SLUG),
-            globalUiContent: $this->globalUiLoader->load(),
+            globalUiContent: $this->loadGlobalUi(),
             gradientSection: $this->globalContentRepo->findGradientContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_GRADIENT),
             introSplitSection: $this->restaurantContentRepo->findIntroContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INTRO_SPLIT),
             introSplit2Section: $this->restaurantContentRepo->findIntroSplit2Content(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INTRO_SPLIT2),
@@ -95,7 +95,7 @@ class RestaurantService implements IRestaurantService
             restaurant: $restaurant,
             imagesByType: $this->groupImagesByType($images),
             cms: $this->restaurantContentRepo->findDetailContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_DETAIL),
-            globalUiContent: $this->globalUiLoader->load(),
+            globalUiContent: $this->loadGlobalUi(),
             timeSlots: $scheduleData['timeSlots'],
             priceCards: $scheduleData['priceCards'],
             cuisineTypes: $cuisineTypes,

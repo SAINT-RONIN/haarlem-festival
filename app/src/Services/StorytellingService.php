@@ -17,13 +17,13 @@ use App\Services\Interfaces\IStorytellingService;
  * Fetches hero, gradient, intro-split, masonry, and global-UI sections
  * from the content repositories and bundles them into a StorytellingPageData object.
  */
-class StorytellingService implements IStorytellingService
+class StorytellingService extends BaseContentService implements IStorytellingService
 {
     public function __construct(
-        private readonly GlobalContentRepository $globalContentRepo,
+        GlobalContentRepository $globalContentRepo,
         private readonly StorytellingContentRepository $storyContentRepo,
-        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
+        parent::__construct($globalContentRepo);
     }
 
     /**
@@ -50,7 +50,7 @@ class StorytellingService implements IStorytellingService
             gradientSection:   $this->globalContentRepo->findGradientContent($slug, StorytellingPageConstants::SECTION_GRADIENT),
             introSplitSection: $this->globalContentRepo->findIntroContent($slug, StorytellingPageConstants::SECTION_INTRO_SPLIT),
             masonrySection:    $this->storyContentRepo->findMasonryContent($slug, StorytellingPageConstants::SECTION_MASONRY),
-            globalUiContent:   $this->globalUiLoader->load(),
+            globalUiContent:   $this->loadGlobalUi(),
         );
     }
 }

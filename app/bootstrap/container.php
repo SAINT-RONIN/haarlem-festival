@@ -87,7 +87,6 @@ use App\Services\SessionService;
 use App\Services\CmsPageContentService;
 use App\Services\StorytellingDetailService;
 use App\Services\ScheduleDayVisibilityResolver;
-use App\Services\GlobalUiContentLoader;
 use App\Services\StorytellingService;
 
 /**
@@ -137,7 +136,6 @@ return static function (string $controllerClass): object {
     // ── Domain content repositories (wrap CmsContentRepository with typed returns) ──
 
     $globalContentRepo     = fn() => $make('globalContentRepo', fn() => new GlobalContentRepository($cmsContent()));
-    $globalUiLoader = fn() => $make('globalUiLoader', fn() => new GlobalUiContentLoader($globalContentRepo()));
     $scheduleContentRepo   = fn() => $make('scheduleContentRepo', fn() => new ScheduleContentRepository($cmsContent()));
     $checkoutContentRepo   = fn() => $make('checkoutContentRepo', fn() => new CheckoutContentRepository($cmsContent()));
     $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
@@ -187,7 +185,6 @@ return static function (string $controllerClass): object {
                 $eventSessionRepo(),
                 $cmsContent(),
                 $globalContentRepo(),
-                $globalUiLoader(),
             ),
             $sessionService,
         ),
@@ -198,7 +195,6 @@ return static function (string $controllerClass): object {
                 $restaurantRepo(),
                 new RestaurantImageRepository($pdo()),
                 new CuisineTypeRepository($pdo()),
-                $globalUiLoader(),
             ),
             $sessionService,
         ),
@@ -206,7 +202,6 @@ return static function (string $controllerClass): object {
             new StorytellingService(
                 $globalContentRepo(),
                 $storyContentRepo(),
-                $globalUiLoader(),
             ),
             new StorytellingDetailService(
                 $storyContentRepo(),
@@ -214,7 +209,7 @@ return static function (string $controllerClass): object {
                 $eventSessionRepo(),
                 $eventSessionLabel(),
                 $mediaAssetRepo(),
-                $globalUiLoader(),
+                $globalContentRepo(),
             ),
             $sessionService,
             $scheduleService(),
@@ -224,7 +219,6 @@ return static function (string $controllerClass): object {
                 $globalContentRepo(),
                 $jazzContentRepo(),
                 new PassTypeRepository($pdo()),
-                $globalUiLoader(),
             ),
             new JazzArtistDetailService(
                 $jazzContentRepo(),
@@ -299,13 +293,11 @@ return static function (string $controllerClass): object {
             new HistoryService(
                 $globalContentRepo(),
                 $historyContentRepo(),
-                $globalUiLoader(),
             ),
             new HistoricalLocationService(
                 $cmsContent(),
                 $globalContentRepo(),
                 $histLocContentRepo(),
-                $globalUiLoader(),
             ),
             $sessionService,
             $scheduleService(),

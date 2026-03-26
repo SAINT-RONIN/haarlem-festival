@@ -14,8 +14,8 @@ use App\DTOs\Pages\HomeScheduleSessionData;
 use App\Models\Restaurant;
 use App\Models\Venue;
 use App\DTOs\Filters\VenueFilter;
-use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
@@ -39,11 +39,10 @@ class HomeService extends BaseContentService implements IHomeService
         private readonly IVenueRepository $venueRepository,
         private readonly IRestaurantRepository $restaurantRepository,
         private readonly IEventSessionRepository $eventSessionRepository,
-        ICmsContentRepository $cmsContentRepository,
-        private readonly GlobalContentRepository $globalContentRepo,
-        private readonly GlobalUiContentLoader $globalUiLoader,
+        private readonly ICmsContentRepository $cmsContentRepository,
+        GlobalContentRepository $globalContentRepo,
     ) {
-        parent::__construct($cmsContentRepository);
+        parent::__construct($globalContentRepo);
     }
 
     /**
@@ -71,7 +70,7 @@ class HomeService extends BaseContentService implements IHomeService
         return new HomePageData(
             cmsContent: $cmsContent,
             heroContent: $this->globalContentRepo->findHeroContent('home'),
-            globalUiContent: $this->globalUiLoader->load(),
+            globalUiContent: $this->loadGlobalUi(),
             eventTypes: $this->buildEventTypes($cmsContent),
             locations: $this->buildLocations(),
             scheduleDays: $this->buildScheduleDays(),

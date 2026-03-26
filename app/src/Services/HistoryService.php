@@ -14,13 +14,13 @@ use App\Services\Interfaces\IHistoryService;
 /**
  * Composes the CMS-driven domain payload for the History overview page.
  */
-class HistoryService implements IHistoryService
+class HistoryService extends BaseContentService implements IHistoryService
 {
     public function __construct(
-        private readonly GlobalContentRepository $globalContentRepo,
+        GlobalContentRepository $globalContentRepo,
         private readonly HistoryContentRepository $historyContentRepo,
-        private readonly GlobalUiContentLoader $globalUiLoader,
     ) {
+        parent::__construct($globalContentRepo);
     }
 
     public function getHistoryPageData(): HistoryPageData
@@ -42,7 +42,7 @@ class HistoryService implements IHistoryService
             venuesSection:        $this->historyContentRepo->findVenuesContent($pageSlug, HistoryPageConstants::SECTION_VENUES),
             ticketOptionsSection: $this->historyContentRepo->findTicketOptionsContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS),
             tourInfoSection:      $this->historyContentRepo->findTourInfoContent($pageSlug, HistoryPageConstants::SECTION_TOUR_INFO),
-            globalUiContent:      $this->globalUiLoader->load(),
+            globalUiContent:      $this->loadGlobalUi(),
         );
     }
 }

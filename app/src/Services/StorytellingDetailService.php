@@ -13,6 +13,7 @@ use App\Models\EventSessionLabel;
 use App\DTOs\Events\StorytellingDetailEvent;
 use App\DTOs\Pages\StorytellingDetailPageData;
 use App\Models\StorytellingEventCmsData;
+use App\Repositories\GlobalContentRepository;
 use App\Repositories\StorytellingContentRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
@@ -27,7 +28,7 @@ use App\Services\Interfaces\IStorytellingDetailService;
  * session labels, and about-body fallback logic from five repositories
  * into a single StorytellingDetailPageData object.
  */
-class StorytellingDetailService implements IStorytellingDetailService
+class StorytellingDetailService extends BaseContentService implements IStorytellingDetailService
 {
     public function __construct(
         private readonly StorytellingContentRepository $storyContentRepo,
@@ -35,8 +36,9 @@ class StorytellingDetailService implements IStorytellingDetailService
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IMediaAssetRepository $mediaAssetRepository,
-        private readonly GlobalUiContentLoader $globalUiLoader,
+        GlobalContentRepository $globalContentRepo,
     ) {
+        parent::__construct($globalContentRepo);
     }
 
     /**
@@ -72,7 +74,7 @@ class StorytellingDetailService implements IStorytellingDetailService
             featuredImagePath: $this->fetchFeaturedImagePath($event),
             labels: $this->fetchEventLabels($event->eventId),
             aboutBody: $this->resolveAboutBody($cms, $event),
-            globalUiContent: $this->globalUiLoader->load(),
+            globalUiContent: $this->loadGlobalUi(),
             scheduleCtaButtonText: $cms->scheduleCtaButtonText ?? '',
         );
     }
