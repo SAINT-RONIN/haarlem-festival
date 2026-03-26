@@ -85,7 +85,7 @@ $userName = $userName ?? 'Administrator';
 
             <form id="page-edit-form" action="/cms/pages/<?= $page->id ?>/<?= htmlspecialchars($page->slug) ?>/edit"
                   method="POST" class="space-y-6">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                 <?php foreach ($sections as $section): ?>
                     <?php if ($section->isEditable): ?>
                         <?php require __DIR__ . '/../../partials/cms/edit-section-accordion.php'; ?>

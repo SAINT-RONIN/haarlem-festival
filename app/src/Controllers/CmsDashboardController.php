@@ -202,7 +202,7 @@ class CmsDashboardController extends CmsBaseController
     /** Validates the CSRF token from POST; redirects back to the edit page if invalid. */
     private function validateCsrfOrRedirect(int $pageId): void
     {
-        $csrfToken = $this->readStringPostParam('csrf_token');
+        $csrfToken = $this->readStringPostParam('_csrf');
         $isValid = $this->sessionService->isValidCsrfToken(
             self::CSRF_SCOPE_PAGE_EDIT,
             $csrfToken,
@@ -369,7 +369,7 @@ class CmsDashboardController extends CmsBaseController
     private function processUploadRequest(): void
     {
         // Validate CSRF token first for all upload types
-        $csrfToken = $this->readStringPostParam('csrf_token');
+        $csrfToken = $this->readStringPostParam('_csrf');
         if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, $csrfToken)) {
             echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_CSRF]);
             return;

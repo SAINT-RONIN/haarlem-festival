@@ -117,7 +117,7 @@ function uploadMediaFile(file) {
 
     const formData = new FormData();
     formData.append('image', file);
-    formData.append('csrf_token', csrfToken);
+    formData.append('_csrf', csrfToken);
 
     const grid = document.getElementById('media-grid');
     const placeholder = document.createElement('div');
@@ -164,7 +164,7 @@ function deleteAsset(mediaAssetId) {
 
     const formData = new FormData();
     formData.append('media_asset_id', mediaAssetId);
-    formData.append('csrf_token', csrfToken);
+    formData.append('_csrf', csrfToken);
 
     fetch('/cms/media/delete', { method: 'POST', body: formData })
         .then(r => r.json())

@@ -112,7 +112,7 @@ class CmsMediaController extends CmsBaseController
 
     private function validateMediaCsrf(): void
     {
-        $csrfToken = $this->readStringPostParam('csrf_token') ?? '';
+        $csrfToken = $this->readStringPostParam('_csrf') ?? '';
         if (!$this->sessionService->isValidCsrfToken('cms_media', $csrfToken)) {
             throw new ValidationException('Invalid security token');
         }

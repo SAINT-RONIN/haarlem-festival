@@ -32,7 +32,7 @@ function initTinyMCE() {
                 formData.append('image', blobInfo.blob(), blobInfo.filename());
                 // item_id is not needed for inline TinyMCE uploads — pass 0 as a placeholder
                 formData.append('item_id', '0');
-                formData.append('csrf_token', csrfToken);
+                formData.append('_csrf', csrfToken);
 
                 fetch(uploadUrl, { method: 'POST', body: formData })
                     .then(function (response) {
@@ -149,7 +149,7 @@ function uploadImage(itemId, fileInput) {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('item_id', itemId);
-    formData.append('csrf_token', csrfToken);
+    formData.append('_csrf', csrfToken);
 
     const previewContainer = document.getElementById('preview-' + itemId);
     previewContainer.innerHTML = '<div class="text-gray-500">Uploading...</div>';
@@ -307,7 +307,7 @@ function selectMediaAsset(mediaAssetId, filePath, itemId) {
     const formData = new FormData();
     formData.append('item_id', itemId);
     formData.append('media_asset_id', mediaAssetId);
-    formData.append('csrf_token', csrfToken);
+    formData.append('_csrf', csrfToken);
 
     fetch('/cms/pages/' + pageId + '/' + encodeURIComponent(pageSlug) + '/upload-image', {
         method: 'POST',
