@@ -23,13 +23,6 @@ final class RestaurantPageConstants
     public const SECTION_CARDS        = 'restaurant_cards_section';
     public const SECTION_DETAIL       = 'detail_section';
 
-    // RestaurantImage.ImageType column values
-    public const IMAGE_TYPE_ABOUT       = 'about';
-    public const IMAGE_TYPE_CHEF        = 'chef';
-    public const IMAGE_TYPE_MENU        = 'menu';
-    public const IMAGE_TYPE_GALLERY     = 'gallery';
-    public const IMAGE_TYPE_RESERVATION = 'reservation';
-
     // Fallback shown when no media asset is linked
     public const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
 

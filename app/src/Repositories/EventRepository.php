@@ -150,7 +150,7 @@ class EventRepository implements IEventRepository
             FROM Event
             WHERE EventTypeId = :eventTypeId
               AND IsActive = 1
-            ORDER BY Title ASC
+            ORDER BY RestaurantId ASC
         ');
         $stmt->execute(['eventTypeId' => EventTypeId::Restaurant->value]);
         return array_map([RestaurantDetailEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));

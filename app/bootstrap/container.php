@@ -50,7 +50,6 @@ use App\Repositories\EventGalleryImageRepository;
 use App\Repositories\EventHighlightRepository;
 use App\Repositories\PageGalleryImageRepository;
 use App\Repositories\ReservationRepository;
-use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
@@ -73,6 +72,8 @@ use App\Services\JazzArtistDetailService;
 use App\Services\JazzService;
 use App\Services\MediaAssetService;
 use App\Services\ProgramService;
+use App\Services\RestaurantDetailService;
+use App\Services\RestaurantReservationService;
 use App\Services\RestaurantService;
 use App\Services\ScheduleService;
 use App\Services\AuthService;
@@ -97,7 +98,6 @@ return static function (string $controllerClass): object {
     $priceTierRepository = new PriceTierRepository();
     $scheduleDayConfigRepository = new ScheduleDayConfigRepository();
     $restaurantRepository = new RestaurantRepository();
-    $restaurantImageRepository = new RestaurantImageRepository();
     $artistAlbumRepository = new ArtistAlbumRepository();
     $artistTrackRepository = new ArtistTrackRepository();
     $artistLineupMemberRepository = new ArtistLineupMemberRepository();
@@ -166,8 +166,16 @@ return static function (string $controllerClass): object {
                 $eventRepository,
                 $mediaAssetRepository,
             ),
+            new RestaurantDetailService(
+                $cmsContent,
+                $eventRepository,
+                $mediaAssetRepository,
+            ),
+            new RestaurantReservationService(
+                $eventRepository,
+                new ReservationRepository(),
+            ),
             $sessionService,
-            new ReservationRepository(),
         ),
         StorytellingController::class => new StorytellingController(
             new StorytellingService(

@@ -8,6 +8,7 @@ use App\Constants\RestaurantPageConstants;
 use App\Models\RestaurantDetailPageData;
 use App\Models\RestaurantDetailSectionContent;
 use App\Models\RestaurantEventCmsData;
+use App\Models\RestaurantCardsSectionContent;
 use App\Models\RestaurantGradientSectionContent;
 use App\Models\RestaurantInstructionsSectionContent;
 use App\Models\RestaurantIntroSectionContent;
