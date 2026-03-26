@@ -20,5 +20,6 @@ final readonly class CmsItemDisplayViewModel
         public string                         $value,
         public ?int                           $mediaAssetId,
         public ?CmsMediaAssetDisplayViewModel $mediaAsset,
+        public bool                           $isTextarea,
     ) {}
 }

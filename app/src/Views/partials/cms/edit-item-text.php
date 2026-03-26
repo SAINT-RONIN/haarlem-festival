@@ -7,7 +7,7 @@
 
 $itemId = $item->itemId;
 $inputId = 'item-' . $itemId;
-$isTextarea = strlen($item->value) > 100 || $item->type === 'TEXT';
+$isTextarea = $item->isTextarea;
 ?>
 
 <div class="space-y-2">

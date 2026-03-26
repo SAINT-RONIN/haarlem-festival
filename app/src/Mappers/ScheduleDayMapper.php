@@ -164,7 +164,7 @@ final class ScheduleDayMapper
      * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
      * @return array{eventCount: int, filterGroups: array, resetButtonText: string}
      */
-    // TODO: Return typed DTO instead of array
+    // Returns associative array — internal mapper output consumed only by toScheduleSection()
     private static function resolveFilterContext(
         array $scheduleData,
         ScheduleSectionContent $cmsContent,

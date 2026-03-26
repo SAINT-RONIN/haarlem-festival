@@ -10,6 +10,7 @@ use App\DTOs\Schedule\ScheduleDayData;
 use App\DTOs\Events\SessionCapacityInfo;
 use App\DTOs\Schedule\SessionQueryResult;
 use App\DTOs\Schedule\SessionWithEvent;
+use App\Exceptions\RepositoryException;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
@@ -281,14 +282,18 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
     {
         $sql = 'SELECT DISTINCT DATE(es.StartDateTime) AS Date ' . $baseFrom . ' ' . $whereClause . ' ORDER BY Date ASC LIMIT :maxDays';
 
-        $stmt = $this->pdo->prepare($sql);
-        foreach ($params as $key => $value) {
-            $stmt->bindValue(':' . $key, $value);
-        }
-        $stmt->bindValue(':maxDays', $maxDays, PDO::PARAM_INT);
-        $stmt->execute();
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue(':' . $key, $value);
+            }
+            $stmt->bindValue(':maxDays', $maxDays, PDO::PARAM_INT);
+            $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $error) {
+            throw new RepositoryException('Failed to fetch distinct session dates.', (int) $error->getCode(), $error);
+        }
     }
 
     /** Fetches sessions limited to the given set of dates. */
@@ -313,8 +318,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             $sql .= ' LIMIT ' . (int)$limit;
         }
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(array_merge($params, $dateBindings));
+        $stmt = $this->execute($sql, array_merge($params, $dateBindings));
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -328,8 +332,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             $sql .= ' LIMIT ' . (int)$filters->limit;
         }
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
+        $stmt = $this->execute($sql, $params);
 
         return new SessionQueryResult(
             sessions: array_map([SessionWithEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC)),
@@ -500,8 +503,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         $maxDays = (int)$filter->maxDays;
         $sql .= ' LIMIT ' . (int) $maxDays;
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
+        $stmt = $this->execute($sql, $params);
 
         return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }

@@ -90,7 +90,8 @@ class StorytellingController extends BaseController
         $scheduleSection = $this->buildDetailScheduleSection($pageData->event->eventId, $pageData->scheduleCtaButtonText ?: null);
         $isLoggedIn = $this->sessionService->isLoggedIn();
         $currentUri = $_SERVER['REQUEST_URI'] ?? '';
-        $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn, $currentUri);
+        $appUrl = (string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl');
+        $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn, $currentUri, $appUrl);
         $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
     }
 

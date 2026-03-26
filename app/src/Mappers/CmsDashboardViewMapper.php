@@ -191,6 +191,8 @@ final class CmsDashboardViewMapper
      */
     public static function toItemViewModel(CmsItemEditData $item): CmsItemDisplayViewModel
     {
+        $isTextarea = strlen($item->value) > 100 || $item->type === 'TEXT';
+
         return new CmsItemDisplayViewModel(
             itemId:       $item->itemId,
             itemKey:      $item->itemKey,
@@ -202,6 +204,7 @@ final class CmsDashboardViewMapper
             value:        $item->value,
             mediaAssetId: $item->mediaAssetId,
             mediaAsset:   self::toMediaAssetViewModel($item->mediaAsset),
+            isTextarea:   $isTextarea,
         );
     }
 

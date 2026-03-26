@@ -97,8 +97,9 @@ final class JazzMapper
         JazzArtistDetailPageData $pageData,
         array $performances,
         string $currentUri,
+        string $appUrl,
     ): JazzArtistDetailPageViewModel {
-        $shareUrl = rtrim((string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl'), '/') . $currentUri;
+        $shareUrl = rtrim($appUrl, '/') . $currentUri;
 
         return new JazzArtistDetailPageViewModel(
             hero: self::buildArtistHeroData($pageData),

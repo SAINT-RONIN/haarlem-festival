@@ -96,7 +96,8 @@ class JazzController extends BaseController
         // Flatten day-grouped schedule into a flat list of performance view-models for the detail layout
         $performances = ScheduleMapper::flattenEventsAsViewModels($scheduleData);
         $currentUri = $_SERVER['REQUEST_URI'] ?? '';
-        $viewModel = JazzMapper::toArtistDetailViewModel($pageData, $performances, $currentUri);
+        $appUrl = (string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl');
+        $viewModel = JazzMapper::toArtistDetailViewModel($pageData, $performances, $currentUri, $appUrl);
         $this->renderView(__DIR__ . '/../Views/pages/jazz-artist-detail.php', $viewModel);
     }
 

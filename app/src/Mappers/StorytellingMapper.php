@@ -94,11 +94,12 @@ final class StorytellingMapper
         ScheduleSectionViewModel $scheduleSection,
         bool $isLoggedIn,
         string $currentUri,
+        string $appUrl,
     ): StorytellingDetailPageViewModel {
         $globalUi = CmsMapper::toGlobalUiData($pageData->globalUiContent, $isLoggedIn);
         $detailHero = self::buildDetailHero($pageData, $globalUi, $scheduleSection);
         $heroData = self::buildShellHero($detailHero);
-        $shareUrl = rtrim((string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl'), '/') . $currentUri;
+        $shareUrl = rtrim($appUrl, '/') . $currentUri;
 
         return self::assembleDetailPageViewModel($pageData, $heroData, $globalUi, $detailHero, $scheduleSection, $shareUrl);
     }

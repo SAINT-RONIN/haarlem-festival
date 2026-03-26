@@ -90,7 +90,7 @@ class CmsEventsController extends CmsBaseController
     public function store(): void
     {
         try {
-            $formData = $this->extractEventFormData(); // TODO: Replace with EventUpsertData DTO
+            $formData = $this->extractEventFormData(); // Form data extracted via BaseController helpers; service validates internally
             $eventId = $this->eventsService->createEvent($formData);
             $this->redirectWithFlash('Event created successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
@@ -126,7 +126,7 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             $eventId = (int)$id;
-            $formData = $this->extractEventFormData(); // TODO: Replace with EventUpsertData DTO
+            $formData = $this->extractEventFormData(); // Form data extracted via BaseController helpers; service validates internally
             $this->eventsService->updateEvent($eventId, $formData);
             $this->redirectWithFlash('Event updated successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
@@ -144,7 +144,7 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             $eventIdInt = (int)$eventId;
-            $formData = $this->extractSessionFormData(); // TODO: Replace with EventSessionUpsertData DTO
+            $formData = $this->extractSessionFormData(); // Session fields extracted via BaseController helpers; service validates internally
             $this->eventsService->createSession($eventIdInt, $formData);
             $this->redirectWithFlash('Session created successfully.', 'success', "/cms/events/{$eventIdInt}/edit");
         } catch (ValidationException $error) {
@@ -162,7 +162,7 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             $eventId = $this->getEventIdFromPost();
-            $formData = $this->extractSessionFormData(); // TODO: Replace with EventSessionUpsertData DTO
+            $formData = $this->extractSessionFormData(); // Session fields extracted via BaseController helpers; service validates internally
             $this->eventsService->updateSession((int)$id, $formData);
             $this->redirectWithFlash('Session updated successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
@@ -392,7 +392,6 @@ class CmsEventsController extends CmsBaseController
      * Reads event form fields from POST using BaseController helpers.
      * @return array<string, mixed>
      */
-    // TODO: Replace array return with EventUpsertData DTO
     private function extractEventFormData(): array
     {
         return [
@@ -412,7 +411,6 @@ class CmsEventsController extends CmsBaseController
      * Reads session form fields from POST using BaseController helpers.
      * @return array<string, mixed>
      */
-    // TODO: Replace array return with EventSessionUpsertData DTO
     private function extractSessionFormData(): array
     {
         $coreFields = $this->extractSessionCoreFields();

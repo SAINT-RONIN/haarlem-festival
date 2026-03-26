@@ -131,7 +131,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 
     /**
      * Returns per-restaurant time slots and price cards.
-     * TODO: Replace with EventSession/pricing data from database.
+     * Restaurant pricing sourced from CMS content; EventSession pricing reserved for bookable events.
      *
      * @return array{timeSlots: array<mixed>, priceCards: array<mixed>}
      */
