@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Exceptions\JsonBodyParseException;
+use App\DTOs\Filters\ScheduleFilterParams;
+use App\DTOs\Session\SessionContext;
 use App\Enums\PriceType;
 use App\Enums\TimeRange;
-use App\DTOs\Filters\ScheduleFilterParams;
+use App\Exceptions\JsonBodyParseException;
+use App\Services\Interfaces\ISessionService;
 use App\ViewModels\BaseViewModel;
 
 /**
@@ -201,5 +203,19 @@ abstract class BaseController
         }
 
         return $body;
+    }
+
+    /** Builds a SessionContext from the given session service for cart and program operations. */
+    protected function resolveSessionContext(ISessionService $sessionService): SessionContext
+    {
+        $sessionKey = $sessionService->getSessionId();
+        $isLoggedIn = $sessionService->isLoggedIn();
+        $userId = $isLoggedIn ? $sessionService->getUserId() : null;
+
+        return new SessionContext(
+            sessionKey: $sessionKey,
+            userId: $userId,
+            isLoggedIn: $isLoggedIn,
+        );
     }
 }

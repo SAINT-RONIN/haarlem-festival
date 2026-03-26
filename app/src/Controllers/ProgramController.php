@@ -31,7 +31,7 @@ class ProgramController extends BaseController
     public function index(): void
     {
         try {
-            $context = $this->resolveSessionContext();
+            $context = $this->resolveSessionContext($this->sessionService);
 
             $programData = $this->programService->getProgramData($context->sessionKey, $context->userId);
             $cmsContent = $this->checkoutContentRepo->findProgramMainContent('my-program', 'main');
@@ -51,7 +51,7 @@ class ProgramController extends BaseController
     {
         try {
             $body = $this->readJsonBody();
-            $context = $this->resolveSessionContext();
+            $context = $this->resolveSessionContext($this->sessionService);
 
             $eventSessionId = (int)($body['eventSessionId'] ?? 0);
             $quantity = (int)($body['quantity'] ?? 1);
@@ -73,7 +73,7 @@ class ProgramController extends BaseController
     {
         try {
             $body = $this->readJsonBody();
-            $context = $this->resolveSessionContext();
+            $context = $this->resolveSessionContext($this->sessionService);
 
             $programItemId = (int)($body['programItemId'] ?? 0);
             $quantity = (int)($body['quantity'] ?? 0);
@@ -94,7 +94,7 @@ class ProgramController extends BaseController
     {
         try {
             $body = $this->readJsonBody();
-            $context = $this->resolveSessionContext();
+            $context = $this->resolveSessionContext($this->sessionService);
 
             $programItemId = (int)($body['programItemId'] ?? 0);
             $donationAmount = (float)($body['donationAmount'] ?? 0.0);
@@ -115,7 +115,7 @@ class ProgramController extends BaseController
     {
         try {
             $body = $this->readJsonBody();
-            $context = $this->resolveSessionContext();
+            $context = $this->resolveSessionContext($this->sessionService);
 
             $programItemId = (int)($body['programItemId'] ?? 0);
 
@@ -134,7 +134,7 @@ class ProgramController extends BaseController
     public function clear(): void
     {
         try {
-            $context = $this->resolveSessionContext();
+            $context = $this->resolveSessionContext($this->sessionService);
 
             $this->programService->clearProgram($context->sessionKey, $context->userId);
 
@@ -157,18 +157,5 @@ class ProgramController extends BaseController
             'total' => $totals['total'],
             'canCheckout' => $programData->items !== [],
         ]);
-    }
-
-    /** Builds a SessionContext from the current session state for cart operations. */
-    private function resolveSessionContext(): SessionContext
-    {
-        $sessionKey = $this->sessionService->getSessionId();
-        $userId = $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
-
-        return new SessionContext(
-            sessionKey: $sessionKey,
-            userId: $userId,
-            isLoggedIn: $userId !== null,
-        );
     }
 }

@@ -38,7 +38,7 @@ class CheckoutController extends BaseController
     public function index(): void
     {
         try {
-            $context = $this->resolveSessionContext();
+            $context = $this->resolveSessionContext($this->sessionService);
 
             $programData = $this->programService->getProgramData($context->sessionKey, $context->userId);
 
@@ -66,7 +66,7 @@ class CheckoutController extends BaseController
     public function createSession(): void
     {
         try {
-            $context = $this->resolveSessionContext();
+            $context = $this->resolveSessionContext($this->sessionService);
             $userId = $this->requireAuthenticatedUserId();
 
             $payload = $this->readJsonBody();
@@ -91,7 +91,7 @@ class CheckoutController extends BaseController
         try {
             $sessionId = $this->readStringQueryParam('session_id', 255);
             $sessionSummary = $sessionId !== null ? $this->checkoutService->getSessionSummary($sessionId) : null;
-            $viewModel = CheckoutMapper::toSuccessViewModel($sessionSummary, $this->resolveSessionContext()->isLoggedIn);
+            $viewModel = CheckoutMapper::toSuccessViewModel($sessionSummary, $this->resolveSessionContext($this->sessionService)->isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-success.php', $viewModel);
         } catch (CheckoutException $error) {
@@ -110,7 +110,7 @@ class CheckoutController extends BaseController
             $paymentId = $this->readPositiveIntQueryParam('payment_id');
 
             $cancelResult = $this->checkoutService->handleCancel($orderId, $paymentId);
-            $viewModel = CheckoutMapper::toCancelViewModel($cancelResult, $this->resolveSessionContext()->isLoggedIn);
+            $viewModel = CheckoutMapper::toCancelViewModel($cancelResult, $this->resolveSessionContext($this->sessionService)->isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-cancel.php', $viewModel);
         } catch (CheckoutException $error) {
@@ -143,25 +143,12 @@ class CheckoutController extends BaseController
         }
     }
 
-    /** Builds a SessionContext from the current session state for cart operations. */
-    private function resolveSessionContext(): SessionContext
-    {
-        $sessionKey = $this->sessionService->getSessionId();
-        $userId = $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
-
-        return new SessionContext(
-            sessionKey: $sessionKey,
-            userId: $userId,
-            isLoggedIn: $userId !== null,
-        );
-    }
-
     /**
      * @throws CheckoutException if no user is logged in
      */
     private function requireAuthenticatedUserId(): int
     {
-        $context = $this->resolveSessionContext();
+        $context = $this->resolveSessionContext($this->sessionService);
         if (!$context->isLoggedIn) {
             throw new CheckoutException('Please log in to continue checkout.');
         }
