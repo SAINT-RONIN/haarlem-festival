@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventSessionLabel;
+use App\Models\EventSessionLabelFilter;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use PDO;
 
@@ -21,7 +22,10 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findLabels(array $filters = []): array
+    /**
+     * @return EventSessionLabel[]
+     */
+    public function findLabels(EventSessionLabelFilter $filters = new EventSessionLabelFilter()): array
     {
         $sql = '
             SELECT EventSessionLabelId, EventSessionId, LabelText
@@ -30,26 +34,9 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
         ';
         $params = [];
 
-        if (isset($filters['sessionId'])) {
+        if ($filters->sessionId !== null) {
             $sql .= ' AND EventSessionId = :sessionId';
-            $params['sessionId'] = (int)$filters['sessionId'];
-        }
-
-        $sessionIds = $filters['sessionIds'] ?? null;
-        if (is_array($sessionIds)) {
-            $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
-            if ($normalizedIds === []) {
-                return [];
-            }
-
-            $inPlaceholders = [];
-            foreach ($normalizedIds as $index => $sessionId) {
-                $paramName = 'sessionId' . $index;
-                $inPlaceholders[] = ':' . $paramName;
-                $params[$paramName] = $sessionId;
-            }
-
-            $sql .= ' AND EventSessionId IN (' . implode(', ', $inPlaceholders) . ')';
+            $params['sessionId'] = $filters->sessionId;
         }
 
         $sql .= ' ORDER BY EventSessionId ASC, EventSessionLabelId ASC';
@@ -57,12 +44,40 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $labels = array_map([EventSessionLabel::class, 'fromRow'], $rows);
 
-        $groupBySession = (bool)($filters['groupBySession'] ?? false);
-        if (!$groupBySession) {
-            return $labels;
+        return array_map([EventSessionLabel::class, 'fromRow'], $rows);
+    }
+
+    /**
+     * @param int[] $sessionIds
+     * @return array<int, EventSessionLabel[]>
+     */
+    public function findLabelsBySessionIds(array $sessionIds): array
+    {
+        $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
+        if ($normalizedIds === []) {
+            return [];
         }
+
+        $params = [];
+        $inPlaceholders = [];
+        foreach ($normalizedIds as $index => $sessionId) {
+            $paramName = 'sessionId' . $index;
+            $inPlaceholders[] = ':' . $paramName;
+            $params[$paramName] = $sessionId;
+        }
+
+        $sql = '
+            SELECT EventSessionLabelId, EventSessionId, LabelText
+            FROM EventSessionLabel
+            WHERE EventSessionId IN (' . implode(', ', $inPlaceholders) . ')
+            ORDER BY EventSessionId ASC, EventSessionLabelId ASC
+        ';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $labels = array_map([EventSessionLabel::class, 'fromRow'], $rows);
 
         $grouped = [];
         foreach ($labels as $label) {

@@ -10,24 +10,24 @@
     <div class="w-full grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
         <article class="xl:col-span-8 flex flex-col gap-5 sm:gap-6">
             <h2 class="text-royal-blue text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-['Montserrat'] leading-tight">
-                <?= htmlspecialchars($viewModel->overviewHeading) ?>
+                <?= htmlspecialchars($viewModel->overview->overviewHeading) ?>
             </h2>
             <p class="text-royal-blue/90 text-base sm:text-lg md:text-xl font-normal font-['Montserrat'] leading-relaxed">
-                <?= htmlspecialchars($viewModel->overviewLead) ?>
+                <?= htmlspecialchars($viewModel->overview->overviewLead) ?>
             </p>
             <p class="text-royal-blue/80 text-base sm:text-lg md:text-xl font-normal font-['Montserrat'] leading-relaxed">
-                <?= htmlspecialchars($viewModel->overviewBodyPrimary) ?>
+                <?= htmlspecialchars($viewModel->overview->overviewBodyPrimary) ?>
             </p>
             <p class="text-royal-blue/80 text-base sm:text-lg md:text-xl font-normal font-['Montserrat'] leading-relaxed">
-                <?= htmlspecialchars($viewModel->overviewBodySecondary) ?>
+                <?= htmlspecialchars($viewModel->overview->overviewBodySecondary) ?>
             </p>
 
             <aside class="p-5 sm:p-6 md:p-8 bg-white rounded-2xl shadow-[0px_4px_10px_-6px_rgba(0,0,0,0.10)] shadow-[0px_10px_25px_-5px_rgba(0,0,0,0.10)] border border-slate-200/60">
                 <h3 class="text-royal-blue text-2xl sm:text-3xl font-normal font-['Montserrat'] mb-4 sm:mb-5">
-                    <?= htmlspecialchars($viewModel->lineupHeading) ?>
+                    <?= htmlspecialchars($viewModel->lineup->lineupHeading) ?>
                 </h3>
                 <ul class="space-y-2">
-                    <?php foreach ($viewModel->lineup as $member): ?>
+                    <?php foreach ($viewModel->lineup->lineup as $member): ?>
                         <li class="text-royal-blue text-sm sm:text-base md:text-lg font-normal font-['Montserrat'] leading-6">
                             <?= htmlspecialchars($member) ?>
                         </li>
@@ -48,12 +48,12 @@
                     <path d="M8 4h8v2a4 4 0 0 1-8 0V4z"></path>
                 </svg>
                 <h3 class="text-slate-800 text-xl sm:text-2xl font-normal font-['Montserrat'] leading-7">
-                    <?= htmlspecialchars($viewModel->highlightsHeading) ?>
+                    <?= htmlspecialchars($viewModel->lineup->highlightsHeading) ?>
                 </h3>
             </div>
 
             <ul class="list-disc pl-5 space-y-3 marker:text-slate-700/70">
-                <?php foreach ($viewModel->highlights as $highlight): ?>
+                <?php foreach ($viewModel->lineup->highlights as $highlight): ?>
                     <li class="text-slate-700 text-base sm:text-lg font-normal font-['Montserrat'] leading-6 sm:leading-7">
                         <?= htmlspecialchars($highlight) ?>
                     </li>

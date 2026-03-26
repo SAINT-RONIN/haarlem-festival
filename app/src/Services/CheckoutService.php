@@ -8,11 +8,13 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Infrastructure\Interfaces\IStripeService;
+use App\Models\ProgramData;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
+use App\Exceptions\CheckoutException;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
 use PDO;
@@ -48,24 +50,28 @@ class CheckoutService implements ICheckoutService
         $this->pdo = $pdo;
     }
 
-    public function createCheckoutSession(array $programData, int $userId, array $payload): array
+    /**
+     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
+     * @return array{redirectUrl:string,orderId:int,paymentId:int}
+     */
+    public function createCheckoutSession(ProgramData $programData, int $userId, array $payload): array
     {
         $this->validatePayload($payload);
 
-        $program = $programData['program'] ?? null;
-        $items = $programData['items'] ?? [];
+        $program = $programData->program;
+        $items = $programData->items;
 
         if ($program === null || $items === []) {
-            throw new \RuntimeException('Your program is empty.');
+            throw new CheckoutException('Your program is empty.');
         }
 
         $method = $this->mapPaymentMethod((string)$payload['paymentMethod']);
-        $subtotal = (float)$programData['subtotal'];
-        $vatTotal = (float)$programData['taxAmount'];
-        $total = (float)$programData['total'];
+        $subtotal = $programData->subtotal;
+        $vatTotal = $programData->taxAmount;
+        $total = $programData->total;
 
         if ($total <= 0) {
-            throw new \RuntimeException('Total amount must be greater than zero.');
+            throw new CheckoutException('Total amount must be greater than zero.');
         }
 
         $appUrl = $this->runtimeConfig->getAppUrl();
@@ -76,7 +82,7 @@ class CheckoutService implements ICheckoutService
 
         try {
             $orderNumber = $this->generateOrderNumber();
-            $payBeforeUtc = new \DateTimeImmutable('+30 minutes');
+            $payBeforeUtc = new \DateTimeImmutable('+24 hours');
 
             $orderId = $this->orderRepository->create(
                 userAccountId: $userId,
@@ -91,13 +97,13 @@ class CheckoutService implements ICheckoutService
             foreach ($items as $item) {
                 $this->orderItemRepository->create(
                     orderId: $orderId,
-                    eventSessionId: isset($item['eventSessionId']) ? (int)$item['eventSessionId'] : null,
+                    eventSessionId: $item->eventSessionId,
                     historyTourId: null,
                     passPurchaseId: null,
-                    quantity: (int)$item['quantity'],
-                    unitPrice: $this->toMoneyString((float)$item['basePrice']),
+                    quantity: $item->quantity,
+                    unitPrice: $this->toMoneyString($item->basePrice),
                     vatRate: $this->toMoneyString($this->runtimeConfig->getVatRate() * 100),
-                    donationAmount: $this->toMoneyString((float)($item['donationAmount'] ?? 0.0)),
+                    donationAmount: $this->toMoneyString($item->donationAmount),
                 );
             }
 
@@ -136,7 +142,7 @@ class CheckoutService implements ICheckoutService
             $checkoutUrl = (string)($session['url'] ?? '');
 
             if ($sessionId === '' || $checkoutUrl === '') {
-                throw new \RuntimeException('Stripe checkout session could not be created.');
+                throw new CheckoutException('Stripe checkout session could not be created.');
             }
 
             $this->paymentRepository->updateStripeSessionId($paymentId, $sessionId);
@@ -154,7 +160,7 @@ class CheckoutService implements ICheckoutService
                 'orderId' => $orderId,
                 'paymentId' => $paymentId,
             ];
-        } catch (\Throwable $error) {
+        } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -163,14 +169,17 @@ class CheckoutService implements ICheckoutService
         }
     }
 
+    /**
+     * @return array{status:string,orderId:?int,paymentId:?int}
+     */
     public function handleCancel(?int $orderId, ?int $paymentId): array
     {
         if ($orderId !== null) {
-            $this->updateOrderStatusIfCurrent($orderId, OrderStatus::Cancelled, [OrderStatus::Pending]);
+            $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Cancelled, [OrderStatus::Pending]);
         }
 
         if ($paymentId !== null) {
-            $this->updatePaymentStatusIfCurrent($paymentId, PaymentStatus::Cancelled, [PaymentStatus::Pending]);
+            $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Cancelled, [PaymentStatus::Pending]);
         }
 
         return [
@@ -180,6 +189,9 @@ class CheckoutService implements ICheckoutService
         ];
     }
 
+    /**
+     * @return array{processed:bool,eventId:string,eventType:string}
+     */
     public function handleWebhook(string $payload, ?string $signatureHeader): array
     {
         $event = $this->stripeService->constructWebhookEvent($payload, $signatureHeader);
@@ -188,7 +200,7 @@ class CheckoutService implements ICheckoutService
         $eventType = (string)($event['type'] ?? '');
 
         if ($eventId === '' || $eventType === '') {
-            throw new \RuntimeException('Invalid Stripe event payload.');
+            throw new CheckoutException('Invalid Stripe event payload.');
         }
 
         if ($this->webhookEventRepository->hasProcessed($eventId)) {
@@ -201,7 +213,7 @@ class CheckoutService implements ICheckoutService
 
         $object = $event['data']['object'] ?? null;
         if (!is_array($object)) {
-            throw new \RuntimeException('Stripe event object is missing.');
+            throw new CheckoutException('Stripe event object is missing.');
         }
 
         $metadata = isset($object['metadata']) && is_array($object['metadata']) ? $object['metadata'] : [];
@@ -235,10 +247,10 @@ class CheckoutService implements ICheckoutService
                 case 'checkout.session.expired':
                 case 'checkout.session.async_payment_failed':
                     if ($orderId !== null) {
-                        $this->updateOrderStatusIfCurrent($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
+                        $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
                     }
                     if ($paymentId !== null) {
-                        $this->updatePaymentStatusIfCurrent($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
+                        $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
                     }
                     break;
 
@@ -248,7 +260,7 @@ class CheckoutService implements ICheckoutService
 
             $this->webhookEventRepository->markProcessed($eventId, $eventType);
             $this->pdo->commit();
-        } catch (\Throwable $error) {
+        } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -262,6 +274,9 @@ class CheckoutService implements ICheckoutService
         ];
     }
 
+    /**
+     * @return array{sessionId:string,paymentStatus:string,status:string,amountTotal:float,currency:string}
+     */
     public function getSessionSummary(string $sessionId): array
     {
         if ($sessionId === '') {
@@ -329,49 +344,5 @@ class CheckoutService implements ICheckoutService
         return 'HF-' . gmdate('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(3)));
     }
 
-
-    /**
-     * @param OrderStatus[] $allowedCurrentStatuses
-     */
-    private function updateOrderStatusIfCurrent(int $orderId, OrderStatus $newStatus, array $allowedCurrentStatuses): void
-    {
-        if ($allowedCurrentStatuses === []) {
-            return;
-        }
-
-        $inClause = implode(', ', array_fill(0, count($allowedCurrentStatuses), '?'));
-        $sql = "UPDATE `Order` SET Status = ? WHERE OrderId = ? AND Status IN ({$inClause})";
-        $stmt = $this->pdo->prepare($sql);
-
-        $params = [$newStatus->value, $orderId];
-        foreach ($allowedCurrentStatuses as $status) {
-            $params[] = $status->value;
-        }
-
-        $stmt->execute($params);
-    }
-
-    /**
-     * @param PaymentStatus[] $allowedCurrentStatuses
-     */
-    private function updatePaymentStatusIfCurrent(int $paymentId, PaymentStatus $newStatus, array $allowedCurrentStatuses): void
-    {
-        if ($allowedCurrentStatuses === []) {
-            return;
-        }
-
-        $inClause = implode(', ', array_fill(0, count($allowedCurrentStatuses), '?'));
-        $sql = "UPDATE Payment SET Status = ?, PaidAtUtc = ? WHERE PaymentId = ? AND Status IN ({$inClause})";
-        $stmt = $this->pdo->prepare($sql);
-
-        $paidAtUtc = $newStatus === PaymentStatus::Paid ? (new \DateTimeImmutable())->format('Y-m-d H:i:s') : null;
-
-        $params = [$newStatus->value, $paidAtUtc, $paymentId];
-        foreach ($allowedCurrentStatuses as $status) {
-            $params[] = $status->value;
-        }
-
-        $stmt->execute($params);
-    }
 }
 

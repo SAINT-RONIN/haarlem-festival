@@ -120,7 +120,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                 loading="lazy"
                             >
                             <span class="text-slate-800 text-base sm:text-lg font-light font-['Montserrat'] leading-4">
-                                <?= htmlspecialchars($event->historyTicketLabel) ?>
+                                <?= htmlspecialchars($event->historyTicketLabel ?? '') ?>
                             </span>
                         </dd>
                     </div>
@@ -162,6 +162,21 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                 data-adding-text="<?= htmlspecialchars($event->addingText) ?>"
                                 data-success-text="<?= htmlspecialchars($event->successText) ?>"
                                 class="px-2.5 py-[5px] bg-slate-800 hover:bg-red rounded-[10px] border border-slate-800 hover:border-red flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2"
+                            >
+                                <span class="text-center text-stone-100 text-lg sm:text-xl font-normal font-['Montserrat']">
+                                    <?= htmlspecialchars($event->ctaLabel) ?>
+                                </span>
+                            </button>
+                        <?php elseif ($isHistoryEvent): ?>
+                            <button
+                                    type="button"
+                                    data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
+                                    data-price="<?= htmlspecialchars($event->priceDisplay) ?>"
+                                    data-is-pay-what-you-like="<?= $event->isPayWhatYouLike ? '1' : '0' ?>"
+                                    data-confirm-text="<?= htmlspecialchars($event->confirmText) ?>"
+                                    data-adding-text="<?= htmlspecialchars($event->addingText) ?>"
+                                    data-success-text="<?= htmlspecialchars($event->successText) ?>"
+                                    class="px-2.5 py-[5px] bg-slate-800 hover:bg-red rounded-[10px] border border-slate-800 hover:border-red flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2"
                             >
                                 <span class="text-center text-stone-100 text-lg sm:text-xl font-normal font-['Montserrat']">
                                     <?= htmlspecialchars($event->ctaLabel) ?>

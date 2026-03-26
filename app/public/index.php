@@ -34,13 +34,16 @@ use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
+use App\Controllers\CmsArtistsController;
 use App\Controllers\CmsOrdersController;
+use App\Controllers\CmsRestaurantsController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
+use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
 use App\Services\SessionService;
 use FastRoute\Dispatcher;
@@ -68,7 +71,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Storytelling page
     $r->addRoute('GET', '/storytelling', [StorytellingController::class, 'index']);
-    $r->addRoute('GET', '/storytelling/{id:\d+}', [StorytellingController::class, 'detail']);
+    $r->addRoute('GET', '/storytelling/{slug:[a-z0-9-]+}', [StorytellingController::class, 'detail']);
 
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
@@ -133,6 +136,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
     $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
 
+    // Schedule API
+    $r->addRoute('GET', '/api/schedule/{pageSlug:[a-z]+}', [ScheduleApiController::class, 'getScheduleHtml']);
+
     // CMS Media Routes
     $r->addRoute('GET', '/cms/media', [CmsMediaController::class, 'index']);
     $r->addRoute('POST', '/cms/media/upload', [CmsMediaController::class, 'upload']);
@@ -143,7 +149,28 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/orders', [CmsOrdersController::class, 'index']);
 
     // CMS Users Routes
-    $r->addRoute('GET', '/cms/users', [CmsUsersController::class, 'index']);
+    $r->addRoute('GET',  '/cms/users',                    [CmsUsersController::class, 'index']);
+    $r->addRoute('GET',  '/cms/users/create',             [CmsUsersController::class, 'create']);
+    $r->addRoute('POST', '/cms/users',                    [CmsUsersController::class, 'store']);
+    $r->addRoute('GET',  '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'edit']);
+    $r->addRoute('POST', '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'update']);
+    $r->addRoute('POST', '/cms/users/{id:\d+}/delete',    [CmsUsersController::class, 'delete']);
+
+    // CMS Restaurants Routes
+    $r->addRoute('GET',  '/cms/restaurants',                       [CmsRestaurantsController::class, 'index']);
+    $r->addRoute('GET',  '/cms/restaurants/create',                [CmsRestaurantsController::class, 'create']);
+    $r->addRoute('POST', '/cms/restaurants',                       [CmsRestaurantsController::class, 'store']);
+    $r->addRoute('GET',  '/cms/restaurants/{id:\d+}/edit',         [CmsRestaurantsController::class, 'edit']);
+    $r->addRoute('POST', '/cms/restaurants/{id:\d+}/edit',         [CmsRestaurantsController::class, 'update']);
+    $r->addRoute('POST', '/cms/restaurants/{id:\d+}/delete',       [CmsRestaurantsController::class, 'delete']);
+
+    // CMS Artists Routes
+    $r->addRoute('GET',  '/cms/artists',                           [CmsArtistsController::class, 'index']);
+    $r->addRoute('GET',  '/cms/artists/create',                    [CmsArtistsController::class, 'create']);
+    $r->addRoute('POST', '/cms/artists',                           [CmsArtistsController::class, 'store']);
+    $r->addRoute('GET',  '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'edit']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'update']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/delete',           [CmsArtistsController::class, 'delete']);
 
     // Slug-aware routes (preferred)
     $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);

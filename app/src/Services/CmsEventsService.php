@@ -7,14 +7,20 @@ namespace App\Services;
 use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
-use App\Repositories\EventRepository;
-use App\Repositories\EventSessionLabelRepository;
-use App\Repositories\EventSessionPriceRepository;
-use App\Repositories\EventSessionRepository;
-use App\Repositories\EventTypeRepository;
-use App\Repositories\PriceTierRepository;
-use App\Repositories\ScheduleDayConfigRepository;
-use App\Repositories\VenueRepository;
+use App\Repositories\Interfaces\IEventRepository;
+use App\Repositories\Interfaces\IEventSessionLabelRepository;
+use App\Repositories\Interfaces\IEventSessionPriceRepository;
+use App\Repositories\Interfaces\IEventSessionRepository;
+use App\Repositories\Interfaces\IEventTypeRepository;
+use App\Repositories\Interfaces\IOrderItemRepository;
+use App\Repositories\Interfaces\IPriceTierRepository;
+use App\Repositories\Interfaces\IScheduleDayConfigRepository;
+use App\Repositories\Interfaces\IVenueRepository;
+use App\Models\EventFilter;
+use App\Models\EventSessionFilter;
+use App\Models\EventTypeFilter;
+use App\Models\ScheduleDayConfigFilter;
+use App\Models\VenueFilter;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Utils\CmsEventConstraints;
 
@@ -26,14 +32,15 @@ use App\Utils\CmsEventConstraints;
 class CmsEventsService implements ICmsEventsService
 {
     public function __construct(
-        private EventRepository $eventRepository,
-        private EventSessionRepository $sessionRepository,
-        private EventSessionLabelRepository $labelRepository,
-        private EventSessionPriceRepository $priceRepository,
-        private EventTypeRepository $eventTypeRepository,
-        private VenueRepository $venueRepository,
-        private PriceTierRepository $priceTierRepository,
-        private ScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private IEventRepository $eventRepository,
+        private IEventSessionRepository $sessionRepository,
+        private IEventSessionLabelRepository $labelRepository,
+        private IEventSessionPriceRepository $priceRepository,
+        private IEventTypeRepository $eventTypeRepository,
+        private IVenueRepository $venueRepository,
+        private IPriceTierRepository $priceTierRepository,
+        private IScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private IOrderItemRepository $orderItemRepository,
     ) {
     }
 
@@ -45,20 +52,12 @@ class CmsEventsService implements ICmsEventsService
      */
     public function getAllEventsWithDetails(?int $eventTypeId = null, ?string $dayOfWeek = null): array
     {
-        $filters = [
-            'isActive' => true,
-            'includeSessionCount' => true,
-        ];
-
-        if ($eventTypeId !== null) {
-            $filters['eventTypeId'] = $eventTypeId;
-        }
-
-        if ($dayOfWeek !== null) {
-            $filters['dayOfWeek'] = $dayOfWeek;
-        }
-
-        return $this->eventRepository->findEvents($filters);
+        return $this->eventRepository->findEvents(new EventFilter(
+            isActive: true,
+            includeSessionCount: true,
+            eventTypeId: $eventTypeId,
+            dayOfWeek: $dayOfWeek,
+        ));
     }
 
     /**
@@ -68,7 +67,7 @@ class CmsEventsService implements ICmsEventsService
      */
     public function getEventTypes(): array
     {
-        return $this->eventTypeRepository->findEventTypes(['orderBy' => 'name']);
+        return $this->eventTypeRepository->findEventTypes(new EventTypeFilter(orderBy: 'name'));
     }
 
     /**
@@ -78,7 +77,7 @@ class CmsEventsService implements ICmsEventsService
      */
     public function getVenues(): array
     {
-        return $this->venueRepository->findVenues(['isActive' => true]);
+        return $this->venueRepository->findVenues(new VenueFilter(isActive: true));
     }
 
     /**
@@ -128,16 +127,13 @@ class CmsEventsService implements ICmsEventsService
     public function getWeeklyScheduleOverview(?int $eventTypeId = null): array
     {
         $schedule = $this->initializeWeekSchedule();
-        $filters = [
-            'isActive' => true,
-            'eventIsActive' => true,
-            'includeCancelled' => false,
-            'orderBy' => 'es.StartDateTime ASC',
-        ];
-        if ($eventTypeId !== null) {
-            $filters['eventTypeId'] = $eventTypeId;
-        }
-        $sessions = $this->sessionRepository->findSessions($filters)['sessions'] ?? [];
+        $sessions = $this->sessionRepository->findSessions(new EventSessionFilter(
+            eventTypeId: $eventTypeId,
+            isActive: true,
+            includeCancelled: false,
+            eventIsActive: true,
+            orderBy: 'es.StartDateTime ASC',
+        ))->sessions;
 
         return $this->groupSessionsByDay($sessions, $schedule);
     }
@@ -202,19 +198,19 @@ class CmsEventsService implements ICmsEventsService
      */
     public function getEventForEdit(int $eventId): ?array
     {
-        $event = $this->eventRepository->findEvents([
-            'eventId' => $eventId,
-            'includeSessionCount' => true,
-        ])[0] ?? null;
+        $event = $this->eventRepository->findEvents(new EventFilter(
+            eventId: $eventId,
+            includeSessionCount: true,
+        ))[0] ?? null;
         if (!$event) {
             return null;
         }
 
-        $sessions = $this->sessionRepository->findSessions([
-            'eventId' => $eventId,
-            'includeCancelled' => true,
-            'orderBy' => 'es.StartDateTime ASC',
-        ])['sessions'] ?? [];
+        $sessions = $this->sessionRepository->findSessions(new EventSessionFilter(
+            eventId: $eventId,
+            includeCancelled: true,
+            orderBy: 'es.StartDateTime ASC',
+        ))->sessions;
 
         [$pricesMap, $labelsMap] = $this->loadSessionPricesAndLabels($sessions);
 
@@ -242,8 +238,8 @@ class CmsEventsService implements ICmsEventsService
         }
 
         return [
-            $this->priceRepository->findPrices(['sessionIds' => $sessionIds, 'groupBySession' => true]),
-            $this->labelRepository->findLabels(['sessionIds' => $sessionIds, 'groupBySession' => true]),
+            $this->priceRepository->findPricesBySessionIds($sessionIds),
+            $this->labelRepository->findLabelsBySessionIds($sessionIds),
         ];
     }
 
@@ -295,9 +291,14 @@ class CmsEventsService implements ICmsEventsService
 
     /**
      * Deletes an event session.
+     *
+     * @throws ValidationException
      */
     public function deleteSession(int $sessionId): bool
     {
+        if ($this->orderItemRepository->existsForSession($sessionId)) {
+            throw new ValidationException(['This session has sold tickets and cannot be deleted.']);
+        }
         return $this->sessionRepository->delete($sessionId);
     }
 
@@ -411,7 +412,70 @@ class CmsEventsService implements ICmsEventsService
             }
         }
 
+        $errors = array_merge($errors, $this->validateCapacityTotal($data));
+        $errors = array_merge($errors, $this->validateCapacitySingleTicketLimit($data));
+        $errors = array_merge($errors, $this->validateDurationMinutes($data));
+        $errors = array_merge($errors, $this->validateAgeRange($data));
+
         return $errors;
+    }
+
+    /**
+     * Validates that CapacityTotal is a positive integer, if provided.
+     */
+    private function validateCapacityTotal(array $data): array
+    {
+        if (!array_key_exists('CapacityTotal', $data)) {
+            return [];
+        }
+        if ((int) $data['CapacityTotal'] <= 0) {
+            return ['Capacity must be a positive integer'];
+        }
+        return [];
+    }
+
+    /**
+     * Validates that CapacitySingleTicketLimit does not exceed CapacityTotal, if both are provided.
+     */
+    private function validateCapacitySingleTicketLimit(array $data): array
+    {
+        if (!array_key_exists('CapacityTotal', $data) || !array_key_exists('CapacitySingleTicketLimit', $data)) {
+            return [];
+        }
+        if ((int) $data['CapacitySingleTicketLimit'] > (int) $data['CapacityTotal']) {
+            return ['Single ticket limit cannot exceed total capacity'];
+        }
+        return [];
+    }
+
+    /**
+     * Validates that DurationMinutes is a positive integer, if provided and not empty.
+     */
+    private function validateDurationMinutes(array $data): array
+    {
+        if (!array_key_exists('DurationMinutes', $data) || $data['DurationMinutes'] === '' || $data['DurationMinutes'] === null) {
+            return [];
+        }
+        if ((int) $data['DurationMinutes'] <= 0) {
+            return ['Duration must be a positive integer'];
+        }
+        return [];
+    }
+
+    /**
+     * Validates that MaxAge is at least MinAge, if both are provided and not empty.
+     */
+    private function validateAgeRange(array $data): array
+    {
+        $hasMin = array_key_exists('MinAge', $data) && $data['MinAge'] !== '' && $data['MinAge'] !== null;
+        $hasMax = array_key_exists('MaxAge', $data) && $data['MaxAge'] !== '' && $data['MaxAge'] !== null;
+        if (!$hasMin || !$hasMax) {
+            return [];
+        }
+        if ((int) $data['MaxAge'] < (int) $data['MinAge']) {
+            return ['Maximum age cannot be less than minimum age'];
+        }
+        return [];
     }
 
     /**
@@ -479,10 +543,7 @@ class CmsEventsService implements ICmsEventsService
      */
     public function getScheduleDayConfigs(): array
     {
-        return $this->scheduleDayConfigRepository->findConfigs([
-            'includeEventTypeName' => true,
-            'orderBy' => 'scope',
-        ]);
+        return $this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(includeEventTypeName: true, orderBy: 'scope'));
     }
 
     /**
@@ -496,7 +557,7 @@ class CmsEventsService implements ICmsEventsService
         $globalConfigs = [];
         $typeConfigs   = [];
         foreach ($dayConfigs as $config) {
-            if ($config->eventTypeId === null) {
+            if (!$config->eventTypeId) {
                 $globalConfigs[(int)$config->dayOfWeek] = $config;
             } else {
                 $typeConfigs[(int)$config->eventTypeId][(int)$config->dayOfWeek] = $config;
@@ -541,10 +602,7 @@ class CmsEventsService implements ICmsEventsService
     private function loadGlobalDaySettings(): array
     {
         $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs([
-                     'eventTypeId' => null,
-                     'orderBy' => 'day',
-                 ]) as $row) {
+        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: 0, orderBy: 'day')) as $row) {
             $settings[$row->dayOfWeek] = $row->isVisible;
         }
         return $settings;
@@ -560,10 +618,7 @@ class CmsEventsService implements ICmsEventsService
         }
 
         $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs([
-                     'eventTypeId' => $eventTypeId,
-                     'orderBy' => 'day',
-                 ]) as $row) {
+        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: $eventTypeId, orderBy: 'day')) as $row) {
             $settings[$row->dayOfWeek] = $row->isVisible;
         }
         return $settings;

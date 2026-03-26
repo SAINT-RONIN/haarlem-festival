@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Enums\PriceType;
+use App\Enums\TimeRange;
+use App\Models\ScheduleFilterParams;
 use App\ViewModels\BaseViewModel;
 
 /**
@@ -82,6 +85,45 @@ abstract class BaseController
 
         $intValue = (int)$value;
         return $intValue > 0 ? $intValue : null;
+    }
+
+    /**
+     * Reads schedule filter parameters from the query string.
+     * Returns null if no filter params are present (no filtering applied).
+     */
+    protected function readScheduleFilterParams(): ?ScheduleFilterParams
+    {
+        $day = $this->readStringQueryParam('day');
+        $timeRange = $this->readStringQueryParam('timeRange');
+        $priceType = $this->readStringQueryParam('priceType');
+        $venue = $this->readStringQueryParam('venue');
+        $language = $this->readStringQueryParam('language');
+        $age = $this->readPositiveIntQueryParam('age');
+
+        if ($day === null && $timeRange === null && $priceType === null
+            && $venue === null && $language === null && $age === null) {
+            return null;
+        }
+
+        return $this->buildScheduleFilterParams($day, $timeRange, $priceType, $venue, $language, $age);
+    }
+
+    private function buildScheduleFilterParams(
+        ?string $day,
+        ?string $timeRange,
+        ?string $priceType,
+        ?string $venue,
+        ?string $language,
+        ?int $age,
+    ): ScheduleFilterParams {
+        return new ScheduleFilterParams(
+            day: $day !== null ? strtolower($day) : null,
+            timeRange: TimeRange::tryFrom($timeRange ?? '') !== null ? $timeRange : null,
+            priceType: PriceType::tryFrom($priceType ?? '') !== null ? $priceType : null,
+            venue: $venue,
+            language: $language !== null ? strtolower($language) : null,
+            age: $age,
+        );
     }
 
     protected function readServerHeader(string $headerName): ?string

@@ -10,10 +10,10 @@ $isLoggedIn = $viewModel->isLoggedIn;
 <?php
 $title = 'Payment cancelled';
 $message = 'No worries. Your payment was cancelled and no charge was completed.';
-$details = $viewModel->cancelResult !== []
+$details = $viewModel->hasCancelData
     ? [
-        'Order' => (string)($viewModel->cancelResult['orderId'] ?? 'n/a'),
-        'Payment' => (string)($viewModel->cancelResult['paymentId'] ?? 'n/a'),
+        'Order' => $viewModel->orderId,
+        'Payment' => $viewModel->paymentId,
     ]
     : [];
 $primaryHref = '/checkout';

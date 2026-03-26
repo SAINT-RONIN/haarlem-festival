@@ -13,7 +13,8 @@ final readonly class LocationIntroduction
     public function __construct(
         public string $headingText,
         public string $introText,
-        public string $locationImagePath = '',
+        public string $factText,
+        public string $locationImagePath,
     ) {
     }
 }

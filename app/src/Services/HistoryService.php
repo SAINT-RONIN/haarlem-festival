@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\GlobalUiConstants;
 use App\Constants\HistoryPageConstants;
-use App\Services\Interfaces\IHistoryService;
+use App\Models\GlobalUiContent;
+use App\Models\HeroSectionContent;
+use App\Models\HistoryGradientSectionContent;
+use App\Models\HistoryIntroSectionContent;
+use App\Models\HistoryPageData;
+use App\Models\HistoryRouteSectionContent;
+use App\Models\HistoryTicketOptionsSectionContent;
+use App\Models\HistoryTourInfoSectionContent;
+use App\Models\HistoryVenuesSectionContent;
 use App\Services\Interfaces\ICmsPageContentService;
+use App\Services\Interfaces\IHistoryService;
 
-/**
- * Service for preparing history page data.
- *
- * Assembles all data needed for the history view, including
- * event types, locations, and schedule information.
- */
 class HistoryService implements IHistoryService
 {
     public function __construct(
@@ -21,44 +25,22 @@ class HistoryService implements IHistoryService
     ) {
     }
 
-    /**
-     * Builds the history page view model with all required data.
-     */
-    public function getHistoryPageData(): array
+    public function getHistoryPageData(): HistoryPageData
     {
-        $pageSlug = HistoryPageConstants::PAGE_SLUG;
+        return $this->buildPageData(HistoryPageConstants::PAGE_SLUG);
+    }
 
-        return [
-            'sections' => [
-                HistoryPageConstants::SECTION_HERO => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoryPageConstants::SECTION_HERO,
-                ),
-                HistoryPageConstants::SECTION_GRADIENT => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoryPageConstants::SECTION_GRADIENT,
-                ),
-                HistoryPageConstants::SECTION_INTRO => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoryPageConstants::SECTION_INTRO,
-                ),
-                HistoryPageConstants::SECTION_ROUTE => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoryPageConstants::SECTION_ROUTE,
-                ),
-                HistoryPageConstants::SECTION_VENUES => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoryPageConstants::SECTION_VENUES,
-                ),
-                HistoryPageConstants::SECTION_TICKET_OPTIONS => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoryPageConstants::SECTION_TICKET_OPTIONS,
-                ),
-                HistoryPageConstants::SECTION_TOUR_INFO => $this->cmsService->getSectionContent(
-                    $pageSlug,
-                    HistoryPageConstants::SECTION_TOUR_INFO,
-                ),
-            ],
-        ];
+    private function buildPageData(string $pageSlug): HistoryPageData
+    {
+        return new HistoryPageData(
+            heroSection:          HeroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_HERO)),
+            gradientSection:      HistoryGradientSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_GRADIENT)),
+            introSection:         HistoryIntroSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_INTRO)),
+            routeSection:         HistoryRouteSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_ROUTE)),
+            venuesSection:        HistoryVenuesSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_VENUES)),
+            ticketOptionsSection: HistoryTicketOptionsSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS)),
+            tourInfoSection:      HistoryTourInfoSectionContent::fromRawArray($this->cmsService->getSectionContent($pageSlug, HistoryPageConstants::SECTION_TOUR_INFO)),
+            globalUiContent:      GlobalUiContent::fromRawArray($this->cmsService->getSectionContent(GlobalUiConstants::PAGE_SLUG, GlobalUiConstants::SECTION_KEY)),
+        );
     }
 }

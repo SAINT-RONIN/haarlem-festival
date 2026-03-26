@@ -6,28 +6,36 @@ namespace App\Services;
 
 use App\Constants\JazzArtistDetailConstants;
 use App\Exceptions\JazzArtistDetailNotFoundException;
+use App\Models\JazzArtistDetailCmsData;
 use App\Models\JazzArtistDetailEvent;
-use App\Repositories\CmsContentRepository;
+use App\Models\JazzArtistDetailPageData;
+use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IArtistAlbumRepository;
+use App\Repositories\Interfaces\IArtistGalleryImageRepository;
+use App\Repositories\Interfaces\IArtistHighlightRepository;
+use App\Repositories\Interfaces\IArtistLineupMemberRepository;
+use App\Repositories\Interfaces\IArtistTrackRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Services\Interfaces\IJazzArtistDetailService;
 
 class JazzArtistDetailService implements IJazzArtistDetailService
 {
-    /**
-     * @var array<string, array{expiresAt:int, data:array<string, mixed>}>
-     */
+    /** @var array<string, array{expiresAt:int, data:JazzArtistDetailPageData}> */
     private static array $pageCache = [];
 
     public function __construct(
-        private readonly CmsContentRepository $cmsService,
+        private readonly ICmsContentRepository $cmsService,
         private readonly IEventRepository $eventRepository,
+        private readonly IArtistAlbumRepository $albumRepository,
+        private readonly IArtistTrackRepository $trackRepository,
+        private readonly IArtistLineupMemberRepository $lineupMemberRepository,
+        private readonly IArtistHighlightRepository $highlightRepository,
+        private readonly IArtistGalleryImageRepository $galleryImageRepository,
     ) {
     }
 
-    /**
-     * @throws JazzArtistDetailNotFoundException
-     */
-    public function getArtistPageDataBySlug(string $slug): array
+    /** @throws JazzArtistDetailNotFoundException */
+    public function getArtistPageDataBySlug(string $slug): JazzArtistDetailPageData
     {
         $normalizedSlug = $this->normalizeSlug($slug);
         $cached = $this->getCachedPageData($normalizedSlug);
@@ -36,70 +44,60 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         }
 
         $event = $this->findJazzEventBySlug($normalizedSlug);
-        $eventId = $event->eventId;
+        $pageData = $this->buildPageData($event);
+        $this->setCachedPageData($normalizedSlug, $pageData);
 
-        $payload = [
-            'event' => $this->buildEventPayload($event),
-            'cms' => $this->cmsService->getSectionContent(
-                JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
-                JazzArtistDetailConstants::eventSectionKey($eventId),
-            ),
-            'eventId' => $eventId,
-        ];
-
-        $this->setCachedPageData($normalizedSlug, $payload);
-
-        return $payload;
+        return $pageData;
     }
 
-    /**
-     * @param array<string, mixed> $payload
-     */
-    private function setCachedPageData(string $slug, array $payload): void
+    private function fetchCmsContent(int $eventId): JazzArtistDetailCmsData
+    {
+        $raw = $this->cmsService->getSectionContent(
+            JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
+            JazzArtistDetailConstants::eventSectionKey($eventId),
+        );
+        return JazzArtistDetailCmsData::fromRawArray($raw);
+    }
+
+    private function buildPageData(JazzArtistDetailEvent $event): JazzArtistDetailPageData
+    {
+        return new JazzArtistDetailPageData(
+            event: $event,
+            cms: $this->fetchCmsContent($event->eventId),
+            eventId: $event->eventId,
+            albums: $this->albumRepository->findByEventId($event->eventId),
+            tracks: $this->trackRepository->findByEventId($event->eventId),
+            lineupMembers: $this->lineupMemberRepository->findByEventId($event->eventId),
+            highlights: $this->highlightRepository->findByEventId($event->eventId),
+            galleryImages: $this->galleryImageRepository->findByEventId($event->eventId),
+        );
+    }
+
+    private function setCachedPageData(string $slug, JazzArtistDetailPageData $pageData): void
     {
         self::$pageCache[$slug] = [
             'expiresAt' => time() + JazzArtistDetailConstants::PAGE_CACHE_TTL_SECONDS,
-            'data' => $payload,
+            'data' => $pageData,
         ];
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
-    private function getCachedPageData(string $slug): ?array
+    private function getCachedPageData(string $slug): ?JazzArtistDetailPageData
     {
         $entry = self::$pageCache[$slug] ?? null;
         if (!is_array($entry)) {
             return null;
         }
 
-        $expiresAt = (int)($entry['expiresAt'] ?? 0);
-        if ($expiresAt < time()) {
+        if ((int)($entry['expiresAt'] ?? 0) < time()) {
             unset(self::$pageCache[$slug]);
             return null;
         }
 
         $data = $entry['data'] ?? null;
-        return is_array($data) ? $data : null;
+        return $data instanceof JazzArtistDetailPageData ? $data : null;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function buildEventPayload(JazzArtistDetailEvent $event): array
-    {
-        return [
-            'id' => $event->eventId,
-            'title' => $event->title,
-            'shortDescription' => $event->shortDescription,
-            'longDescriptionHtml' => $event->longDescriptionHtml,
-            'slug' => $event->slug,
-        ];
-    }
-
-    /**
-     * @throws JazzArtistDetailNotFoundException
-     */
+    /** @throws JazzArtistDetailNotFoundException */
     private function normalizeSlug(string $slug): string
     {
         $normalizedSlug = trim(strtolower(rawurldecode($slug)));
@@ -110,9 +108,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         return trim($normalizedSlug, '-');
     }
 
-    /**
-     * @throws JazzArtistDetailNotFoundException
-     */
+    /** @throws JazzArtistDetailNotFoundException */
     private function findJazzEventBySlug(string $slug): JazzArtistDetailEvent
     {
         $event = $this->eventRepository->findActiveJazzBySlug($slug);

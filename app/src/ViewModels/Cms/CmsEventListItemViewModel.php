@@ -15,6 +15,8 @@ final readonly class CmsEventListItemViewModel
         public string  $eventTypeSlug,
         public ?string $venueName,
         public int     $sessionCount,
+        public int     $totalSoldTickets,
+        public int     $totalCapacity,
         public bool    $isActive,
         public string  $typeClass,
         public string  $statusText,

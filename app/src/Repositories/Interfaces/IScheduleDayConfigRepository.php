@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\ScheduleDayConfigFilter;
+
 /**
  * Interface for ScheduleDayConfig repository.
  */
@@ -12,15 +14,9 @@ interface IScheduleDayConfigRepository
     /**
      * Returns schedule day configurations using optional filters.
      *
-     * @param array{
-     *   eventTypeId?: int|null,
-     *   includeEventTypeName?: bool,
-     *   includeGlobal?: bool,
-     *   orderBy?: string
-     * } $filters
      * @return \App\Models\ScheduleDayConfig[] List of matching configurations
      */
-    public function findConfigs(array $filters = []): array;
+    public function findConfigs(ScheduleDayConfigFilter $filter = new ScheduleDayConfigFilter()): array;
 
     /**
      * Upserts a schedule day visibility setting.

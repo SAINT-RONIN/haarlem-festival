@@ -4,13 +4,23 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\CmsMessages;
 use App\Enums\EventTypeId;
 use App\Models\CmsItem;
+use App\Models\CmsItemEditData;
+use App\Models\CmsItemFilter;
+use App\Models\CmsMediaAssetData;
 use App\Models\CmsPage;
+use App\Models\CmsPageEditData;
+use App\Models\CmsPageFilter;
 use App\Models\CmsSection;
-use App\Repositories\CmsRepository;
-use App\Repositories\EventRepository;
-use App\Repositories\MediaAssetRepository;
+use App\Models\CmsSectionEditData;
+use App\Models\CmsSectionFilter;
+use App\Models\CmsUpdateResult;
+use App\Models\EventFilter;
+use App\Repositories\Interfaces\ICmsRepository;
+use App\Repositories\Interfaces\IEventRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\ICmsEditService;
 use App\Utils\CmsContentLimits;
 
@@ -23,106 +33,148 @@ use App\Utils\CmsContentLimits;
 class CmsEditService implements ICmsEditService
 {
     public function __construct(
-        private CmsRepository $cmsRepository,
-        private MediaAssetRepository $mediaAssetRepository,
-        private EventRepository $eventRepository,
+        private ICmsRepository $cmsRepository,
+        private IMediaAssetRepository $mediaAssetRepository,
+        private IEventRepository $eventRepository,
     ) {
     }
 
     /**
      * Gets a page with all its sections and items for editing.
-     *
-     * @return array|null Array with 'page', 'sections' keys or null if not found
      */
-    public function getPageForEditing(int $pageId): ?array
+    public function getPageForEditing(int $pageId): ?CmsPageEditData
     {
-        $pages = $this->cmsRepository->findPages(['cmsPageId' => $pageId]);
+        $pages = $this->cmsRepository->findPages(new CmsPageFilter(cmsPageId: $pageId));
         $page = $pages[0] ?? null;
         if ($page === null) {
             return null;
         }
 
-        $sections = $this->cmsRepository->findSections(['cmsPageId' => $pageId]);
-        $items = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
+        $sections = $this->buildSectionsWithItems($page);
+
+        return new CmsPageEditData(page: $page, sections: $sections);
+    }
+
+    /**
+     * @return CmsSectionEditData[]
+     */
+    private function buildSectionsWithItems(CmsPage $page): array
+    {
+        $sections = $this->cmsRepository->findSections(new CmsSectionFilter(cmsPageId: $page->cmsPageId));
+        $items = $this->cmsRepository->findItems(new CmsItemFilter(cmsPageId: $page->cmsPageId));
         $itemsBySection = $this->groupItemsBySection($items);
-        $sectionsWithItems = [];
+        $eventNameMap = $this->buildEventNameMapForPage($page->slug);
 
-        $eventNameMap = [];
-        $pageSlug = $page->slug;
-        if ($pageSlug === 'storytelling-detail') {
-            $eventNameMap = $this->buildEventNameMap(EventTypeId::Storytelling->value);
-        }
+        return $this->assembleSections($sections, $itemsBySection, $eventNameMap);
+    }
 
-        if ($pageSlug === 'jazz-artist-detail') {
-            $eventNameMap = $this->buildEventNameMap(EventTypeId::Jazz->value);
-        }
-
+    /**
+     * @param CmsSection[] $sections
+     * @param array<int, list<CmsItem>> $itemsBySection
+     * @param array<string, string> $eventNameMap
+     * @return CmsSectionEditData[]
+     */
+    private function assembleSections(array $sections, array $itemsBySection, array $eventNameMap): array
+    {
+        $result = [];
         foreach ($sections as $section) {
-            /** @var CmsSection $section */
-            $sectionItems = $itemsBySection[$section->cmsSectionId] ?? [];
-            $enrichedItems = $this->enrichItemsWithMetadata($sectionItems);
+            $built = $this->buildSingleSection($section, $itemsBySection, $eventNameMap);
+            if ($built !== null) {
+                $result[] = $built;
+            }
+        }
+        return $result;
+    }
 
-            $sectionsWithItems[] = [
-                'sectionId' => $section->cmsSectionId,
-                'sectionKey' => $section->sectionKey,
-                'displayName' => $this->resolveDisplayName($section->sectionKey, $eventNameMap),
-                'items' => $enrichedItems
-            ];
+    /**
+     * @param array<int, list<CmsItem>> $itemsBySection
+     * @param array<string, string> $eventNameMap
+     */
+    private function buildSingleSection(CmsSection $section, array $itemsBySection, array $eventNameMap): ?CmsSectionEditData
+    {
+        if ($eventNameMap !== [] && str_starts_with($section->sectionKey, 'event_') && !isset($eventNameMap[$section->sectionKey])) {
+            return null;
         }
 
-        return [
-            'page' => $page,
-            'sections' => $sectionsWithItems
-        ];
+        $sectionItems = $this->sortHeroImageFirst($itemsBySection[$section->cmsSectionId] ?? []);
+        $displayName = $eventNameMap[$section->sectionKey] ?? $section->sectionKey;
+
+        return new CmsSectionEditData(
+            sectionId: $section->cmsSectionId,
+            sectionKey: $section->sectionKey,
+            displayName: $displayName,
+            items: $this->enrichItemsWithMetadata($sectionItems),
+        );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildEventNameMapForPage(string $pageSlug): array
+    {
+        if ($pageSlug === 'storytelling-detail') {
+            return $this->buildEventNameMap(EventTypeId::Storytelling->value);
+        }
+        if ($pageSlug === 'jazz-artist-detail') {
+            return $this->buildEventNameMap(EventTypeId::Jazz->value);
+        }
+        return [];
     }
 
     /**
      * Updates multiple CMS items from form submission.
      *
-     * @param int $pageId The page ID for validation
-     * @param array $items Array of item updates: [itemId => value_string]
-     * @return array ['success' => bool, 'errors' => array]
+     * @param array<int|string, mixed> $items Array of item updates: [itemId => value_string]
      */
-    public function updatePageItems(int $pageId, array $items): array
+    public function updatePageItems(int $pageId, array $items): CmsUpdateResult
     {
         $errors = [];
         $updatedCount = 0;
-        $pageItems = $this->cmsRepository->findItems(['cmsPageId' => $pageId]);
-        $pageItemsById = [];
-        foreach ($pageItems as $pageItem) {
-            $pageItemsById[$pageItem->cmsItemId] = $pageItem;
-        }
+        $pageItemsById = $this->indexPageItemsById($pageId);
 
         foreach ($items as $itemId => $rawValue) {
-            $itemId = (int)$itemId;
-            $item = $pageItemsById[$itemId] ?? null;
-
-            if (!$item) {
-                $errors[] = "Item ID {$itemId} not found";
-                continue;
-            }
-
-            $type = $item->itemType->value;
-            $itemData = ['value' => $rawValue];
-            $value = $itemData['value'] ?? '';
-
-            $validationError = $this->validateItemValue($value, $type, $item->itemKey);
-            if ($validationError) {
-                $errors[] = $validationError;
-                continue;
-            }
-
-            $updateData = $this->prepareUpdateData($value, $type);
-            if ($this->cmsRepository->updateItem($itemId, $updateData)) {
+            $result = $this->processSingleItem((int)$itemId, (string)$rawValue, $pageItemsById);
+            if ($result === true) {
                 $updatedCount++;
+            } elseif (is_string($result)) {
+                $errors[] = $result;
             }
         }
 
-        return [
-            'success' => empty($errors),
-            'updatedCount' => $updatedCount,
-            'errors' => $errors
-        ];
+        return new CmsUpdateResult(success: $errors === [], updatedCount: $updatedCount, errors: $errors);
+    }
+
+    /**
+     * @param array<int, CmsItem> $indexedItems
+     * @return true|string|null true = updated, string = validation error, null = not updated (no error)
+     */
+    private function processSingleItem(int $itemId, string $rawValue, array $indexedItems): true|string|null
+    {
+        $item = $indexedItems[$itemId] ?? null;
+        if ($item === null) {
+            throw new \App\Exceptions\CmsEditException("Item ID {$itemId} not found");
+        }
+
+        $type = $item->itemType->value;
+        $validationError = $this->validateItemValue($rawValue, $type, $item->itemKey);
+        if ($validationError !== null) {
+            return $validationError;
+        }
+
+        return $this->cmsRepository->updateItem($itemId, $this->prepareUpdateData($rawValue, $type)) ? true : null;
+    }
+
+    /**
+     * @return array<int, CmsItem>
+     */
+    private function indexPageItemsById(int $pageId): array
+    {
+        $pageItems = $this->cmsRepository->findItems(new CmsItemFilter(cmsPageId: $pageId));
+        $indexed = [];
+        foreach ($pageItems as $pageItem) {
+            $indexed[$pageItem->cmsItemId] = $pageItem;
+        }
+        return $indexed;
     }
 
     /**
@@ -136,19 +188,26 @@ class CmsEditService implements ICmsEditService
     /**
      * Builds a route-aware preview URL for CMS page edit screens.
      *
-     * @param array<int, array<string, mixed>> $sections
+     * @param CmsSectionEditData[] $sections
      */
     public function resolvePreviewUrl(CmsPage $page, array $sections): string
     {
-        $slug = $page->slug;
-
-        if ($slug === 'home') {
+        if ($page->slug === 'home') {
             return '/';
         }
 
+        $detailUrl = $this->resolveDetailPageUrl($page->slug, $sections);
+        return $detailUrl ?? '/' . $page->slug;
+    }
+
+    /**
+     * @param CmsSectionEditData[] $sections
+     */
+    private function resolveDetailPageUrl(string $slug, array $sections): ?string
+    {
         if ($slug === 'storytelling-detail') {
-            $eventId = $this->extractFirstEventId($sections);
-            return $eventId !== null ? '/storytelling/' . $eventId : '/storytelling';
+            $eventName = $this->extractFirstEventDisplayName($sections);
+            return $eventName !== null ? '/storytelling/' . $this->toSlug($eventName) : '/storytelling';
         }
 
         if ($slug === 'jazz-artist-detail') {
@@ -161,7 +220,7 @@ class CmsEditService implements ICmsEditService
             return $eventId !== null ? '/restaurant/' . $eventId : '/restaurant';
         }
 
-        return '/' . $slug;
+        return null;
     }
 
     /**
@@ -175,15 +234,22 @@ class CmsEditService implements ICmsEditService
         $plainText = $this->stripHtmlForCount($value);
 
         if (strlen($plainText) > $maxChars) {
-            $label = $this->formatItemKeyName($itemKey);
-            return "{$label} exceeds maximum of {$maxChars} characters";
+            return $this->buildCharLimitError($itemKey, $maxChars);
         }
 
         return null;
     }
 
+    private function buildCharLimitError(string $itemKey, int $maxChars): string
+    {
+        $label = CmsMessages::formatFieldLabel($itemKey);
+        return "{$label} exceeds maximum of {$maxChars} characters";
+    }
+
     /**
      * Prepares data array for repository update.
+     *
+     * @return array{HtmlValue: ?string, TextValue: ?string}
      */
     private function prepareUpdateData(string $value, string $type): array
     {
@@ -217,9 +283,20 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
-     * Enriches items with display metadata.
+     * Moves the hero_image item to the front so it appears first in the CMS editor.
      *
      * @param CmsItem[] $items
+     * @return CmsItem[]
+     */
+    private function sortHeroImageFirst(array $items): array
+    {
+        usort($items, fn(CmsItem $a, CmsItem $b) => ($b->itemKey === 'hero_image') <=> ($a->itemKey === 'hero_image'));
+        return $items;
+    }
+
+    /**
+     * @param CmsItem[] $items
+     * @return CmsItemEditData[]
      */
     private function enrichItemsWithMetadata(array $items): array
     {
@@ -227,13 +304,22 @@ class CmsEditService implements ICmsEditService
         $enriched = [];
 
         foreach ($items as $item) {
-            $mediaAsset = $this->resolveMediaAsset($item, $mediaAssets);
-            $resolvedFilePath = $this->resolveFilePath($item, $mediaAsset);
-            $inputType = $this->resolveInputType($item);
-            $enriched[] = $this->buildEnrichedItem($item, $mediaAsset, $resolvedFilePath, $inputType);
+            $enriched[] = $this->enrichSingleItem($item, $mediaAssets);
         }
 
         return $enriched;
+    }
+
+    /**
+     * @param array<int, \App\Models\MediaAsset> $mediaAssets
+     */
+    private function enrichSingleItem(CmsItem $item, array $mediaAssets): CmsItemEditData
+    {
+        $mediaAsset = $this->resolveMediaAsset($item, $mediaAssets);
+        $resolvedFilePath = $this->resolveFilePath($item, $mediaAsset);
+        $inputType = $this->resolveInputType($item);
+
+        return $this->buildEnrichedItem($item, $mediaAsset, $resolvedFilePath, $inputType);
     }
 
     /**
@@ -281,44 +367,51 @@ class CmsEditService implements ICmsEditService
         return $inputType;
     }
 
-    private function buildEnrichedItem(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset, ?string $resolvedFilePath, string $inputType): array
+    private function buildEnrichedItem(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset, ?string $resolvedFilePath, string $inputType): CmsItemEditData
     {
         $type = $item->itemType->value;
-        $mediaAssetArray = $this->buildMediaAssetArray($item, $mediaAsset, $resolvedFilePath, $type);
 
-        return [
-            'itemId' => $item->cmsItemId,
-            'itemKey' => $item->itemKey,
-            'displayName' => $this->formatItemKeyName($item->itemKey),
-            'type' => $type,
-            'typeLabel' => CmsContentLimits::getLabelForType($type),
-            'inputType' => $inputType,
-            'maxChars' => CmsContentLimits::getCharLimitForType($type),
-            'value' => $this->getItemValue($item),
-            'mediaAssetId' => $item->mediaAssetId,
-            'mediaAsset' => $mediaAssetArray,
-        ];
+        return new CmsItemEditData(
+            itemId: $item->cmsItemId,
+            itemKey: $item->itemKey,
+            displayName: $item->itemKey,
+            type: $type,
+            typeLabel: CmsContentLimits::getLabelForType($type),
+            inputType: $inputType,
+            maxChars: CmsContentLimits::getCharLimitForType($type),
+            value: $this->getItemValue($item),
+            mediaAssetId: $item->mediaAssetId,
+            mediaAsset: $this->buildMediaAssetData($item, $mediaAsset, $resolvedFilePath, $type),
+        );
     }
 
-    private function buildMediaAssetArray(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset, ?string $resolvedFilePath, string $type): ?array
+    private function buildMediaAssetData(CmsItem $item, ?\App\Models\MediaAsset $mediaAsset, ?string $resolvedFilePath, string $type): ?CmsMediaAssetData
     {
         if ($mediaAsset !== null) {
-            return [
-                'FilePath' => $mediaAsset->filePath,
-                'OriginalFileName' => $mediaAsset->originalFileName,
-                'AltText' => $mediaAsset->altText,
-            ];
+            return $this->mediaAssetDataFromAsset($mediaAsset);
         }
-
         if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH') {
-            return [
-                'FilePath' => $resolvedFilePath,
-                'OriginalFileName' => basename($resolvedFilePath),
-                'AltText' => $this->formatItemKeyName($item->itemKey),
-            ];
+            return $this->mediaAssetDataFromFilePath($item->itemKey, $resolvedFilePath);
         }
-
         return null;
+    }
+
+    private function mediaAssetDataFromAsset(\App\Models\MediaAsset $mediaAsset): CmsMediaAssetData
+    {
+        return new CmsMediaAssetData(
+            filePath: $mediaAsset->filePath,
+            originalFileName: $mediaAsset->originalFileName,
+            altText: $mediaAsset->altText,
+        );
+    }
+
+    private function mediaAssetDataFromFilePath(string $itemKey, string $filePath): CmsMediaAssetData
+    {
+        return new CmsMediaAssetData(
+            filePath: $filePath,
+            originalFileName: basename($filePath),
+            altText: $itemKey,
+        );
     }
 
     /**
@@ -343,10 +436,12 @@ class CmsEditService implements ICmsEditService
     /**
      * Builds a map of section key → event title for storytelling events.
      * e.g., ['event_34' => 'Winnie de Poeh (4+)', ...]
+     *
+     * @return array<string, string>
      */
     private function buildEventNameMap(int $eventTypeId): array
     {
-        $events = $this->eventRepository->findEvents(['eventTypeId' => $eventTypeId]);
+        $events = $this->eventRepository->findEvents(new EventFilter(eventTypeId: $eventTypeId, isActive: true));
         $map = [];
         foreach ($events as $event) {
             $map['event_' . $event->eventId] = $event->title;
@@ -355,44 +450,12 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
-     * Resolves a section display name, using the event name map when available.
-     */
-    private function resolveDisplayName(string $sectionKey, array $eventNameMap): string
-    {
-        if (!empty($eventNameMap) && isset($eventNameMap[$sectionKey])) {
-            return $eventNameMap[$sectionKey];
-        }
-        return $this->formatSectionName($sectionKey);
-    }
-
-    /**
-     * Formats a section key into a display name.
-     * e.g., 'hero_section' -> 'Hero Section'
-     */
-    private function formatSectionName(string $sectionKey): string
-    {
-        $name = str_replace('_', ' ', $sectionKey);
-        return ucwords($name);
-    }
-
-    /**
-     * Formats an item key into a display name.
-     * e.g., 'hero_main_title' -> 'Hero Main Title'
-     */
-    private function formatItemKeyName(string $itemKey): string
-    {
-        $name = str_replace('_', ' ', $itemKey);
-        return ucwords($name);
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $sections
+     * @param CmsSectionEditData[] $sections
      */
     private function extractFirstEventId(array $sections): ?int
     {
         foreach ($sections as $section) {
-            $sectionKey = (string)($section['sectionKey'] ?? '');
-            if (preg_match('/^event_(\d+)$/', $sectionKey, $matches) === 1) {
+            if (preg_match('/^event_(\d+)$/', $section->sectionKey, $matches) === 1) {
                 return (int)$matches[1];
             }
         }
@@ -401,17 +464,16 @@ class CmsEditService implements ICmsEditService
     }
 
     /**
-     * @param array<int, array<string, mixed>> $sections
+     * @param CmsSectionEditData[] $sections
      */
     private function extractFirstEventDisplayName(array $sections): ?string
     {
         foreach ($sections as $section) {
-            $sectionKey = (string)($section['sectionKey'] ?? '');
-            if (!str_starts_with($sectionKey, 'event_')) {
+            if (!str_starts_with($section->sectionKey, 'event_')) {
                 continue;
             }
 
-            $displayName = trim((string)($section['displayName'] ?? ''));
+            $displayName = trim($section->displayName);
             if ($displayName !== '') {
                 return $displayName;
             }

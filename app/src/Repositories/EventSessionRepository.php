@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Enums\PriceTierId;
 use App\Infrastructure\Database;
+use App\Models\EventSessionFilter;
 use App\Models\ScheduleDayData;
+use App\Models\SessionQueryResult;
 use App\Models\SessionWithEvent;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
@@ -19,29 +22,29 @@ class EventSessionRepository implements IEventSessionRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findSessions(array $filters = []): array
+    public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult
     {
         $conditions = [];
         $params = [];
 
-        if (isset($filters['eventId'])) {
+        if ($filters->eventId !== null) {
             $conditions[] = 'es.EventId = :eventId';
-            $params['eventId'] = (int)$filters['eventId'];
+            $params['eventId'] = $filters->eventId;
         }
 
-        if (isset($filters['eventTypeId'])) {
+        if ($filters->eventTypeId !== null) {
             $conditions[] = 'e.EventTypeId = :eventTypeId';
-            $params['eventTypeId'] = (int)$filters['eventTypeId'];
+            $params['eventTypeId'] = $filters->eventTypeId;
         }
 
-        if (isset($filters['sessionId'])) {
+        if ($filters->sessionId !== null) {
             $conditions[] = 'es.EventSessionId = :sessionId';
-            $params['sessionId'] = (int)$filters['sessionId'];
+            $params['sessionId'] = $filters->sessionId;
         }
 
-        if (isset($filters['sessionIds']) && is_array($filters['sessionIds']) && $filters['sessionIds'] !== []) {
+        if ($filters->sessionIds !== null && $filters->sessionIds !== []) {
             $sessionIdPlaceholders = [];
-            foreach ($filters['sessionIds'] as $index => $sid) {
+            foreach ($filters->sessionIds as $index => $sid) {
                 $key = 'sessionId_' . $index;
                 $sessionIdPlaceholders[] = ':' . $key;
                 $params[$key] = (int)$sid;
@@ -49,40 +52,40 @@ class EventSessionRepository implements IEventSessionRepository
             $conditions[] = 'es.EventSessionId IN (' . implode(',', $sessionIdPlaceholders) . ')';
         }
 
-        if (array_key_exists('isActive', $filters)) {
+        if ($filters->isActive !== null) {
             $conditions[] = 'es.IsActive = :isActive';
-            $params['isActive'] = ((bool)$filters['isActive']) ? 1 : 0;
+            $params['isActive'] = $filters->isActive ? 1 : 0;
         }
 
-        $includeCancelled = (bool)($filters['includeCancelled'] ?? false);
+        $includeCancelled = (bool)($filters->includeCancelled ?? false);
         if (!$includeCancelled) {
             $conditions[] = 'es.IsCancelled = 0';
         }
 
-        if (isset($filters['eventIsActive'])) {
+        if ($filters->eventIsActive !== null) {
             $conditions[] = 'e.IsActive = :eventIsActive';
-            $params['eventIsActive'] = ((bool)$filters['eventIsActive']) ? 1 : 0;
+            $params['eventIsActive'] = $filters->eventIsActive ? 1 : 0;
         }
 
-        if (isset($filters['startDate']) && is_string($filters['startDate']) && $filters['startDate'] !== '') {
+        if ($filters->startDate !== null) {
             $conditions[] = 'DATE(es.StartDateTime) >= :startDate';
-            $params['startDate'] = $filters['startDate'];
+            $params['startDate'] = $filters->startDate;
         }
 
-        if (isset($filters['endDate']) && is_string($filters['endDate']) && $filters['endDate'] !== '') {
+        if ($filters->endDate !== null) {
             $conditions[] = 'DATE(es.StartDateTime) <= :endDate';
-            $params['endDate'] = $filters['endDate'];
+            $params['endDate'] = $filters->endDate;
         }
 
-        if (isset($filters['dayOfWeek']) && is_string($filters['dayOfWeek']) && $filters['dayOfWeek'] !== '') {
-            $dayNumber = $this->dayNameToNumber($filters['dayOfWeek']);
+        if ($filters->dayOfWeek !== null && $filters->dayOfWeek !== '') {
+            $dayNumber = $this->dayNameToNumber($filters->dayOfWeek);
             if ($dayNumber !== null) {
                 $conditions[] = 'DAYOFWEEK(es.StartDateTime) = :dayOfWeekNum';
                 $params['dayOfWeekNum'] = $dayNumber;
             }
         }
 
-        $visibleDays = $filters['visibleDays'] ?? null;
+        $visibleDays = $filters->visibleDays;
         if (is_array($visibleDays)) {
             if ($visibleDays === []) {
                 // Explicitly no visible days configured: force an empty result set.
@@ -98,8 +101,41 @@ class EventSessionRepository implements IEventSessionRepository
             }
         }
 
+        if ($filters->timeRange !== null) {
+            match ($filters->timeRange) {
+                'morning'   => $conditions[] = 'HOUR(es.StartDateTime) < 12',
+                'afternoon' => $conditions[] = '(HOUR(es.StartDateTime) >= 12 AND HOUR(es.StartDateTime) < 17)',
+                'evening'   => $conditions[] = 'HOUR(es.StartDateTime) >= 17',
+            };
+        }
+
+        if ($filters->priceType !== null) {
+            $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
+            match ($filters->priceType) {
+                'pay-what-you-like' => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = :pwylTierId)',
+                'free'              => $conditions[] = '(es.IsFree = 1 OR NOT EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0))',
+                'fixed'             => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != :pwylTierId)',
+                default             => null,
+            };
+        }
+
+        if ($filters->venueName !== null && $filters->venueName !== '') {
+            $conditions[] = 'LOWER(v.Name) = :venueName';
+            $params['venueName'] = strtolower($filters->venueName);
+        }
+
+        if ($filters->languageCode !== null && $filters->languageCode !== '') {
+            $conditions[] = 'LOWER(es.LanguageCode) = :languageCode';
+            $params['languageCode'] = strtolower($filters->languageCode);
+        }
+
+        if ($filters->filterMinAge !== null && $filters->filterMinAge > 0) {
+            $conditions[] = '(es.MinAge IS NOT NULL AND es.MinAge >= :filterMinAge)';
+            $params['filterMinAge'] = $filters->filterMinAge;
+        }
+
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
-        $requestedOrderBy = is_string($filters['orderBy'] ?? null) ? $filters['orderBy'] : '';
+        $requestedOrderBy = is_string($filters->orderBy) ? $filters->orderBy : '';
         $allowedOrderBy = [
             'es.StartDateTime ASC',
             'es.StartDateTime DESC',
@@ -118,9 +154,9 @@ class EventSessionRepository implements IEventSessionRepository
             LEFT JOIN MediaAsset ma ON a.ImageAssetId = ma.MediaAssetId
         ';
 
-        $groupByDay = (bool)($filters['groupByDay'] ?? false);
+        $groupByDay = (bool)($filters->groupByDay ?? false);
         if ($groupByDay) {
-            $maxDays = (int)($filters['maxDays'] ?? 7);
+            $maxDays = (int)($filters->maxDays ?? 7);
             if ($maxDays <= 0) {
                 $maxDays = 7;
             }
@@ -141,7 +177,7 @@ class EventSessionRepository implements IEventSessionRepository
             $days = $daysStmt->fetchAll(PDO::FETCH_ASSOC);
 
             if ($days === []) {
-                return ['days' => [], 'sessions' => []];
+                return new SessionQueryResult(sessions: [], days: []);
             }
 
             $dates = array_column($days, 'Date');
@@ -162,6 +198,7 @@ class EventSessionRepository implements IEventSessionRepository
                     DATE(es.StartDateTime) AS SessionDate,
                     DAYNAME(es.StartDateTime) AS DayOfWeek,
                     e.Title AS EventTitle,
+                    e.Slug AS EventSlug,
                     e.EventTypeId,
                     et.Name AS EventTypeName,
                     et.Slug AS EventTypeSlug,
@@ -172,14 +209,18 @@ class EventSessionRepository implements IEventSessionRepository
                 ' . $sessionsWhereClause . '
                 ORDER BY ' . $orderBy;
 
+            if ($filters->limit !== null && $filters->limit > 0) {
+                $sessionsSql .= ' LIMIT ' . (int) $filters->limit;
+            }
+
             $prepared = $this->pdo->prepare($sessionsSql);
             $prepared->execute(array_merge($params, $dateBindings));
             $sessionRows = $prepared->fetchAll(PDO::FETCH_ASSOC);
 
-            return [
-                'days'     => array_map([ScheduleDayData::class, 'fromRow'], $days),
-                'sessions' => array_map([SessionWithEvent::class, 'fromRow'], $sessionRows),
-            ];
+            return new SessionQueryResult(
+                sessions: array_map([SessionWithEvent::class, 'fromRow'], $sessionRows),
+                days: array_map([ScheduleDayData::class, 'fromRow'], $days),
+            );
         }
 
         $sessionsSql = '
@@ -188,6 +229,7 @@ class EventSessionRepository implements IEventSessionRepository
                 DATE(es.StartDateTime) AS SessionDate,
                 DAYNAME(es.StartDateTime) AS DayOfWeek,
                 e.Title AS EventTitle,
+                e.Slug AS EventSlug,
                 e.EventTypeId,
                 et.Name AS EventTypeName,
                 et.Slug AS EventTypeSlug,
@@ -198,9 +240,15 @@ class EventSessionRepository implements IEventSessionRepository
             ' . $whereClause . '
             ORDER BY ' . $orderBy;
 
+        if ($filters->limit !== null && $filters->limit > 0) {
+            $sessionsSql .= ' LIMIT ' . (int) $filters->limit;
+        }
+
         $stmt = $this->pdo->prepare($sessionsSql);
         $stmt->execute($params);
-        return ['sessions' => array_map([SessionWithEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC))];
+        return new SessionQueryResult(
+            sessions: array_map([SessionWithEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC)),
+        );
     }
 
     public function create(array $data): int
@@ -251,28 +299,44 @@ class EventSessionRepository implements IEventSessionRepository
                 StartDateTime = :startDateTime,
                 EndDateTime = :endDateTime,
                 CapacityTotal = :capacityTotal,
+                CapacitySingleTicketLimit = :capacitySingleTicketLimit,
                 HallName = :hallName,
+                SessionType = :sessionType,
+                DurationMinutes = :durationMinutes,
                 LanguageCode = :languageCode,
                 MinAge = :minAge,
+                MaxAge = :maxAge,
+                ReservationRequired = :reservationRequired,
+                IsFree = :isFree,
                 Notes = :notes,
                 HistoryTicketLabel = :historyTicketLabel,
                 CtaLabel = :ctaLabel,
-                CtaUrl = :ctaUrl
+                CtaUrl = :ctaUrl,
+                IsCancelled = :isCancelled,
+                IsActive = :isActive
             WHERE EventSessionId = :sessionId
         ');
 
         return $stmt->execute([
-            'sessionId' => $sessionId,
-            'startDateTime' => $data['StartDateTime'],
-            'endDateTime' => $data['EndDateTime'],
-            'capacityTotal' => $data['CapacityTotal'] ?? 100,
-            'hallName' => $data['HallName'] ?? null,
-            'languageCode' => $data['LanguageCode'] ?? null,
-            'minAge' => $data['MinAge'] ?? null,
-            'notes' => $data['Notes'] ?? '',
-            'historyTicketLabel' => $data['HistoryTicketLabel'] ?? null,
-            'ctaLabel' => $data['CtaLabel'] ?? null,
-            'ctaUrl' => $data['CtaUrl'] ?? null,
+            'sessionId'                 => $sessionId,
+            'startDateTime'             => $data['StartDateTime'],
+            'endDateTime'               => $data['EndDateTime'],
+            'capacityTotal'             => (int)($data['CapacityTotal'] ?? 100),
+            'capacitySingleTicketLimit' => (int)($data['CapacitySingleTicketLimit'] ?? 100),
+            'hallName'                  => $data['HallName'] ?? null,
+            'sessionType'               => $data['SessionType'] ?? null,
+            'durationMinutes'           => isset($data['DurationMinutes']) && $data['DurationMinutes'] !== '' ? (int)$data['DurationMinutes'] : null,
+            'languageCode'              => $data['LanguageCode'] ?? null,
+            'minAge'                    => $data['MinAge'] ?? null,
+            'maxAge'                    => isset($data['MaxAge']) && $data['MaxAge'] !== '' ? (int)$data['MaxAge'] : null,
+            'reservationRequired'       => isset($data['ReservationRequired']) ? 1 : 0,
+            'isFree'                    => isset($data['IsFree']) ? 1 : 0,
+            'notes'                     => $data['Notes'] ?? '',
+            'historyTicketLabel'        => $data['HistoryTicketLabel'] ?? null,
+            'ctaLabel'                  => $data['CtaLabel'] ?? null,
+            'ctaUrl'                    => $data['CtaUrl'] ?? null,
+            'isCancelled'               => isset($data['IsCancelled']) ? 1 : 0,
+            'isActive'                  => isset($data['IsActive']) ? 1 : 0,
         ]);
     }
 
@@ -280,6 +344,70 @@ class EventSessionRepository implements IEventSessionRepository
     {
         $stmt = $this->pdo->prepare('DELETE FROM EventSession WHERE EventSessionId = :sessionId');
         return $stmt->execute(['sessionId' => $sessionId]);
+    }
+
+    /**
+     * Returns distinct session dates matching the base filters (ignoring user-facing schedule filters).
+     * Used to build the day filter UI with all available days, even when other filters narrow results.
+     *
+     * @return ScheduleDayData[]
+     */
+    public function findDistinctDays(EventSessionFilter $filter): array
+    {
+        $conditions = [];
+        $params = [];
+
+        if ($filter->eventTypeId !== null) {
+            $conditions[] = 'e.EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = $filter->eventTypeId;
+        }
+
+        if ($filter->isActive !== null) {
+            $conditions[] = 'es.IsActive = :isActive';
+            $params['isActive'] = $filter->isActive ? 1 : 0;
+        }
+
+        if ($filter->eventIsActive !== null) {
+            $conditions[] = 'e.IsActive = :eventIsActive';
+            $params['eventIsActive'] = $filter->eventIsActive ? 1 : 0;
+        }
+
+        $conditions[] = 'es.IsCancelled = 0';
+
+        if ($filter->eventId !== null) {
+            $conditions[] = 'es.EventId = :eventId';
+            $params['eventId'] = $filter->eventId;
+        }
+
+        if ($filter->visibleDays !== null && $filter->visibleDays !== []) {
+            if (count($filter->visibleDays) < 7) {
+                $dayParams = [];
+                foreach (array_values($filter->visibleDays) as $index => $day) {
+                    $key = 'visDay' . $index;
+                    $dayParams[] = ':' . $key;
+                    $params[$key] = (int) $day;
+                }
+                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
+            }
+        }
+
+        $whereClause = $conditions !== [] ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+        $sql = "
+            SELECT DISTINCT DATE(es.StartDateTime) AS date, DAYNAME(es.StartDateTime) AS dayName
+            FROM EventSession es
+            INNER JOIN Event e ON es.EventId = e.EventId
+            {$whereClause}
+            ORDER BY date ASC
+        ";
+
+        $maxDays = $filter->maxDays ?? 7;
+        $sql .= ' LIMIT ' . (int) $maxDays;
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     private function dayNameToNumber(string $dayName): ?int

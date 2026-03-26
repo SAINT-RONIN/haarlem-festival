@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class Restaurant
+final class Restaurant
 {
     /*
      * Purpose: Stores restaurant information for festival dining events
@@ -67,16 +67,16 @@ class Restaurant
     public static function fromRow(array $row): self
     {
         return new self(
-            restaurantId: (int)$row['RestaurantId'],
-            name: (string)$row['Name'],
-            addressLine: (string)$row['AddressLine'],
-            city: (string)$row['City'],
+            restaurantId: (int)($row['RestaurantId'] ?? throw new \InvalidArgumentException('Missing required field: RestaurantId')),
+            name: (string)($row['Name'] ?? throw new \InvalidArgumentException('Missing required field: Name')),
+            addressLine: (string)($row['AddressLine'] ?? throw new \InvalidArgumentException('Missing required field: AddressLine')),
+            city: (string)($row['City'] ?? throw new \InvalidArgumentException('Missing required field: City')),
             stars: isset($row['Stars']) ? (int)$row['Stars'] : null,
-            cuisineType: (string)$row['CuisineType'],
-            descriptionHtml: (string)$row['DescriptionHtml'],
+            cuisineType: (string)($row['CuisineType'] ?? throw new \InvalidArgumentException('Missing required field: CuisineType')),
+            descriptionHtml: (string)($row['DescriptionHtml'] ?? throw new \InvalidArgumentException('Missing required field: DescriptionHtml')),
             imageAssetId: isset($row['ImageAssetId']) ? (int)$row['ImageAssetId'] : null,
-            isActive: (bool)$row['IsActive'],
-            createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
+            isActive: (bool)($row['IsActive'] ?? throw new \InvalidArgumentException('Missing required field: IsActive')),
+            createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: CreatedAtUtc')),
             // ImagePath comes from the LEFT JOIN with MediaAsset.
             imagePath: isset($row['ImagePath']) ? (string)$row['ImagePath'] : null,
 
@@ -103,6 +103,8 @@ class Restaurant
     /**
      * Converts the model to an associative array for INSERT/UPDATE queries.
      * Keys match the database column names.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

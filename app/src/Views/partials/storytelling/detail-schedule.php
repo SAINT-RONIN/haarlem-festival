@@ -8,7 +8,6 @@
  * @var \App\ViewModels\Storytelling\StorytellingDetailPageViewModel $viewModel
  */
 
-use App\Helpers\CmsOutputHelper;
 
 $schedule = $viewModel->scheduleSection;
 
@@ -27,11 +26,11 @@ if ($schedule === null || empty($schedule->days)) {
         <div class="w-full flex flex-col sm:flex-row justify-start items-start sm:items-baseline gap-2.5 overflow-hidden">
             <h2 id="<?= htmlspecialchars($schedule->sectionId) ?>-heading"
                 class="text-royal-blue text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold">
-                <?= htmlspecialchars(CmsOutputHelper::text($schedule->title), ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars($schedule->title) ?>
             </h2>
             <?php if ($schedule->year): ?>
                 <span class="text-royal-blue text-xl sm:text-2xl md:text-3xl font-bold">
-                    <?= htmlspecialchars(CmsOutputHelper::text($schedule->year), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars($schedule->year) ?>
                 </span>
             <?php endif; ?>
         </div>
@@ -142,3 +141,4 @@ if ($schedule === null || empty($schedule->days)) {
         <?php endforeach; ?>
     </div>
 </section>
+<script src="/assets/js/add-to-program.js"></script>

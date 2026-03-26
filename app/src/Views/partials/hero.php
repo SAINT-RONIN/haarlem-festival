@@ -243,10 +243,12 @@ $isLoggedIn = $isLoggedIn ?? ($global['is_logged_in'] ?? false);
                             </svg>
                         </span>
                     </a>
+                    <?php if (!empty($hero['hero_button_secondary'])): ?>
                     <a href="<?= htmlspecialchars($hero['hero_button_secondary_link'] ?? '#') ?>"
                        class="p-1.5 sm:p-2 md:p-2.5 lg:p-3.5 bg-sand hover:bg-red rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl outline outline-1 sm:outline-2 outline-offset-[-1px] sm:outline-offset-[-2px] outline-red flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                         <span class="text-center text-red group-hover:text-sand text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-normal whitespace-nowrap transition-colors duration-200"><?= htmlspecialchars($hero['hero_button_secondary']) ?></span>
                     </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

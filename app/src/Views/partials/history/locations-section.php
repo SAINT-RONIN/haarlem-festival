@@ -37,11 +37,15 @@ $venues  = $venuesData->venues;
                             <?= htmlspecialchars($venue->description) ?>
                         </div>
                     </div>
-                    <div class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center mt-auto">
+
+                    <a href="<?= htmlspecialchars($venue->venueUrl) ?>" class="w-full h-11 px-4 bg-slate-800 rounded-[5px] inline-flex justify-between items-center mt-auto">
                         <div class="flex-1 text-white text-xl font-normal font-['Montserrat'] leading-5">
-                            View more
+                            <?= htmlspecialchars($venuesData->viewMoreLabel) ?>
                         </div>
-                    </div>
+                        <svg class="w-5 h-5 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </a>
                 </div>
             </article>
         <?php endforeach; ?>

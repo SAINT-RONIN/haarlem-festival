@@ -13,6 +13,7 @@ namespace App\Enums;
  * - 3 = Family
  * - 4 = ReservationFee
  * - 5 = PayWhatYouLike
+ * - 6 = Single
  */
 enum PriceTierId: int
 {
@@ -21,6 +22,7 @@ enum PriceTierId: int
     case Family = 3;
     case ReservationFee = 4;
     case PayWhatYouLike = 5;
+    case Single = 6;
 
     /**
      * Attempts to create an enum from a nullable value.

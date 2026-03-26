@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\EventType;
+use App\Models\EventTypeFilter;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use PDO;
 
@@ -21,7 +22,7 @@ class EventTypeRepository implements IEventTypeRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findEventTypes(array $filters = []): array
+    public function findEventTypes(EventTypeFilter $filter = new EventTypeFilter()): array
     {
         $sql = '
             SELECT EventTypeId, Name, Slug
@@ -30,15 +31,13 @@ class EventTypeRepository implements IEventTypeRepository
         ';
         $params = [];
 
-        if (isset($filters['eventTypeId'])) {
+        if ($filter->eventTypeId !== null) {
             $sql .= ' AND EventTypeId = :eventTypeId';
-            $params['eventTypeId'] = (int)$filters['eventTypeId'];
+            $params['eventTypeId'] = (int)$filter->eventTypeId;
         }
 
-        $orderByFilter = is_string($filters['orderBy'] ?? null)
-            ? strtolower((string)$filters['orderBy'])
-            : 'id';
-        $sql .= $orderByFilter === 'name'
+        $orderBy = is_string($filter->orderBy) ? strtolower($filter->orderBy) : 'id';
+        $sql .= $orderBy === 'name'
             ? ' ORDER BY Name ASC'
             : ' ORDER BY EventTypeId ASC';
 

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
+use App\Models\ProgramData;
+
 interface ICheckoutService
 {
     /**
-     * @param array{program: mixed, items: array, subtotal: float, taxAmount: float, total: float} $programData
      * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails:bool} $payload
      * @return array{redirectUrl:string,orderId:int,paymentId:int}
      */
-    public function createCheckoutSession(array $programData, int $userId, array $payload): array;
+    public function createCheckoutSession(ProgramData $programData, int $userId, array $payload): array;
 
     /**
      * @return array{status:string,orderId:?int,paymentId:?int}
@@ -24,7 +25,7 @@ interface ICheckoutService
     public function handleWebhook(string $payload, ?string $signatureHeader): array;
 
     /**
-     * @return array<string,mixed>
+     * @return array{sessionId:string,paymentStatus:string,status:string,amountTotal:float,currency:string}
      */
     public function getSessionSummary(string $sessionId): array;
 }

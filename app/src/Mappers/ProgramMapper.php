@@ -6,6 +6,10 @@ namespace App\Mappers;
 
 use App\Enums\EventTypeId;
 use App\Helpers\AgeLabelFormatter;
+use App\Models\CheckoutMainContent;
+use App\Models\ProgramData;
+use App\Models\ProgramItemData;
+use App\Models\ProgramMainContent;
 use App\ViewModels\Program\CheckoutItemViewModel;
 use App\ViewModels\Program\CheckoutPageViewModel;
 use App\ViewModels\Program\MyProgramPageViewModel;
@@ -13,114 +17,90 @@ use App\ViewModels\Program\ProgramItemViewModel;
 
 class ProgramMapper
 {
-    /**
-     * @param array<string, mixed> $item
-     */
-    public static function toItemViewModel(array $item): ProgramItemViewModel
+    public static function toItemViewModel(ProgramItemData $item): ProgramItemViewModel
     {
-        $basePrice = (float)$item['basePrice'];
-        $quantity = (int)$item['quantity'];
-        $donationAmount = (float)$item['donationAmount'];
-        $eventTypeId = (int)$item['eventTypeId'];
-        $eventTypeSlug = (string)$item['eventTypeSlug'];
-        $isPayWhatYouLike = (bool)$item['isPayWhatYouLike'];
-
-        $lineTotal = ($basePrice * $quantity) + $donationAmount;
-        $priceDisplay = ($isPayWhatYouLike && $basePrice <= 0.0) ? 'Free' : self::formatPrice($basePrice);
+        $lineTotal = ($item->basePrice * $item->quantity) + $item->donationAmount;
+        $priceDisplay = ($item->isPayWhatYouLike && $item->basePrice <= 0.0) ? 'Free' : self::formatPrice($item->basePrice);
 
         return new ProgramItemViewModel(
-            programItemId: (int)$item['programItemId'],
-            eventSessionId: (int)$item['eventSessionId'],
-            eventTitle: (string)$item['eventTitle'],
-            locationDisplay: self::buildLocationDisplay($item['venueName'] ?? '', $item['hallName'] ?? null),
-            dateTimeDisplay: self::buildDateTimeDisplay($item['startDateTime'] ?? '', $item['endDateTime'] ?? null),
+            programItemId: $item->programItemId,
+            eventSessionId: $item->eventSessionId,
+            eventTitle: $item->eventTitle,
+            locationDisplay: self::buildLocationDisplay($item->venueName ?? '', $item->hallName),
+            dateTimeDisplay: self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime),
             priceDisplay: $priceDisplay,
-            rawPrice: $basePrice,
-            quantity: $quantity,
-            donationAmount: $donationAmount,
-            donationDisplay: $donationAmount > 0 ? self::formatPrice($donationAmount) : '',
+            rawPrice: $item->basePrice,
+            quantity: $item->quantity,
+            donationAmount: $item->donationAmount,
+            donationDisplay: $item->donationAmount > 0 ? self::formatPrice($item->donationAmount) : '',
             sumDisplay: self::formatPrice($lineTotal),
-            eventTypeSlug: $eventTypeSlug,
-            eventTypeLabel: self::getEventTypeLabel($eventTypeId, (string)$item['eventTypeName']),
-            eventTypeImageUrl: self::getEventTypeImageUrl($eventTypeId),
-            isPayWhatYouLike: $isPayWhatYouLike,
-            languageLabel: self::buildLanguageLabel($item['languageCode'] ?? null),
-            ageLabel: AgeLabelFormatter::format($item['minAge'] ?? null, $item['maxAge'] ?? null),
+            eventTypeSlug: $item->eventTypeSlug,
+            eventTypeLabel: self::getEventTypeLabel($item->eventTypeId, $item->eventTypeName),
+            eventTypeImageUrl: self::getEventTypeImageUrl($item->eventTypeId),
+            isPayWhatYouLike: $item->isPayWhatYouLike,
+            languageLabel: self::buildLanguageLabel($item->languageCode),
+            ageLabel: AgeLabelFormatter::format($item->minAge, $item->maxAge),
         );
     }
 
-    /**
-     * @param array<string, mixed> $item
-     */
-    public static function toCheckoutItemViewModel(array $item): CheckoutItemViewModel
+    public static function toCheckoutItemViewModel(ProgramItemData $item): CheckoutItemViewModel
     {
-        $quantity = (int)$item['quantity'];
-        $basePrice = (float)$item['basePrice'];
-        $donationAmount = (float)$item['donationAmount'];
-        $lineTotal = ($basePrice * $quantity) + $donationAmount;
+        $lineTotal = ($item->basePrice * $item->quantity) + $item->donationAmount;
 
         return new CheckoutItemViewModel(
-            quantityDisplay: $quantity . '×',
-            eventTitle: (string)$item['eventTitle'],
+            quantityDisplay: $item->quantity . '×',
+            eventTitle: $item->eventTitle,
             priceDisplay: self::formatPrice($lineTotal),
         );
     }
 
-    /**
-     * @param array{program: ?\App\Models\Program, items: array<int, array<string, mixed>>, subtotal: float, taxAmount: float, total: float} $programData
-     * @param array<string, string> $cmsContent
-     */
-    public static function toMyProgramViewModel(array $programData, array $cmsContent, bool $isLoggedIn): MyProgramPageViewModel
+    public static function toMyProgramViewModel(ProgramData $programData, ProgramMainContent $cmsContent, bool $isLoggedIn): MyProgramPageViewModel
     {
-        $itemViewModels = array_map([self::class, 'toItemViewModel'], $programData['items']);
+        $itemViewModels = array_map([self::class, 'toItemViewModel'], $programData->items);
 
         return new MyProgramPageViewModel(
-            pageTitle: $cmsContent['page_title'] ?? '',
-            selectedEventsHeading: $cmsContent['selected_events_heading'] ?? '',
-            payWhatYouLikeMessage: $cmsContent['pay_what_you_like_message'] ?? '',
-            clearButtonText: $cmsContent['clear_button_text'] ?? '',
-            continueExploringText: $cmsContent['continue_exploring_text'] ?? '',
-            paymentOverviewHeading: $cmsContent['payment_overview_heading'] ?? '',
+            pageTitle: $cmsContent->pageTitle ?? '',
+            selectedEventsHeading: $cmsContent->selectedEventsHeading ?? '',
+            payWhatYouLikeMessage: $cmsContent->payWhatYouLikeMessage ?? '',
+            clearButtonText: $cmsContent->clearButtonText ?? '',
+            continueExploringText: $cmsContent->continueExploringText ?? '',
+            paymentOverviewHeading: $cmsContent->paymentOverviewHeading ?? '',
             items: $itemViewModels,
-            subtotal: self::formatPrice((float)$programData['subtotal']),
-            taxLabel: $cmsContent['tax_label'] ?? '',
-            taxAmount: self::formatPrice((float)$programData['taxAmount']),
-            total: self::formatPrice((float)$programData['total']),
-            checkoutButtonText: $cmsContent['checkout_button_text'] ?? '',
+            subtotal: self::formatPrice($programData->subtotal),
+            taxLabel: $cmsContent->taxLabel ?? '',
+            taxAmount: self::formatPrice($programData->taxAmount),
+            total: self::formatPrice($programData->total),
+            checkoutButtonText: $cmsContent->checkoutButtonText ?? '',
             canCheckout: $itemViewModels !== [],
             isLoggedIn: $isLoggedIn,
         );
     }
 
-    /**
-     * @param array{program: ?\App\Models\Program, items: array<int, array<string, mixed>>, subtotal: float, taxAmount: float, total: float} $programData
-     * @param array<string, string> $cmsContent
-     */
-    public static function toCheckoutViewModel(array $programData, array $cmsContent, bool $isLoggedIn): CheckoutPageViewModel
+    public static function toCheckoutViewModel(ProgramData $programData, CheckoutMainContent $cmsContent, bool $isLoggedIn): CheckoutPageViewModel
     {
-        $itemViewModels = array_map([self::class, 'toCheckoutItemViewModel'], $programData['items']);
+        $itemViewModels = array_map([self::class, 'toCheckoutItemViewModel'], $programData->items);
 
         return new CheckoutPageViewModel(
-            pageTitle: $cmsContent['page_title'] ?? '',
-            backButtonText: $cmsContent['back_button_text'] ?? '',
-            paymentOverviewHeading: $cmsContent['payment_overview_heading'] ?? '',
-            personalInfoHeading: $cmsContent['personal_info_heading'] ?? '',
-            personalInfoSubtext: $cmsContent['personal_info_subtext'] ?? '',
-            firstNameLabel: $cmsContent['first_name_label'] ?? '',
-            firstNamePlaceholder: $cmsContent['first_name_placeholder'] ?? '',
-            lastNameLabel: $cmsContent['last_name_label'] ?? '',
-            lastNamePlaceholder: $cmsContent['last_name_placeholder'] ?? '',
-            emailLabel: $cmsContent['email_label'] ?? '',
-            emailPlaceholder: $cmsContent['email_placeholder'] ?? '',
-            paymentMethodsHeading: $cmsContent['payment_methods_heading'] ?? '',
-            saveDetailsLabel: $cmsContent['save_details_label'] ?? '',
-            saveDetailsSubtext: $cmsContent['save_details_subtext'] ?? '',
-            payButtonText: $cmsContent['pay_button_text'] ?? '',
+            pageTitle: $cmsContent->pageTitle ?? '',
+            backButtonText: $cmsContent->backButtonText ?? '',
+            paymentOverviewHeading: $cmsContent->paymentOverviewHeading ?? '',
+            personalInfoHeading: $cmsContent->personalInfoHeading ?? '',
+            personalInfoSubtext: $cmsContent->personalInfoSubtext ?? '',
+            firstNameLabel: $cmsContent->firstNameLabel ?? '',
+            firstNamePlaceholder: $cmsContent->firstNamePlaceholder ?? '',
+            lastNameLabel: $cmsContent->lastNameLabel ?? '',
+            lastNamePlaceholder: $cmsContent->lastNamePlaceholder ?? '',
+            emailLabel: $cmsContent->emailLabel ?? '',
+            emailPlaceholder: $cmsContent->emailPlaceholder ?? '',
+            paymentMethodsHeading: $cmsContent->paymentMethodsHeading ?? '',
+            saveDetailsLabel: $cmsContent->saveDetailsLabel ?? '',
+            saveDetailsSubtext: $cmsContent->saveDetailsSubtext ?? '',
+            payButtonText: $cmsContent->payButtonText ?? '',
             items: $itemViewModels,
-            subtotal: self::formatPrice((float)$programData['subtotal']),
-            taxLabel: $cmsContent['tax_label'] ?? '',
-            taxAmount: self::formatPrice((float)$programData['taxAmount']),
-            total: self::formatPrice((float)$programData['total']),
+            subtotal: self::formatPrice($programData->subtotal),
+            taxLabel: $cmsContent->taxLabel ?? '',
+            taxAmount: self::formatPrice($programData->taxAmount),
+            total: self::formatPrice($programData->total),
             isLoggedIn: $isLoggedIn,
         );
     }
@@ -131,15 +111,14 @@ class ProgramMapper
     }
 
     /**
-     * @param array{subtotal: float, taxAmount: float, total: float} $programData
      * @return array{subtotal: string, taxAmount: string, total: string}
      */
-    public static function formatTotals(array $programData): array
+    public static function formatTotals(ProgramData $programData): array
     {
         return [
-            'subtotal' => self::formatPrice((float)$programData['subtotal']),
-            'taxAmount' => self::formatPrice((float)$programData['taxAmount']),
-            'total' => self::formatPrice((float)$programData['total']),
+            'subtotal' => self::formatPrice($programData->subtotal),
+            'taxAmount' => self::formatPrice($programData->taxAmount),
+            'total' => self::formatPrice($programData->total),
         ];
     }
 
@@ -203,12 +182,11 @@ class ProgramMapper
         }
 
         $labels = [
-            'nl' => '',
-            'en' => '',
-            'de' => '',
-            'fr' => '',
+            'NL' => 'Dutch',
+            'ENG' => 'English',
+            'ZH' => 'Chinese',
         ];
 
-        return $labels[$languageCode] ?? $languageCode;
+        return $labels[strtoupper($languageCode)] ?? $languageCode;
     }
 }

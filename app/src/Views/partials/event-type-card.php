@@ -8,7 +8,7 @@
 
 use App\Helpers\CmsOutputHelper;
 
-$darkBg = $eventType['darkBg'];
+$darkBg = $eventType->darkBg;
 
 $bgClass = $darkBg ? 'bg-royal-blue' : 'bg-sand';
 $textClass = $darkBg ? 'text-sand' : 'text-royal-blue';
@@ -24,9 +24,9 @@ $buttonTextClass = 'text-royal-blue';
  */
 $buttonBorder = 'border border-royal-blue hover:border-sand';
 
-$title = CmsOutputHelper::text($eventType['title']);
-$description = CmsOutputHelper::html($eventType['description']); // HTML allowed from TinyMCE
-$slug = htmlspecialchars($eventType['slug']);
+$title = CmsOutputHelper::text($eventType->title);
+$description = CmsOutputHelper::html($eventType->description); // HTML allowed from TinyMCE
+$slug = htmlspecialchars($eventType->slug);
 
 // Generate unique ID for accessibility
 $cardId = 'event-type-' . $slug;
@@ -41,7 +41,7 @@ $fallbackImageMap = [
 ];
 
 // Get image from CMS or use fallback
-$imageSrc = $eventType['image'] ?? $fallbackImageMap[$slug] ?? '/assets/Image/placeholder.png';
+$imageSrc = $eventType->image ?? $fallbackImageMap[$slug] ?? '/assets/Image/placeholder.png';
 
 // Alt text map for meaningful image descriptions
 $altTextMap = [
@@ -54,7 +54,7 @@ $altTextMap = [
 $imageAlt = $altTextMap[$slug] ?? $title . ' event';
 
 // Button text from CMS database (e.g., "Explore Jazz Events")
-$buttonLabel = CmsOutputHelper::text($eventType['button']);
+$buttonLabel = CmsOutputHelper::text($eventType->button);
 ?>
 
 <article class="self-stretch p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 2xl:p-10 <?php echo $bgClass; ?> rounded-[12px] sm:rounded-[15px] md:rounded-[25px] lg:rounded-[40px] flex flex-col lg:flex-row justify-center items-center gap-2 sm:gap-3 lg:gap-4 xl:gap-8 2xl:gap-12" aria-labelledby="<?php echo $cardId; ?>-heading">

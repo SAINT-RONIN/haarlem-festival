@@ -7,8 +7,10 @@ namespace App\Repositories;
 use App\Enums\EventTypeId;
 use App\Infrastructure\Database;
 use App\Models\Event;
+use App\Models\EventFilter;
 use App\Models\EventWithDetails;
 use App\Models\JazzArtistDetailEvent;
+use App\Models\StorytellingDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
 
@@ -21,13 +23,13 @@ class EventRepository implements IEventRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findEvents(array $filters = []): array
+    public function findEvents(EventFilter $filters = new EventFilter()): array
     {
-        $includeSessionCount = (bool)($filters['includeSessionCount'] ?? false);
-        $isActive = array_key_exists('isActive', $filters) ? (bool)$filters['isActive'] : null;
-        $eventTypeId = $filters['eventTypeId'] ?? null;
-        $dayOfWeek = $filters['dayOfWeek'] ?? null;
-        $eventId = $filters['eventId'] ?? null;
+        $includeSessionCount = (bool)($filters->includeSessionCount ?? false);
+        $isActive = $filters->isActive;
+        $eventTypeId = $filters->eventTypeId;
+        $dayOfWeek = $filters->dayOfWeek;
+        $eventId = $filters->eventId;
 
         $select = '
             SELECT DISTINCT
@@ -38,7 +40,7 @@ class EventRepository implements IEventRepository
         ';
 
         if ($includeSessionCount) {
-            $select .= ', COALESCE(es_count.SessionCount, 0) AS SessionCount';
+            $select .= ', COALESCE(es_count.SessionCount, 0) AS SessionCount, COALESCE(es_count.TotalSoldTickets, 0) AS TotalSoldTickets, COALESCE(es_count.TotalCapacity, 0) AS TotalCapacity';
         }
 
         $sql = $select . '
@@ -49,8 +51,14 @@ class EventRepository implements IEventRepository
 
         if ($includeSessionCount) {
             $sql .= '
-            LEFT JOIN (SELECT EventId, COUNT(*) AS SessionCount FROM EventSession GROUP BY EventId) es_count
-                ON es_count.EventId = e.EventId
+            LEFT JOIN (
+                SELECT EventId,
+                       COUNT(*) AS SessionCount,
+                       COALESCE(SUM(SoldSingleTickets + SoldReservedSeats), 0) AS TotalSoldTickets,
+                       COALESCE(SUM(CapacityTotal), 0) AS TotalCapacity
+                FROM EventSession
+                GROUP BY EventId
+            ) es_count ON es_count.EventId = e.EventId
             ';
         }
 
@@ -96,15 +104,10 @@ class EventRepository implements IEventRepository
         return array_map([EventWithDetails::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent
+    private function queryActiveEventBySlug(string $slug, EventTypeId $eventType): ?array
     {
         $stmt = $this->pdo->prepare('
-            SELECT
-                e.EventId,
-                e.Title,
-                e.ShortDescription,
-                e.LongDescriptionHtml,
-                e.Slug
+            SELECT *
             FROM Event e
             WHERE e.EventTypeId = :eventTypeId
               AND e.IsActive = 1
@@ -113,12 +116,24 @@ class EventRepository implements IEventRepository
         ');
 
         $stmt->execute([
-            'eventTypeId' => EventTypeId::Jazz->value,
+            'eventTypeId' => $eventType->value,
             'slug' => $slug,
         ]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return is_array($row) ? JazzArtistDetailEvent::fromRow($row) : null;
+        return is_array($row) ? $row : null;
+    }
+
+    public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent
+    {
+        $row = $this->queryActiveEventBySlug($slug, EventTypeId::Jazz);
+        return $row !== null ? JazzArtistDetailEvent::fromRow($row) : null;
+    }
+
+    public function findActiveStorytellingBySlug(string $slug): ?StorytellingDetailEvent
+    {
+        $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
+        return $row !== null ? StorytellingDetailEvent::fromRow($row) : null;
     }
 
     private function dayNameToNumber(string $dayName): ?int
@@ -187,7 +202,10 @@ class EventRepository implements IEventRepository
                 Title = :title,
                 ShortDescription = :shortDescription,
                 LongDescriptionHtml = :longDescriptionHtml,
+                FeaturedImageAssetId = :featuredImageAssetId,
                 VenueId = :venueId,
+                ArtistId = :artistId,
+                RestaurantId = :restaurantId,
                 IsActive = :isActive
             WHERE EventId = :eventId
         ');
@@ -197,7 +215,10 @@ class EventRepository implements IEventRepository
             'title' => $data['Title'],
             'shortDescription' => $data['ShortDescription'] ?? '',
             'longDescriptionHtml' => $data['LongDescriptionHtml'] ?? '<p></p>',
+            'featuredImageAssetId' => isset($data['FeaturedImageAssetId']) && is_numeric($data['FeaturedImageAssetId']) ? (int)$data['FeaturedImageAssetId'] : null,
             'venueId' => $data['VenueId'] ?? null,
+            'artistId' => isset($data['ArtistId']) && is_numeric($data['ArtistId']) ? (int)$data['ArtistId'] : null,
+            'restaurantId' => isset($data['RestaurantId']) && is_numeric($data['RestaurantId']) ? (int)$data['RestaurantId'] : null,
             'isActive' => $data['IsActive'] ?? 1,
         ]);
     }

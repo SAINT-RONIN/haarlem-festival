@@ -5,30 +5,21 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Program;
+use App\Models\ProgramFilter;
 use App\Models\ProgramItem;
+use App\Models\ProgramItemFilter;
 
 interface IProgramRepository
 {
     /**
-     * @param array{
-     *   programId?: int,
-     *   sessionKey?: string,
-     *   userAccountId?: int,
-     *   isCheckedOut?: bool
-     * } $filters
      * @return Program[]
      */
-    public function findPrograms(array $filters = []): array;
+    public function findPrograms(ProgramFilter $filter): array;
 
     /**
-     * @param array{
-     *   programId?: int,
-     *   programItemId?: int,
-     *   eventSessionId?: int
-     * } $filters
      * @return ProgramItem[]
      */
-    public function findProgramItems(array $filters = []): array;
+    public function findProgramItems(ProgramItemFilter $filter): array;
 
     public function createProgram(string $sessionKey, ?int $userAccountId): Program;
 

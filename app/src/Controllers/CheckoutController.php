@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Exceptions\CheckoutException;
 use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
+use App\Mappers\CheckoutMapper;
 use App\Mappers\ProgramMapper;
+use App\Models\CheckoutMainContent;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
-use App\ViewModels\Program\CheckoutCancelPageViewModel;
-use App\ViewModels\Program\CheckoutSuccessPageViewModel;
 
 class CheckoutController extends BaseController
 {
@@ -45,16 +46,18 @@ class CheckoutController extends BaseController
 
             $programData = $this->programService->getProgramData($sessionKey, $userId);
 
-            if ($programData['items'] === []) {
+            if ($programData->items === []) {
                 $this->redirect('/my-program');
                 return;
             }
 
-            $cmsContent = $this->cmsService->getSectionContent('checkout', 'main');
+            $cmsContent = CheckoutMainContent::fromRawArray(
+                $this->cmsService->getSectionContent('checkout', 'main'),
+            );
             $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);
-        } catch (\Throwable $error) {
+        } catch (CheckoutException $error) {
             ControllerErrorResponder::respond($error);
         }
     }
@@ -73,7 +76,7 @@ class CheckoutController extends BaseController
                 'success' => true,
                 'redirectUrl' => $result['redirectUrl'],
             ], 200);
-        } catch (\Throwable $error) {
+        } catch (CheckoutException|\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -83,13 +86,10 @@ class CheckoutController extends BaseController
         try {
             $sessionId = $this->readStringQueryParam('session_id', 255);
             $sessionSummary = $sessionId !== null ? $this->checkoutService->getSessionSummary($sessionId) : null;
-            $viewModel = new CheckoutSuccessPageViewModel(
-                $sessionSummary,
-                $this->getLoggedInUserId() !== null,
-            );
+            $viewModel = CheckoutMapper::toSuccessViewModel($sessionSummary, $this->getLoggedInUserId() !== null);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-success.php', $viewModel);
-        } catch (\Throwable $error) {
+        } catch (CheckoutException $error) {
             ControllerErrorResponder::respond($error);
         }
     }
@@ -101,13 +101,10 @@ class CheckoutController extends BaseController
             $paymentId = $this->readPositiveIntQueryParam('payment_id');
 
             $cancelResult = $this->checkoutService->handleCancel($orderId, $paymentId);
-            $viewModel = new CheckoutCancelPageViewModel(
-                $cancelResult,
-                $this->getLoggedInUserId() !== null,
-            );
+            $viewModel = CheckoutMapper::toCancelViewModel($cancelResult, $this->getLoggedInUserId() !== null);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-cancel.php', $viewModel);
-        } catch (\Throwable $error) {
+        } catch (CheckoutException $error) {
             ControllerErrorResponder::respond($error);
         }
     }
@@ -128,7 +125,7 @@ class CheckoutController extends BaseController
                 'eventId' => $result['eventId'],
                 'eventType' => $result['eventType'],
             ], 200);
-        } catch (\Throwable $error) {
+        } catch (CheckoutException|\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -147,7 +144,7 @@ class CheckoutController extends BaseController
     {
         $userId = $this->getLoggedInUserId();
         if ($userId === null) {
-            throw new \RuntimeException('Please log in to continue checkout.');
+            throw new CheckoutException('Please log in to continue checkout.');
         }
 
         return $userId;

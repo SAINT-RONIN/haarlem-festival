@@ -4,29 +4,23 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\EventSessionFilter;
+use App\Models\ScheduleDayData;
+use App\Models\SessionQueryResult;
+
 interface IEventSessionRepository
 {
     /**
-     * @param array{
-     *   eventId?: int,
-     *   eventTypeId?: int,
-     *   sessionId?: int,
-     *   sessionIds?: int[],
-     *   isActive?: bool,
-     *   includeCancelled?: bool,
-     *   orderBy?: string,
-     *   maxDays?: int,
-     *   startDate?: string,
-     *   endDate?: string,
-     *   visibleDays?: array<int>,
-     *   groupByDay?: bool,
-     *   includeEventType?: bool,
-     *   includeVenue?: bool,
-     *   includeArtist?: bool
-     * } $filters
-     * @return array<string, mixed>
+     * @return SessionQueryResult
      */
-    public function findSessions(array $filters = []): array;
+    public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult;
+
+    /**
+     * Returns distinct session dates for building filter UI.
+     *
+     * @return ScheduleDayData[]
+     */
+    public function findDistinctDays(EventSessionFilter $filter): array;
 
     public function create(array $data): int;
 

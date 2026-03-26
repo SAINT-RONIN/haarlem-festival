@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+/**
+ * Carries all CMS sections and domain data needed to render the Restaurant listing page.
+ */
+final readonly class RestaurantPageData
+{
+    /**
+     * @param Restaurant[] $restaurants
+     */
+    public function __construct(
+        public HeroSectionContent $heroContent,
+        public GlobalUiContent $globalUiContent,
+        public RestaurantGradientSectionContent $gradientSection,
+        public RestaurantIntroSectionContent $introSplitSection,
+        public RestaurantIntroSplit2SectionContent $introSplit2Section,
+        public RestaurantInstructionsSectionContent $instructionsSection,
+        public RestaurantCardsSectionContent $cardsSection,
+        public array $restaurants,
+    ) {}
+}

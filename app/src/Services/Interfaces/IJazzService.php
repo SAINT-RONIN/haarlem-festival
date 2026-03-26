@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
+use App\Models\JazzPageData;
+
 /**
  * Interface for Jazz page service.
  */
 interface IJazzService
 {
-    /**
-     * Builds the Jazz page domain payload.
-     *
-     * @return array<string, mixed> Raw Jazz section content and schedule data
-     */
-    public function getJazzPageData(): array;
+    public function getJazzPageData(): JazzPageData;
 }

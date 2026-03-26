@@ -5,10 +5,10 @@
  * @var array $location Location data with keys: name, address, category, badgeClass
  */
 
-$name = htmlspecialchars($location['name']);
-$address = htmlspecialchars($location['address']);
-$category = htmlspecialchars($location['category'] ?? 'venue');
-$badgeClass = htmlspecialchars($location['badgeClass']);
+$name = htmlspecialchars($location->name);
+$address = htmlspecialchars($location->address);
+$category = htmlspecialchars($location->category ?? 'venue');
+$badgeClass = htmlspecialchars($location->badgeClass);
 ?>
 
 <button type="button" class="w-full flex justify-start items-start gap-1 sm:gap-[5px] group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 rounded-lg" aria-label="<?php echo $name; ?> - <?php echo $address; ?>">

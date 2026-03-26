@@ -7,19 +7,17 @@ namespace App\Models;
 /**
  * Represents a single row from the `RestaurantImage` table.
  *
- * Replaces the 8 numbered image columns on Restaurant with a proper junction table.
- * FilePath is resolved via LEFT JOIN with MediaAsset in the repository.
+ * ImageType identifies which section the image belongs to:
+ * 'about', 'chef', 'menu', 'gallery', 'reservation'
  */
 class RestaurantImage
 {
     public function __construct(
-        public readonly int     $restaurantImageId,
-        public readonly int     $restaurantId,
-        public readonly int     $mediaAssetId,
-        public readonly string  $imageType,
-        public readonly int     $sortOrder,
-        // Resolved from JOIN with MediaAsset. null when MediaAsset row is missing.
-        public readonly ?string $filePath = null,
+        public readonly int    $restaurantImageId,
+        public readonly int    $restaurantId,
+        public readonly string $imagePath,
+        public readonly string $imageType,
+        public readonly int    $sortOrder,
     ) {}
 
     public static function fromRow(array $row): self
@@ -27,10 +25,9 @@ class RestaurantImage
         return new self(
             restaurantImageId: (int)$row['RestaurantImageId'],
             restaurantId:      (int)$row['RestaurantId'],
-            mediaAssetId:      (int)$row['MediaAssetId'],
+            imagePath:         (string)$row['ImagePath'],
             imageType:         (string)$row['ImageType'],
             sortOrder:         (int)$row['SortOrder'],
-            filePath:          $row['FilePath'] ?? null,
         );
     }
 }

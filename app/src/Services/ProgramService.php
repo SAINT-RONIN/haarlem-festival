@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\PriceTierId;
+use App\Models\EventSessionFilter;
 use App\Models\EventSessionPrice;
 use App\Models\Program;
+use App\Models\ProgramData;
+use App\Models\ProgramFilter;
 use App\Models\ProgramItem;
-use App\Repositories\EventSessionPriceRepository;
-use App\Repositories\EventSessionRepository;
-use App\Repositories\ProgramRepository;
+use App\Models\ProgramItemData;
+use App\Models\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -20,18 +22,11 @@ class ProgramService implements IProgramService
 {
     private const VAT_RATE = 0.21;
 
-    private IProgramRepository $programRepository;
-    private IEventSessionRepository $sessionRepository;
-    private IEventSessionPriceRepository $priceRepository;
-
     public function __construct(
-        ?IProgramRepository $programRepository = null,
-        ?IEventSessionRepository $sessionRepository = null,
-        ?IEventSessionPriceRepository $priceRepository = null,
+        private readonly IProgramRepository $programRepository,
+        private readonly IEventSessionRepository $sessionRepository,
+        private readonly IEventSessionPriceRepository $priceRepository,
     ) {
-        $this->programRepository = $programRepository ?? new ProgramRepository();
-        $this->sessionRepository = $sessionRepository ?? new EventSessionRepository();
-        $this->priceRepository = $priceRepository ?? new EventSessionPriceRepository();
     }
 
     public function getOrCreateProgram(string $sessionKey, ?int $userAccountId): Program
@@ -47,6 +42,12 @@ class ProgramService implements IProgramService
 
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
+        if ($eventSessionId <= 0) {
+            throw new \InvalidArgumentException('eventSessionId is required');
+        }
+        if ($quantity <= 0) {
+            throw new \InvalidArgumentException('quantity must be at least 1');
+        }
         $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
 
         $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
@@ -55,7 +56,7 @@ class ProgramService implements IProgramService
             $newQuantity = $existingItem->quantity + $quantity;
             $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
 
-            $items = $this->programRepository->findProgramItems(['programItemId' => $existingItem->programItemId]);
+            $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
             return $items[0];
         }
 
@@ -64,6 +65,9 @@ class ProgramService implements IProgramService
 
     public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void
     {
+        if ($programItemId <= 0) {
+            throw new \InvalidArgumentException('programItemId is required');
+        }
         $this->verifyItemOwnership($sessionKey, $userAccountId, $programItemId);
 
         if ($quantity <= 0) {
@@ -76,6 +80,9 @@ class ProgramService implements IProgramService
 
     public function updateDonation(string $sessionKey, ?int $userAccountId, int $programItemId, float $donationAmount): void
     {
+        if ($programItemId <= 0) {
+            throw new \InvalidArgumentException('programItemId is required');
+        }
         $this->verifyItemOwnership($sessionKey, $userAccountId, $programItemId);
 
         if ($donationAmount < 0) {
@@ -87,6 +94,9 @@ class ProgramService implements IProgramService
 
     public function removeItem(string $sessionKey, ?int $userAccountId, int $programItemId): void
     {
+        if ($programItemId <= 0) {
+            throw new \InvalidArgumentException('programItemId is required');
+        }
         $this->verifyItemOwnership($sessionKey, $userAccountId, $programItemId);
 
         $this->programRepository->removeItem($programItemId);
@@ -103,34 +113,31 @@ class ProgramService implements IProgramService
         $this->programRepository->clearProgram($program->programId);
     }
 
-    public function getProgramData(string $sessionKey, ?int $userAccountId): array
+    public function getProgramData(string $sessionKey, ?int $userAccountId): ProgramData
     {
         $program = $this->findActiveProgram($sessionKey, $userAccountId);
-        $emptyResult = ['program' => null, 'items' => [], 'subtotal' => 0.0, 'taxAmount' => 0.0, 'total' => 0.0];
 
         if ($program === null) {
-            return $emptyResult;
+            return new ProgramData(program: null, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
         }
 
-        $programItems = $this->programRepository->findProgramItems(['programId' => $program->programId]);
+        $programItems = $this->programRepository->findProgramItems(new ProgramItemFilter(programId: $program->programId));
 
         if ($programItems === []) {
-            $emptyResult['program'] = $program;
-            return $emptyResult;
+            return new ProgramData(program: $program, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
         }
 
         $enrichedItems = $this->enrichItemsWithSessionData($programItems);
         $subtotal = $this->calculateSubtotal($enrichedItems);
         $taxAmount = $subtotal * self::VAT_RATE;
-        $total = $subtotal + $taxAmount;
 
-        return [
-            'program' => $program,
-            'items' => $enrichedItems,
-            'subtotal' => $subtotal,
-            'taxAmount' => $taxAmount,
-            'total' => $total,
-        ];
+        return new ProgramData(
+            program: $program,
+            items: $enrichedItems,
+            subtotal: $subtotal,
+            taxAmount: $taxAmount,
+            total: $subtotal + $taxAmount,
+        );
     }
 
     private function verifyItemOwnership(string $sessionKey, ?int $userAccountId, int $programItemId): void
@@ -138,53 +145,53 @@ class ProgramService implements IProgramService
         $program = $this->findActiveProgram($sessionKey, $userAccountId);
 
         if ($program === null) {
-            throw new \RuntimeException('Program not found');
+            throw new \InvalidArgumentException('Program not found');
         }
 
-        $items = $this->programRepository->findProgramItems([
-            'programItemId' => $programItemId,
-            'programId' => $program->programId,
-        ]);
+        $items = $this->programRepository->findProgramItems(new ProgramItemFilter(
+            programItemId: $programItemId,
+            programId: $program->programId,
+        ));
 
         if ($items === []) {
-            throw new \RuntimeException('Item does not belong to your program');
+            throw new \InvalidArgumentException('Item does not belong to your program');
         }
     }
 
     private function findActiveProgram(string $sessionKey, ?int $userAccountId): ?Program
     {
         if ($userAccountId !== null) {
-            $programs = $this->programRepository->findPrograms([
-                'userAccountId' => $userAccountId,
-                'isCheckedOut' => false,
-            ]);
+            $programs = $this->programRepository->findPrograms(new ProgramFilter(
+                userAccountId: $userAccountId,
+                isCheckedOut: false,
+            ));
 
             if ($programs !== []) {
                 return $programs[0];
             }
         }
 
-        $programs = $this->programRepository->findPrograms([
-            'sessionKey' => $sessionKey,
-            'isCheckedOut' => false,
-        ]);
+        $programs = $this->programRepository->findPrograms(new ProgramFilter(
+            sessionKey: $sessionKey,
+            isCheckedOut: false,
+        ));
 
         return $programs !== [] ? $programs[0] : null;
     }
 
     private function findExistingItem(int $programId, int $eventSessionId): ?ProgramItem
     {
-        $items = $this->programRepository->findProgramItems([
-            'programId' => $programId,
-            'eventSessionId' => $eventSessionId,
-        ]);
+        $items = $this->programRepository->findProgramItems(new ProgramItemFilter(
+            programId: $programId,
+            eventSessionId: $eventSessionId,
+        ));
 
         return $items !== [] ? $items[0] : null;
     }
 
     /**
      * @param ProgramItem[] $programItems
-     * @return array<int, array<string, mixed>>
+     * @return ProgramItemData[]
      */
     private function enrichItemsWithSessionData(array $programItems): array
     {
@@ -204,28 +211,25 @@ class ProgramService implements IProgramService
             }
 
             $prices = $pricesBySession[$item->eventSessionId] ?? [];
-            $isPayWhatYouLike = $this->hasPayWhatYouLikeTier($prices);
-            $basePrice = $this->getBasePrice($prices);
-
-            $enrichedItems[] = [
-                'programItemId' => $item->programItemId,
-                'eventSessionId' => $item->eventSessionId,
-                'quantity' => $item->quantity,
-                'donationAmount' => (float)($item->donationAmount ?? '0.00'),
-                'eventTitle' => $session->eventTitle,
-                'venueName' => $session->venueName,
-                'hallName' => $session->hallName,
-                'startDateTime' => $session->startDateTime->format('Y-m-d H:i:s'),
-                'endDateTime' => $session->endDateTime?->format('Y-m-d H:i:s'),
-                'eventTypeId' => $session->eventTypeId,
-                'eventTypeName' => $session->eventTypeName,
-                'eventTypeSlug' => $session->eventTypeSlug,
-                'languageCode' => $session->languageCode,
-                'minAge' => $session->minAge,
-                'maxAge' => $session->maxAge,
-                'isPayWhatYouLike' => $isPayWhatYouLike,
-                'basePrice' => $basePrice,
-            ];
+            $enrichedItems[] = new ProgramItemData(
+                programItemId: $item->programItemId,
+                eventSessionId: $item->eventSessionId,
+                quantity: $item->quantity,
+                donationAmount: (float)($item->donationAmount ?? '0.00'),
+                eventTitle: $session->eventTitle,
+                venueName: $session->venueName,
+                hallName: $session->hallName,
+                startDateTime: $session->startDateTime->format('Y-m-d H:i:s'),
+                endDateTime: $session->endDateTime?->format('Y-m-d H:i:s'),
+                eventTypeId: $session->eventTypeId,
+                eventTypeName: $session->eventTypeName,
+                eventTypeSlug: $session->eventTypeSlug,
+                languageCode: $session->languageCode,
+                minAge: $session->minAge,
+                maxAge: $session->maxAge,
+                isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
+                basePrice: $this->getBasePrice($prices),
+            );
         }
 
         return $enrichedItems;
@@ -249,7 +253,7 @@ class ProgramService implements IProgramService
 
     /**
      * @param int[] $sessionIds
-     * @return array<int, array<string, mixed>>
+     * @return array<int, \App\Models\EventSession>
      */
     private function fetchSessionsById(array $sessionIds): array
     {
@@ -257,8 +261,8 @@ class ProgramService implements IProgramService
             return [];
         }
 
-        $result = $this->sessionRepository->findSessions(['sessionIds' => $sessionIds]);
-        $sessions = $result['sessions'] ?? [];
+        $result = $this->sessionRepository->findSessions(new EventSessionFilter(sessionIds: $sessionIds));
+        $sessions = $result->sessions;
 
         $sessionsById = [];
         foreach ($sessions as $session) {
@@ -279,24 +283,18 @@ class ProgramService implements IProgramService
             return [];
         }
 
-        return $this->priceRepository->findPrices([
-            'sessionIds' => $sessionIds,
-            'groupBySession' => true,
-        ]);
+        return $this->priceRepository->findPricesBySessionIds($sessionIds);
     }
 
     /**
-     * @param array<int, array<string, mixed>> $items
+     * @param ProgramItemData[] $items
      */
     private function calculateSubtotal(array $items): float
     {
         $subtotal = 0.0;
 
         foreach ($items as $item) {
-            $basePrice = (float)$item['basePrice'];
-            $quantity = (int)$item['quantity'];
-            $donationAmount = (float)$item['donationAmount'];
-            $subtotal += ($basePrice * $quantity) + $donationAmount;
+            $subtotal += ($item->basePrice * $item->quantity) + $item->donationAmount;
         }
 
         return $subtotal;

@@ -6,7 +6,9 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\Program;
+use App\Models\ProgramFilter;
 use App\Models\ProgramItem;
+use App\Models\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
 use PDO;
 
@@ -19,29 +21,32 @@ class ProgramRepository implements IProgramRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findPrograms(array $filters = []): array
+    /**
+     * @return Program[]
+     */
+    public function findPrograms(ProgramFilter $filter): array
     {
         $conditions = [];
         $params = [];
 
-        if (isset($filters['programId'])) {
+        if ($filter->programId !== null) {
             $conditions[] = 'p.ProgramId = :programId';
-            $params['programId'] = (int)$filters['programId'];
+            $params['programId'] = $filter->programId;
         }
 
-        if (isset($filters['sessionKey'])) {
+        if ($filter->sessionKey !== null) {
             $conditions[] = 'p.SessionKey = :sessionKey';
-            $params['sessionKey'] = $filters['sessionKey'];
+            $params['sessionKey'] = $filter->sessionKey;
         }
 
-        if (isset($filters['userAccountId'])) {
+        if ($filter->userAccountId !== null) {
             $conditions[] = 'p.UserAccountId = :userAccountId';
-            $params['userAccountId'] = (int)$filters['userAccountId'];
+            $params['userAccountId'] = $filter->userAccountId;
         }
 
-        if (array_key_exists('isCheckedOut', $filters)) {
+        if ($filter->isCheckedOut !== null) {
             $conditions[] = 'p.IsCheckedOut = :isCheckedOut';
-            $params['isCheckedOut'] = ((bool)$filters['isCheckedOut']) ? 1 : 0;
+            $params['isCheckedOut'] = $filter->isCheckedOut ? 1 : 0;
         }
 
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
@@ -55,24 +60,27 @@ class ProgramRepository implements IProgramRepository
         return array_map([Program::class, 'fromRow'], $rows);
     }
 
-    public function findProgramItems(array $filters = []): array
+    /**
+     * @return ProgramItem[]
+     */
+    public function findProgramItems(ProgramItemFilter $filter): array
     {
         $conditions = [];
         $params = [];
 
-        if (isset($filters['programId'])) {
+        if ($filter->programId !== null) {
             $conditions[] = 'pi.ProgramId = :programId';
-            $params['programId'] = (int)$filters['programId'];
+            $params['programId'] = $filter->programId;
         }
 
-        if (isset($filters['programItemId'])) {
+        if ($filter->programItemId !== null) {
             $conditions[] = 'pi.ProgramItemId = :programItemId';
-            $params['programItemId'] = (int)$filters['programItemId'];
+            $params['programItemId'] = $filter->programItemId;
         }
 
-        if (isset($filters['eventSessionId'])) {
+        if ($filter->eventSessionId !== null) {
             $conditions[] = 'pi.EventSessionId = :eventSessionId';
-            $params['eventSessionId'] = (int)$filters['eventSessionId'];
+            $params['eventSessionId'] = $filter->eventSessionId;
         }
 
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
@@ -100,7 +108,7 @@ class ProgramRepository implements IProgramRepository
 
         $programId = (int)$this->pdo->lastInsertId();
 
-        $programs = $this->findPrograms(['programId' => $programId]);
+        $programs = $this->findPrograms(new ProgramFilter(programId: $programId));
 
         return $programs[0];
     }
@@ -121,7 +129,7 @@ class ProgramRepository implements IProgramRepository
 
         $itemId = (int)$this->pdo->lastInsertId();
 
-        $items = $this->findProgramItems(['programItemId' => $itemId]);
+        $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
 
         return $items[0];
     }

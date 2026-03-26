@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\Venue;
+use App\Models\VenueFilter;
 use App\Repositories\Interfaces\IVenueRepository;
 use PDO;
 
@@ -18,7 +19,7 @@ class VenueRepository implements IVenueRepository
         $this->pdo = Database::getConnection();
     }
 
-    public function findVenues(array $filters = []): array
+    public function findVenues(VenueFilter $filter = new VenueFilter()): array
     {
         $sql = '
             SELECT VenueId, Name, AddressLine, City, CreatedAtUtc, IsActive
@@ -28,9 +29,9 @@ class VenueRepository implements IVenueRepository
 
         $params = [];
 
-        if (array_key_exists('isActive', $filters)) {
+        if ($filter->isActive !== null) {
             $sql .= ' AND IsActive = :isActive';
-            $params['isActive'] = ((bool)$filters['isActive']) ? 1 : 0;
+            $params['isActive'] = $filter->isActive ? 1 : 0;
         }
 
         $sql .= ' ORDER BY Name ASC';

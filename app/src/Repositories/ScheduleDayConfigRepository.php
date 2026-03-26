@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Infrastructure\Database;
 use App\Models\ScheduleDayConfig;
+use App\Models\ScheduleDayConfigFilter;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use PDO;
 
@@ -24,9 +25,9 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
     /**
      * @return ScheduleDayConfig[]
      */
-    public function findConfigs(array $filters = []): array
+    public function findConfigs(ScheduleDayConfigFilter $filter = new ScheduleDayConfigFilter()): array
     {
-        $includeEventTypeName = (bool)($filters['includeEventTypeName'] ?? false);
+        $includeEventTypeName = (bool)($filter->includeEventTypeName ?? false);
 
         $sql = $includeEventTypeName
             ? '
@@ -52,20 +53,14 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
 
         $params = [];
 
-        if (array_key_exists('eventTypeId', $filters)) {
-            if ($filters['eventTypeId'] === null) {
-                $sql .= ' AND sdc.EventTypeId IS NULL';
-            } else {
-                $sql .= ' AND sdc.EventTypeId = :eventTypeId';
-                $params['eventTypeId'] = (int)$filters['eventTypeId'];
-            }
-        } elseif (($filters['includeGlobal'] ?? true) === false) {
-            $sql .= ' AND sdc.EventTypeId IS NOT NULL';
+        if ($filter->eventTypeId !== null) {
+            $sql .= ' AND sdc.EventTypeId = :eventTypeId';
+            $params['eventTypeId'] = (int)$filter->eventTypeId;
         }
 
-        $requestedOrder = is_string($filters['orderBy'] ?? null) ? (string)$filters['orderBy'] : 'scope';
+        $requestedOrder = is_string($filter->orderBy) ? $filter->orderBy : 'scope';
         $allowedOrders = [
-            'scope' => ' ORDER BY sdc.EventTypeId IS NULL DESC, sdc.EventTypeId ASC, sdc.DayOfWeek ASC',
+            'scope' => ' ORDER BY (sdc.EventTypeId = 0) DESC, sdc.EventTypeId ASC, sdc.DayOfWeek ASC',
             'day' => ' ORDER BY sdc.DayOfWeek ASC',
         ];
         $sql .= $allowedOrders[$requestedOrder] ?? $allowedOrders['scope'];
@@ -87,7 +82,7 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
             ON DUPLICATE KEY UPDATE IsVisible = :isVisible2
         ');
         $stmt->execute([
-            'eventTypeId' => $eventTypeId,
+            'eventTypeId' => $eventTypeId ?? 0,
             'dayOfWeek' => $dayOfWeek,
             'isVisible' => $isVisible ? 1 : 0,
             'isVisible2' => $isVisible ? 1 : 0,

@@ -19,7 +19,6 @@ if ($viewModel->introSplit2Section !== null) {
     $introSplitImageClass = null;
     $introSplitReversed = true;
     require __DIR__ . '/../sections/intro-split-section.php';
-    $introSplitReversed = false;  // Reset so it doesn't affect other sections
 }
 
 if ($viewModel->instructionsSection !== null) {

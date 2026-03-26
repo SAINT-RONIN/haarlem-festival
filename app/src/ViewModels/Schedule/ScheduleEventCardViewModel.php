@@ -72,6 +72,8 @@ final readonly class ScheduleEventCardViewModel
         public string  $confirmText = '',
         public string  $addingText = '',
         public string  $successText = '',
+        public string  $timeRange = '',
+        public string  $priceType = '',
     ) {
     }
 }

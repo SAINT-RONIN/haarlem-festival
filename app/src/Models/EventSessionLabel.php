@@ -31,9 +31,9 @@ class EventSessionLabel
     public static function fromRow(array $row): self
     {
         return new self(
-            eventSessionLabelId: (int)$row['EventSessionLabelId'],
-            eventSessionId: (int)$row['EventSessionId'],
-            labelText: (string)$row['LabelText'],
+            eventSessionLabelId: (int)($row['EventSessionLabelId'] ?? throw new \InvalidArgumentException('Missing required field: EventSessionLabelId')),
+            eventSessionId: (int)($row['EventSessionId'] ?? throw new \InvalidArgumentException('Missing required field: EventSessionId')),
+            labelText: (string)($row['LabelText'] ?? throw new \InvalidArgumentException('Missing required field: LabelText')),
         );
     }
 

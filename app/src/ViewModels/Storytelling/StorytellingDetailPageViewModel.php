@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Storytelling;
 
-use App\Constants\StorytellingPageConstants;
 use App\ViewModels\BaseViewModel;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
@@ -20,6 +19,7 @@ final readonly class StorytellingDetailPageViewModel extends BaseViewModel
         HeroData $heroData,
         GlobalUiData $globalUi,
         array $cms,
+        string $currentPage,
         public StorytellingDetailHeroData $detailHero,
         public StorytellingAboutSectionData $aboutSection,
         public StoryHighlightsSectionData $highlightsSection,
@@ -30,7 +30,7 @@ final readonly class StorytellingDetailPageViewModel extends BaseViewModel
         parent::__construct(
             heroData: $heroData,
             globalUi: $globalUi,
-            currentPage: StorytellingPageConstants::CURRENT_PAGE,
+            currentPage: $currentPage,
             cms: $cms,
             includeNav: false,
         );

@@ -7,14 +7,20 @@ namespace App\Services;
 use App\Enums\DayOfWeek;
 use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
+use App\Models\EventSessionFilter;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
-use App\Repositories\CmsContentRepository;
-use App\Repositories\EventSessionLabelRepository;
-use App\Repositories\EventSessionPriceRepository;
-use App\Repositories\EventSessionRepository;
-use App\Repositories\EventTypeRepository;
-use App\Repositories\ScheduleDayConfigRepository;
+use App\Models\EventTypeFilter;
+use App\Models\ScheduleDayConfigFilter;
+use App\Models\ScheduleFilterParams;
+use App\Models\ScheduleSectionContent;
+use App\Models\SessionQueryResult;
+use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IEventSessionLabelRepository;
+use App\Repositories\Interfaces\IEventSessionPriceRepository;
+use App\Repositories\Interfaces\IEventSessionRepository;
+use App\Repositories\Interfaces\IEventTypeRepository;
+use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Services\Interfaces\IScheduleService;
 use App\Helpers\AgeLabelFormatter;
 
@@ -26,43 +32,68 @@ use App\Helpers\AgeLabelFormatter;
 class ScheduleService implements IScheduleService
 {
     public function __construct(
-        private CmsContentRepository $cmsService,
-        private EventSessionRepository $sessionRepository,
-        private EventSessionLabelRepository $labelRepository,
-        private EventSessionPriceRepository $priceRepository,
-        private EventTypeRepository $eventTypeRepository,
-        private ScheduleDayConfigRepository $scheduleDayConfigRepository,
+        private ICmsContentRepository $cmsService,
+        private IEventSessionRepository $sessionRepository,
+        private IEventSessionLabelRepository $labelRepository,
+        private IEventSessionPriceRepository $priceRepository,
+        private IEventTypeRepository $eventTypeRepository,
+        private IScheduleDayConfigRepository $scheduleDayConfigRepository,
     ) {
     }
 
-    public function getScheduleData(string $pageSlug, int $eventTypeId, int $maxDays = 4, ?int $eventId = null): array
-    {
-        $eventType = $this->eventTypeRepository->findEventTypes(['eventTypeId' => $eventTypeId])[0] ?? null;
+    public function getScheduleData(
+        string $pageSlug,
+        int $eventTypeId,
+        int $maxDays = 4,
+        ?int $eventId = null,
+        ?string $ctaTextOverride = null,
+        ?ScheduleFilterParams $filterParams = null,
+    ): array {
+        $eventType = $this->eventTypeRepository->findEventTypes(new EventTypeFilter(eventTypeId: $eventTypeId))[0] ?? null;
         $eventTypeSlug = $eventType?->slug ?? $pageSlug;
 
-        $cmsContent = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
+        $cmsRaw = $this->cmsService->getSectionContent($pageSlug, 'schedule_section');
+        $cmsSection = ScheduleSectionContent::fromRawArray($cmsRaw);
         $visibleDays = $this->getVisibleDays($eventTypeId);
 
-        $filters = [
-            'eventTypeId' => $eventTypeId,
-            'isActive' => true,
-            'eventIsActive' => true,
-            'includeCancelled' => false,
-            'groupByDay' => true,
-            'maxDays' => $maxDays,
-            'visibleDays' => $visibleDays,
-            'orderBy' => 'es.StartDateTime ASC',
-        ];
+        $availableDays = $this->sessionRepository->findDistinctDays(
+            new EventSessionFilter(
+                eventTypeId: $eventTypeId,
+                isActive: true,
+                eventIsActive: true,
+                includeCancelled: false,
+                visibleDays: $visibleDays,
+                eventId: $eventId,
+                maxDays: $maxDays,
+            ),
+        );
 
-        if ($eventId !== null) {
-            $filters['eventId'] = $eventId;
-        }
+        $scheduleData = $this->sessionRepository->findSessions(
+            new EventSessionFilter(
+                eventTypeId: $eventTypeId,
+                isActive: true,
+                eventIsActive: true,
+                includeCancelled: false,
+                groupByDay: true,
+                maxDays: $maxDays,
+                visibleDays: $visibleDays,
+                orderBy: 'es.StartDateTime ASC',
+                eventId: $eventId,
+                dayOfWeek: $filterParams?->day,
+                timeRange: $filterParams?->timeRange,
+                priceType: $filterParams?->priceType,
+                venueName: $filterParams?->venue,
+                languageCode: $filterParams?->language,
+                filterMinAge: $filterParams?->age,
+                limit: 50,
+            ),
+        );
 
-        $scheduleData = $this->sessionRepository->findSessions($filters);
-
-        $ctaButtonText = $this->getStringValue($cmsContent, 'schedule_cta_button_text', 'Discover');
-        $payWhatYouLikeText = $this->getStringValue($cmsContent, 'schedule_pay_what_you_like_text', 'Pay as you like');
-        $currencySymbol = $this->getStringValue($cmsContent, 'schedule_currency_symbol', '€');
+        $ctaButtonText = $ctaTextOverride ?? ($cmsSection->scheduleCtaButtonText ?? 'Discover');
+        $payWhatYouLikeText = $cmsSection->schedulePayWhatYouLikeText ?? 'Pay as you like';
+        $currencySymbol = $cmsSection->scheduleCurrencySymbol ?? '€';
+        $startPoint = $cmsSection->scheduleStartPoint ?? 'A giant flag near Church of St. Bavo at Grote Markt';
+        $groupTicketFallback = $cmsSection->scheduleHistoryGroupTicket ?? 'Group ticket- best value for 4 people';
 
         $days = $this->buildScheduleDays(
             $scheduleData,
@@ -70,15 +101,21 @@ class ScheduleService implements IScheduleService
             $eventTypeId,
             $ctaButtonText,
             $payWhatYouLikeText,
-            $currencySymbol
+            $currencySymbol,
+            $startPoint,
+            $groupTicketFallback
         );
 
         return [
-            'cmsContent' => $cmsContent,
+            'cmsContent' => $cmsRaw,
             'pageSlug' => $pageSlug,
             'eventTypeSlug' => $eventTypeSlug,
             'eventTypeId' => $eventTypeId,
             'days' => $days,
+            'activeFilters' => $filterParams,
+            'availableDays' => $availableDays,
+            'filterGroupTypes' => $this->resolveFilterGroupTypes($eventTypeSlug),
+            'priceTypeOptions' => $this->resolvePriceTypeOptions($eventTypeSlug),
         ];
     }
 
@@ -86,15 +123,17 @@ class ScheduleService implements IScheduleService
      * Builds day ViewModels from schedule data.
      */
     private function buildScheduleDays(
-        array  $scheduleData,
-        string $eventTypeSlug,
-        int    $eventTypeId,
-        string $defaultCtaText,
-        string $payWhatYouLikeText,
-        string $currencySymbol
+        SessionQueryResult $scheduleData,
+        string             $eventTypeSlug,
+        int                $eventTypeId,
+        string             $defaultCtaText,
+        string             $payWhatYouLikeText,
+        string             $currencySymbol,
+        string             $startPoint = '',
+        string             $groupTicketFallback = ''
     ): array {
-        $days = $scheduleData['days'] ?? [];
-        $sessions = $scheduleData['sessions'] ?? [];
+        $days = $scheduleData->days;
+        $sessions = $scheduleData->sessions;
 
         if (empty($days)) {
             return [];
@@ -103,10 +142,10 @@ class ScheduleService implements IScheduleService
         // Get session IDs for batch loading labels and prices
         $sessionIds = array_map(static fn ($s) => $s->eventSessionId, $sessions);
         $labelsMap = !empty($sessionIds)
-            ? $this->labelRepository->findLabels(['sessionIds' => $sessionIds, 'groupBySession' => true])
+            ? $this->labelRepository->findLabelsBySessionIds($sessionIds)
             : [];
         $pricesMap = !empty($sessionIds)
-            ? $this->priceRepository->findPrices(['sessionIds' => $sessionIds, 'groupBySession' => true])
+            ? $this->priceRepository->findPricesBySessionIds($sessionIds)
             : [];
 
         // Group sessions by date
@@ -141,7 +180,9 @@ class ScheduleService implements IScheduleService
                     $pricesMap,
                     $defaultCtaText,
                     $payWhatYouLikeText,
-                    $currencySymbol
+                    $currencySymbol,
+                    $startPoint,
+                    $groupTicketFallback
                 );
             }
 
@@ -209,15 +250,17 @@ class ScheduleService implements IScheduleService
         array  $pricesMap,
         string $defaultCtaText,
         string $payWhatYouLikeText,
-        string $currencySymbol
+        string $currencySymbol,
+        string $startPoint = '',
+        string $groupTicketFallback = ''
     ): array {
         $sessionId = $session->eventSessionId;
         [$minAge, $maxAge] = $this->resolveAgeRange($session);
-        $labels = $this->extractLabels($labelsMap[$sessionId] ?? [], $minAge, $maxAge);
+        $labels = $this->extractLabels($labelsMap[$sessionId] ?? [], $minAge, $maxAge, $eventTypeId);
         $priceData = $this->resolvePrice($pricesMap[$sessionId] ?? []);
         $cta = $this->resolveCta($session, $eventTypeSlug, $defaultCtaText);
 
-        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $payWhatYouLikeText, $currencySymbol);
+        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $payWhatYouLikeText, $currencySymbol, $startPoint, $groupTicketFallback);
     }
 
     /**
@@ -239,9 +282,14 @@ class ScheduleService implements IScheduleService
      * @param EventSessionLabel[] $sessionLabels
      * @return string[]
      */
-    private function extractLabels(array $sessionLabels, ?int $minAge, ?int $maxAge): array
+    private function extractLabels(array $sessionLabels, ?int $minAge, ?int $maxAge, int $eventTypeId): array
     {
         $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
+
+        if ($eventTypeId === EventTypeId::History->value) {
+            return $labels;
+        }
+
         return AgeLabelFormatter::appendToLabels($labels, $minAge, $maxAge);
     }
 
@@ -251,7 +299,7 @@ class ScheduleService implements IScheduleService
     private function resolveCta(\App\Models\SessionWithEvent $session, string $eventTypeSlug, string $defaultCtaText): array
     {
         $label = !empty($session->ctaLabel) ? $session->ctaLabel : $defaultCtaText;
-        $url = !empty($session->ctaUrl) ? $session->ctaUrl : '/' . $eventTypeSlug . '/' . $session->eventId;
+        $url = !empty($session->ctaUrl) ? $session->ctaUrl : '/' . $eventTypeSlug . '/' . $session->eventSlug;
         return ['label' => $label, 'url' => $url];
     }
 
@@ -268,7 +316,9 @@ class ScheduleService implements IScheduleService
         array $priceData,
         array $cta,
         string $payWhatYouLikeText,
-        string $currencySymbol
+        string $currencySymbol,
+        string $startPoint = '',
+        string $groupTicketFallback = ''
     ): array {
         $startDateTime = $session->startDateTime;
         $endDateTime = $session->endDateTime;
@@ -286,7 +336,7 @@ class ScheduleService implements IScheduleService
             'currencySymbol' => $currencySymbol,
             'ctaLabel' => $cta['label'],
             'ctaUrl' => $cta['url'],
-            'locationName' => $session->venueName ?? '',
+            'locationName' => $session->venueName ?? $startPoint,
             'hallName' => $session->hallName ?? '',
             'startDateTime' => $startDateTime,
             'endDateTime' => $endDateTime,
@@ -302,8 +352,19 @@ class ScheduleService implements IScheduleService
             'ageLabel' => AgeLabelFormatter::format($minAge, $maxAge),
             'artistName' => $session->artistName,
             'artistImageUrl' => $session->artistImageUrl,
-            'historyTicketLabel' => $session->historyTicketLabel,
+            'historyTicketLabel' => $session->historyTicketLabel ?? $groupTicketFallback ?: null,
+            'timeRange' => $this->computeTimeRange($startDateTime),
+            'priceType' => $priceData['isPayWhatYouLike'] ? 'pay-what-you-like' : ($priceData['amount'] === null || $priceData['amount'] == 0 ? 'free' : 'fixed'),
         ];
+    }
+
+    private function computeTimeRange(\DateTimeInterface $startDateTime): string
+    {
+        $hour = (int) $startDateTime->format('G');
+        if ($hour < 12) {
+            return 'morning';
+        }
+        return $hour < 17 ? 'afternoon' : 'evening';
     }
 
     /**
@@ -334,13 +395,22 @@ class ScheduleService implements IScheduleService
         return ['amount' => null, 'isPayWhatYouLike' => false];
     }
 
-    /**
-     * Gets a string value from content array with default fallback.
-     */
-    private function getStringValue(array $content, string $key, string $default): string
+    /** @return string[] */
+    private function resolveFilterGroupTypes(string $eventTypeSlug): array
     {
-        $value = $content[$key] ?? null;
-        return is_string($value) && $value !== '' ? $value : $default;
+        return match ($eventTypeSlug) {
+            'storytelling' => ['day', 'timeRange', 'priceType', 'language', 'ageGroup'],
+            'jazz'         => ['day', 'venue', 'priceType'],
+            default        => ['day'],
+        };
+    }
+
+    /** @return string[] */
+    private function resolvePriceTypeOptions(string $eventTypeSlug): array
+    {
+        return $eventTypeSlug === 'jazz'
+            ? ['free', 'fixed']
+            : ['pay-what-you-like', 'fixed'];
     }
 
     /**
@@ -358,7 +428,7 @@ class ScheduleService implements IScheduleService
     private function loadGlobalDaySettings(): array
     {
         $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(['eventTypeId' => null, 'orderBy' => 'day']) as $row) {
+        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: 0, orderBy: 'day')) as $row) {
             $settings[$row->dayOfWeek] = $row->isVisible;
         }
         return $settings;
@@ -367,7 +437,7 @@ class ScheduleService implements IScheduleService
     private function loadTypeDaySettings(int $eventTypeId): array
     {
         $settings = [];
-        foreach ($this->scheduleDayConfigRepository->findConfigs(['eventTypeId' => $eventTypeId, 'orderBy' => 'day']) as $row) {
+        foreach ($this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(eventTypeId: $eventTypeId, orderBy: 'day')) as $row) {
             $settings[$row->dayOfWeek] = $row->isVisible;
         }
         return $settings;

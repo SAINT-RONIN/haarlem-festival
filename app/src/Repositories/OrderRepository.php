@@ -71,5 +71,24 @@ class OrderRepository implements IOrderRepository
             'orderId' => $orderId,
         ]);
     }
+
+    /**
+     * @param OrderStatus[] $allowedCurrentStatuses
+     */
+    public function updateStatusIfCurrentIn(int $orderId, OrderStatus $newStatus, array $allowedCurrentStatuses): void
+    {
+        if ($allowedCurrentStatuses === []) {
+            return;
+        }
+        $placeholders = implode(', ', array_fill(0, count($allowedCurrentStatuses), '?'));
+        $stmt = $this->pdo->prepare(
+            "UPDATE `Order` SET Status = ? WHERE OrderId = ? AND Status IN ({$placeholders})"
+        );
+        $params = [$newStatus->value, $orderId];
+        foreach ($allowedCurrentStatuses as $status) {
+            $params[] = $status->value;
+        }
+        $stmt->execute($params);
+    }
 }
 

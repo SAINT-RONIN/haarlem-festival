@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
+use App\Controllers\CmsArtistsController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsOrdersController;
+use App\Controllers\CmsRestaurantsController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
+use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
 use App\Http\Requests\StripeWebhookRequestFactory;
 use App\Infrastructure\CheckoutRuntimeConfig;
@@ -25,6 +28,7 @@ use App\Repositories\CmsContentRepository;
 use App\Repositories\CmsOrdersRepository;
 use App\Repositories\CmsRepository;
 use App\Repositories\CmsUsersRepository;
+use App\Repositories\Interfaces\ICmsUsersRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\EventSessionLabelRepository;
 use App\Repositories\EventSessionRepository;
@@ -36,14 +40,27 @@ use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\UserAccountRepository;
 use App\Repositories\ProgramRepository;
+use App\Repositories\ArtistRepository;
+use App\Repositories\ArtistAlbumRepository;
+use App\Repositories\ArtistGalleryImageRepository;
+use App\Repositories\ArtistHighlightRepository;
+use App\Repositories\ArtistLineupMemberRepository;
+use App\Repositories\ArtistTrackRepository;
+use App\Repositories\EventGalleryImageRepository;
+use App\Repositories\EventHighlightRepository;
+use App\Repositories\PageGalleryImageRepository;
 use App\Repositories\ReservationRepository;
+use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
+use App\Repositories\PassTypeRepository;
 use App\Repositories\PriceTierRepository;
 use App\Repositories\ScheduleDayConfigRepository;
 use App\Repositories\VenueRepository;
+use App\Services\CmsArtistsService;
 use App\Services\CmsDashboardService;
+use App\Services\CmsRestaurantsService;
 use App\Services\CmsEventsService;
 use App\Services\CmsEditService;
 use App\Services\CmsOrdersService;
@@ -80,6 +97,15 @@ return static function (string $controllerClass): object {
     $priceTierRepository = new PriceTierRepository();
     $scheduleDayConfigRepository = new ScheduleDayConfigRepository();
     $restaurantRepository = new RestaurantRepository();
+    $restaurantImageRepository = new RestaurantImageRepository();
+    $artistAlbumRepository = new ArtistAlbumRepository();
+    $artistTrackRepository = new ArtistTrackRepository();
+    $artistLineupMemberRepository = new ArtistLineupMemberRepository();
+    $artistHighlightRepository = new ArtistHighlightRepository();
+    $artistGalleryImageRepository = new ArtistGalleryImageRepository();
+    $eventHighlightRepository = new EventHighlightRepository();
+    $eventGalleryImageRepository = new EventGalleryImageRepository();
+    $pageGalleryImageRepository = new PageGalleryImageRepository();
     $userAccountRepository = new UserAccountRepository();
     $passwordResetTokenRepository = new PasswordResetTokenRepository();
     $programRepository = new ProgramRepository();
@@ -103,6 +129,7 @@ return static function (string $controllerClass): object {
         $venueRepository,
         $priceTierRepository,
         $scheduleDayConfigRepository,
+        $orderItemRepository,
     );
 
     $scheduleService = new ScheduleService(
@@ -114,7 +141,11 @@ return static function (string $controllerClass): object {
         $scheduleDayConfigRepository,
     );
 
-    $programService = new ProgramService();
+    $programService = new ProgramService(
+        $programRepository,
+        $eventSessionRepository,
+        $eventSessionPriceRepository,
+    );
 
     // ── Controller wiring ──
 
@@ -133,6 +164,7 @@ return static function (string $controllerClass): object {
             new RestaurantService(
                 $cmsContent,
                 $restaurantRepository,
+                $restaurantImageRepository,
             ),
             $sessionService,
             new ReservationRepository(),
@@ -154,18 +186,25 @@ return static function (string $controllerClass): object {
         JazzController::class => new JazzController(
             new JazzService(
                 $cmsContent,
+                new PassTypeRepository(),
             ),
             new JazzArtistDetailService(
                 $cmsContent,
                 $eventRepository,
+                $artistAlbumRepository,
+                $artistTrackRepository,
+                $artistLineupMemberRepository,
+                $artistHighlightRepository,
+                $artistGalleryImageRepository,
             ),
-            $cmsPageContentService,
             $sessionService,
             $scheduleService,
         ),
         CmsEventsController::class => new CmsEventsController(
             $cmsEventsService,
             $sessionService,
+            new CmsArtistsService(new ArtistRepository()),
+            new CmsRestaurantsService($restaurantRepository),
         ),
         AuthController::class => new AuthController(
             new AuthService(
@@ -212,11 +251,11 @@ return static function (string $controllerClass): object {
             new HistoryService(
                 $cmsPageContentService,
             ),
-            new HistoricalLocationService(),
-            $cmsPageContentService,
+            new HistoricalLocationService(
+                $cmsPageContentService,
+            ),
             $sessionService,
-            $scheduleService
-
+            $scheduleService,
         ),
         CmsAuthController::class => new CmsAuthController(
             new AuthService(
@@ -242,6 +281,17 @@ return static function (string $controllerClass): object {
         CmsUsersController::class => new CmsUsersController(
             new CmsUsersService(new CmsUsersRepository(Database::getConnection())),
             $sessionService,
+        ),
+        CmsRestaurantsController::class => new CmsRestaurantsController(
+            new CmsRestaurantsService($restaurantRepository),
+            $sessionService,
+        ),
+        CmsArtistsController::class => new CmsArtistsController(
+            new CmsArtistsService(new ArtistRepository()),
+            $sessionService,
+        ),
+        ScheduleApiController::class => new ScheduleApiController(
+            $scheduleService,
         ),
         default => new $controllerClass(),
     };

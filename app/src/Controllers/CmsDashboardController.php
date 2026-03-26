@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Constants\CmsMessages;
+use App\Exceptions\CmsEditException;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsDashboardMapper;
 use App\Services\Interfaces\ICmsDashboardService;
 use App\Services\Interfaces\ICmsEditService;
 use App\Services\Interfaces\IMediaAssetService;
 use App\Services\Interfaces\ISessionService;
+use App\ViewModels\Cms\CmsPageEditViewModel;
 
 /**
  * Controller for the CMS Dashboard.
@@ -38,25 +41,20 @@ class CmsDashboardController
      */
     public function index(): void
     {
-        try {
-            CmsAuthController::requireAdmin($this->sessionService);
+        CmsAuthController::requireAdmin($this->sessionService);
 
-            $currentView = 'dashboard';
-            $domainData = $this->cmsDashboardService->getDashboardData();
-            $viewModel = CmsDashboardMapper::toDashboardViewModel(
-                $domainData['recentPages'],
-                $domainData['activities'],
-                $this->getUserDisplayName(),
-            );
+        $currentView = 'dashboard';
+        $domainData = $this->cmsDashboardService->getDashboardData();
+        $viewModel = CmsDashboardMapper::toDashboardViewModel(
+            $domainData->recentPages,
+            $domainData->activities,
+            $this->getUserDisplayName(),
+        );
 
-            $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
-                'currentView' => $currentView,
-                'viewModel' => $viewModel,
-            ]);
-        } catch (\Throwable $e) {
-            http_response_code(500);
-            require __DIR__ . '/../Views/pages/errors/500.php';
-        }
+        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+            'currentView' => $currentView,
+            'viewModel' => $viewModel,
+        ]);
     }
 
     /**
@@ -65,23 +63,18 @@ class CmsDashboardController
      */
     public function pages(): void
     {
-        try {
-            CmsAuthController::requireAdmin($this->sessionService);
+        CmsAuthController::requireAdmin($this->sessionService);
 
-            $currentView = 'pages';
-            $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
-            $allPages = $this->cmsDashboardService->getPagesListData();
-            $viewModel = CmsDashboardMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
+        $currentView = 'pages';
+        $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
+        $allPages = $this->cmsDashboardService->getPagesListData();
+        $viewModel = CmsDashboardMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
 
-            $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
-                'currentView' => $currentView,
-                'searchQuery' => $searchQuery,
-                'viewModel' => $viewModel,
-            ]);
-        } catch (\Throwable $e) {
-            http_response_code(500);
-            require __DIR__ . '/../Views/pages/errors/500.php';
-        }
+        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+            'currentView' => $currentView,
+            'searchQuery' => $searchQuery,
+            'viewModel' => $viewModel,
+        ]);
     }
 
     /**
@@ -92,44 +85,72 @@ class CmsDashboardController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-
             $pageId = $this->parsePositiveIntId($id);
             if ($pageId === null) {
                 http_response_code(400);
-                echo 'Invalid page ID';
+                echo CmsMessages::INVALID_PAGE_ID;
                 return;
             }
-
-            $pageData = $this->cmsEditService->getPageForEditing($pageId);
-            if ($pageData === null) {
-                http_response_code(404);
-                echo 'Page not found';
-                return;
-            }
-
-            $previewUrl = $this->cmsEditService->resolvePreviewUrl($pageData['page'], $pageData['sections']);
-            $viewData = CmsDashboardMapper::toPageEditViewData($pageData);
-            $page = $viewData['page'];
-            $sections = $viewData['sections'];
-
-            $this->sessionService->start();
-            $csrfToken = $this->sessionService->getCsrfToken(self::CSRF_SCOPE_PAGE_EDIT);
-
-            $this->render(__DIR__ . '/../Views/pages/cms/page-edit.php', [
-                'page' => $page,
-                'sections' => $sections,
-                'previewUrl' => $previewUrl,
-                'contentLimits' => $viewData['contentLimits'],
-                'imageLimits' => $viewData['imageLimits'],
-                'userName' => $this->getUserDisplayName(),
-                'successMessage' => $this->sessionService->consumeFlash('cms_success'),
-                'errorMessage' => $this->sessionService->consumeFlash('cms_error'),
-                'csrfToken' => $csrfToken,
-            ]);
-        } catch (\Throwable $e) {
+            $this->renderEditPage($pageId);
+        } catch (CmsEditException $e) {
             http_response_code(500);
             require __DIR__ . '/../Views/pages/errors/500.php';
         }
+    }
+
+    private function renderEditPage(int $pageId): void
+    {
+        $pageData = $this->cmsEditService->getPageForEditing($pageId);
+        if ($pageData === null) {
+            http_response_code(404);
+            echo CmsMessages::PAGE_NOT_FOUND;
+            return;
+        }
+
+        $previewUrl = $this->cmsEditService->resolvePreviewUrl($pageData->page, $pageData->sections);
+        $viewData = CmsDashboardMapper::toPageEditViewData($pageData);
+        $this->sessionService->start();
+        $csrfToken = $this->sessionService->getCsrfToken(self::CSRF_SCOPE_PAGE_EDIT);
+
+        $this->render(__DIR__ . '/../Views/pages/cms/page-edit.php', $this->buildEditRenderData($viewData, $previewUrl, $csrfToken));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildEditRenderData(CmsPageEditViewModel $viewData, string $previewUrl, string $csrfToken): array
+    {
+        return array_merge(
+            $this->buildEditViewModelFields($viewData, $previewUrl),
+            $this->buildEditSessionFields($csrfToken),
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildEditViewModelFields(CmsPageEditViewModel $viewData, string $previewUrl): array
+    {
+        return [
+            'page'          => $viewData->page,
+            'sections'      => $viewData->sections,
+            'previewUrl'    => $previewUrl,
+            'contentLimits' => $viewData->contentLimits,
+            'imageLimits'   => $viewData->imageLimits,
+            'userName'      => $this->getUserDisplayName(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildEditSessionFields(string $csrfToken): array
+    {
+        return [
+            'successMessage' => $this->sessionService->consumeFlash('cms_success'),
+            'errorMessage'   => $this->sessionService->consumeFlash('cms_error'),
+            'csrfToken'      => $csrfToken,
+        ];
     }
 
     /**
@@ -140,46 +161,64 @@ class CmsDashboardController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-
             $pageId = $this->parsePositiveIntId($id);
             if ($pageId === null) {
                 http_response_code(400);
-                echo 'Invalid page ID';
+                echo CmsMessages::INVALID_PAGE_ID;
                 return;
             }
+            $this->validateCsrfOrRedirect($pageId);
+            $this->validateItemsOrRedirect($pageId);
+            $this->performUpdateAndRedirect($pageId);
+        } catch (CmsEditException $e) {
+            $this->handleUpdateError($e, $this->parsePositiveIntId($id));
+        }
+    }
 
-            $csrfToken = $_POST['csrf_token'] ?? null;
-            if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, is_string($csrfToken) ? $csrfToken : null)) {
-                $this->sessionService->setFlash('cms_error', 'Invalid request token. Please refresh and try again.');
-                header("Location: /cms/pages/{$pageId}/edit");
-                exit;
-            }
+    private function handleUpdateError(CmsEditException $e, ?int $pageId): void
+    {
+        $this->sessionService->setFlash('cms_error', CmsMessages::UPDATE_UNEXPECTED_ERROR);
+        header($pageId !== null ? "Location: /cms/pages/{$pageId}/edit" : 'Location: /cms/pages');
+        exit;
+    }
 
-            $items = $_POST['items'] ?? [];
-            if (!is_array($items) || $items === []) {
-                $this->sessionService->setFlash('cms_error', 'No changes submitted');
-                header("Location: /cms/pages/{$pageId}/edit");
-                exit;
-            }
-
-            $result = $this->cmsEditService->updatePageItems($pageId, $items);
-
-            if (($result['success'] ?? false) === true) {
-                $updatedCount = (int)($result['updatedCount'] ?? 0);
-                $this->sessionService->setFlash('cms_success', "Updated {$updatedCount} item(s) successfully");
-            } else {
-                $errors = $result['errors'] ?? [];
-                $this->sessionService->setFlash('cms_error', is_array($errors) ? implode(', ', $errors) : 'Failed to update content');
-            }
-
+    private function validateCsrfOrRedirect(int $pageId): void
+    {
+        $csrfToken = $_POST['csrf_token'] ?? null;
+        $isValid = $this->sessionService->isValidCsrfToken(
+            self::CSRF_SCOPE_PAGE_EDIT,
+            is_string($csrfToken) ? $csrfToken : null,
+        );
+        if (!$isValid) {
+            $this->sessionService->setFlash('cms_error', CmsMessages::INVALID_CSRF);
             header("Location: /cms/pages/{$pageId}/edit");
             exit;
-        } catch (\Throwable $e) {
-            $this->sessionService->setFlash('cms_error', 'An unexpected error occurred.');
-            $pageId = $this->parsePositiveIntId($id);
-            header($pageId !== null ? "Location: /cms/pages/{$pageId}/edit" : 'Location: /cms/pages');
+        }
+    }
+
+    private function validateItemsOrRedirect(int $pageId): void
+    {
+        $items = $_POST['items'] ?? [];
+        if (!is_array($items) || $items === []) {
+            $this->sessionService->setFlash('cms_error', CmsMessages::NO_CHANGES);
+            header("Location: /cms/pages/{$pageId}/edit");
             exit;
         }
+    }
+
+    private function performUpdateAndRedirect(int $pageId): void
+    {
+        $result = $this->cmsEditService->updatePageItems($pageId, $_POST['items']);
+
+        if ($result->success) {
+            $this->sessionService->setFlash('cms_success', sprintf(CmsMessages::UPDATE_SUCCESS_TEMPLATE, $result->updatedCount));
+        } else {
+            $errorMessage = $result->errors !== [] ? implode(', ', $result->errors) : CmsMessages::UPDATE_FAILED;
+            $this->sessionService->setFlash('cms_error', $errorMessage);
+        }
+
+        header("Location: /cms/pages/{$pageId}/edit");
+        exit;
     }
 
     /**
@@ -190,74 +229,98 @@ class CmsDashboardController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-
             header('Content-Type: application/json');
 
             $pageId = $this->parsePositiveIntId($id);
             if ($pageId === null) {
-                echo json_encode(['success' => false, 'error' => 'Invalid page ID']);
+                echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_PAGE_ID]);
                 return;
             }
 
-            $csrfToken = $_POST['csrf_token'] ?? null;
-            if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, is_string($csrfToken) ? $csrfToken : null)) {
-                echo json_encode(['success' => false, 'error' => 'Invalid request token']);
+            if (!$this->isUploadRequestValid()) {
                 return;
             }
 
-            $itemId = (int)($_POST['item_id'] ?? 0);
-            if ($itemId <= 0) {
-                echo json_encode(['success' => false, 'error' => 'Missing item ID']);
-                return;
-            }
+            $this->dispatchUploadAction();
+        } catch (CmsEditException $e) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::UPDATE_UNEXPECTED_ERROR]);
+        }
+    }
 
-            $mediaAssetId = (int)($_POST['media_asset_id'] ?? 0);
-            if ($mediaAssetId > 0) {
-                try {
-                    $this->cmsEditService->updateItemImage($itemId, $mediaAssetId);
-                    $asset = $this->mediaAssetService->getAssetById($mediaAssetId);
+    private function isUploadRequestValid(): bool
+    {
+        $csrfToken = $_POST['csrf_token'] ?? null;
+        if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, is_string($csrfToken) ? $csrfToken : null)) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_CSRF]);
+            return false;
+        }
 
-                    echo json_encode([
-                        'success' => true,
-                        'mediaAssetId' => $mediaAssetId,
-                        'filePath' => $asset ? $asset->filePath : '',
-                        'message' => 'Image linked successfully',
-                    ]);
-                } catch (\Throwable $e) {
-                    echo json_encode(['success' => false, 'error' => 'Failed to link image']);
-                }
-                return;
-            }
+        $itemId = (int)($_POST['item_id'] ?? 0);
+        if ($itemId <= 0) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::MISSING_ITEM_ID]);
+            return false;
+        }
 
-            if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
-                echo json_encode(['success' => false, 'error' => 'No file uploaded']);
-                return;
-            }
+        return true;
+    }
 
-            try {
-                $mediaAsset = $this->mediaAssetService->uploadImage($_FILES['image'], self::MEDIA_CONTEXT_CMS);
-                $this->cmsEditService->updateItemImage($itemId, $mediaAsset->mediaAssetId);
+    private function dispatchUploadAction(): void
+    {
+        $itemId = (int)($_POST['item_id'] ?? 0);
+        $mediaAssetId = (int)($_POST['media_asset_id'] ?? 0);
 
-                echo json_encode([
-                    'success' => true,
-                    'mediaAssetId' => $mediaAsset->mediaAssetId,
-                    'filePath' => $mediaAsset->filePath,
-                    'message' => 'Image uploaded successfully',
-                ]);
-            } catch (ValidationException $e) {
-                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-            } catch (\Throwable $e) {
-                echo json_encode(['success' => false, 'error' => 'Upload failed']);
-            }
-        } catch (\Throwable $e) {
-            echo json_encode(['success' => false, 'error' => 'An unexpected error occurred']);
+        if ($mediaAssetId > 0) {
+            $this->handleExistingAssetLink($itemId, $mediaAssetId);
+            return;
+        }
+
+        $this->handleNewFileUpload($itemId);
+    }
+
+    private function handleExistingAssetLink(int $itemId, int $mediaAssetId): void
+    {
+        try {
+            $this->cmsEditService->updateItemImage($itemId, $mediaAssetId);
+            $asset = $this->mediaAssetService->getAssetById($mediaAssetId);
+            echo json_encode($this->buildLinkedAssetResponse($mediaAssetId, $asset?->filePath ?? ''));
+        } catch (CmsEditException $e) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::IMAGE_LINK_FAILED]);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildLinkedAssetResponse(int $mediaAssetId, string $filePath): array
+    {
+        return ['success' => true, 'mediaAssetId' => $mediaAssetId, 'filePath' => $filePath, 'message' => CmsMessages::IMAGE_LINK_SUCCESS];
+    }
+
+    private function handleNewFileUpload(int $itemId): void
+    {
+        if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::NO_FILE_UPLOADED]);
+            return;
+        }
+
+        $this->uploadAndLinkImage($itemId);
+    }
+
+    private function uploadAndLinkImage(int $itemId): void
+    {
+        try {
+            $mediaAsset = $this->mediaAssetService->uploadImage($_FILES['image'], self::MEDIA_CONTEXT_CMS);
+            $this->cmsEditService->updateItemImage($itemId, $mediaAsset->mediaAssetId);
+            echo json_encode(['success' => true, 'mediaAssetId' => $mediaAsset->mediaAssetId, 'filePath' => $mediaAsset->filePath, 'message' => CmsMessages::IMAGE_UPLOAD_SUCCESS]);
+        } catch (ValidationException $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 
     private function getUserDisplayName(): string
     {
-        $name = $this->sessionService->get('user_display_name', 'Administrator');
-        return is_string($name) && $name !== '' ? $name : 'Administrator';
+        $name = $this->sessionService->get('user_display_name', CmsMessages::DEFAULT_ADMIN_NAME);
+        return is_string($name) && $name !== '' ? $name : CmsMessages::DEFAULT_ADMIN_NAME;
     }
 
     private function parsePositiveIntId(string $id): ?int

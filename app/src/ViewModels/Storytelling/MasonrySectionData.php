@@ -10,6 +10,9 @@ namespace App\ViewModels\Storytelling;
  */
 final readonly class MasonrySectionData
 {
+    /**
+     * @param MasonryImageData[] $images
+     */
     public function __construct(
         public string $headingText,
         public array $images,

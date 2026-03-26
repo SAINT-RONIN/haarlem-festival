@@ -8,6 +8,7 @@ final readonly class ScheduleSectionViewModel
 {
     /**
      * @param array<ScheduleDayViewModel> $days
+     * @param ScheduleFilterGroupData[] $filterGroups
      */
     public function __construct(
         public string  $sectionId,
@@ -28,9 +29,12 @@ final readonly class ScheduleSectionViewModel
         public string  $currencySymbol,
         public string  $noEventsText,
         public array   $days,
-        public string  $confirmText = 'Confirm selection',
-        public string  $addingText = 'Adding...',
-        public string  $successText = 'Added to program',
+        public string  $confirmText = '',
+        public string  $addingText = '',
+        public string  $successText = '',
+        public array   $filterGroups = [],
+        public string  $resetButtonText = '',
+        public bool    $hasActiveFilters = false,
     ) {
     }
 }

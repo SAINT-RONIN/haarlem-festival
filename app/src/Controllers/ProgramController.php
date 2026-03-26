@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\ProgramMapper;
+use App\Models\ProgramMainContent;
 use App\Services\Interfaces\ICmsPageContentService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
@@ -34,11 +35,13 @@ class ProgramController extends BaseController
             $isLoggedIn = $this->sessionService->isLoggedIn();
 
             $programData = $this->programService->getProgramData($sessionKey, $userId);
-            $cmsContent = $this->cmsService->getSectionContent('my-program', 'main');
+            $cmsContent = ProgramMainContent::fromRawArray(
+                $this->cmsService->getSectionContent('my-program', 'main'),
+            );
             $viewModel = ProgramMapper::toMyProgramViewModel($programData, $cmsContent, $isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respond($error);
         }
     }
@@ -54,12 +57,10 @@ class ProgramController extends BaseController
             $quantity = (int)($body['quantity'] ?? 1);
             $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-            $this->validateAddInput($eventSessionId, $quantity);
-
             $item = $this->programService->addToProgram($sessionKey, $userId, $eventSessionId, $quantity, $donationAmount);
 
             $this->json(['success' => true, 'programItemId' => $item->programItemId]);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -74,12 +75,10 @@ class ProgramController extends BaseController
             $programItemId = (int)($body['programItemId'] ?? 0);
             $quantity = (int)($body['quantity'] ?? 0);
 
-            $this->validatePositiveId($programItemId, 'programItemId');
-
             $this->programService->updateQuantity($sessionKey, $userId, $programItemId, $quantity);
 
             $this->respondJsonWithTotals($sessionKey, $userId);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -94,12 +93,10 @@ class ProgramController extends BaseController
             $programItemId = (int)($body['programItemId'] ?? 0);
             $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-            $this->validatePositiveId($programItemId, 'programItemId');
-
             $this->programService->updateDonation($sessionKey, $userId, $programItemId, $donationAmount);
 
             $this->respondJsonWithTotals($sessionKey, $userId);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -113,12 +110,10 @@ class ProgramController extends BaseController
 
             $programItemId = (int)($body['programItemId'] ?? 0);
 
-            $this->validatePositiveId($programItemId, 'programItemId');
-
             $this->programService->removeItem($sessionKey, $userId, $programItemId);
 
             $this->respondJsonWithTotals($sessionKey, $userId);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -132,7 +127,7 @@ class ProgramController extends BaseController
             $this->programService->clearProgram($sessionKey, $userId);
 
             $this->json(['success' => true]);
-        } catch (\Throwable $error) {
+        } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
     }
@@ -147,7 +142,7 @@ class ProgramController extends BaseController
             'subtotal' => $totals['subtotal'],
             'taxAmount' => $totals['taxAmount'],
             'total' => $totals['total'],
-            'canCheckout' => $programData['items'] !== [],
+            'canCheckout' => $programData->items !== [],
         ]);
     }
 
@@ -160,24 +155,6 @@ class ProgramController extends BaseController
     private function getLoggedInUserId(): ?int
     {
         return $this->sessionService->isLoggedIn() ? $this->sessionService->getUserId() : null;
-    }
-
-    private function validateAddInput(int $eventSessionId, int $quantity): void
-    {
-        if ($eventSessionId <= 0) {
-            throw new \InvalidArgumentException('eventSessionId is required');
-        }
-
-        if ($quantity <= 0) {
-            throw new \InvalidArgumentException('quantity must be at least 1');
-        }
-    }
-
-    private function validatePositiveId(int $id, string $fieldName): void
-    {
-        if ($id <= 0) {
-            throw new \InvalidArgumentException("{$fieldName} is required");
-        }
     }
 
 }

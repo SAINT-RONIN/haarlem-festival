@@ -17,5 +17,7 @@ interface IOrderItemRepository
         ?string $donationAmount,
         string $specialRequest = '',
     ): void;
+
+    public function existsForSession(int $sessionId): bool;
 }
 

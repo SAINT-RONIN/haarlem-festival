@@ -20,5 +20,3 @@ $pageContentPartials = [
 ?>
 <?php require __DIR__ . '/../partials/_shell.php'; ?>
 
-<script src="/assets/js/add-to-program.js"></script>
-

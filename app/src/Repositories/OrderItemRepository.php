@@ -64,5 +64,14 @@ class OrderItemRepository implements IOrderItemRepository
             'specialRequest' => $specialRequest,
         ]);
     }
+
+    public function existsForSession(int $sessionId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT 1 FROM OrderItem WHERE EventSessionId = :sessionId LIMIT 1'
+        );
+        $stmt->execute([':sessionId' => $sessionId]);
+        return $stmt->fetchColumn() !== false;
+    }
 }
 

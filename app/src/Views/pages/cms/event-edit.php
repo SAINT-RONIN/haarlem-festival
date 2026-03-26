@@ -5,6 +5,8 @@
  * @var string $currentView
  * @var \App\ViewModels\Cms\CmsEventEditViewModel $viewModel
  * @var \App\Models\PriceTier[] $priceTiers
+ * @var \App\Models\Artist[] $artists
+ * @var \App\Models\Restaurant[] $restaurants
  * @var string|null $successMessage
  * @var string|null $errorMessage
  */
@@ -71,6 +73,52 @@
                         <textarea name="ShortDescription" id="ShortDescription" rows="2"
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><?= htmlspecialchars($viewModel->shortDescription) ?></textarea>
                     </div>
+
+                    <?php if ($viewModel->eventTypeSlug === 'jazz'): ?>
+                    <div class="md:col-span-2">
+                        <label for="ArtistId" class="block text-sm font-medium text-gray-700 mb-1">Artist</label>
+                        <select name="ArtistId" id="ArtistId"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">No artist selected</option>
+                            <?php foreach ($artists as $artist): ?>
+                                <?php /** @var \App\Models\Artist $artist */ ?>
+                                <option value="<?= $artist->artistId ?>"
+                                    <?= $viewModel->artistId === $artist->artistId ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($artist->name) ?>
+                                    <?php if ($artist->style !== ''): ?>
+                                        — <?= htmlspecialchars($artist->style) ?>
+                                    <?php endif; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            <a href="/cms/artists/create" class="text-blue-600 hover:underline" target="_blank">Create a new artist</a>
+                        </p>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ($viewModel->eventTypeSlug === 'restaurant'): ?>
+                    <div class="md:col-span-2">
+                        <label for="RestaurantId" class="block text-sm font-medium text-gray-700 mb-1">Restaurant</label>
+                        <select name="RestaurantId" id="RestaurantId"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">No restaurant selected</option>
+                            <?php foreach ($restaurants as $restaurant): ?>
+                                <?php /** @var \App\Models\Restaurant $restaurant */ ?>
+                                <option value="<?= $restaurant->restaurantId ?>"
+                                    <?= $viewModel->restaurantId === $restaurant->restaurantId ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($restaurant->name) ?>
+                                    <?php if ($restaurant->city !== ''): ?>
+                                        — <?= htmlspecialchars($restaurant->city) ?>
+                                    <?php endif; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            <a href="/cms/restaurants/create" class="text-blue-600 hover:underline" target="_blank">Create a new restaurant</a>
+                        </p>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 <div class="mt-6">
                     <button type="submit"
@@ -129,10 +177,22 @@
                                        class="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-purple-50">
                                 <p class="text-xs text-purple-600 mt-1">Displayed as: Venue • Hall • Seats</p>
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <span class="text-purple-600">🎷</span> Ticket Limit / Person
+                                </label>
+                                <input type="number" name="CapacitySingleTicketLimit" value="4" min="1"
+                                       class="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-purple-50">
+                            </div>
                         <?php else: ?>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
                                 <input type="number" name="CapacityTotal" value="100" min="1"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ticket Limit / Person</label>
+                                <input type="number" name="CapacitySingleTicketLimit" value="10" min="1"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             </div>
                         <?php endif; ?>
@@ -249,13 +309,20 @@
                                                    placeholder="Main Hall, Outdoor Stage..."
                                                    class="w-full px-2 py-1 text-sm border border-purple-300 rounded focus:ring-1 focus:ring-purple-500 bg-purple-50">
                                         </div>
+                                    <?php else: ?>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1">Total Capacity</label>
+                                            <input type="number" name="CapacityTotal" min="1"
+                                                   value="<?= $session->capacityTotal ?>"
+                                                   class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                        </div>
                                     <?php endif; ?>
                                     <?php if ($viewModel->eventTypeSlug === 'history'): ?>
                                         <div>
                                             <label class="block text-xs font-medium text-amber-600 mb-1">🏛️ Ticket
                                                 Label</label>
                                             <input type="text" name="HistoryTicketLabel"
-                                                   value=""
+                                                   value="<?= htmlspecialchars($session->historyTicketLabel ?? '') ?>"
                                                    placeholder="Group ticket - best value..."
                                                    class="w-full px-2 py-1 text-sm border border-amber-300 rounded focus:ring-1 focus:ring-amber-500 bg-amber-50">
                                         </div>
@@ -263,17 +330,113 @@
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-1">CTA Label</label>
                                         <input type="text" name="CtaLabel"
-                                               value=""
+                                               value="<?= htmlspecialchars($session->ctaLabel ?? '') ?>"
                                                placeholder="Discover"
                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-1">CTA URL</label>
                                         <input type="text" name="CtaUrl"
-                                               value=""
+                                               value="<?= htmlspecialchars($session->ctaUrl ?? '') ?>"
                                                placeholder="/event/..."
                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                                     </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                                    <!-- Capacity: single ticket limit -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Ticket Limit / Person</label>
+                                        <input type="number" name="CapacitySingleTicketLimit" min="1"
+                                               value="<?= $session->capacitySingleTicketLimit ?>"
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                        <p class="text-[10px] text-gray-400 mt-0.5">Max tickets per order</p>
+                                    </div>
+                                    <!-- Read-only: seats available -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Seats Available</label>
+                                        <p class="px-2 py-1 text-sm bg-gray-100 rounded text-gray-700"><?= $session->seatsAvailable ?></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Single Tickets Sold</label>
+                                        <p class="px-2 py-1 text-sm bg-gray-100 rounded text-gray-700"><?= $session->soldSingleTickets ?></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Reserved Seats Sold</label>
+                                        <p class="px-2 py-1 text-sm bg-gray-100 rounded text-gray-700"><?= $session->soldReservedSeats ?></p>
+                                    </div>
+                                    <!-- Session Type -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Session Type</label>
+                                        <input type="text" name="SessionType"
+                                               value="<?= htmlspecialchars($session->sessionType ?? '') ?>"
+                                               placeholder="e.g., Workshop, Tour"
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    <!-- Duration -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Duration (min)</label>
+                                        <input type="number" name="DurationMinutes" min="0"
+                                               value="<?= $session->durationMinutes ?? '' ?>"
+                                               placeholder="e.g., 90"
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    <!-- Language -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Language</label>
+                                        <select name="LanguageCode"
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                            <option value="">Not specified</option>
+                                            <option value="NL" <?= $session->languageCode === 'NL' ? 'selected' : '' ?>>Dutch (NL)</option>
+                                            <option value="ENG" <?= $session->languageCode === 'ENG' ? 'selected' : '' ?>>English (ENG)</option>
+                                        </select>
+                                    </div>
+                                    <!-- Min Age -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Min Age</label>
+                                        <input type="number" name="MinAge" min="0"
+                                               value="<?= $session->minAge ?? '' ?>"
+                                               placeholder="—"
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    <!-- Max Age -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Max Age</label>
+                                        <input type="number" name="MaxAge" min="0"
+                                               value="<?= $session->maxAge ?? '' ?>"
+                                               placeholder="—"
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    <!-- Notes -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Notes</label>
+                                        <input type="text" name="Notes"
+                                               value="<?= htmlspecialchars($session->notes) ?>"
+                                               placeholder="Internal notes"
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                                <!-- Checkboxes row -->
+                                <div class="flex flex-wrap gap-6 mt-4">
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                        <input type="checkbox" name="IsFree" value="1" <?= $session->isFree ? 'checked' : '' ?>
+                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        Free admission
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                        <input type="checkbox" name="ReservationRequired" value="1" <?= $session->reservationRequired ? 'checked' : '' ?>
+                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        Reservation required
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                        <input type="checkbox" name="IsCancelled" value="1" <?= $session->isCancelled ? 'checked' : '' ?>
+                                               class="rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                        <span class="text-red-600">Cancelled</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                        <input type="checkbox" name="IsActive" value="1" <?= $session->isActive ? 'checked' : '' ?>
+                                               class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                        Active (visible on site)
+                                    </label>
                                 </div>
                                 <div class="mt-2">
                                     <button type="submit"

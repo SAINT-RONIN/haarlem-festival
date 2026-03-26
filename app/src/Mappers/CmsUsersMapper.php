@@ -4,26 +4,40 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Enums\UserRoleId;
+use App\Models\UserAccount;
 use App\Models\UserWithRole;
+use App\ViewModels\Cms\CmsUserFormViewModel;
 use App\ViewModels\Cms\CmsUserListItemViewModel;
 use App\ViewModels\Cms\CmsUsersListViewModel;
 
 class CmsUsersMapper
 {
+    /**
+     * @param UserWithRole[] $users
+     */
     public static function toListViewModel(
         array $users,
         string $selectedRole,
         ?string $successMessage,
-        ?string $errorMessage
+        ?string $errorMessage,
+        string $searchQuery = '',
+        string $sortBy = 'registered',
+        string $sortDir = 'desc',
+        string $deleteCsrfToken = '',
     ): CmsUsersListViewModel {
         return new CmsUsersListViewModel(
-            users: array_map([self::class, 'toListItem'], $users),
-            selectedRole: $selectedRole,
-            successMessage: $successMessage,
-            errorMessage: $errorMessage,
+            users:             array_map([self::class, 'toListItem'], $users),
+            selectedRole:      $selectedRole,
+            successMessage:    $successMessage,
+            errorMessage:      $errorMessage,
+            searchQuery:       $searchQuery,
+            sortBy:            $sortBy,
+            sortDir:           $sortDir,
+            deleteCsrfToken:   $deleteCsrfToken,
+            roleFilterOptions: self::buildRoleOptions(),
         );
     }
-
 
     public static function toListItem(UserWithRole $user): CmsUserListItemViewModel
     {
@@ -46,6 +60,36 @@ class CmsUsersMapper
         );
     }
 
+    /**
+     * @param array<string, string> $errors
+     */
+    public static function toFormViewModel(
+        ?UserAccount $user,
+        string $username,
+        string $email,
+        string $firstName,
+        string $lastName,
+        int $selectedRoleId,
+        string $csrfToken,
+        string $formAction,
+        string $pageTitle,
+        array $errors,
+    ): CmsUserFormViewModel {
+        return new CmsUserFormViewModel(
+            userAccountId:  $user?->userAccountId,
+            username:       $username,
+            email:          $email,
+            firstName:      $firstName,
+            lastName:       $lastName,
+            selectedRoleId: $selectedRoleId,
+            csrfToken:      $csrfToken,
+            formAction:     $formAction,
+            pageTitle:      $pageTitle,
+            errors:         $errors,
+            roleOptions:    self::buildRoleOptions(),
+        );
+    }
+
     private static function resolveRoleBadgeClass(string $roleName): string
     {
         return match ($roleName) {
@@ -54,5 +98,17 @@ class CmsUsersMapper
             'Customer'      => 'bg-gray-100 text-gray-800',
             default         => 'bg-gray-100 text-gray-800',
         };
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function buildRoleOptions(): array
+    {
+        $options = [];
+        foreach (UserRoleId::cases() as $role) {
+            $options[$role->value] = $role->getDisplayName();
+        }
+        return $options;
     }
 }

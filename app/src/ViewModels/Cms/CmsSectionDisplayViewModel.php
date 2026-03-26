@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\ViewModels\Cms;
+
+final readonly class CmsSectionDisplayViewModel
+{
+    /**
+     * @param CmsItemDisplayViewModel[]   $items
+     * @param CmsSubGroupViewModel[]|null $subGroups
+     */
+    public function __construct(
+        public int    $id,
+        public string $key,
+        public string $displayName,
+        public bool   $isEditable,
+        public array  $items,
+        public ?array $subGroups,
+    ) {}
+}
