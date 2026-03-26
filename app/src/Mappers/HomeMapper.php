@@ -212,12 +212,22 @@ final class HomeMapper
         );
     }
 
-    /** Keyword-to-category map for venue classification. */
-    private const VENUE_CATEGORY_KEYWORDS = [
-        'jazz' => ['patronaat'],
-        'dance' => ['club', 'lichtfabriek', 'slachthuis', 'jopenkerk', 'caprera', 'puncher'],
-        'history' => ['bavo', 'church'],
-        'storytelling' => ['verhalen', 'schuur', 'kweek', 'boom', 'theater'],
+    /** Flat keyword-to-category map for venue classification. */
+    private const KEYWORD_TO_CATEGORY = [
+        'patronaat'    => 'jazz',
+        'club'         => 'dance',
+        'lichtfabriek' => 'dance',
+        'slachthuis'   => 'dance',
+        'jopenkerk'    => 'dance',
+        'caprera'      => 'dance',
+        'puncher'      => 'dance',
+        'bavo'         => 'history',
+        'church'       => 'history',
+        'verhalen'     => 'storytelling',
+        'schuur'       => 'storytelling',
+        'kweek'        => 'storytelling',
+        'boom'         => 'storytelling',
+        'theater'      => 'storytelling',
     ];
 
     /**
@@ -228,11 +238,9 @@ final class HomeMapper
     {
         $name = strtolower($venueName);
 
-        foreach (self::VENUE_CATEGORY_KEYWORDS as $category => $keywords) {
-            foreach ($keywords as $keyword) {
-                if (str_contains($name, $keyword)) {
-                    return $category;
-                }
+        foreach (self::KEYWORD_TO_CATEGORY as $keyword => $category) {
+            if (str_contains($name, $keyword)) {
+                return $category;
             }
         }
 
