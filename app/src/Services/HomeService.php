@@ -9,6 +9,7 @@ use App\Models\EventType;
 use App\DTOs\Pages\HomePageData;
 use App\DTOs\Pages\HomeScheduleDayData;
 use App\DTOs\Pages\HomeScheduleSessionData;
+use App\DTOs\Pages\HomeEventTypeData;
 use App\DTOs\Filters\VenueFilter;
 use App\Mappers\HomeMapper;
 use App\Repositories\Interfaces\ICmsContentRepository;
