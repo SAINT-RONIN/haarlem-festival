@@ -169,7 +169,7 @@ class EventRepository extends BaseRepository implements IEventRepository
      */
     public function create(EventUpsertData $data): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO Event (
                 EventTypeId, Title, ShortDescription, LongDescriptionHtml,
                 FeaturedImageAssetId, VenueId, ArtistId, RestaurantId, IsActive
@@ -189,8 +189,6 @@ class EventRepository extends BaseRepository implements IEventRepository
                 'isActive' => $data->isActive ? 1 : 0,
             ],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 
     /**

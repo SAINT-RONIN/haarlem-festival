@@ -30,7 +30,7 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         string $totalAmount,
         ?\DateTimeImmutable $payBeforeUtc,
     ): int {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO `Order` (
                 OrderNumber, UserAccountId, ProgramId, Status,
                 PayBeforeUtc, Subtotal, VatTotal, TotalAmount
@@ -49,8 +49,6 @@ class OrderRepository extends BaseRepository implements IOrderRepository
                 'totalAmount' => $totalAmount,
             ],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 
     /**

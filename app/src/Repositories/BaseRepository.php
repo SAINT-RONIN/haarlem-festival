@@ -45,6 +45,34 @@ abstract class BaseRepository
     }
 
     /**
+     * Executes an INSERT statement and returns the auto-generated ID.
+     *
+     * Wraps prepare, execute, and lastInsertId in a single try-catch
+     * so a connection drop between execute and lastInsertId cannot
+     * leak a raw PDOException.
+     *
+     * @param string               $sql    The INSERT query with named placeholders.
+     * @param array<string, mixed> $params Bound parameter values.
+     * @return int The auto-increment ID of the inserted row.
+     * @throws RepositoryException When the INSERT or ID retrieval fails.
+     */
+    protected function executeInsert(string $sql, array $params = []): int
+    {
+        try {
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute($params);
+
+            return (int) $this->pdo->lastInsertId();
+        } catch (\PDOException $error) {
+            throw new RepositoryException(
+                'Database insert failed: ' . $error->getMessage(),
+                (int) $error->getCode(),
+                $error,
+            );
+        }
+    }
+
+    /**
      * Executes a SELECT and maps every returned row through a callable.
      *
      * @param string               $sql    The SQL query with named placeholders.

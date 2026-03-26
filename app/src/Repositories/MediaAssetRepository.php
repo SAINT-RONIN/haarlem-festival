@@ -66,7 +66,7 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
      */
     public function create(array $data): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO MediaAsset (FilePath, OriginalFileName, MimeType, FileSizeBytes, AltText)
             VALUES (:filePath, :originalFileName, :mimeType, :fileSizeBytes, :altText)',
             [
@@ -77,8 +77,6 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
                 ':altText'          => $data['AltText'] ?? '',
             ],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 
     /**

@@ -347,7 +347,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
      */
     public function create(array $data): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO EventSession (
                 EventId, StartDateTime, EndDateTime, CapacityTotal,
                 CapacitySingleTicketLimit, HallName, SessionType,
@@ -381,8 +381,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
                 'ctaUrl' => $data['CtaUrl'] ?? null,
             ],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 
     /**

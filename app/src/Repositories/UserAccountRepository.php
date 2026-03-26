@@ -94,7 +94,7 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         string $lastName,
         int $roleId,
     ): int {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO UserAccount
                 (UserRoleId, Username, Email, PasswordHash, PasswordSalt, FirstName, LastName, IsEmailConfirmed, IsActive)
             VALUES
@@ -108,8 +108,6 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
                 ':lastName'     => $lastName,
             ],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 
     /**

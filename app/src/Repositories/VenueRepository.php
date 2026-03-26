@@ -46,12 +46,10 @@ class VenueRepository extends BaseRepository implements IVenueRepository
      */
     public function create(string $name, string $addressLine, string $city = 'Haarlem'): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO Venue (Name, AddressLine, City, IsActive)
             VALUES (:name, :addressLine, :city, 1)',
             ['name' => $name, 'addressLine' => $addressLine, 'city' => $city],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 }

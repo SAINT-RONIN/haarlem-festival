@@ -23,7 +23,7 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
      */
     public function create(int $orderId, PaymentMethod $method, PaymentStatus $status): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO Payment (OrderId, Method, Status)
             VALUES (:orderId, :method, :status)',
             [
@@ -32,8 +32,6 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
                 'status' => $status->value,
             ],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 
     /**

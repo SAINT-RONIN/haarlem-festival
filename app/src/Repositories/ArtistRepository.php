@@ -51,7 +51,7 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
      */
     public function create(ArtistUpsertData $data): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO Artist (Name, Style, BioHtml, ImageAssetId, IsActive, CreatedAtUtc)
              VALUES (:name, :style, :bio, :imageId, :active, NOW())',
             [
@@ -59,8 +59,6 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
                 ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
             ],
         );
-
-        return (int) $this->pdo->lastInsertId();
     }
 
     /**

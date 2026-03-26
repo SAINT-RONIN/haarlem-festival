@@ -76,13 +76,11 @@ class EventSessionLabelRepository extends BaseRepository implements IEventSessio
      */
     public function create(int $sessionId, string $labelText): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO EventSessionLabel (EventSessionId, LabelText)
             VALUES (:sessionId, :labelText)',
             ['sessionId' => $sessionId, 'labelText' => $labelText],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 
     /**

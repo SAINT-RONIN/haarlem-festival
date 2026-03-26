@@ -74,7 +74,7 @@ class RestaurantRepository extends BaseRepository implements IRestaurantReposito
 
     public function create(RestaurantUpsertData $data): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO Restaurant
             (Name, AddressLine, City, Stars, CuisineType, DescriptionHtml, ImageAssetId, IsActive,
              Phone, Email, Website, AboutText, ChefName, ChefText, MenuDescription,
@@ -96,8 +96,6 @@ class RestaurantRepository extends BaseRepository implements IRestaurantReposito
                 ':special' => $data->specialRequestsNote,
             ],
         );
-
-        return (int) $this->pdo->lastInsertId();
     }
 
     public function update(int $id, RestaurantUpsertData $data): void

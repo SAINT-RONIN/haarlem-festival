@@ -96,13 +96,11 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      */
     public function createProgram(string $sessionKey, ?int $userAccountId): Program
     {
-        $this->execute(
+        $programId = $this->executeInsert(
             'INSERT INTO Program (SessionKey, UserAccountId, IsCheckedOut)
             VALUES (:sessionKey, :userAccountId, 0)',
             ['sessionKey' => $sessionKey, 'userAccountId' => $userAccountId],
         );
-
-        $programId = (int)$this->pdo->lastInsertId();
 
         $programs = $this->findPrograms(new ProgramFilter(programId: $programId));
 
@@ -121,7 +119,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      */
     public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
-        $this->execute(
+        $itemId = $this->executeInsert(
             'INSERT INTO ProgramItem (ProgramId, EventSessionId, Quantity, DonationAmount)
             VALUES (:programId, :eventSessionId, :quantity, :donationAmount)',
             [
@@ -131,8 +129,6 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
                 'donationAmount' => $donationAmount,
             ],
         );
-
-        $itemId = (int)$this->pdo->lastInsertId();
 
         $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
 

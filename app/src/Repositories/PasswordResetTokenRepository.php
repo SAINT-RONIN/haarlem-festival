@@ -25,7 +25,7 @@ class PasswordResetTokenRepository extends BaseRepository implements IPasswordRe
      */
     public function create(int $userId, string $tokenHash, \DateTimeImmutable $expiresAt): int
     {
-        $this->execute(
+        return $this->executeInsert(
             'INSERT INTO PasswordResetToken
             (UserAccountId, Token, ExpiresAtUtc, UsedAtUtc)
             VALUES
@@ -36,8 +36,6 @@ class PasswordResetTokenRepository extends BaseRepository implements IPasswordRe
                 'expiresAt' => $expiresAt->format('Y-m-d H:i:s'),
             ],
         );
-
-        return (int)$this->pdo->lastInsertId();
     }
 
     /**
