@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Constants\HistoryPageConstants;
 use App\Constants\ScheduleConstants;
+use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\EventTypeId;
 use App\Exceptions\HistoricalLocationNotFoundException;
 use App\Mappers\HistoricalLocationMapper;
@@ -35,6 +36,15 @@ class HistoryController extends BaseController
      * GET /history/
      */
     public function index(): void
+    {
+        try {
+            $this->renderIndex();
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
+
+    private function renderIndex(): void
     {
         $data = $this->historyService->getHistoryPageData();
         $scheduleData = $this->scheduleService->getScheduleData(
