@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-final class Restaurant
+final readonly class Restaurant
 {
     /*
      * Purpose: Stores restaurant information for festival dining events
@@ -18,40 +18,40 @@ final class Restaurant
      */
 
     public function __construct(
-        public readonly int                $restaurantId,
-        public readonly string             $name,
-        public readonly string             $addressLine,
-        public readonly string             $city,
-        public readonly ?int               $stars,
-        public readonly string             $cuisineType,
-        public readonly string             $descriptionHtml,
-        public readonly ?int               $imageAssetId,
-        public readonly bool               $isActive,
-        public readonly \DateTimeImmutable $createdAtUtc,
+        public int                $restaurantId,
+        public string             $name,
+        public string             $addressLine,
+        public string             $city,
+        public ?int               $stars,
+        public string             $cuisineType,
+        public string             $descriptionHtml,
+        public ?int               $imageAssetId,
+        public bool               $isActive,
+        public \DateTimeImmutable $createdAtUtc,
         // Image path from MediaAsset table (filled by JOIN in repository).
         // null when the restaurant has no linked image.
-        public readonly ?string            $imagePath = null,
+        public ?string            $imagePath = null,
 
         // --- Detail page fields (added by migration v29) ---
         // Contact info
-        public readonly ?string $phone = null,
-        public readonly ?string $email = null,
-        public readonly ?string $website = null,
+        public ?string $phone = null,
+        public ?string $email = null,
+        public ?string $website = null,
         // About section
-        public readonly ?string $aboutText = null,
+        public ?string $aboutText = null,
         // Chef section
-        public readonly ?string $chefName = null,
-        public readonly ?string $chefText = null,
+        public ?string $chefName = null,
+        public ?string $chefText = null,
         // Menu section
-        public readonly ?string $menuDescription = null,
+        public ?string $menuDescription = null,
         // Location section
-        public readonly ?string $locationDescription = null,
-        public readonly ?string $mapEmbedUrl = null,
+        public ?string $locationDescription = null,
+        public ?string $mapEmbedUrl = null,
         // Practical info
-        public readonly ?int    $michelinStars = null,
-        public readonly ?int    $seatsPerSession = null,
-        public readonly ?int    $durationMinutes = null,
-        public readonly ?string $specialRequestsNote = null,
+        public ?int    $michelinStars = null,
+        public ?int    $seatsPerSession = null,
+        public ?int    $durationMinutes = null,
+        public ?string $specialRequestsNote = null,
     ) {
     }
 

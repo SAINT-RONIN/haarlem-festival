@@ -10,16 +10,16 @@ namespace App\Models;
  * Replaces the 8 numbered image columns on Restaurant with a proper junction table.
  * FilePath is resolved via LEFT JOIN with MediaAsset in the repository.
  */
-class RestaurantImage
+final readonly class RestaurantImage
 {
     public function __construct(
-        public readonly int     $restaurantImageId,
-        public readonly int     $restaurantId,
-        public readonly int     $mediaAssetId,
-        public readonly string  $imageType,
-        public readonly int     $sortOrder,
+        public int     $restaurantImageId,
+        public int     $restaurantId,
+        public int     $mediaAssetId,
+        public string  $imageType,
+        public int     $sortOrder,
         // Resolved from JOIN with MediaAsset. null when MediaAsset row is missing.
-        public readonly ?string $filePath = null,
+        public ?string $filePath = null,
     ) {}
 
     public static function fromRow(array $row): self

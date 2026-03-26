@@ -10,7 +10,7 @@ namespace App\Models;
  * Used as a typed data object between PDO/repositories and the rest of the application.
  * Typical flow: SELECT -> fromRow() -> use in service/controller/view -> toArray() -> INSERT/UPDATE.
  */
-class HistoryTour
+final readonly class HistoryTour
 {
     /*
      * Purpose: Defines a history walking tour variant for a session,
@@ -18,11 +18,11 @@ class HistoryTour
      */
 
     public function __construct(
-        public readonly int    $historyTourId,
-        public readonly int    $eventSessionId,
-        public readonly string $languageCode,
-        public readonly int    $guideCount,
-        public readonly int    $seatsPerTour,
+        public int    $historyTourId,
+        public int    $eventSessionId,
+        public string $languageCode,
+        public int    $guideCount,
+        public int    $seatsPerTour,
     ) {
     }
 
