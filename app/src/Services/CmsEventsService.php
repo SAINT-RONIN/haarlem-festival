@@ -564,7 +564,7 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Applies business-logic defaults for capacity fields before persisting.
+     * Applies business-logic defaults for session fields before persisting.
      *
      * @param array<string, mixed> $data
      * @return array<string, mixed>
@@ -573,6 +573,9 @@ class CmsEventsService implements ICmsEventsService
     {
         $data['CapacityTotal'] = (int)($data['CapacityTotal'] ?? 100);
         $data['CapacitySingleTicketLimit'] = (int)($data['CapacitySingleTicketLimit'] ?? 100);
+        $data['ReservationRequired'] = $data['ReservationRequired'] ?? 0;
+        $data['IsFree'] = $data['IsFree'] ?? 0;
+        $data['Notes'] = $data['Notes'] ?? '';
 
         return $data;
     }

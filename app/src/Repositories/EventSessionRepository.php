@@ -259,7 +259,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
      */
     private function executeGroupedDayQuery(EventSessionFilter $filters, string $whereClause, array $params, string $orderBy): SessionQueryResult
     {
-        $maxDays = max(1, (int)($filters->maxDays ?? 7));
+        $maxDays = max(1, (int)$filters->maxDays);
         $baseFrom = $this->getBaseFromClause();
 
         $days = $this->fetchDistinctDates($baseFrom, $whereClause, $params, $maxDays);
@@ -370,9 +370,9 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
                 'languageCode' => $data['LanguageCode'] ?? null,
                 'minAge' => $data['MinAge'] ?? null,
                 'maxAge' => $data['MaxAge'] ?? null,
-                'reservationRequired' => $data['ReservationRequired'] ?? 0,
-                'isFree' => $data['IsFree'] ?? 0,
-                'notes' => $data['Notes'] ?? '',
+                'reservationRequired' => $data['ReservationRequired'],
+                'isFree' => $data['IsFree'],
+                'notes' => $data['Notes'],
                 'historyTicketLabel' => $data['HistoryTicketLabel'] ?? null,
                 'ctaLabel' => $data['CtaLabel'] ?? null,
                 'ctaUrl' => $data['CtaUrl'] ?? null,
@@ -497,7 +497,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             ORDER BY date ASC
         ";
 
-        $maxDays = $filter->maxDays ?? 7;
+        $maxDays = (int)$filter->maxDays;
         $sql .= ' LIMIT ' . (int) $maxDays;
 
         $stmt = $this->pdo->prepare($sql);
