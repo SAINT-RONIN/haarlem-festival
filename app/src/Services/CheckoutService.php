@@ -12,6 +12,8 @@ use App\Enums\PaymentStatus;
 use App\Infrastructure\Interfaces\IStripeService;
 use App\DTOs\Program\ProgramData;
 use App\DTOs\Program\ProgramItemData;
+use App\Models\CheckoutMainContent;
+use App\Repositories\CheckoutContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
@@ -46,6 +48,7 @@ class CheckoutService implements ICheckoutService
         private readonly IStripeService $stripeService,
         private readonly ICheckoutRuntimeConfig $runtimeConfig,
         private readonly PDO $pdo,
+        private readonly CheckoutContentRepository $checkoutContentRepository,
     ) {
     }
 
@@ -529,5 +532,12 @@ class CheckoutService implements ICheckoutService
         return 'HF-' . gmdate('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(3)));
     }
 
+    /**
+     * Returns the CMS content for the checkout page.
+     */
+    public function getCheckoutMainContent(): CheckoutMainContent
+    {
+        return $this->checkoutContentRepository->findCheckoutMainContent('checkout', 'main');
+    }
 }
 

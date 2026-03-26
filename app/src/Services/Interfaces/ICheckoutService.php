@@ -9,6 +9,7 @@ use App\DTOs\Checkout\CheckoutSessionResult;
 use App\DTOs\Checkout\CheckoutSessionSummary;
 use App\DTOs\Checkout\WebhookHandlerResult;
 use App\DTOs\Program\ProgramData;
+use App\Models\CheckoutMainContent;
 
 /**
  * Contract for the full checkout lifecycle: creating Stripe-backed checkout sessions,
@@ -38,5 +39,10 @@ interface ICheckoutService
      * Retrieves a summary of a Stripe checkout session for the confirmation page.
      */
     public function getSessionSummary(string $sessionId): CheckoutSessionSummary;
+
+    /**
+     * Returns the CMS content for the checkout page.
+     */
+    public function getCheckoutMainContent(): CheckoutMainContent;
 }
 

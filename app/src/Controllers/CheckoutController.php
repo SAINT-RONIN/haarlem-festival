@@ -10,7 +10,6 @@ use App\Exceptions\CheckoutException;
 use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
 use App\Mappers\CheckoutMapper;
 use App\Mappers\ProgramMapper;
-use App\Repositories\CheckoutContentRepository;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
@@ -23,7 +22,6 @@ class CheckoutController extends BaseController
 {
     public function __construct(
         private readonly IProgramService $programService,
-        private readonly CheckoutContentRepository $checkoutContentRepo,
         private readonly ISessionService $sessionService,
         private readonly ICheckoutService $checkoutService,
         private readonly IStripeWebhookRequestFactory $stripeWebhookRequestFactory,
@@ -47,7 +45,7 @@ class CheckoutController extends BaseController
                 return;
             }
 
-            $cmsContent = $this->checkoutContentRepo->findCheckoutMainContent('checkout', 'main');
+            $cmsContent = $this->checkoutService->getCheckoutMainContent();
             $jsPath = __DIR__ . '/../../public/assets/js/checkout.js';
             $jsVersion = file_exists($jsPath) ? (string)filemtime($jsPath) : '';
             $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $context->isLoggedIn, $jsVersion);

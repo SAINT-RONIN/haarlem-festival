@@ -157,6 +157,7 @@ return static function (string $controllerClass): object {
         $programRepo(),
         $eventSessionRepo(),
         $eventSessionPrice(),
+        $checkoutContentRepo(),
     ));
 
     $authService = fn() => $make('authService', fn() => new AuthService(
@@ -266,7 +267,6 @@ return static function (string $controllerClass): object {
         ),
         CheckoutController::class => new CheckoutController(
             $programService(),
-            $checkoutContentRepo(),
             $sessionService,
             new CheckoutService(
                 $programRepo(),
@@ -284,6 +284,7 @@ return static function (string $controllerClass): object {
                     (float)(getenv('VAT_RATE') !== false ? getenv('VAT_RATE') : 0.21),
                 ),
                 $pdo(),
+                $checkoutContentRepo(),
             ),
             new StripeWebhookRequestFactory(),
         ),
@@ -310,7 +311,6 @@ return static function (string $controllerClass): object {
         ),
         ProgramController::class => new ProgramController(
             $programService(),
-            $checkoutContentRepo(),
             $sessionService,
         ),
         CmsOrdersController::class => new CmsOrdersController(

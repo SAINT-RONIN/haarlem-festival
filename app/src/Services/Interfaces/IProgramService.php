@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Models\Program;
+use App\Models\ProgramMainContent;
 use App\DTOs\Program\ProgramData;
 use App\Models\ProgramItem;
 
@@ -47,4 +48,9 @@ interface IProgramService
      * Returns program with all items enriched with event session details.
      */
     public function getProgramData(string $sessionKey, ?int $userAccountId): ProgramData;
+
+    /**
+     * Returns the CMS content for the "My Program" page.
+     */
+    public function getProgramMainContent(): ProgramMainContent;
 }

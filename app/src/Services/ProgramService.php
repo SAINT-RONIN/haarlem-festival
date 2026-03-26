@@ -13,6 +13,8 @@ use App\DTOs\Program\ProgramItemData;
 use App\DTOs\Filters\ProgramItemFilter;
 use App\Exceptions\ProgramException;
 use App\Mappers\ProgramMapper;
+use App\Models\ProgramMainContent;
+use App\Repositories\CheckoutContentRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -33,6 +35,7 @@ class ProgramService implements IProgramService
         private readonly IProgramRepository $programRepository,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
+        private readonly CheckoutContentRepository $checkoutContentRepository,
     ) {
     }
 
@@ -184,6 +187,14 @@ class ProgramService implements IProgramService
         }
 
         return $this->buildEnrichedProgramData($program, $programItems);
+    }
+
+    /**
+     * Returns the CMS content for the "My Program" page.
+     */
+    public function getProgramMainContent(): ProgramMainContent
+    {
+        return $this->checkoutContentRepository->findProgramMainContent('my-program', 'main');
     }
 
     /** Builds a ProgramData with no items and zero totals. */

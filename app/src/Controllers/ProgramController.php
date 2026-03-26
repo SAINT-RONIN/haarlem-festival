@@ -7,7 +7,6 @@ namespace App\Controllers;
 use App\Controllers\Support\ControllerErrorResponder;
 use App\DTOs\Session\SessionContext;
 use App\Mappers\ProgramMapper;
-use App\Repositories\CheckoutContentRepository;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
 
@@ -19,7 +18,6 @@ class ProgramController extends BaseController
 {
     public function __construct(
         private readonly IProgramService $programService,
-        private readonly CheckoutContentRepository $checkoutContentRepo,
         private readonly ISessionService $sessionService,
     ) {
     }
@@ -34,7 +32,7 @@ class ProgramController extends BaseController
             $context = $this->resolveSessionContext($this->sessionService);
 
             $programData = $this->programService->getProgramData($context->sessionKey, $context->userId);
-            $cmsContent = $this->checkoutContentRepo->findProgramMainContent('my-program', 'main');
+            $cmsContent = $this->programService->getProgramMainContent();
             $viewModel = ProgramMapper::toMyProgramViewModel($programData, $cmsContent, $context->isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);
