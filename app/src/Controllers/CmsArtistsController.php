@@ -39,14 +39,7 @@ class CmsArtistsController extends CmsBaseController
         try {
             $currentView = 'artists';
             $search      = $this->readStringQueryParam('search');
-            $artists     = $this->artistsService->getArtists($search);
-            $viewModel   = CmsArtistsMapper::toListViewModel(
-                $artists,
-                $search ?? '',
-                $this->sessionService->consumeFlash('success'),
-                $this->sessionService->consumeFlash('error'),
-                $this->sessionService->getCsrfToken('cms_artist_delete'),
-            );
+            $viewModel   = $this->buildArtistsListViewModel($search);
             require __DIR__ . '/../Views/pages/cms/artists.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -75,16 +68,7 @@ class CmsArtistsController extends CmsBaseController
     public function store(): void
     {
         try {
-            $this->validateCsrf('cms_artist_create', '/cms/artists/create');
-            $data   = $this->extractFormData();
-            // Re-render the form with errors if validation fails
-            $errors = $this->artistsService->validateForCreate($data);
-            if (!empty($errors)) {
-                $this->renderCreateForm($data, $errors);
-                return;
-            }
-            $this->artistsService->createArtist($data);
-            $this->redirectWithFlash('Artist created successfully.', 'success', '/cms/artists');
+            $this->processArtistStore();
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -97,15 +81,7 @@ class CmsArtistsController extends CmsBaseController
     public function edit(int $id): void
     {
         try {
-            $artist = $this->artistsService->findById($id);
-            if ($artist === null) {
-                http_response_code(404);
-                require __DIR__ . '/../Views/pages/errors/404.php';
-                return;
-            }
-            $currentView = 'artists';
-            $viewModel   = $this->buildFormViewModel($id, CmsArtistsMapper::fromArtist($artist), []);
-            require __DIR__ . '/../Views/pages/cms/artist-edit.php';
+            $this->renderArtistEditPage($id);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -118,16 +94,7 @@ class CmsArtistsController extends CmsBaseController
     public function update(int $id): void
     {
         try {
-            $this->validateCsrf('cms_artist_edit_' . $id, '/cms/artists/' . $id . '/edit');
-            $data   = $this->extractFormData();
-            // Re-render the form with errors if validation fails
-            $errors = $this->artistsService->validateForUpdate($id, $data);
-            if (!empty($errors)) {
-                $this->renderEditForm($id, $data, $errors);
-                return;
-            }
-            $this->artistsService->updateArtist($id, $data);
-            $this->redirectWithFlash('Artist updated successfully.', 'success', '/cms/artists');
+            $this->processArtistUpdate($id);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -149,6 +116,63 @@ class CmsArtistsController extends CmsBaseController
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /** Fetches artists from the service and maps them to the list ViewModel. */
+    private function buildArtistsListViewModel(?string $search): \App\ViewModels\Cms\CmsArtistsListViewModel
+    {
+        $artists = $this->artistsService->getArtists($search);
+        return CmsArtistsMapper::toListViewModel(
+            $artists,
+            $search ?? '',
+            $this->sessionService->consumeFlash('success'),
+            $this->sessionService->consumeFlash('error'),
+            $this->sessionService->getCsrfToken('cms_artist_delete'),
+        );
+    }
+
+    /** Handles CSRF validation, form extraction, validation, and persistence for a new artist. */
+    private function processArtistStore(): void
+    {
+        $this->validateCsrf('cms_artist_create', '/cms/artists/create');
+        $data   = $this->extractFormData();
+        // Re-render the form with errors if validation fails
+        $errors = $this->artistsService->validateForCreate($data);
+        if (!empty($errors)) {
+            $this->renderCreateForm($data, $errors);
+            return;
+        }
+        $this->artistsService->createArtist($data);
+        $this->redirectWithFlash('Artist created successfully.', 'success', '/cms/artists');
+    }
+
+    /** Loads the artist by ID, renders 404 if missing, otherwise renders the edit form. */
+    private function renderArtistEditPage(int $id): void
+    {
+        $artist = $this->artistsService->findById($id);
+        if ($artist === null) {
+            http_response_code(404);
+            require __DIR__ . '/../Views/pages/errors/404.php';
+            return;
+        }
+        $currentView = 'artists';
+        $viewModel   = $this->buildFormViewModel($id, CmsArtistsMapper::fromArtist($artist), []);
+        require __DIR__ . '/../Views/pages/cms/artist-edit.php';
+    }
+
+    /** Handles CSRF validation, form extraction, validation, and persistence for updating an artist. */
+    private function processArtistUpdate(int $id): void
+    {
+        $this->validateCsrf('cms_artist_edit_' . $id, '/cms/artists/' . $id . '/edit');
+        $data   = $this->extractFormData();
+        // Re-render the form with errors if validation fails
+        $errors = $this->artistsService->validateForUpdate($id, $data);
+        if (!empty($errors)) {
+            $this->renderEditForm($id, $data, $errors);
+            return;
+        }
+        $this->artistsService->updateArtist($id, $data);
+        $this->redirectWithFlash('Artist updated successfully.', 'success', '/cms/artists');
     }
 
     private function extractFormData(): ArtistUpsertData

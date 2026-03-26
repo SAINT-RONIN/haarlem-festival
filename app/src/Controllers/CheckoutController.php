@@ -37,23 +37,28 @@ class CheckoutController extends BaseController
     public function index(): void
     {
         try {
-            $context = $this->resolveSessionContext($this->sessionService);
-
-            $programData = $this->programService->getProgramData($context->sessionKey, $context->userId);
-
-            if ($programData->items === []) {
-                $this->redirect('/my-program');
-                return;
-            }
-
-            $cmsContent = $this->checkoutService->getCheckoutMainContent();
-            $jsVersion = AssetVersionHelper::resolveJsVersion(__DIR__ . '/../../public/assets/js/checkout.js');
-            $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $context->isLoggedIn, $jsVersion);
-
-            $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);
+            $this->renderCheckoutPage();
         } catch (CheckoutException $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /** Loads session context, program data, CMS content, and renders the checkout page. */
+    private function renderCheckoutPage(): void
+    {
+        $context = $this->resolveSessionContext($this->sessionService);
+        $programData = $this->programService->getProgramData($context->sessionKey, $context->userId);
+
+        if ($programData->items === []) {
+            $this->redirect('/my-program');
+            return;
+        }
+
+        $cmsContent = $this->checkoutService->getCheckoutMainContent();
+        $jsVersion = AssetVersionHelper::resolveJsVersion(__DIR__ . '/../../public/assets/js/checkout.js');
+        $viewModel = ProgramMapper::toCheckoutViewModel($programData, $cmsContent, $context->isLoggedIn, $jsVersion);
+
+        $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);
     }
 
     /**
@@ -64,20 +69,26 @@ class CheckoutController extends BaseController
     public function createSession(): void
     {
         try {
-            $context = $this->resolveSessionContext($this->sessionService);
-            $userId = $this->requireAuthenticatedUserId();
-
-            $payload = $this->readJsonBody();
-            $programData = $this->programService->getProgramData($context->sessionKey, $userId);
-            $result = $this->checkoutService->createCheckoutSession($programData, $userId, $payload);
-
-            $this->json([
-                'success' => true,
-                'redirectUrl' => $result->redirectUrl,
-            ], 200);
+            $this->processCreateSession();
         } catch (CheckoutException|\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
+    }
+
+    /** Resolves auth context, reads JSON payload, creates a Stripe session, and returns the redirect URL. */
+    private function processCreateSession(): void
+    {
+        $context = $this->resolveSessionContext($this->sessionService);
+        $userId = $this->requireAuthenticatedUserId();
+
+        $payload = $this->readJsonBody();
+        $programData = $this->programService->getProgramData($context->sessionKey, $userId);
+        $result = $this->checkoutService->createCheckoutSession($programData, $userId, $payload);
+
+        $this->json([
+            'success' => true,
+            'redirectUrl' => $result->redirectUrl,
+        ], 200);
     }
 
     /**
@@ -123,22 +134,28 @@ class CheckoutController extends BaseController
     public function webhook(): void
     {
         try {
-            $webhookRequest = $this->stripeWebhookRequestFactory->createFromGlobals();
-
-            $result = $this->checkoutService->handleWebhook(
-                $webhookRequest->payload,
-                $webhookRequest->signatureHeader,
-            );
-
-            $this->json([
-                'received' => true,
-                'processed' => $result->processed,
-                'eventId' => $result->eventId,
-                'eventType' => $result->eventType,
-            ], 200);
+            $this->processWebhook();
         } catch (CheckoutException|\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
         }
+    }
+
+    /** Creates a webhook request from globals, processes it, and returns the result as JSON. */
+    private function processWebhook(): void
+    {
+        $webhookRequest = $this->stripeWebhookRequestFactory->createFromGlobals();
+
+        $result = $this->checkoutService->handleWebhook(
+            $webhookRequest->payload,
+            $webhookRequest->signatureHeader,
+        );
+
+        $this->json([
+            'received' => true,
+            'processed' => $result->processed,
+            'eventId' => $result->eventId,
+            'eventType' => $result->eventType,
+        ], 200);
     }
 
     /**

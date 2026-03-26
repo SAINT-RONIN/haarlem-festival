@@ -33,22 +33,25 @@ class CmsOrdersController extends CmsBaseController
     public function index(): void
     {
         try {
-
-            $currentView  = 'orders';
+            $currentView = 'orders';
             $statusFilter = $this->readStringQueryParam('status');
-
-            $ordersData = $this->ordersService->getOrdersWithDetails($statusFilter);
-
-            $viewModel = CmsOrdersMapper::toListViewModel(
-                $ordersData,
-                $statusFilter ?? '',
-                $this->sessionService->consumeFlash('success'),
-                $this->sessionService->consumeFlash('error'),
-            );
-
+            $viewModel = $this->buildOrdersViewModel($statusFilter);
             require __DIR__ . '/../Views/pages/cms/orders.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /** Fetches orders from the service and maps them to the list view model. */
+    private function buildOrdersViewModel(?string $statusFilter): \App\ViewModels\Cms\CmsOrdersListViewModel
+    {
+        $ordersData = $this->ordersService->getOrdersWithDetails($statusFilter);
+
+        return CmsOrdersMapper::toListViewModel(
+            $ordersData,
+            $statusFilter ?? '',
+            $this->sessionService->consumeFlash('success'),
+            $this->sessionService->consumeFlash('error'),
+        );
     }
 }

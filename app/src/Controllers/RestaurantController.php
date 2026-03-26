@@ -44,18 +44,24 @@ class RestaurantController extends BaseController
     public function detail(string $id): void
     {
         try {
-            $data = $this->restaurantService->getRestaurantDetailData((int) $id);
-
-            if ($data === null) {
-                http_response_code(404);
-                require __DIR__ . '/../Views/pages/errors/404.php';
-                return;
-            }
-
-            $viewModel = RestaurantViewMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
-            $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
+            $this->renderRestaurantDetail($id);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /** Loads restaurant data, returns 404 if not found, otherwise builds VM and renders detail page. */
+    private function renderRestaurantDetail(string $id): void
+    {
+        $data = $this->restaurantService->getRestaurantDetailData((int) $id);
+
+        if ($data === null) {
+            http_response_code(404);
+            require __DIR__ . '/../Views/pages/errors/404.php';
+            return;
+        }
+
+        $viewModel = RestaurantViewMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
+        $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
     }
 }

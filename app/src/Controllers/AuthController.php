@@ -30,10 +30,7 @@ class AuthController extends BaseController
     public function showLogin(): void
     {
         try {
-            if ($this->sessionService->isLoggedIn()) {
-                $this->redirect('/');
-                exit;
-            }
+            $this->redirectIfLoggedIn('/');
 
             $error = $this->sessionService->consumeFlash('login_error');
             $success = $this->sessionService->consumeFlash('login_success');
@@ -51,19 +48,7 @@ class AuthController extends BaseController
     public function login(): void
     {
         try {
-            $login = $this->readStringPostParam('login') ?? '';
-            $password = $_POST['password'] ?? '';
-            $result = $this->authService->attemptLogin($login, $password);
-
-            if (!$result['success']) {
-                $this->redirectWithError('/login', $result['error']);
-                return;
-            }
-
-            $user = $result['user'];
-            $this->sessionService->login($user->userAccountId, $user->userRoleId);
-            $this->redirect('/');
-            exit;
+            $this->processLogin();
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -91,10 +76,7 @@ class AuthController extends BaseController
     public function showRegister(): void
     {
         try {
-            if ($this->sessionService->isLoggedIn()) {
-                $this->redirect('/');
-                exit;
-            }
+            $this->redirectIfLoggedIn('/');
 
             $recaptchaSiteKey = $this->captchaService->getSiteKey();
             $errors = $this->sessionService->consumeFlash('register_errors') ?? [];
@@ -251,6 +233,33 @@ class AuthController extends BaseController
         $this->sessionService->setFlash('register_errors', $errors);
         $this->sessionService->setFlash('register_input', $input);
         $this->redirect($url);
+        exit;
+    }
+
+    /** Redirects already-authenticated users away from login/register pages. */
+    private function redirectIfLoggedIn(string $url): void
+    {
+        if ($this->sessionService->isLoggedIn()) {
+            $this->redirect($url);
+            exit;
+        }
+    }
+
+    /** Reads login credentials, authenticates, and redirects on success or failure. */
+    private function processLogin(): void
+    {
+        $login = $this->readStringPostParam('login') ?? '';
+        $password = $_POST['password'] ?? '';
+        $result = $this->authService->attemptLogin($login, $password);
+
+        if (!$result['success']) {
+            $this->redirectWithError('/login', $result['error']);
+            return;
+        }
+
+        $user = $result['user'];
+        $this->sessionService->login($user->userAccountId, $user->userRoleId);
+        $this->redirect('/');
         exit;
     }
 }

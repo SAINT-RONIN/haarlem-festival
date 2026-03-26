@@ -24,15 +24,8 @@ class CmsRestaurantsController extends CmsBaseController
     {
         try {
             $currentView = 'restaurants';
-            $search = $this->readStringQueryParam('search');
-            $restaurants = $this->restaurantsService->getRestaurants($search);
-            $viewModel = CmsRestaurantsMapper::toListViewModel(
-                $restaurants,
-                $search ?? '',
-                $this->sessionService->consumeFlash('success'),
-                $this->sessionService->consumeFlash('error'),
-                $this->sessionService->getCsrfToken('cms_restaurant_delete'),
-            );
+            $search      = $this->readStringQueryParam('search');
+            $viewModel   = $this->buildRestaurantsListViewModel($search);
             require __DIR__ . '/../Views/pages/cms/restaurants.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -54,15 +47,7 @@ class CmsRestaurantsController extends CmsBaseController
     public function store(): void
     {
         try {
-            $this->validateCsrf('cms_restaurant_create', '/cms/restaurants/create');
-            $data   = $this->extractFormData();
-            $errors = $this->restaurantsService->validateForCreate($data);
-            if (!empty($errors)) {
-                $this->renderCreateForm($data, $errors);
-                return;
-            }
-            $this->restaurantsService->createRestaurant($data);
-            $this->redirectWithFlash('Restaurant created successfully.', 'success', '/cms/restaurants');
+            $this->processRestaurantStore();
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -71,16 +56,7 @@ class CmsRestaurantsController extends CmsBaseController
     public function edit(int $id): void
     {
         try {
-            $restaurant = $this->restaurantsService->findById($id);
-            if ($restaurant === null) {
-                http_response_code(404);
-                require __DIR__ . '/../Views/pages/errors/404.php';
-                return;
-            }
-            $currentView = 'restaurants';
-            $data = CmsRestaurantsMapper::fromRestaurant($restaurant);
-            $viewModel = $this->buildFormViewModel($id, $data, []);
-            require __DIR__ . '/../Views/pages/cms/restaurant-edit.php';
+            $this->renderRestaurantEditPage($id);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -89,15 +65,7 @@ class CmsRestaurantsController extends CmsBaseController
     public function update(int $id): void
     {
         try {
-            $this->validateCsrf('cms_restaurant_edit_' . $id, '/cms/restaurants/' . $id . '/edit');
-            $data   = $this->extractFormData();
-            $errors = $this->restaurantsService->validateForUpdate($id, $data);
-            if (!empty($errors)) {
-                $this->renderEditForm($id, $data, $errors);
-                return;
-            }
-            $this->restaurantsService->updateRestaurant($id, $data);
-            $this->redirectWithFlash('Restaurant updated successfully.', 'success', '/cms/restaurants');
+            $this->processRestaurantUpdate($id);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -112,6 +80,62 @@ class CmsRestaurantsController extends CmsBaseController
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /** Fetches restaurants from the service and maps them to the list ViewModel. */
+    private function buildRestaurantsListViewModel(?string $search): \App\ViewModels\Cms\CmsRestaurantsListViewModel
+    {
+        $restaurants = $this->restaurantsService->getRestaurants($search);
+        return CmsRestaurantsMapper::toListViewModel(
+            $restaurants,
+            $search ?? '',
+            $this->sessionService->consumeFlash('success'),
+            $this->sessionService->consumeFlash('error'),
+            $this->sessionService->getCsrfToken('cms_restaurant_delete'),
+        );
+    }
+
+    /** Handles CSRF validation, form extraction, validation, and persistence for a new restaurant. */
+    private function processRestaurantStore(): void
+    {
+        $this->validateCsrf('cms_restaurant_create', '/cms/restaurants/create');
+        $data   = $this->extractFormData();
+        $errors = $this->restaurantsService->validateForCreate($data);
+        if (!empty($errors)) {
+            $this->renderCreateForm($data, $errors);
+            return;
+        }
+        $this->restaurantsService->createRestaurant($data);
+        $this->redirectWithFlash('Restaurant created successfully.', 'success', '/cms/restaurants');
+    }
+
+    /** Loads the restaurant by ID, renders 404 if missing, otherwise renders the edit form. */
+    private function renderRestaurantEditPage(int $id): void
+    {
+        $restaurant = $this->restaurantsService->findById($id);
+        if ($restaurant === null) {
+            http_response_code(404);
+            require __DIR__ . '/../Views/pages/errors/404.php';
+            return;
+        }
+        $currentView = 'restaurants';
+        $data        = CmsRestaurantsMapper::fromRestaurant($restaurant);
+        $viewModel   = $this->buildFormViewModel($id, $data, []);
+        require __DIR__ . '/../Views/pages/cms/restaurant-edit.php';
+    }
+
+    /** Handles CSRF validation, form extraction, validation, and persistence for updating a restaurant. */
+    private function processRestaurantUpdate(int $id): void
+    {
+        $this->validateCsrf('cms_restaurant_edit_' . $id, '/cms/restaurants/' . $id . '/edit');
+        $data   = $this->extractFormData();
+        $errors = $this->restaurantsService->validateForUpdate($id, $data);
+        if (!empty($errors)) {
+            $this->renderEditForm($id, $data, $errors);
+            return;
+        }
+        $this->restaurantsService->updateRestaurant($id, $data);
+        $this->redirectWithFlash('Restaurant updated successfully.', 'success', '/cms/restaurants');
     }
 
     private function extractFormData(): RestaurantUpsertData

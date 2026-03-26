@@ -32,10 +32,7 @@ class ScheduleApiController extends BaseController
     public function getScheduleHtml(string $pageSlug): void
     {
         try {
-            $scheduleSection = $this->buildScheduleViewModel($pageSlug);
-            $scheduleAjaxRender = true;
-            header('Content-Type: text/html; charset=utf-8');
-            require __DIR__ . '/../Views/partials/sections/schedule/schedule-section.php';
+            $this->renderScheduleHtml($pageSlug);
         } catch (SchedulePageNotFoundException) {
             http_response_code(404);
             echo '';
@@ -43,6 +40,15 @@ class ScheduleApiController extends BaseController
             http_response_code(500);
             echo '';
         }
+    }
+
+    /** Builds the schedule view model, sets the content-type header, and renders the partial. */
+    private function renderScheduleHtml(string $pageSlug): void
+    {
+        $scheduleSection = $this->buildScheduleViewModel($pageSlug);
+        $scheduleAjaxRender = true;
+        header('Content-Type: text/html; charset=utf-8');
+        require __DIR__ . '/../Views/partials/sections/schedule/schedule-section.php';
     }
 
     /** Builds the schedule view model by resolving page-specific config and applying query-string filters. */

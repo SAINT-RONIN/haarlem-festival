@@ -50,19 +50,7 @@ class CmsDashboardController extends CmsBaseController
     public function index(): void
     {
         try {
-
-            $currentView = 'dashboard';
-            $domainData = $this->cmsDashboardService->getDashboardData();
-            $viewModel = CmsDashboardViewMapper::toDashboardViewModel(
-                $domainData->recentPages,
-                $domainData->activities,
-                $this->getUserDisplayName(),
-            );
-
-            $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
-                'currentView' => $currentView,
-                'viewModel' => $viewModel,
-            ]);
+            $this->renderDashboard();
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -75,17 +63,7 @@ class CmsDashboardController extends CmsBaseController
     public function pages(): void
     {
         try {
-
-            $currentView = 'pages';
-            $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
-            $allPages = $this->cmsDashboardService->getPagesListData();
-            $viewModel = CmsDashboardViewMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
-
-            $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
-                'currentView' => $currentView,
-                'searchQuery' => $searchQuery,
-                'viewModel' => $viewModel,
-            ]);
+            $this->renderPagesList();
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -103,11 +81,8 @@ class CmsDashboardController extends CmsBaseController
                 return;
             }
             $this->renderEditPage($pageId);
-        } catch (CmsEditException $e) {
-            http_response_code(500);
-            require __DIR__ . '/../Views/pages/errors/500.php';
         } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
+            $this->handleCmsEditError($error, $this->parsePositiveIntId($id));
         }
     }
 
@@ -185,18 +160,68 @@ class CmsDashboardController extends CmsBaseController
             $this->validateCsrfOrRedirect($pageId);
             $this->validateItemsOrRedirect($pageId);
             $this->performUpdateAndRedirect($pageId);
-        } catch (CmsEditException $e) {
-            $this->handleUpdateError($e, $this->parsePositiveIntId($id));
         } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
+            $this->handleCmsEditError($error, $this->parsePositiveIntId($id));
         }
     }
 
-    private function handleUpdateError(CmsEditException $e, ?int $pageId): void
+    /** Gets dashboard data, maps to view model, and renders the dashboard page. */
+    private function renderDashboard(): void
     {
-        $this->sessionService->setFlash('cms_error', CmsMessages::UPDATE_UNEXPECTED_ERROR);
-        header($pageId !== null ? "Location: /cms/pages/{$pageId}/edit" : 'Location: /cms/pages');
-        exit;
+        $domainData = $this->cmsDashboardService->getDashboardData();
+        $viewModel = CmsDashboardViewMapper::toDashboardViewModel(
+            $domainData->recentPages,
+            $domainData->activities,
+            $this->getUserDisplayName(),
+        );
+
+        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+            'currentView' => 'dashboard',
+            'viewModel' => $viewModel,
+        ]);
+    }
+
+    /** Reads the search filter, loads all pages, and renders the pages list. */
+    private function renderPagesList(): void
+    {
+        $searchQuery = trim((string)filter_input(INPUT_GET, 'search'));
+        $allPages = $this->cmsDashboardService->getPagesListData();
+        $viewModel = CmsDashboardViewMapper::toPagesListViewModel($allPages, $searchQuery, $this->getUserDisplayName());
+
+        $this->render(__DIR__ . '/../Views/pages/cms/dashboard.php', [
+            'currentView' => 'pages',
+            'searchQuery' => $searchQuery,
+            'viewModel' => $viewModel,
+        ]);
+    }
+
+    /**
+     * Consolidated error handler for edit and update actions.
+     * Renders a 500 page for CmsEditException, delegates all others to ControllerErrorResponder.
+     */
+    private function handleCmsEditError(\Throwable $error, ?int $pageId): void
+    {
+        if ($error instanceof CmsEditException) {
+            $this->sessionService->setFlash('cms_error', CmsMessages::UPDATE_UNEXPECTED_ERROR);
+            header($pageId !== null ? "Location: /cms/pages/{$pageId}/edit" : 'Location: /cms/pages');
+            exit;
+        }
+
+        ControllerErrorResponder::respond($error);
+    }
+
+    /**
+     * Consolidated error handler for upload actions.
+     * Returns JSON error for CmsEditException, delegates all others to ControllerErrorResponder.
+     */
+    private function handleCmsUploadError(\Throwable $error): void
+    {
+        if ($error instanceof CmsEditException) {
+            echo json_encode(['success' => false, 'error' => CmsMessages::UPDATE_UNEXPECTED_ERROR]);
+            return;
+        }
+
+        ControllerErrorResponder::respondJson($error);
     }
 
     /** Validates the CSRF token from POST; redirects back to the edit page if invalid. */
@@ -258,10 +283,8 @@ class CmsDashboardController extends CmsBaseController
                 return;
             }
             $this->processUploadRequest();
-        } catch (CmsEditException $e) {
-            echo json_encode(['success' => false, 'error' => CmsMessages::UPDATE_UNEXPECTED_ERROR]);
         } catch (\Throwable $error) {
-            ControllerErrorResponder::respondJson($error);
+            $this->handleCmsUploadError($error);
         }
     }
 

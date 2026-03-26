@@ -62,18 +62,8 @@ class CmsEventsController extends CmsBaseController
     public function create(): void
     {
         try {
-
             $currentView = 'events';
-            $viewModel = new CmsEventCreateViewModel(
-                eventTypes: $this->eventsService->getEventTypes(),
-                venues: $this->eventsService->getVenues(),
-                artists: $this->artistsService->getArtists(null),
-                restaurants: $this->restaurantsService->getRestaurants(null),
-                errorMessage: $this->sessionService->consumeFlash('error'),
-                successMessage: $this->sessionService->consumeFlash('success'),
-                preselectedDay: $this->readStringQueryParam('day') ?? '',
-            );
-
+            $viewModel = $this->buildCreateViewModel();
             require __DIR__ . '/../Views/pages/cms/event-create.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -246,17 +236,9 @@ class CmsEventsController extends CmsBaseController
     public function createVenue(): void
     {
         try {
-            $name = $this->readStringPostParam('VenueName') ?? '';
-            $addressLine = $this->readStringPostParam('AddressLine') ?? '';
-            $venueId = $this->eventsService->createVenue($name, $addressLine);
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'venueId' => $venueId, 'name' => $name]);
-            exit;
+            $this->processCreateVenue();
         } catch (ValidationException $error) {
-            http_response_code(400);
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'errors' => $error->getErrors()]);
-            exit;
+            $this->respondVenueValidationError($error);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respondJson($error);
         }
@@ -309,6 +291,40 @@ class CmsEventsController extends CmsBaseController
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /** Loads all dropdown data for the event creation form and maps it to a view model. */
+    private function buildCreateViewModel(): CmsEventCreateViewModel
+    {
+        return CmsEventsViewMapper::toCreateViewModel(
+            $this->eventsService->getEventTypes(),
+            $this->eventsService->getVenues(),
+            $this->artistsService->getArtists(null),
+            $this->restaurantsService->getRestaurants(null),
+            $this->sessionService->consumeFlash('error'),
+            $this->sessionService->consumeFlash('success'),
+            $this->readStringQueryParam('day') ?? '',
+        );
+    }
+
+    /** Creates a new venue and returns a JSON success response with the new venue ID. */
+    private function processCreateVenue(): void
+    {
+        $name = $this->readStringPostParam('VenueName') ?? '';
+        $addressLine = $this->readStringPostParam('AddressLine') ?? '';
+        $venueId = $this->eventsService->createVenue($name, $addressLine);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'venueId' => $venueId, 'name' => $name]);
+        exit;
+    }
+
+    /** Returns a 400 JSON response with venue validation errors. */
+    private function respondVenueValidationError(ValidationException $error): void
+    {
+        http_response_code(400);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'errors' => $error->getErrors()]);
+        exit;
     }
 
     private function renderScheduleDaysPage(): void

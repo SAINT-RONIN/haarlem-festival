@@ -46,20 +46,7 @@ class CmsAuthController extends BaseController
     public function login(): void
     {
         try {
-            $login = $this->readStringPostParam('login') ?? '';
-            $password = $_POST['password'] ?? '';
-            // Delegate credential verification to the auth service
-            $result = $this->authService->attemptAdminLogin($login, $password);
-
-            if (!$result['success']) {
-                $this->redirectWithError($result['error']);
-                return;
-            }
-
-            $user = $result['user'];
-            $this->sessionService->login($user->userAccountId, $user->userRoleId);
-            header('Location: /cms');
-            exit;
+            $this->processLogin();
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
@@ -78,6 +65,25 @@ class CmsAuthController extends BaseController
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /** Reads admin credentials, authenticates, and redirects on success or failure. */
+    private function processLogin(): void
+    {
+        $login = $this->readStringPostParam('login') ?? '';
+        $password = $_POST['password'] ?? '';
+        // Delegate credential verification to the auth service
+        $result = $this->authService->attemptAdminLogin($login, $password);
+
+        if (!$result['success']) {
+            $this->redirectWithError($result['error']);
+            return;
+        }
+
+        $user = $result['user'];
+        $this->sessionService->login($user->userAccountId, $user->userRoleId);
+        header('Location: /cms');
+        exit;
     }
 
     private function redirectWithError(string $error): void
