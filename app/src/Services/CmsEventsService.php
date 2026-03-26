@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
 use App\Helpers\FormatHelper;
 use App\Exceptions\CmsOperationException;

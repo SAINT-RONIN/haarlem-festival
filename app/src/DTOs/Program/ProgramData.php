@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DTOs\Program;
 
+use App\Models\Program;
+
 /**
  * A visitor's program (cart) with resolved item details.
  * Assembled by ProgramService for the my-program page.

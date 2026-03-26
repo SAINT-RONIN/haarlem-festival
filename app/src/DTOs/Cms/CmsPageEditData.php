@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DTOs\Cms;
 
+use App\Models\CmsPage;
+
 /**
  * All data needed to render the CMS page editor — page metadata, sections with items,
  * content/image limits. Assembled by CmsEditService.
