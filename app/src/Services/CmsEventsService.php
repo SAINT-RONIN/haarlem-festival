@@ -326,6 +326,8 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException($errors);
         }
 
+        $data = $this->applySessionDefaults($data);
+
         return $this->sessionRepository->create($data);
     }
 
@@ -340,6 +342,8 @@ class CmsEventsService implements ICmsEventsService
         if (!empty($errors)) {
             throw new ValidationException($errors);
         }
+
+        $data = $this->applySessionDefaults($data);
 
         return $this->sessionRepository->update($sessionId, $data);
     }
@@ -557,6 +561,20 @@ class CmsEventsService implements ICmsEventsService
             return ['Maximum age cannot be less than minimum age'];
         }
         return [];
+    }
+
+    /**
+     * Applies business-logic defaults for capacity fields before persisting.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private function applySessionDefaults(array $data): array
+    {
+        $data['CapacityTotal'] = (int)($data['CapacityTotal'] ?? 100);
+        $data['CapacitySingleTicketLimit'] = (int)($data['CapacitySingleTicketLimit'] ?? 100);
+
+        return $data;
     }
 
     /**
