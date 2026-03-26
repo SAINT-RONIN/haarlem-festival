@@ -39,6 +39,9 @@ class ScheduleApiController extends BaseController
         } catch (SchedulePageNotFoundException) {
             http_response_code(404);
             echo '';
+        } catch (\Throwable) {
+            http_response_code(500);
+            echo '';
         }
     }
 

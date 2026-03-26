@@ -40,6 +40,8 @@ class ProgramController extends BaseController
             $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respond($error);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
         }
     }
 
@@ -62,6 +64,8 @@ class ProgramController extends BaseController
             $this->json(['success' => true, 'programItemId' => $item->programItemId]);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
     }
 
@@ -83,6 +87,8 @@ class ProgramController extends BaseController
             $this->respondJsonWithTotals($context->sessionKey, $context->userId);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
     }
 
@@ -104,6 +110,8 @@ class ProgramController extends BaseController
             $this->respondJsonWithTotals($context->sessionKey, $context->userId);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
     }
 
@@ -124,6 +132,8 @@ class ProgramController extends BaseController
             $this->respondJsonWithTotals($context->sessionKey, $context->userId);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
     }
 
@@ -141,6 +151,8 @@ class ProgramController extends BaseController
             $this->json(['success' => true]);
         } catch (\InvalidArgumentException $error) {
             ControllerErrorResponder::respondJson($error, 400);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error);
         }
     }
 
