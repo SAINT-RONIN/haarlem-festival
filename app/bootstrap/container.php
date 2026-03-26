@@ -136,11 +136,11 @@ return static function (string $controllerClass): object {
 
     $cmsContent = fn() => $make('cmsContent', fn() => new CmsContentRepository($cmsRepo(), $mediaAssetRepo()));
     $cmsPageContent = fn() => $make('cmsPageContent', fn() => new CmsPageContentService($cmsContent()));
-    $globalUiLoader = fn() => $make('globalUiLoader', fn() => new GlobalUiContentLoader($globalContentRepo()));
 
     // ── Domain content repositories (wrap CmsContentRepository with typed returns) ──
 
     $globalContentRepo     = fn() => $make('globalContentRepo', fn() => new GlobalContentRepository($cmsContent()));
+    $globalUiLoader = fn() => $make('globalUiLoader', fn() => new GlobalUiContentLoader($globalContentRepo()));
     $scheduleContentRepo   = fn() => $make('scheduleContentRepo', fn() => new ScheduleContentRepository($cmsContent()));
     $checkoutContentRepo   = fn() => $make('checkoutContentRepo', fn() => new CheckoutContentRepository($cmsContent()));
     $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
