@@ -51,7 +51,7 @@ class AuthController extends BaseController
     public function login(): void
     {
         try {
-            $login = trim($_POST['login'] ?? '');
+            $login = $this->readStringPostParam('login') ?? '';
             $password = $_POST['password'] ?? '';
             $result = $this->authService->attemptLogin($login, $password);
 
@@ -115,7 +115,7 @@ class AuthController extends BaseController
         try {
             // Extract form fields, then verify CAPTCHA before any further validation
             $data = $this->extractRegistrationData();
-            if (!$this->captchaService->verify($_POST['g-recaptcha-response'] ?? null, $_SERVER['REMOTE_ADDR'] ?? null)) {
+            if (!$this->captchaService->verify($this->readStringPostParam('g-recaptcha-response'), $this->readServerHeader('REMOTE_ADDR'))) {
                 $this->redirectWithErrors('/register', ['captcha' => 'Please complete the CAPTCHA verification.'], $data->toArray());
                 return;
             }
@@ -148,7 +148,7 @@ class AuthController extends BaseController
     public function forgotPassword(): void
     {
         try {
-            $email = trim($_POST['email'] ?? '');
+            $email = $this->readStringPostParam('email') ?? '';
             $this->authService->requestPasswordReset($email);
             $this->sessionService->setFlash('forgot_success', 'If an account exists with that email, you will receive a password reset link.');
             $this->redirect('/forgot-password');
@@ -165,7 +165,7 @@ class AuthController extends BaseController
     public function showResetPassword(): void
     {
         try {
-            $token = $_GET['token'] ?? '';
+            $token = $this->readStringQueryParam('token') ?? '';
             $result = $this->authService->validateResetToken($token);
             $this->sessionService->start();
             [$error, $validToken] = $this->resolveResetTokenState($result);
@@ -182,7 +182,7 @@ class AuthController extends BaseController
     public function resetPassword(): void
     {
         try {
-            $token = $_POST['token'] ?? '';
+            $token = $this->readStringPostParam('token') ?? '';
             $result = $this->authService->resetPassword($token, $_POST['password'] ?? '', $_POST['confirm_password'] ?? '');
             $this->handleResetPasswordResult($result, $token);
         } catch (\Throwable $error) {
@@ -193,12 +193,12 @@ class AuthController extends BaseController
     private function extractRegistrationData(): RegistrationFormData
     {
         return new RegistrationFormData(
-            username: $_POST['username'] ?? '',
-            email: $_POST['email'] ?? '',
+            username: $this->readStringPostParam('username') ?? '',
+            email: $this->readStringPostParam('email') ?? '',
             password: $_POST['password'] ?? '',
             confirmPassword: $_POST['confirm_password'] ?? '',
-            firstName: $_POST['first_name'] ?? '',
-            lastName: $_POST['last_name'] ?? '',
+            firstName: $this->readStringPostParam('first_name') ?? '',
+            lastName: $this->readStringPostParam('last_name') ?? '',
         );
     }
 

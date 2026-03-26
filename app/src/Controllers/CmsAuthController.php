@@ -14,7 +14,7 @@ use App\Services\Interfaces\ISessionService;
  * Also exposes the static requireAdmin() guard used by all other CMS
  * controllers to enforce admin-only access before processing requests.
  */
-class CmsAuthController
+class CmsAuthController extends BaseController
 {
     public function __construct(
         private readonly IAuthService $authService,
@@ -49,7 +49,7 @@ class CmsAuthController
     public function login(): void
     {
         try {
-            $login = trim($_POST['login'] ?? '');
+            $login = $this->readStringPostParam('login') ?? '';
             $password = $_POST['password'] ?? '';
             // Delegate credential verification to the auth service
             $result = $this->authService->attemptAdminLogin($login, $password);

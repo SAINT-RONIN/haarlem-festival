@@ -158,10 +158,10 @@ class CmsUsersController extends CmsBaseController
     private function extractListFilters(): array
     {
         return [
-            'roleFilter' => isset($_GET['role']) && is_numeric($_GET['role']) ? (int)$_GET['role'] : null,
-            'search'     => isset($_GET['search']) ? trim($_GET['search']) : null,
-            'sortBy'     => $_GET['sort'] ?? 'registered',
-            'sortDir'    => $_GET['dir'] ?? 'desc',
+            'roleFilter' => $this->readPositiveIntQueryParam('role'),
+            'search'     => $this->readStringQueryParam('search'),
+            'sortBy'     => $this->readStringQueryParam('sort') ?? 'registered',
+            'sortDir'    => $this->readStringQueryParam('dir') ?? 'desc',
         ];
     }
 
@@ -170,7 +170,7 @@ class CmsUsersController extends CmsBaseController
     {
         return \App\Mappers\CmsUsersMapper::toListViewModel(
             $users,
-            $_GET['role'] ?? '',
+            $this->readStringQueryParam('role') ?? '',
             $this->sessionService->consumeFlash('success'),
             $this->sessionService->consumeFlash('error'),
             $filters['search'] ?? '',
@@ -183,12 +183,12 @@ class CmsUsersController extends CmsBaseController
     private function extractUserFormData(): array
     {
         return [
-            'username'  => trim($_POST['username'] ?? ''),
-            'email'     => trim($_POST['email'] ?? ''),
+            'username'  => $this->readStringPostParam('username') ?? '',
+            'email'     => $this->readStringPostParam('email') ?? '',
             'password'  => $_POST['password'] ?? '',
-            'firstName' => trim($_POST['firstName'] ?? ''),
-            'lastName'  => trim($_POST['lastName'] ?? ''),
-            'roleId'    => (int)($_POST['roleId'] ?? UserRoleId::Customer->value),
+            'firstName' => $this->readStringPostParam('firstName') ?? '',
+            'lastName'  => $this->readStringPostParam('lastName') ?? '',
+            'roleId'    => $this->readOptionalIntPostParam('roleId') ?? UserRoleId::Customer->value,
         ];
     }
 

@@ -38,11 +38,11 @@ class CmsArtistsController extends CmsBaseController
     {
         try {
             $currentView = 'artists';
-            $search      = trim($_GET['search'] ?? '');
-            $artists     = $this->artistsService->getArtists($search ?: null);
+            $search      = $this->readStringQueryParam('search');
+            $artists     = $this->artistsService->getArtists($search);
             $viewModel   = CmsArtistsMapper::toListViewModel(
                 $artists,
-                $search,
+                $search ?? '',
                 $this->sessionService->consumeFlash('success'),
                 $this->sessionService->consumeFlash('error'),
                 $this->sessionService->getCsrfToken('cms_artist_delete'),
@@ -154,11 +154,11 @@ class CmsArtistsController extends CmsBaseController
     private function extractFormData(): ArtistUpsertData
     {
         return new ArtistUpsertData(
-            name: trim($_POST['name'] ?? ''),
-            style: trim($_POST['style'] ?? ''),
+            name: $this->readStringPostParam('name') ?? '',
+            style: $this->readStringPostParam('style') ?? '',
             bioHtml: $_POST['bioHtml'] ?? '',
-            imageAssetId: isset($_POST['imageAssetId']) && is_numeric($_POST['imageAssetId']) ? (int) $_POST['imageAssetId'] : null,
-            isActive: isset($_POST['isActive']) && $_POST['isActive'] === '1',
+            imageAssetId: $this->readOptionalIntPostParam('imageAssetId'),
+            isActive: $this->readBoolPostParam('isActive'),
         );
     }
 

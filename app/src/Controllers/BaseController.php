@@ -134,6 +134,39 @@ abstract class BaseController
         );
     }
 
+    /** Reads and trims a POST parameter, truncating to $maxLength. Returns null if absent or empty. */
+    protected function readStringPostParam(string $key, int $maxLength = 255): ?string
+    {
+        if (!isset($_POST[$key])) {
+            return null;
+        }
+
+        $value = trim((string)$_POST[$key]);
+        if ($value === '') {
+            return null;
+        }
+
+        return mb_substr($value, 0, $maxLength);
+    }
+
+    /** Reads a POST parameter as an integer. Returns null if absent, empty, or non-numeric. */
+    protected function readOptionalIntPostParam(string $key): ?int
+    {
+        $value = $this->readStringPostParam($key, 32);
+        if ($value === null || !is_numeric($value)) {
+            return null;
+        }
+
+        return (int)$value;
+    }
+
+    /** Reads a POST parameter as a boolean. Returns true if the value is '1' or 'on'. */
+    protected function readBoolPostParam(string $key): bool
+    {
+        $raw = $_POST[$key] ?? '';
+        return $raw === '1' || $raw === 'on';
+    }
+
     /** Reads a server/header value from $_SERVER (e.g. HTTP_STRIPE_SIGNATURE). Returns null if absent or empty. */
     protected function readServerHeader(string $headerName): ?string
     {

@@ -71,7 +71,7 @@ class CmsEventsController extends CmsBaseController
                 restaurants: $this->restaurantsService->getRestaurants(null),
                 errorMessage: $this->sessionService->consumeFlash('error'),
                 successMessage: $this->sessionService->consumeFlash('success'),
-                preselectedDay: $_GET['day'] ?? '',
+                preselectedDay: $this->readStringQueryParam('day') ?? '',
             );
 
             require __DIR__ . '/../Views/pages/cms/event-create.php';
@@ -192,7 +192,7 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             $eventId = $this->getEventIdFromPost();
-            $this->eventsService->addLabel((int)$id, trim($_POST['LabelText'] ?? ''));
+            $this->eventsService->addLabel((int)$id, $this->readStringPostParam('LabelText') ?? '');
             $this->redirectWithFlash('Label added successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
             $this->redirectWithValidationErrors($error, '/cms/events/' . $this->getEventIdFromPost() . '/edit');
@@ -243,8 +243,8 @@ class CmsEventsController extends CmsBaseController
     public function createVenue(): void
     {
         try {
-            $name = trim($_POST['VenueName'] ?? '');
-            $addressLine = trim($_POST['AddressLine'] ?? '');
+            $name = $this->readStringPostParam('VenueName') ?? '';
+            $addressLine = $this->readStringPostParam('AddressLine') ?? '';
             $venueId = $this->eventsService->createVenue($name, $addressLine);
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'venueId' => $venueId, 'name' => $name]);
@@ -323,13 +323,13 @@ class CmsEventsController extends CmsBaseController
 
     private function buildEventsListViewModel(): \App\ViewModels\Cms\CmsEventsListViewModel
     {
-        $eventTypeId = isset($_GET['type']) && is_numeric($_GET['type']) ? (int)$_GET['type'] : null;
-        $dayOfWeek = isset($_GET['day']) && $_GET['day'] !== '' ? $_GET['day'] : null;
+        $eventTypeId = $this->readPositiveIntQueryParam('type');
+        $dayOfWeek = $this->readStringQueryParam('day');
 
         return CmsEventsViewMapper::toEventsListViewModel(
             $this->eventsService->getEventsListPageData($eventTypeId, $dayOfWeek),
-            $_GET['type'] ?? '',
-            $_GET['day'] ?? '',
+            $this->readStringQueryParam('type') ?? '',
+            $this->readStringQueryParam('day') ?? '',
             $this->sessionService->consumeFlash('success'),
             $this->sessionService->consumeFlash('error'),
         );
@@ -371,8 +371,8 @@ class CmsEventsController extends CmsBaseController
     /** Defaults to the Adult price tier if none is specified in the form. */
     private function handleSetPrice(int $sessionId, int $eventId): void
     {
-        $priceTierId = (int)($_POST['PriceTierId'] ?? PriceTierId::Adult->value);
-        $this->eventsService->setSessionPrice($sessionId, $priceTierId, $_POST['Price'] ?? '0');
+        $priceTierId = $this->readOptionalIntPostParam('PriceTierId') ?? PriceTierId::Adult->value;
+        $this->eventsService->setSessionPrice($sessionId, $priceTierId, $this->readStringPostParam('Price') ?? '0');
         $this->redirectWithFlash('Price updated successfully.', 'success', "/cms/events/{$eventId}/edit");
     }
 
@@ -382,19 +382,16 @@ class CmsEventsController extends CmsBaseController
      */
     private function getEventIdFromPost(): int
     {
-        return (int)($_POST['EventId'] ?? 0);
+        return $this->readOptionalIntPostParam('EventId') ?? 0;
     }
 
     private function handleToggleScheduleDay(): void
     {
         // null event type ID means this is a global (all-types) visibility toggle
-        $rawEventTypeId = $_POST['EventTypeId'] ?? null;
-        $eventTypeId = ($rawEventTypeId !== null && $rawEventTypeId !== '' && $rawEventTypeId !== '0')
-            ? (int)$rawEventTypeId
-            : null;
-        $dayOfWeek = (int)($_POST['DayOfWeek'] ?? 0);
-        $isVisible = (int)($_POST['IsVisible'] ?? 1);
-        $this->eventsService->setScheduleDayVisibility($eventTypeId, $dayOfWeek, $isVisible === 1);
+        $eventTypeId = $this->readOptionalIntPostParam('EventTypeId');
+        $dayOfWeek = $this->readOptionalIntPostParam('DayOfWeek') ?? 0;
+        $isVisible = $this->readBoolPostParam('IsVisible');
+        $this->eventsService->setScheduleDayVisibility($eventTypeId, $dayOfWeek, $isVisible);
         $this->redirectWithFlash('Day visibility updated.', 'success', '/cms/schedule-days');
     }
 }

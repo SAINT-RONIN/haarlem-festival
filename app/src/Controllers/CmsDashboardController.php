@@ -202,10 +202,10 @@ class CmsDashboardController extends CmsBaseController
     /** Validates the CSRF token from POST; redirects back to the edit page if invalid. */
     private function validateCsrfOrRedirect(int $pageId): void
     {
-        $csrfToken = $_POST['csrf_token'] ?? null;
+        $csrfToken = $this->readStringPostParam('csrf_token');
         $isValid = $this->sessionService->isValidCsrfToken(
             self::CSRF_SCOPE_PAGE_EDIT,
-            is_string($csrfToken) ? $csrfToken : null,
+            $csrfToken,
         );
         if (!$isValid) {
             $this->sessionService->setFlash('cms_error', CmsMessages::INVALID_CSRF);
@@ -268,8 +268,8 @@ class CmsDashboardController extends CmsBaseController
     /** Routes the upload request to either link an existing asset or handle a new file upload. */
     private function dispatchUploadAction(): void
     {
-        $itemId = (int)($_POST['item_id'] ?? 0);
-        $mediaAssetId = (int)($_POST['media_asset_id'] ?? 0);
+        $itemId = $this->readOptionalIntPostParam('item_id') ?? 0;
+        $mediaAssetId = $this->readOptionalIntPostParam('media_asset_id') ?? 0;
 
         if ($mediaAssetId > 0) {
             $this->handleExistingAssetLink($itemId, $mediaAssetId);
@@ -369,14 +369,14 @@ class CmsDashboardController extends CmsBaseController
     private function processUploadRequest(): void
     {
         // Validate CSRF token first for all upload types
-        $csrfToken = $_POST['csrf_token'] ?? null;
-        if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, is_string($csrfToken) ? $csrfToken : null)) {
+        $csrfToken = $this->readStringPostParam('csrf_token');
+        if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_PAGE_EDIT, $csrfToken)) {
             echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_CSRF]);
             return;
         }
 
         // TinyMCE inline uploads send item_id=0 — upload only, no CMS item linking
-        $itemId = (int)($_POST['item_id'] ?? 0);
+        $itemId = $this->readOptionalIntPostParam('item_id') ?? 0;
         if ($itemId <= 0) {
             $this->handleTinyMceUpload();
             return;

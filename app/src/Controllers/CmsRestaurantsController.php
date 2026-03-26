@@ -24,11 +24,11 @@ class CmsRestaurantsController extends CmsBaseController
     {
         try {
             $currentView = 'restaurants';
-            $search = trim($_GET['search'] ?? '');
-            $restaurants = $this->restaurantsService->getRestaurants($search ?: null);
+            $search = $this->readStringQueryParam('search');
+            $restaurants = $this->restaurantsService->getRestaurants($search);
             $viewModel = CmsRestaurantsMapper::toListViewModel(
                 $restaurants,
-                $search,
+                $search ?? '',
                 $this->sessionService->consumeFlash('success'),
                 $this->sessionService->consumeFlash('error'),
                 $this->sessionService->getCsrfToken('cms_restaurant_delete'),
@@ -127,14 +127,14 @@ class CmsRestaurantsController extends CmsBaseController
     private function extractCorePostData(): array
     {
         return [
-            'name'            => trim($_POST['name'] ?? ''),
-            'addressLine'     => trim($_POST['addressLine'] ?? ''),
-            'city'            => trim($_POST['city'] ?? ''),
-            'stars'           => isset($_POST['stars']) && is_numeric($_POST['stars']) ? (int) $_POST['stars'] : null,
-            'cuisineType'     => trim($_POST['cuisineType'] ?? ''),
+            'name'            => $this->readStringPostParam('name') ?? '',
+            'addressLine'     => $this->readStringPostParam('addressLine') ?? '',
+            'city'            => $this->readStringPostParam('city') ?? '',
+            'stars'           => $this->readOptionalIntPostParam('stars'),
+            'cuisineType'     => $this->readStringPostParam('cuisineType') ?? '',
             'descriptionHtml' => $_POST['descriptionHtml'] ?? '',
-            'imageAssetId'    => isset($_POST['imageAssetId']) && is_numeric($_POST['imageAssetId']) ? (int) $_POST['imageAssetId'] : null,
-            'isActive'        => isset($_POST['isActive']) && $_POST['isActive'] === '1',
+            'imageAssetId'    => $this->readOptionalIntPostParam('imageAssetId'),
+            'isActive'        => $this->readBoolPostParam('isActive'),
         ];
     }
 
@@ -142,9 +142,9 @@ class CmsRestaurantsController extends CmsBaseController
     private function extractContactPostData(): array
     {
         return [
-            'phone'   => trim($_POST['phone'] ?? '') ?: null,
-            'email'   => trim($_POST['email'] ?? '') ?: null,
-            'website' => trim($_POST['website'] ?? '') ?: null,
+            'phone'   => $this->readStringPostParam('phone'),
+            'email'   => $this->readStringPostParam('email'),
+            'website' => $this->readStringPostParam('website'),
         ];
     }
 
@@ -161,11 +161,11 @@ class CmsRestaurantsController extends CmsBaseController
     private function extractAboutPostData(): array
     {
         return [
-            'aboutText'           => $_POST['aboutText'] ?? null ?: null,
-            'chefName'            => trim($_POST['chefName'] ?? '') ?: null,
-            'chefText'            => $_POST['chefText'] ?? null ?: null,
-            'menuDescription'     => $_POST['menuDescription'] ?? null ?: null,
-            'locationDescription' => $_POST['locationDescription'] ?? null ?: null,
+            'aboutText'           => $this->readStringPostParam('aboutText', 10000),
+            'chefName'            => $this->readStringPostParam('chefName'),
+            'chefText'            => $this->readStringPostParam('chefText', 10000),
+            'menuDescription'     => $this->readStringPostParam('menuDescription', 10000),
+            'locationDescription' => $this->readStringPostParam('locationDescription', 10000),
         ];
     }
 
@@ -173,11 +173,11 @@ class CmsRestaurantsController extends CmsBaseController
     private function extractVenuePostData(): array
     {
         return [
-            'mapEmbedUrl'         => trim($_POST['mapEmbedUrl'] ?? '') ?: null,
-            'michelinStars'       => isset($_POST['michelinStars']) && is_numeric($_POST['michelinStars']) ? (int)$_POST['michelinStars'] : null,
-            'seatsPerSession'     => isset($_POST['seatsPerSession']) && is_numeric($_POST['seatsPerSession']) ? (int)$_POST['seatsPerSession'] : null,
-            'durationMinutes'     => isset($_POST['durationMinutes']) && is_numeric($_POST['durationMinutes']) ? (int)$_POST['durationMinutes'] : null,
-            'specialRequestsNote' => trim($_POST['specialRequestsNote'] ?? '') ?: null,
+            'mapEmbedUrl'         => $this->readStringPostParam('mapEmbedUrl', 2048),
+            'michelinStars'       => $this->readOptionalIntPostParam('michelinStars'),
+            'seatsPerSession'     => $this->readOptionalIntPostParam('seatsPerSession'),
+            'durationMinutes'     => $this->readOptionalIntPostParam('durationMinutes'),
+            'specialRequestsNote' => $this->readStringPostParam('specialRequestsNote', 1000),
         ];
     }
 

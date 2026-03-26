@@ -112,7 +112,7 @@ class CmsMediaController extends CmsBaseController
 
     private function validateMediaCsrf(): void
     {
-        $csrfToken = $_POST['csrf_token'] ?? '';
+        $csrfToken = $this->readStringPostParam('csrf_token') ?? '';
         if (!$this->sessionService->isValidCsrfToken('cms_media', $csrfToken)) {
             throw new ValidationException('Invalid security token');
         }
@@ -139,7 +139,7 @@ class CmsMediaController extends CmsBaseController
 
     private function processMediaDelete(): void
     {
-        $mediaAssetId = (int)($_POST['media_asset_id'] ?? 0);
+        $mediaAssetId = $this->readOptionalIntPostParam('media_asset_id') ?? 0;
         if ($mediaAssetId <= 0) {
             echo json_encode(['success' => false, 'error' => 'Invalid asset ID']);
             return;

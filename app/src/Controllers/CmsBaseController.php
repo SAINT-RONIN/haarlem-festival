@@ -47,7 +47,7 @@ abstract class CmsBaseController extends BaseController
      */
     protected function validateCsrf(string $scope, string $redirectUrl): void
     {
-        if (!$this->sessionService->isValidCsrfToken($scope, $_POST['_csrf'] ?? null)) {
+        if (!$this->sessionService->isValidCsrfToken($scope, $this->readStringPostParam('_csrf'))) {
             $this->sessionService->setFlash('error', 'Invalid CSRF token. Please try again.');
             header('Location: ' . $redirectUrl);
             exit;

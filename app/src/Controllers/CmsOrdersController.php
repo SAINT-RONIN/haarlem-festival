@@ -35,13 +35,13 @@ class CmsOrdersController extends CmsBaseController
         try {
 
             $currentView  = 'orders';
-            $statusFilter = isset($_GET['status']) && $_GET['status'] !== '' ? $_GET['status'] : null;
+            $statusFilter = $this->readStringQueryParam('status');
 
             $ordersData = $this->ordersService->getOrdersWithDetails($statusFilter);
 
             $viewModel = CmsOrdersMapper::toListViewModel(
                 $ordersData,
-                $_GET['status'] ?? '',
+                $statusFilter ?? '',
                 $this->sessionService->consumeFlash('success'),
                 $this->sessionService->consumeFlash('error'),
             );
