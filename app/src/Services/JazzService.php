@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\JazzPageConstants;
+use App\Constants\SharedSectionKeys;
 use App\Enums\EventTypeId;
 use App\DTOs\Pages\JazzPageData;
 use App\Repositories\GlobalContentRepository;
@@ -50,8 +51,8 @@ class JazzService extends BaseContentService implements IJazzService
     {
         return new JazzPageData(
             heroSection:        $this->globalContentRepo->findHeroContent($pageSlug),
-            gradientSection:    $this->globalContentRepo->findGradientContent($pageSlug, JazzPageConstants::SECTION_GRADIENT),
-            introSection:       $this->globalContentRepo->findIntroContent($pageSlug, JazzPageConstants::SECTION_INTRO),
+            gradientSection:    $this->globalContentRepo->findGradientContent($pageSlug, SharedSectionKeys::SECTION_GRADIENT),
+            introSection:       $this->globalContentRepo->findIntroContent($pageSlug, SharedSectionKeys::SECTION_INTRO),
             venuesSection:      $this->jazzContentRepo->findVenuesContent($pageSlug, JazzPageConstants::SECTION_VENUES),
             pricingSection:     $this->jazzContentRepo->findPricingContent($pageSlug, JazzPageConstants::SECTION_PRICING),
             scheduleCtaSection: $this->jazzContentRepo->findScheduleCtaContent($pageSlug, JazzPageConstants::SECTION_SCHEDULE_CTA),

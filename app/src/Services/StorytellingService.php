@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\SharedSectionKeys;
 use App\Constants\StorytellingPageConstants;
 use App\DTOs\Pages\StorytellingPageData;
 use App\Repositories\GlobalContentRepository;
@@ -47,8 +48,8 @@ class StorytellingService extends BaseContentService implements IStorytellingSer
         $slug = StorytellingPageConstants::PAGE_SLUG;
         return new StorytellingPageData(
             heroSection:       $this->globalContentRepo->findHeroContent($slug),
-            gradientSection:   $this->globalContentRepo->findGradientContent($slug, StorytellingPageConstants::SECTION_GRADIENT),
-            introSplitSection: $this->globalContentRepo->findIntroContent($slug, StorytellingPageConstants::SECTION_INTRO_SPLIT),
+            gradientSection:   $this->globalContentRepo->findGradientContent($slug, SharedSectionKeys::SECTION_GRADIENT),
+            introSplitSection: $this->globalContentRepo->findIntroContent($slug, SharedSectionKeys::SECTION_INTRO_SPLIT),
             masonrySection:    $this->storyContentRepo->findMasonryContent($slug, StorytellingPageConstants::SECTION_MASONRY),
             globalUiContent:   $this->loadGlobalUi(),
         );

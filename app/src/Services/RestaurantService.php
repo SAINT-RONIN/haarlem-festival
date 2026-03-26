@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\RestaurantPageConstants;
+use App\Constants\SharedSectionKeys;
 use App\DTOs\Pages\RestaurantDetailData;
 use App\DTOs\Pages\RestaurantPageData;
 use App\Repositories\GlobalContentRepository;
@@ -74,8 +75,8 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         return new RestaurantPageData(
             heroContent: $this->globalContentRepo->findHeroContent(RestaurantPageConstants::PAGE_SLUG),
             globalUiContent: $this->loadGlobalUi(),
-            gradientSection: $this->globalContentRepo->findGradientContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_GRADIENT),
-            introSplitSection: $this->restaurantContentRepo->findIntroContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INTRO_SPLIT),
+            gradientSection: $this->globalContentRepo->findGradientContent(RestaurantPageConstants::PAGE_SLUG, SharedSectionKeys::SECTION_GRADIENT),
+            introSplitSection: $this->restaurantContentRepo->findIntroContent(RestaurantPageConstants::PAGE_SLUG, SharedSectionKeys::SECTION_INTRO_SPLIT),
             introSplit2Section: $this->restaurantContentRepo->findIntroSplit2Content(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INTRO_SPLIT2),
             instructionsSection: $this->restaurantContentRepo->findInstructionsContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INSTRUCTIONS),
             cardsSection: $this->restaurantContentRepo->findCardsContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_CARDS),

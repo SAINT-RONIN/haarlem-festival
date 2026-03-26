@@ -13,8 +13,6 @@ final class RestaurantPageConstants
 {
     public const PAGE_SLUG = 'restaurant';
 
-    public const SECTION_GRADIENT = 'gradient_section';
-    public const SECTION_INTRO_SPLIT = 'intro_split_section';
     public const SECTION_INTRO_SPLIT2 = 'intro_split2_section';
     public const SECTION_INSTRUCTIONS = 'instructions_section';
     public const SECTION_CARDS = 'restaurant_cards_section';

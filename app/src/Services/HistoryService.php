@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\HistoryPageConstants;
+use App\Constants\SharedSectionKeys;
 use App\DTOs\Pages\HistoryPageData;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\HistoryContentRepository;
@@ -35,9 +36,9 @@ class HistoryService extends BaseContentService implements IHistoryService
     private function buildPageData(string $pageSlug): HistoryPageData
     {
         return new HistoryPageData(
-            heroSection:          $this->globalContentRepo->findHeroContentBySection($pageSlug, HistoryPageConstants::SECTION_HERO),
-            gradientSection:      $this->globalContentRepo->findGradientContent($pageSlug, HistoryPageConstants::SECTION_GRADIENT),
-            introSection:         $this->globalContentRepo->findIntroContent($pageSlug, HistoryPageConstants::SECTION_INTRO),
+            heroSection:          $this->globalContentRepo->findHeroContentBySection($pageSlug, SharedSectionKeys::SECTION_HERO),
+            gradientSection:      $this->globalContentRepo->findGradientContent($pageSlug, SharedSectionKeys::SECTION_GRADIENT),
+            introSection:         $this->globalContentRepo->findIntroContent($pageSlug, SharedSectionKeys::SECTION_INTRO),
             routeSection:         $this->historyContentRepo->findRouteContent($pageSlug, HistoryPageConstants::SECTION_ROUTE),
             venuesSection:        $this->historyContentRepo->findVenuesContent($pageSlug, HistoryPageConstants::SECTION_VENUES),
             ticketOptionsSection: $this->historyContentRepo->findTicketOptionsContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS),

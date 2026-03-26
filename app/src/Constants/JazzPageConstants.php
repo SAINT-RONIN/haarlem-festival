@@ -9,9 +9,6 @@ final class JazzPageConstants
     public const PAGE_SLUG = 'jazz';
     public const CURRENT_PAGE = 'jazz';
 
-    public const SECTION_HERO = 'hero_section';
-    public const SECTION_GRADIENT = 'gradient_section';
-    public const SECTION_INTRO = 'intro_section';
     public const SECTION_VENUES = 'venues_section';
     public const SECTION_PRICING = 'pricing_section';
     public const SECTION_SCHEDULE_CTA = 'schedule_cta_section';
