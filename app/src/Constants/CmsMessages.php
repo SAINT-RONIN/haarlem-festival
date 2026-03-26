@@ -13,7 +13,6 @@ final class CmsMessages
     public const UPDATE_SUCCESS_TEMPLATE = 'Updated %d item(s) successfully';
     public const IMAGE_UPLOAD_SUCCESS = 'Image uploaded successfully';
     public const IMAGE_LINK_FAILED = 'Failed to link image';
-    public const MISSING_ITEM_ID = 'Missing item ID';
     public const INVALID_PAGE_ID = 'Invalid page ID';
     public const NO_FILE_UPLOADED = 'No file uploaded';
     public const PAGE_NOT_FOUND = 'Page not found';

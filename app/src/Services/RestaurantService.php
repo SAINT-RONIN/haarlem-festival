@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\RestaurantPageConstants;
 use App\DTOs\Pages\RestaurantDetailData;
 use App\DTOs\Pages\RestaurantPageData;
 use App\Repositories\GlobalContentRepository;
@@ -26,15 +27,6 @@ use App\Services\Interfaces\IRestaurantService;
  */
 class RestaurantService implements IRestaurantService
 {
-    private const PAGE_SLUG = 'restaurant';
-
-    private const SECTION_GRADIENT     = 'gradient_section';
-    private const SECTION_INTRO_SPLIT  = 'intro_split_section';
-    private const SECTION_INTRO_SPLIT2 = 'intro_split2_section';
-    private const SECTION_INSTRUCTIONS = 'instructions_section';
-    private const SECTION_CARDS        = 'restaurant_cards_section';
-    private const SECTION_DETAIL       = 'detail_section';
-
     public function __construct(
         private readonly GlobalContentRepository $globalContentRepo,
         private readonly RestaurantContentRepository $restaurantContentRepo,
@@ -80,13 +72,13 @@ class RestaurantService implements IRestaurantService
         $cuisinesByRestaurant = $this->buildCuisineMap($restaurants);
 
         return new RestaurantPageData(
-            heroContent: $this->globalContentRepo->findHeroContent(self::PAGE_SLUG),
+            heroContent: $this->globalContentRepo->findHeroContent(RestaurantPageConstants::PAGE_SLUG),
             globalUiContent: $this->globalUiLoader->load(),
-            gradientSection: $this->globalContentRepo->findGradientContent(self::PAGE_SLUG, self::SECTION_GRADIENT),
-            introSplitSection: $this->restaurantContentRepo->findIntroContent(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT),
-            introSplit2Section: $this->restaurantContentRepo->findIntroSplit2Content(self::PAGE_SLUG, self::SECTION_INTRO_SPLIT2),
-            instructionsSection: $this->restaurantContentRepo->findInstructionsContent(self::PAGE_SLUG, self::SECTION_INSTRUCTIONS),
-            cardsSection: $this->restaurantContentRepo->findCardsContent(self::PAGE_SLUG, self::SECTION_CARDS),
+            gradientSection: $this->globalContentRepo->findGradientContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_GRADIENT),
+            introSplitSection: $this->restaurantContentRepo->findIntroContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INTRO_SPLIT),
+            introSplit2Section: $this->restaurantContentRepo->findIntroSplit2Content(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INTRO_SPLIT2),
+            instructionsSection: $this->restaurantContentRepo->findInstructionsContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_INSTRUCTIONS),
+            cardsSection: $this->restaurantContentRepo->findCardsContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_CARDS),
             restaurants: $restaurants,
             cuisinesByRestaurant: $cuisinesByRestaurant,
         );
@@ -102,7 +94,7 @@ class RestaurantService implements IRestaurantService
         return new RestaurantDetailData(
             restaurant: $restaurant,
             imagesByType: $this->groupImagesByType($images),
-            cms: $this->restaurantContentRepo->findDetailContent(self::PAGE_SLUG, self::SECTION_DETAIL),
+            cms: $this->restaurantContentRepo->findDetailContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_DETAIL),
             globalUiContent: $this->globalUiLoader->load(),
             timeSlots: $scheduleData['timeSlots'],
             priceCards: $scheduleData['priceCards'],

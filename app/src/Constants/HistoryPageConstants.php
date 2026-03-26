@@ -8,7 +8,6 @@ final class HistoryPageConstants
 {
     public const PAGE_SLUG = 'history';
     public const CURRENT_PAGE = 'history';
-    public const SCHEDULE_MAX_DAYS = 7;
     public const SECTION_HERO = 'hero_section';
     public const SECTION_GRADIENT = 'gradient_section';
     public const SECTION_INTRO = 'intro_section';

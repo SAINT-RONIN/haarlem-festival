@@ -46,9 +46,6 @@ use App\Repositories\ArtistHighlightRepository;
 use App\Repositories\ArtistLineupMemberRepository;
 use App\Repositories\ArtistTrackRepository;
 use App\Repositories\CuisineTypeRepository;
-use App\Repositories\EventGalleryImageRepository;
-use App\Repositories\EventHighlightRepository;
-use App\Repositories\PageGalleryImageRepository;
 use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
@@ -173,6 +170,12 @@ return static function (string $controllerClass): object {
         new EmailService(),
     ));
 
+    // ── Lazy service singletons shared across multiple controllers ──
+
+    $cmsArtistsService = fn() => $make('cmsArtistsService', fn() => new CmsArtistsService(new ArtistRepository($pdo())));
+    $cmsRestaurantsService = fn() => $make('cmsRestaurantsService', fn() => new CmsRestaurantsService($restaurantRepo()));
+    $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService($mediaAssetRepo()));
+
     // ── Controller wiring — each arm only creates what it needs ──
 
     return match ($controllerClass) {
@@ -250,8 +253,8 @@ return static function (string $controllerClass): object {
                 $visibilityResolver(),
             ),
             $sessionService,
-            new CmsArtistsService(new ArtistRepository($pdo())),
-            new CmsRestaurantsService($restaurantRepo()),
+            $cmsArtistsService(),
+            $cmsRestaurantsService(),
         ),
         AuthController::class => new AuthController(
             $authService(),
@@ -267,7 +270,7 @@ return static function (string $controllerClass): object {
                 new CmsItemEnricher($mediaAssetRepo()),
                 new CmsPreviewUrlResolver(),
             ),
-            new MediaAssetService($mediaAssetRepo()),
+            $mediaAssetService(),
         ),
         CheckoutController::class => new CheckoutController(
             $programService(),
@@ -312,7 +315,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         CmsMediaController::class => new CmsMediaController(
-            new MediaAssetService($mediaAssetRepo()),
+            $mediaAssetService(),
             $sessionService,
         ),
         ProgramController::class => new ProgramController(
@@ -329,11 +332,11 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         CmsRestaurantsController::class => new CmsRestaurantsController(
-            new CmsRestaurantsService($restaurantRepo()),
+            $cmsRestaurantsService(),
             $sessionService,
         ),
         CmsArtistsController::class => new CmsArtistsController(
-            new CmsArtistsService(new ArtistRepository($pdo())),
+            $cmsArtistsService(),
             $sessionService,
         ),
         ScheduleApiController::class => new ScheduleApiController(

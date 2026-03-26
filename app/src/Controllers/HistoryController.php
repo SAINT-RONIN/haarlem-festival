@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Constants\HistoryPageConstants;
+use App\Constants\ScheduleConstants;
 use App\Enums\EventTypeId;
 use App\Exceptions\HistoricalLocationNotFoundException;
 use App\Mappers\HistoricalLocationMapper;
@@ -39,7 +40,7 @@ class HistoryController extends BaseController
         $scheduleData = $this->scheduleService->getScheduleData(
             HistoryPageConstants::PAGE_SLUG,
             EventTypeId::History->value,
-            HistoryPageConstants::SCHEDULE_MAX_DAYS,
+            ScheduleConstants::MAX_DAYS,
         );
         $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
         $viewModel = HistoryMapper::toPageViewModel($data, $this->sessionService->isLoggedIn(), $scheduleSection);
