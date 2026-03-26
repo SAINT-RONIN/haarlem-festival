@@ -6,14 +6,11 @@ namespace App\Services;
 
 use App\DTOs\Filters\EventSessionFilter;
 use App\Models\EventType;
-use App\DTOs\Pages\HomeEventTypeData;
-use App\DTOs\Pages\HomeLocationData;
 use App\DTOs\Pages\HomePageData;
 use App\DTOs\Pages\HomeScheduleDayData;
 use App\DTOs\Pages\HomeScheduleSessionData;
-use App\Models\Restaurant;
-use App\Models\Venue;
 use App\DTOs\Filters\VenueFilter;
+use App\Mappers\HomeMapper;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
@@ -131,7 +128,7 @@ class HomeService extends BaseContentService implements IHomeService
             return null;
         }
 
-        return $this->mapEventTypeFromSection($slug, $section);
+        return HomeMapper::toEventTypeData($slug, $section);
     }
 
     /** Looks up the CMS section data for an event type slug. */
@@ -146,18 +143,6 @@ class HomeService extends BaseContentService implements IHomeService
         return $cmsContent[$sectionKey];
     }
 
-    /** Maps a CMS section's key-value pairs into a HomeEventTypeData object. */
-    private function mapEventTypeFromSection(string $slug, array $section): HomeEventTypeData
-    {
-        return new HomeEventTypeData(
-            slug: $slug,
-            title: (string)($section[$slug . '_title'] ?? ucfirst($slug)),
-            description: (string)($section[$slug . '_description'] ?? ''),
-            button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
-            image: $section[$slug . '_image'] ?? null,
-            darkBg: HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['darkBg'] ?? false,
-        );
-    }
 
     /**
      * Builds locations list from venues and restaurants.
@@ -169,85 +154,14 @@ class HomeService extends BaseContentService implements IHomeService
         $locations = [];
 
         foreach ($this->venueRepository->findVenues(new VenueFilter(isActive: true)) as $venue) {
-            $locations[] = $this->buildVenueLocation($venue);
+            $locations[] = HomeMapper::toVenueLocation($venue);
         }
 
         foreach ($this->restaurantRepository->findAllActive() as $restaurant) {
-            $locations[] = $this->buildRestaurantLocation($restaurant);
+            $locations[] = HomeMapper::toRestaurantLocation($restaurant);
         }
 
         return $locations;
-    }
-
-    /**
-     * Builds location data for a single venue.
-     */
-    private function buildVenueLocation(Venue $venue): HomeLocationData
-    {
-        $category = $this->determineVenueCategory($venue->name);
-
-        return new HomeLocationData(
-            name: $venue->name,
-            address: $venue->addressLine,
-            category: $category,
-            lat: null,
-            lng: null,
-        );
-    }
-
-    /**
-     * Builds location data for a single restaurant.
-     */
-    private function buildRestaurantLocation(Restaurant $restaurant): HomeLocationData
-    {
-        return new HomeLocationData(
-            name: $restaurant->name,
-            address: $restaurant->addressLine,
-            category: 'restaurant',
-            lat: null,
-            lng: null,
-        );
-    }
-
-    /**
-     * Maps a venue to an event-type category by matching known keywords in
-     * the venue name. Falls back to 'history' for unrecognised venues
-     * (walking-tour locations).
-     */
-    /** Keyword-to-category map for venue classification. */
-    private const VENUE_CATEGORY_KEYWORDS = [
-        'jazz' => ['patronaat'],
-        'dance' => ['club', 'lichtfabriek', 'slachthuis', 'jopenkerk', 'caprera', 'puncher'],
-        'history' => ['bavo', 'church'],
-        'storytelling' => ['verhalen', 'schuur', 'kweek', 'boom', 'theater'],
-    ];
-
-    /**
-     * Maps a venue to an event-type category by matching known keywords in
-     * the venue name. Falls back to 'history' for unrecognised venues.
-     */
-    private function determineVenueCategory(string $venueName): string
-    {
-        $name = strtolower($venueName);
-
-        foreach (self::VENUE_CATEGORY_KEYWORDS as $category => $keywords) {
-            if ($this->nameContainsAny($name, $keywords)) {
-                return $category;
-            }
-        }
-
-        return 'history';
-    }
-
-    /** Checks if a name contains any of the given keywords. */
-    private function nameContainsAny(string $name, array $keywords): bool
-    {
-        foreach ($keywords as $keyword) {
-            if (str_contains($name, $keyword)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

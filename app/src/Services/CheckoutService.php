@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Constants\CheckoutConstraints;
 use App\Enums\OrderStatus;
+use App\Mappers\CheckoutMapper;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Infrastructure\Interfaces\IStripeService;
@@ -188,7 +189,7 @@ class CheckoutService implements ICheckoutService
             'success_url' => $appUrl . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => $appUrl . '/checkout/cancel?order_id=' . $orderId . '&payment_id=' . $paymentId,
             'payment_method_types' => $this->mapStripePaymentMethodTypes($method),
-            'line_items' => $this->buildStripeLineItems($programData->total, $orderNumber),
+            'line_items' => CheckoutMapper::buildStripeLineItems($programData->total, $orderNumber),
             'customer_email' => (string)$payload['email'],
             'client_reference_id' => $orderNumber,
             'metadata' => [
@@ -211,19 +212,6 @@ class CheckoutService implements ICheckoutService
         $this->linkStripeIds($paymentId, $session, $sessionId);
 
         return $checkoutUrl;
-    }
-
-    /** Builds a single consolidated Stripe line item for the full order total. */
-    private function buildStripeLineItems(float $total, string $orderNumber): array
-    {
-        return [[
-            'price_data' => [
-                'currency' => 'eur',
-                'unit_amount' => (int)round($total * 100),
-                'product_data' => ['name' => 'Haarlem Festival order ' . $orderNumber],
-            ],
-            'quantity' => 1,
-        ]];
     }
 
     /** Links Stripe session and payment intent identifiers back to the payment record. */

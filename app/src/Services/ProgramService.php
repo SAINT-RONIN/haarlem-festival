@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\PriceTierId;
 use App\DTOs\Filters\EventSessionFilter;
-use App\Models\EventSessionPrice;
 use App\Models\Program;
 use App\DTOs\Program\ProgramData;
 use App\DTOs\Filters\ProgramFilter;
@@ -14,6 +12,7 @@ use App\Models\ProgramItem;
 use App\DTOs\Program\ProgramItemData;
 use App\DTOs\Filters\ProgramItemFilter;
 use App\Exceptions\ProgramException;
+use App\Mappers\ProgramMapper;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -271,10 +270,6 @@ class ProgramService implements IProgramService
      * @param ProgramItem[] $programItems
      * @return ProgramItemData[]
      */
-    /**
-     * @param ProgramItem[] $programItems
-     * @return ProgramItemData[]
-     */
     private function enrichItemsWithSessionData(array $programItems): array
     {
         $sessionIds = $this->extractSessionIds($programItems);
@@ -283,7 +278,7 @@ class ProgramService implements IProgramService
 
         $enrichedItems = [];
         foreach ($programItems as $item) {
-            $enriched = $this->enrichSingleItem($item, $sessionsById, $pricesBySession);
+            $enriched = ProgramMapper::toProgramItemData($item, $sessionsById, $pricesBySession);
             if ($enriched !== null) {
                 $enrichedItems[] = $enriched;
             }
@@ -292,40 +287,6 @@ class ProgramService implements IProgramService
         return $enrichedItems;
     }
 
-    /** Enriches a single program item with session metadata and pricing. */
-    private function enrichSingleItem(ProgramItem $item, array $sessionsById, array $pricesBySession): ?ProgramItemData
-    {
-        if ($item->eventSessionId === null) {
-            return null;
-        }
-
-        $session = $sessionsById[$item->eventSessionId] ?? null;
-        if ($session === null) {
-            return null;
-        }
-
-        $prices = $pricesBySession[$item->eventSessionId] ?? [];
-
-        return new ProgramItemData(
-            programItemId: $item->programItemId,
-            eventSessionId: $item->eventSessionId,
-            quantity: $item->quantity,
-            donationAmount: (float)($item->donationAmount ?? '0.00'),
-            eventTitle: $session->eventTitle,
-            venueName: $session->venueName,
-            hallName: $session->hallName,
-            startDateTime: $session->startDateTime->format('Y-m-d H:i:s'),
-            endDateTime: $session->endDateTime?->format('Y-m-d H:i:s'),
-            eventTypeId: $session->eventTypeId,
-            eventTypeName: $session->eventTypeName,
-            eventTypeSlug: $session->eventTypeSlug,
-            languageCode: $session->languageCode,
-            minAge: $session->minAge,
-            maxAge: $session->maxAge,
-            isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
-            basePrice: $this->getBasePrice($prices),
-        );
-    }
 
     /**
      * @param ProgramItem[] $programItems
@@ -392,58 +353,4 @@ class ProgramService implements IProgramService
         return $subtotal;
     }
 
-    /**
-     * @param EventSessionPrice[] $prices
-     */
-    private function hasPayWhatYouLikeTier(array $prices): bool
-    {
-        foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param EventSessionPrice[] $prices
-     */
-    private function getBasePrice(array $prices): float
-    {
-        $adultPrice = $this->findPriceByTier($prices, PriceTierId::Adult->value);
-        if ($adultPrice !== null) {
-            return (float)$adultPrice->price;
-        }
-
-        $nonPwylPrice = $this->findFirstNonPwylPrice($prices);
-        if ($nonPwylPrice !== null) {
-            return (float)$nonPwylPrice->price;
-        }
-
-        // PWYL events have no fixed base price; donation covers the amount
-        return 0.0;
-    }
-
-    /** Finds the first price matching a specific tier ID. */
-    private function findPriceByTier(array $prices, int $tierId): ?EventSessionPrice
-    {
-        foreach ($prices as $price) {
-            if ($price->priceTierId === $tierId) {
-                return $price;
-            }
-        }
-        return null;
-    }
-
-    /** Finds the first price that is not pay-what-you-like. */
-    private function findFirstNonPwylPrice(array $prices): ?EventSessionPrice
-    {
-        foreach ($prices as $price) {
-            if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
-                return $price;
-            }
-        }
-        return null;
-    }
 }

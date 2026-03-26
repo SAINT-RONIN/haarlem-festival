@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Enums\EventTypeId;
+use App\Enums\PriceTierId;
 use App\Helpers\AgeLabelFormatter;
 use App\Helpers\FormatHelper;
 use App\Models\CheckoutMainContent;
+use App\Models\EventSessionPrice;
+use App\Models\ProgramItem;
 use App\DTOs\Program\ProgramData;
 use App\DTOs\Program\ProgramItemData;
 use App\Models\ProgramMainContent;
@@ -216,5 +219,82 @@ final class ProgramMapper
         }
 
         return self::LANGUAGE_LABELS[strtoupper($languageCode)] ?? $languageCode;
+    }
+
+    /**
+     * Enriches a single program item with session metadata and pricing.
+     * Extracted from ProgramService so mapping logic lives in the mapper layer.
+     *
+     * @param array<int, \App\DTOs\Schedule\SessionWithEvent> $sessionsById
+     * @param array<int, EventSessionPrice[]> $pricesBySession
+     */
+    public static function toProgramItemData(ProgramItem $item, array $sessionsById, array $pricesBySession): ?ProgramItemData
+    {
+        if ($item->eventSessionId === null) {
+            return null;
+        }
+
+        $session = $sessionsById[$item->eventSessionId] ?? null;
+        if ($session === null) {
+            return null;
+        }
+
+        $prices = $pricesBySession[$item->eventSessionId] ?? [];
+
+        return new ProgramItemData(
+            programItemId: $item->programItemId,
+            eventSessionId: $item->eventSessionId,
+            quantity: $item->quantity,
+            donationAmount: (float)($item->donationAmount ?? '0.00'),
+            eventTitle: $session->eventTitle,
+            venueName: $session->venueName,
+            hallName: $session->hallName,
+            startDateTime: $session->startDateTime->format('Y-m-d H:i:s'),
+            endDateTime: $session->endDateTime?->format('Y-m-d H:i:s'),
+            eventTypeId: $session->eventTypeId,
+            eventTypeName: $session->eventTypeName,
+            eventTypeSlug: $session->eventTypeSlug,
+            languageCode: $session->languageCode,
+            minAge: $session->minAge,
+            maxAge: $session->maxAge,
+            isPayWhatYouLike: self::hasPayWhatYouLikeTier($prices),
+            basePrice: self::resolveBasePrice($prices),
+        );
+    }
+
+    /**
+     * @param EventSessionPrice[] $prices
+     */
+    private static function hasPayWhatYouLikeTier(array $prices): bool
+    {
+        foreach ($prices as $price) {
+            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Resolves the base ticket price: Adult tier first, then any non-PWYL tier, then 0.
+     *
+     * @param EventSessionPrice[] $prices
+     */
+    private static function resolveBasePrice(array $prices): float
+    {
+        foreach ($prices as $price) {
+            if ($price->priceTierId === PriceTierId::Adult->value) {
+                return (float)$price->price;
+            }
+        }
+
+        foreach ($prices as $price) {
+            if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
+                return (float)$price->price;
+            }
+        }
+
+        return 0.0;
     }
 }

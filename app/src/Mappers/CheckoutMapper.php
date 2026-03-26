@@ -43,4 +43,21 @@ final class CheckoutMapper
             paymentId: (string)($cancelResult->paymentId ?? 'n/a'),
         );
     }
+
+    /**
+     * Builds a single consolidated Stripe line item for the full order total.
+     *
+     * @return array<int, array{price_data: array{currency: string, unit_amount: int, product_data: array{name: string}}, quantity: int}>
+     */
+    public static function buildStripeLineItems(float $total, string $orderNumber): array
+    {
+        return [[
+            'price_data' => [
+                'currency' => 'eur',
+                'unit_amount' => (int)round($total * 100),
+                'product_data' => ['name' => 'Haarlem Festival order ' . $orderNumber],
+            ],
+            'quantity' => 1,
+        ]];
+    }
 }

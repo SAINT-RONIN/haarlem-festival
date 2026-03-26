@@ -7,6 +7,8 @@ namespace App\Mappers;
 use App\DTOs\Pages\HomeEventTypeData;
 use App\DTOs\Pages\HomeLocationData;
 use App\DTOs\Pages\HomePageData;
+use App\Models\Restaurant;
+use App\Models\Venue;
 use App\DTOs\Pages\HomeScheduleDayData;
 use App\DTOs\Pages\HomeScheduleSessionData;
 use App\Constants\HomeUiConfig;
@@ -166,5 +168,74 @@ final class HomeMapper
     private static function formatSessionTimes(int $earliestStart, int $latestEnd): string
     {
         return date('H:i', $earliestStart) . " \u{2013} " . date('H:i', $latestEnd);
+    }
+
+    /**
+     * Maps a CMS section's key-value pairs into a HomeEventTypeData object.
+     * Extracted from HomeService so mapping logic lives in the mapper layer.
+     *
+     * @param array<string, ?string> $section
+     */
+    public static function toEventTypeData(string $slug, array $section): HomeEventTypeData
+    {
+        return new HomeEventTypeData(
+            slug: $slug,
+            title: (string)($section[$slug . '_title'] ?? ucfirst($slug)),
+            description: (string)($section[$slug . '_description'] ?? ''),
+            button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
+            image: $section[$slug . '_image'] ?? null,
+            darkBg: HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['darkBg'] ?? false,
+        );
+    }
+
+    /** Maps a Venue model to a HomeLocationData DTO for the map grid. */
+    public static function toVenueLocation(Venue $venue): HomeLocationData
+    {
+        return new HomeLocationData(
+            name: $venue->name,
+            address: $venue->addressLine,
+            category: self::determineVenueCategory($venue->name),
+            lat: null,
+            lng: null,
+        );
+    }
+
+    /** Maps a Restaurant model to a HomeLocationData DTO for the map grid. */
+    public static function toRestaurantLocation(Restaurant $restaurant): HomeLocationData
+    {
+        return new HomeLocationData(
+            name: $restaurant->name,
+            address: $restaurant->addressLine,
+            category: 'restaurant',
+            lat: null,
+            lng: null,
+        );
+    }
+
+    /** Keyword-to-category map for venue classification. */
+    private const VENUE_CATEGORY_KEYWORDS = [
+        'jazz' => ['patronaat'],
+        'dance' => ['club', 'lichtfabriek', 'slachthuis', 'jopenkerk', 'caprera', 'puncher'],
+        'history' => ['bavo', 'church'],
+        'storytelling' => ['verhalen', 'schuur', 'kweek', 'boom', 'theater'],
+    ];
+
+    /**
+     * Maps a venue to an event-type category by matching known keywords in
+     * the venue name. Falls back to 'history' for unrecognised venues.
+     */
+    private static function determineVenueCategory(string $venueName): string
+    {
+        $name = strtolower($venueName);
+
+        foreach (self::VENUE_CATEGORY_KEYWORDS as $category => $keywords) {
+            foreach ($keywords as $keyword) {
+                if (str_contains($name, $keyword)) {
+                    return $category;
+                }
+            }
+        }
+
+        return 'history';
     }
 }
