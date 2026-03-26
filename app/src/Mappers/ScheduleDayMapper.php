@@ -123,29 +123,23 @@ final class ScheduleDayMapper
         ?ScheduleFilterParams $activeFilters = null,
         array $availableDays = [],
     ): ScheduleSectionViewModel {
-        $eventTypeSlug   = $scheduleData['eventTypeSlug'];
-        $eventTypeId     = $scheduleData['eventTypeId'];
-        $eventCount      = array_sum(array_map(fn ($day) => count($day->events), $days));
-        $headerTexts     = self::resolveHeaderTexts($cmsContent, $pageSlug);
-        $cmsSettings     = self::extractCmsSettings($cmsContent);
-        $filterGroupTypes = $scheduleData['filterGroupTypes'] ?? ['day'];
-        $priceTypeOptions = $scheduleData['priceTypeOptions'] ?? ['pay-what-you-like', 'fixed'];
-        $filterGroups    = ScheduleFilterMapper::buildFilterGroups($cmsContent, $filterGroupTypes, $priceTypeOptions, $days, $activeFilters, $availableDays);
-        $resetButtonText = self::str($cmsContent->scheduleFilterResetText, 'Reset all filters');
+        $headerTexts  = self::resolveHeaderTexts($cmsContent, $pageSlug);
+        $cmsSettings  = self::extractCmsSettings($cmsContent);
+        $filterContext = self::resolveFilterContext($scheduleData, $cmsContent, $days, $activeFilters, $availableDays);
 
         return new ScheduleSectionViewModel(
             sectionId: $pageSlug . '-schedule',
             title: $headerTexts['title'],
             year: $headerTexts['year'],
-            eventTypeSlug: $eventTypeSlug,
-            eventTypeId: $eventTypeId,
+            eventTypeSlug: $scheduleData['eventTypeSlug'],
+            eventTypeId: $scheduleData['eventTypeId'],
             filtersButtonText: $cmsSettings['filtersButtonText'],
             showFilters: $cmsSettings['showFilters'],
             additionalInfoTitle: $cmsSettings['additionalInfoTitle'],
             additionalInfoBody: $cmsSettings['additionalInfoBody'],
             showAdditionalInfo: $cmsSettings['showAdditionalInfo'],
             eventCountLabel: $headerTexts['eventCountLabel'],
-            eventCount: $eventCount,
+            eventCount: $filterContext['eventCount'],
             showEventCount: $headerTexts['showEventCount'],
             ctaButtonText: $cmsSettings['ctaButtonText'],
             payWhatYouLikeText: $cmsSettings['payWhatYouLikeText'],
@@ -155,12 +149,42 @@ final class ScheduleDayMapper
             confirmText: $buttonTexts['confirm'],
             addingText: $buttonTexts['adding'],
             successText: $buttonTexts['success'],
-            filterGroups: $filterGroups,
-            resetButtonText: $resetButtonText,
+            filterGroups: $filterContext['filterGroups'],
+            resetButtonText: $filterContext['resetButtonText'],
             hasActiveFilters: $activeFilters !== null && $activeFilters->hasAnyFilter(),
             gridClasses: self::resolveGridClasses(count($days)),
             itemClasses: self::resolveItemClasses(count($days)),
         );
+    }
+
+    /**
+     * Builds filter groups, counts total events, and resolves the reset button text.
+     *
+     * @param ScheduleDayViewModel[] $days
+     * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
+     * @return array{eventCount: int, filterGroups: array, resetButtonText: string}
+     */
+    // TODO: Return typed DTO instead of array
+    private static function resolveFilterContext(
+        array $scheduleData,
+        ScheduleSectionContent $cmsContent,
+        array $days,
+        ?ScheduleFilterParams $activeFilters,
+        array $availableDays,
+    ): array {
+        $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
+        $filterGroupTypes = $scheduleData['filterGroupTypes'] ?? ['day'];
+        $priceTypeOptions = $scheduleData['priceTypeOptions'] ?? ['pay-what-you-like', 'fixed'];
+        $filterGroups = ScheduleFilterMapper::buildFilterGroups(
+            $cmsContent, $filterGroupTypes, $priceTypeOptions, $days, $activeFilters, $availableDays,
+        );
+        $resetButtonText = self::str($cmsContent->scheduleFilterResetText, 'Reset all filters');
+
+        return [
+            'eventCount'      => $eventCount,
+            'filterGroups'    => $filterGroups,
+            'resetButtonText' => $resetButtonText,
+        ];
     }
 
     /**
