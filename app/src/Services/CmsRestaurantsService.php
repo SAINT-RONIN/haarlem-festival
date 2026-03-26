@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Restaurant;
 use App\DTOs\Cms\RestaurantUpsertData;
 use App\Exceptions\CmsOperationException;
+use App\Helpers\FieldValidator;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Services\Interfaces\ICmsRestaurantsService;
 
@@ -73,21 +74,11 @@ class CmsRestaurantsService implements ICmsRestaurantsService
     private function validate(RestaurantUpsertData $data): array
     {
         $errors = [];
-        if ($data->name === '') {
-            $errors['name'] = 'Name is required.';
-        }
-        if ($data->addressLine === '') {
-            $errors['addressLine'] = 'Address is required.';
-        }
-        if ($data->city === '') {
-            $errors['city'] = 'City is required.';
-        }
-        if ($data->cuisineType === '') {
-            $errors['cuisineType'] = 'Cuisine type is required.';
-        }
-        if ($data->descriptionHtml === '') {
-            $errors['descriptionHtml'] = 'Description is required.';
-        }
+        FieldValidator::requireNonEmpty('name', $data->name, 'Name', $errors);
+        FieldValidator::requireNonEmpty('addressLine', $data->addressLine, 'Address', $errors);
+        FieldValidator::requireNonEmpty('city', $data->city, 'City', $errors);
+        FieldValidator::requireNonEmpty('cuisineType', $data->cuisineType, 'Cuisine type', $errors);
+        FieldValidator::requireNonEmpty('descriptionHtml', $data->descriptionHtml, 'Description', $errors);
         return $errors;
     }
 }

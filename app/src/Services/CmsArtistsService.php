@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Artist;
 use App\DTOs\Cms\ArtistUpsertData;
 use App\Exceptions\CmsOperationException;
+use App\Helpers\FieldValidator;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Services\Interfaces\ICmsArtistsService;
 
@@ -90,15 +91,9 @@ class CmsArtistsService implements ICmsArtistsService
     private function validate(ArtistUpsertData $data): array
     {
         $errors = [];
-        if ($data->name === '') {
-            $errors['name'] = 'Name is required.';
-        }
-        if ($data->style === '') {
-            $errors['style'] = 'Style is required.';
-        }
-        if ($data->bioHtml === '') {
-            $errors['bioHtml'] = 'Bio is required.';
-        }
+        FieldValidator::requireNonEmpty('name', $data->name, 'Name', $errors);
+        FieldValidator::requireNonEmpty('style', $data->style, 'Style', $errors);
+        FieldValidator::requireNonEmpty('bioHtml', $data->bioHtml, 'Bio', $errors);
         return $errors;
     }
 }
