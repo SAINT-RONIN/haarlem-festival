@@ -90,8 +90,8 @@ class CmsEventsController extends CmsBaseController
     public function store(): void
     {
         try {
-            // Raw $_POST is passed to the service which handles extraction and validation
-            $eventId = $this->eventsService->createEvent($_POST);
+            $formData = $this->extractEventFormData(); // TODO: Replace with EventUpsertData DTO
+            $eventId = $this->eventsService->createEvent($formData);
             $this->redirectWithFlash('Event created successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
             $this->redirectWithValidationErrors($error, '/cms/events/create');
@@ -126,7 +126,8 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             $eventId = (int)$id;
-            $this->eventsService->updateEvent($eventId, $_POST);
+            $formData = $this->extractEventFormData(); // TODO: Replace with EventUpsertData DTO
+            $this->eventsService->updateEvent($eventId, $formData);
             $this->redirectWithFlash('Event updated successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
             $this->redirectWithValidationErrors($error, '/cms/events/' . (int)$id . '/edit');
@@ -143,7 +144,8 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             $eventIdInt = (int)$eventId;
-            $this->eventsService->createSession($eventIdInt, $_POST);
+            $formData = $this->extractSessionFormData(); // TODO: Replace with EventSessionUpsertData DTO
+            $this->eventsService->createSession($eventIdInt, $formData);
             $this->redirectWithFlash('Session created successfully.', 'success', "/cms/events/{$eventIdInt}/edit");
         } catch (ValidationException $error) {
             $this->redirectWithValidationErrors($error, '/cms/events/' . (int)$eventId . '/edit');
@@ -160,7 +162,8 @@ class CmsEventsController extends CmsBaseController
     {
         try {
             $eventId = $this->getEventIdFromPost();
-            $this->eventsService->updateSession((int)$id, $_POST);
+            $formData = $this->extractSessionFormData(); // TODO: Replace with EventSessionUpsertData DTO
+            $this->eventsService->updateSession((int)$id, $formData);
             $this->redirectWithFlash('Session updated successfully.', 'success', "/cms/events/{$eventId}/edit");
         } catch (ValidationException $error) {
             $this->redirectWithValidationErrors($error, '/cms/events/' . $this->getEventIdFromPost() . '/edit');
@@ -383,6 +386,78 @@ class CmsEventsController extends CmsBaseController
     private function getEventIdFromPost(): int
     {
         return $this->readOptionalIntPostParam('EventId') ?? 0;
+    }
+
+    /**
+     * Reads event form fields from POST using BaseController helpers.
+     * @return array<string, mixed>
+     */
+    // TODO: Replace array return with EventUpsertData DTO
+    private function extractEventFormData(): array
+    {
+        return [
+            'EventTypeId'          => $this->readOptionalIntPostParam('EventTypeId'),
+            'Title'                => $this->readStringPostParam('Title'),
+            'ShortDescription'     => $this->readStringPostParam('ShortDescription', 1000),
+            'LongDescriptionHtml'  => $this->readStringPostParam('LongDescriptionHtml', 65535),
+            'FeaturedImageAssetId' => $this->readOptionalIntPostParam('FeaturedImageAssetId'),
+            'VenueId'              => $this->readOptionalIntPostParam('VenueId'),
+            'ArtistId'             => $this->readOptionalIntPostParam('ArtistId'),
+            'RestaurantId'         => $this->readOptionalIntPostParam('RestaurantId'),
+            'IsActive'             => $this->readBoolPostParam('IsActive'),
+        ];
+    }
+
+    /**
+     * Reads session form fields from POST using BaseController helpers.
+     * @return array<string, mixed>
+     */
+    // TODO: Replace array return with EventSessionUpsertData DTO
+    private function extractSessionFormData(): array
+    {
+        $coreFields = $this->extractSessionCoreFields();
+        $statusFields = $this->extractSessionStatusFields();
+
+        return array_merge($coreFields, $statusFields);
+    }
+
+    /**
+     * Reads the main session fields (times, capacity, labels) from POST.
+     * @return array<string, mixed>
+     */
+    private function extractSessionCoreFields(): array
+    {
+        return [
+            'EventId'                   => $this->readOptionalIntPostParam('EventId'),
+            'StartDateTime'             => $this->readStringPostParam('StartDateTime'),
+            'EndDateTime'               => $this->readStringPostParam('EndDateTime'),
+            'CapacityTotal'             => $this->readOptionalIntPostParam('CapacityTotal'),
+            'CapacitySingleTicketLimit' => $this->readOptionalIntPostParam('CapacitySingleTicketLimit'),
+            'HallName'                  => $this->readStringPostParam('HallName'),
+            'SessionType'               => $this->readStringPostParam('SessionType'),
+            'DurationMinutes'           => $this->readStringPostParam('DurationMinutes'),
+            'LanguageCode'              => $this->readStringPostParam('LanguageCode'),
+            'MinAge'                    => $this->readOptionalIntPostParam('MinAge'),
+            'MaxAge'                    => $this->readOptionalIntPostParam('MaxAge'),
+        ];
+    }
+
+    /**
+     * Reads session status and secondary fields (booleans, notes, CTA) from POST.
+     * @return array<string, mixed>
+     */
+    private function extractSessionStatusFields(): array
+    {
+        return [
+            'ReservationRequired' => $this->readBoolPostParam('ReservationRequired'),
+            'IsFree'              => $this->readBoolPostParam('IsFree'),
+            'Notes'               => $this->readStringPostParam('Notes', 2000),
+            'HistoryTicketLabel'  => $this->readStringPostParam('HistoryTicketLabel'),
+            'CtaLabel'            => $this->readStringPostParam('CtaLabel'),
+            'CtaUrl'              => $this->readStringPostParam('CtaUrl', 2048),
+            'IsCancelled'         => $this->readBoolPostParam('IsCancelled'),
+            'IsActive'            => $this->readBoolPostParam('IsActive'),
+        ];
     }
 
     private function handleToggleScheduleDay(): void
