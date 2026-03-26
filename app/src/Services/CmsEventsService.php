@@ -18,6 +18,7 @@ use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Repositories\Interfaces\IVenueRepository;
+use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Events\EventEditBundle;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Filters\EventSessionFilter;
@@ -226,8 +227,10 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException($errors);
         }
 
+        $upsertData = $this->buildEventUpsertData($data, isActive: true);
+
         try {
-            return $this->eventRepository->create($data);
+            return $this->eventRepository->create($upsertData);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to create event.', 0, $error);
         }
@@ -300,8 +303,11 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException($errors);
         }
 
+        $isActive = isset($data['IsActive']) ? (bool)$data['IsActive'] : true;
+        $upsertData = $this->buildEventUpsertData($data, isActive: $isActive);
+
         try {
-            return $this->eventRepository->update($eventId, $data);
+            return $this->eventRepository->update($eventId, $upsertData);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to update event.', 0, $error);
         }
@@ -390,6 +396,29 @@ class CmsEventsService implements ICmsEventsService
         }
 
         return $this->priceRepository->upsert($sessionId, $priceTierId, $price);
+    }
+
+    /**
+     * Constructs a typed EventUpsertData from raw form data with proper defaults.
+     * Business-logic defaults (empty description, placeholder HTML) belong here, not in the repo.
+     */
+    private function buildEventUpsertData(array $data, bool $isActive): EventUpsertData
+    {
+        return new EventUpsertData(
+            eventTypeId: (int)$data['EventTypeId'],
+            title: (string)$data['Title'],
+            shortDescription: (string)($data['ShortDescription'] ?? ''),
+            longDescriptionHtml: (string)($data['LongDescriptionHtml'] ?? '<p></p>'),
+            featuredImageAssetId: isset($data['FeaturedImageAssetId']) && is_numeric($data['FeaturedImageAssetId'])
+                ? (int)$data['FeaturedImageAssetId'] : null,
+            venueId: isset($data['VenueId']) && is_numeric($data['VenueId'])
+                ? (int)$data['VenueId'] : null,
+            artistId: isset($data['ArtistId']) && is_numeric($data['ArtistId'])
+                ? (int)$data['ArtistId'] : null,
+            restaurantId: isset($data['RestaurantId']) && is_numeric($data['RestaurantId'])
+                ? (int)$data['RestaurantId'] : null,
+            isActive: $isActive,
+        );
     }
 
     /**

@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Enums\EventTypeId;
 use App\Models\Event;
+use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
 use App\DTOs\Events\JazzArtistDetailEvent;
@@ -161,14 +162,12 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
-     * Inserts a new event with IsActive defaulting to 1 (active).
-     * Nullable foreign keys (VenueId, ArtistId, RestaurantId) allow events
-     * that aren't tied to a specific venue, artist, or restaurant.
+     * Inserts a new event. Nullable foreign keys (VenueId, ArtistId, RestaurantId)
+     * allow events that aren't tied to a specific venue, artist, or restaurant.
      *
-     * @param array<string, mixed> $data Event fields keyed by column name.
      * @return int The auto-incremented EventId of the new row.
      */
-    public function create(array $data): int
+    public function create(EventUpsertData $data): int
     {
         $this->execute(
             'INSERT INTO Event (
@@ -176,17 +175,18 @@ class EventRepository extends BaseRepository implements IEventRepository
                 FeaturedImageAssetId, VenueId, ArtistId, RestaurantId, IsActive
             ) VALUES (
                 :eventTypeId, :title, :shortDescription, :longDescriptionHtml,
-                :featuredImageAssetId, :venueId, :artistId, :restaurantId, 1
+                :featuredImageAssetId, :venueId, :artistId, :restaurantId, :isActive
             )',
             [
-                'eventTypeId' => $data['EventTypeId'],
-                'title' => $data['Title'],
-                'shortDescription' => $data['ShortDescription'] ?? '',
-                'longDescriptionHtml' => $data['LongDescriptionHtml'] ?? '<p></p>',
-                'featuredImageAssetId' => $data['FeaturedImageAssetId'] ?? null,
-                'venueId' => $data['VenueId'] ?? null,
-                'artistId' => $data['ArtistId'] ?? null,
-                'restaurantId' => $data['RestaurantId'] ?? null,
+                'eventTypeId' => $data->eventTypeId,
+                'title' => $data->title,
+                'shortDescription' => $data->shortDescription,
+                'longDescriptionHtml' => $data->longDescriptionHtml,
+                'featuredImageAssetId' => $data->featuredImageAssetId,
+                'venueId' => $data->venueId,
+                'artistId' => $data->artistId,
+                'restaurantId' => $data->restaurantId,
+                'isActive' => $data->isActive ? 1 : 0,
             ],
         );
 
@@ -194,12 +194,9 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
-     * Updates all mutable fields of an event. Numeric foreign keys are coerced to int
-     * or set to null when missing/non-numeric, preventing invalid FK references.
-     *
-     * @param array<string, mixed> $data Event fields keyed by column name.
+     * Updates all mutable fields of an event.
      */
-    public function update(int $eventId, array $data): bool
+    public function update(int $eventId, EventUpsertData $data): bool
     {
         $this->execute(
             'UPDATE Event SET
@@ -211,14 +208,14 @@ class EventRepository extends BaseRepository implements IEventRepository
             WHERE EventId = :eventId',
             [
                 'eventId' => $eventId,
-                'title' => $data['Title'],
-                'shortDescription' => $data['ShortDescription'] ?? '',
-                'longDescriptionHtml' => $data['LongDescriptionHtml'] ?? '<p></p>',
-                'featuredImageAssetId' => isset($data['FeaturedImageAssetId']) && is_numeric($data['FeaturedImageAssetId']) ? (int)$data['FeaturedImageAssetId'] : null,
-                'venueId' => $data['VenueId'] ?? null,
-                'artistId' => isset($data['ArtistId']) && is_numeric($data['ArtistId']) ? (int)$data['ArtistId'] : null,
-                'restaurantId' => isset($data['RestaurantId']) && is_numeric($data['RestaurantId']) ? (int)$data['RestaurantId'] : null,
-                'isActive' => $data['IsActive'] ?? 1,
+                'title' => $data->title,
+                'shortDescription' => $data->shortDescription,
+                'longDescriptionHtml' => $data->longDescriptionHtml,
+                'featuredImageAssetId' => $data->featuredImageAssetId,
+                'venueId' => $data->venueId,
+                'artistId' => $data->artistId,
+                'restaurantId' => $data->restaurantId,
+                'isActive' => $data->isActive ? 1 : 0,
             ],
         );
 

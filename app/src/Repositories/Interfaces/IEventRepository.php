@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Event;
+use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
 use App\DTOs\Events\JazzArtistDetailEvent;
@@ -42,12 +43,12 @@ interface IEventRepository
     /**
      * Inserts a new event and returns the generated ID.
      */
-    public function create(array $data): int;
+    public function create(EventUpsertData $data): int;
 
     /**
-     * Updates an event's columns and returns whether any row was affected.
+     * Updates an event's mutable fields.
      */
-    public function update(int $eventId, array $data): bool;
+    public function update(int $eventId, EventUpsertData $data): bool;
 
     /**
      * Hard-deletes an event by its ID.
