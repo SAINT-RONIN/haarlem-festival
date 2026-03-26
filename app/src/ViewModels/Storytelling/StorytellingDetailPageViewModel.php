@@ -26,6 +26,7 @@ final readonly class StorytellingDetailPageViewModel extends BaseViewModel
         public StoryGallerySectionData $gallerySection,
         public StoryVideoSectionData $videoSection,
         public ScheduleSectionViewModel $scheduleSection,
+        public string $shareUrl,
     ) {
         parent::__construct(
             heroData: $heroData,

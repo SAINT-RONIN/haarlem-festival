@@ -93,12 +93,14 @@ final class StorytellingMapper
         StorytellingDetailPageData $pageData,
         ScheduleSectionViewModel $scheduleSection,
         bool $isLoggedIn,
+        string $currentUri,
     ): StorytellingDetailPageViewModel {
         $globalUi = CmsMapper::toGlobalUiData($pageData->globalUiContent, $isLoggedIn);
         $detailHero = self::buildDetailHero($pageData, $globalUi, $scheduleSection);
         $heroData = self::buildShellHero($detailHero);
+        $shareUrl = rtrim((string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl'), '/') . $currentUri;
 
-        return self::assembleDetailPageViewModel($pageData, $heroData, $globalUi, $detailHero, $scheduleSection);
+        return self::assembleDetailPageViewModel($pageData, $heroData, $globalUi, $detailHero, $scheduleSection, $shareUrl);
     }
 
     private static function assembleDetailPageViewModel(
@@ -107,6 +109,7 @@ final class StorytellingMapper
         GlobalUiData $globalUi,
         StorytellingDetailHeroData $detailHero,
         ScheduleSectionViewModel $scheduleSection,
+        string $shareUrl,
     ): StorytellingDetailPageViewModel {
         return new StorytellingDetailPageViewModel(
             heroData: $heroData, globalUi: $globalUi,
@@ -117,6 +120,7 @@ final class StorytellingMapper
             highlightsSection: self::buildHighlightsSection($pageData->cms, $pageData->highlights),
             gallerySection: self::buildGallerySection($pageData->cms, $pageData->galleryImages),
             videoSection: self::buildVideoSection($pageData->cms), scheduleSection: $scheduleSection,
+            shareUrl: $shareUrl,
         );
     }
 

@@ -93,8 +93,13 @@ final class JazzMapper
      *
      * @param ScheduleEventCardViewModel[] $performances
      */
-    public static function toArtistDetailViewModel(JazzArtistDetailPageData $pageData, array $performances): JazzArtistDetailPageViewModel
-    {
+    public static function toArtistDetailViewModel(
+        JazzArtistDetailPageData $pageData,
+        array $performances,
+        string $currentUri,
+    ): JazzArtistDetailPageViewModel {
+        $shareUrl = rtrim((string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl'), '/') . $currentUri;
+
         return new JazzArtistDetailPageViewModel(
             hero: self::buildArtistHeroData($pageData),
             overview: self::buildArtistOverviewData($pageData),
@@ -102,6 +107,7 @@ final class JazzMapper
             media: self::buildArtistMediaData($pageData),
             cta: self::buildArtistCtaData($pageData),
             performances: $performances,
+            shareUrl: $shareUrl,
         );
     }
 

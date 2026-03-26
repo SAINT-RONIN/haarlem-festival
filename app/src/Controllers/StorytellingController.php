@@ -89,7 +89,8 @@ class StorytellingController extends BaseController
         // Coerce empty CTA text to null so the schedule falls back to its default button label
         $scheduleSection = $this->buildDetailScheduleSection($pageData->event->eventId, $pageData->scheduleCtaButtonText ?: null);
         $isLoggedIn = $this->sessionService->isLoggedIn();
-        $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn);
+        $currentUri = $_SERVER['REQUEST_URI'] ?? '';
+        $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn, $currentUri);
         $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
     }
 

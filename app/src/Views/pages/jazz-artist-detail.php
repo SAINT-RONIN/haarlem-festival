@@ -16,7 +16,7 @@ $includeNav = false;
 
     <?php
     // Social sharing buttons — placed after the overview for discoverability
-    $shareUrl = rtrim((string)(getenv('APP_URL') ?: 'https://haarlemfestival.nl'), '/') . $_SERVER['REQUEST_URI'];
+    $shareUrl = $viewModel->shareUrl;
     $shareTitle = $viewModel->hero->heroTitle;
     require __DIR__ . '/../partials/sections/_social-share.php';
     ?>
