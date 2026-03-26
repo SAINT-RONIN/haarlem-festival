@@ -458,23 +458,35 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Validates session data: required dates, chronological order, URL format, and numeric constraints.
+     * Validates session data: delegates to focused validators for dates, URLs, and numeric constraints.
      */
     private function validateSession(array $data): array
     {
+        $dateErrors = $this->validateSessionDates($data);
+        $urlErrors = $this->validateSessionCtaUrl($data);
+        $numericErrors = array_merge(
+            $this->validateCapacityTotal($data),
+            $this->validateCapacitySingleTicketLimit($data),
+            $this->validateDurationMinutes($data),
+            $this->validateAgeRange($data),
+        );
+
+        return array_merge($dateErrors, $urlErrors, $numericErrors);
+    }
+
+    /** Checks that both dates are present and that end is after start. */
+    private function validateSessionDates(array $data): array
+    {
         $errors = [];
 
-        // StartDateTime required
         if (empty($data['StartDateTime'])) {
             $errors[] = 'Start date/time is required';
         }
 
-        // EndDateTime required
         if (empty($data['EndDateTime'])) {
             $errors[] = 'End date/time is required';
         }
 
-        // EndDateTime must be after StartDateTime
         if (!empty($data['StartDateTime']) && !empty($data['EndDateTime'])) {
             try {
                 $start = new \DateTimeImmutable($data['StartDateTime']);
@@ -487,22 +499,25 @@ class CmsEventsService implements ICmsEventsService
             }
         }
 
-        // CTA URLs can be absolute (https://...) or site-relative (/path, #anchor)
-        if (!empty($data['CtaUrl'])) {
-            $url = trim($data['CtaUrl']);
-            $isAbsolute = filter_var($url, FILTER_VALIDATE_URL) !== false;
-            $isRelative = str_starts_with($url, '/') || str_starts_with($url, '#');
-            if (!$isAbsolute && !$isRelative) {
-                $errors[] = 'CTA URL must be a valid URL or relative path (starting with / or #)';
-            }
+        return $errors;
+    }
+
+    /** Validates CTA URL is absolute or site-relative. */
+    private function validateSessionCtaUrl(array $data): array
+    {
+        if (empty($data['CtaUrl'])) {
+            return [];
         }
 
-        $errors = array_merge($errors, $this->validateCapacityTotal($data));
-        $errors = array_merge($errors, $this->validateCapacitySingleTicketLimit($data));
-        $errors = array_merge($errors, $this->validateDurationMinutes($data));
-        $errors = array_merge($errors, $this->validateAgeRange($data));
+        $url = trim($data['CtaUrl']);
+        $isAbsolute = filter_var($url, FILTER_VALIDATE_URL) !== false;
+        $isRelative = str_starts_with($url, '/') || str_starts_with($url, '#');
 
-        return $errors;
+        if (!$isAbsolute && !$isRelative) {
+            return ['CTA URL must be a valid URL or relative path (starting with / or #)'];
+        }
+
+        return [];
     }
 
     /**
