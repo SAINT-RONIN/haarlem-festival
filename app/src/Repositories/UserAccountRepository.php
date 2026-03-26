@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\UserAccount;
 use App\Repositories\Interfaces\IUserAccountRepository;
-use PDO;
 
 /**
  * Repository for UserAccount database operations.
@@ -14,31 +13,21 @@ use PDO;
  * Handles all SQL queries related to user accounts including
  * authentication lookups, registration, and password updates.
  */
-class UserAccountRepository implements IUserAccountRepository
+class UserAccountRepository extends BaseRepository implements IUserAccountRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Finds an active user matching by either username or email.
      * Used at login time so users can sign in with either credential.
      */
     public function findByUsernameOrEmail(string $login): ?UserAccount
     {
-        $sql = '
-            SELECT * FROM UserAccount 
-            WHERE (Username = :loginUsername OR Email = :loginEmail) 
-            AND IsActive = 1
-        ';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'loginUsername' => $login,
-            'loginEmail' => $login,
-        ]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $row ? UserAccount::fromRow($row) : null;
+        return $this->fetchOne(
+            'SELECT * FROM UserAccount
+            WHERE (Username = :loginUsername OR Email = :loginEmail)
+            AND IsActive = 1',
+            ['loginUsername' => $login, 'loginEmail' => $login],
+            fn(array $row) => UserAccount::fromRow($row),
+        );
     }
 
     /**
@@ -46,12 +35,11 @@ class UserAccountRepository implements IUserAccountRepository
      */
     public function findByEmail(string $email): ?UserAccount
     {
-        $sql = 'SELECT * FROM UserAccount WHERE Email = :email AND IsActive = 1';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['email' => $email]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $row ? UserAccount::fromRow($row) : null;
+        return $this->fetchOne(
+            'SELECT * FROM UserAccount WHERE Email = :email AND IsActive = 1',
+            ['email' => $email],
+            fn(array $row) => UserAccount::fromRow($row),
+        );
     }
 
     /**
@@ -59,12 +47,11 @@ class UserAccountRepository implements IUserAccountRepository
      */
     public function findById(int $id): ?UserAccount
     {
-        $sql = 'SELECT * FROM UserAccount WHERE UserAccountId = :id';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $row ? UserAccount::fromRow($row) : null;
+        return $this->fetchOne(
+            'SELECT * FROM UserAccount WHERE UserAccountId = :id',
+            ['id' => $id],
+            fn(array $row) => UserAccount::fromRow($row),
+        );
     }
 
     /**
@@ -72,9 +59,10 @@ class UserAccountRepository implements IUserAccountRepository
      */
     public function existsByUsername(string $username): bool
     {
-        $sql = 'SELECT COUNT(*) FROM UserAccount WHERE Username = :username';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['username' => $username]);
+        $stmt = $this->execute(
+            'SELECT COUNT(*) FROM UserAccount WHERE Username = :username',
+            ['username' => $username],
+        );
 
         return (int)$stmt->fetchColumn() > 0;
     }
@@ -84,9 +72,10 @@ class UserAccountRepository implements IUserAccountRepository
      */
     public function existsByEmail(string $email): bool
     {
-        $sql = 'SELECT COUNT(*) FROM UserAccount WHERE Email = :email';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['email' => $email]);
+        $stmt = $this->execute(
+            'SELECT COUNT(*) FROM UserAccount WHERE Email = :email',
+            ['email' => $email],
+        );
 
         return (int)$stmt->fetchColumn() > 0;
     }
@@ -105,21 +94,20 @@ class UserAccountRepository implements IUserAccountRepository
         string $lastName,
         int $roleId,
     ): int {
-        $sql = '
-            INSERT INTO UserAccount
+        $this->execute(
+            'INSERT INTO UserAccount
                 (UserRoleId, Username, Email, PasswordHash, PasswordSalt, FirstName, LastName, IsEmailConfirmed, IsActive)
             VALUES
-                (:roleId, :username, :email, :passwordHash, NULL, :firstName, :lastName, 0, 1)
-        ';
-
-        $this->pdo->prepare($sql)->execute([
-            ':roleId'       => $roleId,
-            ':username'     => $username,
-            ':email'        => $email,
-            ':passwordHash' => $passwordHash,
-            ':firstName'    => $firstName,
-            ':lastName'     => $lastName,
-        ]);
+                (:roleId, :username, :email, :passwordHash, NULL, :firstName, :lastName, 0, 1)',
+            [
+                ':roleId'       => $roleId,
+                ':username'     => $username,
+                ':email'        => $email,
+                ':passwordHash' => $passwordHash,
+                ':firstName'    => $firstName,
+                ':lastName'     => $lastName,
+            ],
+        );
 
         return (int)$this->pdo->lastInsertId();
     }
@@ -129,9 +117,10 @@ class UserAccountRepository implements IUserAccountRepository
      */
     public function updatePasswordHash(int $userId, string $passwordHash): void
     {
-        $sql = 'UPDATE UserAccount SET PasswordHash = :hash, UpdatedAtUtc = NOW() WHERE UserAccountId = :id';
-
-        $this->pdo->prepare($sql)->execute([':hash' => $passwordHash, ':id' => $userId]);
+        $this->execute(
+            'UPDATE UserAccount SET PasswordHash = :hash, UpdatedAtUtc = NOW() WHERE UserAccountId = :id',
+            [':hash' => $passwordHash, ':id' => $userId],
+        );
     }
 
     /**
@@ -145,25 +134,20 @@ class UserAccountRepository implements IUserAccountRepository
         string $lastName,
         int $roleId,
     ): void {
-        $sql = '
-            UPDATE UserAccount
-            SET UserRoleId = :roleId,
-                Username   = :username,
-                Email      = :email,
-                FirstName  = :firstName,
-                LastName   = :lastName,
-                UpdatedAtUtc = NOW()
-            WHERE UserAccountId = :id
-        ';
-
-        $this->pdo->prepare($sql)->execute([
-            ':roleId'    => $roleId,
-            ':username'  => $username,
-            ':email'     => $email,
-            ':firstName' => $firstName,
-            ':lastName'  => $lastName,
-            ':id'        => $id,
-        ]);
+        $this->execute(
+            'UPDATE UserAccount
+            SET UserRoleId = :roleId, Username = :username, Email = :email,
+                FirstName = :firstName, LastName = :lastName, UpdatedAtUtc = NOW()
+            WHERE UserAccountId = :id',
+            [
+                ':roleId'    => $roleId,
+                ':username'  => $username,
+                ':email'     => $email,
+                ':firstName' => $firstName,
+                ':lastName'  => $lastName,
+                ':id'        => $id,
+            ],
+        );
     }
 
     /**
@@ -171,8 +155,9 @@ class UserAccountRepository implements IUserAccountRepository
      */
     public function deleteUser(int $id): void
     {
-        $sql = 'UPDATE UserAccount SET IsActive = 0, UpdatedAtUtc = NOW() WHERE UserAccountId = :id';
-
-        $this->pdo->prepare($sql)->execute([':id' => $id]);
+        $this->execute(
+            'UPDATE UserAccount SET IsActive = 0, UpdatedAtUtc = NOW() WHERE UserAccountId = :id',
+            [':id' => $id],
+        );
     }
 }

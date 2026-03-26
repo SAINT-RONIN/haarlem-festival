@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\PageGalleryImage;
 use App\Repositories\Interfaces\IPageGalleryImageRepository;
-use PDO;
 
 /**
  * Read-only access to the PageGalleryImage table.
@@ -14,12 +13,8 @@ use PDO;
  * Page gallery images are tied to a CMS page (rather than an event) and
  * support an optional ImageType filter, ordered by SortOrder.
  */
-class PageGalleryImageRepository implements IPageGalleryImageRepository
+class PageGalleryImageRepository extends BaseRepository implements IPageGalleryImageRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns gallery images for a CMS page, optionally filtered by image type, ordered by SortOrder.
      *
@@ -37,10 +32,6 @@ class PageGalleryImageRepository implements IPageGalleryImageRepository
 
         $sql .= ' ORDER BY SortOrder ASC';
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([PageGalleryImage::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => PageGalleryImage::fromRow($row));
     }
 }

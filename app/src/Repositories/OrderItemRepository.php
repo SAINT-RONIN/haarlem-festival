@@ -6,19 +6,14 @@ namespace App\Repositories;
 
 use App\Models\OrderItem;
 use App\Repositories\Interfaces\IOrderItemRepository;
-use PDO;
 
 /**
  * Manages the OrderItem table, which stores individual line items within an order.
  * Each item links to exactly one purchasable entity (event session, history tour, or pass)
  * via mutually exclusive nullable foreign keys.
  */
-class OrderItemRepository implements IOrderItemRepository
+class OrderItemRepository extends BaseRepository implements IOrderItemRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Inserts a line item into an order. Exactly one of eventSessionId, historyTourId,
      * or passPurchaseId should be non-null to identify the purchased product type.
@@ -35,41 +30,26 @@ class OrderItemRepository implements IOrderItemRepository
         ?string $donationAmount,
         string $specialRequest = '',
     ): void {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO OrderItem (
-                OrderId,
-                EventSessionId,
-                HistoryTourId,
-                PassPurchaseId,
-                Quantity,
-                UnitPrice,
-                VatRate,
-                DonationAmount,
-                SpecialRequest
+        $this->execute(
+            'INSERT INTO OrderItem (
+                OrderId, EventSessionId, HistoryTourId, PassPurchaseId,
+                Quantity, UnitPrice, VatRate, DonationAmount, SpecialRequest
             ) VALUES (
-                :orderId,
-                :eventSessionId,
-                :historyTourId,
-                :passPurchaseId,
-                :quantity,
-                :unitPrice,
-                :vatRate,
-                :donationAmount,
-                :specialRequest
-            )
-        ');
-
-        $stmt->execute([
-            'orderId' => $orderId,
-            'eventSessionId' => $eventSessionId,
-            'historyTourId' => $historyTourId,
-            'passPurchaseId' => $passPurchaseId,
-            'quantity' => $quantity,
-            'unitPrice' => $unitPrice,
-            'vatRate' => $vatRate,
-            'donationAmount' => $donationAmount,
-            'specialRequest' => $specialRequest,
-        ]);
+                :orderId, :eventSessionId, :historyTourId, :passPurchaseId,
+                :quantity, :unitPrice, :vatRate, :donationAmount, :specialRequest
+            )',
+            [
+                'orderId' => $orderId,
+                'eventSessionId' => $eventSessionId,
+                'historyTourId' => $historyTourId,
+                'passPurchaseId' => $passPurchaseId,
+                'quantity' => $quantity,
+                'unitPrice' => $unitPrice,
+                'vatRate' => $vatRate,
+                'donationAmount' => $donationAmount,
+                'specialRequest' => $specialRequest,
+            ],
+        );
     }
 
     /**
@@ -78,10 +58,11 @@ class OrderItemRepository implements IOrderItemRepository
      */
     public function existsForSession(int $sessionId): bool
     {
-        $stmt = $this->pdo->prepare(
-            'SELECT 1 FROM OrderItem WHERE EventSessionId = :sessionId LIMIT 1'
+        $stmt = $this->execute(
+            'SELECT 1 FROM OrderItem WHERE EventSessionId = :sessionId LIMIT 1',
+            [':sessionId' => $sessionId],
         );
-        $stmt->execute([':sessionId' => $sessionId]);
+
         return $stmt->fetchColumn() !== false;
     }
 
@@ -94,10 +75,11 @@ class OrderItemRepository implements IOrderItemRepository
     public function findByOrderId(int $orderId): array
     {
         // Fetch all line items for a specific order
-        $stmt = $this->pdo->prepare('SELECT * FROM OrderItem WHERE OrderId = :orderId');
-        $stmt->execute([':orderId' => $orderId]);
-
-        return array_map([OrderItem::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
+        return $this->fetchAll(
+            'SELECT * FROM OrderItem WHERE OrderId = :orderId',
+            [':orderId' => $orderId],
+            fn(array $row) => OrderItem::fromRow($row),
+        );
     }
 }
 

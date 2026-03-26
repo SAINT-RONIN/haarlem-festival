@@ -7,19 +7,14 @@ namespace App\Repositories;
 use App\Models\EventSessionLabel;
 use App\DTOs\Filters\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
-use PDO;
 
 /**
  * Manages the EventSessionLabel table, which stores free-text tags attached to sessions
  * (e.g. "Sold Out", "Last Tickets", "New"). Labels are displayed on session cards in the
  * public schedule. Supports batch retrieval grouped by session ID for list views.
  */
-class EventSessionLabelRepository implements IEventSessionLabelRepository
+class EventSessionLabelRepository extends BaseRepository implements IEventSessionLabelRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Retrieves labels with optional filtering by session ID.
      *
@@ -41,11 +36,7 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
 
         $sql .= ' ORDER BY EventSessionId ASC, EventSessionLabelId ASC';
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([EventSessionLabel::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => EventSessionLabel::fromRow($row));
     }
 
     /**
@@ -63,33 +54,18 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
             return [];
         }
 
-        // Build numbered placeholders (:sessionId0, :sessionId1, ...) for the IN clause
-        $params = [];
-        $inPlaceholders = [];
-        foreach ($normalizedIds as $index => $sessionId) {
-            $paramName = 'sessionId' . $index;
-            $inPlaceholders[] = ':' . $paramName;
-            $params[$paramName] = $sessionId;
-        }
+        $inClause = $this->buildInClause($normalizedIds, 'sessionId');
 
         $sql = '
             SELECT EventSessionLabelId, EventSessionId, LabelText
             FROM EventSessionLabel
-            WHERE EventSessionId IN (' . implode(', ', $inPlaceholders) . ')
+            WHERE EventSessionId IN (' . $inClause['placeholders'] . ')
             ORDER BY EventSessionId ASC, EventSessionLabelId ASC
         ';
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $labels = array_map([EventSessionLabel::class, 'fromRow'], $rows);
+        $labels = $this->fetchAll($sql, $inClause['params'], fn(array $row) => EventSessionLabel::fromRow($row));
 
-        $grouped = [];
-        foreach ($labels as $label) {
-            $grouped[$label->eventSessionId][] = $label;
-        }
-
-        return $grouped;
+        return $this->groupByKey($labels, 'eventSessionId');
     }
 
     /**
@@ -100,14 +76,11 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
      */
     public function create(int $sessionId, string $labelText): int
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO EventSessionLabel (EventSessionId, LabelText)
-            VALUES (:sessionId, :labelText)
-        ');
-        $stmt->execute([
-            'sessionId' => $sessionId,
-            'labelText' => $labelText,
-        ]);
+        $this->execute(
+            'INSERT INTO EventSessionLabel (EventSessionId, LabelText)
+            VALUES (:sessionId, :labelText)',
+            ['sessionId' => $sessionId, 'labelText' => $labelText],
+        );
 
         return (int)$this->pdo->lastInsertId();
     }
@@ -117,12 +90,12 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
      */
     public function delete(int $labelId): bool
     {
-        $stmt = $this->pdo->prepare('
-            DELETE FROM EventSessionLabel
-            WHERE EventSessionLabelId = :labelId
-        ');
+        $this->execute(
+            'DELETE FROM EventSessionLabel WHERE EventSessionLabelId = :labelId',
+            ['labelId' => $labelId],
+        );
 
-        return $stmt->execute(['labelId' => $labelId]);
+        return true;
     }
 
     /**
@@ -133,12 +106,12 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
      */
     public function deleteAllForSession(int $sessionId): bool
     {
-        $stmt = $this->pdo->prepare('
-            DELETE FROM EventSessionLabel
-            WHERE EventSessionId = :sessionId
-        ');
+        $this->execute(
+            'DELETE FROM EventSessionLabel WHERE EventSessionId = :sessionId',
+            ['sessionId' => $sessionId],
+        );
 
-        return $stmt->execute(['sessionId' => $sessionId]);
+        return true;
     }
 
     /**
@@ -146,11 +119,10 @@ class EventSessionLabelRepository implements IEventSessionLabelRepository
      */
     public function countBySession(int $sessionId): int
     {
-        $stmt = $this->pdo->prepare('
-            SELECT COUNT(*) FROM EventSessionLabel
-            WHERE EventSessionId = :sessionId
-        ');
-        $stmt->execute(['sessionId' => $sessionId]);
+        $stmt = $this->execute(
+            'SELECT COUNT(*) FROM EventSessionLabel WHERE EventSessionId = :sessionId',
+            ['sessionId' => $sessionId],
+        );
 
         return (int)$stmt->fetchColumn();
     }

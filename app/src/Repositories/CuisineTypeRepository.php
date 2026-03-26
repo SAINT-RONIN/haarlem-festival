@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\CuisineType;
 use App\Repositories\Interfaces\ICuisineTypeRepository;
-use PDO;
 
 /**
  * Read-only access to the CuisineType table via the RestaurantCuisine junction table.
@@ -14,12 +13,8 @@ use PDO;
  * Cuisine types (e.g. "Italian", "Japanese") are linked to restaurants through a
  * many-to-many relationship. This repository resolves those associations.
  */
-class CuisineTypeRepository implements ICuisineTypeRepository
+class CuisineTypeRepository extends BaseRepository implements ICuisineTypeRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns all cuisine types for a single restaurant, ordered by name.
      * Joins through the RestaurantCuisine junction table.
@@ -28,16 +23,14 @@ class CuisineTypeRepository implements ICuisineTypeRepository
      */
     public function findByRestaurantId(int $restaurantId): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT ct.* FROM CuisineType ct
+        return $this->fetchAll(
+            'SELECT ct.* FROM CuisineType ct
             INNER JOIN RestaurantCuisine rc ON ct.CuisineTypeId = rc.CuisineTypeId
             WHERE rc.RestaurantId = :restaurantId
-            ORDER BY ct.Name ASC
-        ');
-        $stmt->execute(['restaurantId' => $restaurantId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([CuisineType::class, 'fromRow'], $rows);
+            ORDER BY ct.Name ASC',
+            ['restaurantId' => $restaurantId],
+            fn(array $row) => CuisineType::fromRow($row),
+        );
     }
 
     /**
@@ -53,17 +46,17 @@ class CuisineTypeRepository implements ICuisineTypeRepository
             return [];
         }
 
-        // Build positional placeholders (?, ?, ...) for the IN clause
-        $placeholders = implode(',', array_fill(0, count($restaurantIds), '?'));
-        $stmt = $this->pdo->prepare("
+        $inClause = $this->buildInClause($restaurantIds, 'rid');
+        $sql = "
             SELECT ct.*, rc.RestaurantId
             FROM CuisineType ct
             INNER JOIN RestaurantCuisine rc ON ct.CuisineTypeId = rc.CuisineTypeId
-            WHERE rc.RestaurantId IN ({$placeholders})
+            WHERE rc.RestaurantId IN ({$inClause['placeholders']})
             ORDER BY rc.RestaurantId ASC, ct.Name ASC
-        ");
-        $stmt->execute(array_values($restaurantIds));
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        ";
+
+        $stmt = $this->execute($sql, $inClause['params']);
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $grouped = [];
         foreach ($rows as $row) {

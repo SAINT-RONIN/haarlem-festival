@@ -6,19 +6,14 @@ namespace App\Repositories;
 
 use App\Models\PriceTier;
 use App\Repositories\Interfaces\IPriceTierRepository;
-use PDO;
 
 /**
  * Read-only access to the PriceTier lookup table (e.g. "Regular", "VIP").
  *
  * Price tiers are assigned to event session prices to distinguish ticket categories.
  */
-class PriceTierRepository implements IPriceTierRepository
+class PriceTierRepository extends BaseRepository implements IPriceTierRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns all price tiers ordered by ID.
      *
@@ -26,9 +21,11 @@ class PriceTierRepository implements IPriceTierRepository
      */
     public function findAll(): array
     {
-        $stmt = $this->pdo->query('SELECT PriceTierId, Name FROM PriceTier ORDER BY PriceTierId ASC');
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map([PriceTier::class, 'fromRow'], $rows);
+        return $this->fetchAll(
+            'SELECT PriceTierId, Name FROM PriceTier ORDER BY PriceTierId ASC',
+            [],
+            fn(array $row) => PriceTier::fromRow($row),
+        );
     }
 
     /**
@@ -39,9 +36,10 @@ class PriceTierRepository implements IPriceTierRepository
      */
     public function findById(int $priceTierId): ?PriceTier
     {
-        $stmt = $this->pdo->prepare('SELECT PriceTierId, Name FROM PriceTier WHERE PriceTierId = :priceTierId');
-        $stmt->execute(['priceTierId' => $priceTierId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? PriceTier::fromRow($result) : null;
+        return $this->fetchOne(
+            'SELECT PriceTierId, Name FROM PriceTier WHERE PriceTierId = :priceTierId',
+            ['priceTierId' => $priceTierId],
+            fn(array $row) => PriceTier::fromRow($row),
+        );
     }
 }

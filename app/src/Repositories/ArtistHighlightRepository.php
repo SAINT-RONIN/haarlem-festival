@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\ArtistHighlight;
 use App\Repositories\Interfaces\IArtistHighlightRepository;
-use PDO;
 
 /**
  * Read-only access to the ArtistHighlight table.
@@ -14,12 +13,8 @@ use PDO;
  * Highlights are short "fun fact" or career-milestone blurbs displayed on
  * the artist detail page, ordered by SortOrder.
  */
-class ArtistHighlightRepository implements IArtistHighlightRepository
+class ArtistHighlightRepository extends BaseRepository implements IArtistHighlightRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns all highlights for an event, ordered by SortOrder.
      *
@@ -27,14 +22,10 @@ class ArtistHighlightRepository implements IArtistHighlightRepository
      */
     public function findByEventId(int $eventId): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT * FROM ArtistHighlight
-            WHERE EventId = :eventId
-            ORDER BY SortOrder ASC
-        ');
-        $stmt->execute(['eventId' => $eventId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([ArtistHighlight::class, 'fromRow'], $rows);
+        return $this->fetchAll(
+            'SELECT * FROM ArtistHighlight WHERE EventId = :eventId ORDER BY SortOrder ASC',
+            ['eventId' => $eventId],
+            fn(array $row) => ArtistHighlight::fromRow($row),
+        );
     }
 }

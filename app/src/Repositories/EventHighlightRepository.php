@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\EventHighlight;
 use App\Repositories\Interfaces\IEventHighlightRepository;
-use PDO;
 
 /**
  * Read-only access to the EventHighlight table.
@@ -14,12 +13,8 @@ use PDO;
  * Event highlights are short promotional blurbs or key facts displayed
  * on the event detail page, ordered by SortOrder.
  */
-class EventHighlightRepository implements IEventHighlightRepository
+class EventHighlightRepository extends BaseRepository implements IEventHighlightRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns all highlights for an event, ordered by SortOrder.
      *
@@ -27,14 +22,10 @@ class EventHighlightRepository implements IEventHighlightRepository
      */
     public function findByEventId(int $eventId): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT * FROM EventHighlight
-            WHERE EventId = :eventId
-            ORDER BY SortOrder ASC
-        ');
-        $stmt->execute(['eventId' => $eventId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([EventHighlight::class, 'fromRow'], $rows);
+        return $this->fetchAll(
+            'SELECT * FROM EventHighlight WHERE EventId = :eventId ORDER BY SortOrder ASC',
+            ['eventId' => $eventId],
+            fn(array $row) => EventHighlight::fromRow($row),
+        );
     }
 }

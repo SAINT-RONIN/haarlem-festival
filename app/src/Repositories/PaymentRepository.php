@@ -7,19 +7,14 @@ namespace App\Repositories;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Repositories\Interfaces\IPaymentRepository;
-use PDO;
 
 /**
  * Manages the Payment table, which tracks payment attempts for orders. Each order
  * can have one payment record linking to a Stripe checkout session/payment intent.
  * Supports conditional status transitions to safely handle concurrent webhook deliveries.
  */
-class PaymentRepository implements IPaymentRepository
+class PaymentRepository extends BaseRepository implements IPaymentRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Creates a payment record when checkout begins. The Stripe session/intent IDs
      * are stored later via dedicated update methods once Stripe returns them.
@@ -28,16 +23,15 @@ class PaymentRepository implements IPaymentRepository
      */
     public function create(int $orderId, PaymentMethod $method, PaymentStatus $status): int
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO Payment (OrderId, Method, Status)
-            VALUES (:orderId, :method, :status)
-        ');
-
-        $stmt->execute([
-            'orderId' => $orderId,
-            'method' => $method->value,
-            'status' => $status->value,
-        ]);
+        $this->execute(
+            'INSERT INTO Payment (OrderId, Method, Status)
+            VALUES (:orderId, :method, :status)',
+            [
+                'orderId' => $orderId,
+                'method' => $method->value,
+                'status' => $status->value,
+            ],
+        );
 
         return (int)$this->pdo->lastInsertId();
     }
@@ -48,18 +42,14 @@ class PaymentRepository implements IPaymentRepository
      */
     public function updateStatus(int $paymentId, PaymentStatus $status, ?\DateTimeImmutable $paidAtUtc = null): void
     {
-        $stmt = $this->pdo->prepare('
-            UPDATE Payment
-            SET Status = :status,
-                PaidAtUtc = :paidAtUtc
-            WHERE PaymentId = :paymentId
-        ');
-
-        $stmt->execute([
-            'status' => $status->value,
-            'paidAtUtc' => $paidAtUtc?->format('Y-m-d H:i:s'),
-            'paymentId' => $paymentId,
-        ]);
+        $this->execute(
+            'UPDATE Payment SET Status = :status, PaidAtUtc = :paidAtUtc WHERE PaymentId = :paymentId',
+            [
+                'status' => $status->value,
+                'paidAtUtc' => $paidAtUtc?->format('Y-m-d H:i:s'),
+                'paymentId' => $paymentId,
+            ],
+        );
     }
 
     /**
@@ -68,11 +58,10 @@ class PaymentRepository implements IPaymentRepository
      */
     public function updateStripeSessionId(int $paymentId, string $stripeSessionId): void
     {
-        $stmt = $this->pdo->prepare('UPDATE Payment SET StripeCheckoutSessionId = :sessionId WHERE PaymentId = :paymentId');
-        $stmt->execute([
-            'sessionId' => $stripeSessionId,
-            'paymentId' => $paymentId,
-        ]);
+        $this->execute(
+            'UPDATE Payment SET StripeCheckoutSessionId = :sessionId WHERE PaymentId = :paymentId',
+            ['sessionId' => $stripeSessionId, 'paymentId' => $paymentId],
+        );
     }
 
     /**
@@ -81,11 +70,10 @@ class PaymentRepository implements IPaymentRepository
      */
     public function updateStripePaymentIntentId(int $paymentId, string $stripePaymentIntentId): void
     {
-        $stmt = $this->pdo->prepare('UPDATE Payment SET StripePaymentIntentId = :paymentIntentId WHERE PaymentId = :paymentId');
-        $stmt->execute([
-            'paymentIntentId' => $stripePaymentIntentId,
-            'paymentId' => $paymentId,
-        ]);
+        $this->execute(
+            'UPDATE Payment SET StripePaymentIntentId = :paymentIntentId WHERE PaymentId = :paymentId',
+            ['paymentIntentId' => $stripePaymentIntentId, 'paymentId' => $paymentId],
+        );
     }
 
     /**
@@ -93,11 +81,10 @@ class PaymentRepository implements IPaymentRepository
      */
     public function updateProviderRef(int $paymentId, string $providerRef): void
     {
-        $stmt = $this->pdo->prepare('UPDATE Payment SET ProviderRef = :providerRef WHERE PaymentId = :paymentId');
-        $stmt->execute([
-            'providerRef' => $providerRef,
-            'paymentId' => $paymentId,
-        ]);
+        $this->execute(
+            'UPDATE Payment SET ProviderRef = :providerRef WHERE PaymentId = :paymentId',
+            ['providerRef' => $providerRef, 'paymentId' => $paymentId],
+        );
     }
 
     /**
@@ -126,8 +113,10 @@ class PaymentRepository implements IPaymentRepository
             $params[$key] = $status->value;
         }
         $in = implode(', ', $inPlaceholders);
-        $stmt = $this->pdo->prepare("UPDATE Payment SET Status = :newStatus, PaidAtUtc = :paidAtUtc WHERE PaymentId = :paymentId AND Status IN ({$in})");
-        $stmt->execute($params);
+        $this->execute(
+            "UPDATE Payment SET Status = :newStatus, PaidAtUtc = :paidAtUtc WHERE PaymentId = :paymentId AND Status IN ({$in})",
+            $params,
+        );
     }
 }
 

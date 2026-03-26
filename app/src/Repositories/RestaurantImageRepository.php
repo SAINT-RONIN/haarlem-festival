@@ -6,17 +6,12 @@ namespace App\Repositories;
 
 use App\Models\RestaurantImage;
 use App\Repositories\Interfaces\IRestaurantImageRepository;
-use PDO;
 
 /**
  * Repository for RestaurantImage database operations.
  */
-class RestaurantImageRepository implements IRestaurantImageRepository
+class RestaurantImageRepository extends BaseRepository implements IRestaurantImageRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns all images for a restaurant with their file path from MediaAsset.
      *
@@ -27,16 +22,14 @@ class RestaurantImageRepository implements IRestaurantImageRepository
      */
     public function findByRestaurantId(int $restaurantId): array
     {
-        $stmt = $this->pdo->prepare('
+        $sql = '
             SELECT ri.*, ma.FilePath
             FROM RestaurantImage ri
             LEFT JOIN MediaAsset ma ON ri.MediaAssetId = ma.MediaAssetId
             WHERE ri.RestaurantId = :restaurantId
             ORDER BY ri.ImageType ASC, ri.SortOrder ASC
-        ');
-        $stmt->execute(['restaurantId' => $restaurantId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        ';
 
-        return array_map([RestaurantImage::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, ['restaurantId' => $restaurantId], fn(array $row) => RestaurantImage::fromRow($row));
     }
 }

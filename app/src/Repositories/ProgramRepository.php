@@ -9,7 +9,6 @@ use App\DTOs\Filters\ProgramFilter;
 use App\Models\ProgramItem;
 use App\DTOs\Filters\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
-use PDO;
 
 /**
  * Manages the Program and ProgramItem tables. A Program is a shopping cart tied to either
@@ -17,12 +16,8 @@ use PDO;
  * the individual session selections within a program, each with a quantity and optional
  * donation. Once checkout completes, the program is marked as checked out and an Order is created.
  */
-class ProgramRepository implements IProgramRepository
+class ProgramRepository extends BaseRepository implements IProgramRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Retrieves programs matching the given filter criteria (by ID, session key, user, or
      * checkout status). Returns newest programs first.
@@ -55,14 +50,9 @@ class ProgramRepository implements IProgramRepository
         }
 
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
-
         $sql = "SELECT * FROM Program p {$whereClause} ORDER BY p.CreatedAtUtc DESC";
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([Program::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => Program::fromRow($row));
     }
 
     /**
@@ -91,14 +81,9 @@ class ProgramRepository implements IProgramRepository
         }
 
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
-
         $sql = "SELECT * FROM ProgramItem pi {$whereClause} ORDER BY pi.ProgramItemId ASC";
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([ProgramItem::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => ProgramItem::fromRow($row));
     }
 
     /**
@@ -111,15 +96,11 @@ class ProgramRepository implements IProgramRepository
      */
     public function createProgram(string $sessionKey, ?int $userAccountId): Program
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO Program (SessionKey, UserAccountId, IsCheckedOut)
-            VALUES (:sessionKey, :userAccountId, 0)
-        ');
-
-        $stmt->execute([
-            'sessionKey' => $sessionKey,
-            'userAccountId' => $userAccountId,
-        ]);
+        $this->execute(
+            'INSERT INTO Program (SessionKey, UserAccountId, IsCheckedOut)
+            VALUES (:sessionKey, :userAccountId, 0)',
+            ['sessionKey' => $sessionKey, 'userAccountId' => $userAccountId],
+        );
 
         $programId = (int)$this->pdo->lastInsertId();
 
@@ -140,17 +121,16 @@ class ProgramRepository implements IProgramRepository
      */
     public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO ProgramItem (ProgramId, EventSessionId, Quantity, DonationAmount)
-            VALUES (:programId, :eventSessionId, :quantity, :donationAmount)
-        ');
-
-        $stmt->execute([
-            'programId' => $programId,
-            'eventSessionId' => $eventSessionId,
-            'quantity' => $quantity,
-            'donationAmount' => $donationAmount,
-        ]);
+        $this->execute(
+            'INSERT INTO ProgramItem (ProgramId, EventSessionId, Quantity, DonationAmount)
+            VALUES (:programId, :eventSessionId, :quantity, :donationAmount)',
+            [
+                'programId' => $programId,
+                'eventSessionId' => $eventSessionId,
+                'quantity' => $quantity,
+                'donationAmount' => $donationAmount,
+            ],
+        );
 
         $itemId = (int)$this->pdo->lastInsertId();
 
@@ -168,15 +148,10 @@ class ProgramRepository implements IProgramRepository
      */
     public function updateItemQuantity(int $programItemId, int $quantity): void
     {
-        $stmt = $this->pdo->prepare('
-            UPDATE ProgramItem SET Quantity = :quantity
-            WHERE ProgramItemId = :programItemId
-        ');
-
-        $stmt->execute([
-            'quantity' => $quantity,
-            'programItemId' => $programItemId,
-        ]);
+        $this->execute(
+            'UPDATE ProgramItem SET Quantity = :quantity WHERE ProgramItemId = :programItemId',
+            ['quantity' => $quantity, 'programItemId' => $programItemId],
+        );
     }
 
     /**
@@ -184,15 +159,10 @@ class ProgramRepository implements IProgramRepository
      */
     public function updateItemDonation(int $programItemId, float $donationAmount): void
     {
-        $stmt = $this->pdo->prepare('
-            UPDATE ProgramItem SET DonationAmount = :donationAmount
-            WHERE ProgramItemId = :programItemId
-        ');
-
-        $stmt->execute([
-            'donationAmount' => $donationAmount,
-            'programItemId' => $programItemId,
-        ]);
+        $this->execute(
+            'UPDATE ProgramItem SET DonationAmount = :donationAmount WHERE ProgramItemId = :programItemId',
+            ['donationAmount' => $donationAmount, 'programItemId' => $programItemId],
+        );
     }
 
     /**
@@ -200,8 +170,10 @@ class ProgramRepository implements IProgramRepository
      */
     public function removeItem(int $programItemId): void
     {
-        $stmt = $this->pdo->prepare('DELETE FROM ProgramItem WHERE ProgramItemId = :programItemId');
-        $stmt->execute(['programItemId' => $programItemId]);
+        $this->execute(
+            'DELETE FROM ProgramItem WHERE ProgramItemId = :programItemId',
+            ['programItemId' => $programItemId],
+        );
     }
 
     /**
@@ -209,8 +181,10 @@ class ProgramRepository implements IProgramRepository
      */
     public function clearProgram(int $programId): void
     {
-        $stmt = $this->pdo->prepare('DELETE FROM ProgramItem WHERE ProgramId = :programId');
-        $stmt->execute(['programId' => $programId]);
+        $this->execute(
+            'DELETE FROM ProgramItem WHERE ProgramId = :programId',
+            ['programId' => $programId],
+        );
     }
 
     /**
@@ -219,7 +193,9 @@ class ProgramRepository implements IProgramRepository
      */
     public function markCheckedOut(int $programId): void
     {
-        $stmt = $this->pdo->prepare('UPDATE Program SET IsCheckedOut = 1 WHERE ProgramId = :programId');
-        $stmt->execute(['programId' => $programId]);
+        $this->execute(
+            'UPDATE Program SET IsCheckedOut = 1 WHERE ProgramId = :programId',
+            ['programId' => $programId],
+        );
     }
 }

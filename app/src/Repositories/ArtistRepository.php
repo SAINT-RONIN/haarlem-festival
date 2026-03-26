@@ -7,7 +7,6 @@ namespace App\Repositories;
 use App\Models\Artist;
 use App\DTOs\Cms\ArtistUpsertData;
 use App\Repositories\Interfaces\IArtistRepository;
-use PDO;
 
 /**
  * Provides CRUD operations against the Artist table.
@@ -15,12 +14,8 @@ use PDO;
  * Supports optional name-based search for the artist listing and uses
  * soft-delete (IsActive = 0) instead of removing rows.
  */
-class ArtistRepository implements IArtistRepository
+class ArtistRepository extends BaseRepository implements IArtistRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Retrieves all artists, optionally filtered by a partial name match.
      *
@@ -35,9 +30,8 @@ class ArtistRepository implements IArtistRepository
             $params[':search'] = '%' . $search . '%';
         }
         $sql .= ' ORDER BY Name ASC';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        return array_map([Artist::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
+
+        return $this->fetchAll($sql, $params, fn(array $row) => Artist::fromRow($row));
     }
 
     /**
@@ -45,10 +39,11 @@ class ArtistRepository implements IArtistRepository
      */
     public function findById(int $id): ?Artist
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM Artist WHERE ArtistId = :id LIMIT 1');
-        $stmt->execute([':id' => $id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return is_array($row) ? Artist::fromRow($row) : null;
+        return $this->fetchOne(
+            'SELECT * FROM Artist WHERE ArtistId = :id LIMIT 1',
+            [':id' => $id],
+            fn(array $row) => Artist::fromRow($row),
+        );
     }
 
     /**
@@ -56,14 +51,15 @@ class ArtistRepository implements IArtistRepository
      */
     public function create(ArtistUpsertData $data): int
     {
-        $stmt = $this->pdo->prepare(
+        $this->execute(
             'INSERT INTO Artist (Name, Style, BioHtml, ImageAssetId, IsActive, CreatedAtUtc)
-             VALUES (:name, :style, :bio, :imageId, :active, NOW())'
+             VALUES (:name, :style, :bio, :imageId, :active, NOW())',
+            [
+                ':name' => $data->name, ':style' => $data->style, ':bio' => $data->bioHtml,
+                ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
+            ],
         );
-        $stmt->execute([
-            ':name' => $data->name, ':style' => $data->style, ':bio' => $data->bioHtml,
-            ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
-        ]);
+
         return (int) $this->pdo->lastInsertId();
     }
 
@@ -72,14 +68,14 @@ class ArtistRepository implements IArtistRepository
      */
     public function update(int $id, ArtistUpsertData $data): void
     {
-        $stmt = $this->pdo->prepare(
+        $this->execute(
             'UPDATE Artist SET Name=:name, Style=:style, BioHtml=:bio,
-             ImageAssetId=:imageId, IsActive=:active WHERE ArtistId=:id'
+             ImageAssetId=:imageId, IsActive=:active WHERE ArtistId=:id',
+            [
+                ':id' => $id, ':name' => $data->name, ':style' => $data->style, ':bio' => $data->bioHtml,
+                ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
+            ],
         );
-        $stmt->execute([
-            ':id' => $id, ':name' => $data->name, ':style' => $data->style, ':bio' => $data->bioHtml,
-            ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
-        ]);
     }
 
     /**
@@ -87,7 +83,6 @@ class ArtistRepository implements IArtistRepository
      */
     public function delete(int $id): void
     {
-        $stmt = $this->pdo->prepare('UPDATE Artist SET IsActive = 0 WHERE ArtistId = :id');
-        $stmt->execute([':id' => $id]);
+        $this->execute('UPDATE Artist SET IsActive = 0 WHERE ArtistId = :id', [':id' => $id]);
     }
 }

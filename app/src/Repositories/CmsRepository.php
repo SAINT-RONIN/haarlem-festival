@@ -11,7 +11,6 @@ use App\DTOs\Filters\CmsPageFilter;
 use App\Models\CmsSection;
 use App\DTOs\Filters\CmsSectionFilter;
 use App\Repositories\Interfaces\ICmsRepository;
-use PDO;
 
 /**
  * Low-level data access for the three core CMS tables: CmsPage, CmsSection, and CmsItem.
@@ -19,12 +18,8 @@ use PDO;
  * Provides filtered reads and partial updates. Higher-level content resolution
  * (slug lookup, caching, media-asset hydration) lives in CmsContentRepository.
  */
-class CmsRepository implements ICmsRepository
+class CmsRepository extends BaseRepository implements ICmsRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Finds CMS pages with optional filtering by ID or slug.
      *
@@ -69,10 +64,7 @@ class CmsRepository implements ICmsRepository
             $sql .= ' GROUP BY cp.CmsPageId ORDER BY UpdatedAtUtc DESC';
         }
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-
-        return array_map([CmsPage::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
+        return $this->fetchAll($sql, $params, fn(array $row) => CmsPage::fromRow($row));
     }
 
     /**
@@ -97,11 +89,7 @@ class CmsRepository implements ICmsRepository
 
         $sql .= ' ORDER BY CmsSectionId ASC';
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([CmsSection::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => CmsSection::fromRow($row));
     }
 
     /**
@@ -146,11 +134,7 @@ class CmsRepository implements ICmsRepository
 
         $sql .= ' ORDER BY ci.CmsItemId ASC';
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([CmsItem::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => CmsItem::fromRow($row));
     }
 
     /**
@@ -181,8 +165,9 @@ class CmsRepository implements ICmsRepository
 
         $params['cmsItemId'] = $cmsItemId;
         $sql = 'UPDATE CmsItem SET ' . implode(', ', $fields) . ' WHERE CmsItemId = :cmsItemId';
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($params);
+        $this->execute($sql, $params);
+
+        return true;
     }
 
     /**
@@ -190,7 +175,11 @@ class CmsRepository implements ICmsRepository
      */
     public function updateItemMediaAsset(int $cmsItemId, ?int $mediaAssetId): bool
     {
-        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = :mediaAssetId WHERE CmsItemId = :cmsItemId');
-        return $stmt->execute(['mediaAssetId' => $mediaAssetId, 'cmsItemId' => $cmsItemId]);
+        $this->execute(
+            'UPDATE CmsItem SET MediaAssetId = :mediaAssetId WHERE CmsItemId = :cmsItemId',
+            ['mediaAssetId' => $mediaAssetId, 'cmsItemId' => $cmsItemId],
+        );
+
+        return true;
     }
 }

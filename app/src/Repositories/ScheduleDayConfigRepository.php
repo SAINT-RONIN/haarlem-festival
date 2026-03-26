@@ -7,7 +7,6 @@ namespace App\Repositories;
 use App\Models\ScheduleDayConfig;
 use App\DTOs\Filters\ScheduleDayConfigFilter;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
-use PDO;
 
 /**
  * Manages the ScheduleDayConfig table, which controls which days of the week
@@ -15,12 +14,8 @@ use PDO;
  *
  * Rows can be global (EventTypeId = 0) or scoped to a specific event type.
  */
-class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
+class ScheduleDayConfigRepository extends BaseRepository implements IScheduleDayConfigRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Retrieves schedule-day visibility configs, optionally including event type names.
      *
@@ -71,10 +66,7 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
         ];
         $sql .= $allowedOrders[$requestedOrder] ?? $allowedOrders['scope'];
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-
-        return array_map([ScheduleDayConfig::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
+        return $this->fetchAll($sql, $params, fn(array $row) => ScheduleDayConfig::fromRow($row));
     }
 
     /**
@@ -84,16 +76,16 @@ class ScheduleDayConfigRepository implements IScheduleDayConfigRepository
      */
     public function upsert(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO ScheduleDayConfig (EventTypeId, DayOfWeek, IsVisible)
+        $this->execute(
+            'INSERT INTO ScheduleDayConfig (EventTypeId, DayOfWeek, IsVisible)
             VALUES (:eventTypeId, :dayOfWeek, :isVisible)
-            ON DUPLICATE KEY UPDATE IsVisible = :isVisible2
-        ');
-        $stmt->execute([
-            'eventTypeId' => $eventTypeId ?? 0,
-            'dayOfWeek' => $dayOfWeek,
-            'isVisible' => $isVisible ? 1 : 0,
-            'isVisible2' => $isVisible ? 1 : 0,
-        ]);
+            ON DUPLICATE KEY UPDATE IsVisible = :isVisible2',
+            [
+                'eventTypeId' => $eventTypeId ?? 0,
+                'dayOfWeek' => $dayOfWeek,
+                'isVisible' => $isVisible ? 1 : 0,
+                'isVisible2' => $isVisible ? 1 : 0,
+            ],
+        );
     }
 }

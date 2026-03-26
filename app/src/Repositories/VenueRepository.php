@@ -7,7 +7,6 @@ namespace App\Repositories;
 use App\Models\Venue;
 use App\DTOs\Filters\VenueFilter;
 use App\Repositories\Interfaces\IVenueRepository;
-use PDO;
 
 /**
  * Reads and creates records in the Venue table.
@@ -15,12 +14,8 @@ use PDO;
  * Venues represent physical locations in Haarlem where festival events take place.
  * Supports optional active/inactive filtering for the venue list.
  */
-class VenueRepository implements IVenueRepository
+class VenueRepository extends BaseRepository implements IVenueRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns venues ordered by name, optionally filtered by active status.
      *
@@ -43,11 +38,7 @@ class VenueRepository implements IVenueRepository
 
         $sql .= ' ORDER BY Name ASC';
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map([Venue::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => Venue::fromRow($row));
     }
 
     /**
@@ -55,15 +46,11 @@ class VenueRepository implements IVenueRepository
      */
     public function create(string $name, string $addressLine, string $city = 'Haarlem'): int
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO Venue (Name, AddressLine, City, IsActive)
-            VALUES (:name, :addressLine, :city, 1)
-        ');
-        $stmt->execute([
-            'name' => $name,
-            'addressLine' => $addressLine,
-            'city' => $city,
-        ]);
+        $this->execute(
+            'INSERT INTO Venue (Name, AddressLine, City, IsActive)
+            VALUES (:name, :addressLine, :city, 1)',
+            ['name' => $name, 'addressLine' => $addressLine, 'city' => $city],
+        );
 
         return (int)$this->pdo->lastInsertId();
     }

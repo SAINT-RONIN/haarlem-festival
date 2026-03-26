@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\MediaAsset;
 use App\Repositories\Interfaces\IMediaAssetRepository;
-use PDO;
 
 /**
  * CRUD operations for the MediaAsset table, which stores metadata
@@ -14,12 +13,8 @@ use PDO;
  *
  * Also provides a helper to link an asset to a CmsItem record.
  */
-class MediaAssetRepository implements IMediaAssetRepository
+class MediaAssetRepository extends BaseRepository implements IMediaAssetRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Finds a media asset by ID.
      *
@@ -28,10 +23,11 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function findById(int $mediaAssetId): ?MediaAsset
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM MediaAsset WHERE MediaAssetId = :mediaAssetId');
-        $stmt->execute([':mediaAssetId' => $mediaAssetId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? MediaAsset::fromRow($result) : null;
+        return $this->fetchOne(
+            'SELECT * FROM MediaAsset WHERE MediaAssetId = :mediaAssetId',
+            [':mediaAssetId' => $mediaAssetId],
+            fn(array $row) => MediaAsset::fromRow($row),
+        );
     }
 
     /**
@@ -47,18 +43,11 @@ class MediaAssetRepository implements IMediaAssetRepository
             return [];
         }
 
-        // Build numbered placeholders (:id0, :id1, ...) for a safe IN clause
-        $paramKeys = [];
-        $paramValues = [];
-        foreach (array_values($ids) as $index => $id) {
-            $key = ':id' . $index;
-            $paramKeys[] = $key;
-            $paramValues[$key] = $id;
-        }
-        $sql = "SELECT * FROM MediaAsset WHERE MediaAssetId IN (" . implode(',', $paramKeys) . ")";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($paramValues);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $inClause = $this->buildInClause(array_values($ids), 'id');
+        $sql = "SELECT * FROM MediaAsset WHERE MediaAssetId IN ({$inClause['placeholders']})";
+
+        $stmt = $this->execute($sql, $inClause['params']);
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $assets = [];
         foreach ($rows as $row) {
@@ -77,16 +66,18 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function create(array $data): int
     {
-        $sql = 'INSERT INTO MediaAsset (FilePath, OriginalFileName, MimeType, FileSizeBytes, AltText)
-                VALUES (:filePath, :originalFileName, :mimeType, :fileSizeBytes, :altText)';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            ':filePath'         => $data['FilePath'],
-            ':originalFileName' => $data['OriginalFileName'],
-            ':mimeType'         => $data['MimeType'],
-            ':fileSizeBytes'    => $data['FileSizeBytes'],
-            ':altText'          => $data['AltText'] ?? '',
-        ]);
+        $this->execute(
+            'INSERT INTO MediaAsset (FilePath, OriginalFileName, MimeType, FileSizeBytes, AltText)
+            VALUES (:filePath, :originalFileName, :mimeType, :fileSizeBytes, :altText)',
+            [
+                ':filePath'         => $data['FilePath'],
+                ':originalFileName' => $data['OriginalFileName'],
+                ':mimeType'         => $data['MimeType'],
+                ':fileSizeBytes'    => $data['FileSizeBytes'],
+                ':altText'          => $data['AltText'] ?? '',
+            ],
+        );
+
         return (int)$this->pdo->lastInsertId();
     }
 
@@ -114,8 +105,9 @@ class MediaAssetRepository implements IMediaAssetRepository
         }
 
         $sql = 'UPDATE MediaAsset SET ' . implode(', ', $fields) . ' WHERE MediaAssetId = :mediaAssetId';
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($params);
+        $this->execute($sql, $params);
+
+        return true;
     }
 
     /**
@@ -123,8 +115,12 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function delete(int $mediaAssetId): bool
     {
-        $stmt = $this->pdo->prepare('DELETE FROM MediaAsset WHERE MediaAssetId = :mediaAssetId');
-        return $stmt->execute([':mediaAssetId' => $mediaAssetId]);
+        $this->execute(
+            'DELETE FROM MediaAsset WHERE MediaAssetId = :mediaAssetId',
+            [':mediaAssetId' => $mediaAssetId],
+        );
+
+        return true;
     }
 
     /**
@@ -136,8 +132,12 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
     {
-        $stmt = $this->pdo->prepare('UPDATE CmsItem SET MediaAssetId = :mediaAssetId WHERE CmsItemId = :cmsItemId');
-        return $stmt->execute([':mediaAssetId' => $mediaAssetId, ':cmsItemId' => $cmsItemId]);
+        $this->execute(
+            'UPDATE CmsItem SET MediaAssetId = :mediaAssetId WHERE CmsItemId = :cmsItemId',
+            [':mediaAssetId' => $mediaAssetId, ':cmsItemId' => $cmsItemId],
+        );
+
+        return true;
     }
 
     /**
@@ -147,9 +147,10 @@ class MediaAssetRepository implements IMediaAssetRepository
      */
     public function findAll(): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM MediaAsset ORDER BY CreatedAtUtc DESC');
-        $stmt->execute([]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map([MediaAsset::class, 'fromRow'], $rows);
+        return $this->fetchAll(
+            'SELECT * FROM MediaAsset ORDER BY CreatedAtUtc DESC',
+            [],
+            fn(array $row) => MediaAsset::fromRow($row),
+        );
     }
 }

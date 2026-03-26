@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\EventGalleryImage;
 use App\Repositories\Interfaces\IEventGalleryImageRepository;
-use PDO;
 
 /**
  * Read-only access to the EventGalleryImage table.
@@ -14,12 +13,8 @@ use PDO;
  * Stores gallery/carousel images for an event detail page, with an optional
  * ImageType discriminator (e.g. "hero", "gallery") to separate different usages.
  */
-class EventGalleryImageRepository implements IEventGalleryImageRepository
+class EventGalleryImageRepository extends BaseRepository implements IEventGalleryImageRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns gallery images for an event, optionally filtered by image type, ordered by SortOrder.
      *
@@ -37,10 +32,6 @@ class EventGalleryImageRepository implements IEventGalleryImageRepository
 
         $sql .= ' ORDER BY SortOrder ASC';
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([EventGalleryImage::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => EventGalleryImage::fromRow($row));
     }
 }

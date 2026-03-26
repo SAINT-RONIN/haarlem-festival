@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\PasswordResetToken;
 use App\Repositories\Interfaces\IPasswordResetTokenRepository;
-use PDO;
 
 /**
  * Repository for PasswordResetToken database operations.
@@ -14,12 +13,8 @@ use PDO;
  * Handles creation, lookup, and status updates for password reset tokens.
  * Note: The Token column stores SHA-256 hashes, never raw tokens.
  */
-class PasswordResetTokenRepository implements IPasswordResetTokenRepository
+class PasswordResetTokenRepository extends BaseRepository implements IPasswordResetTokenRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Creates a new password reset token.
      *
@@ -30,18 +25,17 @@ class PasswordResetTokenRepository implements IPasswordResetTokenRepository
      */
     public function create(int $userId, string $tokenHash, \DateTimeImmutable $expiresAt): int
     {
-        $sql = '
-            INSERT INTO PasswordResetToken 
+        $this->execute(
+            'INSERT INTO PasswordResetToken
             (UserAccountId, Token, ExpiresAtUtc, UsedAtUtc)
-            VALUES 
-            (:userId, :token, :expiresAt, NULL)
-        ';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'userId' => $userId,
-            'token' => $tokenHash,
-            'expiresAt' => $expiresAt->format('Y-m-d H:i:s'),
-        ]);
+            VALUES
+            (:userId, :token, :expiresAt, NULL)',
+            [
+                'userId' => $userId,
+                'token' => $tokenHash,
+                'expiresAt' => $expiresAt->format('Y-m-d H:i:s'),
+            ],
+        );
 
         return (int)$this->pdo->lastInsertId();
     }
@@ -54,17 +48,14 @@ class PasswordResetTokenRepository implements IPasswordResetTokenRepository
      */
     public function findValidByTokenHash(string $tokenHash): ?PasswordResetToken
     {
-        $sql = '
-            SELECT * FROM PasswordResetToken 
-            WHERE Token = :token 
-            AND ExpiresAtUtc > NOW() 
-            AND UsedAtUtc IS NULL
-        ';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['token' => $tokenHash]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $row ? PasswordResetToken::fromRow($row) : null;
+        return $this->fetchOne(
+            'SELECT * FROM PasswordResetToken
+            WHERE Token = :token
+            AND ExpiresAtUtc > NOW()
+            AND UsedAtUtc IS NULL',
+            ['token' => $tokenHash],
+            fn(array $row) => PasswordResetToken::fromRow($row),
+        );
     }
 
     /**
@@ -72,9 +63,10 @@ class PasswordResetTokenRepository implements IPasswordResetTokenRepository
      */
     public function markAsUsed(int $tokenId): void
     {
-        $sql = 'UPDATE PasswordResetToken SET UsedAtUtc = NOW() WHERE PasswordResetTokenId = :id';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['id' => $tokenId]);
+        $this->execute(
+            'UPDATE PasswordResetToken SET UsedAtUtc = NOW() WHERE PasswordResetTokenId = :id',
+            ['id' => $tokenId],
+        );
     }
 
     /**
@@ -85,9 +77,10 @@ class PasswordResetTokenRepository implements IPasswordResetTokenRepository
      */
     public function deleteExpiredTokens(): int
     {
-        $sql = 'DELETE FROM PasswordResetToken WHERE ExpiresAtUtc < NOW()';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
+        $stmt = $this->execute(
+            'DELETE FROM PasswordResetToken WHERE ExpiresAtUtc < NOW()',
+            [],
+        );
 
         return $stmt->rowCount();
     }

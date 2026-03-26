@@ -7,7 +7,6 @@ namespace App\Repositories;
 use App\Models\EventType;
 use App\DTOs\Filters\EventTypeFilter;
 use App\Repositories\Interfaces\IEventTypeRepository;
-use PDO;
 
 /**
  * Read-only access to the EventType lookup table.
@@ -15,12 +14,8 @@ use PDO;
  * Event types categorise festival events (e.g. "Jazz", "Dance", "Food")
  * and are referenced by Event, ScheduleDayConfig, and PassType.
  */
-class EventTypeRepository implements IEventTypeRepository
+class EventTypeRepository extends BaseRepository implements IEventTypeRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Retrieves event types with optional ID filter and configurable sort order.
      *
@@ -28,11 +23,7 @@ class EventTypeRepository implements IEventTypeRepository
      */
     public function findEventTypes(EventTypeFilter $filter = new EventTypeFilter()): array
     {
-        $sql = '
-            SELECT EventTypeId, Name, Slug
-            FROM EventType
-            WHERE 1 = 1
-        ';
+        $sql = 'SELECT EventTypeId, Name, Slug FROM EventType WHERE 1 = 1';
         $params = [];
 
         if ($filter->eventTypeId !== null) {
@@ -45,10 +36,6 @@ class EventTypeRepository implements IEventTypeRepository
             ? ' ORDER BY Name ASC'
             : ' ORDER BY EventTypeId ASC';
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([EventType::class, 'fromRow'], $rows);
+        return $this->fetchAll($sql, $params, fn(array $row) => EventType::fromRow($row));
     }
 }

@@ -6,19 +6,14 @@ namespace App\Repositories;
 
 use App\Enums\OrderStatus;
 use App\Repositories\Interfaces\IOrderRepository;
-use PDO;
 
 /**
  * Manages rows in the `Order` table. Orders are created in Pending status during checkout
  * and transition through statuses (e.g. Paid, Cancelled, Expired) as payment completes or
  * times out. The table name is backtick-quoted because "Order" is a MySQL reserved word.
  */
-class OrderRepository implements IOrderRepository
+class OrderRepository extends BaseRepository implements IOrderRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Creates a new order in Pending status. The payBeforeUtc deadline controls when
      * unpaid orders become eligible for automatic expiration.
@@ -35,38 +30,25 @@ class OrderRepository implements IOrderRepository
         string $totalAmount,
         ?\DateTimeImmutable $payBeforeUtc,
     ): int {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO `Order` (
-                OrderNumber,
-                UserAccountId,
-                ProgramId,
-                Status,
-                PayBeforeUtc,
-                Subtotal,
-                VatTotal,
-                TotalAmount
+        $this->execute(
+            'INSERT INTO `Order` (
+                OrderNumber, UserAccountId, ProgramId, Status,
+                PayBeforeUtc, Subtotal, VatTotal, TotalAmount
             ) VALUES (
-                :orderNumber,
-                :userAccountId,
-                :programId,
-                :status,
-                :payBeforeUtc,
-                :subtotal,
-                :vatTotal,
-                :totalAmount
-            )
-        ');
-
-        $stmt->execute([
-            'orderNumber' => $orderNumber,
-            'userAccountId' => $userAccountId,
-            'programId' => $programId,
-            'status' => OrderStatus::Pending->value,
-            'payBeforeUtc' => $payBeforeUtc?->format('Y-m-d H:i:s'),
-            'subtotal' => $subtotal,
-            'vatTotal' => $vatTotal,
-            'totalAmount' => $totalAmount,
-        ]);
+                :orderNumber, :userAccountId, :programId, :status,
+                :payBeforeUtc, :subtotal, :vatTotal, :totalAmount
+            )',
+            [
+                'orderNumber' => $orderNumber,
+                'userAccountId' => $userAccountId,
+                'programId' => $programId,
+                'status' => OrderStatus::Pending->value,
+                'payBeforeUtc' => $payBeforeUtc?->format('Y-m-d H:i:s'),
+                'subtotal' => $subtotal,
+                'vatTotal' => $vatTotal,
+                'totalAmount' => $totalAmount,
+            ],
+        );
 
         return (int)$this->pdo->lastInsertId();
     }
@@ -77,11 +59,10 @@ class OrderRepository implements IOrderRepository
      */
     public function updateStatus(int $orderId, OrderStatus $status): void
     {
-        $stmt = $this->pdo->prepare('UPDATE `Order` SET Status = :status WHERE OrderId = :orderId');
-        $stmt->execute([
-            'status' => $status->value,
-            'orderId' => $orderId,
-        ]);
+        $this->execute(
+            'UPDATE `Order` SET Status = :status WHERE OrderId = :orderId',
+            ['status' => $status->value, 'orderId' => $orderId],
+        );
     }
 
     /**
@@ -106,8 +87,10 @@ class OrderRepository implements IOrderRepository
         }
         $in = implode(', ', $inPlaceholders);
         // UPDATE only fires if the current status matches one of the allowed values
-        $stmt = $this->pdo->prepare("UPDATE `Order` SET Status = :newStatus WHERE OrderId = :orderId AND Status IN ({$in})");
-        $stmt->execute($params);
+        $this->execute(
+            "UPDATE `Order` SET Status = :newStatus WHERE OrderId = :orderId AND Status IN ({$in})",
+            $params,
+        );
     }
 }
 

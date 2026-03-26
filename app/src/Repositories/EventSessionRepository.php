@@ -18,11 +18,8 @@ use PDO;
  * listing with joins to Event, EventType, Venue, Artist, and MediaAsset. Provides both
  * flat session lists and day-grouped results for the public schedule UI.
  */
-class EventSessionRepository implements IEventSessionRepository
+class EventSessionRepository extends BaseRepository implements IEventSessionRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
 
     /**
      * Builds and executes a dynamic query for event sessions with extensive filter support.
@@ -347,8 +344,8 @@ class EventSessionRepository implements IEventSessionRepository
      */
     public function create(array $data): int
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO EventSession (
+        $this->execute(
+            'INSERT INTO EventSession (
                 EventId, StartDateTime, EndDateTime, CapacityTotal,
                 CapacitySingleTicketLimit, HallName, SessionType,
                 DurationMinutes, LanguageCode, MinAge, MaxAge,
@@ -360,28 +357,27 @@ class EventSessionRepository implements IEventSessionRepository
                 :durationMinutes, :languageCode, :minAge, :maxAge,
                 :reservationRequired, :isFree, :notes, :historyTicketLabel, :ctaLabel, :ctaUrl,
                 0, 1
-            )
-        ');
-
-        $stmt->execute([
-            'eventId' => $data['EventId'],
-            'startDateTime' => $data['StartDateTime'],
-            'endDateTime' => $data['EndDateTime'],
-            'capacityTotal' => $data['CapacityTotal'] ?? 100,
-            'capacitySingleTicketLimit' => $data['CapacitySingleTicketLimit'] ?? 100,
-            'hallName' => $data['HallName'] ?? null,
-            'sessionType' => $data['SessionType'] ?? null,
-            'durationMinutes' => $data['DurationMinutes'] ?? null,
-            'languageCode' => $data['LanguageCode'] ?? null,
-            'minAge' => $data['MinAge'] ?? null,
-            'maxAge' => $data['MaxAge'] ?? null,
-            'reservationRequired' => $data['ReservationRequired'] ?? 0,
-            'isFree' => $data['IsFree'] ?? 0,
-            'notes' => $data['Notes'] ?? '',
-            'historyTicketLabel' => $data['HistoryTicketLabel'] ?? null,
-            'ctaLabel' => $data['CtaLabel'] ?? null,
-            'ctaUrl' => $data['CtaUrl'] ?? null,
-        ]);
+            )',
+            [
+                'eventId' => $data['EventId'],
+                'startDateTime' => $data['StartDateTime'],
+                'endDateTime' => $data['EndDateTime'],
+                'capacityTotal' => $data['CapacityTotal'] ?? 100,
+                'capacitySingleTicketLimit' => $data['CapacitySingleTicketLimit'] ?? 100,
+                'hallName' => $data['HallName'] ?? null,
+                'sessionType' => $data['SessionType'] ?? null,
+                'durationMinutes' => $data['DurationMinutes'] ?? null,
+                'languageCode' => $data['LanguageCode'] ?? null,
+                'minAge' => $data['MinAge'] ?? null,
+                'maxAge' => $data['MaxAge'] ?? null,
+                'reservationRequired' => $data['ReservationRequired'] ?? 0,
+                'isFree' => $data['IsFree'] ?? 0,
+                'notes' => $data['Notes'] ?? '',
+                'historyTicketLabel' => $data['HistoryTicketLabel'] ?? null,
+                'ctaLabel' => $data['CtaLabel'] ?? null,
+                'ctaUrl' => $data['CtaUrl'] ?? null,
+            ],
+        );
 
         return (int)$this->pdo->lastInsertId();
     }
@@ -395,50 +391,42 @@ class EventSessionRepository implements IEventSessionRepository
      */
     public function update(int $sessionId, array $data): bool
     {
-        $stmt = $this->pdo->prepare('
-            UPDATE EventSession SET
-                StartDateTime = :startDateTime,
-                EndDateTime = :endDateTime,
-                CapacityTotal = :capacityTotal,
-                CapacitySingleTicketLimit = :capacitySingleTicketLimit,
-                HallName = :hallName,
-                SessionType = :sessionType,
-                DurationMinutes = :durationMinutes,
-                LanguageCode = :languageCode,
-                MinAge = :minAge,
-                MaxAge = :maxAge,
-                ReservationRequired = :reservationRequired,
-                IsFree = :isFree,
-                Notes = :notes,
-                HistoryTicketLabel = :historyTicketLabel,
-                CtaLabel = :ctaLabel,
-                CtaUrl = :ctaUrl,
-                IsCancelled = :isCancelled,
-                IsActive = :isActive
-            WHERE EventSessionId = :sessionId
-        ');
+        $this->execute(
+            'UPDATE EventSession SET
+                StartDateTime = :startDateTime, EndDateTime = :endDateTime,
+                CapacityTotal = :capacityTotal, CapacitySingleTicketLimit = :capacitySingleTicketLimit,
+                HallName = :hallName, SessionType = :sessionType,
+                DurationMinutes = :durationMinutes, LanguageCode = :languageCode,
+                MinAge = :minAge, MaxAge = :maxAge,
+                ReservationRequired = :reservationRequired, IsFree = :isFree,
+                Notes = :notes, HistoryTicketLabel = :historyTicketLabel,
+                CtaLabel = :ctaLabel, CtaUrl = :ctaUrl,
+                IsCancelled = :isCancelled, IsActive = :isActive
+            WHERE EventSessionId = :sessionId',
+            [
+                'sessionId'                 => $sessionId,
+                'startDateTime'             => $data['StartDateTime'],
+                'endDateTime'               => $data['EndDateTime'],
+                'capacityTotal'             => (int)($data['CapacityTotal'] ?? 100),
+                'capacitySingleTicketLimit' => (int)($data['CapacitySingleTicketLimit'] ?? 100),
+                'hallName'                  => $data['HallName'] ?? null,
+                'sessionType'               => $data['SessionType'] ?? null,
+                'durationMinutes'           => isset($data['DurationMinutes']) && $data['DurationMinutes'] !== '' ? (int)$data['DurationMinutes'] : null,
+                'languageCode'              => $data['LanguageCode'] ?? null,
+                'minAge'                    => $data['MinAge'] ?? null,
+                'maxAge'                    => isset($data['MaxAge']) && $data['MaxAge'] !== '' ? (int)$data['MaxAge'] : null,
+                'reservationRequired'       => isset($data['ReservationRequired']) ? 1 : 0,
+                'isFree'                    => isset($data['IsFree']) ? 1 : 0,
+                'notes'                     => $data['Notes'] ?? '',
+                'historyTicketLabel'        => $data['HistoryTicketLabel'] ?? null,
+                'ctaLabel'                  => $data['CtaLabel'] ?? null,
+                'ctaUrl'                    => $data['CtaUrl'] ?? null,
+                'isCancelled'               => isset($data['IsCancelled']) ? 1 : 0,
+                'isActive'                  => isset($data['IsActive']) ? 1 : 0,
+            ],
+        );
 
-        return $stmt->execute([
-            'sessionId'                 => $sessionId,
-            'startDateTime'             => $data['StartDateTime'],
-            'endDateTime'               => $data['EndDateTime'],
-            'capacityTotal'             => (int)($data['CapacityTotal'] ?? 100),
-            'capacitySingleTicketLimit' => (int)($data['CapacitySingleTicketLimit'] ?? 100),
-            'hallName'                  => $data['HallName'] ?? null,
-            'sessionType'               => $data['SessionType'] ?? null,
-            'durationMinutes'           => isset($data['DurationMinutes']) && $data['DurationMinutes'] !== '' ? (int)$data['DurationMinutes'] : null,
-            'languageCode'              => $data['LanguageCode'] ?? null,
-            'minAge'                    => $data['MinAge'] ?? null,
-            'maxAge'                    => isset($data['MaxAge']) && $data['MaxAge'] !== '' ? (int)$data['MaxAge'] : null,
-            'reservationRequired'       => isset($data['ReservationRequired']) ? 1 : 0,
-            'isFree'                    => isset($data['IsFree']) ? 1 : 0,
-            'notes'                     => $data['Notes'] ?? '',
-            'historyTicketLabel'        => $data['HistoryTicketLabel'] ?? null,
-            'ctaLabel'                  => $data['CtaLabel'] ?? null,
-            'ctaUrl'                    => $data['CtaUrl'] ?? null,
-            'isCancelled'               => isset($data['IsCancelled']) ? 1 : 0,
-            'isActive'                  => isset($data['IsActive']) ? 1 : 0,
-        ]);
+        return true;
     }
 
     /**
@@ -446,8 +434,12 @@ class EventSessionRepository implements IEventSessionRepository
      */
     public function delete(int $sessionId): bool
     {
-        $stmt = $this->pdo->prepare('DELETE FROM EventSession WHERE EventSessionId = :sessionId');
-        return $stmt->execute(['sessionId' => $sessionId]);
+        $this->execute(
+            'DELETE FROM EventSession WHERE EventSessionId = :sessionId',
+            ['sessionId' => $sessionId],
+        );
+
+        return true;
     }
 
     /**
@@ -520,8 +512,12 @@ class EventSessionRepository implements IEventSessionRepository
      */
     public function deactivateByEventId(int $eventId): bool
     {
-        $stmt = $this->pdo->prepare('UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId');
-        return $stmt->execute(['eventId' => $eventId]);
+        $this->execute(
+            'UPDATE EventSession SET IsActive = 0 WHERE EventId = :eventId',
+            ['eventId' => $eventId],
+        );
+
+        return true;
     }
 
     /**
@@ -531,12 +527,12 @@ class EventSessionRepository implements IEventSessionRepository
     public function getAvailableSeats(int $sessionId): int
     {
         // Remaining seats = total capacity minus all sold tickets (single + reserved)
-        $sql = 'SELECT (CapacityTotal - SoldSingleTickets - SoldReservedSeats) AS available
-                FROM EventSession
-                WHERE EventSessionId = :sessionId';
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':sessionId' => $sessionId]);
+        $stmt = $this->execute(
+            'SELECT (CapacityTotal - SoldSingleTickets - SoldReservedSeats) AS available
+            FROM EventSession
+            WHERE EventSessionId = :sessionId',
+            [':sessionId' => $sessionId],
+        );
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ? max(0, (int)$row['available']) : 0;
@@ -552,17 +548,13 @@ class EventSessionRepository implements IEventSessionRepository
     public function decrementCapacity(int $sessionId, int $quantity): bool
     {
         // Atomic seat reservation — only succeeds if enough capacity remains
-        $sql = 'UPDATE EventSession
-                SET SoldSingleTickets = SoldSingleTickets + :quantity
-                WHERE EventSessionId = :sessionId
-                  AND (CapacityTotal - SoldSingleTickets - SoldReservedSeats) >= :quantityCheck';
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            ':sessionId' => $sessionId,
-            ':quantity' => $quantity,
-            ':quantityCheck' => $quantity,
-        ]);
+        $stmt = $this->execute(
+            'UPDATE EventSession
+            SET SoldSingleTickets = SoldSingleTickets + :quantity
+            WHERE EventSessionId = :sessionId
+              AND (CapacityTotal - SoldSingleTickets - SoldReservedSeats) >= :quantityCheck',
+            [':sessionId' => $sessionId, ':quantity' => $quantity, ':quantityCheck' => $quantity],
+        );
 
         return $stmt->rowCount() > 0;
     }
@@ -574,15 +566,13 @@ class EventSessionRepository implements IEventSessionRepository
     public function getCapacityInfo(int $sessionId): ?SessionCapacityInfo
     {
         // Fetch the capacity snapshot for a single session
-        $sql = 'SELECT EventSessionId, CapacityTotal, SoldSingleTickets, SoldReservedSeats
-                FROM EventSession
-                WHERE EventSessionId = :sessionId';
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':sessionId' => $sessionId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $row !== false ? SessionCapacityInfo::fromRow($row) : null;
+        return $this->fetchOne(
+            'SELECT EventSessionId, CapacityTotal, SoldSingleTickets, SoldReservedSeats
+            FROM EventSession
+            WHERE EventSessionId = :sessionId',
+            [':sessionId' => $sessionId],
+            fn(array $row) => SessionCapacityInfo::fromRow($row),
+        );
     }
 
     /**
@@ -592,14 +582,11 @@ class EventSessionRepository implements IEventSessionRepository
     public function restoreCapacity(int $sessionId, int $quantity): void
     {
         // Restore seats that were previously reserved for a cancelled/expired order
-        $sql = 'UPDATE EventSession
-                SET SoldSingleTickets = GREATEST(0, SoldSingleTickets - :quantity)
-                WHERE EventSessionId = :sessionId';
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            ':sessionId' => $sessionId,
-            ':quantity' => $quantity,
-        ]);
+        $this->execute(
+            'UPDATE EventSession
+            SET SoldSingleTickets = GREATEST(0, SoldSingleTickets - :quantity)
+            WHERE EventSessionId = :sessionId',
+            [':sessionId' => $sessionId, ':quantity' => $quantity],
+        );
     }
 }

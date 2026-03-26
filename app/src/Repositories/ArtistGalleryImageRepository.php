@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Models\ArtistGalleryImage;
 use App\Repositories\Interfaces\IArtistGalleryImageRepository;
-use PDO;
 
 /**
  * Read-only access to the ArtistGalleryImage table.
@@ -14,12 +13,8 @@ use PDO;
  * Gallery images are tied to a Jazz event and shown in the artist detail
  * photo gallery, ordered by SortOrder.
  */
-class ArtistGalleryImageRepository implements IArtistGalleryImageRepository
+class ArtistGalleryImageRepository extends BaseRepository implements IArtistGalleryImageRepository
 {
-    public function __construct(private readonly PDO $pdo)
-    {
-    }
-
     /**
      * Returns all gallery images for an event, ordered by SortOrder.
      *
@@ -27,14 +22,10 @@ class ArtistGalleryImageRepository implements IArtistGalleryImageRepository
      */
     public function findByEventId(int $eventId): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT * FROM ArtistGalleryImage
-            WHERE EventId = :eventId
-            ORDER BY SortOrder ASC
-        ');
-        $stmt->execute(['eventId' => $eventId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_map([ArtistGalleryImage::class, 'fromRow'], $rows);
+        return $this->fetchAll(
+            'SELECT * FROM ArtistGalleryImage WHERE EventId = :eventId ORDER BY SortOrder ASC',
+            ['eventId' => $eventId],
+            fn(array $row) => ArtistGalleryImage::fromRow($row),
+        );
     }
 }

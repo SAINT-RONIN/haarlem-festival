@@ -6,19 +6,13 @@ namespace App\Repositories;
 
 use App\DTOs\Checkout\OrderWithDetails;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
-use PDO;
 
 /**
  * Fetches orders joined with user email, item summary, and latest payment status
  * for the CMS orders list page.
  */
-class CmsOrdersRepository implements ICmsOrdersRepository
+class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
 {
-    public function __construct(
-        private readonly PDO $pdo,
-    ) {
-    }
-
     /**
      * Returns all orders with joined details, optionally filtered by status.
      *
@@ -29,13 +23,7 @@ class CmsOrdersRepository implements ICmsOrdersRepository
         $sql    = $this->buildQuery($statusFilter !== null);
         $params = $statusFilter !== null ? [':status' => $statusFilter] : [];
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-
-        return array_map(
-            fn(array $row) => OrderWithDetails::fromRow($row),
-            $stmt->fetchAll(PDO::FETCH_ASSOC),
-        );
+        return $this->fetchAll($sql, $params, fn(array $row) => OrderWithDetails::fromRow($row));
     }
 
     /**

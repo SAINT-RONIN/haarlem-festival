@@ -7,7 +7,6 @@ namespace App\Repositories;
 use App\Models\UserAccount;
 use App\DTOs\User\UserWithRole;
 use App\Repositories\Interfaces\ICmsUsersRepository;
-use PDO;
 
 /**
  * Handles read-only UserAccount operations for the CMS admin users section.
@@ -16,7 +15,7 @@ use PDO;
  * and provides uniqueness checks that can exclude a given user (for edit forms).
  * Write operations (create, update, delete) live in UserAccountRepository.
  */
-class CmsUsersRepository implements ICmsUsersRepository
+class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
 {
     /** @var array<string, string> Maps front-end sort keys to safe SQL column references */
     private const SORT_COLUMNS = [
@@ -28,11 +27,6 @@ class CmsUsersRepository implements ICmsUsersRepository
     ];
 
     private const SORT_DIRS = ['asc', 'desc'];
-
-    public function __construct(
-        private readonly PDO $pdo,
-    ) {
-    }
 
     /**
      * Returns all users with their role name, with optional filtering, search, and sort.
@@ -47,13 +41,7 @@ class CmsUsersRepository implements ICmsUsersRepository
     ): array {
         [$sql, $params] = $this->buildListQuery($roleFilter, $search, $sortBy, $sortDir);
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-
-        return array_map(
-            fn(array $row) => UserWithRole::fromRow($row),
-            $stmt->fetchAll(PDO::FETCH_ASSOC),
-        );
+        return $this->fetchAll($sql, $params, fn(array $row) => UserWithRole::fromRow($row));
     }
 
     /**
@@ -61,11 +49,11 @@ class CmsUsersRepository implements ICmsUsersRepository
      */
     public function findById(int $id): ?UserAccount
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM UserAccount WHERE UserAccountId = :id');
-        $stmt->execute([':id' => $id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return is_array($row) ? UserAccount::fromRow($row) : null;
+        return $this->fetchOne(
+            'SELECT * FROM UserAccount WHERE UserAccountId = :id',
+            [':id' => $id],
+            fn(array $row) => UserAccount::fromRow($row),
+        );
     }
 
     /**
@@ -73,8 +61,10 @@ class CmsUsersRepository implements ICmsUsersRepository
      */
     public function existsByUsername(string $username): bool
     {
-        $stmt = $this->pdo->prepare('SELECT 1 FROM UserAccount WHERE Username = :username LIMIT 1');
-        $stmt->execute([':username' => $username]);
+        $stmt = $this->execute(
+            'SELECT 1 FROM UserAccount WHERE Username = :username LIMIT 1',
+            [':username' => $username],
+        );
 
         return $stmt->fetchColumn() !== false;
     }
@@ -84,8 +74,10 @@ class CmsUsersRepository implements ICmsUsersRepository
      */
     public function existsByEmail(string $email): bool
     {
-        $stmt = $this->pdo->prepare('SELECT 1 FROM UserAccount WHERE Email = :email LIMIT 1');
-        $stmt->execute([':email' => $email]);
+        $stmt = $this->execute(
+            'SELECT 1 FROM UserAccount WHERE Email = :email LIMIT 1',
+            [':email' => $email],
+        );
 
         return $stmt->fetchColumn() !== false;
     }
@@ -95,9 +87,10 @@ class CmsUsersRepository implements ICmsUsersRepository
      */
     public function existsByUsernameExcluding(string $username, int $excludeId): bool
     {
-        $sql  = 'SELECT 1 FROM UserAccount WHERE Username = :username AND UserAccountId != :excludeId LIMIT 1';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':username' => $username, ':excludeId' => $excludeId]);
+        $stmt = $this->execute(
+            'SELECT 1 FROM UserAccount WHERE Username = :username AND UserAccountId != :excludeId LIMIT 1',
+            [':username' => $username, ':excludeId' => $excludeId],
+        );
 
         return $stmt->fetchColumn() !== false;
     }
@@ -107,9 +100,10 @@ class CmsUsersRepository implements ICmsUsersRepository
      */
     public function existsByEmailExcluding(string $email, int $excludeId): bool
     {
-        $sql  = 'SELECT 1 FROM UserAccount WHERE Email = :email AND UserAccountId != :excludeId LIMIT 1';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':email' => $email, ':excludeId' => $excludeId]);
+        $stmt = $this->execute(
+            'SELECT 1 FROM UserAccount WHERE Email = :email AND UserAccountId != :excludeId LIMIT 1',
+            [':email' => $email, ':excludeId' => $excludeId],
+        );
 
         return $stmt->fetchColumn() !== false;
     }
