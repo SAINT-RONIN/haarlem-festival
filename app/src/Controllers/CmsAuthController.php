@@ -10,9 +10,6 @@ use App\Services\Interfaces\ISessionService;
 
 /**
  * Handles CMS admin authentication: login, logout, and access gating.
- *
- * Also exposes the static requireAdmin() guard used by all other CMS
- * controllers to enforce admin-only access before processing requests.
  */
 class CmsAuthController extends BaseController
 {
@@ -88,24 +85,5 @@ class CmsAuthController extends BaseController
         $this->sessionService->setFlash('cms_login_error', $error);
         header('Location: /cms/login');
         exit;
-    }
-
-    /**
-     * Guard that ensures the current session belongs to an admin user.
-     * Redirects to the login page if the session is missing or non-admin.
-     * Called at the top of every CMS controller action.
-     */
-    public static function requireAdmin(ISessionService $sessionService): void
-    {
-        try {
-            $sessionService->start();
-
-            if (!$sessionService->isLoggedIn() || !$sessionService->isAdmin()) {
-                header('Location: /cms/login');
-                exit;
-            }
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
     }
 }
