@@ -11,6 +11,7 @@ use App\DTOs\Pages\HomeScheduleDayData;
 use App\DTOs\Pages\HomeScheduleSessionData;
 use App\DTOs\Pages\HomeEventTypeData;
 use App\DTOs\Filters\VenueFilter;
+use App\Helpers\SessionGroupingHelper;
 use App\Mappers\HomeMapper;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;
@@ -178,29 +179,13 @@ class HomeService extends BaseContentService implements IHomeService
             includeCancelled: false,
             orderBy: 'es.StartDateTime ASC',
         ))->sessions;
-        $grouped = $this->groupSessionsByDate($sessions);
+        $grouped = SessionGroupingHelper::groupByDate($sessions);
 
         if (empty($grouped)) {
             return $this->buildPlaceholderDays();
         }
 
         return $this->buildScheduleDaysFromGrouped($grouped);
-    }
-
-    /**
-     * Groups sessions by date string (Y-m-d).
-     *
-     * @param \App\DTOs\Schedule\SessionWithEvent[] $sessions
-     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
-     */
-    private function groupSessionsByDate(array $sessions): array
-    {
-        $grouped = [];
-        foreach ($sessions as $session) {
-            $date = $session->startDateTime->format('Y-m-d');
-            $grouped[$date][] = $session;
-        }
-        return $grouped;
     }
 
     /**

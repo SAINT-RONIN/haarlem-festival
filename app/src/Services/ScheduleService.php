@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
 use App\Helpers\FormatHelper;
+use App\Helpers\SessionGroupingHelper;
 use App\DTOs\Filters\EventSessionFilter;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
@@ -194,7 +195,7 @@ class ScheduleService implements IScheduleService
         $sessionIds = $this->collectSessionIds($scheduleData->sessions);
         $labelsMap = $this->batchLoadLabels($sessionIds);
         $pricesMap = $this->batchLoadPrices($sessionIds);
-        $sessionsByDate = $this->groupSessionsByDate($scheduleData->sessions);
+        $sessionsByDate = SessionGroupingHelper::groupByDate($scheduleData->sessions);
 
         return $this->buildDayArrays($scheduleData->days, $sessionsByDate, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings);
     }
@@ -251,21 +252,6 @@ class ScheduleService implements IScheduleService
         return !empty($sessionIds)
             ? $this->priceRepository->findPricesBySessionIds($sessionIds)
             : [];
-    }
-
-    /**
-     * Groups sessions by their date string.
-     *
-     * @param \App\DTOs\Schedule\SessionWithEvent[] $sessions
-     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
-     */
-    private function groupSessionsByDate(array $sessions): array
-    {
-        $sessionsByDate = [];
-        foreach ($sessions as $session) {
-            $sessionsByDate[$session->sessionDate][] = $session;
-        }
-        return $sessionsByDate;
     }
 
     /** Assembles a single day's event cards, applying History time-slot grouping if needed. */
