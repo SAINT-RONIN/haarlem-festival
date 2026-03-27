@@ -52,15 +52,14 @@ class CmsMediaController extends CmsBaseController
      */
     public function upload(): void
     {
-        header('Content-Type: application/json');
         try {
             $this->validateMediaCsrf();
             $this->validateFilePresent();
             $this->processMediaUpload();
         } catch (ValidationException $e) {
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            $this->json(['success' => false, 'error' => $e->getMessage()]);
         } catch (\Throwable $e) {
-            echo json_encode(['success' => false, 'error' => 'Upload failed']);
+            $this->json(['success' => false, 'error' => 'Upload failed']);
         }
     }
 
@@ -70,12 +69,13 @@ class CmsMediaController extends CmsBaseController
      */
     public function delete(): void
     {
-        header('Content-Type: application/json');
         try {
             $this->validateMediaCsrf();
             $this->processMediaDelete();
+        } catch (ValidationException $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()]);
         } catch (\Throwable $e) {
-            echo json_encode(['success' => false, 'error' => 'Delete failed']);
+            $this->json(['success' => false, 'error' => 'Delete failed']);
         }
     }
 
@@ -86,14 +86,12 @@ class CmsMediaController extends CmsBaseController
      */
     public function list(): void
     {
-        header('Content-Type: application/json');
         try {
             $allAssets = $this->mediaAssetService->getAllAssets();
-            // Uses CmsMediaMapper for JSON serialization
             $data = array_map([CmsMediaMapper::class, 'toMediaJsonData'], $allAssets);
-            echo json_encode(['success' => true, 'assets' => $data]);
+            $this->json(['success' => true, 'assets' => $data]);
         } catch (\Throwable $e) {
-            echo json_encode(['success' => false, 'error' => 'Failed to load media']);
+            $this->json(['success' => false, 'error' => 'Failed to load media']);
         }
     }
 
@@ -128,7 +126,7 @@ class CmsMediaController extends CmsBaseController
     private function processMediaUpload(): void
     {
         $result = $this->mediaAssetService->uploadImage($_FILES['image'], 'cms');
-        echo json_encode([
+        $this->json([
             'success' => true,
             'mediaAssetId' => $result->mediaAssetId,
             'filePath' => $result->filePath,
@@ -141,10 +139,10 @@ class CmsMediaController extends CmsBaseController
     {
         $mediaAssetId = $this->readOptionalIntPostParam('media_asset_id') ?? 0;
         if ($mediaAssetId <= 0) {
-            echo json_encode(['success' => false, 'error' => 'Invalid asset ID']);
+            $this->json(['success' => false, 'error' => 'Invalid asset ID']);
             return;
         }
         $deleted = $this->mediaAssetService->deleteAsset($mediaAssetId);
-        echo json_encode(['success' => $deleted]);
+        $this->json(['success' => $deleted]);
     }
 }
