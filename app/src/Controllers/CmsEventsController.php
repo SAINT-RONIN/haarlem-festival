@@ -12,6 +12,7 @@ use App\DTOs\Events\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Services\Interfaces\ICmsRestaurantsService;
+use App\Services\Interfaces\ICmsScheduleDayService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsEventCreateViewModel;
 use App\ViewModels\Cms\CmsScheduleDaysViewModel;
@@ -36,6 +37,7 @@ class CmsEventsController extends CmsBaseController
         ISessionService $sessionService,
         private readonly ICmsArtistsService $artistsService,
         private readonly ICmsRestaurantsService $restaurantsService,
+        private readonly ICmsScheduleDayService $scheduleDayService,
     ) {
         parent::__construct($sessionService);
     }
@@ -329,7 +331,7 @@ class CmsEventsController extends CmsBaseController
 
     private function renderScheduleDaysPage(): void
     {
-        $pageData  = $this->eventsService->getScheduleDaysPageData();
+        $pageData  = $this->scheduleDayService->getScheduleDaysPageData();
         $viewModel = new CmsScheduleDaysViewModel(
             eventTypes: $pageData->eventTypes,
             globalConfigs: $pageData->grouped->global,
@@ -480,7 +482,7 @@ class CmsEventsController extends CmsBaseController
         $eventTypeId = $this->readOptionalIntPostParam('EventTypeId');
         $dayOfWeek = $this->readOptionalIntPostParam('DayOfWeek') ?? 0;
         $isVisible = $this->readBoolPostParam('IsVisible');
-        $this->eventsService->setScheduleDayVisibility($eventTypeId, $dayOfWeek, $isVisible);
+        $this->scheduleDayService->setScheduleDayVisibility($eventTypeId, $dayOfWeek, $isVisible);
         $this->redirectWithFlash('Day visibility updated.', 'success', '/cms/schedule-days');
     }
 }

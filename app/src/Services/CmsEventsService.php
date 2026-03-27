@@ -16,30 +16,26 @@ use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IPriceTierRepository;
-use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Events\EventEditBundle;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Filters\EventSessionFilter;
 use App\DTOs\Events\EventsListPageData;
-use App\DTOs\Schedule\GroupedScheduleDayConfigs;
 use App\DTOs\Filters\EventTypeFilter;
-use App\DTOs\Pages\ScheduleDaysPageData;
-use App\DTOs\Filters\ScheduleDayConfigFilter;
 use App\DTOs\Filters\VenueFilter;
 use App\Services\Interfaces\ICmsEventsService;
-use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 use App\Constants\CmsEventConstraints;
 
 /**
- * CMS-side event and session management: CRUD, pricing, labels, and schedule visibility.
+ * CMS-side event and session management: CRUD, pricing, and labels.
  *
- * Orchestrates ten+ repositories to provide event lifecycle operations. Key design decisions:
+ * Key design decisions:
  * - Events are soft-deleted (IsActive = 0) so historical order references remain valid.
  * - Sessions with sold tickets cannot be hard-deleted; they must be cancelled instead.
- * - Schedule day visibility uses a two-tier system: global defaults that can be overridden per event type.
  * - Price input accepts European comma-decimal format (e.g. "12,50") and normalizes to float.
+ *
+ * Schedule day visibility is handled separately by CmsScheduleDayService.
  */
 class CmsEventsService implements ICmsEventsService
 {
@@ -52,9 +48,7 @@ class CmsEventsService implements ICmsEventsService
         private readonly IEventTypeRepository $eventTypeRepository,
         private readonly IVenueRepository $venueRepository,
         private readonly IPriceTierRepository $priceTierRepository,
-        private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
         private readonly IOrderItemRepository $orderItemRepository,
-        private readonly IScheduleDayVisibilityResolver $visibilityResolver,
     ) {
     }
 
@@ -104,17 +98,6 @@ class CmsEventsService implements ICmsEventsService
             eventTypes: $this->getEventTypes(),
             venues: $this->getVenues(),
             weeklySchedule: $this->getWeeklyScheduleOverview($eventTypeId),
-        );
-    }
-
-    /**
-     * Assembles all data needed for the CMS schedule days management page.
-     */
-    public function getScheduleDaysPageData(): ScheduleDaysPageData
-    {
-        return new ScheduleDaysPageData(
-            eventTypes: $this->getEventTypes(),
-            grouped: $this->getGroupedScheduleDayConfigs(),
         );
     }
 
@@ -662,60 +645,4 @@ class CmsEventsService implements ICmsEventsService
         }
     }
 
-    /**
-     * Returns all schedule day configs (both global and per-event-type), sorted by scope.
-     */
-    public function getScheduleDayConfigs(): array
-    {
-        return $this->scheduleDayConfigRepository->findConfigs(new ScheduleDayConfigFilter(includeEventTypeName: true, orderBy: 'scope'));
-    }
-
-    /**
-     * Partitions schedule day configs into global defaults vs. per-event-type overrides,
-     * keyed by day-of-week number, for rendering the two-tier visibility grid in the CMS.
-     */
-    public function getGroupedScheduleDayConfigs(): GroupedScheduleDayConfigs
-    {
-        $dayConfigs = $this->getScheduleDayConfigs();
-        $globalConfigs = [];
-        $typeConfigs   = [];
-        // Configs without an eventTypeId are global defaults; those with one are type-specific overrides
-        foreach ($dayConfigs as $config) {
-            if (!$config->eventTypeId) {
-                $globalConfigs[(int)$config->dayOfWeek] = $config;
-            } else {
-                $typeConfigs[(int)$config->eventTypeId][(int)$config->dayOfWeek] = $config;
-            }
-        }
-        return new GroupedScheduleDayConfigs(global: $globalConfigs, byType: $typeConfigs);
-    }
-
-    /**
-     * Sets the visibility of a schedule day.
-     *
-     * @param ?int $eventTypeId null for global setting, >0 for specific event type
-     * @param int $dayOfWeek 0=Sunday, 1=Monday, ..., 6=Saturday
-     * @param bool $isVisible
-     * @throws ValidationException
-     */
-    public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
-    {
-        $dayValues = array_map(static fn (DayOfWeek $day): int => $day->value, DayOfWeek::cases());
-        if (!in_array($dayOfWeek, $dayValues, true)) {
-            throw new ValidationException(['Invalid day of week']);
-        }
-
-        $this->scheduleDayConfigRepository->upsert($eventTypeId, $dayOfWeek, $isVisible);
-    }
-
-    /**
-     * Determines which days of the week are visible for a given event type by merging
-     * global defaults with type-specific overrides. Type settings take precedence.
-     *
-     * @return int[] Day numbers (0=Sunday through 6=Saturday) that should be shown
-     */
-    public function getVisibleDays(?int $eventTypeId = null): array
-    {
-        return $this->visibilityResolver->getVisibleDays($eventTypeId);
-    }
 }

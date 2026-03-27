@@ -7,12 +7,12 @@ namespace App\Services\Interfaces;
 use App\Exceptions\ValidationException;
 use App\DTOs\Events\EventEditBundle;
 use App\DTOs\Events\EventsListPageData;
-use App\DTOs\Schedule\GroupedScheduleDayConfigs;
-use App\DTOs\Pages\ScheduleDaysPageData;
 
 /**
  * Contract for CMS event lifecycle: CRUD for events, sessions, labels, and prices,
- * plus schedule day visibility management and composite page-data assembly.
+ * plus composite page-data assembly.
+ *
+ * Schedule day visibility is handled by ICmsScheduleDayService.
  */
 interface ICmsEventsService
 {
@@ -37,11 +37,6 @@ interface ICmsEventsService
      * Assembles all data needed for the CMS events list page.
      */
     public function getEventsListPageData(?int $eventTypeId = null, ?string $dayOfWeek = null): EventsListPageData;
-
-    /**
-     * Assembles all data needed for the CMS schedule days management page.
-     */
-    public function getScheduleDaysPageData(): ScheduleDaysPageData;
 
     /**
      * Creates a new venue.
@@ -130,28 +125,4 @@ interface ICmsEventsService
      */
     public function deleteEvent(int $eventId): void;
 
-    /**
-     * Gets all schedule day visibility configurations.
-     */
-    public function getScheduleDayConfigs(): array;
-
-    /**
-     * Gets schedule day configs grouped into global and type-specific buckets.
-     */
-    public function getGroupedScheduleDayConfigs(): GroupedScheduleDayConfigs;
-
-    /**
-     * Sets the visibility of a schedule day.
-     *
-     * @throws ValidationException
-     */
-    public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void;
-
-    /**
-     * Returns the day-of-week numbers visible for a given event type,
-     * merging global defaults with type-specific overrides.
-     *
-     * @return int[] Day numbers (0=Sunday through 6=Saturday)
-     */
-    public function getVisibleDays(?int $eventTypeId = null): array;
 }

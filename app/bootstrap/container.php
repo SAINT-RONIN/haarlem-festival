@@ -66,6 +66,7 @@ use App\Services\CmsArtistsService;
 use App\Services\CmsDashboardService;
 use App\Services\CmsRestaurantsService;
 use App\Services\CmsEventsService;
+use App\Services\CmsScheduleDayService;
 use App\Services\CmsEditService;
 use App\Services\CmsItemEnricher;
 use App\Services\CmsPreviewUrlResolver;
@@ -242,13 +243,16 @@ return static function (string $controllerClass): object {
                 $eventTypeRepo(),
                 $venueRepo(),
                 new PriceTierRepository($pdo()),
-                $scheduleDayConfig(),
                 $orderItemRepo(),
-                $visibilityResolver(),
             ),
             $sessionService,
             $cmsArtistsService(),
             $cmsRestaurantsService(),
+            new CmsScheduleDayService(
+                $scheduleDayConfig(),
+                $eventTypeRepo(),
+                $visibilityResolver(),
+            ),
         ),
         AuthController::class => new AuthController(
             $authService(),
