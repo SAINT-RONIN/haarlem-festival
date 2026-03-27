@@ -8,8 +8,8 @@ use App\Constants\HistoricalLocationPageConstants;
 use App\Constants\SharedSectionKeys;
 use App\Exceptions\HistoricalLocationNotFoundException;
 use App\DTOs\Pages\HistoricalLocationPageData;
-use App\Repositories\GlobalContentRepository;
-use App\Repositories\HistoricalLocationContentRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
+use App\Repositories\Interfaces\IHistoricalLocationContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IHistoricalLocationService;
 
@@ -20,8 +20,8 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
 {
     public function __construct(
         private readonly ICmsContentRepository $cmsContentRepository,
-        GlobalContentRepository $globalContentRepo,
-        private readonly HistoricalLocationContentRepository $histLocContentRepo,
+        IGlobalContentRepository $globalContentRepo,
+        private readonly IHistoricalLocationContentRepository $histLocContentRepo,
     ) {
         parent::__construct($globalContentRepo);
     }

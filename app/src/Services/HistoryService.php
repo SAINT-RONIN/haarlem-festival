@@ -7,8 +7,8 @@ namespace App\Services;
 use App\Constants\HistoryPageConstants;
 use App\Constants\SharedSectionKeys;
 use App\DTOs\Pages\HistoryPageData;
-use App\Repositories\GlobalContentRepository;
-use App\Repositories\HistoryContentRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
+use App\Repositories\Interfaces\IHistoryContentRepository;
 use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IHistoryService;
 
@@ -18,8 +18,8 @@ use App\Services\Interfaces\IHistoryService;
 class HistoryService extends BaseContentService implements IHistoryService
 {
     public function __construct(
-        GlobalContentRepository $globalContentRepo,
-        private readonly HistoryContentRepository $historyContentRepo,
+        IGlobalContentRepository $globalContentRepo,
+        private readonly IHistoryContentRepository $historyContentRepo,
     ) {
         parent::__construct($globalContentRepo);
     }

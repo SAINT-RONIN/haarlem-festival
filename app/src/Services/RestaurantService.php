@@ -8,11 +8,11 @@ use App\Constants\RestaurantPageConstants;
 use App\Constants\SharedSectionKeys;
 use App\DTOs\Pages\RestaurantDetailData;
 use App\DTOs\Pages\RestaurantPageData;
-use App\Repositories\GlobalContentRepository;
 use App\Repositories\Interfaces\ICuisineTypeRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
+use App\Repositories\Interfaces\IRestaurantContentRepository;
 use App\Repositories\Interfaces\IRestaurantImageRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
-use App\Repositories\RestaurantContentRepository;
 use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IRestaurantService;
 
@@ -29,8 +29,8 @@ use App\Services\Interfaces\IRestaurantService;
 class RestaurantService extends BaseContentService implements IRestaurantService
 {
     public function __construct(
-        GlobalContentRepository $globalContentRepo,
-        private readonly RestaurantContentRepository $restaurantContentRepo,
+        IGlobalContentRepository $globalContentRepo,
+        private readonly IRestaurantContentRepository $restaurantContentRepo,
         private readonly IRestaurantRepository $restaurantRepository,
         private readonly IRestaurantImageRepository $restaurantImageRepository,
         private readonly ICuisineTypeRepository $cuisineTypeRepository,

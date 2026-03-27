@@ -13,7 +13,7 @@ use App\Models\ScheduleSectionContent;
  * Wraps the generic ICmsContentRepository and delegates field mapping
  * to ScheduleContentMapper.
  */
-class ScheduleContentRepository extends BaseContentRepository
+class ScheduleContentRepository extends BaseContentRepository implements Interfaces\IScheduleContentRepository
 {
     /** Fetches the schedule section content as a typed object. */
     public function findScheduleSectionContent(string $pageSlug, string $sectionKey): ScheduleSectionContent

@@ -14,7 +14,7 @@ use App\Models\StorytellingMasonrySectionContent;
  * Wraps the generic ICmsContentRepository and delegates field mapping
  * to StorytellingContentMapper.
  */
-class StorytellingContentRepository extends BaseContentRepository
+class StorytellingContentRepository extends BaseContentRepository implements Interfaces\IStorytellingContentRepository
 {
     /** Fetches the storytelling masonry section content. */
     public function findMasonryContent(string $pageSlug, string $sectionKey): StorytellingMasonrySectionContent

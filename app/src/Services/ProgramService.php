@@ -14,7 +14,7 @@ use App\DTOs\Filters\ProgramItemFilter;
 use App\Exceptions\ProgramException;
 use App\Mappers\ProgramMapper;
 use App\Models\ProgramMainContent;
-use App\Repositories\CheckoutContentRepository;
+use App\Repositories\Interfaces\ICheckoutContentRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -35,7 +35,7 @@ class ProgramService implements IProgramService
         private readonly IProgramRepository $programRepository,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
-        private readonly CheckoutContentRepository $checkoutContentRepository,
+        private readonly ICheckoutContentRepository $checkoutContentRepository,
     ) {
     }
 

@@ -6,19 +6,19 @@ namespace App\Services;
 
 use App\Constants\GlobalUiConstants;
 use App\Models\GlobalUiContent;
-use App\Repositories\GlobalContentRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
 
 /**
  * Base service for page services that need the shared global-UI CMS section.
  *
  * Provides a shared loadGlobalUi() method so child services don't each inject
- * and call GlobalContentRepository separately. Replaces the old GlobalUiContentLoader
+ * and call IGlobalContentRepository separately. Replaces the old GlobalUiContentLoader
  * service, eliminating a service-to-service dependency.
  */
 abstract class BaseContentService
 {
     public function __construct(
-        protected readonly GlobalContentRepository $globalContentRepo,
+        protected readonly IGlobalContentRepository $globalContentRepo,
     ) {
     }
 

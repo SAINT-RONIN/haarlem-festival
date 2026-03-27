@@ -16,7 +16,7 @@ use App\Models\HistoryVenuesSectionContent;
  * Wraps the generic ICmsContentRepository and delegates field mapping
  * to HistoryContentMapper.
  */
-class HistoryContentRepository extends BaseContentRepository
+class HistoryContentRepository extends BaseContentRepository implements Interfaces\IHistoryContentRepository
 {
     /** Fetches the history route section content. */
     public function findRouteContent(string $pageSlug, string $sectionKey): HistoryRouteSectionContent

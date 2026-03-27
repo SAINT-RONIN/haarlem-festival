@@ -11,7 +11,7 @@ use App\Helpers\SlugHelper;
 use App\Models\JazzArtistDetailCmsData;
 use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Pages\JazzArtistDetailPageData;
-use App\Repositories\JazzContentRepository;
+use App\Repositories\Interfaces\IJazzContentRepository;
 use App\Repositories\Interfaces\IArtistAlbumRepository;
 use App\Repositories\Interfaces\IArtistGalleryImageRepository;
 use App\Repositories\Interfaces\IArtistHighlightRepository;
@@ -34,7 +34,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     private static array $pageCache = [];
 
     public function __construct(
-        private readonly JazzContentRepository $jazzContentRepo,
+        private readonly IJazzContentRepository $jazzContentRepo,
         private readonly IEventRepository $eventRepository,
         private readonly IArtistAlbumRepository $albumRepository,
         private readonly IArtistTrackRepository $trackRepository,

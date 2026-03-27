@@ -13,7 +13,7 @@ use App\DTOs\Pages\HomeEventTypeData;
 use App\DTOs\Filters\VenueFilter;
 use App\Mappers\HomeMapper;
 use App\Repositories\Interfaces\ICmsContentRepository;
-use App\Repositories\GlobalContentRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
@@ -38,7 +38,7 @@ class HomeService extends BaseContentService implements IHomeService
         private readonly IRestaurantRepository $restaurantRepository,
         private readonly IEventSessionRepository $eventSessionRepository,
         private readonly ICmsContentRepository $cmsContentRepository,
-        GlobalContentRepository $globalContentRepo,
+        IGlobalContentRepository $globalContentRepo,
     ) {
         parent::__construct($globalContentRepo);
     }

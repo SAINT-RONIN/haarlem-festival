@@ -16,7 +16,7 @@ use App\Models\HistoricalLocationSignificanceContent;
  * Wraps the generic ICmsContentRepository and delegates field mapping
  * to HistoricalLocationContentMapper.
  */
-class HistoricalLocationContentRepository extends BaseContentRepository
+class HistoricalLocationContentRepository extends BaseContentRepository implements Interfaces\IHistoricalLocationContentRepository
 {
     /** Fetches the location-specific hero content. */
     public function findHeroContent(string $pageSlug, string $sectionKey): HistoricalLocationHeroContent

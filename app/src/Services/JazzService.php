@@ -8,9 +8,9 @@ use App\Constants\JazzPageConstants;
 use App\Constants\SharedSectionKeys;
 use App\Enums\EventTypeId;
 use App\DTOs\Pages\JazzPageData;
-use App\Repositories\GlobalContentRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
+use App\Repositories\Interfaces\IJazzContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
-use App\Repositories\JazzContentRepository;
 use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IJazzService;
 
@@ -23,8 +23,8 @@ use App\Services\Interfaces\IJazzService;
 class JazzService extends BaseContentService implements IJazzService
 {
     public function __construct(
-        GlobalContentRepository $globalContentRepo,
-        private readonly JazzContentRepository $jazzContentRepo,
+        IGlobalContentRepository $globalContentRepo,
+        private readonly IJazzContentRepository $jazzContentRepo,
         private readonly IPassTypeRepository $passTypeRepository,
     ) {
         parent::__construct($globalContentRepo);

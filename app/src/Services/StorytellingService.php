@@ -7,8 +7,8 @@ namespace App\Services;
 use App\Constants\SharedSectionKeys;
 use App\Constants\StorytellingPageConstants;
 use App\DTOs\Pages\StorytellingPageData;
-use App\Repositories\GlobalContentRepository;
-use App\Repositories\StorytellingContentRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
+use App\Repositories\Interfaces\IStorytellingContentRepository;
 use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IStorytellingService;
 
@@ -21,8 +21,8 @@ use App\Services\Interfaces\IStorytellingService;
 class StorytellingService extends BaseContentService implements IStorytellingService
 {
     public function __construct(
-        GlobalContentRepository $globalContentRepo,
-        private readonly StorytellingContentRepository $storyContentRepo,
+        IGlobalContentRepository $globalContentRepo,
+        private readonly IStorytellingContentRepository $storyContentRepo,
     ) {
         parent::__construct($globalContentRepo);
     }

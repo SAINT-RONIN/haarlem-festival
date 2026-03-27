@@ -14,7 +14,7 @@ use App\DTOs\Filters\EventTypeFilter;
 use App\DTOs\Filters\ScheduleFilterParams;
 use App\Models\ScheduleSectionContent;
 use App\DTOs\Schedule\SessionQueryResult;
-use App\Repositories\ScheduleContentRepository;
+use App\Repositories\Interfaces\IScheduleContentRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
@@ -32,7 +32,7 @@ use App\Helpers\AgeLabelFormatter;
 class ScheduleService implements IScheduleService
 {
     public function __construct(
-        private readonly ScheduleContentRepository $scheduleContentRepo,
+        private readonly IScheduleContentRepository $scheduleContentRepo,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IEventSessionPriceRepository $priceRepository,

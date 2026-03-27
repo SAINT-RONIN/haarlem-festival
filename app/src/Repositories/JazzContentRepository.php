@@ -18,7 +18,7 @@ use App\Models\JazzVenuesSectionContent;
  * Wraps the generic ICmsContentRepository and delegates field mapping
  * to JazzContentMapper.
  */
-class JazzContentRepository extends BaseContentRepository
+class JazzContentRepository extends BaseContentRepository implements Interfaces\IJazzContentRepository
 {
     /** Fetches the jazz venues section content. */
     public function findVenuesContent(string $pageSlug, string $sectionKey): JazzVenuesSectionContent

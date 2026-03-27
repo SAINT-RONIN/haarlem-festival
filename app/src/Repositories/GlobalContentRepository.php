@@ -16,7 +16,7 @@ use App\Models\IntroSectionContent;
  * Wraps the generic ICmsContentRepository and delegates field mapping
  * to GlobalContentMapper so callers receive typed models instead of raw arrays.
  */
-class GlobalContentRepository extends BaseContentRepository
+class GlobalContentRepository extends BaseContentRepository implements Interfaces\IGlobalContentRepository
 {
     /** Fetches the global UI navigation/labels content. */
     public function findGlobalUiContent(string $pageSlug, string $sectionKey): GlobalUiContent

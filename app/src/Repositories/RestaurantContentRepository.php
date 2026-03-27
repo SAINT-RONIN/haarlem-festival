@@ -17,7 +17,7 @@ use App\Models\RestaurantIntroSplit2SectionContent;
  * Wraps the generic ICmsContentRepository and delegates field mapping
  * to RestaurantContentMapper.
  */
-class RestaurantContentRepository extends BaseContentRepository
+class RestaurantContentRepository extends BaseContentRepository implements Interfaces\IRestaurantContentRepository
 {
     /** Fetches the restaurant cards section content. */
     public function findCardsContent(string $pageSlug, string $sectionKey): RestaurantCardsSectionContent

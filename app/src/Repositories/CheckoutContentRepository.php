@@ -14,7 +14,7 @@ use App\Models\ProgramMainContent;
  * Wraps the generic ICmsContentRepository and delegates field mapping
  * to CheckoutContentMapper.
  */
-class CheckoutContentRepository extends BaseContentRepository
+class CheckoutContentRepository extends BaseContentRepository implements Interfaces\ICheckoutContentRepository
 {
     /** Fetches the checkout page main content. */
     public function findCheckoutMainContent(string $pageSlug, string $sectionKey): CheckoutMainContent

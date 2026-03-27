@@ -13,8 +13,8 @@ use App\Models\EventSessionLabel;
 use App\DTOs\Events\StorytellingDetailEvent;
 use App\DTOs\Pages\StorytellingDetailPageData;
 use App\Models\StorytellingEventCmsData;
-use App\Repositories\GlobalContentRepository;
-use App\Repositories\StorytellingContentRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
+use App\Repositories\Interfaces\IStorytellingContentRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
@@ -31,12 +31,12 @@ use App\Services\Interfaces\IStorytellingDetailService;
 class StorytellingDetailService extends BaseContentService implements IStorytellingDetailService
 {
     public function __construct(
-        private readonly StorytellingContentRepository $storyContentRepo,
+        private readonly IStorytellingContentRepository $storyContentRepo,
         private readonly IEventRepository $eventRepository,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IMediaAssetRepository $mediaAssetRepository,
-        GlobalContentRepository $globalContentRepo,
+        IGlobalContentRepository $globalContentRepo,
     ) {
         parent::__construct($globalContentRepo);
     }
