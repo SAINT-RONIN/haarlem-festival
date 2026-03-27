@@ -39,6 +39,7 @@ use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\UserAccountRepository;
 use App\Repositories\ProgramRepository;
+use App\Repositories\ArtistDetailRepository;
 use App\Repositories\ArtistRepository;
 use App\Repositories\ArtistAlbumRepository;
 use App\Repositories\ArtistGalleryImageRepository;
@@ -224,11 +225,13 @@ return static function (string $controllerClass): object {
             new JazzArtistDetailService(
                 $jazzContentRepo(),
                 $eventRepo(),
-                new ArtistAlbumRepository($pdo()),
-                new ArtistTrackRepository($pdo()),
-                new ArtistLineupMemberRepository($pdo()),
-                new ArtistHighlightRepository($pdo()),
-                new ArtistGalleryImageRepository($pdo()),
+                new ArtistDetailRepository(
+                    new ArtistAlbumRepository($pdo()),
+                    new ArtistTrackRepository($pdo()),
+                    new ArtistLineupMemberRepository($pdo()),
+                    new ArtistHighlightRepository($pdo()),
+                    new ArtistGalleryImageRepository($pdo()),
+                ),
             ),
             $sessionService,
             $scheduleService(),

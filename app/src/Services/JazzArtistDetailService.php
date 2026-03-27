@@ -11,20 +11,16 @@ use App\Helpers\SlugHelper;
 use App\Models\JazzArtistDetailCmsData;
 use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Pages\JazzArtistDetailPageData;
+use App\Repositories\Interfaces\IArtistDetailRepository;
 use App\Repositories\Interfaces\IJazzContentRepository;
-use App\Repositories\Interfaces\IArtistAlbumRepository;
-use App\Repositories\Interfaces\IArtistGalleryImageRepository;
-use App\Repositories\Interfaces\IArtistHighlightRepository;
-use App\Repositories\Interfaces\IArtistLineupMemberRepository;
-use App\Repositories\Interfaces\IArtistTrackRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Services\Interfaces\IJazzArtistDetailService;
 
 /**
  * Assembles the full detail-page payload for a single Jazz artist.
  *
- * Combines event data, CMS overrides, albums, tracks, lineup members,
- * highlights, and gallery images from six different repositories.
+ * Combines event data, CMS overrides, and aggregated artist detail data
+ * (albums, tracks, lineup members, highlights, gallery images).
  * Results are cached in-memory with a configurable TTL to avoid
  * redundant queries within the same request cycle.
  */
@@ -36,11 +32,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     public function __construct(
         private readonly IJazzContentRepository $jazzContentRepo,
         private readonly IEventRepository $eventRepository,
-        private readonly IArtistAlbumRepository $albumRepository,
-        private readonly IArtistTrackRepository $trackRepository,
-        private readonly IArtistLineupMemberRepository $lineupMemberRepository,
-        private readonly IArtistHighlightRepository $highlightRepository,
-        private readonly IArtistGalleryImageRepository $galleryImageRepository,
+        private readonly IArtistDetailRepository $artistDetailRepository,
     ) {
     }
 
@@ -78,20 +70,21 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     }
 
     /**
-     * Aggregates CMS content and all artist-related collections (albums, tracks,
-     * lineup, highlights, gallery) into a single page-data object.
+     * Aggregates CMS content and all artist-related collections into a single page-data object.
      */
     private function buildPageData(JazzArtistDetailEvent $event): JazzArtistDetailPageData
     {
+        $artistDetail = $this->artistDetailRepository->findByEventId($event->eventId);
+
         return new JazzArtistDetailPageData(
             event: $event,
             cms: $this->fetchCmsContent($event->eventId),
             eventId: $event->eventId,
-            albums: $this->albumRepository->findByEventId($event->eventId),
-            tracks: $this->trackRepository->findByEventId($event->eventId),
-            lineupMembers: $this->lineupMemberRepository->findByEventId($event->eventId),
-            highlights: $this->highlightRepository->findByEventId($event->eventId),
-            galleryImages: $this->galleryImageRepository->findByEventId($event->eventId),
+            albums: $artistDetail->albums,
+            tracks: $artistDetail->tracks,
+            lineupMembers: $artistDetail->lineupMembers,
+            highlights: $artistDetail->highlights,
+            galleryImages: $artistDetail->galleryImages,
         );
     }
 
