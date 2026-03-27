@@ -15,7 +15,7 @@ use App\Repositories\Interfaces\IScheduleDayConfigRepository;
  * Shared between CmsEventsService (admin schedule-day management) and ScheduleService
  * (public schedule rendering) to avoid duplicating the two-layer merge logic.
  */
-final class ScheduleDayVisibilityResolver
+final class ScheduleDayVisibilityResolver implements Interfaces\IScheduleDayVisibilityResolver
 {
     public function __construct(
         private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,

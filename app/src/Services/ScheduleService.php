@@ -20,6 +20,7 @@ use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Exceptions\PageLoadException;
+use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 use App\Services\Interfaces\IScheduleService;
 use App\Helpers\AgeLabelFormatter;
 
@@ -36,7 +37,7 @@ class ScheduleService implements IScheduleService
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly IEventTypeRepository $eventTypeRepository,
-        private readonly ScheduleDayVisibilityResolver $visibilityResolver,
+        private readonly IScheduleDayVisibilityResolver $visibilityResolver,
     ) {
     }
 

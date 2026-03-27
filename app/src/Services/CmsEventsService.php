@@ -29,6 +29,7 @@ use App\DTOs\Pages\ScheduleDaysPageData;
 use App\DTOs\Filters\ScheduleDayConfigFilter;
 use App\DTOs\Filters\VenueFilter;
 use App\Services\Interfaces\ICmsEventsService;
+use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 use App\Constants\CmsEventConstraints;
 
 /**
@@ -53,7 +54,7 @@ class CmsEventsService implements ICmsEventsService
         private readonly IPriceTierRepository $priceTierRepository,
         private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
         private readonly IOrderItemRepository $orderItemRepository,
-        private readonly ScheduleDayVisibilityResolver $visibilityResolver,
+        private readonly IScheduleDayVisibilityResolver $visibilityResolver,
     ) {
     }
 
