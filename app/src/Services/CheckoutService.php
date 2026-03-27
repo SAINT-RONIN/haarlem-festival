@@ -18,33 +18,29 @@ use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
-use App\Repositories\Interfaces\IProgramRepository;
-use App\Repositories\Interfaces\IStripeWebhookEventRepository;
 use App\DTOs\Checkout\CheckoutCancelResult;
 use App\DTOs\Checkout\CheckoutSessionResult;
 use App\DTOs\Checkout\CheckoutSessionSummary;
-use App\DTOs\Checkout\WebhookHandlerResult;
 use App\Exceptions\CheckoutException;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
 use PDO;
 
 /**
- * Orchestrates the full checkout lifecycle for festival ticket orders.
+ * Orchestrates the checkout lifecycle for festival ticket orders.
  *
  * Coordinates between the program (cart), order/payment persistence, and Stripe
- * to create checkout sessions, handle cancellations, and process webhook callbacks.
+ * to create checkout sessions and handle cancellations.
+ * Webhook processing is handled separately by StripeWebhookHandler.
  * All multi-step mutations are wrapped in database transactions.
  */
 class CheckoutService implements ICheckoutService
 {
     public function __construct(
-        private readonly IProgramRepository $programRepository,
         private readonly IOrderRepository $orderRepository,
         private readonly IOrderItemRepository $orderItemRepository,
         private readonly IPaymentRepository $paymentRepository,
         private readonly IEventSessionRepository $eventSessionRepository,
-        private readonly IStripeWebhookEventRepository $webhookEventRepository,
         private readonly IStripeService $stripeService,
         private readonly ICheckoutRuntimeConfig $runtimeConfig,
         private readonly PDO $pdo,
@@ -251,136 +247,6 @@ class CheckoutService implements ICheckoutService
             orderId: $orderId,
             paymentId: $paymentId,
         );
-    }
-
-    /**
-     * Processes an incoming Stripe webhook event. Verifies the signature, ensures
-     * idempotency via the webhook event repository, and transitions order/payment
-     * statuses based on the event type (completed, expired, or failed).
-     *
-     * @throws CheckoutException When the event payload is invalid or malformed
-     */
-    public function handleWebhook(string $payload, ?string $signatureHeader): WebhookHandlerResult
-    {
-        $event = $this->stripeService->constructWebhookEvent($payload, $signatureHeader);
-        $eventId = (string)($event['id'] ?? '');
-        $eventType = (string)($event['type'] ?? '');
-
-        $this->validateWebhookEvent($eventId, $eventType);
-
-        if (!$this->webhookEventRepository->markProcessedIfNew($eventId, $eventType)) {
-            return new WebhookHandlerResult(processed: false, eventId: $eventId, eventType: $eventType);
-        }
-
-        $object = $this->extractWebhookObject($event);
-        [$metadata, $orderId, $paymentId] = $this->extractWebhookMetadata($object);
-        $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
-
-        return new WebhookHandlerResult(processed: true, eventId: $eventId, eventType: $eventType);
-    }
-
-    /**
-     * Extracts order/payment metadata from the Stripe webhook object.
-     *
-     * @return array{0: array, 1: ?int, 2: ?int}
-     */
-    private function extractWebhookMetadata(array $object): array
-    {
-        $metadata = isset($object['metadata']) && is_array($object['metadata']) ? $object['metadata'] : [];
-        $orderId = isset($metadata['order_id']) ? (int)$metadata['order_id'] : null;
-        $paymentId = isset($metadata['payment_id']) ? (int)$metadata['payment_id'] : null;
-
-        return [$metadata, $orderId, $paymentId];
-    }
-
-    /** Validates that a webhook event has required fields. */
-    private function validateWebhookEvent(string $eventId, string $eventType): void
-    {
-        if ($eventId === '' || $eventType === '') {
-            throw new CheckoutException('Invalid Stripe event payload.');
-        }
-    }
-
-    /** Extracts the event object from a Stripe webhook event. */
-    private function extractWebhookObject(array $event): array
-    {
-        $object = $event['data']['object'] ?? null;
-        if (!is_array($object)) {
-            throw new CheckoutException('Stripe event object is missing.');
-        }
-        return $object;
-    }
-
-    /** Wraps webhook status transitions in a database transaction. */
-    private function processWebhookTransaction(string $eventType, array $object, array $metadata, ?int $orderId, ?int $paymentId): void
-    {
-        $this->pdo->beginTransaction();
-
-        try {
-            $this->updatePaymentIntentIfPresent($paymentId, $object);
-            $this->applyWebhookStatusTransition($eventType, $metadata, $orderId, $paymentId);
-            $this->pdo->commit();
-        } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
-            throw $error;
-        }
-    }
-
-    /** Links the Stripe payment intent ID to the payment record if present. */
-    private function updatePaymentIntentIfPresent(?int $paymentId, array $object): void
-    {
-        if ($paymentId === null) {
-            return;
-        }
-        $intentId = $object['payment_intent'] ?? null;
-        if (is_string($intentId) && $intentId !== '') {
-            $this->paymentRepository->updateStripePaymentIntentId($paymentId, $intentId);
-        }
-    }
-
-    /** Routes the webhook event type to the appropriate status transition handler. */
-    private function applyWebhookStatusTransition(string $eventType, array $metadata, ?int $orderId, ?int $paymentId): void
-    {
-        switch ($eventType) {
-            case 'checkout.session.completed':
-            case 'checkout.session.async_payment_succeeded':
-                $this->processPaymentCompleted($metadata, $orderId, $paymentId);
-                break;
-
-            case 'checkout.session.expired':
-            case 'checkout.session.async_payment_failed':
-                $this->processPaymentFailed($orderId, $paymentId);
-                break;
-        }
-    }
-
-    /** Marks order as paid, payment as paid, and flags the program as checked out. */
-    private function processPaymentCompleted(array $metadata, ?int $orderId, ?int $paymentId): void
-    {
-        if ($orderId !== null) {
-            $this->orderRepository->updateStatus($orderId, OrderStatus::Paid);
-        }
-        if ($paymentId !== null) {
-            $this->paymentRepository->updateStatus($paymentId, PaymentStatus::Paid, new \DateTimeImmutable());
-        }
-        $programId = isset($metadata['program_id']) ? (int)$metadata['program_id'] : 0;
-        if ($programId > 0) {
-            $this->programRepository->markCheckedOut($programId);
-        }
-    }
-
-    /** Restores capacity and marks order as expired / payment as failed. */
-    private function processPaymentFailed(?int $orderId, ?int $paymentId): void
-    {
-        if ($orderId !== null) {
-            $this->restoreOrderCapacity($orderId);
-            $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
-        }
-        if ($paymentId !== null) {
-            $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
-        }
     }
 
     /**

@@ -72,6 +72,7 @@ use App\Services\CmsPreviewUrlResolver;
 use App\Services\CmsOrdersService;
 use App\Services\CmsUsersService;
 use App\Services\CheckoutService;
+use App\Services\StripeWebhookHandler;
 use App\Services\HistoricalLocationService;
 use App\Services\HistoryService;
 use App\Services\HomeService;
@@ -265,29 +266,42 @@ return static function (string $controllerClass): object {
             ),
             $mediaAssetService(),
         ),
-        CheckoutController::class => new CheckoutController(
-            $programService(),
-            $sessionService,
-            new CheckoutService(
-                $programRepo(),
-                $orderRepo(),
-                $orderItemRepo(),
-                $paymentRepo(),
-                $eventSessionRepo(),
-                new StripeWebhookEventRepository($pdo()),
-                new StripeService(
-                    (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
-                    (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
+        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo) {
+            $stripeService = new StripeService(
+                (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
+                (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
+            );
+            $runtimeConfig = new CheckoutRuntimeConfig(
+                (string)getenv('APP_URL'),
+                (float)(getenv('VAT_RATE') !== false ? getenv('VAT_RATE') : 0.21),
+            );
+
+            return new CheckoutController(
+                $programService(),
+                $sessionService,
+                new CheckoutService(
+                    $orderRepo(),
+                    $orderItemRepo(),
+                    $paymentRepo(),
+                    $eventSessionRepo(),
+                    $stripeService,
+                    $runtimeConfig,
+                    $pdo(),
+                    $checkoutContentRepo(),
                 ),
-                new CheckoutRuntimeConfig(
-                    (string)getenv('APP_URL'),
-                    (float)(getenv('VAT_RATE') !== false ? getenv('VAT_RATE') : 0.21),
+                new StripeWebhookHandler(
+                    $stripeService,
+                    new StripeWebhookEventRepository($pdo()),
+                    $orderRepo(),
+                    $orderItemRepo(),
+                    $paymentRepo(),
+                    $eventSessionRepo(),
+                    $programRepo(),
+                    $pdo(),
                 ),
-                $pdo(),
-                $checkoutContentRepo(),
-            ),
-            new StripeWebhookRequestFactory(),
-        ),
+                new StripeWebhookRequestFactory(),
+            );
+        })(),
         HistoryController::class => new HistoryController(
             new HistoryService(
                 $globalContentRepo(),

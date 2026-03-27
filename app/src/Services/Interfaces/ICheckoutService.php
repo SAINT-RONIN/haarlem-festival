@@ -7,14 +7,14 @@ namespace App\Services\Interfaces;
 use App\DTOs\Checkout\CheckoutCancelResult;
 use App\DTOs\Checkout\CheckoutSessionResult;
 use App\DTOs\Checkout\CheckoutSessionSummary;
-use App\DTOs\Checkout\WebhookHandlerResult;
 use App\DTOs\Program\ProgramData;
 use App\Models\CheckoutMainContent;
 
 /**
- * Contract for the full checkout lifecycle: creating Stripe-backed checkout sessions,
- * handling user cancellations, processing Stripe webhook callbacks, and retrieving
- * session summaries for confirmation pages.
+ * Contract for the checkout lifecycle: creating Stripe-backed checkout sessions,
+ * handling user cancellations, and retrieving session summaries for confirmation pages.
+ *
+ * Webhook processing is handled separately by IStripeWebhookHandler.
  */
 interface ICheckoutService
 {
@@ -29,11 +29,6 @@ interface ICheckoutService
      * Handles a cancelled checkout by reverting the order and payment to their pre-checkout state.
      */
     public function handleCancel(?int $orderId, ?int $paymentId): CheckoutCancelResult;
-
-    /**
-     * Processes an incoming Stripe webhook event, verifying the signature and updating order/payment status.
-     */
-    public function handleWebhook(string $payload, ?string $signatureHeader): WebhookHandlerResult;
 
     /**
      * Retrieves a summary of a Stripe checkout session for the confirmation page.

@@ -14,6 +14,7 @@ use App\Mappers\ProgramMapper;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
+use App\Services\Interfaces\IStripeWebhookHandler;
 
 /**
  * Handles the ticket checkout flow: displaying the checkout page, creating Stripe sessions,
@@ -25,6 +26,7 @@ class CheckoutController extends BaseController
         private readonly IProgramService $programService,
         private readonly ISessionService $sessionService,
         private readonly ICheckoutService $checkoutService,
+        private readonly IStripeWebhookHandler $stripeWebhookHandler,
         private readonly IStripeWebhookRequestFactory $stripeWebhookRequestFactory,
     ) {
     }
@@ -145,7 +147,7 @@ class CheckoutController extends BaseController
     {
         $webhookRequest = $this->stripeWebhookRequestFactory->createFromGlobals();
 
-        $result = $this->checkoutService->handleWebhook(
+        $result = $this->stripeWebhookHandler->handleWebhook(
             $webhookRequest->payload,
             $webhookRequest->signatureHeader,
         );
