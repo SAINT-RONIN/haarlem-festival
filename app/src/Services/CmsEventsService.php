@@ -440,15 +440,11 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Validates event data for creation.
+     * Validates event data for creation (includes base event rules plus event-type requirement).
      */
     private function validateEventCreate(array $data): array
     {
-        $errors = [];
-
-        if (empty($data['Title'])) {
-            $errors[] = 'Event title is required';
-        }
+        $errors = $this->validateEvent($data);
 
         if (empty($data['EventTypeId'])) {
             $errors[] = 'Event type is required';
