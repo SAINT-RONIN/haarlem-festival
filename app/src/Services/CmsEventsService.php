@@ -629,18 +629,22 @@ class CmsEventsService implements ICmsEventsService
     /** @throws CmsOperationException When the database write fails */
     public function deleteEvent(int $eventId): void
     {
-        if (!$this->eventRepository->exists($eventId)) {
-            throw new ValidationException(['Event not found']);
-        }
-
         try {
+            if (!$this->eventRepository->exists($eventId)) {
+                throw new ValidationException(['Event not found']);
+            }
+
             // Wrap in transaction — both writes must succeed or neither does
             $this->pdo->beginTransaction();
             $this->eventRepository->softDelete($eventId);
             $this->sessionRepository->deactivateByEventId($eventId);
             $this->pdo->commit();
+        } catch (ValidationException $error) {
+            throw $error;
         } catch (\Throwable $error) {
-            $this->pdo->rollBack();
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
             throw new CmsOperationException('Failed to delete event.', 0, $error);
         }
     }
