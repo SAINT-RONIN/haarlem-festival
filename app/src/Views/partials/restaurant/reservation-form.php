@@ -32,8 +32,8 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
 
         <!-- Page heading -->
         <div class="flex flex-col gap-2">
-            <h1 class="text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']">Make a Reservation</h1>
-            <p class="text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat']">Fill out the form below to reserve your table</p>
+            <h1 class="text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']"><?= $e($viewModel->reservation->labelTitle) ?></h1>
+            <p class="text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat']"><?= $e($viewModel->reservation->labelDesc) ?></p>
         </div>
 
         <!-- Success banner -->
@@ -63,7 +63,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
                     <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
                     </svg>
-                    <span class="text-slate-800 text-sm font-light font-['Montserrat']">Per adult (drinks not included)</span>
+                    <span class="text-slate-800 text-sm font-light font-['Montserrat']">Per adult</span>
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']">€ <?= number_format($viewModel->reservation->priceAdult, 2) ?></span>
                 </div>
             <?php endif; ?>
@@ -73,7 +73,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
                     <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
                     </svg>
-                    <span class="text-slate-800 text-sm font-light font-['Montserrat']">Under 12 (drinks not included)</span>
+                    <span class="text-slate-800 text-sm font-light font-['Montserrat']">Under 12</span>
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']">€ <?= number_format($viewModel->reservation->priceChild, 2) ?></span>
                 </div>
             <?php endif; ?>
@@ -236,7 +236,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
             <div class="flex flex-col sm:flex-row gap-4">
                 <button type="submit"
                         class="px-6 py-3.5 bg-red hover:bg-royal-blue rounded-2xl text-white text-xl font-normal font-['Montserrat'] transition-colors duration-200 flex items-center justify-center gap-2">
-                    Make a reservation
+                    <?= $e($viewModel->reservation->labelButton) ?>
                     <svg class="w-2 h-4" viewBox="0 0 6 12" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M1 1l4 5-4 5"></path>
                     </svg>

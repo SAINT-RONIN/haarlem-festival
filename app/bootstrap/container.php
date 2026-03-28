@@ -51,6 +51,8 @@ use App\Repositories\EventGalleryImageRepository;
 use App\Repositories\EventHighlightRepository;
 use App\Repositories\PageGalleryImageRepository;
 use App\Repositories\ReservationRepository;
+use App\Repositories\GlobalContentRepository;
+use App\Repositories\RestaurantContentRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
@@ -119,6 +121,8 @@ return static function (string $controllerClass): object {
 
     $sessionService = new SessionService();
     $cmsContent = new CmsContentRepository($cmsRepository, $mediaAssetRepository);
+    $globalContentRepo = new GlobalContentRepository($cmsContent);
+    $restaurantContentRepo = new RestaurantContentRepository($cmsContent);
     $cmsPageContentService = new CmsPageContentService($cmsContent);
 
     $cmsEventsService = new CmsEventsService(
@@ -163,12 +167,14 @@ return static function (string $controllerClass): object {
         ),
         RestaurantController::class => new RestaurantController(
             new RestaurantService(
-                $cmsContent,
+                $globalContentRepo,
+                $restaurantContentRepo,
                 $eventRepository,
                 $mediaAssetRepository,
             ),
             new RestaurantDetailService(
-                $cmsContent,
+                $globalContentRepo,
+                $restaurantContentRepo,
                 $eventRepository,
                 $mediaAssetRepository,
             ),
@@ -303,7 +309,7 @@ return static function (string $controllerClass): object {
             $scheduleService,
         ),
         RestaurantApiController::class => new RestaurantApiController(
-            new RestaurantService($cmsContent, $eventRepository, $mediaAssetRepository),
+            new RestaurantService($globalContentRepo, $restaurantContentRepo, $eventRepository, $mediaAssetRepository),
         ),
         default => new $controllerClass(),
     };

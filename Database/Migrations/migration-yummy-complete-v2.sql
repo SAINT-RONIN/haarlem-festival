@@ -9,6 +9,7 @@
 --
 -- What this covers:
 --   A. Restaurant table column additions (detail fields, image paths, prices)
+--   A2. Event table: Slug column + 7 restaurant event rows seed
 --   B. Reservation table
 --   C. MediaAsset entries for restaurant images
 --   D. Restaurant domain data (detail content + image paths + prices)
@@ -17,6 +18,7 @@
 --   G. CmsItemKey registrations + per-event CMS sections and items
 --
 -- Replaces: migration-restaurant-complete.sql, migration-v10-restaurant-page.sql,
+--           migration-v30-event-slug-column.sql (Slug column + backfill),
 --           migration-v31-restaurant-hero-scroll-link.sql,
 --           migration-v31-yummy-reservation-setup.sql,
 --           migration-v32-reservation-table.sql,
@@ -58,6 +60,57 @@ ALTER TABLE Restaurant
     ADD COLUMN IF NOT EXISTS TimeSlots            TEXT          NULL AFTER ReservationImagePath,
     ADD COLUMN IF NOT EXISTS PriceAdult           DECIMAL(10,2) NULL AFTER TimeSlots,
     ADD COLUMN IF NOT EXISTS PriceChild           DECIMAL(10,2) NULL AFTER PriceAdult;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- PART A2: Event table prerequisites
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Add Slug column if migration-v30 has not yet run on this DB
+ALTER TABLE Event
+    ADD COLUMN IF NOT EXISTS Slug VARCHAR(180) NULL AFTER Title;
+
+-- Seed the 7 restaurant Event rows (skipped if they already exist).
+-- RestaurantId is looked up by name so it works regardless of ID reordering.
+
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
+SELECT 47, 5, 'Café de Roemer - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
+FROM Restaurant r WHERE r.Name = 'Café de Roemer'
+AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 47);
+
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
+SELECT 48, 5, 'Ratatouille - Festival Dinner', 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
+FROM Restaurant r WHERE r.Name = 'Ratatouille'
+AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 48);
+
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
+SELECT 49, 5, 'Restaurant ML - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
+FROM Restaurant r WHERE r.Name = 'Restaurant ML'
+AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 49);
+
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
+SELECT 50, 5, 'Restaurant Fris - Festival Dinner', 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
+FROM Restaurant r WHERE r.Name = 'Restaurant Fris'
+AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 50);
+
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
+SELECT 51, 5, 'New Vegas - Festival Dinner', 'Vegan cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
+FROM Restaurant r WHERE r.Name = 'New Vegas'
+AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 51);
+
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
+SELECT 52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
+FROM Restaurant r WHERE r.Name = 'Grand Cafe Brinkman'
+AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 52);
+
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
+SELECT 53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
+FROM Restaurant r WHERE r.Name = 'Urban Frenchy Bistro Toujours'
+AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 53);
+
+-- Backfill Slug for any restaurant event that doesn't have one yet
+UPDATE Event
+SET Slug = LOWER(TRIM(BOTH '-' FROM REGEXP_REPLACE(Title, '[^a-z0-9]+', '-')))
+WHERE EventTypeId = 5 AND (Slug IS NULL OR Slug = '');
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PART B: Reservation table
@@ -251,7 +304,7 @@ UPDATE Restaurant SET
     GalleryImage1Path    = '/assets/Image/restaurants/toujours-gallery-1.png',
     GalleryImage2Path    = '/assets/Image/restaurants/toujours-gallery-2.png',
     GalleryImage3Path    = '/assets/Image/restaurants/toujours-gallery-3.png',
-    ReservationImagePath = '/assets/Image/restaurants/ratatouille-reservation.jpg',
+    ReservationImagePath = NULL, -- no reservation image file exists for Toujours
     TimeSlots            = '17:30, 19:15, 21:00',
     PriceAdult           = 45.00,
     PriceChild           = 22.50

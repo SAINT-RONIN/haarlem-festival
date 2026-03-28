@@ -3,7 +3,11 @@
     "allow": [
       "Bash(xargs wc:*)",
       "Bash(grep -rn \"INSERT INTO.*\\\\`Event\\\\`\\\\|INSERT INTO Event\" C:/Users/mathe/PhpstormProjects/haarlem-festival/Database/)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(grep:*)",
+      "Bash(find C:/Users/mathe/PhpstormProjects/haarlem-festival -type f \\\\\\(-name *jazz* -o -name *storytelling* \\\\\\) -name *.blade.php)",
+      "Bash(find C:/Users/mathe/PhpstormProjects/haarlem-festival/resources/views -type f \\\\\\(-iname *jazz* -o -iname *storytelling* \\\\\\))",
+      "Bash(find C:/Users/mathe/PhpstormProjects/haarlem-festival -type f -name *.blade.php)"
     ]
   }
 }
