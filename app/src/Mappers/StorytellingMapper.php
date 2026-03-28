@@ -12,8 +12,8 @@ use App\Models\EventGalleryImage;
 use App\Models\EventHighlight;
 use App\Models\PageGalleryImage;
 use App\DTOs\Pages\StorytellingDetailPageData;
-use App\Models\StorytellingEventCmsData;
-use App\Models\StorytellingMasonrySectionContent;
+use App\Content\StorytellingEventCmsData;
+use App\Content\StorytellingMasonrySectionContent;
 use App\DTOs\Pages\StorytellingPageData;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
@@ -77,7 +77,6 @@ final class StorytellingMapper
         return new StorytellingPageViewModel(
             heroData: $heroData,
             globalUi: $globalUi,
-            cms: CmsMapper::toCmsData($heroData, $globalUi),
             gradientSection: CmsMapper::toGradientSection($pageData->gradientSection),
             introSplitSection: CmsMapper::toIntroSplitSection($pageData->introSplitSection),
             masonrySection: self::buildMasonrySection($pageData->masonrySection, $pageData->masonryImages),
@@ -114,7 +113,6 @@ final class StorytellingMapper
     ): StorytellingDetailPageViewModel {
         return new StorytellingDetailPageViewModel(
             heroData: $heroData, globalUi: $globalUi,
-            cms: CmsMapper::toCmsData($heroData, $globalUi),
             currentPage: StorytellingPageConstants::CURRENT_PAGE,
             detailHero: $detailHero,
             aboutSection: self::buildAboutSection($pageData),

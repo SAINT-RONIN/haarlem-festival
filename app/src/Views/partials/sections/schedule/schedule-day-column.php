@@ -9,6 +9,7 @@
  */
 
 use App\Helpers\CmsOutputHelper;
+use App\View\ViewRenderer;
 
 $dayId = 'schedule-day-' . $dayIndex;
 $itemClasses = $dayItemClasses ?? 'lg:flex-1';
@@ -36,7 +37,11 @@ $itemClasses = $dayItemClasses ?? 'lg:flex-1';
                 </li>
             <?php else: ?>
                 <?php foreach ($day->events as $eventIndex => $event): ?>
-                    <?php require __DIR__ . '/schedule-event-card.php'; ?>
+                    <?php ViewRenderer::render(__DIR__ . '/schedule-event-card.php', [
+                        'event' => $event,
+                        'eventIndex' => $eventIndex,
+                        'dayIndex' => $dayIndex,
+                    ]); ?>
                 <?php endforeach; ?>
             <?php endif; ?>
         </ul>

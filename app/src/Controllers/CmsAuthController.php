@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ISessionService;
 
@@ -15,8 +14,9 @@ class CmsAuthController extends BaseController
 {
     public function __construct(
         private readonly IAuthService $authService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -25,18 +25,15 @@ class CmsAuthController extends BaseController
      */
     public function showLogin(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             // Skip the login form if the admin is already authenticated
             if ($this->sessionService->isLoggedIn() && $this->sessionService->isAdmin()) {
-                header('Location: /cms');
-                exit;
+                $this->redirectAndExit('/cms');
             }
 
             $error = $this->sessionService->consumeFlash('cms_login_error');
             require __DIR__ . '/../Views/pages/cms/login.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -45,11 +42,9 @@ class CmsAuthController extends BaseController
      */
     public function login(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->processLogin();
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -58,13 +53,10 @@ class CmsAuthController extends BaseController
      */
     public function logout(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->sessionService->logout();
-            header('Location: /cms/login');
-            exit;
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+            $this->redirectAndExit('/cms/login');
+        });
     }
 
     /** Reads admin credentials, authenticates, and redirects on success or failure. */
@@ -82,14 +74,12 @@ class CmsAuthController extends BaseController
 
         $user = $result['user'];
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
-        header('Location: /cms');
-        exit;
+        $this->redirectAndExit('/cms');
     }
 
     private function redirectWithError(string $error): void
     {
         $this->sessionService->setFlash('cms_login_error', $error);
-        header('Location: /cms/login');
-        exit;
+        $this->redirectAndExit('/cms/login');
     }
 }

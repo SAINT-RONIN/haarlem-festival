@@ -4,6 +4,8 @@
  *
  * @var \App\ViewModels\VenueData $venue
  */
+
+use App\View\ViewRenderer;
 ?>
 
 <div class="flex-1 self-stretch pb-6 bg-white rounded-2xl flex flex-col justify-start items-start gap-6 overflow-hidden shadow-md">
@@ -67,11 +69,10 @@
                 </p>
                 <div class="self-stretch flex flex-col justify-start items-start gap-3.5">
                     <?php foreach ($venue->halls as $hall): ?>
-                        <?php require __DIR__ . '/hall-item.php'; ?>
+                        <?php ViewRenderer::render(__DIR__ . '/hall-item.php', ['hall' => $hall]); ?>
                     <?php endforeach; ?>
                 </div>
             </div>
         <?php endif; ?>
     </div>
 </div>
-

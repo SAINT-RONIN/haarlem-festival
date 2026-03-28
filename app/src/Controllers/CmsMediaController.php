@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsMediaMapper;
 use App\Services\Interfaces\IMediaAssetService;
@@ -37,13 +36,11 @@ class CmsMediaController extends CmsBaseController
      */
     public function index(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'media';
             $viewModel = $this->buildMediaListViewModel();
             require __DIR__ . '/../Views/pages/cms/media.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -52,15 +49,11 @@ class CmsMediaController extends CmsBaseController
      */
     public function upload(): void
     {
-        try {
+        $this->handleCmsJsonRequest(function (): void {
             $this->validateMediaCsrf();
             $this->validateFilePresent();
             $this->processMediaUpload();
-        } catch (ValidationException $e) {
-            $this->json(['success' => false, 'error' => $e->getMessage()]);
-        } catch (\Throwable $e) {
-            $this->json(['success' => false, 'error' => 'Upload failed']);
-        }
+        });
     }
 
     /**
@@ -69,14 +62,10 @@ class CmsMediaController extends CmsBaseController
      */
     public function delete(): void
     {
-        try {
+        $this->handleCmsJsonRequest(function (): void {
             $this->validateMediaCsrf();
             $this->processMediaDelete();
-        } catch (ValidationException $e) {
-            $this->json(['success' => false, 'error' => $e->getMessage()]);
-        } catch (\Throwable $e) {
-            $this->json(['success' => false, 'error' => 'Delete failed']);
-        }
+        });
     }
 
     /**
@@ -86,13 +75,11 @@ class CmsMediaController extends CmsBaseController
      */
     public function list(): void
     {
-        try {
+        $this->handleCmsJsonRequest(function (): void {
             $allAssets = $this->mediaAssetService->getAllAssets();
             $data = array_map([CmsMediaMapper::class, 'toMediaJsonData'], $allAssets);
             $this->json(['success' => true, 'assets' => $data]);
-        } catch (\Throwable $e) {
-            $this->json(['success' => false, 'error' => 'Failed to load media']);
-        }
+        });
     }
 
     private function buildMediaListViewModel(): CmsMediaLibraryViewModel

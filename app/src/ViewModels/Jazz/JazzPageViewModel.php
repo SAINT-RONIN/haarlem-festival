@@ -21,7 +21,6 @@ final readonly class JazzPageViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
-        array $cms,
         public GradientSectionData $gradientSection,
         public IntroSplitSectionData $introSplitSection,
         public VenuesData $venuesData,
@@ -35,7 +34,6 @@ final readonly class JazzPageViewModel extends BaseViewModel
             heroData: $heroData,
             globalUi: $globalUi,
             currentPage: $heroData->currentPage,
-            cms: $cms,
             includeNav: false,
         );
     }

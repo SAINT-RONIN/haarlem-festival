@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
+use App\DTOs\Auth\RegistrationFormData;
+
 /**
  * Contract for user authentication and credential management.
  * Covers login (customer and admin), registration with validation,
@@ -32,18 +34,16 @@ interface IAuthService
     /**
      * Validates registration data and returns any errors.
      *
-     * @param array $data Registration data
      * @return array<string, string> Field name => error message
      */
-    public function validateRegistration(array $data): array;
+    public function validateRegistration(RegistrationFormData $data): array;
 
     /**
      * Registers a new user account.
      *
-     * @param array $data User data
      * @return int The new user's ID
      */
-    public function register(array $data): int;
+    public function register(RegistrationFormData $data): int;
 
     /**
      * Initiates password reset flow.

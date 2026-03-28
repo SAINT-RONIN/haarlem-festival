@@ -6,9 +6,9 @@ namespace App\DTOs\Pages;
 
 use App\Models\EventGalleryImage;
 use App\Models\EventHighlight;
-use App\Models\GlobalUiContent;
+use App\Content\GlobalUiContent;
 use App\DTOs\Events\StorytellingDetailEvent;
-use App\Models\StorytellingEventCmsData;
+use App\Content\StorytellingEventCmsData;
 
 /**
  * Carries the event, CMS content, and pre-resolved fields needed to render a single Storytelling detail page.

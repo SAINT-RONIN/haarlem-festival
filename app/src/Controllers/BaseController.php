@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Controllers\Support\ControllerErrorResponder;
 use App\DTOs\Filters\ScheduleFilterParams;
 use App\DTOs\Session\SessionContext;
 use App\Enums\PriceType;
 use App\Enums\TimeRange;
 use App\Exceptions\JsonBodyParseException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ValidationException;
 use App\Services\Interfaces\ISessionService;
+use App\View\ViewRenderer;
 use App\ViewModels\BaseViewModel;
 
 /**
@@ -18,26 +22,75 @@ use App\ViewModels\BaseViewModel;
  */
 abstract class BaseController
 {
-    /** Renders a full page view, extracting standard layout variables (nav, CMS, auth state) from the view model. */
-    protected function renderPage(string $viewPath, BaseViewModel $viewModel): void
-    {
-        $cms = $viewModel->cms;
-        $currentPage = $viewModel->currentPage;
-        $includeNav = $viewModel->includeNav;
-        $isLoggedIn = $viewModel->globalUi->isLoggedIn;
-
-        require $viewPath;
+    public function __construct(
+        protected readonly ?ISessionService $sessionService = null,
+    ) {
     }
 
-    /** Renders a view without the standard layout variable extraction (used for non-BaseViewModel pages). */
+    /** Renders a full page view through the shared isolated PHP renderer. */
+    protected function renderPage(string $viewPath, BaseViewModel $viewModel): void
+    {
+        ViewRenderer::render($viewPath, ['viewModel' => $viewModel]);
+    }
+
+    /** Renders a view through the shared isolated PHP renderer. */
     protected function renderView(string $viewPath, object $viewModel): void
     {
-        require $viewPath;
+        ViewRenderer::render($viewPath, ['viewModel' => $viewModel]);
     }
 
     protected function redirect(string $location): void
     {
         header('Location: ' . $location);
+    }
+
+    protected function redirectAndExit(string $location): never
+    {
+        $this->redirect($location);
+        exit;
+    }
+
+    protected function renderNotFoundPage(): void
+    {
+        http_response_code(404);
+        require __DIR__ . '/../Views/pages/errors/404.php';
+    }
+
+    /**
+     * Wraps a controller action with shared HTML error handling.
+     *
+     * @param callable(): void $action
+     */
+    protected function handlePageRequest(callable $action): void
+    {
+        try {
+            $action();
+        } catch (NotFoundException) {
+            $this->renderNotFoundPage();
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
+
+    /**
+     * Wraps a controller action with shared JSON error handling.
+     *
+     * @param callable(): void $action
+     * @param array<int, class-string> $badRequestExceptions
+     */
+    protected function handleJsonRequest(
+        callable $action,
+        array $badRequestExceptions = [
+            \InvalidArgumentException::class,
+            JsonBodyParseException::class,
+            ValidationException::class,
+        ],
+    ): void {
+        try {
+            $action();
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respondJson($error, $this->resolveJsonStatusCode($error, $badRequestExceptions));
+        }
     }
 
     /**
@@ -205,9 +258,15 @@ abstract class BaseController
         return $body;
     }
 
-    /** Builds a SessionContext from the given session service for cart and program operations. */
-    protected function resolveSessionContext(ISessionService $sessionService): SessionContext
+    protected function isLoggedIn(): bool
     {
+        return $this->requireSessionService()->isLoggedIn();
+    }
+
+    /** Builds a SessionContext from the given session service for cart and program operations. */
+    protected function resolveSessionContext(?ISessionService $sessionService = null): SessionContext
+    {
+        $sessionService ??= $this->requireSessionService();
         $sessionKey = $sessionService->getSessionId();
         $isLoggedIn = $sessionService->isLoggedIn();
         $userId = $isLoggedIn ? $sessionService->getUserId() : null;
@@ -217,5 +276,28 @@ abstract class BaseController
             userId: $userId,
             isLoggedIn: $isLoggedIn,
         );
+    }
+
+    protected function requireSessionService(): ISessionService
+    {
+        if ($this->sessionService === null) {
+            throw new \LogicException('This controller requires a session service.');
+        }
+
+        return $this->sessionService;
+    }
+
+    /**
+     * @param array<int, class-string> $badRequestExceptions
+     */
+    private function resolveJsonStatusCode(\Throwable $error, array $badRequestExceptions): int
+    {
+        foreach ($badRequestExceptions as $exceptionClass) {
+            if ($error instanceof $exceptionClass) {
+                return 400;
+            }
+        }
+
+        return $error instanceof NotFoundException ? 404 : 500;
     }
 }

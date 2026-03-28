@@ -3,13 +3,9 @@
  * Global Gradient section partial.
  * Background image with gradient overlay.
  *
- * Required variable (set before including this partial):
+ * Required variable:
  * @var \App\ViewModels\GradientSectionData $gradientSection
  */
-
-if (!isset($gradientSection) && isset($viewModel) && property_exists($viewModel, 'gradientSection')) {
-    $gradientSection = $viewModel->gradientSection;
-}
 
 if (!isset($gradientSection)) {
     return;

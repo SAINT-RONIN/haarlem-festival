@@ -5,6 +5,8 @@
  * @var \App\ViewModels\VenuesData $venuesData
  */
 
+use App\View\ViewRenderer;
+
 if (!isset($venuesData) && isset($viewModel) && property_exists($viewModel, 'venuesData')) {
     $venuesData = $viewModel->venuesData;
 }
@@ -37,7 +39,7 @@ if (!isset($venuesData)) {
     <!-- Venue Cards -->
     <div class="self-stretch flex flex-col lg:flex-row justify-start items-stretch gap-6 lg:gap-12">
         <?php foreach ($venuesData->venues as $venue): ?>
-            <?php require __DIR__ . '/venue-card.php'; ?>
+            <?php ViewRenderer::render(__DIR__ . '/venue-card.php', ['venue' => $venue]); ?>
         <?php endforeach; ?>
     </div>
 </section>

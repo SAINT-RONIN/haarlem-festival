@@ -2,9 +2,16 @@
 /**
  * Schedule day column partial - Single day column with date header and event cards.
  *
- * @var array $day Day data with keys: dayName, dayNumber, monthShort, eventCount, sessions
- * @var array $cms CMS content including global_ui section
+ * @var \App\ViewModels\HomeScheduleDayViewModel $day
+ * @var \App\ViewModels\GlobalUiData $globalUi
  */
+
+use App\ViewModels\GlobalUiData;
+use App\View\ViewRenderer;
+
+if (!$globalUi instanceof GlobalUiData) {
+    return;
+}
 
 $dayName = htmlspecialchars($day->dayName);
 $dayNumber = htmlspecialchars((string)$day->dayNumber);
@@ -12,7 +19,6 @@ $monthShort = htmlspecialchars($day->monthShort);
 $isoDate = htmlspecialchars($day->isoDate);
 $eventCount = (int)$day->eventCount;
 $sessions = $day->sessions;
-$global = $cms['global_ui'];
 
 // Unique ID for accessibility — pre-computed in HomeMapper
 $dayId = $day->htmlId;
@@ -34,7 +40,7 @@ $dayId = $day->htmlId;
                 class="self-stretch justify-start text-sand text-base sm:text-lg md:text-xl font-semibold leading-snug"><?php echo $dayName; ?>
                 , <?php echo $monthShort; ?> <?php echo $dayNumber; ?></h3>
             <p class="self-stretch justify-start text-sand text-xs sm:text-sm font-normal leading-tight">
-                <span aria-live="polite"><?php echo $eventCount; ?> <?= htmlspecialchars($global['label_events_count']) ?></span>
+                <span aria-live="polite"><?php echo $eventCount; ?> <?= htmlspecialchars($globalUi->labelEventsCount) ?></span>
             </p>
         </div>
     </header>
@@ -44,13 +50,12 @@ $dayId = $day->htmlId;
         role="list" aria-label="<?php echo $dayName; ?> events">
         <?php if (empty($sessions)): ?>
             <li class="self-stretch p-3 sm:p-4 md:p-5 bg-white rounded-[12px] sm:rounded-[16px] md:rounded-[20px] flex justify-center items-center">
-                <p class="text-slate-500 text-xs sm:text-sm"><?= htmlspecialchars($global['label_no_events']) ?></p>
+                <p class="text-slate-500 text-xs sm:text-sm"><?= htmlspecialchars($globalUi->labelNoEvents) ?></p>
             </li>
         <?php else: ?>
             <?php foreach ($sessions as $session): ?>
-                <?php require __DIR__ . '/schedule-event-card.php'; ?>
+                <?php ViewRenderer::render(__DIR__ . '/schedule-event-card.php', ['session' => $session]); ?>
             <?php endforeach; ?>
         <?php endif; ?>
     </ul>
 </article>
-

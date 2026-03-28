@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
+use App\DTOs\Cms\EventSessionUpsertData;
 use App\DTOs\Filters\EventSessionFilter;
 use App\DTOs\Schedule\ScheduleDayData;
 use App\DTOs\Events\SessionCapacityInfo;
@@ -33,12 +34,12 @@ interface IEventSessionRepository
     /**
      * Inserts a new event session and returns the generated ID.
      */
-    public function create(array $data): int;
+    public function create(EventSessionUpsertData $data): int;
 
     /**
      * Updates an event session's columns and returns whether any row was affected.
      */
-    public function update(int $sessionId, array $data): bool;
+    public function update(int $sessionId, EventSessionUpsertData $data): bool;
 
     /**
      * Deletes an event session by its ID.

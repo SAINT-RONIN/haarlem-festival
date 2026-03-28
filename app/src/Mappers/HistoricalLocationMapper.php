@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\HistoricalLocationFactsContent;
-use App\Models\HistoricalLocationHeroContent;
-use App\Models\HistoricalLocationIntroContent;
+use App\Content\HistoricalLocationFactsContent;
+use App\Content\HistoricalLocationHeroContent;
+use App\Content\HistoricalLocationIntroContent;
 use App\DTOs\Pages\HistoricalLocationPageData;
-use App\Models\HistoricalLocationSignificanceContent;
+use App\Content\HistoricalLocationSignificanceContent;
 use App\Constants\HistoryPageConstants;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
@@ -44,7 +44,6 @@ final class HistoricalLocationMapper
             locationIntroduction: self::toLocationIntroduction($data->introSection),
             locationFacts: self::toLocationFacts($data->factsSection),
             locationSignificance: self::toLocationSignificance($data->significanceSection),
-            cms: CmsMapper::toCmsData($heroData, $globalUi),
         );
     }
 

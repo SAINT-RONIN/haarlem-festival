@@ -9,14 +9,12 @@ use App\Constants\JazzArtistDetailConstants;
 use App\Constants\JazzPageConstants;
 use App\Constants\ScheduleConstants;
 use App\Enums\EventTypeId;
-use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Mappers\JazzMapper;
 use App\Mappers\ScheduleMapper;
 use App\Services\Interfaces\IJazzArtistDetailService;
 use App\Services\Interfaces\IJazzService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
-use App\Controllers\Support\ControllerErrorResponder;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
@@ -35,9 +33,10 @@ class JazzController extends BaseController
     public function __construct(
         private readonly IJazzService $jazzService,
         private readonly IJazzArtistDetailService $jazzArtistDetailService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
         private readonly IScheduleService $scheduleService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -46,14 +45,12 @@ class JazzController extends BaseController
      */
     public function index(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $data = $this->jazzService->getJazzPageData();
             $scheduleSection = $this->buildListingScheduleSection();
-            $viewModel = JazzMapper::toPageViewModel($data, $scheduleSection, $this->sessionService->isLoggedIn());
+            $viewModel = JazzMapper::toPageViewModel($data, $scheduleSection, $this->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/jazz.php', $viewModel);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     private function buildListingScheduleSection(): ScheduleSectionViewModel
@@ -73,14 +70,9 @@ class JazzController extends BaseController
      */
     public function detail(string $slug): void
     {
-        try {
+        $this->handlePageRequest(function () use ($slug): void {
             $this->renderDetailPage($slug);
-        } catch (JazzArtistDetailNotFoundException) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /** Loads artist data by slug and their scheduled performances, then renders the detail view. */

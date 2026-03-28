@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\DTOs\Schedule\ScheduleSectionData;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
@@ -15,11 +16,9 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
 final class ScheduleMapper
 {
     /**
-     * Converts raw schedule data (from ScheduleService::getScheduleData) into a ScheduleSectionViewModel.
-     *
-     * @param array{cmsContent: \App\Models\ScheduleSectionContent, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array} $scheduleData
+     * Converts schedule section data into a ScheduleSectionViewModel.
      */
-    public static function toScheduleSection(array $scheduleData): ScheduleSectionViewModel
+    public static function toScheduleSection(ScheduleSectionData $scheduleData): ScheduleSectionViewModel
     {
         return ScheduleDayMapper::buildSection($scheduleData);
     }
@@ -29,7 +28,7 @@ final class ScheduleMapper
      *
      * @return array<array<string, mixed>>
      */
-    public static function flattenEvents(array $scheduleData): array
+    public static function flattenEvents(ScheduleSectionData $scheduleData): array
     {
         return ScheduleDayMapper::flattenEvents($scheduleData);
     }
@@ -39,7 +38,7 @@ final class ScheduleMapper
      *
      * @return ScheduleEventCardViewModel[]
      */
-    public static function flattenEventsAsViewModels(array $scheduleData): array
+    public static function flattenEventsAsViewModels(ScheduleSectionData $scheduleData): array
     {
         return ScheduleDayMapper::flattenEventsAsViewModels($scheduleData);
     }

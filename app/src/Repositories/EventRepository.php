@@ -30,12 +30,33 @@ class EventRepository extends BaseRepository implements IEventRepository
      */
     public function findEvents(EventFilter $filters = new EventFilter()): array
     {
-        $includeSessionCount = (bool)($filters->includeSessionCount ?? false);
-        $isActive = $filters->isActive;
-        $eventTypeId = $filters->eventTypeId;
-        $dayOfWeekNumber = $filters->dayOfWeekNumber;
-        $eventId = $filters->eventId;
+        $conditions = [];
+        $params = [];
+        $sql = $this->buildFindEventsQuery($filters, $conditions, $params);
 
+        return $this->fetchAll($sql, $params, fn(array $row) => EventWithDetails::fromRow($row));
+    }
+
+    /**
+     * @param string[] $conditions
+     * @param array<string,mixed> $params
+     */
+    private function buildFindEventsQuery(EventFilter $filters, array &$conditions, array &$params): string
+    {
+        $sql = $this->buildEventSelectClause((bool)($filters->includeSessionCount ?? false));
+        $sql .= $this->buildEventJoinClause((bool)($filters->includeSessionCount ?? false));
+        $sql .= $this->buildDayOfWeekJoinClause($filters->dayOfWeekNumber, $params);
+        $this->appendEventConditions($filters, $conditions, $params);
+
+        if ($conditions !== []) {
+            $sql .= ' WHERE ' . implode(' AND ', $conditions);
+        }
+
+        return $sql . ' ORDER BY et.Name ASC, e.Title ASC';
+    }
+
+    private function buildEventSelectClause(bool $includeSessionCount): string
+    {
         $select = '
             SELECT DISTINCT
                 e.*,
@@ -44,20 +65,26 @@ class EventRepository extends BaseRepository implements IEventRepository
                 et.Slug AS EventTypeSlug
         ';
 
-        // Append aggregate columns: number of sessions, total sold tickets, and total capacity per event
         if ($includeSessionCount) {
             $select .= ', COALESCE(es_count.SessionCount, 0) AS SessionCount, COALESCE(es_count.TotalSoldTickets, 0) AS TotalSoldTickets, COALESCE(es_count.TotalCapacity, 0) AS TotalCapacity';
         }
 
-        $sql = $select . '
+        return $select;
+    }
+
+    private function buildEventJoinClause(bool $includeSessionCount): string
+    {
+        $joins = '
             FROM Event e
             LEFT JOIN Venue v ON e.VenueId = v.VenueId
             INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
         ';
 
-        // Left-join a derived table that aggregates session counts and ticket totals per event
-        if ($includeSessionCount) {
-            $sql .= '
+        if (!$includeSessionCount) {
+            return $joins;
+        }
+
+        return $joins . '
             LEFT JOIN (
                 SELECT EventId,
                        COUNT(*) AS SessionCount,
@@ -66,44 +93,47 @@ class EventRepository extends BaseRepository implements IEventRepository
                 FROM EventSession
                 GROUP BY EventId
             ) es_count ON es_count.EventId = e.EventId
-            ';
+        ';
+    }
+
+    /**
+     * @param array<string,mixed> $params
+     */
+    private function buildDayOfWeekJoinClause(?int $dayOfWeekNumber, array &$params): string
+    {
+        if ($dayOfWeekNumber === null) {
+            return '';
         }
 
-        $conditions = [];
-        $params = [];
+        $params['dayOfWeekNum'] = $dayOfWeekNumber;
 
-        // Filter events to only those with at least one session on the requested day of week
-        if ($dayOfWeekNumber !== null) {
-            $sql .= '
-                INNER JOIN EventSession es_day
-                    ON es_day.EventId = e.EventId
-                    AND DAYOFWEEK(es_day.StartDateTime) = :dayOfWeekNum
-            ';
-            $params['dayOfWeekNum'] = $dayOfWeekNumber;
-        }
+        return '
+            INNER JOIN EventSession es_day
+                ON es_day.EventId = e.EventId
+                AND DAYOFWEEK(es_day.StartDateTime) = :dayOfWeekNum
+        ';
+    }
 
-        if ($isActive !== null) {
+    /**
+     * @param string[] $conditions
+     * @param array<string,mixed> $params
+     */
+    private function appendEventConditions(EventFilter $filters, array &$conditions, array &$params): void
+    {
+        if ($filters->isActive !== null) {
             $conditions[] = 'e.IsActive = :isActive';
-            $params['isActive'] = $isActive ? 1 : 0;
+            $params['isActive'] = $filters->isActive ? 1 : 0;
         }
 
-        if ($eventTypeId !== null) {
+        if ($filters->eventTypeId !== null) {
             $conditions[] = 'e.EventTypeId = :eventTypeId';
-            $params['eventTypeId'] = (int)$eventTypeId;
+            $params['eventTypeId'] = (int)$filters->eventTypeId;
         }
 
-        if ($eventId !== null) {
+        if ($filters->eventId !== null) {
             $conditions[] = 'e.EventId = :eventId';
-            $params['eventId'] = (int)$eventId;
+            $params['eventId'] = (int)$filters->eventId;
         }
-
-        if ($conditions !== []) {
-            $sql .= ' WHERE ' . implode(' AND ', $conditions);
-        }
-
-        $sql .= ' ORDER BY et.Name ASC, e.Title ASC';
-
-        return $this->fetchAll($sql, $params, fn(array $row) => EventWithDetails::fromRow($row));
     }
 
     /**

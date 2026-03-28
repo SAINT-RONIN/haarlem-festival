@@ -18,7 +18,6 @@ final readonly class StorytellingDetailPageViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
-        array $cms,
         string $currentPage,
         public StorytellingDetailHeroData $detailHero,
         public StorytellingAboutSectionData $aboutSection,
@@ -32,7 +31,6 @@ final readonly class StorytellingDetailPageViewModel extends BaseViewModel
             heroData: $heroData,
             globalUi: $globalUi,
             currentPage: $currentPage,
-            cms: $cms,
             includeNav: false,
         );
     }

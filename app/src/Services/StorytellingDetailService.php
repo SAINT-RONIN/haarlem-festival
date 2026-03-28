@@ -12,7 +12,7 @@ use App\DTOs\Filters\EventSessionFilter;
 use App\Models\EventSessionLabel;
 use App\DTOs\Events\StorytellingDetailEvent;
 use App\DTOs\Pages\StorytellingDetailPageData;
-use App\Models\StorytellingEventCmsData;
+use App\Content\StorytellingEventCmsData;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IStorytellingContentRepository;
 use App\Repositories\Interfaces\IEventRepository;

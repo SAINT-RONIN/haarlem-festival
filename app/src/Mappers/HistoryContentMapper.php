@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\HistoryRouteSectionContent;
-use App\Models\HistoryTicketOptionsSectionContent;
-use App\Models\HistoryTourInfoSectionContent;
-use App\Models\HistoryVenuesSectionContent;
+use App\Content\HistoryRouteSectionContent;
+use App\Content\HistoryTicketOptionsSectionContent;
+use App\Content\HistoryTourInfoSectionContent;
+use App\Content\HistoryVenuesSectionContent;
 
 /**
  * Maps raw CMS arrays into History page content models.

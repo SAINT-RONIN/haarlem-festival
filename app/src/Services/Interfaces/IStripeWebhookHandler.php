@@ -15,7 +15,7 @@ interface IStripeWebhookHandler
      * Verifies the webhook signature, ensures idempotency, and transitions
      * order/payment statuses based on the Stripe event type.
      *
-     * @throws \App\Exceptions\CheckoutException When the event payload is invalid
+     * @throws \App\Exceptions\CheckoutException When webhook processing fails
      */
     public function handleWebhook(string $payload, ?string $signatureHeader): WebhookHandlerResult;
 }

@@ -48,6 +48,12 @@ app/cache/
 app/var/
 .phpunit.result.cache
 coverage/
+!app/storage/
+app/storage/*
+!app/storage/.gitkeep
+!app/storage/cache/
+app/storage/cache/*
+!app/storage/cache/.gitkeep
 
 # ==============================
 # Node (if present)

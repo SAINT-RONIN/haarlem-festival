@@ -9,7 +9,6 @@ use App\Constants\SharedSectionKeys;
 use App\DTOs\Pages\HistoryPageData;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IHistoryContentRepository;
-use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IHistoryService;
 
 /**
@@ -26,11 +25,10 @@ class HistoryService extends BaseContentService implements IHistoryService
 
     public function getHistoryPageData(): HistoryPageData
     {
-        try {
-            return $this->buildPageData(HistoryPageConstants::PAGE_SLUG);
-        } catch (\Throwable $error) {
-            throw new PageLoadException('Failed to load the History page.', 0, $error);
-        }
+        return $this->guardPageLoad(
+            fn (): HistoryPageData => $this->buildPageData(HistoryPageConstants::PAGE_SLUG),
+            'Failed to load the History page.',
+        );
     }
 
     private function buildPageData(string $pageSlug): HistoryPageData

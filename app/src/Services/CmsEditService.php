@@ -20,6 +20,8 @@ use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Exceptions\CmsOperationException;
 use App\Services\Interfaces\ICmsEditService;
+use App\Services\Interfaces\ICmsItemEnricher;
+use App\Services\Interfaces\ICmsPreviewUrlResolver;
 use App\Utils\CmsContentLimits;
 
 /**
@@ -33,8 +35,8 @@ class CmsEditService implements ICmsEditService
     public function __construct(
         private readonly ICmsRepository $cmsRepository,
         private readonly IEventRepository $eventRepository,
-        private readonly CmsItemEnricher $itemEnricher,
-        private readonly CmsPreviewUrlResolver $previewUrlResolver,
+        private readonly ICmsItemEnricher $itemEnricher,
+        private readonly ICmsPreviewUrlResolver $previewUrlResolver,
     ) {
     }
 

@@ -6,9 +6,7 @@ namespace App\Controllers;
 
 use App\Constants\HistoryPageConstants;
 use App\Constants\ScheduleConstants;
-use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\EventTypeId;
-use App\Exceptions\HistoricalLocationNotFoundException;
 use App\Mappers\HistoricalLocationMapper;
 use App\Mappers\HistoryMapper;
 use App\Mappers\ScheduleMapper;
@@ -27,9 +25,10 @@ class HistoryController extends BaseController
     public function __construct(
         private readonly IHistoryService $historyService,
         private readonly IHistoricalLocationService $historicalLocationService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
         private readonly IScheduleService $scheduleService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -37,11 +36,9 @@ class HistoryController extends BaseController
      */
     public function index(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->renderIndex();
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     private function renderIndex(): void
@@ -53,7 +50,7 @@ class HistoryController extends BaseController
             ScheduleConstants::MAX_DAYS,
         );
         $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
-        $viewModel = HistoryMapper::toPageViewModel($data, $this->sessionService->isLoggedIn(), $scheduleSection);
+        $viewModel = HistoryMapper::toPageViewModel($data, $this->isLoggedIn(), $scheduleSection);
         $this->renderPage(__DIR__ . '/../Views/pages/history.php', $viewModel);
     }
 
@@ -64,20 +61,15 @@ class HistoryController extends BaseController
      */
     public function location(string $name): void
     {
-        try {
+        $this->handlePageRequest(function () use ($name): void {
             $this->renderLocation($name);
-        } catch (HistoricalLocationNotFoundException) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     private function renderLocation(string $name): void
     {
         $data = $this->historicalLocationService->getHistoralLocationPageData($name);
-        $viewModel = HistoricalLocationMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
+        $viewModel = HistoricalLocationMapper::toPageViewModel($data, $this->isLoggedIn());
         $this->renderPage(__DIR__ . '/../Views/pages/historical-location.php', $viewModel);
     }
 }

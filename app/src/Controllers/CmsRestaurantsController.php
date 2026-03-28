@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
-use App\Mappers\CmsRestaurantsMapper;
 use App\DTOs\Cms\RestaurantUpsertData;
+use App\Mappers\CmsRestaurantsMapper;
 use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsRestaurantFormViewModel;
@@ -22,64 +21,52 @@ class CmsRestaurantsController extends CmsBaseController
 
     public function index(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'restaurants';
             $search      = $this->readStringQueryParam('search');
             $viewModel   = $this->buildRestaurantsListViewModel($search);
             require __DIR__ . '/../Views/pages/cms/restaurants.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     public function create(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'restaurants';
-            $emptyData   = new RestaurantUpsertData('', '', '', null, '', '', null, true, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            $emptyData   = CmsRestaurantsMapper::emptyData();
             $viewModel   = $this->buildFormViewModel(null, $emptyData, []);
             require __DIR__ . '/../Views/pages/cms/restaurant-create.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     public function store(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $this->processRestaurantStore();
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     public function edit(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->renderRestaurantEditPage($id);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     public function update(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->processRestaurantUpdate($id);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     public function delete(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->validateCsrf('cms_restaurant_delete', '/cms/restaurants');
             $this->restaurantsService->deleteRestaurant($id);
             $this->redirectWithFlash('Restaurant deactivated successfully.', 'success', '/cms/restaurants');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /** Fetches restaurants from the service and maps them to the list ViewModel. */
@@ -114,8 +101,7 @@ class CmsRestaurantsController extends CmsBaseController
     {
         $restaurant = $this->restaurantsService->findById($id);
         if ($restaurant === null) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
+            $this->renderNotFoundPage();
             return;
         }
         $currentView = 'restaurants';
@@ -140,7 +126,7 @@ class CmsRestaurantsController extends CmsBaseController
 
     private function extractFormData(): RestaurantUpsertData
     {
-        return new RestaurantUpsertData(...[
+        return CmsRestaurantsMapper::fromFormInput([
             ...$this->extractCorePostData(),
             ...$this->extractContactPostData(),
             ...$this->extractDetailPostData(),

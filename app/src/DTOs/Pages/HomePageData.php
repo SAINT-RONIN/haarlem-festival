@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
-use App\Models\GlobalUiContent;
-use App\Models\HeroSectionContent;
+use App\Content\GlobalUiContent;
+use App\Content\HeroSectionContent;
 
 /**
  * Typed result returned by HomeService::getHomePageData().

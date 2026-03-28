@@ -9,14 +9,12 @@ use App\Constants\ScheduleConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Constants\StorytellingPageConstants;
 use App\Enums\EventTypeId;
-use App\Exceptions\StorytellingEventNotFoundException;
 use App\Mappers\ScheduleMapper;
 use App\Mappers\StorytellingMapper;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
 use App\Services\Interfaces\IStorytellingDetailService;
 use App\Services\Interfaces\IStorytellingService;
-use App\Controllers\Support\ControllerErrorResponder;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
@@ -34,9 +32,10 @@ class StorytellingController extends BaseController
     public function __construct(
         private readonly IStorytellingService $storytellingService,
         private readonly IStorytellingDetailService $storytellingDetailService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
         private readonly IScheduleService $scheduleService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -45,15 +44,13 @@ class StorytellingController extends BaseController
      */
     public function index(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $pageData = $this->storytellingService->getStorytellingPageData();
             $scheduleSection = $this->buildListingScheduleSection();
-            $isLoggedIn = $this->sessionService->isLoggedIn();
+            $isLoggedIn = $this->isLoggedIn();
             $viewModel = StorytellingMapper::toPageViewModel($pageData, $scheduleSection, $isLoggedIn);
             $this->renderPage(__DIR__ . '/../Views/pages/storytelling.php', $viewModel);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     private function buildListingScheduleSection(): ScheduleSectionViewModel
@@ -73,14 +70,9 @@ class StorytellingController extends BaseController
      */
     public function detail(string $slug): void
     {
-        try {
+        $this->handlePageRequest(function () use ($slug): void {
             $this->renderDetailPage($slug);
-        } catch (StorytellingEventNotFoundException) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
-        } catch (\Throwable $throwable) {
-            ControllerErrorResponder::respond($throwable);
-        }
+        });
     }
 
     /** Loads event detail data by slug and composes the schedule + view model for rendering. */
@@ -89,7 +81,7 @@ class StorytellingController extends BaseController
         $pageData = $this->storytellingDetailService->getDetailPageData($slug);
         // Coerce empty CTA text to null so the schedule falls back to its default button label
         $scheduleSection = $this->buildDetailScheduleSection($pageData->event->eventId, $pageData->scheduleCtaButtonText ?: null);
-        $isLoggedIn = $this->sessionService->isLoggedIn();
+        $isLoggedIn = $this->isLoggedIn();
         $currentUri = $_SERVER['REQUEST_URI'] ?? '';
         $appUrl = (string)(getenv('APP_URL') ?: GlobalUiConstants::DEFAULT_APP_URL);
         $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn, $currentUri, $appUrl);

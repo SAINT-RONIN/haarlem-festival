@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
 use App\DTOs\Auth\RegistrationFormData;
+use App\Mappers\AuthMapper;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ICaptchaService;
 use App\Services\Interfaces\ISessionService;
@@ -18,9 +18,10 @@ class AuthController extends BaseController
 {
     public function __construct(
         private readonly IAuthService $authService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
         private readonly ICaptchaService $captchaService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -29,16 +30,14 @@ class AuthController extends BaseController
      */
     public function showLogin(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->redirectIfLoggedIn('/');
 
             $error = $this->sessionService->consumeFlash('login_error');
             $success = $this->sessionService->consumeFlash('login_success');
 
             require __DIR__ . '/../Views/pages/login.php';
-        } catch (\Throwable $throwable) {
-            ControllerErrorResponder::respond($throwable);
-        }
+        });
     }
 
     /**
@@ -47,11 +46,9 @@ class AuthController extends BaseController
      */
     public function login(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->processLogin();
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -60,13 +57,10 @@ class AuthController extends BaseController
      */
     public function logout(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->sessionService->logout();
-            $this->redirect('/');
-            exit;
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+            $this->redirectAndExit('/');
+        });
     }
 
     /**
@@ -75,7 +69,7 @@ class AuthController extends BaseController
      */
     public function showRegister(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->redirectIfLoggedIn('/');
 
             $recaptchaSiteKey = $this->captchaService->getSiteKey();
@@ -83,9 +77,7 @@ class AuthController extends BaseController
             $oldInput = $this->sessionService->consumeFlash('register_input') ?? [];
 
             require __DIR__ . '/../Views/pages/register.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -94,7 +86,7 @@ class AuthController extends BaseController
      */
     public function register(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             // Extract form fields, then verify CAPTCHA before any further validation
             $data = $this->extractRegistrationData();
             if (!$this->captchaService->verify($this->readStringPostParam('g-recaptcha-response'), $this->readServerHeader('REMOTE_ADDR'))) {
@@ -102,9 +94,7 @@ class AuthController extends BaseController
                 return;
             }
             $this->processRegistration($data);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -113,14 +103,12 @@ class AuthController extends BaseController
      */
     public function showForgotPassword(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $success = $this->sessionService->consumeFlash('forgot_success');
             $error = $this->sessionService->consumeFlash('forgot_error');
 
             require __DIR__ . '/../Views/pages/forgot-password.php';
-        } catch (\Throwable $throwable) {
-            ControllerErrorResponder::respond($throwable);
-        }
+        });
     }
 
     /**
@@ -129,15 +117,12 @@ class AuthController extends BaseController
      */
     public function forgotPassword(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $email = $this->readStringPostParam('email') ?? '';
             $this->authService->requestPasswordReset($email);
             $this->sessionService->setFlash('forgot_success', 'If an account exists with that email, you will receive a password reset link.');
-            $this->redirect('/forgot-password');
-            exit;
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+            $this->redirectAndExit('/forgot-password');
+        });
     }
 
     /**
@@ -146,15 +131,13 @@ class AuthController extends BaseController
      */
     public function showResetPassword(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $token = $this->readStringQueryParam('token') ?? '';
             $result = $this->authService->validateResetToken($token);
             $this->sessionService->start();
             [$error, $validToken] = $this->resolveResetTokenState($result);
             require __DIR__ . '/../Views/pages/reset-password.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -163,39 +146,35 @@ class AuthController extends BaseController
      */
     public function resetPassword(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $token = $this->readStringPostParam('token') ?? '';
             $result = $this->authService->resetPassword($token, $_POST['password'] ?? '', $_POST['confirm_password'] ?? '');
             $this->handleResetPasswordResult($result, $token);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     private function extractRegistrationData(): RegistrationFormData
     {
-        return new RegistrationFormData(
-            username: $this->readStringPostParam('username') ?? '',
-            email: $this->readStringPostParam('email') ?? '',
-            password: $_POST['password'] ?? '',
-            confirmPassword: $_POST['confirm_password'] ?? '',
-            firstName: $this->readStringPostParam('first_name') ?? '',
-            lastName: $this->readStringPostParam('last_name') ?? '',
-        );
+        return AuthMapper::fromRegistrationInput([
+            'username' => $this->readStringPostParam('username') ?? '',
+            'email' => $this->readStringPostParam('email') ?? '',
+            'password' => $_POST['password'] ?? '',
+            'confirm_password' => $_POST['confirm_password'] ?? '',
+            'first_name' => $this->readStringPostParam('first_name') ?? '',
+            'last_name' => $this->readStringPostParam('last_name') ?? '',
+        ]);
     }
 
     private function processRegistration(RegistrationFormData $data): void
     {
-        $dataArray = $data->toArray();
-        $errors = $this->authService->validateRegistration($dataArray);
+        $errors = $this->authService->validateRegistration($data);
         if ($errors !== []) {
-            $this->redirectWithErrors('/register', $errors, $dataArray);
+            $this->redirectWithErrors('/register', $errors, $data->toArray());
             return;
         }
-        $this->authService->register($dataArray);
+        $this->authService->register($data);
         $this->sessionService->setFlash('login_success', 'Registration successful! Please log in.');
-        $this->redirect('/login');
-        exit;
+        $this->redirectAndExit('/login');
     }
 
     private function resolveResetTokenState(array $result): array
@@ -211,19 +190,16 @@ class AuthController extends BaseController
     {
         if (!$result['success']) {
             $this->sessionService->setFlash('reset_error', $result['error']);
-            $this->redirect('/reset-password?token=' . urlencode($token));
-            exit;
+            $this->redirectAndExit('/reset-password?token=' . urlencode($token));
         }
         $this->sessionService->setFlash('login_success', 'Your password has been reset. Please log in with your new password.');
-        $this->redirect('/login');
-        exit;
+        $this->redirectAndExit('/login');
     }
 
     private function redirectWithError(string $url, string $error): void
     {
         $this->sessionService->setFlash('login_error', $error);
-        $this->redirect($url);
-        exit;
+        $this->redirectAndExit($url);
     }
 
     private function redirectWithErrors(string $url, array $errors, array $input): void
@@ -232,16 +208,14 @@ class AuthController extends BaseController
         unset($input['password'], $input['confirmPassword']);
         $this->sessionService->setFlash('register_errors', $errors);
         $this->sessionService->setFlash('register_input', $input);
-        $this->redirect($url);
-        exit;
+        $this->redirectAndExit($url);
     }
 
     /** Redirects already-authenticated users away from login/register pages. */
     private function redirectIfLoggedIn(string $url): void
     {
         if ($this->sessionService->isLoggedIn()) {
-            $this->redirect($url);
-            exit;
+            $this->redirectAndExit($url);
         }
     }
 
@@ -259,7 +233,6 @@ class AuthController extends BaseController
 
         $user = $result['user'];
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
-        $this->redirect('/');
-        exit;
+        $this->redirectAndExit('/');
     }
 }

@@ -23,15 +23,14 @@ class TimeFormatter
             return 'recently';
         }
 
-        try {
-            $time = new \DateTime($timestamp, new \DateTimeZone('UTC'));
-            $now = new \DateTime('now', new \DateTimeZone('UTC'));
-            $diff = $now->diff($time);
-
-            return self::formatDiff($diff);
-        } catch (\Exception $e) {
+        $time = self::parseUtcTimestamp($timestamp);
+        if ($time === null) {
             return 'recently';
         }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        return self::formatDiff($now->diff($time));
     }
 
     /**
@@ -69,5 +68,14 @@ class TimeFormatter
             return $diff->i . 'm ago';
         }
         return $diff->h . 'h ago';
+    }
+
+    private static function parseUtcTimestamp(string $timestamp): ?\DateTimeImmutable
+    {
+        return \DateTimeImmutable::createFromFormat(
+            'Y-m-d H:i:s',
+            $timestamp,
+            new \DateTimeZone('UTC'),
+        ) ?: null;
     }
 }

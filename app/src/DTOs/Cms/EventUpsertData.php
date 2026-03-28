@@ -6,7 +6,7 @@ namespace App\DTOs\Cms;
 
 /**
  * Typed carrier for event create/update form fields.
- * Constructed in CmsEventsService after validation, passed to EventRepository.
+ * Constructed by CmsEventsInputMapper and passed through the CMS event service boundary.
  */
 final readonly class EventUpsertData
 {

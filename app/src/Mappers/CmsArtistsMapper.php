@@ -17,6 +17,25 @@ use App\ViewModels\Cms\CmsArtistsListViewModel;
  */
 final class CmsArtistsMapper
 {
+    public static function emptyData(): ArtistUpsertData
+    {
+        return new ArtistUpsertData('', '', '', null, true);
+    }
+
+    /**
+     * @param array<string, mixed> $input
+     */
+    public static function fromFormInput(array $input): ArtistUpsertData
+    {
+        return new ArtistUpsertData(
+            name: (string)($input['name'] ?? ''),
+            style: (string)($input['style'] ?? ''),
+            bioHtml: (string)($input['bioHtml'] ?? ''),
+            imageAssetId: isset($input['imageAssetId']) ? (int)$input['imageAssetId'] : null,
+            isActive: (bool)($input['isActive'] ?? false),
+        );
+    }
+
     /**
      * Converts an array of Artist models into the full CMS artist-list page ViewModel,
      * including search state, flash messages, and a CSRF token for delete actions.

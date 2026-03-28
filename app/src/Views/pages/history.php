@@ -5,13 +5,21 @@
  * @var \App\ViewModels\History\HistoryPageViewModel $viewModel
  */
 
-$includeEventSections = true;
-$pageContentPartials = [
-    __DIR__ . '/../partials/history/route-section.php',
-    __DIR__ . '/../partials/history/locations-section.php',
-    __DIR__ . '/../partials/history/ticket-options.php',
-    __DIR__ . '/../partials/history/info-about-tour.php',
-    __DIR__ . '/../partials/sections/schedule/schedule-section.php',
-];
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
+use App\View\ViewTemplate;
+
+$layout = new PublicPageLayout(
+    contentTemplates: [
+        new ViewTemplate(__DIR__ . '/../partials/history/route-section.php'),
+        new ViewTemplate(__DIR__ . '/../partials/history/locations-section.php'),
+        new ViewTemplate(__DIR__ . '/../partials/history/ticket-options.php'),
+        new ViewTemplate(__DIR__ . '/../partials/history/info-about-tour.php'),
+        new ViewTemplate(__DIR__ . '/../partials/sections/schedule/schedule-section.php', [
+            'scheduleSection' => $viewModel->scheduleSection,
+        ]),
+    ],
+    includeEventSections: true,
+);
 ?>
-<?php require __DIR__ . '/../partials/_shell.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', ['viewModel' => $viewModel, 'layout' => $layout]); ?>

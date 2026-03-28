@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\RestaurantViewMapper;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\ISessionService;
@@ -16,8 +15,9 @@ class RestaurantController extends BaseController
 {
     public function __construct(
         private readonly IRestaurantService $restaurantService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -27,13 +27,11 @@ class RestaurantController extends BaseController
      */
     public function index(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $data = $this->restaurantService->getRestaurantPageData();
-            $viewModel = RestaurantViewMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
+            $viewModel = RestaurantViewMapper::toPageViewModel($data, $this->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -43,11 +41,9 @@ class RestaurantController extends BaseController
      */
     public function detail(string $id): void
     {
-        try {
+        $this->handlePageRequest(function () use ($id): void {
             $this->renderRestaurantDetail($id);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /** Loads restaurant data, returns 404 if not found, otherwise builds VM and renders detail page. */
@@ -56,12 +52,11 @@ class RestaurantController extends BaseController
         $data = $this->restaurantService->getRestaurantDetailData((int) $id);
 
         if ($data === null) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
+            $this->renderNotFoundPage();
             return;
         }
 
-        $viewModel = RestaurantViewMapper::toDetailViewModel($data, $this->sessionService->isLoggedIn());
+        $viewModel = RestaurantViewMapper::toDetailViewModel($data, $this->isLoggedIn());
         $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
     }
 }

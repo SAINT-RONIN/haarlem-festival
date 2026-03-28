@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\RestaurantCardsSectionContent;
-use App\Models\RestaurantDetailSectionContent;
-use App\Models\RestaurantInstructionsSectionContent;
-use App\Models\RestaurantIntroSectionContent;
-use App\Models\RestaurantIntroSplit2SectionContent;
+use App\Content\RestaurantCardsSectionContent;
+use App\Content\RestaurantDetailSectionContent;
+use App\Content\RestaurantInstructionsSectionContent;
+use App\Content\RestaurantIntroSectionContent;
+use App\Content\RestaurantIntroSplit2SectionContent;
 
 /**
  * Maps raw CMS arrays into Restaurant page content models.

@@ -5,21 +5,25 @@
  * @var \App\ViewModels\Restaurant\RestaurantPageViewModel $viewModel
  */
 
+use App\View\ViewRenderer;
+
 if ($viewModel->introSplit2Section !== null) {
-    $introSplitSection = $viewModel->introSplit2Section;
-    $sectionId = 'restaurants';
-    $introSplitImageClass = null;
-    $introSplitReversed = true;
-    require __DIR__ . '/../sections/intro-split-section.php';
-    $introSplitReversed = false;  // Reset so it doesn't affect other sections
+    ViewRenderer::render(__DIR__ . '/../sections/intro-split-section.php', [
+        'introSplitSection' => $viewModel->introSplit2Section,
+        'sectionId' => 'restaurants',
+        'introSplitImageClass' => null,
+        'introSplitReversed' => true,
+    ]);
 }
 
 if ($viewModel->instructionsSection !== null) {
-    $instructionsSection = $viewModel->instructionsSection;
-    require __DIR__ . '/instructions-section.php';
+    ViewRenderer::render(__DIR__ . '/instructions-section.php', [
+        'instructionsSection' => $viewModel->instructionsSection,
+    ]);
 }
 
 if ($viewModel->restaurantCardsSection !== null) {
-    $restaurantCardsSection = $viewModel->restaurantCardsSection;
-    require __DIR__ . '/restaurant-cards-section.php';
+    ViewRenderer::render(__DIR__ . '/restaurant-cards-section.php', [
+        'restaurantCardsSection' => $viewModel->restaurantCardsSection,
+    ]);
 }

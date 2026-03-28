@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
 use App\Helpers\FormatHelper;
+use App\DTOs\Cms\EventSessionUpsertData;
 use App\Exceptions\CmsOperationException;
 use App\Exceptions\ValidationException;
 use App\Repositories\Interfaces\IEventRepository;
@@ -204,17 +205,15 @@ class CmsEventsService implements ICmsEventsService
      * @throws ValidationException When validation fails
      * @throws CmsOperationException When the database write fails
      */
-    public function createEvent(array $data): int
+    public function createEvent(EventUpsertData $data): int
     {
         $errors = $this->validateEventCreate($data);
         if (!empty($errors)) {
             throw new ValidationException($errors);
         }
 
-        $upsertData = $this->buildEventUpsertData($data, isActive: true);
-
         try {
-            return $this->eventRepository->create($upsertData);
+            return $this->eventRepository->create($data);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to create event.', 0, $error);
         }
@@ -280,18 +279,15 @@ class CmsEventsService implements ICmsEventsService
      * @throws ValidationException
      */
     /** @throws CmsOperationException When the database write fails */
-    public function updateEvent(int $eventId, array $data): bool
+    public function updateEvent(int $eventId, EventUpsertData $data): bool
     {
         $errors = $this->validateEvent($data);
         if (!empty($errors)) {
             throw new ValidationException($errors);
         }
 
-        $isActive = isset($data['IsActive']) ? (bool)$data['IsActive'] : true;
-        $upsertData = $this->buildEventUpsertData($data, isActive: $isActive);
-
         try {
-            return $this->eventRepository->update($eventId, $upsertData);
+            return $this->eventRepository->update($eventId, $data);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to update event.', 0, $error);
         }
@@ -302,15 +298,14 @@ class CmsEventsService implements ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function createSession(int $eventId, array $data): int
+    public function createSession(int $eventId, EventSessionUpsertData $data): int
     {
-        $data['EventId'] = $eventId;
         $errors = $this->validateSession($data);
         if (!empty($errors)) {
             throw new ValidationException($errors);
         }
 
-        $data = $this->applySessionDefaults($data);
+        $data = $this->applySessionDefaults($data, $eventId);
 
         return $this->sessionRepository->create($data);
     }
@@ -320,7 +315,7 @@ class CmsEventsService implements ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function updateSession(int $sessionId, array $data): bool
+    public function updateSession(int $sessionId, EventSessionUpsertData $data): bool
     {
         $errors = $this->validateSession($data);
         if (!empty($errors)) {
@@ -387,36 +382,13 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Constructs a typed EventUpsertData from raw form data with proper defaults.
-     * Business-logic defaults (empty description, placeholder HTML) belong here, not in the repo.
-     */
-    private function buildEventUpsertData(array $data, bool $isActive): EventUpsertData
-    {
-        return new EventUpsertData(
-            eventTypeId: (int)$data['EventTypeId'],
-            title: (string)$data['Title'],
-            shortDescription: (string)($data['ShortDescription'] ?? ''),
-            longDescriptionHtml: (string)($data['LongDescriptionHtml'] ?? '<p></p>'),
-            featuredImageAssetId: isset($data['FeaturedImageAssetId']) && is_numeric($data['FeaturedImageAssetId'])
-                ? (int)$data['FeaturedImageAssetId'] : null,
-            venueId: isset($data['VenueId']) && is_numeric($data['VenueId'])
-                ? (int)$data['VenueId'] : null,
-            artistId: isset($data['ArtistId']) && is_numeric($data['ArtistId'])
-                ? (int)$data['ArtistId'] : null,
-            restaurantId: isset($data['RestaurantId']) && is_numeric($data['RestaurantId'])
-                ? (int)$data['RestaurantId'] : null,
-            isActive: $isActive,
-        );
-    }
-
-    /**
      * Validates event data for update.
      */
-    private function validateEvent(array $data): array
+    private function validateEvent(EventUpsertData $data): array
     {
         $errors = [];
 
-        if (empty($data['Title'])) {
+        if (trim($data->title) === '') {
             $errors[] = 'Event title is required';
         }
 
@@ -426,11 +398,11 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Validates event data for creation (includes base event rules plus event-type requirement).
      */
-    private function validateEventCreate(array $data): array
+    private function validateEventCreate(EventUpsertData $data): array
     {
         $errors = $this->validateEvent($data);
 
-        if (empty($data['EventTypeId'])) {
+        if ($data->eventTypeId <= 0) {
             $errors[] = 'Event type is required';
         }
 
@@ -440,7 +412,7 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Validates session data: delegates to focused validators for dates, URLs, and numeric constraints.
      */
-    private function validateSession(array $data): array
+    private function validateSession(EventSessionUpsertData $data): array
     {
         $dateErrors = $this->validateSessionDates($data);
         $urlErrors = $this->validateSessionCtaUrl($data);
@@ -455,22 +427,22 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /** Checks that both dates are present and that end is after start. */
-    private function validateSessionDates(array $data): array
+    private function validateSessionDates(EventSessionUpsertData $data): array
     {
         $errors = [];
 
-        if (empty($data['StartDateTime'])) {
+        if ($data->startDateTime === '') {
             $errors[] = 'Start date/time is required';
         }
 
-        if (empty($data['EndDateTime'])) {
+        if ($data->endDateTime === '') {
             $errors[] = 'End date/time is required';
         }
 
-        if (!empty($data['StartDateTime']) && !empty($data['EndDateTime'])) {
+        if ($data->startDateTime !== '' && $data->endDateTime !== '') {
             try {
-                $start = new \DateTimeImmutable($data['StartDateTime']);
-                $end = new \DateTimeImmutable($data['EndDateTime']);
+                $start = new \DateTimeImmutable($data->startDateTime);
+                $end = new \DateTimeImmutable($data->endDateTime);
                 if ($end <= $start) {
                     $errors[] = 'End time must be after start time';
                 }
@@ -483,13 +455,13 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /** Validates CTA URL is absolute or site-relative. */
-    private function validateSessionCtaUrl(array $data): array
+    private function validateSessionCtaUrl(EventSessionUpsertData $data): array
     {
-        if (empty($data['CtaUrl'])) {
+        if ($data->ctaUrl === null || $data->ctaUrl === '') {
             return [];
         }
 
-        $url = trim($data['CtaUrl']);
+        $url = trim($data->ctaUrl);
         $isAbsolute = filter_var($url, FILTER_VALIDATE_URL) !== false;
         $isRelative = str_starts_with($url, '/') || str_starts_with($url, '#');
 
@@ -503,12 +475,12 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Validates that CapacityTotal is a positive integer, if provided.
      */
-    private function validateCapacityTotal(array $data): array
+    private function validateCapacityTotal(EventSessionUpsertData $data): array
     {
-        if (!array_key_exists('CapacityTotal', $data)) {
+        if ($data->capacityTotal === null) {
             return [];
         }
-        if ((int) $data['CapacityTotal'] <= 0) {
+        if ($data->capacityTotal <= 0) {
             return ['Capacity must be a positive integer'];
         }
         return [];
@@ -517,12 +489,12 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Validates that CapacitySingleTicketLimit does not exceed CapacityTotal, if both are provided.
      */
-    private function validateCapacitySingleTicketLimit(array $data): array
+    private function validateCapacitySingleTicketLimit(EventSessionUpsertData $data): array
     {
-        if (!array_key_exists('CapacityTotal', $data) || !array_key_exists('CapacitySingleTicketLimit', $data)) {
+        if ($data->capacityTotal === null || $data->capacitySingleTicketLimit === null) {
             return [];
         }
-        if ((int) $data['CapacitySingleTicketLimit'] > (int) $data['CapacityTotal']) {
+        if ($data->capacitySingleTicketLimit > $data->capacityTotal) {
             return ['Single ticket limit cannot exceed total capacity'];
         }
         return [];
@@ -531,12 +503,12 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Validates that DurationMinutes is a positive integer, if provided and not empty.
      */
-    private function validateDurationMinutes(array $data): array
+    private function validateDurationMinutes(EventSessionUpsertData $data): array
     {
-        if (!array_key_exists('DurationMinutes', $data) || $data['DurationMinutes'] === '' || $data['DurationMinutes'] === null) {
+        if ($data->durationMinutes === null) {
             return [];
         }
-        if ((int) $data['DurationMinutes'] <= 0) {
+        if ($data->durationMinutes <= 0) {
             return ['Duration must be a positive integer'];
         }
         return [];
@@ -545,14 +517,12 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Validates that MaxAge is at least MinAge, if both are provided and not empty.
      */
-    private function validateAgeRange(array $data): array
+    private function validateAgeRange(EventSessionUpsertData $data): array
     {
-        $hasMin = array_key_exists('MinAge', $data) && $data['MinAge'] !== '' && $data['MinAge'] !== null;
-        $hasMax = array_key_exists('MaxAge', $data) && $data['MaxAge'] !== '' && $data['MaxAge'] !== null;
-        if (!$hasMin || !$hasMax) {
+        if ($data->minAge === null || $data->maxAge === null) {
             return [];
         }
-        if ((int) $data['MaxAge'] < (int) $data['MinAge']) {
+        if ($data->maxAge < $data->minAge) {
             return ['Maximum age cannot be less than minimum age'];
         }
         return [];
@@ -561,18 +531,30 @@ class CmsEventsService implements ICmsEventsService
     /**
      * Applies business-logic defaults for session fields before persisting.
      *
-     * @param array<string, mixed> $data
-     * @return array<string, mixed>
      */
-    private function applySessionDefaults(array $data): array
+    private function applySessionDefaults(EventSessionUpsertData $data, ?int $eventIdOverride = null): EventSessionUpsertData
     {
-        $data['CapacityTotal'] = (int)($data['CapacityTotal'] ?? 100);
-        $data['CapacitySingleTicketLimit'] = (int)($data['CapacitySingleTicketLimit'] ?? 100);
-        $data['ReservationRequired'] = $data['ReservationRequired'] ?? 0;
-        $data['IsFree'] = $data['IsFree'] ?? 0;
-        $data['Notes'] = $data['Notes'] ?? '';
-
-        return $data;
+        return new EventSessionUpsertData(
+            eventId: $eventIdOverride ?? $data->eventId,
+            startDateTime: $data->startDateTime,
+            endDateTime: $data->endDateTime,
+            capacityTotal: $data->capacityTotal ?? 100,
+            capacitySingleTicketLimit: $data->capacitySingleTicketLimit ?? 100,
+            hallName: $data->hallName,
+            sessionType: $data->sessionType,
+            durationMinutes: $data->durationMinutes,
+            languageCode: $data->languageCode,
+            minAge: $data->minAge,
+            maxAge: $data->maxAge,
+            reservationRequired: $data->reservationRequired,
+            isFree: $data->isFree,
+            notes: $data->notes,
+            historyTicketLabel: $data->historyTicketLabel,
+            ctaLabel: $data->ctaLabel,
+            ctaUrl: $data->ctaUrl,
+            isCancelled: $data->isCancelled,
+            isActive: $data->isActive,
+        );
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure;
 
 use PDO;
-use PDOException;
 use RuntimeException;
 
 /**
@@ -29,7 +28,8 @@ class Database
      * This is critical for transactions - if different parts of the code used different
      * connections, transactions wouldn't work properly.
      *
-     * @throws RuntimeException When database connection fails or environment variables are missing
+     * @throws RuntimeException When database environment variables are missing
+     * @throws \PDOException When the database connection fails
      */
     public static function getConnection(): PDO
     {
@@ -54,22 +54,17 @@ class Database
 
         $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 
-        try {
-            self::$pdo = new PDO($dsn, $user, $pass, [
-                // Throw exceptions on errors instead of silent failures
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                // Return associative arrays by default
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                // Use native prepared statements
-                PDO::ATTR_EMULATE_PREPARES => false,
-                // Reuse existing connection across PHP-FPM requests
-                PDO::ATTR_PERSISTENT => true,
-            ]);
+        self::$pdo = new PDO($dsn, $user, $pass, [
+            // Throw exceptions on errors instead of silent failures
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            // Return associative arrays by default
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            // Use native prepared statements
+            PDO::ATTR_EMULATE_PREPARES => false,
+            // Reuse existing connection across PHP-FPM requests
+            PDO::ATTR_PERSISTENT => true,
+        ]);
 
-            return self::$pdo;
-        } catch (PDOException $e) {
-            // Wrap in RuntimeException so callers get context without exposing credentials
-            throw new RuntimeException('Database connection failed', 0, $e);
-        }
+        return self::$pdo;
     }
 }

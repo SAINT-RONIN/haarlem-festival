@@ -15,10 +15,6 @@
  * @var bool        $introSplitReversed  Flip the layout (image left, text right)
  */
 
-if (!isset($introSplitSection) && isset($viewModel) && property_exists($viewModel, 'introSplitSection')) {
-    $introSplitSection = $viewModel->introSplitSection;
-}
-
 if (!isset($introSplitSection)) {
     return;
 }

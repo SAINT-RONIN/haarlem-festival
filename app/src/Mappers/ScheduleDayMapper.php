@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\DTOs\Filters\ScheduleFilterParams;
-use App\Models\ScheduleSectionContent;
+use App\DTOs\Schedule\ScheduleSectionData;
+use App\Content\ScheduleSectionContent;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
@@ -20,17 +21,15 @@ final class ScheduleDayMapper
 
     /**
      * Assembles the full ScheduleSectionViewModel from resolved sub-components.
-     *
-     * @param array{cmsContent: ScheduleSectionContent, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: \App\DTOs\Schedule\ScheduleDayData[]} $scheduleData
      */
-    public static function buildSection(array $scheduleData): ScheduleSectionViewModel
+    public static function buildSection(ScheduleSectionData $scheduleData): ScheduleSectionViewModel
     {
-        $cmsContent    = $scheduleData['cmsContent'];
-        $pageSlug      = $scheduleData['pageSlug'];
-        $activeFilters = $scheduleData['activeFilters'] ?? null;
-        $availableDays = $scheduleData['availableDays'] ?? [];
+        $cmsContent    = $scheduleData->cmsContent;
+        $pageSlug      = $scheduleData->pageSlug;
+        $activeFilters = $scheduleData->activeFilters;
+        $availableDays = $scheduleData->availableDays;
         $buttonTexts   = self::extractButtonTexts($cmsContent);
-        $days          = self::mapDays($scheduleData['days'], $buttonTexts['confirm'], $buttonTexts['adding'], $buttonTexts['success']);
+        $days          = self::mapDays($scheduleData->days, $buttonTexts['confirm'], $buttonTexts['adding'], $buttonTexts['success']);
 
         return self::buildSectionViewModel($scheduleData, $cmsContent, $pageSlug, $days, $buttonTexts, $activeFilters, $availableDays);
     }
@@ -40,10 +39,10 @@ final class ScheduleDayMapper
      *
      * @return array<array<string, mixed>>
      */
-    public static function flattenEvents(array $scheduleData): array
+    public static function flattenEvents(ScheduleSectionData $scheduleData): array
     {
         $events = [];
-        foreach ($scheduleData['days'] ?? [] as $day) {
+        foreach ($scheduleData->days as $day) {
             foreach ($day['events'] ?? [] as $event) {
                 $events[] = $event;
             }
@@ -56,10 +55,10 @@ final class ScheduleDayMapper
      *
      * @return ScheduleEventCardViewModel[]
      */
-    public static function flattenEventsAsViewModels(array $scheduleData): array
+    public static function flattenEventsAsViewModels(ScheduleSectionData $scheduleData): array
     {
         $viewModels = [];
-        foreach ($scheduleData['days'] ?? [] as $day) {
+        foreach ($scheduleData->days as $day) {
             foreach ($day['events'] ?? [] as $event) {
                 $viewModels[] = ScheduleCardMapper::toEventCardViewModel($event, '', '', '');
             }
@@ -115,7 +114,7 @@ final class ScheduleDayMapper
      * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
      */
     private static function buildSectionViewModel(
-        array $scheduleData,
+        ScheduleSectionData $scheduleData,
         ScheduleSectionContent $cmsContent,
         string $pageSlug,
         array $days,
@@ -131,8 +130,8 @@ final class ScheduleDayMapper
             sectionId: $pageSlug . '-schedule',
             title: $headerTexts['title'],
             year: $headerTexts['year'],
-            eventTypeSlug: $scheduleData['eventTypeSlug'],
-            eventTypeId: $scheduleData['eventTypeId'],
+            eventTypeSlug: $scheduleData->eventTypeSlug,
+            eventTypeId: $scheduleData->eventTypeId,
             filtersButtonText: $cmsSettings['filtersButtonText'],
             showFilters: $cmsSettings['showFilters'],
             additionalInfoTitle: $cmsSettings['additionalInfoTitle'],
@@ -166,15 +165,15 @@ final class ScheduleDayMapper
      */
     // Returns associative array — internal mapper output consumed only by toScheduleSection()
     private static function resolveFilterContext(
-        array $scheduleData,
+        ScheduleSectionData $scheduleData,
         ScheduleSectionContent $cmsContent,
         array $days,
         ?ScheduleFilterParams $activeFilters,
         array $availableDays,
     ): array {
         $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
-        $filterGroupTypes = $scheduleData['filterGroupTypes'] ?? ['day'];
-        $priceTypeOptions = $scheduleData['priceTypeOptions'] ?? ['pay-what-you-like', 'fixed'];
+        $filterGroupTypes = $scheduleData->filterGroupTypes;
+        $priceTypeOptions = $scheduleData->priceTypeOptions;
         $filterGroups = ScheduleFilterMapper::buildFilterGroups(
             $cmsContent, $filterGroupTypes, $priceTypeOptions, $days, $activeFilters, $availableDays,
         );

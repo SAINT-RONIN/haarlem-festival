@@ -10,6 +10,7 @@
 
 use App\ViewModels\History\RouteData;
 use App\ViewModels\History\RouteVenue;
+use App\View\ViewRenderer;
 
 /** @var RouteData $route */
 $route = $viewModel->routeData;
@@ -29,7 +30,10 @@ $venues  = $route->venues ?? [];
                     <?php foreach ($venues as $index => $venue): ?>
                         <?php /** @var RouteVenue $venue */ ?>
                         <li class="w-full">
-                            <?php require __DIR__ . '/route-venue.php'; ?>
+                            <?php ViewRenderer::render(__DIR__ . '/route-venue.php', [
+                                'venue' => $venue,
+                                'index' => $index,
+                            ]); ?>
                         </li>
                     <?php endforeach; ?>
                 </ul>

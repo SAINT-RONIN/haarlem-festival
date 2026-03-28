@@ -7,14 +7,17 @@ namespace App\Mappers;
 use App\DTOs\Pages\HomeEventTypeData;
 use App\DTOs\Pages\HomeLocationData;
 use App\DTOs\Pages\HomePageData;
-use App\Models\Restaurant;
-use App\Models\Venue;
 use App\DTOs\Pages\HomeScheduleDayData;
 use App\DTOs\Pages\HomeScheduleSessionData;
 use App\Constants\HomeUiConfig;
 use App\ViewModels\HomeEventTypeViewModel;
+use App\ViewModels\HomeEventsHeaderViewModel;
+use App\ViewModels\HomeExploreBannerViewModel;
+use App\ViewModels\HomeIntroSectionViewModel;
+use App\ViewModels\HomeLocationsSectionViewModel;
 use App\ViewModels\HomeLocationViewModel;
 use App\ViewModels\HomePageViewModel;
+use App\ViewModels\HomeScheduleSectionViewModel;
 use App\ViewModels\HomeScheduleDayViewModel;
 use App\ViewModels\HomeScheduleSessionViewModel;
 
@@ -32,16 +35,115 @@ final class HomeMapper
     {
         $heroData = CmsMapper::toHeroData($data->heroContent, 'home');
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
-        $cms = array_merge($data->cmsContent, CmsMapper::toCmsData($heroData, $globalUi));
 
         return new HomePageViewModel(
             heroData:     $heroData,
             globalUi:     $globalUi,
-            cms:          $cms,
+            exploreBanner: self::buildExploreBanner($data->cmsContent),
+            introSection: self::buildIntroSection($data->cmsContent),
+            eventsHeader: self::buildEventsHeader($data->cmsContent),
+            locationsSection: self::buildLocationsSection($data->cmsContent),
+            schedulePreviewSection: self::buildSchedulePreviewSection($data->cmsContent),
             eventTypes:   self::formatEventTypes($data->eventTypes),
             locations:    self::formatLocations($data->locations),
             scheduleDays: self::formatScheduleDays($data->scheduleDays),
         );
+    }
+
+    /**
+     * @param array<string, array<string, ?string>> $cmsContent
+     */
+    private static function buildExploreBanner(array $cmsContent): HomeExploreBannerViewModel
+    {
+        $section = self::section($cmsContent, 'banner_section');
+
+        return new HomeExploreBannerViewModel(
+            title: self::value($section, 'banner_main_title'),
+            subtitle: self::value($section, 'banner_subtitle'),
+            backgroundImageUrl: self::value($section, 'banner_background_image', '/assets/Image/explore-incoming-events.png'),
+        );
+    }
+
+    /**
+     * @param array<string, array<string, ?string>> $cmsContent
+     */
+    private static function buildIntroSection(array $cmsContent): HomeIntroSectionViewModel
+    {
+        $section = self::section($cmsContent, 'about_section');
+
+        return new HomeIntroSectionViewModel(
+            title: self::value($section, 'about_main_title'),
+            tagline: self::value($section, 'about_tagline'),
+            descriptionHtml: self::value($section, 'about_description'),
+            buttonLabel: self::value($section, 'about_button'),
+            buttonUrl: '#schedule',
+            imageUrl: self::value($section, 'about_image', '/assets/Image/what-is-haarlem.png'),
+            imageAlt: 'Aerial view of Haarlem city center during the festival, showing historic architecture and event venues',
+        );
+    }
+
+    /**
+     * @param array<string, array<string, ?string>> $cmsContent
+     */
+    private static function buildEventsHeader(array $cmsContent): HomeEventsHeaderViewModel
+    {
+        $section = self::section($cmsContent, 'events_overview_header');
+
+        return new HomeEventsHeaderViewModel(
+            title: self::value($section, 'events_main_title'),
+            subtitle: self::value($section, 'events_subtitle'),
+        );
+    }
+
+    /**
+     * @param array<string, array<string, ?string>> $cmsContent
+     */
+    private static function buildLocationsSection(array $cmsContent): HomeLocationsSectionViewModel
+    {
+        $section = self::section($cmsContent, 'venue_map_section');
+
+        return new HomeLocationsSectionViewModel(
+            title: self::value($section, 'venue_main_title'),
+            filterLabel: self::value($section, 'venue_filter_label'),
+            filterTitle: self::value($section, 'venue_filter_title'),
+            allLabel: self::value($section, 'venue_filter_all', 'All'),
+            jazzLabel: self::value($section, 'venue_filter_jazz', 'Jazz'),
+            danceLabel: self::value($section, 'venue_filter_dance', 'Dance'),
+            historyLabel: self::value($section, 'venue_filter_history', 'History'),
+            restaurantsLabel: self::value($section, 'venue_filter_restaurants', 'Restaurants'),
+            storiesLabel: self::value($section, 'venue_filter_stories', 'Stories'),
+        );
+    }
+
+    /**
+     * @param array<string, array<string, ?string>> $cmsContent
+     */
+    private static function buildSchedulePreviewSection(array $cmsContent): HomeScheduleSectionViewModel
+    {
+        $section = self::section($cmsContent, 'schedule_section');
+
+        return new HomeScheduleSectionViewModel(
+            title: self::value($section, 'schedule_main_title'),
+            subtitlePrimary: self::value($section, 'schedule_subtitle_1'),
+            subtitleSecondary: self::value($section, 'schedule_subtitle_2'),
+        );
+    }
+
+    /**
+     * @param array<string, array<string, ?string>> $cmsContent
+     * @return array<string, ?string>
+     */
+    private static function section(array $cmsContent, string $key): array
+    {
+        return $cmsContent[$key] ?? [];
+    }
+
+    /**
+     * @param array<string, ?string> $section
+     */
+    private static function value(array $section, string $key, string $default = ''): string
+    {
+        return (string)($section[$key] ?? $default);
     }
 
     /**
@@ -170,80 +272,4 @@ final class HomeMapper
         return date('H:i', $earliestStart) . " \u{2013} " . date('H:i', $latestEnd);
     }
 
-    /**
-     * Maps a CMS section's key-value pairs into a HomeEventTypeData object.
-     * Extracted from HomeService so mapping logic lives in the mapper layer.
-     *
-     * @param array<string, ?string> $section
-     */
-    public static function toEventTypeData(string $slug, array $section): HomeEventTypeData
-    {
-        return new HomeEventTypeData(
-            slug: $slug,
-            title: (string)($section[$slug . '_title'] ?? ucfirst($slug)),
-            description: (string)($section[$slug . '_description'] ?? ''),
-            button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
-            image: $section[$slug . '_image'] ?? null,
-            darkBg: HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['darkBg'] ?? false,
-        );
-    }
-
-    /** Maps a Venue model to a HomeLocationData DTO for the map grid. */
-    public static function toVenueLocation(Venue $venue): HomeLocationData
-    {
-        return new HomeLocationData(
-            name: $venue->name,
-            address: $venue->addressLine,
-            category: self::determineVenueCategory($venue->name),
-            lat: null,
-            lng: null,
-        );
-    }
-
-    /** Maps a Restaurant model to a HomeLocationData DTO for the map grid. */
-    public static function toRestaurantLocation(Restaurant $restaurant): HomeLocationData
-    {
-        return new HomeLocationData(
-            name: $restaurant->name,
-            address: $restaurant->addressLine,
-            category: 'restaurant',
-            lat: null,
-            lng: null,
-        );
-    }
-
-    /** Flat keyword-to-category map for venue classification. */
-    private const KEYWORD_TO_CATEGORY = [
-        'patronaat'    => 'jazz',
-        'club'         => 'dance',
-        'lichtfabriek' => 'dance',
-        'slachthuis'   => 'dance',
-        'jopenkerk'    => 'dance',
-        'caprera'      => 'dance',
-        'puncher'      => 'dance',
-        'bavo'         => 'history',
-        'church'       => 'history',
-        'verhalen'     => 'storytelling',
-        'schuur'       => 'storytelling',
-        'kweek'        => 'storytelling',
-        'boom'         => 'storytelling',
-        'theater'      => 'storytelling',
-    ];
-
-    /**
-     * Maps a venue to an event-type category by matching known keywords in
-     * the venue name. Falls back to 'history' for unrecognised venues.
-     */
-    private static function determineVenueCategory(string $venueName): string
-    {
-        $name = strtolower($venueName);
-
-        foreach (self::KEYWORD_TO_CATEGORY as $keyword => $category) {
-            if (str_contains($name, $keyword)) {
-                return $category;
-            }
-        }
-
-        return 'history';
-    }
 }

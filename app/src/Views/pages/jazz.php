@@ -5,17 +5,27 @@
  * @var \App\ViewModels\Jazz\JazzPageViewModel $viewModel
  */
 
-$pageContentPartials = [
-    __DIR__ . '/../partials/jazz/venues-section.php',
-    __DIR__ . '/../partials/jazz/pricing-section.php',
-    __DIR__ . '/../partials/jazz/schedule-cta-section.php',
-    __DIR__ . '/../partials/jazz/artists-section.php',
-    __DIR__ . '/../partials/jazz/booking-cta-section.php',
-];
-$includeEventSections = true;
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
+use App\View\ViewTemplate;
 
+$contentTemplates = [
+    new ViewTemplate(__DIR__ . '/../partials/jazz/venues-section.php', ['venuesData' => $viewModel->venuesData]),
+    new ViewTemplate(__DIR__ . '/../partials/jazz/pricing-section.php', ['pricingData' => $viewModel->pricingData]),
+    new ViewTemplate(__DIR__ . '/../partials/jazz/schedule-cta-section.php', ['scheduleCtaData' => $viewModel->scheduleCtaData]),
+    new ViewTemplate(__DIR__ . '/../partials/jazz/artists-section.php', ['artistsData' => $viewModel->artistsData]),
+    new ViewTemplate(__DIR__ . '/../partials/jazz/booking-cta-section.php', ['bookingCtaData' => $viewModel->bookingCtaData]),
+];
 if ($viewModel->scheduleSection !== null) {
-    $pageContentPartials[] = __DIR__ . '/../partials/sections/schedule/schedule-section.php';
+    $contentTemplates[] = new ViewTemplate(
+        __DIR__ . '/../partials/sections/schedule/schedule-section.php',
+        ['scheduleSection' => $viewModel->scheduleSection],
+    );
 }
+
+$layout = new PublicPageLayout(
+    contentTemplates: $contentTemplates,
+    includeEventSections: true,
+);
 ?>
-<?php require __DIR__ . '/../partials/_shell.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', ['viewModel' => $viewModel, 'layout' => $layout]); ?>

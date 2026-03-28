@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
-use App\Models\GlobalUiContent;
-use App\Models\GradientSectionContent;
-use App\Models\HeroSectionContent;
-use App\Models\IntroSectionContent;
-use App\Models\JazzArtistsSectionContent;
-use App\Models\JazzBookingCtaSectionContent;
-use App\Models\JazzPricingSectionContent;
-use App\Models\JazzScheduleCtaSectionContent;
-use App\Models\JazzVenuesSectionContent;
+use App\Content\GlobalUiContent;
+use App\Content\GradientSectionContent;
+use App\Content\HeroSectionContent;
+use App\Content\IntroSectionContent;
+use App\Content\JazzArtistsSectionContent;
+use App\Content\JazzBookingCtaSectionContent;
+use App\Content\JazzPricingSectionContent;
+use App\Content\JazzScheduleCtaSectionContent;
+use App\Content\JazzVenuesSectionContent;
 
 /**
  * Carries all CMS sections and domain data needed to render the Jazz overview page.

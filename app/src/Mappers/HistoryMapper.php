@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\DTOs\Pages\HistoryPageData;
-use App\Models\HistoryRouteSectionContent;
-use App\Models\HistoryTicketOptionsSectionContent;
-use App\Models\HistoryTourInfoSectionContent;
-use App\Models\HistoryVenuesSectionContent;
+use App\Content\HistoryRouteSectionContent;
+use App\Content\HistoryTicketOptionsSectionContent;
+use App\Content\HistoryTourInfoSectionContent;
+use App\Content\HistoryVenuesSectionContent;
 use App\Constants\HistoryPageConstants;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
@@ -42,7 +42,7 @@ final class HistoryMapper
         ?ScheduleSectionViewModel $scheduleSection,
     ): HistoryPageViewModel {
         return new HistoryPageViewModel(
-            heroData: $heroData, globalUi: $globalUi, cms: CmsMapper::toCmsData($heroData, $globalUi),
+            heroData: $heroData, globalUi: $globalUi,
             gradientSection:    CmsMapper::toGradientSection($data->gradientSection),
             introSplitSection:  CmsMapper::toIntroSplitSection($data->introSection),
             routeData:          self::toRouteData($data->routeSection),

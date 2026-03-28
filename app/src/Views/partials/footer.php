@@ -1,12 +1,15 @@
 <?php
 /**
  * Footer partial - Site footer with navigation and copyright.
+ *
+ * @var \App\ViewModels\GlobalUiData|null $globalUi
+ * @var bool $useLayoutWrapper
  */
-?>
-<?php
+
 use App\ViewModels\GlobalUiData;
-$footerGlobalUi = (isset($viewModel) && property_exists($viewModel, 'globalUi') && $viewModel->globalUi instanceof GlobalUiData)
-    ? $viewModel->globalUi
+
+$footerGlobalUi = ($globalUi ?? null) instanceof GlobalUiData
+    ? $globalUi
     : null;
 ?>
 <!-- Footer -->

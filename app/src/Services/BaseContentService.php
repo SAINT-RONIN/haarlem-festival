@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\GlobalUiConstants;
-use App\Models\GlobalUiContent;
+use App\Content\GlobalUiContent;
+use App\Exceptions\PageLoadException;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 
 /**
@@ -29,5 +30,21 @@ abstract class BaseContentService
             GlobalUiConstants::PAGE_SLUG,
             GlobalUiConstants::SECTION_KEY,
         );
+    }
+
+    /**
+     * Wraps page assembly in a consistent PageLoadException boundary.
+     *
+     * @template T
+     * @param callable(): T $loader
+     * @return T
+     */
+    protected function guardPageLoad(callable $loader, string $message): mixed
+    {
+        try {
+            return $loader();
+        } catch (\Throwable $error) {
+            throw new PageLoadException($message, 0, $error);
+        }
     }
 }

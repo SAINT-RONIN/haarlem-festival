@@ -2,42 +2,41 @@
 /**
  * Locations section partial - Map placeholder and venues/restaurants list.
  *
- * @var array $locations Array of location data
- * @var array $cms
+ * @var \App\ViewModels\HomeLocationViewModel[] $locations
+ * @var \App\ViewModels\HomeLocationsSectionViewModel $locationsSection
  */
 
 use App\Helpers\CmsOutputHelper;
-
-$venue = $cms['venue_map_section'];
+use App\View\ViewRenderer;
 ?>
 
 <!-- Locations Section -->
 <section id="locations" class="w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-4 sm:py-6 md:py-10 lg:py-12 flex flex-col justify-start items-start gap-2 sm:gap-2.5" aria-labelledby="locations-heading">
-    <h2 id="locations-heading" class="self-stretch justify-start text-royal-blue text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold"><?= CmsOutputHelper::text($venue['venue_main_title']) ?></h2>
+    <h2 id="locations-heading" class="self-stretch justify-start text-royal-blue text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold"><?= CmsOutputHelper::text($locationsSection->title) ?></h2>
 
     <!-- Legend -->
     <div class="self-stretch flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 sm:gap-3 md:gap-6" role="group" aria-label="Map legend">
-        <span class="justify-start text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-medium"><?= CmsOutputHelper::text($venue['venue_filter_label']) ?></span>
+        <span class="justify-start text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-medium"><?= CmsOutputHelper::text($locationsSection->filterLabel) ?></span>
         <dl class="flex flex-wrap justify-start items-center gap-2 sm:gap-3 md:gap-5">
             <div class="flex justify-start items-center gap-1">
                 <dt class="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-azure-blue rounded-full" aria-hidden="true"></dt>
-                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($venue['venue_filter_jazz']) ?></dd>
+                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($locationsSection->jazzLabel) ?></dd>
             </div>
             <div class="flex justify-start items-center gap-1">
                 <dt class="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-deep-crimson rounded-full" aria-hidden="true"></dt>
-                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($venue['venue_filter_dance']) ?></dd>
+                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($locationsSection->danceLabel) ?></dd>
             </div>
             <div class="flex justify-start items-center gap-1">
                 <dt class="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-amber-gold rounded-full" aria-hidden="true"></dt>
-                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($venue['venue_filter_history']) ?></dd>
+                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($locationsSection->historyLabel) ?></dd>
             </div>
             <div class="flex justify-start items-center gap-1">
                 <dt class="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-olive-green rounded-full" aria-hidden="true"></dt>
-                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($venue['venue_filter_restaurants']) ?></dd>
+                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($locationsSection->restaurantsLabel) ?></dd>
             </div>
             <div class="flex justify-start items-center gap-1">
                 <dt class="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-deep-purple rounded-full" aria-hidden="true"></dt>
-                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($venue['venue_filter_stories']) ?></dd>
+                <dd class="justify-start text-black text-xs sm:text-sm md:text-base font-normal"><?= CmsOutputHelper::text($locationsSection->storiesLabel) ?></dd>
             </div>
         </dl>
     </div>
@@ -53,7 +52,7 @@ $venue = $cms['venue_map_section'];
                 <ul class="flex-1 min-h-0 max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-none overflow-y-auto p-1.5 sm:p-2 space-y-1 sm:space-y-[5px] list-none" role="list">
                     <?php foreach ($locations as $location): ?>
                         <li class="w-full">
-                            <?php require __DIR__ . '/location-item.php'; ?>
+                            <?php ViewRenderer::render(__DIR__ . '/location-item.php', ['location' => $location]); ?>
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -65,26 +64,26 @@ $venue = $cms['venue_map_section'];
                 <!-- Filter Buttons -->
                 <div class="self-stretch px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-2.5 md:py-3 lg:py-3.5 bg-white rounded-xl sm:rounded-2xl shadow-[0px_0px_4px_0px_rgba(26,42,64,0.25)] flex flex-col md:flex-row justify-center items-center gap-1.5 sm:gap-2 md:gap-2.5" role="group" aria-label="Filter locations by category">
                     <span class="px-2 sm:px-3 md:px-4 lg:px-6 py-1.5 sm:py-2 md:py-2.5 rounded-xl sm:rounded-2xl flex justify-center items-center">
-                        <span class="text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-bold"><?= CmsOutputHelper::text($venue['venue_filter_title']) ?></span>
+                        <span class="text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-bold"><?= CmsOutputHelper::text($locationsSection->filterTitle) ?></span>
                     </span>
                     <div class="flex flex-wrap justify-center items-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-3.5" role="radiogroup" aria-label="Location category filter">
                         <button type="button" class="h-7 sm:h-8 md:h-10 lg:h-12 px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-red hover:bg-royal-blue rounded-lg sm:rounded-xl md:rounded-2xl outline outline-1 outline-offset-[-1px] outline-red hover:outline-royal-blue flex justify-center items-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2" aria-pressed="true">
-                            <span class="text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal"><?= CmsOutputHelper::text($venue['venue_filter_all']) ?></span>
+                            <span class="text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal"><?= CmsOutputHelper::text($locationsSection->allLabel) ?></span>
                         </button>
                         <button type="button" class="h-7 sm:h-8 md:h-10 lg:h-12 px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-white hover:bg-royal-blue rounded-lg sm:rounded-xl md:rounded-2xl outline outline-1 outline-offset-[-1px] outline-royal-blue hover:outline-sand flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue focus-visible:ring-offset-2" aria-pressed="false">
-                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($venue['venue_filter_jazz']) ?></span>
+                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($locationsSection->jazzLabel) ?></span>
                         </button>
                         <button type="button" class="h-7 sm:h-8 md:h-10 lg:h-12 px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-white hover:bg-royal-blue rounded-lg sm:rounded-xl md:rounded-2xl outline outline-1 outline-offset-[-1px] outline-royal-blue hover:outline-sand flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue focus-visible:ring-offset-2" aria-pressed="false">
-                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($venue['venue_filter_dance']) ?></span>
+                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($locationsSection->danceLabel) ?></span>
                         </button>
                         <button type="button" class="h-7 sm:h-8 md:h-10 lg:h-12 px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-white hover:bg-royal-blue rounded-lg sm:rounded-xl md:rounded-2xl outline outline-1 outline-offset-[-1px] outline-royal-blue hover:outline-sand flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue focus-visible:ring-offset-2" aria-pressed="false">
-                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($venue['venue_filter_history']) ?></span>
+                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($locationsSection->historyLabel) ?></span>
                         </button>
                         <button type="button" class="h-7 sm:h-8 md:h-10 lg:h-12 px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-white hover:bg-royal-blue rounded-lg sm:rounded-xl md:rounded-2xl outline outline-1 outline-offset-[-1px] outline-royal-blue hover:outline-sand flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue focus-visible:ring-offset-2" aria-pressed="false">
-                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($venue['venue_filter_restaurants']) ?></span>
+                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($locationsSection->restaurantsLabel) ?></span>
                         </button>
                         <button type="button" class="h-7 sm:h-8 md:h-10 lg:h-12 px-2 sm:px-3 md:px-4 lg:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 bg-white hover:bg-royal-blue rounded-lg sm:rounded-xl md:rounded-2xl outline outline-1 outline-offset-[-1px] outline-royal-blue hover:outline-sand flex justify-center items-center transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue focus-visible:ring-offset-2" aria-pressed="false">
-                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($venue['venue_filter_stories']) ?></span>
+                            <span class="text-royal-blue group-hover:text-white text-xs sm:text-sm md:text-base lg:text-lg font-normal transition-colors duration-200"><?= CmsOutputHelper::text($locationsSection->storiesLabel) ?></span>
                         </button>
                     </div>
                 </div>

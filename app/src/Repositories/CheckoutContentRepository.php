@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Mappers\CheckoutContentMapper;
-use App\Models\CheckoutMainContent;
-use App\Models\ProgramMainContent;
+use App\Content\CheckoutMainContent;
+use App\Content\ProgramMainContent;
 
 /**
  * Provides typed access to Checkout and Program CMS content sections.

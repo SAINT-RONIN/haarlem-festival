@@ -55,6 +55,13 @@ use FastRoute\RouteCollector;
 // Load controller factory — returns a closure keyed by controller class name.
 $container = require __DIR__ . '/../bootstrap/container.php';
 
+// Ensure the route cache directory exists before FastRoute tries to write into it.
+$routeCacheFile = __DIR__ . '/../storage/cache/route.cache';
+$routeCacheDir = dirname($routeCacheFile);
+if (!is_dir($routeCacheDir)) {
+    mkdir($routeCacheDir, 0775, true);
+}
+
 // Define routes — cachedDispatcher writes the compiled route table to a file
 // so it only needs to parse route definitions once instead of every request.
 $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
@@ -182,7 +189,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
 
 }, [
-    'cacheFile' => __DIR__ . '/../storage/cache/route.cache',
+    'cacheFile' => $routeCacheFile,
     'cacheDisabled' => false,
 ]);
 

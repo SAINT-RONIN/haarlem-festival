@@ -9,6 +9,8 @@
  * @var \App\ViewModels\Storytelling\StorytellingDetailPageViewModel $viewModel
  */
 
+use App\View\ViewRenderer;
+
 $about = $viewModel->aboutSection;
 $highlights = $viewModel->highlightsSection;
 $gallery = $viewModel->gallerySection;
@@ -127,8 +129,9 @@ $video = $viewModel->videoSection;
 
     <?php
     // Social sharing buttons — placed below the video for discoverability
-    $shareUrl = $viewModel->shareUrl;
-    $shareTitle = $viewModel->detailHero->title;
-    require __DIR__ . '/../sections/_social-share.php';
+    ViewRenderer::render(__DIR__ . '/../sections/_social-share.php', [
+        'shareUrl' => $viewModel->shareUrl,
+        'shareTitle' => $viewModel->detailHero->title,
+    ]);
     ?>
 </section>

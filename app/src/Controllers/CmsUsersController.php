@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
-use App\Enums\UserRoleId;
 use App\Mappers\CmsUsersMapper;
 use App\Services\Interfaces\ICmsUsersService;
 use App\Services\Interfaces\ISessionService;
@@ -33,15 +31,13 @@ class CmsUsersController extends CmsBaseController
      */
     public function index(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'users';
             $f           = $this->extractListFilters();
             $usersData   = $this->usersService->getUsersWithRoles($f['roleFilter'], $f['search'] ?: null, $f['sortBy'], $f['sortDir']);
             $viewModel   = $this->buildListViewModel($f, $usersData);
             require __DIR__ . '/../Views/pages/cms/users.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -50,11 +46,9 @@ class CmsUsersController extends CmsBaseController
      */
     public function create(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $this->renderCreateUserForm();
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -63,11 +57,9 @@ class CmsUsersController extends CmsBaseController
      */
     public function store(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $this->processUserStore();
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -76,11 +68,9 @@ class CmsUsersController extends CmsBaseController
      */
     public function edit(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->renderUserEditPage($id);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -89,11 +79,9 @@ class CmsUsersController extends CmsBaseController
      */
     public function update(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->processUserUpdate($id);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -102,30 +90,15 @@ class CmsUsersController extends CmsBaseController
      */
     public function delete(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->processUserDelete($id);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /** Builds the empty create-user form ViewModel with default role and renders it. */
     private function renderCreateUserForm(): void
     {
-        $currentView = 'users';
-        $viewModel   = CmsUsersMapper::toFormViewModel(
-            null,
-            '',
-            '',
-            '',
-            '',
-            UserRoleId::Customer->value,
-            $this->sessionService->getCsrfToken('cms_user_create'),
-            '/cms/users',
-            'Create User',
-            [],
-        );
-        require __DIR__ . '/../Views/pages/cms/user-create.php';
+        $this->renderCreateForm(CmsUsersMapper::emptyFormData(), []);
     }
 
     /** Handles CSRF validation, form extraction, validation, and persistence for a new user. */
@@ -136,7 +109,7 @@ class CmsUsersController extends CmsBaseController
         // Re-render the form with errors if validation fails
         $errors = $this->usersService->validateForCreate($data['username'], $data['email'], $data['password'], $data['firstName'], $data['lastName']);
         if (!empty($errors)) {
-            $this->renderCreateForm($data['username'], $data['email'], $data['firstName'], $data['lastName'], $data['roleId'], $errors);
+            $this->renderCreateForm($data, $errors);
             return;
         }
         $this->usersService->createUser($data['username'], $data['email'], $data['password'], $data['firstName'], $data['lastName'], $data['roleId']);
@@ -148,11 +121,10 @@ class CmsUsersController extends CmsBaseController
     {
         $user = $this->usersService->findById($id);
         if ($user === null) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
+            $this->renderNotFoundPage();
             return;
         }
-        $this->renderEditForm($id, $user->username, $user->email, $user->firstName, $user->lastName, $user->userRoleId, []);
+        $this->renderEditForm($id, CmsUsersMapper::fromUser($user), []);
     }
 
     /** Handles CSRF validation, form extraction, validation, and persistence for updating a user. */
@@ -164,7 +136,7 @@ class CmsUsersController extends CmsBaseController
         // Empty password string is coerced to null so the service preserves the existing hash
         $errors = $this->usersService->validateForUpdate($id, $data['username'], $data['email'], $data['password'] ?: null, $data['firstName'], $data['lastName']);
         if (!empty($errors)) {
-            $this->renderEditForm($id, $data['username'], $data['email'], $data['firstName'], $data['lastName'], $data['roleId'], $errors);
+            $this->renderEditForm($id, $data, $errors);
             return;
         }
         $this->usersService->updateUser($id, $data['username'], $data['email'], $data['password'] ?: null, $data['firstName'], $data['lastName'], $data['roleId']);
@@ -198,7 +170,7 @@ class CmsUsersController extends CmsBaseController
     /** Builds the list ViewModel from filters and user data. */
     private function buildListViewModel(array $filters, array $users): \App\ViewModels\Cms\CmsUsersListViewModel
     {
-        return \App\Mappers\CmsUsersMapper::toListViewModel(
+        return CmsUsersMapper::toListViewModel(
             $users,
             $this->readStringQueryParam('role') ?? '',
             $this->sessionService->consumeFlash('success'),
@@ -212,29 +184,29 @@ class CmsUsersController extends CmsBaseController
 
     private function extractUserFormData(): array
     {
-        return [
+        return CmsUsersMapper::fromFormInput([
             'username'  => $this->readStringPostParam('username') ?? '',
             'email'     => $this->readStringPostParam('email') ?? '',
             'password'  => $_POST['password'] ?? '',
             'firstName' => $this->readStringPostParam('firstName') ?? '',
             'lastName'  => $this->readStringPostParam('lastName') ?? '',
-            'roleId'    => $this->readOptionalIntPostParam('roleId') ?? UserRoleId::Customer->value,
-        ];
+            'roleId'    => $this->readOptionalIntPostParam('roleId'),
+        ]);
     }
 
     /**
      * @param array<string, string> $errors
      */
-    private function renderCreateForm(string $username, string $email, string $firstName, string $lastName, int $roleId, array $errors): void
+    private function renderCreateForm(array $data, array $errors): void
     {
         $currentView = 'users';
         $viewModel   = CmsUsersMapper::toFormViewModel(
             null,
-            $username,
-            $email,
-            $firstName,
-            $lastName,
-            $roleId,
+            $data['username'],
+            $data['email'],
+            $data['firstName'],
+            $data['lastName'],
+            $data['roleId'],
             $this->sessionService->getCsrfToken('cms_user_create'),
             '/cms/users',
             'Create User',
@@ -246,16 +218,22 @@ class CmsUsersController extends CmsBaseController
     /**
      * @param array<string, string> $errors
      */
-    private function renderEditForm(int $id, string $username, string $email, string $firstName, string $lastName, int $roleId, array $errors): void
+    private function renderEditForm(int $id, array $data, array $errors): void
     {
+        $user = $this->usersService->findById($id);
+        if ($user === null) {
+            $this->renderNotFoundPage();
+            return;
+        }
+
         $currentView = 'users';
         $viewModel   = CmsUsersMapper::toFormViewModel(
-            $this->usersService->findById($id),
-            $username,
-            $email,
-            $firstName,
-            $lastName,
-            $roleId,
+            $user,
+            $data['username'],
+            $data['email'],
+            $data['firstName'],
+            $data['lastName'],
+            $data['roleId'],
             $this->sessionService->getCsrfToken('cms_user_edit_' . $id),
             '/cms/users/' . $id . '/edit',
             'Edit User',

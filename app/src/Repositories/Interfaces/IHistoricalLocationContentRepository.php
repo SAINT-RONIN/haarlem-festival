@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\HistoricalLocationFactsContent;
-use App\Models\HistoricalLocationHeroContent;
-use App\Models\HistoricalLocationIntroContent;
-use App\Models\HistoricalLocationSignificanceContent;
+use App\Content\HistoricalLocationFactsContent;
+use App\Content\HistoricalLocationHeroContent;
+use App\Content\HistoricalLocationIntroContent;
+use App\Content\HistoricalLocationSignificanceContent;
 
 /**
  * Typed access to HistoricalLocation CMS content sections.

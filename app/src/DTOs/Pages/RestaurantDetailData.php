@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
-use App\Models\GlobalUiContent;
+use App\Content\GlobalUiContent;
 use App\Models\Restaurant;
-use App\Models\RestaurantDetailSectionContent;
+use App\Content\RestaurantDetailSectionContent;
 
 /**
  * Carries all data needed to render the Restaurant detail page.

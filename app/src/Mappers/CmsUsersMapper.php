@@ -20,6 +20,52 @@ use App\ViewModels\Cms\CmsUsersListViewModel;
 final class CmsUsersMapper
 {
     /**
+     * @return array{username:string,email:string,password:string,firstName:string,lastName:string,roleId:int}
+     */
+    public static function emptyFormData(): array
+    {
+        return [
+            'username' => '',
+            'email' => '',
+            'password' => '',
+            'firstName' => '',
+            'lastName' => '',
+            'roleId' => UserRoleId::Customer->value,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $input
+     * @return array{username:string,email:string,password:string,firstName:string,lastName:string,roleId:int}
+     */
+    public static function fromFormInput(array $input): array
+    {
+        return [
+            'username' => (string)($input['username'] ?? ''),
+            'email' => (string)($input['email'] ?? ''),
+            'password' => (string)($input['password'] ?? ''),
+            'firstName' => (string)($input['firstName'] ?? ''),
+            'lastName' => (string)($input['lastName'] ?? ''),
+            'roleId' => isset($input['roleId']) ? (int)$input['roleId'] : UserRoleId::Customer->value,
+        ];
+    }
+
+    /**
+     * @return array{username:string,email:string,password:string,firstName:string,lastName:string,roleId:int}
+     */
+    public static function fromUser(UserAccount $user): array
+    {
+        return [
+            'username' => $user->username,
+            'email' => $user->email,
+            'password' => '',
+            'firstName' => $user->firstName,
+            'lastName' => $user->lastName,
+            'roleId' => $user->userRoleId,
+        ];
+    }
+
+    /**
      * Builds the CMS users-list page ViewModel, including sort column links,
      * role-filter options, and role/status badge classes for each user row.
      *

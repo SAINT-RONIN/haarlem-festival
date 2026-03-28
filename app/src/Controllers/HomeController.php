@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\HomeMapper;
 use App\Services\Interfaces\IHomeService;
 use App\Services\Interfaces\ISessionService;
@@ -16,8 +15,9 @@ class HomeController extends BaseController
 {
     public function __construct(
         private readonly IHomeService $homeService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -27,12 +27,10 @@ class HomeController extends BaseController
      */
     public function index(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $data = $this->homeService->getHomePageData();
-            $viewModel = HomeMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
+            $viewModel = HomeMapper::toPageViewModel($data, $this->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/home.php', $viewModel);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 }

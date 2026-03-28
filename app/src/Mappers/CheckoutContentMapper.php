@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\CheckoutMainContent;
-use App\Models\ProgramMainContent;
+use App\Content\CheckoutMainContent;
+use App\Content\ProgramMainContent;
 
 /**
  * Maps raw CMS arrays into Checkout and Program content models.

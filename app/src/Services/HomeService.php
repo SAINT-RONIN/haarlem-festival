@@ -10,16 +10,17 @@ use App\DTOs\Pages\HomePageData;
 use App\DTOs\Pages\HomeScheduleDayData;
 use App\DTOs\Pages\HomeScheduleSessionData;
 use App\DTOs\Pages\HomeEventTypeData;
+use App\DTOs\Pages\HomeLocationData;
 use App\DTOs\Filters\VenueFilter;
 use App\Helpers\SessionGroupingHelper;
-use App\Mappers\HomeMapper;
+use App\Models\Restaurant;
+use App\Models\Venue;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Repositories\Interfaces\IVenueRepository;
-use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IHomeService;
 use App\Constants\HomeUiConfig;
 
@@ -53,11 +54,10 @@ class HomeService extends BaseContentService implements IHomeService
      */
     public function getHomePageData(): HomePageData
     {
-        try {
-            return $this->assembleHomePageData();
-        } catch (\Throwable $error) {
-            throw new PageLoadException('Failed to load the home page.', 0, $error);
-        }
+        return $this->guardPageLoad(
+            fn (): HomePageData => $this->assembleHomePageData(),
+            'Failed to load the home page.',
+        );
     }
 
     /** Fetches and combines all data sources for the home page. */
@@ -130,7 +130,14 @@ class HomeService extends BaseContentService implements IHomeService
             return null;
         }
 
-        return HomeMapper::toEventTypeData($slug, $section);
+        return new HomeEventTypeData(
+            slug: $slug,
+            title: (string)($section[$slug . '_title'] ?? ucfirst($slug)),
+            description: (string)($section[$slug . '_description'] ?? ''),
+            button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
+            image: $section[$slug . '_image'] ?? null,
+            darkBg: HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['darkBg'] ?? false,
+        );
     }
 
     /** Looks up the CMS section data for an event type slug. */
@@ -156,11 +163,11 @@ class HomeService extends BaseContentService implements IHomeService
         $locations = [];
 
         foreach ($this->venueRepository->findVenues(new VenueFilter(isActive: true)) as $venue) {
-            $locations[] = HomeMapper::toVenueLocation($venue);
+            $locations[] = $this->buildVenueLocation($venue);
         }
 
         foreach ($this->restaurantRepository->findAllActive() as $restaurant) {
-            $locations[] = HomeMapper::toRestaurantLocation($restaurant);
+            $locations[] = $this->buildRestaurantLocation($restaurant);
         }
 
         return $locations;
@@ -295,5 +302,58 @@ class HomeService extends BaseContentService implements IHomeService
     private function buildSinglePlaceholderDay(string $date): HomeScheduleDayData
     {
         return new HomeScheduleDayData(date: $date, eventCount: 0, sessions: []);
+    }
+
+    private function buildVenueLocation(Venue $venue): HomeLocationData
+    {
+        return new HomeLocationData(
+            name: $venue->name,
+            address: $venue->addressLine,
+            category: $this->determineVenueCategory($venue->name),
+            lat: null,
+            lng: null,
+        );
+    }
+
+    private function buildRestaurantLocation(Restaurant $restaurant): HomeLocationData
+    {
+        return new HomeLocationData(
+            name: $restaurant->name,
+            address: $restaurant->addressLine,
+            category: 'restaurant',
+            lat: null,
+            lng: null,
+        );
+    }
+
+    /** Flat keyword-to-category map for venue classification. */
+    private const KEYWORD_TO_CATEGORY = [
+        'patronaat' => 'jazz',
+        'club' => 'dance',
+        'lichtfabriek' => 'dance',
+        'slachthuis' => 'dance',
+        'jopenkerk' => 'dance',
+        'caprera' => 'dance',
+        'puncher' => 'dance',
+        'bavo' => 'history',
+        'church' => 'history',
+        'verhalen' => 'storytelling',
+        'schuur' => 'storytelling',
+        'kweek' => 'storytelling',
+        'boom' => 'storytelling',
+        'theater' => 'storytelling',
+    ];
+
+    private function determineVenueCategory(string $venueName): string
+    {
+        $name = strtolower($venueName);
+
+        foreach (self::KEYWORD_TO_CATEGORY as $keyword => $category) {
+            if (str_contains($name, $keyword)) {
+                return $category;
+            }
+        }
+
+        return 'history';
     }
 }

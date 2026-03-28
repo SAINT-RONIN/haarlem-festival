@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\CmsOrdersMapper;
 use App\Services\Interfaces\ICmsOrdersService;
 use App\Services\Interfaces\ISessionService;
@@ -32,14 +31,12 @@ class CmsOrdersController extends CmsBaseController
      */
     public function index(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'orders';
             $statusFilter = $this->readStringQueryParam('status');
             $viewModel = $this->buildOrdersViewModel($statusFilter);
             require __DIR__ . '/../Views/pages/cms/orders.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /** Fetches orders from the service and maps them to the list view model. */

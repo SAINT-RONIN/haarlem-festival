@@ -19,6 +19,7 @@ use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
+use App\Checkout\OrderCapacityRestorer;
 use App\Http\Requests\StripeWebhookRequestFactory;
 use App\Infrastructure\CheckoutRuntimeConfig;
 use App\Infrastructure\Database;
@@ -83,12 +84,12 @@ use App\Services\JazzService;
 use App\Services\MediaAssetService;
 use App\Services\ProgramService;
 use App\Services\RestaurantService;
+use App\Schedule\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
 use App\Services\AuthService;
 use App\Services\CaptchaService;
 use App\Services\SessionService;
 use App\Services\StorytellingDetailService;
-use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\StorytellingService;
 
 /**
@@ -146,6 +147,9 @@ return static function (string $controllerClass): object {
     $histLocContentRepo    = fn() => $make('histLocContentRepo', fn() => new HistoricalLocationContentRepository($cmsContent()));
 
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
+    $orderCapacityRestorer = fn() => $make('orderCapacityRestorer', fn() => new OrderCapacityRestorer($orderItemRepo(), $eventSessionRepo()));
+    $cmsItemEnricher = fn() => $make('cmsItemEnricher', fn() => new CmsItemEnricher($mediaAssetRepo()));
+    $cmsPreviewUrlResolver = fn() => $make('cmsPreviewUrlResolver', fn() => new CmsPreviewUrlResolver());
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
         $scheduleContentRepo(),
@@ -268,12 +272,12 @@ return static function (string $controllerClass): object {
             new CmsEditService(
                 $cmsRepo(),
                 $eventRepo(),
-                new CmsItemEnricher($mediaAssetRepo()),
-                new CmsPreviewUrlResolver(),
+                $cmsItemEnricher(),
+                $cmsPreviewUrlResolver(),
             ),
             $mediaAssetService(),
         ),
-        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo) {
+        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer) {
             $stripeService = new StripeService(
                 (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
                 (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
@@ -295,15 +299,15 @@ return static function (string $controllerClass): object {
                     $runtimeConfig,
                     $pdo(),
                     $checkoutContentRepo(),
+                    $orderCapacityRestorer(),
                 ),
                 new StripeWebhookHandler(
                     $stripeService,
                     new StripeWebhookEventRepository($pdo()),
                     $orderRepo(),
-                    $orderItemRepo(),
                     $paymentRepo(),
-                    $eventSessionRepo(),
                     $programRepo(),
+                    $orderCapacityRestorer(),
                     $pdo(),
                 ),
                 new StripeWebhookRequestFactory(),

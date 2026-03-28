@@ -6,6 +6,7 @@ namespace App\Mappers;
 
 use App\DTOs\Checkout\CheckoutCancelResult;
 use App\DTOs\Checkout\CheckoutSessionSummary;
+use App\Helpers\FormatHelper;
 use App\ViewModels\Program\CheckoutCancelPageViewModel;
 use App\ViewModels\Program\CheckoutSuccessPageViewModel;
 
@@ -24,9 +25,8 @@ final class CheckoutMapper
         return new CheckoutSuccessPageViewModel(
             isLoggedIn: $isLoggedIn,
             hasSessionData: $sessionSummary !== null,
-            sessionId: $sessionSummary?->sessionId ?? '',
-            paymentStatus: $sessionSummary?->paymentStatus ?? 'unknown',
-            checkoutStatus: $sessionSummary?->status ?? 'unknown',
+            orderReference: self::resolveOrderReference($sessionSummary),
+            totalLabel: self::formatTotalLabel($sessionSummary),
         );
     }
 
@@ -44,20 +44,23 @@ final class CheckoutMapper
         );
     }
 
-    /**
-     * Builds a single consolidated Stripe line item for the full order total.
-     *
-     * @return array<int, array{price_data: array{currency: string, unit_amount: int, product_data: array{name: string}}, quantity: int}>
-     */
-    public static function buildStripeLineItems(float $total, string $orderNumber): array
+    private static function resolveOrderReference(?CheckoutSessionSummary $sessionSummary): ?string
     {
-        return [[
-            'price_data' => [
-                'currency' => 'eur',
-                'unit_amount' => (int)round($total * 100),
-                'product_data' => ['name' => 'Haarlem Festival order ' . $orderNumber],
-            ],
-            'quantity' => 1,
-        ]];
+        if ($sessionSummary === null || $sessionSummary->orderReference === '') {
+            return null;
+        }
+
+        return $sessionSummary->orderReference;
+    }
+
+    private static function formatTotalLabel(?CheckoutSessionSummary $sessionSummary): ?string
+    {
+        if ($sessionSummary === null) {
+            return null;
+        }
+
+        return $sessionSummary->currency === 'EUR'
+            ? FormatHelper::price($sessionSummary->amountTotal)
+            : $sessionSummary->currency . ' ' . number_format($sessionSummary->amountTotal, 2, '.', '');
     }
 }

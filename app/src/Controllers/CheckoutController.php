@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
-use App\DTOs\Session\SessionContext;
 use App\Exceptions\CheckoutException;
+use App\Exceptions\CheckoutInputException;
+use App\Exceptions\StripeWebhookException;
 use App\Helpers\AssetVersionHelper;
 use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
 use App\Mappers\CheckoutMapper;
@@ -24,11 +24,12 @@ class CheckoutController extends BaseController
 {
     public function __construct(
         private readonly IProgramService $programService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
         private readonly ICheckoutService $checkoutService,
         private readonly IStripeWebhookHandler $stripeWebhookHandler,
         private readonly IStripeWebhookRequestFactory $stripeWebhookRequestFactory,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -38,21 +39,19 @@ class CheckoutController extends BaseController
      */
     public function index(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->renderCheckoutPage();
-        } catch (CheckoutException $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /** Loads session context, program data, CMS content, and renders the checkout page. */
     private function renderCheckoutPage(): void
     {
-        $context = $this->resolveSessionContext($this->sessionService);
+        $context = $this->resolveSessionContext();
         $programData = $this->programService->getProgramData($context->sessionKey, $context->userId);
 
         if ($programData->items === []) {
-            $this->redirect('/my-program');
+            $this->redirectAndExit('/my-program');
             return;
         }
 
@@ -70,17 +69,15 @@ class CheckoutController extends BaseController
      */
     public function createSession(): void
     {
-        try {
+        $this->handleJsonRequest(function (): void {
             $this->processCreateSession();
-        } catch (CheckoutException|\InvalidArgumentException $error) {
-            ControllerErrorResponder::respondJson($error, 400);
-        }
+        }, [CheckoutInputException::class, \InvalidArgumentException::class]);
     }
 
     /** Resolves auth context, reads JSON payload, creates a Stripe session, and returns the redirect URL. */
     private function processCreateSession(): void
     {
-        $context = $this->resolveSessionContext($this->sessionService);
+        $context = $this->resolveSessionContext();
         $userId = $this->requireAuthenticatedUserId();
 
         $payload = $this->readJsonBody();
@@ -99,15 +96,13 @@ class CheckoutController extends BaseController
      */
     public function success(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $sessionId = $this->readStringQueryParam('session_id', 255);
             $sessionSummary = $sessionId !== null ? $this->checkoutService->getSessionSummary($sessionId) : null;
-            $viewModel = CheckoutMapper::toSuccessViewModel($sessionSummary, $this->resolveSessionContext($this->sessionService)->isLoggedIn);
+            $viewModel = CheckoutMapper::toSuccessViewModel($sessionSummary, $this->resolveSessionContext()->isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-success.php', $viewModel);
-        } catch (CheckoutException $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -116,17 +111,15 @@ class CheckoutController extends BaseController
      */
     public function cancel(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $orderId = $this->readPositiveIntQueryParam('order_id');
             $paymentId = $this->readPositiveIntQueryParam('payment_id');
 
             $cancelResult = $this->checkoutService->handleCancel($orderId, $paymentId);
-            $viewModel = CheckoutMapper::toCancelViewModel($cancelResult, $this->resolveSessionContext($this->sessionService)->isLoggedIn);
+            $viewModel = CheckoutMapper::toCancelViewModel($cancelResult, $this->resolveSessionContext()->isLoggedIn);
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-cancel.php', $viewModel);
-        } catch (CheckoutException $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -135,11 +128,9 @@ class CheckoutController extends BaseController
      */
     public function webhook(): void
     {
-        try {
+        $this->handleJsonRequest(function (): void {
             $this->processWebhook();
-        } catch (CheckoutException|\InvalidArgumentException $error) {
-            ControllerErrorResponder::respondJson($error, 400);
-        }
+        }, [StripeWebhookException::class, \InvalidArgumentException::class]);
     }
 
     /** Creates a webhook request from globals, processes it, and returns the result as JSON. */
@@ -165,9 +156,9 @@ class CheckoutController extends BaseController
      */
     private function requireAuthenticatedUserId(): int
     {
-        $context = $this->resolveSessionContext($this->sessionService);
+        $context = $this->resolveSessionContext();
         if (!$context->isLoggedIn) {
-            throw new CheckoutException('Please log in to continue checkout.');
+            throw new CheckoutInputException('Please log in to continue checkout.');
         }
 
         return $context->userId;

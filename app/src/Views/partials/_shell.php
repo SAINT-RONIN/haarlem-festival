@@ -4,56 +4,68 @@
  *
  * Required:
  * @var \App\ViewModels\BaseViewModel $viewModel
- *
- * Optional:
- * @var string|array<int, string> $pageContentPartials Absolute partial path(s) rendered inside <main>
- * @var bool $includeHero Whether to render the shared hero partial (default: true)
- * @var bool $includeEventSections Whether to render shared event sections (gradient + intro)
- * @var string $eventIntroSectionId Optional section id passed to intro split section
- * @var string|null $eventIntroImageClass Optional image class passed to intro split section
- * @var string $mainClass Main element CSS classes
+ * @var \App\View\PublicPageLayout $layout
  */
 
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
 use App\ViewModels\BaseViewModel;
+use App\ViewModels\GradientSectionData;
+use App\ViewModels\IntroSplitSectionData;
 
 /** @var BaseViewModel $viewModel — guaranteed by the controller's renderPage() method */
+/** @var PublicPageLayout $layout */
 
-$cms = $viewModel->cms;
+$layout = $layout ?? new PublicPageLayout();
+
+$heroData = $viewModel->heroData;
+$globalUi = $viewModel->globalUi;
 $currentPage = $viewModel->currentPage;
 $includeNav = $viewModel->includeNav;
-$isLoggedIn = $viewModel->globalUi->isLoggedIn;
-$includeHero = $includeHero ?? true;
-$includeEventSections = $includeEventSections ?? false;
-$eventIntroSectionId = $eventIntroSectionId ?? null;
-$eventIntroImageClass = $eventIntroImageClass ?? null;
-$mainClass = $mainClass ?? 'w-full bg-sand inline-flex flex-col justify-start items-center';
-
-/** @var string[] $contentPartials — always an array, pre-normalized by the controller */
-$contentPartials = (array)($pageContentPartials ?? []);
+$isLoggedIn = $globalUi->isLoggedIn;
+$gradientSection = property_exists($viewModel, 'gradientSection') && $viewModel->gradientSection instanceof GradientSectionData
+    ? $viewModel->gradientSection
+    : null;
+$introSplitSection = property_exists($viewModel, 'introSplitSection') && $viewModel->introSplitSection instanceof IntroSplitSectionData
+    ? $viewModel->introSplitSection
+    : null;
 ?>
 
-<?php require __DIR__ . '/header.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/header.php', [
+    'currentPage' => $currentPage,
+    'includeNav' => $includeNav,
+    'isLoggedIn' => $isLoggedIn,
+]); ?>
 
-<main class="<?= htmlspecialchars($mainClass) ?>">
-    <?php if ($includeHero): ?>
-        <?php require __DIR__ . '/hero.php'; ?>
+<main class="<?= htmlspecialchars($layout->mainClass) ?>">
+    <?php if ($layout->includeHero): ?>
+        <?php ViewRenderer::render(__DIR__ . '/hero.php', [
+            'heroData' => $heroData,
+            'globalUi' => $globalUi,
+            'currentPage' => $currentPage,
+            'isLoggedIn' => $isLoggedIn,
+        ]); ?>
     <?php endif; ?>
 
-    <?php if ($includeEventSections): ?>
-        <?php require __DIR__ . '/sections/gradient-section.php'; ?>
+    <?php if ($layout->includeEventSections): ?>
+        <?php if ($gradientSection !== null): ?>
+            <?php ViewRenderer::render(__DIR__ . '/sections/gradient-section.php', [
+                'gradientSection' => $gradientSection,
+            ]); ?>
+        <?php endif; ?>
 
-        <?php if ($eventIntroSectionId !== null): ?>
-            <?php $sectionId = $eventIntroSectionId; ?>
+        <?php if ($introSplitSection !== null): ?>
+            <?php ViewRenderer::render(__DIR__ . '/sections/intro-split-section.php', [
+                'introSplitSection' => $introSplitSection,
+                'sectionId' => $layout->eventIntroSectionId,
+                'introSplitImageClass' => $layout->eventIntroImageClass,
+            ]); ?>
         <?php endif; ?>
-        <?php if ($eventIntroImageClass !== null): ?>
-            <?php $introSplitImageClass = $eventIntroImageClass; ?>
-        <?php endif; ?>
-        <?php require __DIR__ . '/sections/intro-split-section.php'; ?>
     <?php endif; ?>
 
-    <?php foreach ($contentPartials as $contentPartialPath): ?>
-        <?php require $contentPartialPath; ?>
+    <?php foreach ($layout->contentTemplates as $contentTemplate): ?>
+        <?php ViewRenderer::render($contentTemplate->path, $contentTemplate->locals + ['viewModel' => $viewModel]); ?>
     <?php endforeach; ?>
 </main>
 
-<?php require __DIR__ . '/footer.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/footer.php', ['globalUi' => $globalUi]); ?>

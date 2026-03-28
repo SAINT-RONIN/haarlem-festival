@@ -5,10 +5,16 @@
  * @var \App\ViewModels\Restaurant\RestaurantPageViewModel $viewModel
  */
 
-$includeEventSections = true;
-$eventIntroSectionId = 'about';
-$pageContentPartials = [
-    __DIR__ . '/../partials/restaurant/content-sections.php',
-];
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
+use App\View\ViewTemplate;
+
+$layout = new PublicPageLayout(
+    contentTemplates: [
+        new ViewTemplate(__DIR__ . '/../partials/restaurant/content-sections.php'),
+    ],
+    includeEventSections: true,
+    eventIntroSectionId: 'about',
+);
 ?>
-<?php require __DIR__ . '/../partials/_shell.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', ['viewModel' => $viewModel, 'layout' => $layout]); ?>

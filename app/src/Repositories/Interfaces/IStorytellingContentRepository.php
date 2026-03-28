@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\StorytellingEventCmsData;
-use App\Models\StorytellingMasonrySectionContent;
+use App\Content\StorytellingEventCmsData;
+use App\Content\StorytellingMasonrySectionContent;
 
 /**
  * Typed access to Storytelling page CMS content sections.

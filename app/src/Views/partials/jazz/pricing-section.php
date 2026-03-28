@@ -5,6 +5,8 @@
  * @var \App\ViewModels\PricingData $pricingData
  */
 
+use App\View\ViewRenderer;
+
 if (!isset($pricingData) && isset($viewModel) && property_exists($viewModel, 'pricingData')) {
     $pricingData = $viewModel->pricingData;
 }
@@ -37,7 +39,7 @@ if (!isset($pricingData)) {
     <!-- Pricing Cards -->
     <div class="self-stretch flex flex-col lg:flex-row justify-start items-stretch gap-6 lg:gap-12">
         <?php foreach ($pricingData->pricingCards as $card): ?>
-            <?php require __DIR__ . '/pricing-card.php'; ?>
+            <?php ViewRenderer::render(__DIR__ . '/pricing-card.php', ['card' => $card]); ?>
         <?php endforeach; ?>
     </div>
 </section>

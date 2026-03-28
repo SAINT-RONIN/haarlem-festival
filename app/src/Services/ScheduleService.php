@@ -9,19 +9,20 @@ use App\Enums\PriceTierId;
 use App\Helpers\FormatHelper;
 use App\Helpers\SessionGroupingHelper;
 use App\DTOs\Filters\EventSessionFilter;
+use App\DTOs\Schedule\ScheduleSectionData;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
 use App\DTOs\Filters\EventTypeFilter;
 use App\DTOs\Filters\ScheduleFilterParams;
-use App\Models\ScheduleSectionContent;
+use App\Content\ScheduleSectionContent;
 use App\DTOs\Schedule\SessionQueryResult;
 use App\Repositories\Interfaces\IScheduleContentRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
+use App\Schedule\Interfaces\IScheduleDayVisibilityResolver;
 use App\Exceptions\PageLoadException;
-use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 use App\Services\Interfaces\IScheduleService;
 use App\Helpers\AgeLabelFormatter;
 
@@ -50,7 +51,6 @@ class ScheduleService implements IScheduleService
      * venue, language, age), batch-loads labels and prices, then assembles
      * day-grouped event card arrays ready for the mapper layer.
      *
-     * @return array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: array, filterGroupTypes: string[], priceTypeOptions: string[]}
      */
     /**
      * @throws PageLoadException When an unexpected error occurs while building schedule data
@@ -62,7 +62,7 @@ class ScheduleService implements IScheduleService
         ?int $eventId = null,
         ?string $ctaTextOverride = null,
         ?ScheduleFilterParams $filterParams = null,
-    ): array {
+    ): ScheduleSectionData {
         try {
             return $this->assembleScheduleData($pageSlug, $eventTypeId, $maxDays, $eventId, $ctaTextOverride, $filterParams);
         } catch (\Throwable $error) {
@@ -88,7 +88,7 @@ class ScheduleService implements IScheduleService
         ?int $eventId,
         ?string $ctaTextOverride,
         ?ScheduleFilterParams $filterParams,
-    ): array {
+    ): ScheduleSectionData {
         $eventTypeSlug = $this->resolveEventTypeSlug($eventTypeId, $pageSlug);
         $cmsSection = $this->scheduleContentRepo->findScheduleSectionContent($pageSlug, 'schedule_section');
         $visibleDays = $this->getVisibleDays($eventTypeId);
@@ -99,17 +99,17 @@ class ScheduleService implements IScheduleService
 
         $days = $this->buildScheduleDays($scheduleData, $eventTypeSlug, $eventTypeId, $displayStrings);
 
-        return [
-            'cmsContent' => $cmsSection,
-            'pageSlug' => $pageSlug,
-            'eventTypeSlug' => $eventTypeSlug,
-            'eventTypeId' => $eventTypeId,
-            'days' => $days,
-            'activeFilters' => $filterParams,
-            'availableDays' => $availableDays,
-            'filterGroupTypes' => $this->resolveFilterGroupTypes($eventTypeSlug),
-            'priceTypeOptions' => $this->resolvePriceTypeOptions($eventTypeSlug),
-        ];
+        return new ScheduleSectionData(
+            cmsContent: $cmsSection,
+            pageSlug: $pageSlug,
+            eventTypeSlug: $eventTypeSlug,
+            eventTypeId: $eventTypeId,
+            days: $days,
+            activeFilters: $filterParams,
+            availableDays: $availableDays,
+            filterGroupTypes: $this->resolveFilterGroupTypes($eventTypeSlug),
+            priceTypeOptions: $this->resolvePriceTypeOptions($eventTypeSlug),
+        );
     }
 
     /** Resolves the event type slug used for URLs and filter logic. */

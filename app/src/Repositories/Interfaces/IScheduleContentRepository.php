@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\ScheduleSectionContent;
+use App\Content\ScheduleSectionContent;
 
 /**
  * Typed access to Schedule page CMS content sections.

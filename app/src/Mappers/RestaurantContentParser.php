@@ -6,7 +6,7 @@ namespace App\Mappers;
 
 use App\Models\CuisineType;
 use App\Models\Restaurant;
-use App\Models\RestaurantDetailSectionContent;
+use App\Content\RestaurantDetailSectionContent;
 use App\DTOs\Pages\RestaurantDetailData;
 
 /**

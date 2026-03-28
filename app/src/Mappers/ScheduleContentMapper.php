@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\ScheduleSectionContent;
+use App\Content\ScheduleSectionContent;
 
 /**
  * Maps raw CMS arrays into Schedule page content models.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\DTOs\Filters\ScheduleFilterParams;
+use App\DTOs\Schedule\ScheduleSectionData;
 
 /**
  * Defines the contract for building schedule page data for any event type.
@@ -12,10 +13,7 @@ use App\DTOs\Filters\ScheduleFilterParams;
 interface IScheduleService
 {
     /**
-     * Returns raw schedule data for any event type.
-     * The ViewModel layer maps this to ScheduleSectionViewModel.
-     *
-     * @return array{cmsContent: array, pageSlug: string, eventTypeSlug: string, eventTypeId: int, days: array, activeFilters: ?ScheduleFilterParams, availableDays: array, filterGroupTypes: string[], priceTypeOptions: string[]}
+     * Returns a typed schedule payload for any event type.
      */
     public function getScheduleData(
         string $pageSlug,
@@ -24,5 +22,5 @@ interface IScheduleService
         ?int $eventId = null,
         ?string $ctaTextOverride = null,
         ?ScheduleFilterParams $filterParams = null,
-    ): array;
+    ): ScheduleSectionData;
 }

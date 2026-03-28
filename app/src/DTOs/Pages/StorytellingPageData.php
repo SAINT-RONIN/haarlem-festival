@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
-use App\Models\GlobalUiContent;
-use App\Models\GradientSectionContent;
-use App\Models\HeroSectionContent;
-use App\Models\IntroSectionContent;
-use App\Models\StorytellingMasonrySectionContent;
+use App\Content\GlobalUiContent;
+use App\Content\GradientSectionContent;
+use App\Content\HeroSectionContent;
+use App\Content\IntroSectionContent;
+use App\Content\StorytellingMasonrySectionContent;
 
 /**
  * Carries all CMS sections needed to render the Storytelling overview page.

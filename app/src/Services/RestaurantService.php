@@ -13,7 +13,6 @@ use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IRestaurantContentRepository;
 use App\Repositories\Interfaces\IRestaurantImageRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
-use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IRestaurantService;
 
 /**
@@ -40,11 +39,10 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 
     public function getRestaurantPageData(): RestaurantPageData
     {
-        try {
-            return $this->assembleRestaurantPageData();
-        } catch (\Throwable $error) {
-            throw new PageLoadException('Failed to load the Restaurant page.', 0, $error);
-        }
+        return $this->guardPageLoad(
+            fn (): RestaurantPageData => $this->assembleRestaurantPageData(),
+            'Failed to load the Restaurant page.',
+        );
     }
 
     /**
@@ -59,11 +57,10 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             return null;
         }
 
-        try {
-            return $this->assembleDetailData($restaurant);
-        } catch (\Throwable $error) {
-            throw new PageLoadException('Failed to load restaurant detail page.', 0, $error);
-        }
+        return $this->guardPageLoad(
+            fn (): RestaurantDetailData => $this->assembleDetailData($restaurant),
+            'Failed to load restaurant detail page.',
+        );
     }
 
     /** Fetches all data sources and assembles the restaurant overview page payload. */

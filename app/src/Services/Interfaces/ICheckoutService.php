@@ -8,7 +8,7 @@ use App\DTOs\Checkout\CheckoutCancelResult;
 use App\DTOs\Checkout\CheckoutSessionResult;
 use App\DTOs\Checkout\CheckoutSessionSummary;
 use App\DTOs\Program\ProgramData;
-use App\Models\CheckoutMainContent;
+use App\Content\CheckoutMainContent;
 
 /**
  * Contract for the checkout lifecycle: creating Stripe-backed checkout sessions,

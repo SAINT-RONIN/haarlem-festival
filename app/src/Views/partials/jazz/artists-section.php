@@ -5,6 +5,8 @@
  * @var \App\ViewModels\ArtistsData $artistsData
  */
 
+use App\View\ViewRenderer;
+
 if (!isset($artistsData) && isset($viewModel) && property_exists($viewModel, 'artistsData')) {
     $artistsData = $viewModel->artistsData;
 }
@@ -25,7 +27,7 @@ if (!isset($artistsData)) {
         <!-- Artist Cards Grid -->
         <div class="self-stretch flex flex-col lg:flex-row justify-center items-stretch gap-6 lg:gap-12">
             <?php foreach ($artistsData->artists as $artist): ?>
-                <?php require __DIR__ . '/artist-card.php'; ?>
+                <?php ViewRenderer::render(__DIR__ . '/artist-card.php', ['artist' => $artist]); ?>
             <?php endforeach; ?>
         </div>
     </div>

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
 use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
+use App\Mappers\CmsEventsInputMapper;
 use App\Mappers\CmsEventsViewMapper;
+use App\DTOs\Cms\EventSessionUpsertData;
+use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Events\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
@@ -48,13 +50,11 @@ class CmsEventsController extends CmsBaseController
      */
     public function index(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'events';
             $viewModel = $this->buildEventsListViewModel();
             require __DIR__ . '/../Views/pages/cms/events.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -63,13 +63,11 @@ class CmsEventsController extends CmsBaseController
      */
     public function create(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'events';
             $viewModel = $this->buildCreateViewModel();
             require __DIR__ . '/../Views/pages/cms/event-create.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -81,15 +79,11 @@ class CmsEventsController extends CmsBaseController
      */
     public function store(): void
     {
-        try {
+        $this->handleCmsValidationRequest(function (): void {
             $formData = $this->extractEventFormData(); // Form data extracted via BaseController helpers; service validates internally
             $eventId = $this->eventsService->createEvent($formData);
             $this->redirectWithFlash('Event created successfully.', 'success', "/cms/events/{$eventId}/edit");
-        } catch (ValidationException $error) {
-            $this->redirectWithValidationErrors($error, '/cms/events/create');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        }, '/cms/events/create');
     }
 
     /**
@@ -98,16 +92,14 @@ class CmsEventsController extends CmsBaseController
      */
     public function edit(string $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $currentView = 'events';
             $editData = $this->loadEventEditData((int)$id);
             if ($editData === null) {
                 return;
             }
             $this->renderEventEditPage($editData);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -116,16 +108,12 @@ class CmsEventsController extends CmsBaseController
      */
     public function update(string $id): void
     {
-        try {
+        $this->handleCmsValidationRequest(function () use ($id): void {
             $eventId = (int)$id;
             $formData = $this->extractEventFormData(); // Form data extracted via BaseController helpers; service validates internally
             $this->eventsService->updateEvent($eventId, $formData);
             $this->redirectWithFlash('Event updated successfully.', 'success', "/cms/events/{$eventId}/edit");
-        } catch (ValidationException $error) {
-            $this->redirectWithValidationErrors($error, '/cms/events/' . (int)$id . '/edit');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        }, '/cms/events/' . (int)$id . '/edit');
     }
 
     /**
@@ -134,16 +122,12 @@ class CmsEventsController extends CmsBaseController
      */
     public function createSession(string $eventId): void
     {
-        try {
+        $this->handleCmsValidationRequest(function () use ($eventId): void {
             $eventIdInt = (int)$eventId;
-            $formData = $this->extractSessionFormData(); // Session fields extracted via BaseController helpers; service validates internally
+            $formData = $this->extractSessionFormData($eventIdInt); // Session fields extracted via BaseController helpers; service validates internally
             $this->eventsService->createSession($eventIdInt, $formData);
             $this->redirectWithFlash('Session created successfully.', 'success', "/cms/events/{$eventIdInt}/edit");
-        } catch (ValidationException $error) {
-            $this->redirectWithValidationErrors($error, '/cms/events/' . (int)$eventId . '/edit');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        }, '/cms/events/' . (int)$eventId . '/edit');
     }
 
     /**
@@ -152,16 +136,12 @@ class CmsEventsController extends CmsBaseController
      */
     public function updateSession(string $id): void
     {
-        try {
+        $this->handleCmsValidationRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
             $formData = $this->extractSessionFormData(); // Session fields extracted via BaseController helpers; service validates internally
             $this->eventsService->updateSession((int)$id, $formData);
             $this->redirectWithFlash('Session updated successfully.', 'success', "/cms/events/{$eventId}/edit");
-        } catch (ValidationException $error) {
-            $this->redirectWithValidationErrors($error, '/cms/events/' . $this->getEventIdFromPost() . '/edit');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
     /**
@@ -170,13 +150,11 @@ class CmsEventsController extends CmsBaseController
      */
     public function deleteSession(string $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
             $this->eventsService->deleteSession((int)$id);
             $this->redirectWithFlash('Session deleted successfully.', 'success', "/cms/events/{$eventId}/edit");
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -185,15 +163,11 @@ class CmsEventsController extends CmsBaseController
      */
     public function addLabel(string $id): void
     {
-        try {
+        $this->handleCmsValidationRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
             $this->eventsService->addLabel((int)$id, $this->readStringPostParam('LabelText') ?? '');
             $this->redirectWithFlash('Label added successfully.', 'success', "/cms/events/{$eventId}/edit");
-        } catch (ValidationException $error) {
-            $this->redirectWithValidationErrors($error, '/cms/events/' . $this->getEventIdFromPost() . '/edit');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
     /**
@@ -202,13 +176,11 @@ class CmsEventsController extends CmsBaseController
      */
     public function deleteLabel(string $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
             $this->eventsService->deleteLabel((int)$id);
             $this->redirectWithFlash('Label deleted successfully.', 'success', "/cms/events/{$eventId}/edit");
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -217,14 +189,10 @@ class CmsEventsController extends CmsBaseController
      */
     public function setPrice(string $id): void
     {
-        try {
+        $this->handleCmsValidationRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
             $this->handleSetPrice((int)$id, $eventId);
-        } catch (ValidationException $error) {
-            $this->redirectWithValidationErrors($error, '/cms/events/' . $this->getEventIdFromPost() . '/edit');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
     /**
@@ -237,13 +205,9 @@ class CmsEventsController extends CmsBaseController
      */
     public function createVenue(): void
     {
-        try {
+        $this->handleCmsJsonRequest(function (): void {
             $this->processCreateVenue();
-        } catch (ValidationException $error) {
-            $this->respondVenueValidationError($error);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respondJson($error);
-        }
+        });
     }
 
     /**
@@ -252,14 +216,10 @@ class CmsEventsController extends CmsBaseController
      */
     public function delete(string $id): void
     {
-        try {
+        $this->handleCmsValidationRequest(function () use ($id): void {
             $this->eventsService->deleteEvent((int)$id);
             $this->redirectWithFlash('Event deleted successfully.', 'success', '/cms/events');
-        } catch (ValidationException $error) {
-            $this->redirectWithValidationErrors($error, '/cms/events');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        }, '/cms/events');
     }
 
     /**
@@ -268,12 +228,10 @@ class CmsEventsController extends CmsBaseController
      */
     public function scheduleDays(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'schedule-days';
             $this->renderScheduleDaysPage();
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -286,13 +244,9 @@ class CmsEventsController extends CmsBaseController
      */
     public function toggleScheduleDay(): void
     {
-        try {
+        $this->handleCmsValidationRequest(function (): void {
             $this->handleToggleScheduleDay();
-        } catch (ValidationException $error) {
-            $this->redirectWithValidationErrors($error, '/cms/schedule-days');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        }, '/cms/schedule-days');
     }
 
     /** Loads all dropdown data for the event creation form and maps it to a view model. */
@@ -315,18 +269,7 @@ class CmsEventsController extends CmsBaseController
         $name = $this->readStringPostParam('VenueName') ?? '';
         $addressLine = $this->readStringPostParam('AddressLine') ?? '';
         $venueId = $this->eventsService->createVenue($name, $addressLine);
-        header('Content-Type: application/json');
-        echo json_encode(['success' => true, 'venueId' => $venueId, 'name' => $name]);
-        exit;
-    }
-
-    /** Returns a 400 JSON response with venue validation errors. */
-    private function respondVenueValidationError(ValidationException $error): void
-    {
-        http_response_code(400);
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'errors' => $error->getErrors()]);
-        exit;
+        $this->json(['success' => true, 'venueId' => $venueId, 'name' => $name]);
     }
 
     private function renderScheduleDaysPage(): void
@@ -360,8 +303,7 @@ class CmsEventsController extends CmsBaseController
     {
         $editData = $this->eventsService->getEventForEdit($eventId);
         if ($editData === null) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
+            $this->renderNotFoundPage();
             return null;
         }
         return $editData;
@@ -406,13 +348,10 @@ class CmsEventsController extends CmsBaseController
         return $this->readOptionalIntPostParam('EventId') ?? 0;
     }
 
-    /**
-     * Reads event form fields from POST using BaseController helpers.
-     * @return array<string, mixed>
-     */
-    private function extractEventFormData(): array
+    /** Reads event form fields from POST using BaseController helpers. */
+    private function extractEventFormData(): EventUpsertData
     {
-        return [
+        return CmsEventsInputMapper::fromEventFormInput([
             'EventTypeId'          => $this->readOptionalIntPostParam('EventTypeId'),
             'Title'                => $this->readStringPostParam('Title'),
             'ShortDescription'     => $this->readStringPostParam('ShortDescription', 1000),
@@ -422,28 +361,13 @@ class CmsEventsController extends CmsBaseController
             'ArtistId'             => $this->readOptionalIntPostParam('ArtistId'),
             'RestaurantId'         => $this->readOptionalIntPostParam('RestaurantId'),
             'IsActive'             => $this->readBoolPostParam('IsActive'),
-        ];
+        ]);
     }
 
-    /**
-     * Reads session form fields from POST using BaseController helpers.
-     * @return array<string, mixed>
-     */
-    private function extractSessionFormData(): array
+    /** Reads session form fields from POST using BaseController helpers. */
+    private function extractSessionFormData(?int $eventIdOverride = null): EventSessionUpsertData
     {
-        $coreFields = $this->extractSessionCoreFields();
-        $statusFields = $this->extractSessionStatusFields();
-
-        return array_merge($coreFields, $statusFields);
-    }
-
-    /**
-     * Reads the main session fields (times, capacity, labels) from POST.
-     * @return array<string, mixed>
-     */
-    private function extractSessionCoreFields(): array
-    {
-        return [
+        return CmsEventsInputMapper::fromSessionFormInput([
             'EventId'                   => $this->readOptionalIntPostParam('EventId'),
             'StartDateTime'             => $this->readStringPostParam('StartDateTime'),
             'EndDateTime'               => $this->readStringPostParam('EndDateTime'),
@@ -451,29 +375,19 @@ class CmsEventsController extends CmsBaseController
             'CapacitySingleTicketLimit' => $this->readOptionalIntPostParam('CapacitySingleTicketLimit'),
             'HallName'                  => $this->readStringPostParam('HallName'),
             'SessionType'               => $this->readStringPostParam('SessionType'),
-            'DurationMinutes'           => $this->readStringPostParam('DurationMinutes'),
+            'DurationMinutes'           => $this->readOptionalIntPostParam('DurationMinutes'),
             'LanguageCode'              => $this->readStringPostParam('LanguageCode'),
             'MinAge'                    => $this->readOptionalIntPostParam('MinAge'),
             'MaxAge'                    => $this->readOptionalIntPostParam('MaxAge'),
-        ];
-    }
-
-    /**
-     * Reads session status and secondary fields (booleans, notes, CTA) from POST.
-     * @return array<string, mixed>
-     */
-    private function extractSessionStatusFields(): array
-    {
-        return [
-            'ReservationRequired' => $this->readBoolPostParam('ReservationRequired'),
-            'IsFree'              => $this->readBoolPostParam('IsFree'),
-            'Notes'               => $this->readStringPostParam('Notes', 2000),
-            'HistoryTicketLabel'  => $this->readStringPostParam('HistoryTicketLabel'),
-            'CtaLabel'            => $this->readStringPostParam('CtaLabel'),
-            'CtaUrl'              => $this->readStringPostParam('CtaUrl', 2048),
-            'IsCancelled'         => $this->readBoolPostParam('IsCancelled'),
-            'IsActive'            => $this->readBoolPostParam('IsActive'),
-        ];
+            'ReservationRequired'       => $this->readBoolPostParam('ReservationRequired'),
+            'IsFree'                    => $this->readBoolPostParam('IsFree'),
+            'Notes'                     => $this->readStringPostParam('Notes', 2000),
+            'HistoryTicketLabel'        => $this->readStringPostParam('HistoryTicketLabel'),
+            'CtaLabel'                  => $this->readStringPostParam('CtaLabel'),
+            'CtaUrl'                    => $this->readStringPostParam('CtaUrl', 2048),
+            'IsCancelled'               => $this->readBoolPostParam('IsCancelled'),
+            'IsActive'                  => $this->readBoolPostParam('IsActive'),
+        ], $eventIdOverride);
     }
 
     private function handleToggleScheduleDay(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTOs\Cms\EventSessionUpsertData;
 use App\Enums\PriceTierId;
 use App\DTOs\Filters\EventSessionFilter;
 use App\DTOs\Schedule\ScheduleDayData;
@@ -340,12 +341,11 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
     }
 
     /**
-     * Inserts a new session with IsCancelled=0 and IsActive=1 by default.
+     * Inserts a new session from the typed CMS upsert payload.
      *
-     * @param array<string, mixed> $data Session fields keyed by column name.
      * @return int The auto-incremented EventSessionId.
      */
-    public function create(array $data): int
+    public function create(EventSessionUpsertData $data): int
     {
         return $this->executeInsert(
             'INSERT INTO EventSession (
@@ -359,38 +359,36 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
                 :capacitySingleTicketLimit, :hallName, :sessionType,
                 :durationMinutes, :languageCode, :minAge, :maxAge,
                 :reservationRequired, :isFree, :notes, :historyTicketLabel, :ctaLabel, :ctaUrl,
-                0, 1
+                :isCancelled, :isActive
             )',
             [
-                'eventId' => $data['EventId'],
-                'startDateTime' => $data['StartDateTime'],
-                'endDateTime' => $data['EndDateTime'],
-                'capacityTotal' => $data['CapacityTotal'],
-                'capacitySingleTicketLimit' => $data['CapacitySingleTicketLimit'],
-                'hallName' => $data['HallName'] ?? null,
-                'sessionType' => $data['SessionType'] ?? null,
-                'durationMinutes' => $data['DurationMinutes'] ?? null,
-                'languageCode' => $data['LanguageCode'] ?? null,
-                'minAge' => $data['MinAge'] ?? null,
-                'maxAge' => $data['MaxAge'] ?? null,
-                'reservationRequired' => $data['ReservationRequired'],
-                'isFree' => $data['IsFree'],
-                'notes' => $data['Notes'],
-                'historyTicketLabel' => $data['HistoryTicketLabel'] ?? null,
-                'ctaLabel' => $data['CtaLabel'] ?? null,
-                'ctaUrl' => $data['CtaUrl'] ?? null,
+                'eventId' => $data->eventId,
+                'startDateTime' => $data->startDateTime,
+                'endDateTime' => $data->endDateTime,
+                'capacityTotal' => $data->capacityTotal,
+                'capacitySingleTicketLimit' => $data->capacitySingleTicketLimit,
+                'hallName' => $data->hallName,
+                'sessionType' => $data->sessionType,
+                'durationMinutes' => $data->durationMinutes,
+                'languageCode' => $data->languageCode,
+                'minAge' => $data->minAge,
+                'maxAge' => $data->maxAge,
+                'reservationRequired' => $data->reservationRequired ? 1 : 0,
+                'isFree' => $data->isFree ? 1 : 0,
+                'notes' => $data->notes,
+                'historyTicketLabel' => $data->historyTicketLabel,
+                'ctaLabel' => $data->ctaLabel,
+                'ctaUrl' => $data->ctaUrl,
+                'isCancelled' => $data->isCancelled ? 1 : 0,
+                'isActive' => $data->isActive ? 1 : 0,
             ],
         );
     }
 
     /**
-     * Updates all mutable session fields. Checkbox-style booleans (ReservationRequired, IsFree,
-     * IsCancelled, IsActive) are derived from key presence via isset(), matching HTML form behavior
-     * where unchecked checkboxes are absent from POST data.
-     *
-     * @param array<string, mixed> $data Session fields keyed by column name.
+     * Updates all mutable session fields from the typed CMS upsert payload.
      */
-    public function update(int $sessionId, array $data): bool
+    public function update(int $sessionId, EventSessionUpsertData $data): bool
     {
         $this->execute(
             'UPDATE EventSession SET
@@ -406,24 +404,24 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             WHERE EventSessionId = :sessionId',
             [
                 'sessionId'                 => $sessionId,
-                'startDateTime'             => $data['StartDateTime'],
-                'endDateTime'               => $data['EndDateTime'],
-                'capacityTotal'             => (int)$data['CapacityTotal'],
-                'capacitySingleTicketLimit' => (int)$data['CapacitySingleTicketLimit'],
-                'hallName'                  => $data['HallName'] ?? null,
-                'sessionType'               => $data['SessionType'] ?? null,
-                'durationMinutes'           => isset($data['DurationMinutes']) && $data['DurationMinutes'] !== '' ? (int)$data['DurationMinutes'] : null,
-                'languageCode'              => $data['LanguageCode'] ?? null,
-                'minAge'                    => $data['MinAge'] ?? null,
-                'maxAge'                    => isset($data['MaxAge']) && $data['MaxAge'] !== '' ? (int)$data['MaxAge'] : null,
-                'reservationRequired'       => isset($data['ReservationRequired']) ? 1 : 0,
-                'isFree'                    => isset($data['IsFree']) ? 1 : 0,
-                'notes'                     => $data['Notes'] ?? '',
-                'historyTicketLabel'        => $data['HistoryTicketLabel'] ?? null,
-                'ctaLabel'                  => $data['CtaLabel'] ?? null,
-                'ctaUrl'                    => $data['CtaUrl'] ?? null,
-                'isCancelled'               => isset($data['IsCancelled']) ? 1 : 0,
-                'isActive'                  => isset($data['IsActive']) ? 1 : 0,
+                'startDateTime'             => $data->startDateTime,
+                'endDateTime'               => $data->endDateTime,
+                'capacityTotal'             => $data->capacityTotal,
+                'capacitySingleTicketLimit' => $data->capacitySingleTicketLimit,
+                'hallName'                  => $data->hallName,
+                'sessionType'               => $data->sessionType,
+                'durationMinutes'           => $data->durationMinutes,
+                'languageCode'              => $data->languageCode,
+                'minAge'                    => $data->minAge,
+                'maxAge'                    => $data->maxAge,
+                'reservationRequired'       => $data->reservationRequired ? 1 : 0,
+                'isFree'                    => $data->isFree ? 1 : 0,
+                'notes'                     => $data->notes,
+                'historyTicketLabel'        => $data->historyTicketLabel,
+                'ctaLabel'                  => $data->ctaLabel,
+                'ctaUrl'                    => $data->ctaUrl,
+                'isCancelled'               => $data->isCancelled ? 1 : 0,
+                'isActive'                  => $data->isActive ? 1 : 0,
             ],
         );
 
@@ -451,8 +449,22 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
      */
     public function findDistinctDays(EventSessionFilter $filter): array
     {
-        $conditions = [];
         $params = [];
+        $conditions = $this->buildDistinctDayConditions($filter, $params);
+        $sql = $this->buildDistinctDayQuery($conditions, (int)$filter->maxDays);
+
+        $stmt = $this->execute($sql, $params);
+
+        return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    /**
+     * @param array<string,mixed> $params
+     * @return string[]
+     */
+    private function buildDistinctDayConditions(EventSessionFilter $filter, array &$params): array
+    {
+        $conditions = ['es.IsCancelled = 0'];
 
         if ($filter->eventTypeId !== null) {
             $conditions[] = 'e.EventTypeId = :eventTypeId';
@@ -469,41 +481,53 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             $params['eventIsActive'] = $filter->eventIsActive ? 1 : 0;
         }
 
-        $conditions[] = 'es.IsCancelled = 0';
-
         if ($filter->eventId !== null) {
             $conditions[] = 'es.EventId = :eventId';
             $params['eventId'] = $filter->eventId;
         }
 
-        if ($filter->visibleDays !== null && $filter->visibleDays !== []) {
-            if (count($filter->visibleDays) < 7) {
-                $dayParams = [];
-                foreach (array_values($filter->visibleDays) as $index => $day) {
-                    $key = 'visDay' . $index;
-                    $dayParams[] = ':' . $key;
-                    $params[$key] = (int) $day;
-                }
-                $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
-            }
+        $this->appendVisibleDayCondition($conditions, $params, $filter->visibleDays);
+
+        return $conditions;
+    }
+
+    /**
+     * @param string[] $conditions
+     * @param array<string,mixed> $params
+     * @param int[]|null $visibleDays
+     */
+    private function appendVisibleDayCondition(array &$conditions, array &$params, ?array $visibleDays): void
+    {
+        if ($visibleDays === null || $visibleDays === [] || count($visibleDays) >= 7) {
+            return;
         }
 
+        $dayParams = [];
+
+        foreach (array_values($visibleDays) as $index => $day) {
+            $key = 'visDay' . $index;
+            $dayParams[] = ':' . $key;
+            $params[$key] = (int)$day;
+        }
+
+        $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
+    }
+
+    /**
+     * @param string[] $conditions
+     */
+    private function buildDistinctDayQuery(array $conditions, int $maxDays): string
+    {
         $whereClause = $conditions !== [] ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
-        $sql = "
+        return "
             SELECT DISTINCT DATE(es.StartDateTime) AS date, DAYNAME(es.StartDateTime) AS dayName
             FROM EventSession es
             INNER JOIN Event e ON es.EventId = e.EventId
             {$whereClause}
             ORDER BY date ASC
+            LIMIT {$maxDays}
         ";
-
-        $maxDays = (int)$filter->maxDays;
-        $sql .= ' LIMIT ' . (int) $maxDays;
-
-        $stmt = $this->execute($sql, $params);
-
-        return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /**

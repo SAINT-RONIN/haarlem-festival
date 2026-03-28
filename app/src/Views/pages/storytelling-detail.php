@@ -8,15 +8,20 @@
  * @var \App\ViewModels\Storytelling\StorytellingDetailPageViewModel $viewModel
  */
 
-$includeHero = false;
-$pageContentPartials = [
-    // Custom full-screen hero with inline nav — replaces the shared hero.php partial.
-    __DIR__ . '/../partials/storytelling/detail-hero.php',
-    // Renders the about, highlights, gallery, and video sections for this event.
-    __DIR__ . '/../partials/storytelling/detail-content.php',
-    // Renders the session schedule scoped to this specific storytelling event.
-    __DIR__ . '/../partials/storytelling/detail-schedule.php',
-];
-?>
-<?php require __DIR__ . '/../partials/_shell.php'; ?>
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
+use App\View\ViewTemplate;
 
+$layout = new PublicPageLayout(
+    contentTemplates: [
+        // Custom full-screen hero with inline nav — replaces the shared hero.php partial.
+        new ViewTemplate(__DIR__ . '/../partials/storytelling/detail-hero.php'),
+        // Renders the about, highlights, gallery, and video sections for this event.
+        new ViewTemplate(__DIR__ . '/../partials/storytelling/detail-content.php'),
+        // Renders the session schedule scoped to this specific storytelling event.
+        new ViewTemplate(__DIR__ . '/../partials/storytelling/detail-schedule.php'),
+    ],
+    includeHero: false,
+);
+?>
+<?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', ['viewModel' => $viewModel, 'layout' => $layout]); ?>

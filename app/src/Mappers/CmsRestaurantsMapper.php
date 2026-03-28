@@ -12,6 +12,41 @@ use App\ViewModels\Cms\CmsRestaurantsListViewModel;
 
 class CmsRestaurantsMapper
 {
+    public static function emptyData(): RestaurantUpsertData
+    {
+        return new RestaurantUpsertData('', '', '', null, '', '', null, true, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
+     * @param array<string, mixed> $input
+     */
+    public static function fromFormInput(array $input): RestaurantUpsertData
+    {
+        return new RestaurantUpsertData(
+            name: (string)($input['name'] ?? ''),
+            addressLine: (string)($input['addressLine'] ?? ''),
+            city: (string)($input['city'] ?? ''),
+            stars: self::intOrNull($input['stars'] ?? null),
+            cuisineType: (string)($input['cuisineType'] ?? ''),
+            descriptionHtml: (string)($input['descriptionHtml'] ?? ''),
+            imageAssetId: self::intOrNull($input['imageAssetId'] ?? null),
+            isActive: (bool)($input['isActive'] ?? false),
+            phone: self::stringOrNull($input['phone'] ?? null),
+            email: self::stringOrNull($input['email'] ?? null),
+            website: self::stringOrNull($input['website'] ?? null),
+            aboutText: self::stringOrNull($input['aboutText'] ?? null),
+            chefName: self::stringOrNull($input['chefName'] ?? null),
+            chefText: self::stringOrNull($input['chefText'] ?? null),
+            menuDescription: self::stringOrNull($input['menuDescription'] ?? null),
+            locationDescription: self::stringOrNull($input['locationDescription'] ?? null),
+            mapEmbedUrl: self::stringOrNull($input['mapEmbedUrl'] ?? null),
+            michelinStars: self::intOrNull($input['michelinStars'] ?? null),
+            seatsPerSession: self::intOrNull($input['seatsPerSession'] ?? null),
+            durationMinutes: self::intOrNull($input['durationMinutes'] ?? null),
+            specialRequestsNote: self::stringOrNull($input['specialRequestsNote'] ?? null),
+        );
+    }
+
     /**
      * @param Restaurant[] $restaurants
      */
@@ -141,5 +176,24 @@ class CmsRestaurantsMapper
             'durationMinutes'     => $r->durationMinutes,
             'specialRequestsNote' => $r->specialRequestsNote,
         ];
+    }
+
+    private static function stringOrNull(mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+        return $trimmed === '' ? null : $trimmed;
+    }
+
+    private static function intOrNull(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (int)$value;
     }
 }

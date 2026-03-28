@@ -9,13 +9,14 @@ use App\DTOs\Cms\CmsItemEditData;
 use App\DTOs\Cms\CmsMediaAssetData;
 use App\Models\MediaAsset;
 use App\Repositories\Interfaces\IMediaAssetRepository;
+use App\Services\Interfaces\ICmsItemEnricher;
 use App\Utils\CmsContentLimits;
 
 /**
  * Enriches raw CmsItem records with media-asset metadata and editor-input type info
  * so the CMS editor UI has everything it needs to render each field correctly.
  */
-final class CmsItemEnricher
+final class CmsItemEnricher implements ICmsItemEnricher
 {
     public function __construct(
         private readonly IMediaAssetRepository $mediaAssetRepository,

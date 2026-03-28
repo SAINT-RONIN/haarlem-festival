@@ -7,12 +7,20 @@
  * @var \App\ViewModels\Storytelling\StorytellingPageViewModel $viewModel
  */
 
-$includeEventSections = true;
-$pageContentPartials = [
-    // Displays the masonry image grid that introduces the storytelling event visually.
-    __DIR__ . '/../partials/storytelling-masonry-section.php',
-    // Displays the full session schedule so visitors can browse available dates and times.
-    __DIR__ . '/../partials/sections/schedule/schedule-section.php',
-];
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
+use App\View\ViewTemplate;
+
+$layout = new PublicPageLayout(
+    contentTemplates: [
+        // Displays the masonry image grid that introduces the storytelling event visually.
+        new ViewTemplate(__DIR__ . '/../partials/storytelling-masonry-section.php'),
+        // Displays the full session schedule so visitors can browse available dates and times.
+        new ViewTemplate(__DIR__ . '/../partials/sections/schedule/schedule-section.php', [
+            'scheduleSection' => $viewModel->scheduleSection,
+        ]),
+    ],
+    includeEventSections: true,
+);
 ?>
-<?php require __DIR__ . '/../partials/_shell.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', ['viewModel' => $viewModel, 'layout' => $layout]); ?>

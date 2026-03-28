@@ -9,7 +9,6 @@ use App\Constants\StorytellingPageConstants;
 use App\DTOs\Pages\StorytellingPageData;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IStorytellingContentRepository;
-use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IStorytellingService;
 
 /**
@@ -35,11 +34,10 @@ class StorytellingService extends BaseContentService implements IStorytellingSer
      */
     public function getStorytellingPageData(): StorytellingPageData
     {
-        try {
-            return $this->assembleStorytellingPageData();
-        } catch (\Throwable $error) {
-            throw new PageLoadException('Failed to load the Storytelling page.', 0, $error);
-        }
+        return $this->guardPageLoad(
+            fn (): StorytellingPageData => $this->assembleStorytellingPageData(),
+            'Failed to load the Storytelling page.',
+        );
     }
 
     /** Fetches all CMS sections and assembles the storytelling page data. */

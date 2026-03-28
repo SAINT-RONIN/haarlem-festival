@@ -5,9 +5,12 @@
  * @var \App\ViewModels\Restaurant\RestaurantDetailViewModel $viewModel
  */
 
-$includeEventSections = false;
-$pageContentPartials = [
-    __DIR__ . '/../partials/restaurant/detail-content.php',
-];
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
+use App\View\ViewTemplate;
+
+$layout = new PublicPageLayout(contentTemplates: [
+    new ViewTemplate(__DIR__ . '/../partials/restaurant/detail-content.php'),
+]);
 ?>
-<?php require __DIR__ . '/../partials/_shell.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', ['viewModel' => $viewModel, 'layout' => $layout]); ?>

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
+use App\DTOs\Cms\EventSessionUpsertData;
+use App\DTOs\Cms\EventUpsertData;
 use App\Exceptions\ValidationException;
 use App\DTOs\Events\EventEditBundle;
 use App\DTOs\Events\EventsListPageData;
@@ -63,7 +65,7 @@ interface ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function createEvent(array $data): int;
+    public function createEvent(EventUpsertData $data): int;
 
     /**
      * Gets a single event with all related data for editing.
@@ -76,21 +78,21 @@ interface ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function updateEvent(int $eventId, array $data): bool;
+    public function updateEvent(int $eventId, EventUpsertData $data): bool;
 
     /**
      * Creates a new event session.
      *
      * @throws ValidationException
      */
-    public function createSession(int $eventId, array $data): int;
+    public function createSession(int $eventId, EventSessionUpsertData $data): int;
 
     /**
      * Updates an event session.
      *
      * @throws ValidationException
      */
-    public function updateSession(int $sessionId, array $data): bool;
+    public function updateSession(int $sessionId, EventSessionUpsertData $data): bool;
 
     /**
      * Hard-deletes an event session. Blocked if tickets have been sold for this session.

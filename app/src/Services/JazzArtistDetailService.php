@@ -8,7 +8,7 @@ use App\Constants\JazzArtistDetailConstants;
 use App\Constants\SharedSectionKeys;
 use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Helpers\SlugHelper;
-use App\Models\JazzArtistDetailCmsData;
+use App\Content\JazzArtistDetailCmsData;
 use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Pages\JazzArtistDetailPageData;
 use App\Repositories\Interfaces\IArtistDetailRepository;

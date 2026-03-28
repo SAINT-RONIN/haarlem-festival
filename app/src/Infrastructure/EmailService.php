@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
+use App\Exceptions\EmailDeliveryException;
 use App\Exceptions\SmtpNotConfiguredException;
 use App\Infrastructure\Interfaces\IEmailService;
-use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
 /**
@@ -56,7 +56,7 @@ class EmailService implements IEmailService
      *
      * @param string $toEmail Recipient email address
      * @param string $rawToken The raw token (will be included in URL)
-     * @return bool True if sent/logged successfully
+     * @return bool True if sent successfully
      */
     public function sendPasswordResetEmail(string $toEmail, string $rawToken): bool
     {
@@ -105,7 +105,6 @@ EMAIL;
             throw new SmtpNotConfiguredException("Cannot send mail to local email address '{$to}'.");
         }
 
-        // Email has been sent successfully if we reach this point, even if it fails to send, we log the error and return false
         return $this->sendViaSmtp($to, $subject, $body);
     }
 
@@ -130,31 +129,26 @@ EMAIL;
      */
     private function sendViaSmtp(string $to, string $subject, string $body): bool
     {
-        $mail = new PHPMailer(true);
+        $mail = new PHPMailer(false);
+        $mail->isSMTP();
+        $mail->Host = $this->host;
+        $mail->SMTPAuth = true;
+        $mail->Username = $this->username;
+        $mail->Password = $this->password;
+        $mail->SMTPSecure = $this->resolveEncryption();
+        $mail->Port = $this->port;
 
-        try {
-            $mail->isSMTP();
-            $mail->Host = $this->host;
-            $mail->SMTPAuth = true;
-            $mail->Username = $this->username;
-            $mail->Password = $this->password;
-            $mail->SMTPSecure = $this->resolveEncryption();
-            $mail->Port = $this->port;
+        $mail->setFrom($this->fromAddress, $this->fromName);
+        $mail->addAddress($to);
+        $mail->Subject = $subject;
+        $mail->Body = $body;
+        $mail->isHTML(false);
 
-            // Email settings
-            $mail->setFrom($this->fromAddress, $this->fromName);
-            $mail->addAddress($to);
-            $mail->Subject = $subject;
-            $mail->Body = $body;
-            $mail->isHTML(false);
-
-            $mail->send();
-            return true;
-        } catch (Exception $e) {
-            $error = $mail->ErrorInfo !== '' ? $mail->ErrorInfo : $e->getMessage();
-            error_log('Email sending failed: ' . $error);
-            return false;
+        if (!$mail->send()) {
+            throw new EmailDeliveryException('Email sending failed: ' . $mail->ErrorInfo);
         }
+
+        return true;
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTOs\Auth\RegistrationFormData;
 use App\Enums\UserRoleId;
 use App\Helpers\UserValidationHelper;
 use App\Infrastructure\Interfaces\IEmailService;
@@ -95,20 +96,20 @@ class AuthService implements IAuthService
      *
      * @return array<string, string> Field name => error message
      */
-    public function validateRegistration(array $data): array
+    public function validateRegistration(RegistrationFormData $data): array
     {
         $errors = [];
-        $errors = $this->validateUsername($data['username'] ?? '', $errors);
-        $errors = $this->validateEmail($data['email'] ?? '', $errors);
-        $errors = $this->validatePasswords($data['password'] ?? '', $data['confirmPassword'] ?? '', $errors);
+        $errors = $this->validateUsername($data->username, $errors);
+        $errors = $this->validateEmail($data->email, $errors);
+        $errors = $this->validatePasswords($data->password, $data->confirmPassword, $errors);
         $errors = $this->validateNames($data, $errors);
 
         return $errors;
     }
 
-    private function validateNames(array $data, array $errors): array
+    private function validateNames(RegistrationFormData $data, array $errors): array
     {
-        return array_merge($errors, UserValidationHelper::checkNames($data['firstName'] ?? '', $data['lastName'] ?? ''));
+        return array_merge($errors, UserValidationHelper::checkNames($data->firstName, $data->lastName));
     }
 
     /**
@@ -169,17 +170,17 @@ class AuthService implements IAuthService
      * @return int The new user's ID
      * @throws AuthenticationException When registration persistence fails
      */
-    public function register(array $data): int
+    public function register(RegistrationFormData $data): int
     {
         try {
-            $passwordHash = PasswordHasher::hash($data['password']);
+            $passwordHash = PasswordHasher::hash($data->password);
 
             return $this->userRepository->createUser(
-                username: trim($data['username']),
-                email: trim($data['email']),
+                username: trim($data->username),
+                email: trim($data->email),
                 passwordHash: $passwordHash,
-                firstName: trim($data['firstName']),
-                lastName: trim($data['lastName']),
+                firstName: trim($data->firstName),
+                lastName: trim($data->lastName),
                 roleId: UserRoleId::Customer->value,
             );
         } catch (\Throwable $error) {

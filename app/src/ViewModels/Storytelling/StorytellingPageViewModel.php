@@ -20,7 +20,6 @@ final readonly class StorytellingPageViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
-        array $cms,
         public GradientSectionData $gradientSection,
         public IntroSplitSectionData $introSplitSection,
         public MasonrySectionData $masonrySection,
@@ -30,7 +29,6 @@ final readonly class StorytellingPageViewModel extends BaseViewModel
             heroData: $heroData,
             globalUi: $globalUi,
             currentPage: $heroData->currentPage,
-            cms: $cms,
             includeNav: false,
         );
     }

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Checkout\Interfaces\IOrderCapacityRestorer;
 use App\Constants\CheckoutConstraints;
 use App\Enums\OrderStatus;
-use App\Mappers\CheckoutMapper;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Infrastructure\Interfaces\IStripeService;
 use App\DTOs\Program\ProgramData;
 use App\DTOs\Program\ProgramItemData;
-use App\Models\CheckoutMainContent;
+use App\Content\CheckoutMainContent;
 use App\Repositories\Interfaces\ICheckoutContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
@@ -22,6 +22,8 @@ use App\DTOs\Checkout\CheckoutCancelResult;
 use App\DTOs\Checkout\CheckoutSessionResult;
 use App\DTOs\Checkout\CheckoutSessionSummary;
 use App\Exceptions\CheckoutException;
+use App\Exceptions\CheckoutInputException;
+use App\Exceptions\CheckoutSessionException;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
 use PDO;
@@ -45,6 +47,7 @@ class CheckoutService implements ICheckoutService
         private readonly ICheckoutRuntimeConfig $runtimeConfig,
         private readonly PDO $pdo,
         private readonly ICheckoutContentRepository $checkoutContentRepository,
+        private readonly IOrderCapacityRestorer $orderCapacityRestorer,
     ) {
     }
 
@@ -72,7 +75,7 @@ class CheckoutService implements ICheckoutService
     private function validatePositiveTotal(float $total): void
     {
         if ($total <= 0) {
-            throw new CheckoutException('Total amount must be greater than zero.');
+            throw new CheckoutInputException('Total amount must be greater than zero.');
         }
     }
 
@@ -105,7 +108,7 @@ class CheckoutService implements ICheckoutService
     private function validateProgramNotEmpty(ProgramData $programData): void
     {
         if ($programData->program === null || $programData->items === []) {
-            throw new CheckoutException('Your program is empty.');
+            throw new CheckoutInputException('Your program is empty.');
         }
     }
 
@@ -159,7 +162,7 @@ class CheckoutService implements ICheckoutService
             $reserved = $this->eventSessionRepository->decrementCapacity($item->eventSessionId, $item->quantity);
 
             if (!$reserved) {
-                throw new CheckoutException(
+                throw new CheckoutInputException(
                     "Seats no longer available for '{$item->eventTitle}'. Please update your program."
                 );
             }
@@ -181,14 +184,63 @@ class CheckoutService implements ICheckoutService
         string $orderNumber,
         PaymentMethod $method,
     ): string {
+        $session = $this->createStripeSession($programData, $userId, $payload, $orderId, $paymentId, $orderNumber, $method);
+
+        $sessionId = (string)($session['id'] ?? '');
+        $checkoutUrl = (string)($session['url'] ?? '');
+
+        if ($sessionId === '' || $checkoutUrl === '') {
+            throw new CheckoutSessionException('Stripe checkout session could not be created.');
+        }
+
+        $this->linkStripeIds($paymentId, $session, $sessionId);
+
+        return $checkoutUrl;
+    }
+
+    /**
+     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
+     * @return array<string,mixed>
+     */
+    private function createStripeSession(
+        ProgramData $programData,
+        int $userId,
+        array $payload,
+        int $orderId,
+        int $paymentId,
+        string $orderNumber,
+        PaymentMethod $method,
+    ): array {
+        try {
+            return $this->stripeService->createCheckoutSession(
+                $this->buildStripeSessionParams($programData, $userId, $payload, $orderId, $paymentId, $orderNumber, $method),
+            );
+        } catch (\Throwable $error) {
+            throw new CheckoutSessionException('Stripe checkout session could not be created.', 0, $error);
+        }
+    }
+
+    /**
+     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
+     * @return array<string,mixed>
+     */
+    private function buildStripeSessionParams(
+        ProgramData $programData,
+        int $userId,
+        array $payload,
+        int $orderId,
+        int $paymentId,
+        string $orderNumber,
+        PaymentMethod $method,
+    ): array {
         $appUrl = $this->runtimeConfig->getAppUrl();
 
-        $session = $this->stripeService->createCheckoutSession([
+        return [
             'mode' => 'payment',
             'success_url' => $appUrl . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => $appUrl . '/checkout/cancel?order_id=' . $orderId . '&payment_id=' . $paymentId,
             'payment_method_types' => $this->mapStripePaymentMethodTypes($method),
-            'line_items' => CheckoutMapper::buildStripeLineItems($programData->total, $orderNumber),
+            'line_items' => $this->buildStripeLineItems($programData->total, $orderNumber),
             'customer_email' => (string)$payload['email'],
             'client_reference_id' => $orderNumber,
             'metadata' => [
@@ -199,18 +251,7 @@ class CheckoutService implements ICheckoutService
                 'first_name' => (string)$payload['firstName'],
                 'last_name' => (string)$payload['lastName'],
             ],
-        ]);
-
-        $sessionId = (string)($session['id'] ?? '');
-        $checkoutUrl = (string)($session['url'] ?? '');
-
-        if ($sessionId === '' || $checkoutUrl === '') {
-            throw new CheckoutException('Stripe checkout session could not be created.');
-        }
-
-        $this->linkStripeIds($paymentId, $session, $sessionId);
-
-        return $checkoutUrl;
+        ];
     }
 
     /** Links Stripe session and payment intent identifiers back to the payment record. */
@@ -232,15 +273,8 @@ class CheckoutService implements ICheckoutService
      */
     public function handleCancel(?int $orderId, ?int $paymentId): CheckoutCancelResult
     {
-        if ($orderId !== null) {
-            // Restore reserved capacity for each session in the cancelled order
-            $this->restoreOrderCapacity($orderId);
-            $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Cancelled, [OrderStatus::Pending]);
-        }
-
-        if ($paymentId !== null) {
-            $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Cancelled, [PaymentStatus::Pending]);
-        }
+        $this->cancelOrderIfPresent($orderId);
+        $this->cancelPaymentIfPresent($paymentId);
 
         return new CheckoutCancelResult(
             status: 'cancelled',
@@ -261,15 +295,40 @@ class CheckoutService implements ICheckoutService
             throw new \InvalidArgumentException('Missing Stripe session id.');
         }
 
-        $session = $this->stripeService->retrieveCheckoutSession($sessionId);
+        $session = $this->loadCheckoutSession($sessionId);
 
         return new CheckoutSessionSummary(
-            sessionId: $session['id'] ?? '',
-            paymentStatus: $session['payment_status'] ?? 'unpaid',
-            status: $session['status'] ?? 'open',
+            orderReference: (string)($session['client_reference_id'] ?? ''),
             amountTotal: isset($session['amount_total']) ? ((int)$session['amount_total'] / 100) : 0,
             currency: strtoupper((string)($session['currency'] ?? 'eur')),
         );
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function loadCheckoutSession(string $sessionId): array
+    {
+        try {
+            return $this->stripeService->retrieveCheckoutSession($sessionId);
+        } catch (\Throwable $error) {
+            throw new CheckoutSessionException('Stripe checkout session could not be loaded.', 0, $error);
+        }
+    }
+
+    /**
+     * @return array<int, array{price_data: array{currency: string, unit_amount: int, product_data: array{name: string}}, quantity: int}>
+     */
+    private function buildStripeLineItems(float $total, string $orderNumber): array
+    {
+        return [[
+            'price_data' => [
+                'currency' => 'eur',
+                'unit_amount' => (int)round($total * 100),
+                'product_data' => ['name' => 'Haarlem Festival order ' . $orderNumber],
+            ],
+            'quantity' => 1,
+        ]];
     }
 
     /**
@@ -335,7 +394,7 @@ class CheckoutService implements ICheckoutService
         $capacity = $this->eventSessionRepository->getCapacityInfo($item->eventSessionId);
 
         if ($capacity === null) {
-            throw new CheckoutException("Session for '{$item->eventTitle}' no longer exists.");
+            throw new CheckoutInputException("Session for '{$item->eventTitle}' no longer exists.");
         }
 
         $available = $capacity->getAvailableSeats();
@@ -347,11 +406,11 @@ class CheckoutService implements ICheckoutService
     private function validateSeatAvailability(ProgramItemData $item, int $available): void
     {
         if ($available <= 0) {
-            throw new CheckoutException("'{$item->eventTitle}' is sold out.");
+            throw new CheckoutInputException("'{$item->eventTitle}' is sold out.");
         }
 
         if ($item->quantity > $available) {
-            throw new CheckoutException(
+            throw new CheckoutInputException(
                 "Only {$available} seats remaining for '{$item->eventTitle}'. You requested {$item->quantity}."
             );
         }
@@ -367,25 +426,29 @@ class CheckoutService implements ICheckoutService
         }
 
         $remaining = max(0, $singleTicketCap - $capacity->soldSingleTickets);
-        throw new CheckoutException(
+        throw new CheckoutInputException(
             "Single-ticket limit reached for '{$item->eventTitle}'. "
             . ($remaining > 0 ? "Only {$remaining} single tickets remaining." : 'Passes may still be available.')
         );
     }
 
-    /**
-     * Restores reserved capacity for all sessions in an order.
-     * Called when an order is cancelled or a payment fails/expires.
-     */
-    private function restoreOrderCapacity(int $orderId): void
+    private function cancelOrderIfPresent(?int $orderId): void
     {
-        $orderItems = $this->orderItemRepository->findByOrderId($orderId);
-
-        foreach ($orderItems as $item) {
-            if ($item->eventSessionId !== null && $item->eventSessionId > 0) {
-                $this->eventSessionRepository->restoreCapacity($item->eventSessionId, $item->quantity);
-            }
+        if ($orderId === null) {
+            return;
         }
+
+        $this->orderCapacityRestorer->restore($orderId);
+        $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Cancelled, [OrderStatus::Pending]);
+    }
+
+    private function cancelPaymentIfPresent(?int $paymentId): void
+    {
+        if ($paymentId === null) {
+            return;
+        }
+
+        $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Cancelled, [PaymentStatus::Pending]);
     }
 
     private function toMoneyString(float $value): string
@@ -406,4 +469,3 @@ class CheckoutService implements ICheckoutService
         return $this->checkoutContentRepository->findCheckoutMainContent('checkout', 'main');
     }
 }
-

@@ -6,7 +6,7 @@ namespace App\DTOs\Auth;
 
 /**
  * Typed carrier for user registration form fields.
- * Extracted from POST in AuthController, validated by AuthService.
+ * Built from raw request data by AuthMapper, then validated by AuthService.
  */
 final readonly class RegistrationFormData
 {
@@ -21,7 +21,7 @@ final readonly class RegistrationFormData
     }
 
     /**
-     * Converts to the associative array format expected by AuthService.
+     * Converts to an array for flash-based form repopulation after validation errors.
      *
      * @return array<string, string>
      */

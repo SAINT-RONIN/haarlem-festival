@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
-use App\Models\GlobalUiContent;
-use App\Models\GradientSectionContent;
-use App\Models\HeroSectionContent;
-use App\Models\HistoryRouteSectionContent;
-use App\Models\HistoryTicketOptionsSectionContent;
-use App\Models\HistoryTourInfoSectionContent;
-use App\Models\HistoryVenuesSectionContent;
-use App\Models\IntroSectionContent;
+use App\Content\GlobalUiContent;
+use App\Content\GradientSectionContent;
+use App\Content\HeroSectionContent;
+use App\Content\HistoryRouteSectionContent;
+use App\Content\HistoryTicketOptionsSectionContent;
+use App\Content\HistoryTourInfoSectionContent;
+use App\Content\HistoryVenuesSectionContent;
+use App\Content\IntroSectionContent;
 
 /**
  * Carries all CMS sections needed to render the History overview page.

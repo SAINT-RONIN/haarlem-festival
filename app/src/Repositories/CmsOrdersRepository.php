@@ -33,8 +33,6 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
      */
     private function buildQuery(bool $withStatusFilter): string
     {
-        $statusClause = $withStatusFilter ? ' AND o.Status = :status' : '';
-
         return "
             SELECT
                 o.OrderId,
@@ -44,36 +42,48 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
                 o.TotalAmount,
                 o.CreatedAtUtc,
                 ua.Email,
-                (
-                    /* Build a comma-separated summary like '2x Jazz Night, 1x History Tour #5'.
-                       COALESCE picks the first non-null label among event session, tour, or pass. */
-                    SELECT GROUP_CONCAT(
-                        CONCAT(oi.Quantity, 'x ',
-                            COALESCE(
-                                (SELECT e.Title FROM Event e
-                                 JOIN EventSession es ON e.EventId = es.EventId
-                                 WHERE es.EventSessionId = oi.EventSessionId),
-                                (SELECT CONCAT('History Tour #', oi.HistoryTourId)),
-                                (SELECT CONCAT('Pass #', oi.PassPurchaseId)),
-                                'Unknown item'
-                            )
-                        ) SEPARATOR ', '
-                    )
-                    FROM OrderItem oi
-                    WHERE oi.OrderId = o.OrderId
-                ) AS ItemsSummary,
-                (
-                    /* Latest payment status -- an order may have multiple payment attempts */
-                    SELECT p.Status
-                    FROM Payment p
-                    WHERE p.OrderId = o.OrderId
-                    ORDER BY p.CreatedAtUtc DESC
-                    LIMIT 1
-                ) AS PaymentStatus
+                {$this->buildItemsSummarySelect()} AS ItemsSummary,
+                {$this->buildPaymentStatusSelect()} AS PaymentStatus
             FROM `Order` o
             LEFT JOIN UserAccount ua ON o.UserAccountId = ua.UserAccountId
-            WHERE 1 = 1{$statusClause}
+            WHERE 1 = 1{$this->buildStatusClause($withStatusFilter)}
             ORDER BY o.CreatedAtUtc DESC
         ";
+    }
+
+    private function buildStatusClause(bool $withStatusFilter): string
+    {
+        return $withStatusFilter ? ' AND o.Status = :status' : '';
+    }
+
+    private function buildItemsSummarySelect(): string
+    {
+        return "(
+            SELECT GROUP_CONCAT(
+                CONCAT(oi.Quantity, 'x ',
+                    COALESCE(
+                        (SELECT e.Title FROM Event e
+                         JOIN EventSession es ON e.EventId = es.EventId
+                         WHERE es.EventSessionId = oi.EventSessionId),
+                        (SELECT CONCAT('History Tour #', oi.HistoryTourId)),
+                        (SELECT CONCAT('Pass #', oi.PassPurchaseId)),
+                        'Unknown item'
+                    )
+                ) SEPARATOR ', '
+            )
+            FROM OrderItem oi
+            WHERE oi.OrderId = o.OrderId
+        )";
+    }
+
+    private function buildPaymentStatusSelect(): string
+    {
+        return "(
+            SELECT p.Status
+            FROM Payment p
+            WHERE p.OrderId = o.OrderId
+            ORDER BY p.CreatedAtUtc DESC
+            LIMIT 1
+        )";
     }
 }

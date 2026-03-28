@@ -27,11 +27,18 @@ class ScheduleDayConfigRepository extends BaseRepository implements IScheduleDay
      */
     public function findConfigs(ScheduleDayConfigFilter $filter = new ScheduleDayConfigFilter()): array
     {
-        $includeEventTypeName = (bool)($filter->includeEventTypeName ?? false);
+        $params = [];
+        $sql = $this->buildConfigQuery((bool)($filter->includeEventTypeName ?? false));
+        $sql .= $this->buildEventTypeFilterClause($filter->eventTypeId, $params);
+        $sql .= $this->resolveOrderClause($filter->orderBy);
 
-        // When event type name is needed, join EventType to resolve the display label
-        $sql = $includeEventTypeName
-            ? '
+        return $this->fetchAll($sql, $params, fn(array $row) => ScheduleDayConfig::fromRow($row));
+    }
+
+    private function buildConfigQuery(bool $includeEventTypeName): string
+    {
+        if ($includeEventTypeName) {
+            return '
                 SELECT
                     sdc.ScheduleDayConfigId,
                     sdc.EventTypeId,
@@ -41,32 +48,42 @@ class ScheduleDayConfigRepository extends BaseRepository implements IScheduleDay
                 FROM ScheduleDayConfig sdc
                 LEFT JOIN EventType et ON sdc.EventTypeId = et.EventTypeId AND sdc.EventTypeId IS NOT NULL
                 WHERE 1 = 1
-            '
-            : '
-                SELECT
-                    sdc.ScheduleDayConfigId,
-                    sdc.EventTypeId,
-                    sdc.DayOfWeek,
-                    sdc.IsVisible
-                FROM ScheduleDayConfig sdc
-                WHERE 1 = 1
             ';
-
-        $params = [];
-
-        if ($filter->eventTypeId !== null) {
-            $sql .= ' AND sdc.EventTypeId = :eventTypeId';
-            $params['eventTypeId'] = (int)$filter->eventTypeId;
         }
 
-        $requestedOrder = is_string($filter->orderBy) ? $filter->orderBy : 'scope';
+        return '
+            SELECT
+                sdc.ScheduleDayConfigId,
+                sdc.EventTypeId,
+                sdc.DayOfWeek,
+                sdc.IsVisible
+            FROM ScheduleDayConfig sdc
+            WHERE 1 = 1
+        ';
+    }
+
+    /**
+     * @param array<string,mixed> $params
+     */
+    private function buildEventTypeFilterClause(?int $eventTypeId, array &$params): string
+    {
+        if ($eventTypeId === null) {
+            return '';
+        }
+
+        $params['eventTypeId'] = $eventTypeId;
+        return ' AND sdc.EventTypeId = :eventTypeId';
+    }
+
+    private function resolveOrderClause(mixed $orderBy): string
+    {
+        $requestedOrder = is_string($orderBy) ? $orderBy : 'scope';
         $allowedOrders = [
             'scope' => ' ORDER BY (sdc.EventTypeId = 0) DESC, sdc.EventTypeId ASC, sdc.DayOfWeek ASC',
             'day' => ' ORDER BY sdc.DayOfWeek ASC',
         ];
-        $sql .= $allowedOrders[$requestedOrder] ?? $allowedOrders['scope'];
 
-        return $this->fetchAll($sql, $params, fn(array $row) => ScheduleDayConfig::fromRow($row));
+        return $allowedOrders[$requestedOrder] ?? $allowedOrders['scope'];
     }
 
     /**

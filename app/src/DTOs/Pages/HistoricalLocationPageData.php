@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\DTOs\Pages;
 
-use App\Models\GlobalUiContent;
-use App\Models\HeroSectionContent;
-use App\Models\HistoricalLocationFactsContent;
-use App\Models\HistoricalLocationHeroContent;
-use App\Models\HistoricalLocationIntroContent;
-use App\Models\HistoricalLocationSignificanceContent;
+use App\Content\GlobalUiContent;
+use App\Content\HeroSectionContent;
+use App\Content\HistoricalLocationFactsContent;
+use App\Content\HistoricalLocationHeroContent;
+use App\Content\HistoricalLocationIntroContent;
+use App\Content\HistoricalLocationSignificanceContent;
 
 /**
  * Carries all CMS sections needed to render a HistoricalLocation detail page.

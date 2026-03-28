@@ -6,13 +6,13 @@ namespace App\Mappers;
 
 use App\Models\CuisineType;
 use App\Models\Restaurant;
-use App\Models\RestaurantCardsSectionContent;
+use App\Content\RestaurantCardsSectionContent;
 use App\DTOs\Pages\RestaurantDetailData;
-use App\Models\RestaurantDetailSectionContent;
-use App\Models\GradientSectionContent;
-use App\Models\RestaurantInstructionsSectionContent;
-use App\Models\RestaurantIntroSectionContent;
-use App\Models\RestaurantIntroSplit2SectionContent;
+use App\Content\RestaurantDetailSectionContent;
+use App\Content\GradientSectionContent;
+use App\Content\RestaurantInstructionsSectionContent;
+use App\Content\RestaurantIntroSectionContent;
+use App\Content\RestaurantIntroSplit2SectionContent;
 use App\DTOs\Pages\RestaurantPageData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -39,7 +39,6 @@ final class RestaurantViewMapper
         return new RestaurantPageViewModel(
             heroData:               $heroData,
             globalUi:               $globalUi,
-            cms:                    CmsMapper::toCmsData($heroData, $globalUi),
             gradientSection:        self::toGradientSection($data->gradientSection),
             introSplitSection:      self::toIntroSplitSection($data->introSplitSection),
             introSplit2Section:     self::toIntroSplit2Section($data->introSplit2Section),
@@ -58,7 +57,7 @@ final class RestaurantViewMapper
         $globalUi    = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return new RestaurantDetailViewModel(...array_merge(
-            ['heroData' => $heroData, 'globalUi' => $globalUi, 'cms' => CmsMapper::toCmsData($heroData, $globalUi)],
+            ['heroData' => $heroData, 'globalUi' => $globalUi],
             RestaurantContentParser::buildDetailDomainFields($restaurant, $data, $cuisineString),
             RestaurantContentParser::buildDetailCmsLabels($cms),
         ));

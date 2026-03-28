@@ -17,9 +17,9 @@ use App\Services\Interfaces\ISessionService;
  */
 abstract class CmsBaseController extends BaseController
 {
-    public function __construct(
-        protected readonly ISessionService $sessionService,
-    ) {
+    public function __construct(ISessionService $sessionService)
+    {
+        parent::__construct($sessionService);
         $this->requireAdmin();
     }
 
@@ -34,12 +34,43 @@ abstract class CmsBaseController extends BaseController
             $this->sessionService->start();
 
             if (!$this->sessionService->isLoggedIn() || !$this->sessionService->isAdmin()) {
-                header('Location: /cms/login');
-                exit;
+                $this->redirectAndExit('/cms/login');
             }
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
         }
+    }
+
+    /**
+     * @param callable(): void $action
+     */
+    protected function handleCmsPageRequest(callable $action): void
+    {
+        $this->handlePageRequest($action);
+    }
+
+    /**
+     * @param callable(): void $action
+     * @param string|callable(): string $validationRedirectUrl
+     */
+    protected function handleCmsValidationRequest(callable $action, string|callable $validationRedirectUrl): void
+    {
+        try {
+            $action();
+        } catch (ValidationException $error) {
+            $redirectUrl = is_callable($validationRedirectUrl) ? $validationRedirectUrl() : $validationRedirectUrl;
+            $this->redirectWithValidationErrors($error, $redirectUrl);
+        } catch (\Throwable $error) {
+            ControllerErrorResponder::respond($error);
+        }
+    }
+
+    /**
+     * @param callable(): void $action
+     */
+    protected function handleCmsJsonRequest(callable $action): void
+    {
+        $this->handleJsonRequest($action, [ValidationException::class]);
     }
 
     /**
@@ -49,8 +80,7 @@ abstract class CmsBaseController extends BaseController
     {
         if (!$this->sessionService->isValidCsrfToken($scope, $this->readStringPostParam('_csrf'))) {
             $this->sessionService->setFlash('error', 'Invalid CSRF token. Please try again.');
-            header('Location: ' . $redirectUrl);
-            exit;
+            $this->redirectAndExit($redirectUrl);
         }
     }
 
@@ -60,8 +90,7 @@ abstract class CmsBaseController extends BaseController
     protected function redirectWithFlash(string $message, string $type, string $url): void
     {
         $this->sessionService->setFlash($type, $message);
-        header('Location: ' . $url);
-        exit;
+        $this->redirectAndExit($url);
     }
 
     /**

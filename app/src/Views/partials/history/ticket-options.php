@@ -10,6 +10,7 @@
 
 use App\ViewModels\History\TicketOptions;
 use App\ViewModels\History\PricingCard;
+use App\View\ViewRenderer;
 
 /** @var TicketOptions $ticketOptions */
 $ticketOptions = $viewModel->ticketOptionsData;
@@ -23,7 +24,7 @@ $cards   = $ticketOptions->pricingCards;
     <div class="self-stretch grid grid-cols-1 md:grid-cols-2 gap-12 xl:gap-48 justify-items-center items-stretch">
         <?php foreach ($cards as $card): ?>
             <?php /** @var PricingCard $card */ ?>
-            <?php require __DIR__ . '/ticket-type.php'; ?>
+            <?php ViewRenderer::render(__DIR__ . '/ticket-type.php', ['card' => $card]); ?>
         <?php endforeach; ?>
     </div>
 </section>

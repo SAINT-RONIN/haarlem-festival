@@ -10,9 +10,7 @@ namespace App\DTOs\Checkout;
 final readonly class CheckoutSessionSummary
 {
     public function __construct(
-        public string $sessionId,
-        public string $paymentStatus,
-        public string $status,
+        public string $orderReference,
         public float $amountTotal,
         public string $currency,
     ) {

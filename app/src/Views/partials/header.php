@@ -6,6 +6,9 @@
  * @var bool $includeNav Whether to include standalone navigation (false for homepage where nav is in hero)
  * @var bool $isLoggedIn Whether user is logged in (passed from controller/ViewModel, defaults to false)
  */
+
+use App\View\ViewRenderer;
+
 $currentPage = $currentPage ?? 'home';
 $includeNav = $includeNav ?? false;
 $useLayoutWrapper = $useLayoutWrapper ?? false;
@@ -38,5 +41,8 @@ $isLoggedIn = $isLoggedIn ?? false;
     <?php endif; ?>
 
     <?php if ($includeNav): ?>
-        <?php require __DIR__ . '/navbar.php'; ?>
+        <?php ViewRenderer::render(__DIR__ . '/navbar.php', [
+            'currentPage' => $currentPage,
+            'isLoggedIn' => $isLoggedIn,
+        ]); ?>
     <?php endif; ?>

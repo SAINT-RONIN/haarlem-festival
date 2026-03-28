@@ -14,8 +14,9 @@ interface IEmailService
      * Sends a password reset email containing a one-time reset link.
      *
      * @param string $resetToken The unhashed token that will be embedded in the reset URL
-     * @return bool True if the email was delivered (or logged in dev mode)
-     * @throws \RuntimeException When SMTP is not configured or sending to local addresses is blocked
+     * @return bool True if the email was delivered
+     * @throws \App\Exceptions\SmtpNotConfiguredException When SMTP is not configured or local sending is blocked
+     * @throws \App\Exceptions\EmailDeliveryException When SMTP delivery fails unexpectedly
      */
     public function sendPasswordResetEmail(string $toEmail, string $resetToken): bool;
 }

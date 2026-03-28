@@ -20,7 +20,11 @@ final readonly class HomePageViewModel extends BaseViewModel
     public function __construct(
         HeroData $heroData,
         GlobalUiData $globalUi,
-        array $cms,
+        public HomeExploreBannerViewModel $exploreBanner,
+        public HomeIntroSectionViewModel $introSection,
+        public HomeEventsHeaderViewModel $eventsHeader,
+        public HomeLocationsSectionViewModel $locationsSection,
+        public HomeScheduleSectionViewModel $schedulePreviewSection,
         public array $eventTypes = [],
         public array $locations = [],
         public array $scheduleDays = [],
@@ -29,7 +33,6 @@ final readonly class HomePageViewModel extends BaseViewModel
             heroData: $heroData,
             globalUi: $globalUi,
             currentPage: $heroData->currentPage,
-            cms: $cms,
             includeNav: false,
         );
     }

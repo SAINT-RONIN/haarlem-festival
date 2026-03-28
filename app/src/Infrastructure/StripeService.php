@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
-use App\Exceptions\PaymentSessionCreationException;
 use App\Exceptions\StripeNotConfiguredException;
 use App\Infrastructure\Interfaces\IStripeService;
 use Stripe\Checkout\Session;
-use Stripe\Exception\ApiErrorException;
-use Stripe\Exception\SignatureVerificationException;
 use Stripe\Stripe;
 use Stripe\StripeClient;
 use Stripe\Webhook;
@@ -17,9 +14,8 @@ use Stripe\Webhook;
 /**
  * Thin adapter around the Stripe PHP SDK for payment processing.
  *
- * Wraps Stripe Checkout Sessions and Webhook signature verification,
- * converting SDK exceptions into standard RuntimeException/InvalidArgumentException.
- * All responses are returned as plain arrays so callers never depend on Stripe SDK types.
+ * Keeps Stripe SDK usage localized and returns plain arrays so the rest of the
+ * application never depends on Stripe SDK types directly.
  */
 final class StripeService implements IStripeService
 {
@@ -50,15 +46,10 @@ final class StripeService implements IStripeService
      *
      * @param array<string,mixed> $params Stripe-native session parameters (mode, line_items, success_url, etc.)
      * @return array<string,mixed> The created session payload including 'id' and 'url' keys
-     * @throws \RuntimeException When the Stripe API rejects the request
      */
     public function createCheckoutSession(array $params): array
     {
-        try {
-            return Session::create($params)->toArray();
-        } catch (ApiErrorException $error) {
-            throw new PaymentSessionCreationException('Stripe checkout session creation failed: ' . $error->getMessage(), 0, $error);
-        }
+        return Session::create($params)->toArray();
     }
 
     /**
@@ -67,7 +58,6 @@ final class StripeService implements IStripeService
      *
      * @return array<string,mixed>
      * @throws \InvalidArgumentException When sessionId is blank
-     * @throws \RuntimeException When the Stripe API call fails
      */
     public function retrieveCheckoutSession(string $sessionId): array
     {
@@ -75,15 +65,11 @@ final class StripeService implements IStripeService
             throw new \InvalidArgumentException('Missing Stripe session id.');
         }
 
-        try {
-            $session = $this->client->checkout->sessions->retrieve($sessionId, [
-                'expand' => ['payment_intent'],
-            ]);
+        $session = $this->client->checkout->sessions->retrieve($sessionId, [
+            'expand' => ['payment_intent'],
+        ]);
 
-            return $session->toArray();
-        } catch (ApiErrorException $error) {
-            throw new PaymentSessionCreationException('Stripe checkout session retrieval failed: ' . $error->getMessage(), 0, $error);
-        }
+        return $session->toArray();
     }
 
     /**
@@ -91,7 +77,6 @@ final class StripeService implements IStripeService
      *
      * @param int $toleranceSeconds Maximum age of the event before rejecting it (guards against replay attacks)
      * @return array<string,mixed> Parsed event with 'id', 'type', and 'data.object' keys
-     * @throws \RuntimeException When the webhook secret is not configured
      * @throws \InvalidArgumentException When the signature is missing, invalid, or the payload is malformed
      */
     public function constructWebhookEvent(string $payload, ?string $signatureHeader, int $toleranceSeconds = 300): array
@@ -104,17 +89,11 @@ final class StripeService implements IStripeService
             throw new \InvalidArgumentException('Missing Stripe-Signature header.');
         }
 
-        try {
-            return Webhook::constructEvent(
-                $payload,
-                $signatureHeader,
-                $this->webhookSecret,
-                $toleranceSeconds,
-            )->toArray();
-        } catch (SignatureVerificationException $error) {
-            throw new \InvalidArgumentException('Invalid Stripe webhook signature: ' . $error->getMessage(), 0, $error);
-        } catch (\UnexpectedValueException $error) {
-            throw new \InvalidArgumentException('Invalid Stripe webhook payload: ' . $error->getMessage(), 0, $error);
-        }
+        return Webhook::constructEvent(
+            $payload,
+            $signatureHeader,
+            $this->webhookSecret,
+            $toleranceSeconds,
+        )->toArray();
     }
 }

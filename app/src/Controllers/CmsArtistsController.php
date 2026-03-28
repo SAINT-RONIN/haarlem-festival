@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
-use App\Mappers\CmsArtistsMapper;
 use App\DTOs\Cms\ArtistUpsertData;
+use App\Mappers\CmsArtistsMapper;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ISessionService;
 
@@ -31,19 +30,15 @@ class CmsArtistsController extends CmsBaseController
     /**
      * Displays the paginated artist list with optional search filtering.
      * GET /cms/artists
-     *
-     * @throws \Throwable Caught internally; rendered via ControllerErrorResponder.
      */
     public function index(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'artists';
             $search      = $this->readStringQueryParam('search');
             $viewModel   = $this->buildArtistsListViewModel($search);
             require __DIR__ . '/../Views/pages/cms/artists.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -52,13 +47,11 @@ class CmsArtistsController extends CmsBaseController
      */
     public function create(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $currentView = 'artists';
-            $viewModel   = $this->buildFormViewModel(null, new ArtistUpsertData('', '', '', null, true), []);
+            $viewModel   = $this->buildFormViewModel(null, CmsArtistsMapper::emptyData(), []);
             require __DIR__ . '/../Views/pages/cms/artist-create.php';
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -67,11 +60,9 @@ class CmsArtistsController extends CmsBaseController
      */
     public function store(): void
     {
-        try {
+        $this->handleCmsPageRequest(function (): void {
             $this->processArtistStore();
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -80,11 +71,9 @@ class CmsArtistsController extends CmsBaseController
      */
     public function edit(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->renderArtistEditPage($id);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -93,11 +82,9 @@ class CmsArtistsController extends CmsBaseController
      */
     public function update(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->processArtistUpdate($id);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /**
@@ -109,13 +96,11 @@ class CmsArtistsController extends CmsBaseController
      */
     public function delete(int $id): void
     {
-        try {
+        $this->handleCmsPageRequest(function () use ($id): void {
             $this->validateCsrf('cms_artist_delete', '/cms/artists');
             $this->artistsService->deleteArtist($id);
             $this->redirectWithFlash('Artist deactivated successfully.', 'success', '/cms/artists');
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /** Fetches artists from the service and maps them to the list ViewModel. */
@@ -151,8 +136,7 @@ class CmsArtistsController extends CmsBaseController
     {
         $artist = $this->artistsService->findById($id);
         if ($artist === null) {
-            http_response_code(404);
-            require __DIR__ . '/../Views/pages/errors/404.php';
+            $this->renderNotFoundPage();
             return;
         }
         $currentView = 'artists';
@@ -177,13 +161,13 @@ class CmsArtistsController extends CmsBaseController
 
     private function extractFormData(): ArtistUpsertData
     {
-        return new ArtistUpsertData(
-            name: $this->readStringPostParam('name') ?? '',
-            style: $this->readStringPostParam('style') ?? '',
-            bioHtml: $_POST['bioHtml'] ?? '',
-            imageAssetId: $this->readOptionalIntPostParam('imageAssetId'),
-            isActive: $this->readBoolPostParam('isActive'),
-        );
+        return CmsArtistsMapper::fromFormInput([
+            'name' => $this->readStringPostParam('name') ?? '',
+            'style' => $this->readStringPostParam('style') ?? '',
+            'bioHtml' => $_POST['bioHtml'] ?? '',
+            'imageAssetId' => $this->readOptionalIntPostParam('imageAssetId'),
+            'isActive' => $this->readBoolPostParam('isActive'),
+        ]);
     }
 
     /**

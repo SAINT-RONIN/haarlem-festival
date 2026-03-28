@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\DTOs\Filters\ScheduleFilterParams;
-use App\Models\ScheduleSectionContent;
+use App\Content\ScheduleSectionContent;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleFilterGroupData;
 use App\ViewModels\Schedule\ScheduleFilterOptionData;

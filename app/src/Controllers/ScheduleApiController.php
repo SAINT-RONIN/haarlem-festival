@@ -31,15 +31,9 @@ class ScheduleApiController extends BaseController
      */
     public function getScheduleHtml(string $pageSlug): void
     {
-        try {
+        $this->handlePageRequest(function () use ($pageSlug): void {
             $this->renderScheduleHtml($pageSlug);
-        } catch (SchedulePageNotFoundException) {
-            http_response_code(404);
-            echo '';
-        } catch (\Throwable) {
-            http_response_code(500);
-            echo '';
-        }
+        });
     }
 
     /** Builds the schedule view model, sets the content-type header, and renders the partial. */

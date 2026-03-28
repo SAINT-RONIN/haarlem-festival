@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\PriceTierId;
 use App\DTOs\Filters\EventSessionFilter;
 use App\Models\Program;
 use App\DTOs\Program\ProgramData;
 use App\DTOs\Filters\ProgramFilter;
+use App\DTOs\Schedule\SessionWithEvent;
 use App\Models\ProgramItem;
 use App\DTOs\Program\ProgramItemData;
 use App\DTOs\Filters\ProgramItemFilter;
+use App\Models\EventSessionPrice;
 use App\Exceptions\ProgramException;
-use App\Mappers\ProgramMapper;
-use App\Models\ProgramMainContent;
+use App\Content\ProgramMainContent;
 use App\Repositories\Interfaces\ICheckoutContentRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
@@ -289,7 +291,7 @@ class ProgramService implements IProgramService
 
         $enrichedItems = [];
         foreach ($programItems as $item) {
-            $enriched = ProgramMapper::toProgramItemData($item, $sessionsById, $pricesBySession);
+            $enriched = $this->buildProgramItemData($item, $sessionsById, $pricesBySession);
             if ($enriched !== null) {
                 $enrichedItems[] = $enriched;
             }
@@ -317,7 +319,7 @@ class ProgramService implements IProgramService
 
     /**
      * @param int[] $sessionIds
-     * @return array<int, \App\Models\EventSession>
+     * @return array<int, SessionWithEvent>
      */
     private function fetchSessionsById(array $sessionIds): array
     {
@@ -362,6 +364,78 @@ class ProgramService implements IProgramService
         }
 
         return $subtotal;
+    }
+
+    /**
+     * @param array<int, SessionWithEvent> $sessionsById
+     * @param array<int, EventSessionPrice[]> $pricesBySession
+     */
+    private function buildProgramItemData(ProgramItem $item, array $sessionsById, array $pricesBySession): ?ProgramItemData
+    {
+        if ($item->eventSessionId === null) {
+            return null;
+        }
+
+        $session = $sessionsById[$item->eventSessionId] ?? null;
+        if ($session === null) {
+            return null;
+        }
+
+        $prices = $pricesBySession[$item->eventSessionId] ?? [];
+
+        return new ProgramItemData(
+            programItemId: $item->programItemId,
+            eventSessionId: $item->eventSessionId,
+            quantity: $item->quantity,
+            donationAmount: (float)($item->donationAmount ?? '0.00'),
+            eventTitle: $session->eventTitle,
+            venueName: $session->venueName,
+            hallName: $session->hallName,
+            startDateTime: $session->startDateTime->format('Y-m-d H:i:s'),
+            endDateTime: $session->endDateTime?->format('Y-m-d H:i:s'),
+            eventTypeId: $session->eventTypeId,
+            eventTypeName: $session->eventTypeName,
+            eventTypeSlug: $session->eventTypeSlug,
+            languageCode: $session->languageCode,
+            minAge: $session->minAge,
+            maxAge: $session->maxAge,
+            isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
+            basePrice: $this->resolveBasePrice($prices),
+        );
+    }
+
+    /**
+     * @param EventSessionPrice[] $prices
+     */
+    private function hasPayWhatYouLikeTier(array $prices): bool
+    {
+        foreach ($prices as $price) {
+            if ($price->priceTierId === PriceTierId::PayWhatYouLike->value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param EventSessionPrice[] $prices
+     */
+    private function resolveBasePrice(array $prices): float
+    {
+        foreach ($prices as $price) {
+            if ($price->priceTierId === PriceTierId::Adult->value) {
+                return (float)$price->price;
+            }
+        }
+
+        foreach ($prices as $price) {
+            if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
+                return (float)$price->price;
+            }
+        }
+
+        return 0.0;
     }
 
 }

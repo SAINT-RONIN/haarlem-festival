@@ -14,15 +14,13 @@ use App\Models\ArtistLineupMember;
 use App\Models\ArtistTrack;
 use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Pages\JazzArtistDetailPageData;
-use App\Models\JazzArtistsSectionContent;
-use App\Models\JazzBookingCtaSectionContent;
+use App\Content\JazzArtistsSectionContent;
+use App\Content\JazzBookingCtaSectionContent;
 use App\DTOs\Pages\JazzPageData;
-use App\Models\JazzPricingSectionContent;
-use App\Models\JazzScheduleCtaSectionContent;
-use App\Models\JazzVenuesSectionContent;
+use App\Content\JazzPricingSectionContent;
+use App\Content\JazzScheduleCtaSectionContent;
+use App\Content\JazzVenuesSectionContent;
 use App\Models\PassType;
-use App\ViewModels\GlobalUiData;
-use App\ViewModels\HeroData;
 use App\ViewModels\Jazz\ArtistCardData;
 use App\ViewModels\Jazz\ArtistsData;
 use App\ViewModels\Jazz\BookingCallToActionData;
@@ -60,23 +58,9 @@ final class JazzMapper
     {
         $heroData = CmsMapper::toHeroData($domain->heroSection, JazzPageConstants::CURRENT_PAGE);
         $globalUi = CmsMapper::toGlobalUiData($domain->globalUiContent, $isLoggedIn);
-        $cms      = CmsMapper::toCmsData($heroData, $globalUi);
 
-        return self::buildPageViewModel($domain, $heroData, $globalUi, $cms, $scheduleSection);
-    }
-
-    /**
-     * @param array<string, mixed> $cms
-     */
-    private static function buildPageViewModel(
-        JazzPageData $domain,
-        HeroData $heroData,
-        GlobalUiData $globalUi,
-        array $cms,
-        ?ScheduleSectionViewModel $scheduleSection,
-    ): JazzPageViewModel {
         return new JazzPageViewModel(
-            heroData: $heroData, globalUi: $globalUi, cms: $cms,
+            heroData: $heroData, globalUi: $globalUi,
             gradientSection: CmsMapper::toGradientSection($domain->gradientSection, JazzPageConstants::DEFAULT_GRADIENT_BACKGROUND_IMAGE),
             introSplitSection: CmsMapper::toIntroSplitSection($domain->introSection, JazzPageConstants::DEFAULT_INTRO_IMAGE, JazzPageConstants::DEFAULT_INTRO_IMAGE_ALT),
             venuesData: self::buildVenuesData($domain->venuesSection),

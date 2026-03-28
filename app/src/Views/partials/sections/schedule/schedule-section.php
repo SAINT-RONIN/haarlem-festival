@@ -7,6 +7,7 @@
  */
 
 use App\Helpers\CmsOutputHelper;
+use App\View\ViewRenderer;
 
 if (!isset($scheduleSection) && isset($viewModel) && property_exists($viewModel, 'scheduleSection')) {
     $scheduleSection = $viewModel->scheduleSection;
@@ -42,7 +43,7 @@ $sectionId = $schedule->sectionId ?? 'schedule';
         </header>
 
         <!-- Filters Row -->
-        <?php require __DIR__ . '/schedule-filters.php'; ?>
+        <?php ViewRenderer::render(__DIR__ . '/schedule-filters.php', ['schedule' => $schedule]); ?>
 
         <!-- Additional Info Box -->
         <?php if ($schedule->showAdditionalInfo && !empty($schedule->additionalInfoBody)): ?>
@@ -75,8 +76,12 @@ $sectionId = $schedule->sectionId ?? 'schedule';
         <ul class="w-full flex flex-col <?= $gridClasses ?> justify-center items-start gap-4 sm:gap-6 lg:gap-12"
             role="list" aria-label="Schedule days">
             <?php foreach ($schedule->days as $dayIndex => $day): ?>
-                <?php $dayItemClasses = $itemClasses; ?>
-                <?php require __DIR__ . '/schedule-day-column.php'; ?>
+                <?php ViewRenderer::render(__DIR__ . '/schedule-day-column.php', [
+                    'schedule' => $schedule,
+                    'day' => $day,
+                    'dayIndex' => $dayIndex,
+                    'dayItemClasses' => $itemClasses,
+                ]); ?>
             <?php endforeach; ?>
         </ul>
     </div>
@@ -86,4 +91,3 @@ $sectionId = $schedule->sectionId ?? 'schedule';
 <script src="/assets/js/add-to-program.js"></script>
 <script src="/assets/js/schedule-filters.js"></script>
 <?php endif; ?>
-

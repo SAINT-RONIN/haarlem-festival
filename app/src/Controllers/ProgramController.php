@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Controllers\Support\ControllerErrorResponder;
-use App\DTOs\Session\SessionContext;
 use App\Mappers\ProgramMapper;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
@@ -18,8 +16,9 @@ class ProgramController extends BaseController
 {
     public function __construct(
         private readonly IProgramService $programService,
-        private readonly ISessionService $sessionService,
+        ISessionService $sessionService,
     ) {
+        parent::__construct($sessionService);
     }
 
     /**
@@ -28,19 +27,15 @@ class ProgramController extends BaseController
      */
     public function index(): void
     {
-        try {
+        $this->handlePageRequest(function (): void {
             $this->renderProgramPage();
-        } catch (\InvalidArgumentException $error) {
-            ControllerErrorResponder::respond($error);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respond($error);
-        }
+        });
     }
 
     /** Loads session context, program data, CMS content, and renders the My Program page. */
     private function renderProgramPage(): void
     {
-        $context = $this->resolveSessionContext($this->sessionService);
+        $context = $this->resolveSessionContext();
 
         $programData = $this->programService->getProgramData($context->sessionKey, $context->userId);
         $cmsContent = $this->programService->getProgramMainContent();
@@ -55,20 +50,16 @@ class ProgramController extends BaseController
      */
     public function add(): void
     {
-        try {
+        $this->handleJsonRequest(function (): void {
             $this->processAdd();
-        } catch (\InvalidArgumentException $error) {
-            ControllerErrorResponder::respondJson($error, 400);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respondJson($error);
-        }
+        });
     }
 
     /** Reads JSON body, resolves session context, casts input fields, and adds a session to the program. */
     private function processAdd(): void
     {
         $body = $this->readJsonBody();
-        $context = $this->resolveSessionContext($this->sessionService);
+        $context = $this->resolveSessionContext();
 
         $eventSessionId = (int)($body['eventSessionId'] ?? 0);
         $quantity = (int)($body['quantity'] ?? 1);
@@ -85,20 +76,16 @@ class ProgramController extends BaseController
      */
     public function updateQuantity(): void
     {
-        try {
+        $this->handleJsonRequest(function (): void {
             $this->processUpdateQuantity();
-        } catch (\InvalidArgumentException $error) {
-            ControllerErrorResponder::respondJson($error, 400);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respondJson($error);
-        }
+        });
     }
 
     /** Reads JSON body, casts quantity fields, updates the item quantity, and responds with recalculated totals. */
     private function processUpdateQuantity(): void
     {
         $body = $this->readJsonBody();
-        $context = $this->resolveSessionContext($this->sessionService);
+        $context = $this->resolveSessionContext();
 
         $programItemId = (int)($body['programItemId'] ?? 0);
         $quantity = (int)($body['quantity'] ?? 0);
@@ -114,20 +101,16 @@ class ProgramController extends BaseController
      */
     public function updateDonation(): void
     {
-        try {
+        $this->handleJsonRequest(function (): void {
             $this->processUpdateDonation();
-        } catch (\InvalidArgumentException $error) {
-            ControllerErrorResponder::respondJson($error, 400);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respondJson($error);
-        }
+        });
     }
 
     /** Reads JSON body, casts donation fields, updates the donation amount, and responds with recalculated totals. */
     private function processUpdateDonation(): void
     {
         $body = $this->readJsonBody();
-        $context = $this->resolveSessionContext($this->sessionService);
+        $context = $this->resolveSessionContext();
 
         $programItemId = (int)($body['programItemId'] ?? 0);
         $donationAmount = (float)($body['donationAmount'] ?? 0.0);
@@ -143,20 +126,16 @@ class ProgramController extends BaseController
      */
     public function remove(): void
     {
-        try {
+        $this->handleJsonRequest(function (): void {
             $this->processRemove();
-        } catch (\InvalidArgumentException $error) {
-            ControllerErrorResponder::respondJson($error, 400);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respondJson($error);
-        }
+        });
     }
 
     /** Reads JSON body, casts the item ID, removes the item, and responds with recalculated totals. */
     private function processRemove(): void
     {
         $body = $this->readJsonBody();
-        $context = $this->resolveSessionContext($this->sessionService);
+        $context = $this->resolveSessionContext();
 
         $programItemId = (int)($body['programItemId'] ?? 0);
 
@@ -171,17 +150,13 @@ class ProgramController extends BaseController
      */
     public function clear(): void
     {
-        try {
-            $context = $this->resolveSessionContext($this->sessionService);
+        $this->handleJsonRequest(function (): void {
+            $context = $this->resolveSessionContext();
 
             $this->programService->clearProgram($context->sessionKey, $context->userId);
 
             $this->json(['success' => true]);
-        } catch (\InvalidArgumentException $error) {
-            ControllerErrorResponder::respondJson($error, 400);
-        } catch (\Throwable $error) {
-            ControllerErrorResponder::respondJson($error);
-        }
+        });
     }
 
     /** Re-fetches program data to return freshly calculated subtotal, tax, and total after a mutation. */

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Checkout\Interfaces\IOrderCapacityRestorer;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Exceptions\CheckoutException;
+use App\Exceptions\StripeWebhookException;
 use App\Infrastructure\Interfaces\IStripeService;
-use App\Repositories\Interfaces\IEventSessionRepository;
-use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
 use App\Repositories\Interfaces\IProgramRepository;
@@ -30,10 +30,9 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         private readonly IStripeService $stripeService,
         private readonly IStripeWebhookEventRepository $webhookEventRepository,
         private readonly IOrderRepository $orderRepository,
-        private readonly IOrderItemRepository $orderItemRepository,
         private readonly IPaymentRepository $paymentRepository,
-        private readonly IEventSessionRepository $eventSessionRepository,
         private readonly IProgramRepository $programRepository,
+        private readonly IOrderCapacityRestorer $orderCapacityRestorer,
         private readonly PDO $pdo,
     ) {
     }
@@ -45,7 +44,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
      */
     public function handleWebhook(string $payload, ?string $signatureHeader): WebhookHandlerResult
     {
-        $event = $this->stripeService->constructWebhookEvent($payload, $signatureHeader);
+        $event = $this->loadWebhookEvent($payload, $signatureHeader);
         $eventId = (string)($event['id'] ?? '');
         $eventType = (string)($event['type'] ?? '');
 
@@ -62,11 +61,25 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         return new WebhookHandlerResult(processed: true, eventId: $eventId, eventType: $eventType);
     }
 
+    /**
+     * @return array<string,mixed>
+     */
+    private function loadWebhookEvent(string $payload, ?string $signatureHeader): array
+    {
+        try {
+            return $this->stripeService->constructWebhookEvent($payload, $signatureHeader);
+        } catch (\InvalidArgumentException $error) {
+            throw new StripeWebhookException($error->getMessage(), 0, $error);
+        } catch (\Throwable $error) {
+            throw new StripeWebhookException('Stripe webhook could not be validated.', 0, $error);
+        }
+    }
+
     /** Validates that a webhook event has required fields. */
     private function validateWebhookEvent(string $eventId, string $eventType): void
     {
         if ($eventId === '' || $eventType === '') {
-            throw new CheckoutException('Invalid Stripe event payload.');
+            throw new StripeWebhookException('Invalid Stripe event payload.');
         }
     }
 
@@ -75,7 +88,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     {
         $object = $event['data']['object'] ?? null;
         if (!is_array($object)) {
-            throw new CheckoutException('Stripe event object is missing.');
+            throw new StripeWebhookException('Stripe event object is missing.');
         }
         return $object;
     }
@@ -157,27 +170,26 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     /** Restores capacity and marks order as expired / payment as failed. */
     private function processPaymentFailed(?int $orderId, ?int $paymentId): void
     {
-        if ($orderId !== null) {
-            $this->restoreOrderCapacity($orderId);
-            $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
-        }
-        if ($paymentId !== null) {
-            $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
-        }
+        $this->expireOrderIfPresent($orderId);
+        $this->failPaymentIfPresent($paymentId);
     }
 
-    /**
-     * Restores reserved capacity for all sessions in an order.
-     * Called when a payment fails or expires via webhook.
-     */
-    private function restoreOrderCapacity(int $orderId): void
+    private function expireOrderIfPresent(?int $orderId): void
     {
-        $orderItems = $this->orderItemRepository->findByOrderId($orderId);
-
-        foreach ($orderItems as $item) {
-            if ($item->eventSessionId !== null && $item->eventSessionId > 0) {
-                $this->eventSessionRepository->restoreCapacity($item->eventSessionId, $item->quantity);
-            }
+        if ($orderId === null) {
+            return;
         }
+
+        $this->orderCapacityRestorer->restore($orderId);
+        $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
+    }
+
+    private function failPaymentIfPresent(?int $paymentId): void
+    {
+        if ($paymentId === null) {
+            return;
+        }
+
+        $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
     }
 }
