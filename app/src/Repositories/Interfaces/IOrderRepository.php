@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Enums\OrderStatus;
+use App\Models\Order;
 
 /**
  * Contract for managing rows in the Order table. Orders are created in Pending status
@@ -27,8 +28,13 @@ interface IOrderRepository
         string $subtotal,
         string $vatTotal,
         string $totalAmount,
+        ?string $ticketRecipientFirstName,
+        ?string $ticketRecipientLastName,
+        ?string $ticketRecipientEmail,
         ?\DateTimeImmutable $payBeforeUtc,
     ): int;
+
+    public function findById(int $orderId): ?Order;
 
     /**
      * Unconditionally sets the order status. Use updateStatusIfCurrentIn() when you need
@@ -44,5 +50,15 @@ interface IOrderRepository
      * @param OrderStatus[] $allowedCurrentStatuses
      */
     public function updateStatusIfCurrentIn(int $orderId, OrderStatus $newStatus, array $allowedCurrentStatuses): void;
-}
 
+    public function updateTicketRecipient(
+        int $orderId,
+        string $firstName,
+        string $lastName,
+        string $email,
+    ): void;
+
+    public function markTicketEmailSent(int $orderId, \DateTimeImmutable $sentAtUtc): void;
+
+    public function markTicketEmailFailed(int $orderId, string $errorMessage): void;
+}

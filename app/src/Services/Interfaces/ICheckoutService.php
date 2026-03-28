@@ -14,7 +14,8 @@ use App\Content\CheckoutMainContent;
  * Contract for the checkout lifecycle: creating Stripe-backed checkout sessions,
  * handling user cancellations, and retrieving session summaries for confirmation pages.
  *
- * Webhook processing is handled separately by IStripeWebhookHandler.
+ * Webhook processing is handled separately by IStripeWebhookHandler, with
+ * the success-page return path acting as a paid-session fallback in local/dev.
  */
 interface ICheckoutService
 {
@@ -40,4 +41,3 @@ interface ICheckoutService
      */
     public function getCheckoutMainContent(): CheckoutMainContent;
 }
-

@@ -26,6 +26,7 @@ use App\Exceptions\CheckoutInputException;
 use App\Exceptions\CheckoutSessionException;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
+use App\Services\Interfaces\ITicketFulfillmentService;
 use PDO;
 
 /**
@@ -48,6 +49,7 @@ class CheckoutService implements ICheckoutService
         private readonly PDO $pdo,
         private readonly ICheckoutContentRepository $checkoutContentRepository,
         private readonly IOrderCapacityRestorer $orderCapacityRestorer,
+        private readonly ITicketFulfillmentService $ticketFulfillmentService,
     ) {
     }
 
@@ -86,7 +88,7 @@ class CheckoutService implements ICheckoutService
 
         try {
             $orderNumber = $this->generateOrderNumber();
-            $orderId = $this->persistOrder($programData, $userId, $orderNumber);
+            $orderId = $this->persistOrder($programData, $userId, $orderNumber, $payload);
             $this->persistOrderLineItems($programData->items, $orderId);
             $this->reserveSessionSeats($programData->items);
 
@@ -113,7 +115,7 @@ class CheckoutService implements ICheckoutService
     }
 
     /** Persists the order header with a unique order number. */
-    private function persistOrder(ProgramData $programData, int $userId, string $orderNumber): int
+    private function persistOrder(ProgramData $programData, int $userId, string $orderNumber, array $payload): int
     {
         return $this->orderRepository->create(
             userAccountId: $userId,
@@ -122,6 +124,9 @@ class CheckoutService implements ICheckoutService
             subtotal: $this->toMoneyString($programData->subtotal),
             vatTotal: $this->toMoneyString($programData->taxAmount),
             totalAmount: $this->toMoneyString($programData->total),
+            ticketRecipientFirstName: trim((string)$payload['firstName']),
+            ticketRecipientLastName: trim((string)$payload['lastName']),
+            ticketRecipientEmail: trim((string)$payload['email']),
             payBeforeUtc: new \DateTimeImmutable('+24 hours'),
         );
     }
@@ -296,6 +301,7 @@ class CheckoutService implements ICheckoutService
         }
 
         $session = $this->loadCheckoutSession($sessionId);
+        $this->fulfillPaidOrderFromSession($session);
 
         return new CheckoutSessionSummary(
             orderReference: (string)($session['client_reference_id'] ?? ''),
@@ -314,6 +320,90 @@ class CheckoutService implements ICheckoutService
         } catch (\Throwable $error) {
             throw new CheckoutSessionException('Stripe checkout session could not be loaded.', 0, $error);
         }
+    }
+
+    /**
+     * Uses the verified Stripe success return as a fulfillment fallback when the
+     * webhook is unavailable in local/dev. The fulfillment service is idempotent,
+     * so repeated success-page refreshes are safe.
+     *
+     * @param array<string,mixed> $session
+     */
+    private function fulfillPaidOrderFromSession(array $session): void
+    {
+        if (!$this->isPaidSession($session)) {
+            return;
+        }
+
+        $orderId = $this->extractOrderIdFromSession($session);
+        if ($orderId === null) {
+            return;
+        }
+
+        $this->ticketFulfillmentService->fulfillPaidOrder(
+            $orderId,
+            $this->extractCustomerEmailFromSession($session),
+            $this->extractMetadataString($session, 'first_name'),
+            $this->extractMetadataString($session, 'last_name'),
+        );
+    }
+
+    /**
+     * @param array<string,mixed> $session
+     */
+    private function isPaidSession(array $session): bool
+    {
+        return ($session['payment_status'] ?? null) === 'paid';
+    }
+
+    /**
+     * @param array<string,mixed> $session
+     */
+    private function extractOrderIdFromSession(array $session): ?int
+    {
+        $metadata = $session['metadata'] ?? null;
+        if (!is_array($metadata) || !isset($metadata['order_id'])) {
+            return null;
+        }
+
+        $orderId = (int)$metadata['order_id'];
+        return $orderId > 0 ? $orderId : null;
+    }
+
+    /**
+     * @param array<string,mixed> $session
+     */
+    private function extractCustomerEmailFromSession(array $session): ?string
+    {
+        $customerDetails = $session['customer_details'] ?? null;
+        if (is_array($customerDetails) && isset($customerDetails['email']) && is_string($customerDetails['email'])) {
+            $email = trim($customerDetails['email']);
+            if ($email !== '') {
+                return $email;
+            }
+        }
+
+        $customerEmail = $session['customer_email'] ?? null;
+        if (!is_string($customerEmail)) {
+            return null;
+        }
+
+        $customerEmail = trim($customerEmail);
+        return $customerEmail !== '' ? $customerEmail : null;
+    }
+
+    /**
+     * @param array<string,mixed> $session
+     */
+    private function extractMetadataString(array $session, string $key): ?string
+    {
+        $metadata = $session['metadata'] ?? null;
+        if (!is_array($metadata) || !isset($metadata[$key]) || !is_string($metadata[$key])) {
+            return null;
+        }
+
+        $value = trim($metadata[$key]);
+        return $value !== '' ? $value : null;
     }
 
     /**

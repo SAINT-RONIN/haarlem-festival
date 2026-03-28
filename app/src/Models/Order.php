@@ -30,6 +30,11 @@ final readonly class Order
         public string              $subtotal,
         public string              $vatTotal,
         public string              $totalAmount,
+        public ?string             $ticketRecipientFirstName,
+        public ?string             $ticketRecipientLastName,
+        public ?string             $ticketRecipientEmail,
+        public ?\DateTimeImmutable $ticketEmailSentAtUtc,
+        public ?string             $ticketEmailLastError,
     ) {
     }
 
@@ -50,6 +55,13 @@ final readonly class Order
             subtotal: (string)$row['Subtotal'],
             vatTotal: (string)$row['VatTotal'],
             totalAmount: (string)$row['TotalAmount'],
+            ticketRecipientFirstName: isset($row['TicketRecipientFirstName']) ? (string)$row['TicketRecipientFirstName'] : null,
+            ticketRecipientLastName: isset($row['TicketRecipientLastName']) ? (string)$row['TicketRecipientLastName'] : null,
+            ticketRecipientEmail: isset($row['TicketRecipientEmail']) ? (string)$row['TicketRecipientEmail'] : null,
+            ticketEmailSentAtUtc: isset($row['TicketEmailSentAtUtc']) && $row['TicketEmailSentAtUtc'] !== null
+                ? new \DateTimeImmutable($row['TicketEmailSentAtUtc'])
+                : null,
+            ticketEmailLastError: isset($row['TicketEmailLastError']) ? (string)$row['TicketEmailLastError'] : null,
         );
     }
 
@@ -70,6 +82,11 @@ final readonly class Order
             'Subtotal' => $this->subtotal,
             'VatTotal' => $this->vatTotal,
             'TotalAmount' => $this->totalAmount,
+            'TicketRecipientFirstName' => $this->ticketRecipientFirstName,
+            'TicketRecipientLastName' => $this->ticketRecipientLastName,
+            'TicketRecipientEmail' => $this->ticketRecipientEmail,
+            'TicketEmailSentAtUtc' => $this->ticketEmailSentAtUtc?->format('Y-m-d H:i:s'),
+            'TicketEmailLastError' => $this->ticketEmailLastError,
         ];
     }
 }

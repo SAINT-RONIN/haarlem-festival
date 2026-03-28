@@ -54,4 +54,12 @@ class StripeWebhookEventRepository extends BaseRepository implements IStripeWebh
 
         return $stmt->rowCount() > 0;
     }
+
+    public function release(string $eventId): void
+    {
+        $this->execute(
+            'DELETE FROM StripeWebhookEvent WHERE StripeEventId = :eventId',
+            ['eventId' => $eventId],
+        );
+    }
 }

@@ -24,4 +24,9 @@ interface IStripeWebhookEventRepository
      * Preferred over hasProcessed() + markProcessed() to avoid race conditions.
      */
     public function markProcessedIfNew(string $eventId, string $eventType): bool;
+
+    /**
+     * Releases a reserved event id so Stripe can retry after a downstream failure.
+     */
+    public function release(string $eventId): void;
 }

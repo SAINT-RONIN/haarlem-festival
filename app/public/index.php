@@ -28,6 +28,9 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
     }
 }
 
+$appEnv = strtolower((string)(getenv('APP_ENV') ?: 'local'));
+$disableRouteCache = in_array($appEnv, ['local', 'development', 'dev'], true);
+
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
@@ -102,6 +105,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/checkout/success', [CheckoutController::class, 'success']);
     $r->addRoute('GET', '/checkout/cancel', [CheckoutController::class, 'cancel']);
     $r->addRoute('POST', '/api/stripe/webhook', [CheckoutController::class, 'webhook']);
+    $r->addRoute('POST', '/checkout/webhook', [CheckoutController::class, 'webhook']);
 
 
     // Website Authentication Routes
@@ -190,7 +194,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
 
 }, [
     'cacheFile' => $routeCacheFile,
-    'cacheDisabled' => false,
+    'cacheDisabled' => $disableRouteCache,
 ]);
 
 // Fetch method and URI from request

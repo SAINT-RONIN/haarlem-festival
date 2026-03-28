@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
+use App\DTOs\Tickets\TicketEmailAttachment;
+use App\DTOs\Tickets\TicketEmailMessage;
 use App\Exceptions\EmailDeliveryException;
 use App\Exceptions\SmtpNotConfiguredException;
 use App\Infrastructure\Interfaces\IEmailService;
@@ -68,6 +70,14 @@ class EmailService implements IEmailService
         return $this->send($toEmail, $subject, $body);
     }
 
+    public function sendOrderTicketsEmail(TicketEmailMessage $message): bool
+    {
+        $subject = 'Your Haarlem Festival Tickets - ' . $message->orderReference;
+        $body = $this->buildOrderTicketsEmailBody($message);
+
+        return $this->send($message->toEmail, $subject, $body, $message->attachments);
+    }
+
     /**
      * Builds the password reset email body.
      */
@@ -90,12 +100,42 @@ Haarlem Festival Team
 EMAIL;
     }
 
+    private function buildOrderTicketsEmailBody(TicketEmailMessage $message): string
+    {
+        $recipientName = $message->recipientName !== '' ? $message->recipientName : 'festival guest';
+        $summaryLines = $message->eventSummaryLines === []
+            ? '- Your tickets are attached as PDF files.'
+            : implode("\n", array_map(static fn(string $line) => '- ' . $line, $message->eventSummaryLines));
+
+        return <<<EMAIL
+Hello {$recipientName},
+
+Your Haarlem Festival payment was successful.
+
+Order reference: {$message->orderReference}
+Tickets attached: {$message->ticketCount}
+
+Order summary:
+{$summaryLines}
+
+How to use your tickets:
+- Open the attached PDF tickets before arriving at the venue.
+- Present each QR code at the entrance for scanning.
+- Each QR code can be scanned only once.
+
+Keep this email for your records. If you need help, visit {$this->appUrl}/my-program.
+
+Best regards,
+Haarlem Festival Team
+EMAIL;
+    }
+
     /**
      * Guards against accidental email delivery in development, then dispatches via SMTP.
      *
      * @throws \RuntimeException When SMTP is not configured or local sending is blocked
      */
-    private function send(string $to, string $subject, string $body): bool
+    private function send(string $to, string $subject, string $body, array $attachments = []): bool
     {
         if (!$this->isSmtpConfigured()) {
             throw new SmtpNotConfiguredException("SMTP not configured. Email to {$to} with subject '{$subject}' was not sent.");
@@ -105,7 +145,7 @@ EMAIL;
             throw new SmtpNotConfiguredException("Cannot send mail to local email address '{$to}'.");
         }
 
-        return $this->sendViaSmtp($to, $subject, $body);
+        return $this->sendViaSmtp($to, $subject, $body, $attachments);
     }
 
     /**
@@ -127,7 +167,7 @@ EMAIL;
     /**
      * Sends email via SMTP using PHPMailer.
      */
-    private function sendViaSmtp(string $to, string $subject, string $body): bool
+    private function sendViaSmtp(string $to, string $subject, string $body, array $attachments = []): bool
     {
         $mail = new PHPMailer(false);
         $mail->isSMTP();
@@ -143,6 +183,14 @@ EMAIL;
         $mail->Subject = $subject;
         $mail->Body = $body;
         $mail->isHTML(false);
+
+        foreach ($attachments as $attachment) {
+            if (!$attachment instanceof TicketEmailAttachment) {
+                continue;
+            }
+
+            $mail->addAttachment($attachment->absolutePath, $attachment->displayName);
+        }
 
         if (!$mail->send()) {
             throw new EmailDeliveryException('Email sending failed: ' . $mail->ErrorInfo);

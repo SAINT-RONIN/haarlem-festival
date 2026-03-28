@@ -38,6 +38,7 @@ use App\Repositories\OrderItemRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\PasswordResetTokenRepository;
 use App\Repositories\PaymentRepository;
+use App\Repositories\TicketRepository;
 use App\Repositories\UserAccountRepository;
 use App\Repositories\ProgramRepository;
 use App\Repositories\ArtistDetailRepository;
@@ -91,6 +92,10 @@ use App\Services\CaptchaService;
 use App\Services\SessionService;
 use App\Services\StorytellingDetailService;
 use App\Services\StorytellingService;
+use App\Services\TicketFulfillmentService;
+use App\Tickets\PdfTicketGenerator;
+use App\Tickets\QrCodeGenerator;
+use App\Tickets\TicketCodeGenerator;
 
 /**
  * Lazy dependency container — only creates the repositories and services
@@ -130,6 +135,7 @@ return static function (string $controllerClass): object {
     $orderRepo          = fn() => $make('orderRepo', fn() => new OrderRepository($pdo()));
     $orderItemRepo      = fn() => $make('orderItemRepo', fn() => new OrderItemRepository($pdo()));
     $paymentRepo        = fn() => $make('paymentRepo', fn() => new PaymentRepository($pdo()));
+    $ticketRepo         = fn() => $make('ticketRepo', fn() => new TicketRepository($pdo()));
 
     // ── Lazy service accessors (shared across multiple controllers) ──
 
@@ -150,6 +156,19 @@ return static function (string $controllerClass): object {
     $orderCapacityRestorer = fn() => $make('orderCapacityRestorer', fn() => new OrderCapacityRestorer($orderItemRepo(), $eventSessionRepo()));
     $cmsItemEnricher = fn() => $make('cmsItemEnricher', fn() => new CmsItemEnricher($mediaAssetRepo()));
     $cmsPreviewUrlResolver = fn() => $make('cmsPreviewUrlResolver', fn() => new CmsPreviewUrlResolver());
+    $emailService = fn() => $make('emailService', fn() => new EmailService());
+    $ticketFulfillmentService = fn() => $make('ticketFulfillmentService', fn() => new TicketFulfillmentService(
+        $orderRepo(),
+        $orderItemRepo(),
+        $eventSessionRepo(),
+        $ticketRepo(),
+        $mediaAssetRepo(),
+        $userAccountRepo(),
+        $emailService(),
+        new QrCodeGenerator(),
+        new PdfTicketGenerator(),
+        new TicketCodeGenerator(),
+    ));
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
         $scheduleContentRepo(),
@@ -171,7 +190,7 @@ return static function (string $controllerClass): object {
         $pdo(),
         $userAccountRepo(),
         $resetTokenRepo(),
-        new EmailService(),
+        $emailService(),
     ));
 
     // ── Lazy service singletons shared across multiple controllers ──
@@ -277,7 +296,7 @@ return static function (string $controllerClass): object {
             ),
             $mediaAssetService(),
         ),
-        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer) {
+        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer, $ticketFulfillmentService) {
             $stripeService = new StripeService(
                 (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
                 (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
@@ -300,6 +319,7 @@ return static function (string $controllerClass): object {
                     $pdo(),
                     $checkoutContentRepo(),
                     $orderCapacityRestorer(),
+                    $ticketFulfillmentService(),
                 ),
                 new StripeWebhookHandler(
                     $stripeService,
@@ -308,6 +328,7 @@ return static function (string $controllerClass): object {
                     $paymentRepo(),
                     $programRepo(),
                     $orderCapacityRestorer(),
+                    $ticketFulfillmentService(),
                     $pdo(),
                 ),
                 new StripeWebhookRequestFactory(),

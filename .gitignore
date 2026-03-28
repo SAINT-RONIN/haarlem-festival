@@ -54,6 +54,8 @@ app/storage/*
 !app/storage/cache/
 app/storage/cache/*
 !app/storage/cache/.gitkeep
+app/public/assets/tickets/*
+!app/public/assets/tickets/.gitkeep
 
 # ==============================
 # Node (if present)

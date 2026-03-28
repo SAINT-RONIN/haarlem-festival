@@ -46,4 +46,20 @@ class PathResolver
     {
         return '/assets/Image/' . $folder . '/' . $fileName;
     }
+
+    /**
+     * Gets the absolute path where generated ticket PDFs are stored.
+     */
+    public static function getTicketAssetPath(): string
+    {
+        return self::getPublicPath() . '/assets/tickets';
+    }
+
+    /**
+     * Gets the web-accessible relative path for a generated ticket PDF.
+     */
+    public static function getTicketAssetRelativePath(string $fileName): string
+    {
+        return '/assets/tickets/' . $fileName;
+    }
 }

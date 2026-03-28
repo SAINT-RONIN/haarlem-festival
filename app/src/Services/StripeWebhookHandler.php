@@ -16,6 +16,7 @@ use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
 use App\DTOs\Checkout\WebhookHandlerResult;
 use App\Services\Interfaces\IStripeWebhookHandler;
+use App\Services\Interfaces\ITicketFulfillmentService;
 use PDO;
 
 /**
@@ -33,6 +34,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         private readonly IPaymentRepository $paymentRepository,
         private readonly IProgramRepository $programRepository,
         private readonly IOrderCapacityRestorer $orderCapacityRestorer,
+        private readonly ITicketFulfillmentService $ticketFulfillmentService,
         private readonly PDO $pdo,
     ) {
     }
@@ -54,9 +56,15 @@ class StripeWebhookHandler implements IStripeWebhookHandler
             return new WebhookHandlerResult(processed: false, eventId: $eventId, eventType: $eventType);
         }
 
-        $object = $this->extractWebhookObject($event);
-        [$metadata, $orderId, $paymentId] = $this->extractWebhookMetadata($object);
-        $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
+        try {
+            $object = $this->extractWebhookObject($event);
+            [$metadata, $orderId, $paymentId] = $this->extractWebhookMetadata($object);
+            $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
+            $this->fulfillTicketsIfPaymentCompleted($eventType, $object, $metadata, $orderId);
+        } catch (\Throwable $error) {
+            $this->safeReleaseWebhookReservation($eventId);
+            throw $error;
+        }
 
         return new WebhookHandlerResult(processed: true, eventId: $eventId, eventType: $eventType);
     }
@@ -156,10 +164,15 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     private function processPaymentCompleted(array $metadata, ?int $orderId, ?int $paymentId): void
     {
         if ($orderId !== null) {
-            $this->orderRepository->updateStatus($orderId, OrderStatus::Paid);
+            $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Paid, [OrderStatus::Pending]);
         }
         if ($paymentId !== null) {
-            $this->paymentRepository->updateStatus($paymentId, PaymentStatus::Paid, new \DateTimeImmutable());
+            $this->paymentRepository->updateStatusIfCurrentIn(
+                $paymentId,
+                PaymentStatus::Paid,
+                [PaymentStatus::Pending],
+                new \DateTimeImmutable(),
+            );
         }
         $programId = isset($metadata['program_id']) ? (int)$metadata['program_id'] : 0;
         if ($programId > 0) {
@@ -191,5 +204,57 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         }
 
         $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
+    }
+
+    private function fulfillTicketsIfPaymentCompleted(
+        string $eventType,
+        array $object,
+        array $metadata,
+        ?int $orderId,
+    ): void {
+        if ($orderId === null || !$this->isPaymentCompletedEvent($eventType)) {
+            return;
+        }
+
+        $this->ticketFulfillmentService->fulfillPaidOrder(
+            $orderId,
+            $this->extractCustomerEmail($object),
+            isset($metadata['first_name']) ? (string)$metadata['first_name'] : null,
+            isset($metadata['last_name']) ? (string)$metadata['last_name'] : null,
+        );
+    }
+
+    private function isPaymentCompletedEvent(string $eventType): bool
+    {
+        return in_array($eventType, ['checkout.session.completed', 'checkout.session.async_payment_succeeded'], true);
+    }
+
+    private function extractCustomerEmail(array $object): ?string
+    {
+        $customerDetails = $object['customer_details'] ?? null;
+        if (is_array($customerDetails) && isset($customerDetails['email']) && is_string($customerDetails['email'])) {
+            $email = trim($customerDetails['email']);
+            if ($email !== '') {
+                return $email;
+            }
+        }
+
+        $customerEmail = $object['customer_email'] ?? null;
+        if (is_string($customerEmail)) {
+            $customerEmail = trim($customerEmail);
+            if ($customerEmail !== '') {
+                return $customerEmail;
+            }
+        }
+
+        return null;
+    }
+
+    private function safeReleaseWebhookReservation(string $eventId): void
+    {
+        try {
+            $this->webhookEventRepository->release($eventId);
+        } catch (\Throwable) {
+        }
     }
 }

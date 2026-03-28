@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Enums\OrderStatus;
+use App\Models\Order;
 use App\Repositories\Interfaces\IOrderRepository;
 
 /**
@@ -28,15 +29,20 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         string $subtotal,
         string $vatTotal,
         string $totalAmount,
+        ?string $ticketRecipientFirstName,
+        ?string $ticketRecipientLastName,
+        ?string $ticketRecipientEmail,
         ?\DateTimeImmutable $payBeforeUtc,
     ): int {
         return $this->executeInsert(
             'INSERT INTO `Order` (
                 OrderNumber, UserAccountId, ProgramId, Status,
-                PayBeforeUtc, Subtotal, VatTotal, TotalAmount
+                PayBeforeUtc, Subtotal, VatTotal, TotalAmount,
+                TicketRecipientFirstName, TicketRecipientLastName, TicketRecipientEmail
             ) VALUES (
                 :orderNumber, :userAccountId, :programId, :status,
-                :payBeforeUtc, :subtotal, :vatTotal, :totalAmount
+                :payBeforeUtc, :subtotal, :vatTotal, :totalAmount,
+                :ticketRecipientFirstName, :ticketRecipientLastName, :ticketRecipientEmail
             )',
             [
                 'orderNumber' => $orderNumber,
@@ -47,7 +53,19 @@ class OrderRepository extends BaseRepository implements IOrderRepository
                 'subtotal' => $subtotal,
                 'vatTotal' => $vatTotal,
                 'totalAmount' => $totalAmount,
+                'ticketRecipientFirstName' => $ticketRecipientFirstName,
+                'ticketRecipientLastName' => $ticketRecipientLastName,
+                'ticketRecipientEmail' => $ticketRecipientEmail,
             ],
+        );
+    }
+
+    public function findById(int $orderId): ?Order
+    {
+        return $this->fetchOne(
+            'SELECT * FROM `Order` WHERE OrderId = :orderId',
+            ['orderId' => $orderId],
+            fn(array $row) => Order::fromRow($row),
         );
     }
 
@@ -90,5 +108,53 @@ class OrderRepository extends BaseRepository implements IOrderRepository
             $params,
         );
     }
-}
 
+    public function updateTicketRecipient(
+        int $orderId,
+        string $firstName,
+        string $lastName,
+        string $email,
+    ): void {
+        $this->execute(
+            'UPDATE `Order`
+            SET TicketRecipientFirstName = :firstName,
+                TicketRecipientLastName = :lastName,
+                TicketRecipientEmail = :email
+            WHERE OrderId = :orderId',
+            [
+                'firstName' => $firstName,
+                'lastName' => $lastName,
+                'email' => $email,
+                'orderId' => $orderId,
+            ],
+        );
+    }
+
+    public function markTicketEmailSent(int $orderId, \DateTimeImmutable $sentAtUtc): void
+    {
+        $this->execute(
+            'UPDATE `Order`
+            SET TicketEmailSentAtUtc = :sentAtUtc,
+                TicketEmailLastError = NULL
+            WHERE OrderId = :orderId',
+            [
+                'sentAtUtc' => $sentAtUtc->format('Y-m-d H:i:s'),
+                'orderId' => $orderId,
+            ],
+        );
+    }
+
+    public function markTicketEmailFailed(int $orderId, string $errorMessage): void
+    {
+        $this->execute(
+            'UPDATE `Order`
+            SET TicketEmailSentAtUtc = NULL,
+                TicketEmailLastError = :errorMessage
+            WHERE OrderId = :orderId',
+            [
+                'errorMessage' => $errorMessage,
+                'orderId' => $orderId,
+            ],
+        );
+    }
+}
