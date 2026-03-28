@@ -54,7 +54,7 @@ final class RestaurantMapper
             introSplitSection:      self::buildIntroSplitSection($data->introSplitSection),
             introSplit2Section:     self::buildIntroSplit2Section($data->introSplit2Section),
             instructionsSection:    self::buildInstructionsSection($data->instructionsSection),
-            restaurantCardsSection: self::buildRestaurantCardsSection($data->cardsSection, $data->restaurants),
+            restaurantCardsSection: self::buildRestaurantCardsSection($data->cardsSection, $data->restaurants, $data->activeFilter ?? ''),
         );
     }
 
@@ -338,15 +338,17 @@ final class RestaurantMapper
     private static function buildRestaurantCardsSection(
         RestaurantCardsSectionContent $cms,
         array $restaurants,
+        string $activeFilter = '',
     ): RestaurantCardsSectionData {
         return new RestaurantCardsSectionData(
             title:         $cms->cardsTitle    ?? '',
             subtitle:      $cms->cardsSubtitle ?? '',
             filters:       self::buildCuisineFilters($restaurants),
-            cards:         self::buildCards($restaurants),
+            cards:         self::buildCards($restaurants, $activeFilter),
             labelFilters:  $cms->cardsLabelFilters  ?? 'Filters',
             labelAboutBtn: $cms->cardsLabelAboutBtn ?? 'About it',
             labelBookBtn:  $cms->cardsLabelBookBtn  ?? 'Book table',
+            activeFilter:  $activeFilter,
         );
     }
 
@@ -405,8 +407,19 @@ final class RestaurantMapper
      * @param RestaurantListingData[] $restaurants
      * @return RestaurantCardData[]
      */
-    private static function buildCards(array $restaurants): array
+    private static function buildCards(array $restaurants, string $activeFilter = ''): array
     {
+        if ($activeFilter !== '') {
+            $restaurants = array_values(array_filter(
+                $restaurants,
+                fn(RestaurantListingData $r) => in_array(
+                    $activeFilter,
+                    array_map('trim', explode(',', mb_strtolower($r->cms->cuisineType ?? ''))),
+                    true,
+                ),
+            ));
+        }
+
         return array_map(fn(RestaurantListingData $listing) => new RestaurantCardData(
             slug:        $listing->event->slug,
             name:        $listing->event->title,

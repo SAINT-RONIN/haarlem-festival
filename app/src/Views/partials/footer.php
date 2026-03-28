@@ -79,5 +79,10 @@ $footerGlobalUi = (isset($viewModel) && property_exists($viewModel, 'globalUi') 
 <?php endif; ?>
 
 <script src="/assets/js/menu-toggle.js"></script>
+<?php if (!empty($extraScripts)): ?>
+    <?php foreach ($extraScripts as $src): ?>
+        <script src="<?= htmlspecialchars($src) ?>"></script>
+    <?php endforeach; ?>
+<?php endif; ?>
 </body>
 </html>

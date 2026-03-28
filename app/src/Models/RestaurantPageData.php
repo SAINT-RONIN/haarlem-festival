@@ -21,5 +21,6 @@ final readonly class RestaurantPageData
         public RestaurantInstructionsSectionContent $instructionsSection,
         public RestaurantCardsSectionContent $cardsSection,
         public array $restaurants,
+        public ?string $activeFilter = null,
     ) {}
 }

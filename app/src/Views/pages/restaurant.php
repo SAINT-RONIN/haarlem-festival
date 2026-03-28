@@ -11,4 +11,7 @@ $pageContentPartials = [
     __DIR__ . '/../partials/restaurant/content-sections.php',
 ];
 ?>
-<?php require __DIR__ . '/../partials/_shell.php'; ?>
+<?php
+$extraScripts = ['/assets/js/restaurant-filters.js'];
+require __DIR__ . '/../partials/_shell.php';
+?>

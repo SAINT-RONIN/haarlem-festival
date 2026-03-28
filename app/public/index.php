@@ -42,6 +42,7 @@ use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
+use App\Controllers\RestaurantApiController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
@@ -138,6 +139,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
 
     // Schedule API
     $r->addRoute('GET', '/api/schedule/{pageSlug:[a-z]+}', [ScheduleApiController::class, 'getScheduleHtml']);
+
+    // Restaurant API
+    $r->addRoute('GET', '/api/restaurants', [RestaurantApiController::class, 'getCardsHtml']);
 
     // CMS Media Routes
     $r->addRoute('GET', '/cms/media', [CmsMediaController::class, 'index']);

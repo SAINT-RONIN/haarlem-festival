@@ -11,5 +11,5 @@ use App\Models\RestaurantPageData;
  */
 interface IRestaurantService
 {
-    public function getRestaurantPageData(): RestaurantPageData;
+    public function getRestaurantPageData(?string $cuisineFilter = null): RestaurantPageData;
 }

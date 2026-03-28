@@ -16,6 +16,7 @@ use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
+use App\Controllers\RestaurantApiController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
@@ -300,6 +301,9 @@ return static function (string $controllerClass): object {
         ),
         ScheduleApiController::class => new ScheduleApiController(
             $scheduleService,
+        ),
+        RestaurantApiController::class => new RestaurantApiController(
+            new RestaurantService($cmsContent, $eventRepository, $mediaAssetRepository),
         ),
         default => new $controllerClass(),
     };

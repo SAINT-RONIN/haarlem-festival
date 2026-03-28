@@ -40,7 +40,7 @@ class RestaurantService implements IRestaurantService
     ) {
     }
 
-    public function getRestaurantPageData(): RestaurantPageData
+    public function getRestaurantPageData(?string $cuisineFilter = null): RestaurantPageData
     {
         $events      = $this->eventRepository->findActiveRestaurantEvents();
         $restaurants = array_map(fn(RestaurantDetailEvent $e) => $this->buildListingData($e), $events);
@@ -67,7 +67,8 @@ class RestaurantService implements IRestaurantService
             cardsSection: RestaurantCardsSectionContent::fromRawArray(
                 $this->cmsService->getSectionContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_CARDS),
             ),
-            restaurants: $restaurants,
+            restaurants:  $restaurants,
+            activeFilter: $cuisineFilter,
         );
     }
 
