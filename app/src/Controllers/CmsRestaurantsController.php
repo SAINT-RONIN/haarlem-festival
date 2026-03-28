@@ -43,7 +43,7 @@ class CmsRestaurantsController
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'restaurants';
-            $emptyData   = new RestaurantUpsertData('', '', '', null, '', '', null, true, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            $emptyData   = new RestaurantUpsertData('', '', '', null, '', '', null, true);
             $viewModel   = $this->buildFormViewModel(null, $emptyData, []);
             require __DIR__ . '/../Views/pages/cms/restaurant-create.php';
         } catch (\Throwable $error) {
@@ -136,69 +136,16 @@ class CmsRestaurantsController
 
     private function extractFormData(): RestaurantUpsertData
     {
-        return new RestaurantUpsertData(...[
-            ...$this->extractCorePostData(),
-            ...$this->extractContactPostData(),
-            ...$this->extractDetailPostData(),
-        ]);
-    }
-
-    /** @return array<string, mixed> */
-    private function extractCorePostData(): array
-    {
-        return [
-            'name'            => trim($_POST['name'] ?? ''),
-            'addressLine'     => trim($_POST['addressLine'] ?? ''),
-            'city'            => trim($_POST['city'] ?? ''),
-            'stars'           => isset($_POST['stars']) && is_numeric($_POST['stars']) ? (int) $_POST['stars'] : null,
-            'cuisineType'     => trim($_POST['cuisineType'] ?? ''),
-            'descriptionHtml' => $_POST['descriptionHtml'] ?? '',
-            'imageAssetId'    => isset($_POST['imageAssetId']) && is_numeric($_POST['imageAssetId']) ? (int) $_POST['imageAssetId'] : null,
-            'isActive'        => isset($_POST['isActive']) && $_POST['isActive'] === '1',
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function extractContactPostData(): array
-    {
-        return [
-            'phone'   => trim($_POST['phone'] ?? '') ?: null,
-            'email'   => trim($_POST['email'] ?? '') ?: null,
-            'website' => trim($_POST['website'] ?? '') ?: null,
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function extractDetailPostData(): array
-    {
-        return [
-            ...$this->extractAboutPostData(),
-            ...$this->extractVenuePostData(),
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function extractAboutPostData(): array
-    {
-        return [
-            'aboutText'           => $_POST['aboutText'] ?? null ?: null,
-            'chefName'            => trim($_POST['chefName'] ?? '') ?: null,
-            'chefText'            => $_POST['chefText'] ?? null ?: null,
-            'menuDescription'     => $_POST['menuDescription'] ?? null ?: null,
-            'locationDescription' => $_POST['locationDescription'] ?? null ?: null,
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function extractVenuePostData(): array
-    {
-        return [
-            'mapEmbedUrl'         => trim($_POST['mapEmbedUrl'] ?? '') ?: null,
-            'michelinStars'       => isset($_POST['michelinStars']) && is_numeric($_POST['michelinStars']) ? (int)$_POST['michelinStars'] : null,
-            'seatsPerSession'     => isset($_POST['seatsPerSession']) && is_numeric($_POST['seatsPerSession']) ? (int)$_POST['seatsPerSession'] : null,
-            'durationMinutes'     => isset($_POST['durationMinutes']) && is_numeric($_POST['durationMinutes']) ? (int)$_POST['durationMinutes'] : null,
-            'specialRequestsNote' => trim($_POST['specialRequestsNote'] ?? '') ?: null,
-        ];
+        return new RestaurantUpsertData(
+            name:            trim($_POST['name'] ?? ''),
+            addressLine:     trim($_POST['addressLine'] ?? ''),
+            city:            trim($_POST['city'] ?? ''),
+            stars:           isset($_POST['stars']) && is_numeric($_POST['stars']) ? (int) $_POST['stars'] : null,
+            cuisineType:     trim($_POST['cuisineType'] ?? ''),
+            descriptionHtml: $_POST['descriptionHtml'] ?? '',
+            imageAssetId:    isset($_POST['imageAssetId']) && is_numeric($_POST['imageAssetId']) ? (int) $_POST['imageAssetId'] : null,
+            isActive:        isset($_POST['isActive']) && $_POST['isActive'] === '1',
+        );
     }
 
     /** @param array<string, string> $errors */

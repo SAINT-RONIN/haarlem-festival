@@ -16,6 +16,7 @@ $cards        = $restaurantCardsSection->cards;
 $labelFilters = $restaurantCardsSection->labelFilters;
 $labelAbout   = $restaurantCardsSection->labelAboutBtn;
 $labelBook    = $restaurantCardsSection->labelBookBtn;
+$activeFilter = $restaurantCardsSection->activeFilter;
 ?>
 
 <section id="restaurants-grid" class="self-stretch px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-12 flex flex-col justify-start items-start gap-6 sm:gap-8 md:gap-10">
@@ -31,7 +32,8 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
     </div>
 
     <!-- Filter Section -->
-    <div class="self-stretch p-4 sm:p-6 bg-slate-800 rounded-2xl sm:rounded-3xl flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4 sm:gap-6 overflow-x-auto">
+    <div class="self-stretch p-4 sm:p-6 bg-slate-800 rounded-2xl sm:rounded-3xl flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4 sm:gap-6 overflow-x-auto"
+         data-restaurant-filters="restaurant-cards">
         <div class="flex justify-start items-center gap-2.5">
             <svg class="w-6 h-6 text-white flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <line x1="4" y1="6" x2="20" y2="6"/>
@@ -41,17 +43,20 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
             <span class="text-white text-lg sm:text-xl font-medium font-['Montserrat'] whitespace-nowrap"><?= htmlspecialchars($labelFilters) ?></span>
         </div>
 
-        <div class="flex justify-start items-center gap-2 sm:gap-3 overflow-x-auto flex-shrink-0">
+        <div class="flex justify-start items-center gap-2 sm:gap-3 overflow-x-auto flex-shrink-0"
+             data-filter-group="cuisine" role="radiogroup" aria-label="Filter by cuisine">
             <?php foreach ($filters as $idx => $label): ?>
-                <?php if ($idx === 0): ?>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-lg sm:rounded-xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                        <?= htmlspecialchars($label) ?>
-                    </button>
-                <?php else: ?>
-                    <button class="px-4 sm:px-5 py-2.5 sm:py-3 bg-stone-100 hover:bg-red rounded-lg sm:rounded-xl text-slate-800 hover:text-white text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                        <?= htmlspecialchars($label) ?>
-                    </button>
-                <?php endif; ?>
+                <?php
+                    $filterValue = ($idx === 0) ? 'all' : strtolower(trim($label));
+                    $isActive    = ($activeFilter === '' && $idx === 0) || ($activeFilter !== '' && $filterValue === $activeFilter);
+                ?>
+                <button type="button"
+                        data-filter-value="<?= htmlspecialchars($filterValue) ?>"
+                        role="radio"
+                        aria-checked="<?= $isActive ? 'true' : 'false' ?>"
+                        class="px-4 sm:px-5 py-2.5 sm:py-3 <?= $isActive ? 'bg-red text-white hover:bg-royal-blue' : 'bg-stone-100 text-slate-800 hover:bg-red hover:text-white' ?> rounded-lg sm:rounded-xl text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                    <?= htmlspecialchars($label) ?>
+                </button>
             <?php endforeach; ?>
         </div>
     </div>
@@ -60,7 +65,8 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
         <!-- Restaurant Cards Grid -->
         <div class="self-stretch grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php foreach ($cards as $card): ?>
-                <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full">
+                <div class="bg-white rounded-3xl outline outline-2 outline-slate-800 overflow-hidden flex flex-col h-full"
+                     data-cuisines="<?= htmlspecialchars(strtolower($card->cuisine)) ?>">
                     <?php if ($card->isVegan): ?>
                         <div class="w-full h-48 sm:h-60 p-2.5 flex justify-end items-start" style="background-image: url('<?= htmlspecialchars($card->image) ?>'); background-size: cover; background-position: center;">
                             <div class="px-3 py-2 bg-stone-100 rounded-lg flex justify-center items-center">
@@ -121,4 +127,5 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
     <?php endif; ?>
 
 </section>
+
 

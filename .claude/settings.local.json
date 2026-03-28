@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc:*)",
+      "Bash(grep -rn \"INSERT INTO.*\\\\`Event\\\\`\\\\|INSERT INTO Event\" C:/Users/mathe/PhpstormProjects/haarlem-festival/Database/)",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}

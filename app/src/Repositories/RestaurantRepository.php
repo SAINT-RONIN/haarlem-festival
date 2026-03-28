@@ -90,25 +90,19 @@ class RestaurantRepository implements IRestaurantRepository
     {
         $stmt = $this->pdo->prepare(
             'INSERT INTO Restaurant
-            (Name, AddressLine, City, Stars, CuisineType, DescriptionHtml, ImageAssetId, IsActive,
-             Phone, Email, Website, AboutText, ChefName, ChefText, MenuDescription,
-             LocationDescription, MapEmbedUrl, MichelinStars, SeatsPerSession, DurationMinutes,
-             SpecialRequestsNote, CreatedAtUtc)
+            (Name, AddressLine, City, Stars, CuisineType, DescriptionHtml, ImageAssetId, IsActive, CreatedAtUtc)
             VALUES
-            (:name, :address, :city, :stars, :cuisine, :desc, :imageId, :active,
-             :phone, :email, :website, :about, :chef, :chefText, :menu,
-             :location, :mapUrl, :michelin, :seats, :duration, :special, NOW())'
+            (:name, :address, :city, :stars, :cuisine, :desc, :imageId, :active, NOW())'
         );
         $stmt->execute([
-            ':name' => $data->name, ':address' => $data->addressLine, ':city' => $data->city,
-            ':stars' => $data->stars, ':cuisine' => $data->cuisineType, ':desc' => $data->descriptionHtml,
-            ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
-            ':phone' => $data->phone, ':email' => $data->email, ':website' => $data->website,
-            ':about' => $data->aboutText, ':chef' => $data->chefName, ':chefText' => $data->chefText,
-            ':menu' => $data->menuDescription, ':location' => $data->locationDescription,
-            ':mapUrl' => $data->mapEmbedUrl, ':michelin' => $data->michelinStars,
-            ':seats' => $data->seatsPerSession, ':duration' => $data->durationMinutes,
-            ':special' => $data->specialRequestsNote,
+            ':name'    => $data->name,
+            ':address' => $data->addressLine,
+            ':city'    => $data->city,
+            ':stars'   => $data->stars,
+            ':cuisine' => $data->cuisineType,
+            ':desc'    => $data->descriptionHtml,
+            ':imageId' => $data->imageAssetId,
+            ':active'  => $data->isActive ? 1 : 0,
         ]);
         return (int) $this->pdo->lastInsertId();
     }
@@ -118,23 +112,19 @@ class RestaurantRepository implements IRestaurantRepository
         $stmt = $this->pdo->prepare(
             'UPDATE Restaurant SET
             Name=:name, AddressLine=:address, City=:city, Stars=:stars, CuisineType=:cuisine,
-            DescriptionHtml=:desc, ImageAssetId=:imageId, IsActive=:active,
-            Phone=:phone, Email=:email, Website=:website, AboutText=:about,
-            ChefName=:chef, ChefText=:chefText, MenuDescription=:menu,
-            LocationDescription=:location, MapEmbedUrl=:mapUrl, MichelinStars=:michelin,
-            SeatsPerSession=:seats, DurationMinutes=:duration, SpecialRequestsNote=:special
+            DescriptionHtml=:desc, ImageAssetId=:imageId, IsActive=:active
             WHERE RestaurantId=:id'
         );
         $stmt->execute([
-            ':id' => $id, ':name' => $data->name, ':address' => $data->addressLine, ':city' => $data->city,
-            ':stars' => $data->stars, ':cuisine' => $data->cuisineType, ':desc' => $data->descriptionHtml,
-            ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
-            ':phone' => $data->phone, ':email' => $data->email, ':website' => $data->website,
-            ':about' => $data->aboutText, ':chef' => $data->chefName, ':chefText' => $data->chefText,
-            ':menu' => $data->menuDescription, ':location' => $data->locationDescription,
-            ':mapUrl' => $data->mapEmbedUrl, ':michelin' => $data->michelinStars,
-            ':seats' => $data->seatsPerSession, ':duration' => $data->durationMinutes,
-            ':special' => $data->specialRequestsNote,
+            ':id'      => $id,
+            ':name'    => $data->name,
+            ':address' => $data->addressLine,
+            ':city'    => $data->city,
+            ':stars'   => $data->stars,
+            ':cuisine' => $data->cuisineType,
+            ':desc'    => $data->descriptionHtml,
+            ':imageId' => $data->imageAssetId,
+            ':active'  => $data->isActive ? 1 : 0,
         ]);
     }
 
