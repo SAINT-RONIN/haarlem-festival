@@ -90,11 +90,11 @@ class CmsEventsController extends CmsBaseController
      * Renders the event edit page with sessions, prices, and labels.
      * GET /cms/events/{id}/edit
      */
-    public function edit(string $id): void
+    public function edit(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
             $currentView = 'events';
-            $editData = $this->loadEventEditData((int)$id);
+            $editData = $this->loadEventEditData($id);
             if ($editData === null) {
                 return;
             }
@@ -106,40 +106,40 @@ class CmsEventsController extends CmsBaseController
      * Validates and applies updates to an existing event.
      * POST /cms/events/{id}/edit
      */
-    public function update(string $id): void
+    public function update(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
-            $eventId = (int)$id;
+            $eventId = $id;
             $formData = $this->extractEventFormData(); // Form data extracted via BaseController helpers; service validates internally
             $this->eventsService->updateEvent($eventId, $formData);
             $this->redirectWithFlash('Event updated successfully.', 'success', "/cms/events/{$eventId}/edit");
-        }, '/cms/events/' . (int)$id . '/edit');
+        }, '/cms/events/' . $id . '/edit');
     }
 
     /**
      * Adds a new time-slot session to an event.
      * POST /cms/events/{eventId}/sessions
      */
-    public function createSession(string $eventId): void
+    public function createSession(int $eventId): void
     {
         $this->handleCmsValidationRequest(function () use ($eventId): void {
-            $eventIdInt = (int)$eventId;
+            $eventIdInt = $eventId;
             $formData = $this->extractSessionFormData($eventIdInt); // Session fields extracted via BaseController helpers; service validates internally
             $this->eventsService->createSession($eventIdInt, $formData);
             $this->redirectWithFlash('Session created successfully.', 'success', "/cms/events/{$eventIdInt}/edit");
-        }, '/cms/events/' . (int)$eventId . '/edit');
+        }, '/cms/events/' . $eventId . '/edit');
     }
 
     /**
      * Updates an existing session's details (capacity, times, etc.).
      * POST /cms/sessions/{id}/edit
      */
-    public function updateSession(string $id): void
+    public function updateSession(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
             $formData = $this->extractSessionFormData(); // Session fields extracted via BaseController helpers; service validates internally
-            $this->eventsService->updateSession((int)$id, $formData);
+            $this->eventsService->updateSession($id, $formData);
             $this->redirectWithFlash('Session updated successfully.', 'success', "/cms/events/{$eventId}/edit");
         }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
@@ -148,11 +148,11 @@ class CmsEventsController extends CmsBaseController
      * Removes a session from its parent event.
      * POST /cms/sessions/{id}/delete
      */
-    public function deleteSession(string $id): void
+    public function deleteSession(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
-            $this->eventsService->deleteSession((int)$id);
+            $this->eventsService->deleteSession($id);
             $this->redirectWithFlash('Session deleted successfully.', 'success', "/cms/events/{$eventId}/edit");
         });
     }
@@ -161,11 +161,11 @@ class CmsEventsController extends CmsBaseController
      * Attaches a text label to a session (e.g. "Sold Out", "VIP").
      * POST /cms/sessions/{id}/labels
      */
-    public function addLabel(string $id): void
+    public function addLabel(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
-            $this->eventsService->addLabel((int)$id, $this->readStringPostParam('LabelText') ?? '');
+            $this->eventsService->addLabel($id, $this->readStringPostParam('LabelText') ?? '');
             $this->redirectWithFlash('Label added successfully.', 'success', "/cms/events/{$eventId}/edit");
         }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
@@ -174,11 +174,11 @@ class CmsEventsController extends CmsBaseController
      * Removes a label from a session.
      * POST /cms/labels/{id}/delete
      */
-    public function deleteLabel(string $id): void
+    public function deleteLabel(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
-            $this->eventsService->deleteLabel((int)$id);
+            $this->eventsService->deleteLabel($id);
             $this->redirectWithFlash('Label deleted successfully.', 'success', "/cms/events/{$eventId}/edit");
         });
     }
@@ -187,11 +187,11 @@ class CmsEventsController extends CmsBaseController
      * Sets or updates the ticket price for a session at a given price tier.
      * POST /cms/sessions/{id}/price
      */
-    public function setPrice(string $id): void
+    public function setPrice(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
-            $this->handleSetPrice((int)$id, $eventId);
+            $this->handleSetPrice($id, $eventId);
         }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
@@ -214,10 +214,10 @@ class CmsEventsController extends CmsBaseController
      * Deletes an event and all its associated sessions.
      * POST /cms/events/{id}/delete
      */
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
-            $this->eventsService->deleteEvent((int)$id);
+            $this->eventsService->deleteEvent($id);
             $this->redirectWithFlash('Event deleted successfully.', 'success', '/cms/events');
         }, '/cms/events');
     }

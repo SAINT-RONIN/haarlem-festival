@@ -73,16 +73,12 @@ class CmsDashboardController extends CmsBaseController
      * Displays the page edit form.
      * GET /cms/pages/{id}/edit
      */
-    public function edit(string $id): void
+    public function edit(int $id): void
     {
         try {
-            $pageId = $this->parsePageId($id);
-            if ($pageId === null) {
-                return;
-            }
-            $this->renderEditPage($pageId);
+            $this->renderEditPage($id);
         } catch (\Throwable $error) {
-            $this->handleCmsEditError($error, $this->parsePositiveIntId($id));
+            $this->handleCmsEditError($error, $id);
         }
     }
 
@@ -150,18 +146,14 @@ class CmsDashboardController extends CmsBaseController
      *
      * @throws CmsEditException Caught internally; redirects with error flash.
      */
-    public function update(string $id): void
+    public function update(int $id): void
     {
         try {
-            $pageId = $this->parsePageId($id);
-            if ($pageId === null) {
-                return;
-            }
-            $this->validateCsrfOrRedirect($pageId);
-            $this->validateItemsOrRedirect($pageId);
-            $this->performUpdateAndRedirect($pageId);
+            $this->validateCsrfOrRedirect($id);
+            $this->validateItemsOrRedirect($id);
+            $this->performUpdateAndRedirect($id);
         } catch (\Throwable $error) {
-            $this->handleCmsEditError($error, $this->parsePositiveIntId($id));
+            $this->handleCmsEditError($error, $id);
         }
     }
 
@@ -274,14 +266,10 @@ class CmsDashboardController extends CmsBaseController
      *
      * @throws CmsEditException Caught internally; returns JSON error.
      */
-    public function uploadImage(string $id): void
+    public function uploadImage(int $id): void
     {
         try {
             header('Content-Type: application/json');
-            $pageId = $this->parsePageIdJson($id);
-            if ($pageId === null) {
-                return;
-            }
             $this->processUploadRequest();
         } catch (\Throwable $error) {
             $this->handleCmsUploadError($error);

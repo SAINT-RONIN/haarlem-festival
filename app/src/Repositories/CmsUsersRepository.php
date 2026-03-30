@@ -129,9 +129,13 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         }
 
         if ($search !== null && $search !== '') {
-            $sql .= ' AND (ua.Username LIKE :search OR ua.Email LIKE :search'
-                  . ' OR ua.FirstName LIKE :search OR ua.LastName LIKE :search)';
-            $params[':search'] = '%' . $search . '%';
+            $sql .= ' AND (ua.Username LIKE :searchUser OR ua.Email LIKE :searchEmail'
+                  . ' OR ua.FirstName LIKE :searchFirst OR ua.LastName LIKE :searchLast)';
+            $searchTerm = '%' . $search . '%';
+            $params[':searchUser'] = $searchTerm;
+            $params[':searchEmail'] = $searchTerm;
+            $params[':searchFirst'] = $searchTerm;
+            $params[':searchLast'] = $searchTerm;
         }
 
         $sql .= ' ORDER BY ' . $this->resolveSortColumn($sortBy) . ' ' . $this->resolveSortDir($sortDir);

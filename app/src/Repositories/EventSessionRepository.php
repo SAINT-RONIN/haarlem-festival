@@ -180,14 +180,24 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             return;
         }
 
-        $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
-
         match ($filters->priceType) {
-            'pay-what-you-like' => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = :pwylTierId)',
-            'free'              => $conditions[] = '(es.IsFree = 1 OR NOT EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0))',
-            'fixed'             => $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != :pwylTierId)',
-            default             => null,
+            'free' => $conditions[] = '(es.IsFree = 1 OR NOT EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0))',
+            'pay-what-you-like' => $this->addPwylCondition($conditions, $params),
+            'fixed' => $this->addFixedCondition($conditions, $params),
+            default => null,
         };
+    }
+
+    private function addPwylCondition(array &$conditions, array &$params): void
+    {
+        $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
+        $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = :pwylTierId)';
+    }
+
+    private function addFixedCondition(array &$conditions, array &$params): void
+    {
+        $params['pwylTierId'] = PriceTierId::PayWhatYouLike->value;
+        $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != :pwylTierId)';
     }
 
     /** Adds venue name, language code, and minimum age conditions. */
