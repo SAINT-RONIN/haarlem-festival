@@ -107,7 +107,7 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
     public function findOrderItems(int $orderId): array
     {
         $sql = "
-            SELECT oi.*, e.Title AS EventTitle, v.Name AS VenueName, es.SessionDateTime, pt.PassName
+            SELECT oi.*, e.Title AS EventTitle, v.Name AS VenueName, es.StartDateTime AS SessionDateTime, pt.PassName
             FROM OrderItem oi
             LEFT JOIN EventSession es ON oi.EventSessionId = es.EventSessionId
             LEFT JOIN Event e ON es.EventId = e.EventId

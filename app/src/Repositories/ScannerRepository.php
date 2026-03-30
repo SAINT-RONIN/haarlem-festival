@@ -21,7 +21,7 @@ class ScannerRepository extends BaseRepository implements IScannerRepository
                 t.IsScanned,
                 t.ScannedAtUtc,
                 e.Title AS EventTitle,
-                es.SessionDateTime,
+                es.StartDateTime AS SessionDateTime,
                 es.DurationMinutes,
                 v.Name AS VenueName,
                 o.OrderNumber
