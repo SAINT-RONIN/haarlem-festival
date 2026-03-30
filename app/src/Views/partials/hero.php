@@ -190,6 +190,15 @@ $isLoggedIn = $isLoggedIn ?? $globalUi->isLoggedIn;
                         </div>
                     </div>
 
+                    <!-- My Orders Button (authenticated only) -->
+                    <?php if ($isLoggedIn): ?>
+                    <a href="/my-orders" role="menuitem"
+                       class="w-full xl:w-auto px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                        <i data-lucide="receipt" class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200" aria-hidden="true"></i>
+                        <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200">My Orders</span>
+                    </a>
+                    <?php endif; ?>
+
                     <!-- My Program Button -->
                     <a href="/program"
                        class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
