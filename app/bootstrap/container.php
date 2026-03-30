@@ -98,7 +98,10 @@ use App\Services\ScannerService;
 use App\Services\SessionService;
 use App\Services\StorytellingDetailService;
 use App\Services\StorytellingService;
+use App\Services\InvoiceFulfillmentService;
 use App\Services\TicketFulfillmentService;
+use App\Repositories\InvoiceRepository;
+use App\Tickets\InvoicePdfGenerator;
 use App\Tickets\PdfTicketGenerator;
 use App\Tickets\QrCodeGenerator;
 use App\Tickets\TicketCodeGenerator;
@@ -144,6 +147,7 @@ return static function (string $controllerClass): object {
     $orderItemRepo      = fn() => $make('orderItemRepo', fn() => new OrderItemRepository($pdo()));
     $paymentRepo        = fn() => $make('paymentRepo', fn() => new PaymentRepository($pdo()));
     $ticketRepo         = fn() => $make('ticketRepo', fn() => new TicketRepository($pdo()));
+    $invoiceRepo        = fn() => $make('invoiceRepo', fn() => new InvoiceRepository($pdo()));
 
     // ── Lazy service accessors (shared across multiple controllers) ──
 
@@ -176,6 +180,17 @@ return static function (string $controllerClass): object {
         new QrCodeGenerator(),
         new PdfTicketGenerator(),
         new TicketCodeGenerator(),
+    ));
+
+    $invoiceFulfillmentService = fn() => $make('invoiceFulfillmentService', fn() => new InvoiceFulfillmentService(
+        $orderRepo(),
+        $orderItemRepo(),
+        $eventSessionRepo(),
+        $invoiceRepo(),
+        $mediaAssetRepo(),
+        new InvoicePdfGenerator(),
+        $emailService(),
+        $passTypeRepo(),
     ));
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
@@ -305,7 +320,7 @@ return static function (string $controllerClass): object {
             ),
             $mediaAssetService(),
         ),
-        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer, $ticketFulfillmentService, $passPurchaseRepo) {
+        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer, $ticketFulfillmentService, $invoiceFulfillmentService, $passPurchaseRepo) {
             $stripeService = new StripeService(
                 (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
                 (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
@@ -339,6 +354,7 @@ return static function (string $controllerClass): object {
                     $programRepo(),
                     $orderCapacityRestorer(),
                     $ticketFulfillmentService(),
+                    $invoiceFulfillmentService(),
                     $pdo(),
                 ),
                 new StripeWebhookRequestFactory(),

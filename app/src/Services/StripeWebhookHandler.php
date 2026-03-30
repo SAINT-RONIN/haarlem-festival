@@ -16,6 +16,7 @@ use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
 use App\DTOs\Checkout\WebhookHandlerResult;
 use App\Services\Interfaces\IStripeWebhookHandler;
+use App\Services\Interfaces\IInvoiceFulfillmentService;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use PDO;
 
@@ -35,6 +36,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         private readonly IProgramRepository $programRepository,
         private readonly IOrderCapacityRestorer $orderCapacityRestorer,
         private readonly ITicketFulfillmentService $ticketFulfillmentService,
+        private readonly IInvoiceFulfillmentService $invoiceFulfillmentService,
         private readonly PDO $pdo,
     ) {
     }
@@ -61,6 +63,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
             [$metadata, $orderId, $paymentId] = $this->extractWebhookMetadata($object);
             $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
             $this->fulfillTicketsIfPaymentCompleted($eventType, $object, $metadata, $orderId);
+            $this->fulfillInvoiceIfPaymentCompleted($eventType, $orderId);
         } catch (\Throwable $error) {
             $this->safeReleaseWebhookReservation($eventId);
             throw $error;
@@ -222,6 +225,15 @@ class StripeWebhookHandler implements IStripeWebhookHandler
             isset($metadata['first_name']) ? (string)$metadata['first_name'] : null,
             isset($metadata['last_name']) ? (string)$metadata['last_name'] : null,
         );
+    }
+
+    private function fulfillInvoiceIfPaymentCompleted(string $eventType, ?int $orderId): void
+    {
+        if ($orderId === null || !$this->isPaymentCompletedEvent($eventType)) {
+            return;
+        }
+
+        $this->invoiceFulfillmentService->fulfillPaidOrder($orderId);
     }
 
     private function isPaymentCompletedEvent(string $eventType): bool

@@ -62,4 +62,20 @@ class PathResolver
     {
         return '/assets/tickets/' . $fileName;
     }
+
+    /**
+     * Gets the absolute path where generated invoice PDFs are stored.
+     */
+    public static function getInvoiceAssetPath(): string
+    {
+        return self::getPublicPath() . '/assets/invoices';
+    }
+
+    /**
+     * Gets the web-accessible relative path for a generated invoice PDF.
+     */
+    public static function getInvoiceAssetRelativePath(string $fileName): string
+    {
+        return '/assets/invoices/' . $fileName;
+    }
 }

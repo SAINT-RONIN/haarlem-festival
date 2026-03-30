@@ -20,10 +20,10 @@ class ScannerRepository extends BaseRepository implements IScannerRepository
                 t.TicketCode,
                 t.IsScanned,
                 t.ScannedAtUtc,
-                e.EventTitle,
+                e.Title AS EventTitle,
                 es.SessionDateTime,
                 es.DurationMinutes,
-                v.VenueName,
+                v.Name AS VenueName,
                 o.OrderNumber
             FROM Ticket t
             JOIN OrderItem oi ON t.OrderItemId = oi.OrderItemId

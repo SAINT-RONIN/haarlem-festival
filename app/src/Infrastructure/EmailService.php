@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
+use App\DTOs\Invoice\InvoiceEmailMessage;
 use App\DTOs\Tickets\TicketEmailAttachment;
 use App\DTOs\Tickets\TicketEmailMessage;
 use App\Exceptions\EmailDeliveryException;
@@ -78,6 +79,14 @@ class EmailService implements IEmailService
         return $this->send($message->toEmail, $subject, $body, $message->attachments);
     }
 
+    public function sendInvoiceEmail(InvoiceEmailMessage $message): bool
+    {
+        $subject = 'Your Haarlem Festival Invoice - ' . $message->orderNumber;
+        $body = $this->buildInvoiceEmailBody($message);
+
+        return $this->send($message->recipientEmail, $subject, $body, $message->attachments);
+    }
+
     /**
      * Builds the password reset email body.
      */
@@ -94,6 +103,25 @@ Click the link below to reset your password:
 This link will expire in 1 hour.
 
 If you did not request this reset, you can safely ignore this email.
+
+Best regards,
+Haarlem Festival Team
+EMAIL;
+    }
+
+    private function buildInvoiceEmailBody(InvoiceEmailMessage $message): string
+    {
+        $recipientName = $message->recipientName !== '' ? $message->recipientName : 'valued customer';
+
+        return <<<EMAIL
+Hello {$recipientName},
+
+Please find attached the invoice for your Haarlem Festival order.
+
+Invoice number: {$message->invoiceNumber}
+Order reference: {$message->orderNumber}
+
+If you have any questions about this invoice, please visit {$this->appUrl}/my-program.
 
 Best regards,
 Haarlem Festival Team
@@ -185,11 +213,11 @@ EMAIL;
         $mail->isHTML(false);
 
         foreach ($attachments as $attachment) {
-            if (!$attachment instanceof TicketEmailAttachment) {
-                continue;
+            if ($attachment instanceof TicketEmailAttachment) {
+                $mail->addAttachment($attachment->absolutePath, $attachment->displayName);
+            } elseif (is_object($attachment) && isset($attachment->absolutePath, $attachment->displayName)) {
+                $mail->addAttachment($attachment->absolutePath, $attachment->displayName);
             }
-
-            $mail->addAttachment($attachment->absolutePath, $attachment->displayName);
         }
 
         if (!$mail->send()) {

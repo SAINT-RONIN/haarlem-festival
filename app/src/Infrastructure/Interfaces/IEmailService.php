@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Interfaces;
 
+use App\DTOs\Invoice\InvoiceEmailMessage;
 use App\DTOs\Tickets\TicketEmailMessage;
 
 /**
@@ -29,4 +30,12 @@ interface IEmailService
      * @throws \App\Exceptions\EmailDeliveryException When SMTP delivery fails unexpectedly
      */
     public function sendOrderTicketsEmail(TicketEmailMessage $message): bool;
+
+    /**
+     * Sends a paid-order invoice email with the invoice PDF attachment.
+     *
+     * @throws \App\Exceptions\SmtpNotConfiguredException When SMTP is not configured or local sending is blocked
+     * @throws \App\Exceptions\EmailDeliveryException When SMTP delivery fails unexpectedly
+     */
+    public function sendInvoiceEmail(InvoiceEmailMessage $message): bool;
 }
