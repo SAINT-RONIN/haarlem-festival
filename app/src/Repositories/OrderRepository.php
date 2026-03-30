@@ -69,6 +69,15 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         );
     }
 
+    public function findByIdAndUserId(int $orderId, int $userId): ?Order
+    {
+        return $this->fetchOne(
+            'SELECT * FROM `Order` WHERE OrderId = :orderId AND UserAccountId = :userId',
+            ['orderId' => $orderId, 'userId' => $userId],
+            fn(array $row) => Order::fromRow($row),
+        );
+    }
+
     /**
      * Unconditionally sets the order status. Use updateStatusIfCurrentIn() when you need
      * to guard against race conditions during concurrent payment callbacks.

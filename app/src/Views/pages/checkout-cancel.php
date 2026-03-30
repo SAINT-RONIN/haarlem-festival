@@ -16,7 +16,9 @@ $details = $viewModel->hasCancelData
         'Payment' => $viewModel->paymentId,
     ]
     : [];
-$primaryHref = '/checkout';
+$primaryHref = $viewModel->hasCancelData && $viewModel->orderId !== 'n/a'
+    ? '/checkout/retry/' . $viewModel->orderId
+    : '/checkout';
 $primaryLabel = 'Try again';
 $secondaryHref = '/my-program';
 $secondaryLabel = 'Back to my program';

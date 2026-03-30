@@ -24,6 +24,7 @@ use App\DTOs\Checkout\CheckoutSessionSummary;
 use App\Exceptions\CheckoutException;
 use App\Exceptions\CheckoutInputException;
 use App\Exceptions\CheckoutSessionException;
+use App\Exceptions\RetryPaymentException;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
 use App\Services\Interfaces\ITicketFulfillmentService;
@@ -269,6 +270,110 @@ class CheckoutService implements ICheckoutService
         if (is_string($paymentIntentId) && $paymentIntentId !== '') {
             $this->paymentRepository->updateStripePaymentIntentId($paymentId, $paymentIntentId);
         }
+    }
+
+    /**
+     * Loads and validates an order for retry payment.
+     */
+    public function getRetryOrder(int $orderId, int $userId): \App\Models\Order
+    {
+        $order = $this->orderRepository->findByIdAndUserId($orderId, $userId);
+
+        if ($order === null) {
+            throw new RetryPaymentException('Order not found.');
+        }
+
+        return $order;
+    }
+
+    /**
+     * Creates a new Stripe session for an existing pending order within the 24h window.
+     */
+    public function retryCheckoutSession(int $orderId, int $userId, array $payload): CheckoutSessionResult
+    {
+        $order = $this->getRetryOrder($orderId, $userId);
+        $this->validateRetryEligibility($order);
+
+        $method = $this->mapPaymentMethod((string) ($payload['paymentMethod'] ?? ''));
+
+        return $this->executeRetryTransaction($order, $method);
+    }
+
+    private function validateRetryEligibility(\App\Models\Order $order): void
+    {
+        if ($order->status !== OrderStatus::Pending) {
+            throw new RetryPaymentException('This order is no longer pending.');
+        }
+
+        if ($order->payBeforeUtc !== null && $order->payBeforeUtc < new \DateTimeImmutable('now')) {
+            throw new RetryPaymentException('The payment deadline has passed.');
+        }
+    }
+
+    private function executeRetryTransaction(\App\Models\Order $order, PaymentMethod $method): CheckoutSessionResult
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $paymentId = $this->paymentRepository->create($order->orderId, $method, PaymentStatus::Pending);
+            $checkoutUrl = $this->createAndLinkRetryStripeSession($order, $paymentId, $method);
+
+            $this->pdo->commit();
+
+            return new CheckoutSessionResult(
+                redirectUrl: $checkoutUrl,
+                orderId: $order->orderId,
+                paymentId: $paymentId,
+            );
+        } catch (\Throwable $error) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $error;
+        }
+    }
+
+    private function createAndLinkRetryStripeSession(\App\Models\Order $order, int $paymentId, PaymentMethod $method): string
+    {
+        $params = $this->buildRetryStripeParams($order, $paymentId, $method);
+        $session = $this->stripeService->createCheckoutSession($params);
+
+        $sessionId = (string) ($session['id'] ?? '');
+        $checkoutUrl = (string) ($session['url'] ?? '');
+
+        if ($sessionId === '' || $checkoutUrl === '') {
+            throw new CheckoutSessionException('Stripe checkout session could not be created.');
+        }
+
+        $this->linkStripeIds($paymentId, $session, $sessionId);
+
+        return $checkoutUrl;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildRetryStripeParams(\App\Models\Order $order, int $paymentId, PaymentMethod $method): array
+    {
+        $appUrl = $this->runtimeConfig->getAppUrl();
+
+        return [
+            'mode' => 'payment',
+            'success_url' => $appUrl . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $appUrl . '/checkout/cancel?order_id=' . $order->orderId . '&payment_id=' . $paymentId,
+            'payment_method_types' => $this->mapStripePaymentMethodTypes($method),
+            'line_items' => $this->buildStripeLineItems((float) $order->totalAmount, $order->orderNumber),
+            'customer_email' => $order->ticketRecipientEmail ?? '',
+            'client_reference_id' => $order->orderNumber,
+            'metadata' => [
+                'order_id' => (string) $order->orderId,
+                'payment_id' => (string) $paymentId,
+                'program_id' => (string) $order->programId,
+                'user_id' => (string) $order->userAccountId,
+                'first_name' => (string) ($order->ticketRecipientFirstName ?? ''),
+                'last_name' => (string) ($order->ticketRecipientLastName ?? ''),
+            ],
+        ];
     }
 
     /**

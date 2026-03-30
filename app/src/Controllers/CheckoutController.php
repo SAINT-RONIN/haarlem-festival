@@ -6,10 +6,12 @@ namespace App\Controllers;
 
 use App\Exceptions\CheckoutException;
 use App\Exceptions\CheckoutInputException;
+use App\Exceptions\RetryPaymentException;
 use App\Exceptions\StripeWebhookException;
 use App\Helpers\AssetVersionHelper;
 use App\Http\Requests\Interfaces\IStripeWebhookRequestFactory;
 use App\Mappers\CheckoutMapper;
+use App\Mappers\CheckoutRetryMapper;
 use App\Mappers\ProgramMapper;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\IProgramService;
@@ -120,6 +122,41 @@ class CheckoutController extends BaseController
 
             $this->renderView(__DIR__ . '/../Views/pages/checkout-cancel.php', $viewModel);
         });
+    }
+
+    /**
+     * Displays the retry payment page for a pending order.
+     * GET /checkout/retry/{orderId}
+     */
+    public function retryIndex(int $orderId): void
+    {
+        $this->handlePageRequest(function () use ($orderId): void {
+            $userId = $this->requireAuthenticatedUserId();
+            $order = $this->checkoutService->getRetryOrder($orderId, $userId);
+            $viewModel = CheckoutRetryMapper::toRetryViewModel($order, true);
+
+            $this->renderView(__DIR__ . '/../Views/pages/checkout-retry.php', $viewModel);
+        });
+    }
+
+    /**
+     * Creates a new Stripe session for an existing pending order.
+     * POST /api/checkout/retry-session
+     */
+    public function retrySession(): void
+    {
+        $this->handleJsonRequest(function (): void {
+            $userId = $this->requireAuthenticatedUserId();
+            $payload = $this->readJsonBody();
+            $orderId = (int) ($payload['orderId'] ?? 0);
+
+            $result = $this->checkoutService->retryCheckoutSession($orderId, $userId, $payload);
+
+            $this->json([
+                'success' => true,
+                'redirectUrl' => $result->redirectUrl,
+            ]);
+        }, [RetryPaymentException::class, CheckoutInputException::class, \InvalidArgumentException::class]);
     }
 
     /**

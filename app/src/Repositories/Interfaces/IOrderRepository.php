@@ -37,6 +37,12 @@ interface IOrderRepository
     public function findById(int $orderId): ?Order;
 
     /**
+     * Finds an order by ID only if it belongs to the given user.
+     * Used for ownership validation in retry-payment flows.
+     */
+    public function findByIdAndUserId(int $orderId, int $userId): ?Order;
+
+    /**
      * Unconditionally sets the order status. Use updateStatusIfCurrentIn() when you need
      * to guard against race conditions during concurrent payment callbacks.
      */

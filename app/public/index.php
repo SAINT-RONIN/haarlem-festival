@@ -105,6 +105,8 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/api/checkout/create-session', [CheckoutController::class, 'createSession']);
     $r->addRoute('GET', '/checkout/success', [CheckoutController::class, 'success']);
     $r->addRoute('GET', '/checkout/cancel', [CheckoutController::class, 'cancel']);
+    $r->addRoute('GET', '/checkout/retry/{orderId:\d+}', [CheckoutController::class, 'retryIndex']);
+    $r->addRoute('POST', '/api/checkout/retry-session', [CheckoutController::class, 'retrySession']);
     $r->addRoute('POST', '/api/stripe/webhook', [CheckoutController::class, 'webhook']);
     $r->addRoute('POST', '/checkout/webhook', [CheckoutController::class, 'webhook']);
 

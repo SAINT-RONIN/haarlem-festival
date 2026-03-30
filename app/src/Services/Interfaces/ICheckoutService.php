@@ -32,6 +32,21 @@ interface ICheckoutService
     public function handleCancel(?int $orderId, ?int $paymentId): CheckoutCancelResult;
 
     /**
+     * Loads and validates an order for retry payment.
+     *
+     * @throws \App\Exceptions\RetryPaymentException When order not found or not owned by user.
+     */
+    public function getRetryOrder(int $orderId, int $userId): \App\Models\Order;
+
+    /**
+     * Creates a new Stripe session for an existing pending order within the 24h payment window.
+     *
+     * @param array{paymentMethod:string} $payload
+     * @throws \App\Exceptions\RetryPaymentException When order is not eligible for retry.
+     */
+    public function retryCheckoutSession(int $orderId, int $userId, array $payload): CheckoutSessionResult;
+
+    /**
      * Retrieves a summary of a Stripe checkout session for the confirmation page.
      */
     public function getSessionSummary(string $sessionId): CheckoutSessionSummary;
