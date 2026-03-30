@@ -35,6 +35,7 @@ final readonly class EventSessionFilter
         public ?string $venueName = null,
         public ?string $languageCode = null,
         public ?int $filterMinAge = null,
+        public ?string $startTime = null,
         public ?int $limit = null,
     ) {
     }

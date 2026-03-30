@@ -17,6 +17,7 @@ final readonly class ScheduleFilterParams
         public ?string $venue = null,
         public ?string $language = null,
         public ?int $age = null,
+        public ?string $startTime = null,
     ) {
     }
 
@@ -27,6 +28,7 @@ final readonly class ScheduleFilterParams
             || $this->priceType !== null
             || $this->venue !== null
             || $this->language !== null
-            || $this->age !== null;
+            || $this->age !== null
+            || $this->startTime !== null;
     }
 }

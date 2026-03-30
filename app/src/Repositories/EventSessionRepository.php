@@ -61,6 +61,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         $this->addDateFilters($filters, $conditions, $params);
         $this->addVisibleDaysFilter($filters, $conditions, $params);
         $this->addTimeRangeFilter($filters, $conditions);
+        $this->addStartTimeFilter($filters, $conditions, $params);
         $this->addPriceTypeFilter($filters, $conditions, $params);
         $this->addTextFilters($filters, $conditions, $params);
 
@@ -171,6 +172,17 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             'afternoon' => $conditions[] = '(HOUR(es.StartDateTime) >= 12 AND HOUR(es.StartDateTime) < 17)',
             'evening'   => $conditions[] = 'HOUR(es.StartDateTime) >= 17',
         };
+    }
+
+    /** Filters by exact start hour (e.g. "10:00" matches sessions starting at 10:xx). */
+    private function addStartTimeFilter(EventSessionFilter $filters, array &$conditions, array &$params): void
+    {
+        if ($filters->startTime === null) {
+            return;
+        }
+
+        $conditions[] = 'TIME(es.StartDateTime) = :startTime';
+        $params['startTime'] = $filters->startTime . ':00';
     }
 
     /** Classifies sessions as free, fixed-price, or pay-what-you-like via subqueries. */

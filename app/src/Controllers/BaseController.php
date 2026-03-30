@@ -161,13 +161,14 @@ abstract class BaseController
         $venue = $this->readStringQueryParam('venue');
         $language = $this->readStringQueryParam('language');
         $age = $this->readPositiveIntQueryParam('age');
+        $startTime = $this->readStringQueryParam('startTime');
 
         if ($day === null && $timeRange === null && $priceType === null
-            && $venue === null && $language === null && $age === null) {
+            && $venue === null && $language === null && $age === null && $startTime === null) {
             return null;
         }
 
-        return $this->buildScheduleFilterParams($day, $timeRange, $priceType, $venue, $language, $age);
+        return $this->buildScheduleFilterParams($day, $timeRange, $priceType, $venue, $language, $age, $startTime);
     }
 
     /** Constructs a ScheduleFilterParams DTO, normalizing enum values and lowercasing free-text fields. */
@@ -178,6 +179,7 @@ abstract class BaseController
         ?string $venue,
         ?string $language,
         ?int $age,
+        ?string $startTime,
     ): ScheduleFilterParams {
         return new ScheduleFilterParams(
             day: $day !== null ? strtolower($day) : null,
@@ -186,6 +188,7 @@ abstract class BaseController
             venue: $venue,
             language: $language !== null ? strtolower($language) : null,
             age: $age,
+            startTime: $startTime,
         );
     }
 

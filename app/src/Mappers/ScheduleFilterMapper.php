@@ -40,6 +40,7 @@ final class ScheduleFilterMapper
             $group = match ($type) {
                 'day'       => self::buildDayFilterGroup($cmsContent, $availableDays, $allLabel, $activeFilters),
                 'timeRange' => self::buildTimeRangeFilterGroup($cmsContent, $allLabel, $activeFilters),
+                'startTime' => self::buildStartTimeFilterGroup($allLabel, $activeFilters),
                 'priceType' => self::buildPriceTypeFilterGroup($cmsContent, $allLabel, $priceTypeOptions, $activeFilters),
                 'language'  => self::buildLanguageFilterGroup($cmsContent, $allLabel, $activeFilters),
                 'ageGroup'  => self::buildAgeGroupFilterGroup($cmsContent, $activeFilters),
@@ -81,6 +82,24 @@ final class ScheduleFilterMapper
             label: self::str($cmsContent->scheduleFilterDayLabel, 'Day'),
             key: 'day',
             options: $options,
+        );
+    }
+
+    /** Builds the start time filter group with specific hour slots (10:00, 13:00, 16:00). */
+    private static function buildStartTimeFilterGroup(
+        string $allLabel,
+        ?ScheduleFilterParams $activeFilters,
+    ): ScheduleFilterGroupData {
+        $active = $activeFilters?->startTime;
+        return new ScheduleFilterGroupData(
+            label: 'Start time',
+            key: 'startTime',
+            options: [
+                new ScheduleFilterOptionData(label: $allLabel, value: 'all', isActive: $active === null),
+                new ScheduleFilterOptionData(label: '10:00', value: '10:00', isActive: $active === '10:00'),
+                new ScheduleFilterOptionData(label: '13:00', value: '13:00', isActive: $active === '13:00'),
+                new ScheduleFilterOptionData(label: '16:00', value: '16:00', isActive: $active === '16:00'),
+            ],
         );
     }
 

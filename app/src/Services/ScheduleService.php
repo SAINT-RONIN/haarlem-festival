@@ -160,6 +160,7 @@ class ScheduleService implements IScheduleService
                 venueName: $filterParams?->venue,
                 languageCode: $filterParams?->language,
                 filterMinAge: $filterParams?->age,
+                startTime: $filterParams?->startTime,
                 limit: 50,
             ),
         );
@@ -561,6 +562,7 @@ class ScheduleService implements IScheduleService
         return match ($eventTypeSlug) {
             'storytelling' => ['day', 'timeRange', 'priceType', 'language', 'ageGroup'],
             'jazz'         => ['day', 'venue', 'priceType'],
+            'history'      => ['day', 'startTime'],
             default        => ['day'],
         };
     }
