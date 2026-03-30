@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\DTOs\Checkout\OrderWithDetails;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
+use App\Repositories\Interfaces\IInvoiceRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\ICmsOrdersService;
 
 /**
@@ -18,6 +20,8 @@ class CmsOrdersService implements ICmsOrdersService
 {
     public function __construct(
         private readonly ICmsOrdersRepository $ordersRepository,
+        private readonly IInvoiceRepository $invoiceRepository,
+        private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {
     }
 
@@ -32,6 +36,17 @@ class CmsOrdersService implements ICmsOrdersService
         return $this->ordersRepository->findOrdersWithDetails($statusFilter);
     }
 
+    private function resolveInvoicePdfPath(?\App\Models\Invoice $invoice): ?string
+    {
+        if ($invoice === null || $invoice->pdfAssetId === null) {
+            return null;
+        }
+
+        $asset = $this->mediaAssetRepository->findById($invoice->pdfAssetId);
+
+        return $asset?->filePath;
+    }
+
     /**
      * Returns structured detail data for a single order, or null if the order does not exist.
      *
@@ -44,11 +59,16 @@ class CmsOrdersService implements ICmsOrdersService
             return null;
         }
 
+        $invoice = $this->invoiceRepository->findByOrderId($orderId);
+        $invoicePdfPath = $this->resolveInvoicePdfPath($invoice);
+
         return [
-            'order'    => $order,
-            'items'    => $this->ordersRepository->findOrderItems($orderId),
-            'payments' => $this->ordersRepository->findOrderPayments($orderId),
-            'tickets'  => $this->ordersRepository->findOrderTickets($orderId),
+            'order'          => $order,
+            'items'          => $this->ordersRepository->findOrderItems($orderId),
+            'payments'       => $this->ordersRepository->findOrderPayments($orderId),
+            'tickets'        => $this->ordersRepository->findOrderTickets($orderId),
+            'invoice'        => $invoice,
+            'invoicePdfPath' => $invoicePdfPath,
         ];
     }
 }

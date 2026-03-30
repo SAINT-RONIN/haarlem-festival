@@ -83,7 +83,7 @@ final class CmsOrdersMapper
     /**
      * Builds the CMS order detail page ViewModel from raw repository data arrays.
      *
-     * @param array{order: array, items: array, payments: array, tickets: array} $data
+     * @param array{order: array, items: array, payments: array, tickets: array, invoice: ?\App\Models\Invoice, invoicePdfPath: ?string} $data
      */
     public static function toDetailViewModel(
         array $data,
@@ -95,6 +95,8 @@ final class CmsOrdersMapper
             items:          array_map([CmsOrderItemDto::class, 'fromRow'], $data['items']),
             payments:       array_map([CmsOrderPaymentDto::class, 'fromRow'], $data['payments']),
             tickets:        array_map([CmsOrderTicketDto::class, 'fromRow'], $data['tickets']),
+            invoice:        $data['invoice'] ?? null,
+            invoicePdfPath: $data['invoicePdfPath'] ?? null,
             successMessage: $successMessage,
             errorMessage:   $errorMessage,
         );

@@ -113,6 +113,22 @@ $isLoggedIn = $viewModel->isLoggedIn;
                                 <h3 class="text-slate-800 text-sm font-bold font-['Montserrat'] uppercase">
                                     Download Tickets
                                 </h3>
+                        <?php elseif ($order->statusText === 'Paid' && empty($order->ticketPdfUrls)): ?>
+                            <!-- Tickets Pending -->
+                            <div class="p-4 bg-amber-50 rounded-2xl flex items-center gap-3">
+                                <svg class="w-5 h-5 text-amber-500 flex-shrink-0" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                     aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <p class="text-amber-800 text-sm font-medium font-['Montserrat']">
+                                    Your tickets are being generated. Please check back shortly or check your email.
+                                </p>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($order->ticketPdfUrls)): ?>
                                 <div class="flex flex-wrap gap-2">
                                     <?php foreach ($order->ticketPdfUrls as $ticket): ?>
                                         <a href="<?= htmlspecialchars($ticket['url']) ?>"

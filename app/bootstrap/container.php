@@ -387,7 +387,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         CmsOrdersController::class => new CmsOrdersController(
-            new CmsOrdersService(new CmsOrdersRepository($pdo())),
+            new CmsOrdersService(new CmsOrdersRepository($pdo()), $invoiceRepo(), $mediaAssetRepo()),
             $sessionService,
         ),
         CmsUsersController::class => new CmsUsersController(
