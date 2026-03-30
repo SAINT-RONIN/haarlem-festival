@@ -48,6 +48,7 @@ class HistoryController extends BaseController
             HistoryPageConstants::PAGE_SLUG,
             EventTypeId::History->value,
             ScheduleConstants::MAX_DAYS,
+            filterParams: $this->readScheduleFilterParams(),
         );
         $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
         $viewModel = HistoryMapper::toPageViewModel($data, $this->isLoggedIn(), $scheduleSection);
