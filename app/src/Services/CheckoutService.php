@@ -19,6 +19,7 @@ use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\IPassPurchaseRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
+use App\Repositories\Interfaces\IProgramRepository;
 use App\DTOs\Checkout\CheckoutCancelResult;
 use App\DTOs\Checkout\CheckoutSessionResult;
 use App\DTOs\Checkout\CheckoutSessionSummary;
@@ -53,6 +54,7 @@ class CheckoutService implements ICheckoutService
         private readonly IOrderCapacityRestorer $orderCapacityRestorer,
         private readonly ITicketFulfillmentService $ticketFulfillmentService,
         private readonly IPassPurchaseRepository $passPurchaseRepository,
+        private readonly IProgramRepository $programRepository,
     ) {
     }
 
@@ -475,12 +477,57 @@ class CheckoutService implements ICheckoutService
             return;
         }
 
+        $this->markOrderPaidFromSession($session, $orderId);
+
         $this->ticketFulfillmentService->fulfillPaidOrder(
             $orderId,
             $this->extractCustomerEmailFromSession($session),
             $this->extractMetadataString($session, 'first_name'),
             $this->extractMetadataString($session, 'last_name'),
         );
+    }
+
+    /**
+     * Marks the order and payment as Paid when the success page confirms payment.
+     * Idempotent — only transitions from Pending, so webhook + success-page can both fire safely.
+     */
+    private function markOrderPaidFromSession(array $session, int $orderId): void
+    {
+        $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Paid, [OrderStatus::Pending]);
+
+        $paymentId = $this->extractPaymentIdFromSession($session);
+        if ($paymentId !== null) {
+            $this->paymentRepository->updateStatusIfCurrentIn(
+                $paymentId,
+                PaymentStatus::Paid,
+                [PaymentStatus::Pending],
+                new \DateTimeImmutable(),
+            );
+        }
+
+        $programId = $this->extractProgramIdFromSession($session);
+        if ($programId > 0) {
+            $this->programRepository->markCheckedOut($programId);
+        }
+    }
+
+    private function extractPaymentIdFromSession(array $session): ?int
+    {
+        $metadata = $session['metadata'] ?? null;
+        if (!is_array($metadata) || !isset($metadata['payment_id'])) {
+            return null;
+        }
+        $id = (int) $metadata['payment_id'];
+        return $id > 0 ? $id : null;
+    }
+
+    private function extractProgramIdFromSession(array $session): int
+    {
+        $metadata = $session['metadata'] ?? null;
+        if (!is_array($metadata) || !isset($metadata['program_id'])) {
+            return 0;
+        }
+        return (int) $metadata['program_id'];
     }
 
     /**

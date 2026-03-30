@@ -345,6 +345,7 @@ return static function (string $controllerClass): object {
                     $orderCapacityRestorer(),
                     $ticketFulfillmentService(),
                     $passPurchaseRepo(),
+                    $programRepo(),
                 ),
                 new StripeWebhookHandler(
                     $stripeService,
