@@ -18,26 +18,12 @@ function initAddToProgramButtons() {
 
 window.initAddToProgramButtons = initAddToProgramButtons;
 
-function showCounterWidget(originalBtn) {
-    var sessionId = parseInt(originalBtn.getAttribute('data-event-session-id'), 10);
-    var price = originalBtn.getAttribute('data-price');
-    var isPayWhatYouLike = originalBtn.getAttribute('data-is-pay-what-you-like') === '1';
-    var isHistoryEvent = originalBtn.getAttribute('data-is-history-event') === '1';
-    var confirmText = originalBtn.getAttribute('data-confirm-text') || 'Confirm selection';
-    var addingText = originalBtn.getAttribute('data-adding-text') || 'Adding...';
-    var successText = originalBtn.getAttribute('data-success-text') || 'Added to program';
-    var container = originalBtn.parentElement;
-    var quantity = 1;
-    var groupTicketQuantity = 1;
+// Reusable builder for ticket counter rows (single or group)
+function buildTicketCounterRow(initialQuantity) {
+    var quantity = initialQuantity || 1;
 
-    originalBtn.style.display = 'none';
-
-    // Counter widget
-    var widget = document.createElement('div');
-    widget.className = 'flex flex-col items-end gap-2';
-
-    var counterRow = document.createElement('div');
-    counterRow.className = 'inline-flex items-center gap-2';
+    var row = document.createElement('div');
+    row.className = 'inline-flex items-center gap-2';
 
     var decreaseBtn = document.createElement('button');
     decreaseBtn.type = 'button';
@@ -61,116 +47,127 @@ function showCounterWidget(originalBtn) {
     cancelBtn.textContent = '\u00D7';
     cancelBtn.setAttribute('aria-label', 'Cancel selection');
 
-    counterRow.appendChild(decreaseBtn);
-    counterRow.appendChild(qtyDisplay);
-    counterRow.appendChild(increaseBtn);
-    counterRow.appendChild(cancelBtn);
+    row.appendChild(decreaseBtn);
+    row.appendChild(qtyDisplay);
+    row.appendChild(increaseBtn);
+    row.appendChild(cancelBtn);
 
-    var groupTicketWidget;
-    var groupTicketCounterRow;
-    var groupDecreaseBtn;
-    var groupIncreaseBtn;
-    var groupQtyDisplay;
-    var groupCancelBtn;
+    return {
+        row: row,
+        decreaseBtn: decreaseBtn,
+        increaseBtn: increaseBtn,
+        cancelBtn: cancelBtn,
+        qtyDisplay: qtyDisplay,
+        getQuantity: function () {
+            return quantity;
+        },
+        setQuantity: function (newQty) {
+            quantity = newQty;
+            qtyDisplay.textContent = String(quantity);
+        }
+    };
+}
 
-    // Counter widget group ticket
+function showCounterWidget(originalBtn) {
+    var sessionId = parseInt(originalBtn.getAttribute('data-event-session-id'), 10);
+    var container = originalBtn.parentElement;
+    var isHistoryEvent = originalBtn.getAttribute('data-is-history-event') === '1';
+    var confirmText = originalBtn.getAttribute('data-confirm-text') || 'Confirm selection';
+    var addingText = originalBtn.getAttribute('data-adding-text') || 'Adding...';
+    var successText = originalBtn.getAttribute('data-success-text') || 'Added to program';
+
+    var quantity = 1;
+    var groupTicketQuantity = 1;
+
+    originalBtn.style.display = 'none';
+
+    // Main widget wrapper (column layout)
+    var widget = document.createElement('div');
+    widget.className = 'flex flex-col items-end gap-2';
+
+    // Column of counters (each section stacked vertically)
+    var countersWrapper = document.createElement('div');
+    countersWrapper.className = 'flex flex-col items-end gap-2';
+
+    // Single tickets section
     if (isHistoryEvent) {
-        groupTicketWidget = document.createElement('div');
-        groupTicketWidget.className = 'flex flex-col items-end gap-2';
-        groupTicketCounterRow = document.createElement('div');
-        groupTicketCounterRow.className = 'inline-flex items-center gap-2';
-
-        groupDecreaseBtn = document.createElement('button');
-        groupDecreaseBtn.type = 'button';
-        groupDecreaseBtn.className = 'w-7 h-7 bg-slate-800 rounded-[5px] flex items-center justify-center hover:bg-slate-700 transition-colors text-white text-lg font-bold';
-        groupDecreaseBtn.textContent = '\u2212';
-        groupDecreaseBtn.setAttribute('aria-label', 'Decrease quantity');
-
-        groupQtyDisplay = document.createElement('span');
-        groupQtyDisplay.className = 'w-8 h-7 bg-stone-100 rounded flex items-center justify-center text-slate-800 text-sm font-semibold';
-        groupQtyDisplay.textContent = String(quantity);
-
-        groupIncreaseBtn = document.createElement('button');
-        groupIncreaseBtn.type = 'button';
-        groupIncreaseBtn.className = 'w-7 h-7 bg-slate-800 rounded-[5px] flex items-center justify-center hover:bg-slate-700 transition-colors text-white text-lg font-bold';
-        groupIncreaseBtn.textContent = '+';
-        groupIncreaseBtn.setAttribute('aria-label', 'Increase quantity');
-
-        groupCancelBtn = document.createElement('button');
-        groupCancelBtn.type = 'button';
-        groupCancelBtn.className = 'w-7 h-7 rounded-[5px] flex items-center justify-center text-slate-500 hover:text-red-500 transition-colors text-lg font-bold';
-        groupCancelBtn.textContent = '\u00D7';
-        groupCancelBtn.setAttribute('aria-label', 'Cancel selection');
-
-        groupTicketCounterRow.appendChild(groupDecreaseBtn);
-        groupTicketCounterRow.appendChild(groupQtyDisplay);
-        groupTicketCounterRow.appendChild(groupIncreaseBtn);
-        groupTicketCounterRow.appendChild(groupCancelBtn);
-
+        var singleLabel = document.createElement('span');
+        singleLabel.className = 'text-xs text-slate-700 font-semibold self-end';
+        singleLabel.textContent = 'Single tickets';
+        countersWrapper.appendChild(singleLabel);
     }
 
+    var mainCounter = buildTicketCounterRow(quantity);
+    countersWrapper.appendChild(mainCounter.row);
+
+    // Group tickets section (history only)
+    var groupCounter = null;
+    if (isHistoryEvent) {
+        var groupLabel = document.createElement('span');
+        groupLabel.className = 'text-xs text-slate-700 font-semibold self-end mt-1';
+        groupLabel.textContent = 'Group tickets';
+
+        groupCounter = buildTicketCounterRow(groupTicketQuantity);
+
+        countersWrapper.appendChild(groupLabel);
+        countersWrapper.appendChild(groupCounter.row);
+    }
+
+    // Single shared confirm button
     var confirmBtn = document.createElement('button');
     confirmBtn.type = 'button';
     confirmBtn.className = 'px-3.5 py-2 rounded-[10px] bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors duration-200';
     confirmBtn.textContent = confirmText;
 
-    widget.appendChild(counterRow);
-    widget.appendChild(groupTicketCounterRow);
+    widget.appendChild(countersWrapper);
     widget.appendChild(confirmBtn);
     container.appendChild(widget);
 
-    var groupConfirmBtn;
-    if (isHistoryEvent) {
-        groupConfirmBtn = document.createElement('button');
-        groupConfirmBtn.type = 'button';
-        groupConfirmBtn.className = 'px-3.5 py-2 rounded-[10px] bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors duration-200';
-        groupConfirmBtn.textContent = confirmText;
-
-        groupTicketWidget.appendChild(groupTicketCounterRow);
-        groupTicketWidget.appendChild(groupTicketCounterRow);
-        groupTicketWidget.appendChild(confirmBtn);
-        container.appendChild(groupTicketWidget);
-    }
-
-    decreaseBtn.addEventListener('click', function () {
-        if (quantity > 1) {
-            quantity--;
-            qtyDisplay.textContent = String(quantity);
+    // Single tickets counter wiring
+    mainCounter.decreaseBtn.addEventListener('click', function () {
+        var current = mainCounter.getQuantity();
+        if (current > 1) {
+            mainCounter.setQuantity(current - 1);
         }
     });
 
-    increaseBtn.addEventListener('click', function () {
-        quantity++;
-        qtyDisplay.textContent = String(quantity);
+    mainCounter.increaseBtn.addEventListener('click', function () {
+        mainCounter.setQuantity(mainCounter.getQuantity() + 1);
     });
 
-    cancelBtn.addEventListener('click', function () {
+    mainCounter.cancelBtn.addEventListener('click', function () {
         widget.remove();
         originalBtn.style.display = '';
     });
 
-    if (isHistoryEvent) {
-        groupDecreaseBtn.addEventListener('click', function () {
-            if (groupTicketQuantity > 1) {
-                groupTicketQuantity--;
-                groupQtyDisplay.textContent = String(quantity);
+    // Group tickets counter wiring
+    if (groupCounter) {
+        groupCounter.decreaseBtn.addEventListener('click', function () {
+            var current = groupCounter.getQuantity();
+            if (current > 1) {
+                groupCounter.setQuantity(current - 1);
             }
         });
 
-        groupIncreaseBtn.addEventListener('click', function () {
-            groupTicketQuantity++;
-            groupQtyDisplay.textContent = String(groupTicketQuantity);
+        groupCounter.increaseBtn.addEventListener('click', function () {
+            groupCounter.setQuantity(groupCounter.getQuantity() + 1);
         });
 
-        groupCancelBtn.addEventListener('click', function () {
-            widget.remove();
-            originalBtn.style.display = '';
+        groupCounter.cancelBtn.addEventListener('click', function () {
+            // Reset group tickets to 1 but keep widget open
+            groupCounter.setQuantity(1);
         });
     }
 
+    // Confirm handler (single button for both counters)
     confirmBtn.addEventListener('click', function () {
         confirmBtn.disabled = true;
         confirmBtn.textContent = addingText;
+
+        quantity = mainCounter.getQuantity();
+        if (groupCounter) {
+            groupTicketQuantity = groupCounter.getQuantity();
+        }
 
         fetch('/api/program/add', {
             method: 'POST',
