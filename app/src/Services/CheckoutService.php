@@ -26,6 +26,7 @@ use App\DTOs\Checkout\CheckoutSessionSummary;
 use App\Exceptions\CheckoutException;
 use App\Exceptions\CheckoutInputException;
 use App\Exceptions\CheckoutSessionException;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\RetryPaymentException;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
@@ -312,7 +313,7 @@ class CheckoutService implements ICheckoutService
         $order = $this->orderRepository->findByIdAndUserId($orderId, $userId);
 
         if ($order === null) {
-            throw new RetryPaymentException('Order not found.');
+            throw new NotFoundException('Order', $orderId);
         }
 
         return $order;

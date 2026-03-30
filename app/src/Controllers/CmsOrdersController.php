@@ -71,7 +71,7 @@ class CmsOrdersController extends CmsBaseController
     {
         $data = $this->ordersService->getOrderDetail($orderId);
         if ($data === null) {
-            throw new NotFoundException("Order #{$orderId} not found.");
+            throw new NotFoundException('Order', $orderId);
         }
 
         return CmsOrdersMapper::toDetailViewModel(
