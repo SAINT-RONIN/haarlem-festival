@@ -58,6 +58,14 @@ $currentView = $currentView ?? 'dashboard';
                 </a>
             </li>
             <li>
+                <a href="/cms/scanner"
+                   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'scanner' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
+                        <?= $currentView === 'scanner' ? 'aria-current="page"' : '' ?>>
+                    <i data-lucide="scan-line" class="w-5 h-5" aria-hidden="true"></i>
+                    <span class="font-medium">Scanner</span>
+                </a>
+            </li>
+            <li>
                 <a href="/cms/media"
                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'media' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
                         <?= $currentView === 'media' ? 'aria-current="page"' : '' ?>>

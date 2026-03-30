@@ -96,6 +96,19 @@ class SessionService implements ISessionService
     }
 
     /**
+     * Checks if the current user is an employee or administrator.
+     */
+    public function isEmployeeOrAdmin(): bool
+    {
+        $this->start();
+
+        $roleId = $_SESSION[self::ROLE_ID_KEY] ?? null;
+
+        return $roleId === UserRoleId::Employee->value
+            || $roleId === UserRoleId::Administrator->value;
+    }
+
+    /**
      * Gets the current user's ID, or null if not logged in.
      */
     public function getUserId(): ?int

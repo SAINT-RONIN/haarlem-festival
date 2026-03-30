@@ -46,6 +46,7 @@ use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
+use App\Controllers\ScannerController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
 use App\Services\SessionService;
@@ -157,6 +158,10 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
 
     // CMS Orders Routes
     $r->addRoute('GET', '/cms/orders', [CmsOrdersController::class, 'index']);
+
+    // CMS Scanner Routes
+    $r->addRoute('GET',  '/cms/scanner',      [ScannerController::class, 'index']);
+    $r->addRoute('POST', '/api/scanner/scan', [ScannerController::class, 'scan']);
 
     // CMS Users Routes
     $r->addRoute('GET',  '/cms/users',                    [CmsUsersController::class, 'index']);

@@ -16,6 +16,7 @@ use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
+use App\Controllers\ScannerController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
@@ -51,6 +52,7 @@ use App\Repositories\ArtistTrackRepository;
 use App\Repositories\CuisineTypeRepository;
 use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
+use App\Repositories\ScannerRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\PassTypeRepository;
@@ -89,6 +91,7 @@ use App\Schedule\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
 use App\Services\AuthService;
 use App\Services\CaptchaService;
+use App\Services\ScannerService;
 use App\Services\SessionService;
 use App\Services\StorytellingDetailService;
 use App\Services\StorytellingService;
@@ -373,6 +376,13 @@ return static function (string $controllerClass): object {
         ),
         CmsArtistsController::class => new CmsArtistsController(
             $cmsArtistsService(),
+            $sessionService,
+        ),
+        ScannerController::class => new ScannerController(
+            new ScannerService(
+                new ScannerRepository($pdo()),
+                $ticketRepo(),
+            ),
             $sessionService,
         ),
         ScheduleApiController::class => new ScheduleApiController(

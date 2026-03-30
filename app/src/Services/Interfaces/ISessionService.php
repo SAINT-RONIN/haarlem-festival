@@ -37,6 +37,11 @@ interface ISessionService
     public function isAdmin(): bool;
 
     /**
+     * Checks if the current user is an employee or administrator.
+     */
+    public function isEmployeeOrAdmin(): bool;
+
+    /**
      * Gets the current user's ID.
      */
     public function getUserId(): ?int;
