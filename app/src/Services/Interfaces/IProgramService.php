@@ -25,6 +25,11 @@ interface IProgramService
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem;
 
     /**
+     * Adds a festival pass to the program with the given quantity.
+     */
+    public function addPassToProgram(string $sessionKey, ?int $userAccountId, int $passTypeId, ?string $validDate, int $quantity): ProgramItem;
+
+    /**
      * Updates the ticket quantity for an existing program item.
      */
     public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void;

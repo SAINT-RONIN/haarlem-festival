@@ -71,6 +71,32 @@ class ProgramController extends BaseController
     }
 
     /**
+     * Adds a festival pass to the user's program with a given quantity.
+     * POST /api/program/add-pass (JSON)
+     */
+    public function addPass(): void
+    {
+        $this->handleJsonRequest(function (): void {
+            $this->processAddPass();
+        });
+    }
+
+    /** Reads JSON body, resolves session context, and adds a pass to the program. */
+    private function processAddPass(): void
+    {
+        $body = $this->readJsonBody();
+        $context = $this->resolveSessionContext();
+
+        $passTypeId = (int)($body['passTypeId'] ?? 0);
+        $quantity = (int)($body['quantity'] ?? 1);
+        $validDate = isset($body['validDate']) ? (string)$body['validDate'] : null;
+
+        $item = $this->programService->addPassToProgram($context->sessionKey, $context->userId, $passTypeId, $validDate, $quantity);
+
+        $this->json(['success' => true, 'programItemId' => $item->programItemId]);
+    }
+
+    /**
      * Updates the ticket quantity for a program item and returns recalculated totals.
      * PATCH /my-program/update-quantity (JSON)
      */

@@ -16,7 +16,9 @@ use App\DTOs\Filters\ProgramItemFilter;
 use App\Models\EventSessionPrice;
 use App\Exceptions\ProgramException;
 use App\Content\ProgramMainContent;
+use App\Exceptions\PassPurchaseException;
 use App\Repositories\Interfaces\ICheckoutContentRepository;
+use App\Repositories\Interfaces\IPassTypeRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -38,6 +40,7 @@ class ProgramService implements IProgramService
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly ICheckoutContentRepository $checkoutContentRepository,
+        private readonly IPassTypeRepository $passTypeRepository,
     ) {
     }
 
@@ -78,6 +81,38 @@ class ProgramService implements IProgramService
             throw $error;
         } catch (\Throwable $error) {
             throw new ProgramException('Failed to add item to program.', 0, $error);
+        }
+    }
+
+    /**
+     * Adds a festival pass to the program with the given quantity.
+     *
+     * @throws \InvalidArgumentException When passTypeId or quantity is invalid
+     * @throws PassPurchaseException When the database write fails
+     */
+    public function addPassToProgram(string $sessionKey, ?int $userAccountId, int $passTypeId, ?string $validDate, int $quantity): ProgramItem
+    {
+        $this->validatePassInput($passTypeId, $quantity);
+
+        try {
+            $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
+
+            return $this->programRepository->addPassItem($program->programId, $passTypeId, $validDate, $quantity, 0.0);
+        } catch (\InvalidArgumentException $error) {
+            throw $error;
+        } catch (\Throwable $error) {
+            throw new PassPurchaseException('Failed to add pass to program.', 0, $error);
+        }
+    }
+
+    /** Validates input parameters for adding a pass to the program. */
+    private function validatePassInput(int $passTypeId, int $quantity): void
+    {
+        if ($passTypeId <= 0) {
+            throw new \InvalidArgumentException('passTypeId is required');
+        }
+        if ($quantity <= 0) {
+            throw new \InvalidArgumentException('quantity must be at least 1');
         }
     }
 
@@ -291,7 +326,10 @@ class ProgramService implements IProgramService
 
         $enrichedItems = [];
         foreach ($programItems as $item) {
-            $enriched = $this->buildProgramItemData($item, $sessionsById, $pricesBySession);
+            $enriched = $item->passTypeId !== null
+                ? $this->buildPassItemData($item)
+                : $this->buildProgramItemData($item, $sessionsById, $pricesBySession);
+
             if ($enriched !== null) {
                 $enrichedItems[] = $enriched;
             }
@@ -401,6 +439,32 @@ class ProgramService implements IProgramService
             maxAge: $session->maxAge,
             isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
             basePrice: $this->resolveBasePrice($prices),
+        );
+    }
+
+    /** Builds a ProgramItemData for a pass item by looking up the PassType. */
+    private function buildPassItemData(ProgramItem $item): ?ProgramItemData
+    {
+        $passType = $this->passTypeRepository->findById($item->passTypeId);
+
+        if ($passType === null) {
+            return null;
+        }
+
+        return new ProgramItemData(
+            programItemId: $item->programItemId,
+            eventSessionId: null,
+            quantity: $item->quantity,
+            donationAmount: (float)($item->donationAmount ?? '0.00'),
+            eventTitle: $passType->passName,
+            eventTypeId: $passType->eventTypeId,
+            eventTypeName: 'Jazz',
+            eventTypeSlug: 'jazz',
+            basePrice: (float)$passType->price,
+            passTypeId: $passType->passTypeId,
+            passName: $passType->passName,
+            passScope: $passType->passScope->value,
+            passValidDate: $item->passValidDate?->format('Y-m-d'),
         );
     }
 

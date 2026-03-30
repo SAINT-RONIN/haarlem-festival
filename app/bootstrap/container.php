@@ -55,6 +55,7 @@ use App\Repositories\RestaurantRepository;
 use App\Repositories\ScannerRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
+use App\Repositories\PassPurchaseRepository;
 use App\Repositories\PassTypeRepository;
 use App\Repositories\PriceTierRepository;
 use App\Repositories\ScheduleDayConfigRepository;
@@ -135,6 +136,8 @@ return static function (string $controllerClass): object {
     $userAccountRepo    = fn() => $make('userAccountRepo', fn() => new UserAccountRepository($pdo()));
     $resetTokenRepo     = fn() => $make('resetTokenRepo', fn() => new PasswordResetTokenRepository($pdo()));
     $programRepo        = fn() => $make('programRepo', fn() => new ProgramRepository($pdo()));
+    $passTypeRepo       = fn() => $make('passTypeRepo', fn() => new PassTypeRepository($pdo()));
+    $passPurchaseRepo   = fn() => $make('passPurchaseRepo', fn() => new PassPurchaseRepository($pdo()));
     $orderRepo          = fn() => $make('orderRepo', fn() => new OrderRepository($pdo()));
     $orderItemRepo      = fn() => $make('orderItemRepo', fn() => new OrderItemRepository($pdo()));
     $paymentRepo        = fn() => $make('paymentRepo', fn() => new PaymentRepository($pdo()));
@@ -187,6 +190,7 @@ return static function (string $controllerClass): object {
         $eventSessionRepo(),
         $eventSessionPrice(),
         $checkoutContentRepo(),
+        $passTypeRepo(),
     ));
 
     $authService = fn() => $make('authService', fn() => new AuthService(
@@ -299,7 +303,7 @@ return static function (string $controllerClass): object {
             ),
             $mediaAssetService(),
         ),
-        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer, $ticketFulfillmentService) {
+        CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer, $ticketFulfillmentService, $passPurchaseRepo) {
             $stripeService = new StripeService(
                 (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
                 (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
@@ -323,6 +327,7 @@ return static function (string $controllerClass): object {
                     $checkoutContentRepo(),
                     $orderCapacityRestorer(),
                     $ticketFulfillmentService(),
+                    $passPurchaseRepo(),
                 ),
                 new StripeWebhookHandler(
                     $stripeService,

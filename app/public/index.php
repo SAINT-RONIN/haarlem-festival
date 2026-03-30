@@ -95,6 +95,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/my program', [ProgramController::class, 'index']);
     $r->addRoute('GET', '/program', [ProgramController::class, 'index']);
     $r->addRoute('POST', '/api/program/add', [ProgramController::class, 'add']);
+    $r->addRoute('POST', '/api/program/add-pass', [ProgramController::class, 'addPass']);
     $r->addRoute('POST', '/api/program/update-quantity', [ProgramController::class, 'updateQuantity']);
     $r->addRoute('POST', '/api/program/update-donation', [ProgramController::class, 'updateDonation']);
     $r->addRoute('POST', '/api/program/remove', [ProgramController::class, 'remove']);

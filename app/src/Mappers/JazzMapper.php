@@ -267,13 +267,13 @@ final class JazzMapper
      */
     private static function buildPricingCards(JazzPricingSectionContent $section, array $passPrices): array
     {
-        $dayPassPrice = self::findPassPrice($passPrices, PassScope::Day->value, $section->pricingDaypassPrice);
-        $allAccessPrice = self::findPassPrice($passPrices, PassScope::Range->value, $section->pricing3dayPrice);
+        $dayPassType = self::findPassType($passPrices, PassScope::Day->value);
+        $allAccessType = self::findPassType($passPrices, PassScope::Range->value);
 
         return [
             self::buildIndividualTicketCard($section),
-            self::buildDayPassCard($section, $dayPassPrice),
-            self::buildAllAccessCard($section, $allAccessPrice),
+            self::buildDayPassCard($section, $dayPassType),
+            self::buildAllAccessCard($section, $allAccessType),
         ];
     }
 
@@ -318,8 +318,12 @@ final class JazzMapper
         );
     }
 
-    private static function buildDayPassCard(JazzPricingSectionContent $section, string $price): PricingCardData
+    private static function buildDayPassCard(JazzPricingSectionContent $section, ?PassType $passType): PricingCardData
     {
+        $price = $passType !== null
+            ? FormatHelper::price((float) $passType->price)
+            : ($section->pricingDaypassPrice ?? '');
+
         return new PricingCardData(
             title: $section->pricingDaypassTitle ?? '',
             price: $price,
@@ -328,6 +332,7 @@ final class JazzMapper
             includes: self::buildDayPassIncludes($section),
             additionalInfo: $section->pricingDaypassInfo ?? '',
             isHighlighted: false,
+            passTypeId: $passType?->passTypeId,
         );
     }
 
@@ -344,8 +349,12 @@ final class JazzMapper
         ];
     }
 
-    private static function buildAllAccessCard(JazzPricingSectionContent $section, string $price): PricingCardData
+    private static function buildAllAccessCard(JazzPricingSectionContent $section, ?PassType $passType): PricingCardData
     {
+        $price = $passType !== null
+            ? FormatHelper::price((float) $passType->price)
+            : ($section->pricing3dayPrice ?? '');
+
         return new PricingCardData(
             title: $section->pricing3dayTitle ?? '',
             price: $price,
@@ -354,6 +363,7 @@ final class JazzMapper
             includes: self::buildAllAccessIncludes($section),
             additionalInfo: $section->pricing3dayInfo ?? '',
             isHighlighted: true,
+            passTypeId: $passType?->passTypeId,
         );
     }
 
@@ -371,20 +381,20 @@ final class JazzMapper
     }
 
     /**
-     * Searches the PassType array for a matching scope (Day or Range) and formats
-     * its price; falls back to the CMS-authored string if no DB record exists.
+     * Searches the PassType array for the first matching scope (Day or Range).
+     * Returns the full PassType so callers can extract both price and ID.
      *
      * @param PassType[] $passPrices
      */
-    private static function findPassPrice(array $passPrices, string $scope, ?string $cmsFallback): string
+    private static function findPassType(array $passPrices, string $scope): ?PassType
     {
         foreach ($passPrices as $pass) {
             if ($pass->passScope->value === $scope) {
-                return FormatHelper::price((float) $pass->price);
+                return $pass;
             }
         }
 
-        return $cmsFallback ?? '';
+        return null;
     }
 
     private static function buildScheduleCtaData(JazzScheduleCtaSectionContent $section): ScheduleCallToActionData

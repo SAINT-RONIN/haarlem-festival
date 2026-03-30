@@ -140,6 +140,35 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
     }
 
     /**
+     * Adds a pass to the program cart and returns the newly created item
+     * with server-generated fields populated.
+     *
+     * @throws \RuntimeException If the inserted row cannot be read back.
+     */
+    public function addPassItem(int $programId, int $passTypeId, ?string $passValidDate, int $quantity, float $donationAmount): ProgramItem
+    {
+        $itemId = $this->executeInsert(
+            'INSERT INTO ProgramItem (ProgramId, PassTypeId, PassValidDate, Quantity, DonationAmount)
+            VALUES (:programId, :passTypeId, :passValidDate, :quantity, :donationAmount)',
+            [
+                'programId' => $programId,
+                'passTypeId' => $passTypeId,
+                'passValidDate' => $passValidDate,
+                'quantity' => $quantity,
+                'donationAmount' => $donationAmount,
+            ],
+        );
+
+        $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
+
+        if ($items === []) {
+            throw new \RuntimeException("Failed to retrieve program item after creation (ID: {$itemId})");
+        }
+
+        return $items[0];
+    }
+
+    /**
      * Updates the ticket quantity for a cart item (e.g. user changes "2 tickets" to "3").
      */
     public function updateItemQuantity(int $programItemId, int $quantity): void

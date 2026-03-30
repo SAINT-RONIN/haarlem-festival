@@ -43,6 +43,13 @@ interface IProgramRepository
     public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem;
 
     /**
+     * Adds a pass item to a program and returns the created ProgramItem.
+     *
+     * @throws \RuntimeException If the inserted row cannot be read back.
+     */
+    public function addPassItem(int $programId, int $passTypeId, ?string $passValidDate, int $quantity, float $donationAmount): ProgramItem;
+
+    /**
      * Updates the ticket quantity on an existing program item.
      */
     public function updateItemQuantity(int $programItemId, int $quantity): void;

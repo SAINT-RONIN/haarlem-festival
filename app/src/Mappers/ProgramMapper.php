@@ -32,15 +32,17 @@ final class ProgramMapper
     public static function toItemViewModel(ProgramItemData $item): ProgramItemViewModel
     {
         $lineTotal = self::lineTotal($item);
-        // "Pay what you like" events with a zero base price display as "Free"
-        $priceDisplay = ($item->isPayWhatYouLike && $item->basePrice <= 0.0) ? 'Free' : FormatHelper::price($item->basePrice);
+        $priceDisplay = self::buildPriceDisplay($item);
+        $locationDisplay = $item->passTypeId !== null
+            ? self::buildPassLocationDisplay($item->passScope, $item->passValidDate)
+            : self::buildLocationDisplay($item->venueName ?? '', $item->hallName);
 
         return new ProgramItemViewModel(
             programItemId: $item->programItemId,
-            eventSessionId: $item->eventSessionId,
+            eventSessionId: $item->eventSessionId ?? 0,
             eventTitle: $item->eventTitle,
-            locationDisplay: self::buildLocationDisplay($item->venueName ?? '', $item->hallName),
-            dateTimeDisplay: self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime),
+            locationDisplay: $locationDisplay,
+            dateTimeDisplay: $item->passTypeId !== null ? '' : self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime),
             priceDisplay: $priceDisplay,
             rawPrice: $item->basePrice,
             quantity: $item->quantity,
@@ -54,6 +56,28 @@ final class ProgramMapper
             languageLabel: self::buildLanguageLabel($item->languageCode),
             ageLabel: AgeLabelFormatter::format($item->minAge, $item->maxAge),
         );
+    }
+
+    /** Formats the price display, showing "Free" for pay-what-you-like events with zero price. */
+    private static function buildPriceDisplay(ProgramItemData $item): string
+    {
+        if ($item->isPayWhatYouLike && $item->basePrice <= 0.0) {
+            return 'Free';
+        }
+
+        return FormatHelper::price($item->basePrice);
+    }
+
+    /** Builds a descriptive location string for pass items (e.g. "Day Pass" or "All-Access Pass"). */
+    private static function buildPassLocationDisplay(?string $passScope, ?string $passValidDate): string
+    {
+        $label = $passScope === 'Day' ? 'Day Pass' : 'All-Access Pass';
+
+        if ($passValidDate !== null && $passValidDate !== '') {
+            return $label . ' - ' . $passValidDate;
+        }
+
+        return $label;
     }
 
     /**

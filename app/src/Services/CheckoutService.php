@@ -17,6 +17,7 @@ use App\Repositories\Interfaces\ICheckoutContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
+use App\Repositories\Interfaces\IPassPurchaseRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
 use App\DTOs\Checkout\CheckoutCancelResult;
 use App\DTOs\Checkout\CheckoutSessionResult;
@@ -51,6 +52,7 @@ class CheckoutService implements ICheckoutService
         private readonly ICheckoutContentRepository $checkoutContentRepository,
         private readonly IOrderCapacityRestorer $orderCapacityRestorer,
         private readonly ITicketFulfillmentService $ticketFulfillmentService,
+        private readonly IPassPurchaseRepository $passPurchaseRepository,
     ) {
     }
 
@@ -90,7 +92,7 @@ class CheckoutService implements ICheckoutService
         try {
             $orderNumber = $this->generateOrderNumber();
             $orderId = $this->persistOrder($programData, $userId, $orderNumber, $payload);
-            $this->persistOrderLineItems($programData->items, $orderId);
+            $this->persistOrderLineItems($programData->items, $orderId, $userId);
             $this->reserveSessionSeats($programData->items);
 
             $paymentId = $this->paymentRepository->create($orderId, $method, PaymentStatus::Pending);
@@ -137,9 +139,14 @@ class CheckoutService implements ICheckoutService
      *
      * @param ProgramItemData[] $items
      */
-    private function persistOrderLineItems(array $items, int $orderId): void
+    private function persistOrderLineItems(array $items, int $orderId, int $userId): void
     {
         foreach ($items as $item) {
+            if ($item->passTypeId !== null) {
+                $this->persistPassOrderItem($item, $orderId, $userId);
+                continue;
+            }
+
             $this->orderItemRepository->create(
                 orderId: $orderId,
                 eventSessionId: $item->eventSessionId,
@@ -153,6 +160,29 @@ class CheckoutService implements ICheckoutService
         }
     }
 
+    /** Creates a PassPurchase record and links it to an order line item. */
+    private function persistPassOrderItem(ProgramItemData $item, int $orderId, int $userId): void
+    {
+        $passPurchaseId = $this->passPurchaseRepository->create(
+            passTypeId: $item->passTypeId,
+            userAccountId: $userId,
+            validDate: $item->passValidDate,
+            validFromDate: null,
+            validToDate: null,
+        );
+
+        $this->orderItemRepository->create(
+            orderId: $orderId,
+            eventSessionId: null,
+            historyTourId: null,
+            passPurchaseId: $passPurchaseId,
+            quantity: $item->quantity,
+            unitPrice: $this->toMoneyString($item->basePrice),
+            vatRate: $this->toMoneyString($this->runtimeConfig->getVatRate() * 100),
+            donationAmount: $this->toMoneyString($item->donationAmount),
+        );
+    }
+
     /**
      * Atomically reserves seats for all items — prevents overselling under concurrent checkouts.
      *
@@ -161,7 +191,7 @@ class CheckoutService implements ICheckoutService
     private function reserveSessionSeats(array $items): void
     {
         foreach ($items as $item) {
-            if ($item->eventSessionId <= 0) {
+            if ($item->eventSessionId === null || $item->eventSessionId <= 0) {
                 continue;
             }
 
@@ -576,7 +606,7 @@ class CheckoutService implements ICheckoutService
     private function validateItemAvailability(array $items): void
     {
         foreach ($items as $item) {
-            if ($item->eventSessionId <= 0) {
+            if ($item->passTypeId !== null || $item->eventSessionId === null || $item->eventSessionId <= 0) {
                 continue;
             }
             $this->validateSingleItemAvailability($item);

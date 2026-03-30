@@ -75,6 +75,20 @@ $borderClass = $card->isHighlighted ? 'border-black' : 'border-royal-blue';
                     <?= htmlspecialchars($card->additionalInfo) ?>
                 </p>
             <?php endif; ?>
+
+            <!-- Add to Program Button -->
+            <?php if ($card->passTypeId !== null): ?>
+                <div class="self-stretch pt-4">
+                    <button type="button"
+                            class="js-add-pass-to-cart w-full px-4 py-3 bg-green-600 rounded-[10px] text-white text-base sm:text-lg font-semibold font-['Montserrat'] hover:bg-green-700 transition-colors duration-200"
+                            data-pass-type-id="<?= htmlspecialchars((string)$card->passTypeId) ?>"
+                            data-confirm-text="Confirm selection"
+                            data-adding-text="Adding..."
+                            data-success-text="Added to program">
+                        Add to Program
+                    </button>
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>

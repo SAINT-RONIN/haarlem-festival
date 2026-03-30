@@ -28,4 +28,16 @@ class PassTypeRepository extends BaseRepository implements IPassTypeRepository
             fn(array $row) => PassType::fromRow($row),
         );
     }
+
+    /**
+     * Returns a single active pass type by its ID, or null if not found.
+     */
+    public function findById(int $passTypeId): ?PassType
+    {
+        return $this->fetchOne(
+            'SELECT * FROM PassType WHERE PassTypeId = :passTypeId AND IsActive = 1',
+            ['passTypeId' => $passTypeId],
+            fn(array $row) => PassType::fromRow($row),
+        );
+    }
 }

@@ -17,4 +17,9 @@ interface IPassTypeRepository
      * @return PassType[]
      */
     public function findByEventType(int $eventTypeId): array;
+
+    /**
+     * Returns a single pass type by its ID, or null if not found.
+     */
+    public function findById(int $passTypeId): ?PassType;
 }

@@ -43,3 +43,4 @@ if (!isset($pricingData)) {
         <?php endforeach; ?>
     </div>
 </section>
+<script src="/assets/js/add-to-program.js"></script>
