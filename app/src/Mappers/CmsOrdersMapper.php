@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\DTOs\Cms\CmsOrderDetailDto;
+use App\DTOs\Cms\CmsOrderItemDto;
+use App\DTOs\Cms\CmsOrderPaymentDto;
+use App\DTOs\Cms\CmsOrderTicketDto;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Helpers\FormatHelper;
 use App\DTOs\Checkout\OrderWithDetails;
+use App\ViewModels\Cms\CmsOrderDetailViewModel;
 use App\ViewModels\Cms\CmsOrderListItemViewModel;
 use App\ViewModels\Cms\CmsOrdersListViewModel;
 
@@ -73,6 +78,26 @@ final class CmsOrdersMapper
             OrderStatus::Refunded->value  => 'bg-purple-100 text-purple-800',
             default                       => 'bg-gray-100 text-gray-800',
         };
+    }
+
+    /**
+     * Builds the CMS order detail page ViewModel from raw repository data arrays.
+     *
+     * @param array{order: array, items: array, payments: array, tickets: array} $data
+     */
+    public static function toDetailViewModel(
+        array $data,
+        ?string $successMessage,
+        ?string $errorMessage,
+    ): CmsOrderDetailViewModel {
+        return new CmsOrderDetailViewModel(
+            order:          CmsOrderDetailDto::fromRow($data['order']),
+            items:          array_map([CmsOrderItemDto::class, 'fromRow'], $data['items']),
+            payments:       array_map([CmsOrderPaymentDto::class, 'fromRow'], $data['payments']),
+            tickets:        array_map([CmsOrderTicketDto::class, 'fromRow'], $data['tickets']),
+            successMessage: $successMessage,
+            errorMessage:   $errorMessage,
+        );
     }
 
     /** Maps a PaymentStatus value to its Tailwind badge color classes. */

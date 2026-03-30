@@ -165,6 +165,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
 
     // CMS Orders Routes
     $r->addRoute('GET', '/cms/orders', [CmsOrdersController::class, 'index']);
+    $r->addRoute('GET', '/cms/orders/{id:\d+}', [CmsOrdersController::class, 'detail']);
 
     // CMS Scanner Routes
     $r->addRoute('GET',  '/cms/scanner',      [ScannerController::class, 'index']);

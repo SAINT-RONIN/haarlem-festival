@@ -103,12 +103,16 @@
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date
                     </th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
                 </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                 <?php if (empty($viewModel->orders)): ?>
                     <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                             <p>No orders found</p>
                         </td>
                     </tr>
@@ -147,6 +151,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <?= htmlspecialchars($order->createdAt) ?>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <a href="/cms/orders/<?= $order->orderId ?>" class="text-blue-600 hover:text-blue-800 font-medium">View</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

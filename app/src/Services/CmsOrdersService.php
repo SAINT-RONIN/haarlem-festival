@@ -31,4 +31,24 @@ class CmsOrdersService implements ICmsOrdersService
     {
         return $this->ordersRepository->findOrdersWithDetails($statusFilter);
     }
+
+    /**
+     * Returns structured detail data for a single order, or null if the order does not exist.
+     *
+     * @return array{order: array, items: array, payments: array, tickets: array}|null
+     */
+    public function getOrderDetail(int $orderId): ?array
+    {
+        $order = $this->ordersRepository->findOrderById($orderId);
+        if ($order === null) {
+            return null;
+        }
+
+        return [
+            'order'    => $order,
+            'items'    => $this->ordersRepository->findOrderItems($orderId),
+            'payments' => $this->ordersRepository->findOrderPayments($orderId),
+            'tickets'  => $this->ordersRepository->findOrderTickets($orderId),
+        ];
+    }
 }

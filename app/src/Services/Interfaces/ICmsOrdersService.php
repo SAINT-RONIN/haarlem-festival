@@ -17,4 +17,11 @@ interface ICmsOrdersService
      * @return OrderWithDetails[]
      */
     public function getOrdersWithDetails(?string $statusFilter = null): array;
+
+    /**
+     * Returns a structured detail result for a single order, or null if the order does not exist.
+     *
+     * @return array{order: array, items: array, payments: array, tickets: array}|null
+     */
+    public function getOrderDetail(int $orderId): ?array;
 }
