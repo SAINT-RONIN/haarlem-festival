@@ -39,7 +39,7 @@ class RestaurantController extends BaseController
      *
      * GET /restaurant/{id}
      */
-    public function detail(string $id): void
+    public function detail(int $id): void
     {
         $this->handlePageRequest(function () use ($id): void {
             $this->renderRestaurantDetail($id);
@@ -47,9 +47,9 @@ class RestaurantController extends BaseController
     }
 
     /** Loads restaurant data, returns 404 if not found, otherwise builds VM and renders detail page. */
-    private function renderRestaurantDetail(string $id): void
+    private function renderRestaurantDetail(int $id): void
     {
-        $data = $this->restaurantService->getRestaurantDetailData((int) $id);
+        $data = $this->restaurantService->getRestaurantDetailData($id);
 
         if ($data === null) {
             $this->renderNotFoundPage();
