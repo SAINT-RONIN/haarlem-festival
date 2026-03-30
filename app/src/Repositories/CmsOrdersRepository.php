@@ -111,7 +111,7 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
             FROM OrderItem oi
             LEFT JOIN EventSession es ON oi.EventSessionId = es.EventSessionId
             LEFT JOIN Event e ON es.EventId = e.EventId
-            LEFT JOIN Venue v ON es.VenueId = v.VenueId
+            LEFT JOIN Venue v ON e.VenueId = v.VenueId
             LEFT JOIN PassPurchase pp ON oi.PassPurchaseId = pp.PassPurchaseId
             LEFT JOIN PassType pt ON pp.PassTypeId = pt.PassTypeId
             WHERE oi.OrderId = :orderId
