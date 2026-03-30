@@ -14,6 +14,7 @@ use App\Services\Interfaces\IHistoricalLocationService;
 use App\Services\Interfaces\IHistoryService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
+use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
  * Controller for the history page.
@@ -40,6 +41,7 @@ class HistoryController extends BaseController
             HistoryPageConstants::PAGE_SLUG,
             EventTypeId::History->value,
             HistoryPageConstants::SCHEDULE_MAX_DAYS,
+            filterParams: $this->readScheduleFilterParams(),
         );
         $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
         $viewModel = HistoryMapper::toPageViewModel($data, $this->sessionService->isLoggedIn(), $scheduleSection);

@@ -1,4 +1,4 @@
-<?php
+ <?php
 /**
  * Reusable schedule section partial.
  * Used by Storytelling, Jazz, Dance, and History pages.

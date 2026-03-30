@@ -401,6 +401,7 @@ class ScheduleService implements IScheduleService
         return match ($eventTypeSlug) {
             'storytelling' => ['day', 'timeRange', 'priceType', 'language', 'ageGroup'],
             'jazz'         => ['day', 'venue', 'priceType'],
+            'history'      => ['day', 'timeRange'],
             default        => ['day'],
         };
     }
