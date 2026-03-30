@@ -451,21 +451,29 @@ class ProgramService implements IProgramService
             return null;
         }
 
+        $displayName = self::formatPassDisplayName($passType->passName);
+
         return new ProgramItemData(
             programItemId: $item->programItemId,
             eventSessionId: null,
             quantity: $item->quantity,
             donationAmount: (float)($item->donationAmount ?? '0.00'),
-            eventTitle: $passType->passName,
+            eventTitle: $displayName,
             eventTypeId: $passType->eventTypeId,
             eventTypeName: 'Jazz',
             eventTypeSlug: 'jazz',
             basePrice: (float)$passType->price,
             passTypeId: $passType->passTypeId,
-            passName: $passType->passName,
+            passName: $displayName,
             passScope: $passType->passScope->value,
             passValidDate: $item->passValidDate?->format('Y-m-d'),
         );
+    }
+
+    /** Converts a raw DB pass name like "DayPass" into "Day Pass". */
+    private static function formatPassDisplayName(string $rawName): string
+    {
+        return trim((string) preg_replace('/([a-z])([A-Z])/', '$1 $2', $rawName));
     }
 
     /**

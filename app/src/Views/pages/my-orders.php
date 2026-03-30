@@ -91,6 +91,18 @@ $isLoggedIn = $viewModel->isLoggedIn;
                                         </svg>
                                         Complete Payment
                                     </a>
+                                <?php elseif ($order->statusText === 'Expired' || $order->statusText === 'Cancelled'): ?>
+                                    <a href="/my-program"
+                                       class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg text-sm font-medium font-['Montserrat'] transition-colors duration-200 inline-flex items-center gap-2">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                             aria-hidden="true">
+                                            <circle cx="9" cy="21" r="1"></circle>
+                                            <circle cx="20" cy="21" r="1"></circle>
+                                            <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"></path>
+                                        </svg>
+                                        Re-order
+                                    </a>
                                 <?php endif; ?>
                             </div>
                         </div>

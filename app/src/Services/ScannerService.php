@@ -24,11 +24,19 @@ class ScannerService implements IScannerService
 
     public function scanTicket(string $ticketCode, int $scannedByUserId): TicketScanDetail
     {
+        $this->validateTicketCode($ticketCode);
         $detail = $this->findTicketOrFail($ticketCode);
         $this->validateNotAlreadyScanned($detail);
         $this->markAsScanned($detail->ticketId, $scannedByUserId);
 
         return $detail;
+    }
+
+    private function validateTicketCode(string $ticketCode): void
+    {
+        if ($ticketCode === '') {
+            throw new TicketNotFoundException('Please enter a ticket code.');
+        }
     }
 
     private function findTicketOrFail(string $ticketCode): TicketScanDetail
