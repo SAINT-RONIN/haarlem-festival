@@ -44,6 +44,7 @@ use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
+use App\Controllers\OrderHistoryController;
 use App\Controllers\ProgramController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScannerController;
@@ -88,6 +89,9 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
     $r->addRoute('GET', '/restaurant/{id:\d+}', [RestaurantController::class, 'detail']);
+
+    // Order History
+    $r->addRoute('GET', '/my-orders', [OrderHistoryController::class, 'index']);
 
     // My Program (cart) Routes
     $r->addRoute('GET', '/my-program', [ProgramController::class, 'index']);

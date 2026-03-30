@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsArtistsController;
+use App\Controllers\OrderHistoryController;
+use App\Repositories\OrderHistoryRepository;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsEventsController;
@@ -392,6 +394,10 @@ return static function (string $controllerClass): object {
         ),
         ScheduleApiController::class => new ScheduleApiController(
             $scheduleService(),
+        ),
+        OrderHistoryController::class => new OrderHistoryController(
+            new OrderHistoryRepository($pdo()),
+            $sessionService,
         ),
         default => new $controllerClass(),
     };
