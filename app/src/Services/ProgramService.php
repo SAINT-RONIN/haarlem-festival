@@ -64,7 +64,7 @@ class ProgramService implements IProgramService
      * @throws \InvalidArgumentException When eventSessionId or quantity is invalid
      * @throws ProgramException When the database write fails
      */
-    public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
+    public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): ProgramItem
     {
         $this->validateAddInput($eventSessionId, $quantity);
 
@@ -73,10 +73,10 @@ class ProgramService implements IProgramService
             $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
 
             if ($existingItem !== null) {
-                return $this->incrementExistingItem($existingItem, $quantity);
+                return $this->incrementExistingItem($existingItem, $quantity, $groupTicketQuantity);
             }
 
-            return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $donationAmount);
+            return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $groupTicketQuantity, $donationAmount);
         } catch (\InvalidArgumentException $error) {
             throw $error;
         } catch (\Throwable $error) {
@@ -128,10 +128,10 @@ class ProgramService implements IProgramService
     }
 
     /** Increases quantity on an existing program item and returns the updated item. */
-    private function incrementExistingItem(ProgramItem $existingItem, int $additionalQuantity): ProgramItem
+    private function incrementExistingItem(ProgramItem $existingItem, int $additionalQuantity, int $additionalGroupTicketQuantity): ProgramItem
     {
         $newQuantity = $existingItem->quantity + $additionalQuantity;
-        $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
+        $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity, $additionalGroupTicketQuantity);
 
         $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
         return $items[0];
@@ -142,7 +142,7 @@ class ProgramService implements IProgramService
      *
      * @throws \InvalidArgumentException When the item does not belong to the user's program
      */
-    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void
+    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity, int $groupTicketQuantity): void
     {
         if ($programItemId <= 0) {
             throw new \InvalidArgumentException('programItemId is required');
@@ -154,7 +154,7 @@ class ProgramService implements IProgramService
             return;
         }
 
-        $this->programRepository->updateItemQuantity($programItemId, $quantity);
+        $this->programRepository->updateItemQuantity($programItemId, $quantity, $groupTicketQuantity);
     }
 
     /**

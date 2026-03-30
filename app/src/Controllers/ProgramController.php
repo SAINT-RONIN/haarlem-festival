@@ -63,9 +63,10 @@ class ProgramController extends BaseController
 
         $eventSessionId = (int)($body['eventSessionId'] ?? 0);
         $quantity = (int)($body['quantity'] ?? 1);
+        $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 1);
         $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-        $item = $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $donationAmount);
+        $item = $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $groupTicketQuantity, $donationAmount);
 
         $this->json(['success' => true, 'programItemId' => $item->programItemId]);
     }
@@ -115,8 +116,9 @@ class ProgramController extends BaseController
 
         $programItemId = (int)($body['programItemId'] ?? 0);
         $quantity = (int)($body['quantity'] ?? 0);
+        $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 0);
 
-        $this->programService->updateQuantity($context->sessionKey, $context->userId, $programItemId, $quantity);
+        $this->programService->updateQuantity($context->sessionKey, $context->userId, $programItemId, $quantity, $groupTicketQuantity);
 
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }

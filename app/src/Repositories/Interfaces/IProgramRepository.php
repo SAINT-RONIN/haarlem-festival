@@ -40,7 +40,7 @@ interface IProgramRepository
      *
      * @throws \RuntimeException If the inserted row cannot be read back.
      */
-    public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem;
+    public function addItem(int $programId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): ProgramItem;
 
     /**
      * Adds a pass item to a program and returns the created ProgramItem.
@@ -52,7 +52,7 @@ interface IProgramRepository
     /**
      * Updates the ticket quantity on an existing program item.
      */
-    public function updateItemQuantity(int $programItemId, int $quantity): void;
+    public function updateItemQuantity(int $programItemId, int $quantity, int $groupTicketQuantity): void;
 
     /**
      * Updates the donation amount on an existing program item.
