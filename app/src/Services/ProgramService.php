@@ -66,15 +66,12 @@ class ProgramService implements IProgramService
      */
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): void
     {
-        $this->validateAddInput($eventSessionId, $quantity);
+
+        $this->validateAddInput($eventSessionId, $quantity, $groupTicketQuantity);
 
         try {
             $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
-            $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
 
-            if ($existingItem !== null) {
-                $this->incrementExistingItem($existingItem, $quantity, $groupTicketQuantity);
-            }
 
             $prices = $this->priceRepository->findPricesBySessionIds([$eventSessionId])[$eventSessionId] ?? [];
             usort($prices, fn($a, $b) => $a->price <=> $b->price);
@@ -82,11 +79,25 @@ class ProgramService implements IProgramService
             $groupPriceTierId = array_last($prices)->priceTierId ?? 0;
 
             if ($quantity > 0) {
-                $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $priceTierId, $donationAmount);
+                $existingItem = $this->findExistingItem($program->programId, $eventSessionId, $priceTierId);
+
+                if ($existingItem !== null) {
+                    $this->incrementExistingItem($existingItem, $quantity, $groupTicketQuantity);
+                }
+                else {
+                    $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $priceTierId, $donationAmount);
+                }
             }
 
             if ($groupTicketQuantity > 0) {
-                $this->programRepository->addItem($program->programId, $eventSessionId, $groupTicketQuantity, $groupPriceTierId, $donationAmount);
+                $existingItem = $this->findExistingItem($program->programId, $eventSessionId, $groupPriceTierId);
+
+                if ($existingItem !== null) {
+                    $this->incrementExistingItem($existingItem, $quantity, $groupTicketQuantity);
+                }
+                else{
+                    $this->programRepository->addItem($program->programId, $eventSessionId, $groupTicketQuantity, $groupPriceTierId, $donationAmount);
+                }
             }
         } catch (\InvalidArgumentException $error) {
             throw $error;
@@ -128,12 +139,12 @@ class ProgramService implements IProgramService
     }
 
     /** Validates input parameters for adding an item to the program. */
-    private function validateAddInput(int $eventSessionId, int $quantity): void
+    private function validateAddInput(int $eventSessionId, int $quantity, int $groupTicketQuantity): void
     {
         if ($eventSessionId <= 0) {
             throw new \InvalidArgumentException('eventSessionId is required');
         }
-        if ($quantity <= 0) {
+        if ($quantity <= 0 && $groupTicketQuantity <= 0) {
             throw new \InvalidArgumentException('quantity must be at least 1');
         }
     }
@@ -315,11 +326,12 @@ class ProgramService implements IProgramService
         return $programs !== [] ? $programs[0] : null;
     }
 
-    private function findExistingItem(int $programId, int $eventSessionId): ?ProgramItem
+    private function findExistingItem(int $programId, int $eventSessionId, int $priceTierId): ?ProgramItem
     {
         $items = $this->programRepository->findProgramItems(new ProgramItemFilter(
             programId: $programId,
             eventSessionId: $eventSessionId,
+            priceTierId: $priceTierId,
         ));
 
         return $items !== [] ? $items[0] : null;

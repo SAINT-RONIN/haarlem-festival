@@ -80,6 +80,11 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
             $params['eventSessionId'] = $filter->eventSessionId;
         }
 
+        if ($filter->eventSessionId !== null) {
+            $conditions[] = 'pi.PriceTierId = :priceTierId';
+            $params['priceTierId'] = $filter->priceTierId;
+        }
+
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
         $sql = "SELECT * FROM ProgramItem pi {$whereClause} ORDER BY pi.ProgramItemId ASC";
 
