@@ -358,25 +358,6 @@ class CmsDashboardController extends CmsBaseController
         return is_string($name) && $name !== '' ? $name : CmsMessages::DEFAULT_ADMIN_NAME;
     }
 
-    private function parsePageId(string $id): ?int
-    {
-        $pageId = $this->parsePositiveIntId($id);
-        if ($pageId === null) {
-            http_response_code(400);
-            echo CmsMessages::INVALID_PAGE_ID;
-        }
-        return $pageId;
-    }
-
-    private function parsePageIdJson(string $id): ?int
-    {
-        $pageId = $this->parsePositiveIntId($id);
-        if ($pageId === null) {
-            echo json_encode(['success' => false, 'error' => CmsMessages::INVALID_PAGE_ID]);
-        }
-        return $pageId;
-    }
-
     private function processUploadRequest(): void
     {
         // Validate CSRF token first for all upload types
