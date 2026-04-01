@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\DTOs\Pages\RestaurantDetailData;
 use App\DTOs\Pages\RestaurantPageData;
 
 /**
@@ -13,6 +12,4 @@ use App\DTOs\Pages\RestaurantPageData;
 interface IRestaurantService
 {
     public function getRestaurantPageData(): RestaurantPageData;
-
-    public function getRestaurantDetailData(int $id): ?RestaurantDetailData;
 }

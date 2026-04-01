@@ -52,8 +52,6 @@ use App\Repositories\ArtistGalleryImageRepository;
 use App\Repositories\ArtistHighlightRepository;
 use App\Repositories\ArtistLineupMemberRepository;
 use App\Repositories\ArtistTrackRepository;
-use App\Repositories\CuisineTypeRepository;
-use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\ScannerRepository;
 use App\Repositories\ReservationRepository;
@@ -247,9 +245,6 @@ return static function (string $controllerClass): object {
             new RestaurantService(
                 $globalContentRepo(),
                 $restaurantContentRepo(),
-                $restaurantRepo(),
-                new RestaurantImageRepository($pdo()),
-                new CuisineTypeRepository($pdo()),
                 $eventRepo(),
                 $mediaAssetRepo(),
             ),
@@ -435,9 +430,6 @@ return static function (string $controllerClass): object {
             new RestaurantService(
                 $globalContentRepo(),
                 $restaurantContentRepo(),
-                $restaurantRepo(),
-                new RestaurantImageRepository($pdo()),
-                new CuisineTypeRepository($pdo()),
                 $eventRepo(),
                 $mediaAssetRepo(),
             ),

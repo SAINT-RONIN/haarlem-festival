@@ -16,8 +16,6 @@ use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Pages\RestaurantDetailPageData;
 use App\DTOs\Pages\RestaurantListingData;
 use App\DTOs\Pages\RestaurantPageData;
-use App\Models\CuisineType;
-use App\Models\Restaurant;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
@@ -55,7 +53,7 @@ final class RestaurantViewMapper
             introSplitSection:      self::toIntroSplitSection($data->introSplitSection),
             introSplit2Section:     self::toIntroSplit2Section($data->introSplit2Section),
             instructionsSection:    self::toInstructionsSection($data->instructionsSection),
-            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsSection, $data->restaurants, $data->cuisinesByRestaurant, $data->listings),
+            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsSection, $data->listings),
         );
     }
 
@@ -91,7 +89,8 @@ final class RestaurantViewMapper
         return self::toDetailViewModel($data, $isLoggedIn);
     }
 
-    /** Builds the hero section for a restaurant detail page using event data. */
+    // ── Detail page section builders ──────────────────────────────────
+
     private static function toEventDetailHeroData(
         RestaurantDetailEvent $event,
         RestaurantDetailSectionContent $sharedCms,
@@ -117,7 +116,6 @@ final class RestaurantViewMapper
         );
     }
 
-    /** Assembles a flat CMS array for views that need raw access. */
     private static function buildCmsArray(RestaurantEventCmsData $cms, RestaurantDetailSectionContent $sharedCms): array
     {
         return [
@@ -251,7 +249,6 @@ final class RestaurantViewMapper
 
     // ── Listing page section builders ──────────────────────────────────
 
-    /** Maps gradient CMS content to a gradient section ViewModel. */
     private static function toGradientSection(GradientSectionContent $cms): GradientSectionData
     {
         return new GradientSectionData(
@@ -261,7 +258,6 @@ final class RestaurantViewMapper
         );
     }
 
-    /** Maps intro CMS content to an intro-split section ViewModel with parsed body. */
     private static function toIntroSplitSection(RestaurantIntroSectionContent $cms): IntroSplitSectionData
     {
         $heading = $cms->introHeading ?? '';
@@ -278,7 +274,6 @@ final class RestaurantViewMapper
         );
     }
 
-    /** Maps second intro CMS content to an intro-split section ViewModel, or null if empty. */
     private static function toIntroSplit2Section(RestaurantIntroSplit2SectionContent $cms): ?IntroSplitSectionData
     {
         if ($cms->intro2Heading === null && $cms->intro2Body === null) {
@@ -295,7 +290,6 @@ final class RestaurantViewMapper
         );
     }
 
-    /** Maps instructions CMS content to an instructions section ViewModel with 3 cards. */
     private static function toInstructionsSection(RestaurantInstructionsSectionContent $cms): ?InstructionsSectionData
     {
         if ($cms->instructionsTitle === null) {
@@ -313,43 +307,23 @@ final class RestaurantViewMapper
     }
 
     /**
-     * Builds the restaurant cards section with cuisine filters and card data.
-     * Uses event-based listings when available, falls back to direct Restaurant models.
-     *
-     * @param Restaurant[] $restaurants
-     * @param array<int, CuisineType[]> $cuisinesByRestaurant
      * @param RestaurantListingData[] $listings
      */
-    private static function toRestaurantCardsSection(
-        RestaurantCardsSectionContent $cms,
-        array $restaurants,
-        array $cuisinesByRestaurant,
-        array $listings = [],
-    ): RestaurantCardsSectionData {
-        if ($listings !== []) {
-            return new RestaurantCardsSectionData(
-                title: $cms->cardsTitle ?? '',
-                subtitle: $cms->cardsSubtitle ?? '',
-                filters: self::buildListingFilters($listings),
-                cards: self::buildListingCards($listings),
-            );
-        }
-
+    private static function toRestaurantCardsSection(RestaurantCardsSectionContent $cms, array $listings): RestaurantCardsSectionData
+    {
         return new RestaurantCardsSectionData(
             title: $cms->cardsTitle ?? '',
             subtitle: $cms->cardsSubtitle ?? '',
-            filters: self::buildCuisineFilters($restaurants, $cuisinesByRestaurant),
-            cards: self::buildCards($restaurants, $cuisinesByRestaurant),
+            filters: self::buildCuisineFilters($listings),
+            cards: self::buildCards($listings),
         );
     }
 
     /**
-     * Extracts unique cuisine filters from event-based listings.
-     *
      * @param RestaurantListingData[] $listings
      * @return string[]
      */
-    private static function buildListingFilters(array $listings): array
+    private static function buildCuisineFilters(array $listings): array
     {
         $unique = [];
         foreach ($listings as $listing) {
@@ -367,12 +341,10 @@ final class RestaurantViewMapper
     }
 
     /**
-     * Builds card ViewModels from event-based listings.
-     *
      * @param RestaurantListingData[] $listings
      * @return RestaurantCardData[]
      */
-    private static function buildListingCards(array $listings): array
+    private static function buildCards(array $listings): array
     {
         $cards = [];
         foreach ($listings as $listing) {
@@ -385,61 +357,6 @@ final class RestaurantViewMapper
                 rating: (int)($listing->cms->stars ?? 0),
                 image: $listing->imagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
                 slug: $listing->event->slug,
-            );
-        }
-
-        return $cards;
-    }
-
-    /**
-     * Extracts and sorts unique cuisine type labels for the filter bar.
-     *
-     * @param Restaurant[] $restaurants
-     * @param array<int, CuisineType[]> $cuisinesByRestaurant
-     */
-    private static function buildCuisineFilters(array $restaurants, array $cuisinesByRestaurant): array
-    {
-        $unique = [];
-
-        foreach ($restaurants as $restaurant) {
-            $cuisineTypes = $cuisinesByRestaurant[$restaurant->restaurantId] ?? [];
-            foreach ($cuisineTypes as $cuisineType) {
-                $key = mb_strtolower($cuisineType->name);
-                if ($key !== '' && !isset($unique[$key])) {
-                    $unique[$key] = $cuisineType->name;
-                }
-            }
-        }
-
-        $labels = array_values($unique);
-        sort($labels, SORT_NATURAL | SORT_FLAG_CASE);
-
-        return ['All', ...$labels];
-    }
-
-    /**
-     * Builds card ViewModels from direct Restaurant models.
-     *
-     * @param Restaurant[] $restaurants
-     * @param array<int, CuisineType[]> $cuisinesByRestaurant
-     * @return RestaurantCardData[]
-     */
-    private static function buildCards(array $restaurants, array $cuisinesByRestaurant): array
-    {
-        $cards = [];
-
-        foreach ($restaurants as $restaurant) {
-            $cuisineTypes = $cuisinesByRestaurant[$restaurant->restaurantId] ?? [];
-            $cuisineString = implode(', ', array_map(fn(CuisineType $c) => $c->name, $cuisineTypes));
-
-            $cards[] = new RestaurantCardData(
-                id: $restaurant->restaurantId,
-                name: $restaurant->name,
-                cuisine: $cuisineString,
-                address: RestaurantContentParser::buildAddress($restaurant),
-                description: RestaurantContentParser::cleanDescription($restaurant->descriptionHtml),
-                rating: $restaurant->stars ?? 0,
-                image: $restaurant->imagePath ?? RestaurantContentParser::DEFAULT_IMAGE,
             );
         }
 
