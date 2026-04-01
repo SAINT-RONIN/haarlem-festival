@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+/**
+ * ViewModel for the CMS restaurant create and edit form.
+ */
 final readonly class CmsRestaurantFormViewModel
 {
     /**

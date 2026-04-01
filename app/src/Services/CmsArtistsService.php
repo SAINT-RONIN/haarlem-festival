@@ -32,6 +32,7 @@ class CmsArtistsService implements ICmsArtistsService
         return $this->artistRepository->findAll($search);
     }
 
+    /** Loads one artist for the CMS edit page. */
     public function findById(int $id): ?Artist
     {
         return $this->artistRepository->findById($id);

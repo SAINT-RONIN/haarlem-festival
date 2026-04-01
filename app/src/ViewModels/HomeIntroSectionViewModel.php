@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
+/**
+ * ViewModel for the introductory content section on the home page.
+ */
 final readonly class HomeIntroSectionViewModel
 {
     public function __construct(

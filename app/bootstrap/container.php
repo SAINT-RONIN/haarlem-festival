@@ -339,6 +339,7 @@ return static function (string $controllerClass): object {
             $mediaAssetService(),
         ),
         CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer, $ticketFulfillmentService, $invoiceFulfillmentService, $passPurchaseRepo) {
+            // Stripe setup is only needed for checkout routes, so other pages do not create it.
             $stripeService = new StripeService(
                 (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
                 (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),

@@ -18,6 +18,7 @@ use App\Services\Interfaces\ISessionService;
  */
 class RestaurantController extends BaseController
 {
+    /** Injects the services used to render restaurant pages and save reservations. */
     public function __construct(
         private readonly IRestaurantService $restaurantService,
         private readonly IRestaurantDetailService $restaurantDetailService,
@@ -78,9 +79,11 @@ class RestaurantController extends BaseController
     public function submitReservation(string $slug): void
     {
         $this->handleJsonRequest(function () use ($slug): void {
+            // We need the current session or user so the reservation can be added to the right program.
             $sessionContext = $this->resolveSessionContext();
             $result = $this->restaurantReservationService->submitReservation($slug, $_POST);
 
+            // The reservation is saved first, then linked to the visitor's program as a separate step.
             $this->programService->addReservationToProgram(
                 $sessionContext->sessionKey,
                 $sessionContext->userId,

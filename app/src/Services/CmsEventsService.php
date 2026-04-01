@@ -40,6 +40,7 @@ use App\Constants\CmsEventConstraints;
  */
 class CmsEventsService implements ICmsEventsService
 {
+    /** Stores the repositories used by the CMS to manage events, sessions, labels, and prices. */
     public function __construct(
         private readonly \PDO $pdo,
         private readonly IEventRepository $eventRepository,
@@ -311,7 +312,7 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Updates an event session.
+     * Updates an existing event session after validating the submitted changes.
      *
      * @throws ValidationException
      */
@@ -357,7 +358,7 @@ class CmsEventsService implements ICmsEventsService
     }
 
     /**
-     * Deletes a label.
+     * Deletes one label from a session.
      */
     public function deleteLabel(int $labelId): bool
     {
@@ -453,9 +454,11 @@ class CmsEventsService implements ICmsEventsService
         return $errors;
     }
 
+    /** Tries the datetime formats used by the CMS form and returns null when none match cleanly. */
     private function parseSessionDateTime(string $value): ?\DateTimeImmutable
     {
         foreach (['Y-m-d\TH:i', 'Y-m-d H:i:s', 'Y-m-d H:i'] as $format) {
+            // createFromFormat can partially parse invalid input, so we also inspect the parser errors.
             $dateTime = \DateTimeImmutable::createFromFormat($format, $value);
             $errors = \DateTimeImmutable::getLastErrors();
 

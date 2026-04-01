@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
+/**
+ * ViewModel for the location filter section on the home page.
+ */
 final readonly class HomeLocationsSectionViewModel
 {
     public function __construct(

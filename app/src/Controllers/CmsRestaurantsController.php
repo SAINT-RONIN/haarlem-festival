@@ -10,8 +10,12 @@ use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsRestaurantFormViewModel;
 
+/**
+ * Handles the CMS restaurant pages for listing, creating, editing, and deactivating restaurants.
+ */
 class CmsRestaurantsController extends CmsBaseController
 {
+    /** Injects the restaurant CMS service and the shared session service. */
     public function __construct(
         private readonly ICmsRestaurantsService $restaurantsService,
         ISessionService $sessionService,
@@ -19,6 +23,7 @@ class CmsRestaurantsController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
+    /** Renders the CMS restaurant overview page with the current search filter. */
     public function index(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -29,6 +34,7 @@ class CmsRestaurantsController extends CmsBaseController
         });
     }
 
+    /** Renders the empty restaurant form used to create a new CMS restaurant entry. */
     public function create(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -39,6 +45,7 @@ class CmsRestaurantsController extends CmsBaseController
         });
     }
 
+    /** Validates and stores a new restaurant submitted from the CMS create form. */
     public function store(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -46,6 +53,7 @@ class CmsRestaurantsController extends CmsBaseController
         });
     }
 
+    /** Loads one restaurant and renders its CMS edit form. */
     public function edit(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -53,6 +61,7 @@ class CmsRestaurantsController extends CmsBaseController
         });
     }
 
+    /** Validates and saves changes for an existing CMS restaurant. */
     public function update(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -60,6 +69,7 @@ class CmsRestaurantsController extends CmsBaseController
         });
     }
 
+    /** Soft-deletes a restaurant from the CMS after passing CSRF validation. */
     public function delete(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {

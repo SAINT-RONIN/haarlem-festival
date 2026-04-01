@@ -22,6 +22,7 @@ class ScannerService implements IScannerService
     ) {
     }
 
+    /** Validates a ticket code, loads its details, rejects duplicates, and marks it as scanned. */
     public function scanTicket(string $ticketCode, int $scannedByUserId): TicketScanDetail
     {
         $this->validateTicketCode($ticketCode);
@@ -32,6 +33,7 @@ class ScannerService implements IScannerService
         return $detail;
     }
 
+    /** Rejects empty ticket codes before we hit the database. */
     private function validateTicketCode(string $ticketCode): void
     {
         if ($ticketCode === '') {
@@ -39,6 +41,7 @@ class ScannerService implements IScannerService
         }
     }
 
+    /** Loads the ticket scan details needed by the scanner screen or throws when no ticket matches. */
     private function findTicketOrFail(string $ticketCode): TicketScanDetail
     {
         $detail = $this->scannerRepository->findTicketWithDetails($ticketCode);
@@ -50,6 +53,7 @@ class ScannerService implements IScannerService
         return $detail;
     }
 
+    /** Stops the scan flow when the ticket has already been scanned earlier. */
     private function validateNotAlreadyScanned(TicketScanDetail $detail): void
     {
         if ($detail->isScanned) {
@@ -57,6 +61,7 @@ class ScannerService implements IScannerService
         }
     }
 
+    /** Persists the successful scan together with the user who performed it. */
     private function markAsScanned(int $ticketId, int $userId): void
     {
         $this->ticketRepository->markScanned($ticketId, $userId);

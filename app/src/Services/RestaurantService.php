@@ -34,6 +34,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         parent::__construct($globalContentRepo);
     }
 
+    /** Loads all CMS sections and restaurant listings needed by the restaurant overview page. */
     public function getRestaurantPageData(): RestaurantPageData
     {
         return $this->guardPageLoad(
@@ -42,6 +43,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         );
     }
 
+    /** Builds the restaurant page payload from CMS content and restaurant event data. */
     private function assembleRestaurantPageData(): RestaurantPageData
     {
         return new RestaurantPageData(
@@ -57,6 +59,8 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     }
 
     /**
+     * Converts active restaurant events into listing cards enriched with CMS content and images.
+     *
      * @return RestaurantListingData[]
      */
     private function buildEventListings(): array
@@ -71,6 +75,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         $listings = [];
 
         foreach ($events as $event) {
+            // Each event card mixes event data, CMS content, image data, and optional restaurant details.
             $cms = $this->restaurantContentRepo->findEventCmsData(
                 RestaurantDetailConstants::PAGE_SLUG,
                 RestaurantDetailConstants::eventSectionKey($event->eventId),

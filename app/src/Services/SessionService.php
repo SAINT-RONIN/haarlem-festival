@@ -117,12 +117,14 @@ class SessionService implements ISessionService
         return $_SESSION[self::USER_ID_KEY] ?? null;
     }
 
+    /** Stores one arbitrary session value under the provided key. */
     public function set(string $key, mixed $value): void
     {
         $this->start();
         $_SESSION[$key] = $value;
     }
 
+    /** Reads one arbitrary session value and falls back to the provided default when missing. */
     public function get(string $key, mixed $default = null): mixed
     {
         $this->start();

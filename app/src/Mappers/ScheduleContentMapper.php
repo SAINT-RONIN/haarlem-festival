@@ -11,7 +11,7 @@ use App\Content\ScheduleSectionContent;
  */
 final class ScheduleContentMapper
 {
-    /** Maps raw CMS data to a ScheduleSectionContent model. */
+    /** Maps one raw CMS content array into the typed content object used by the schedule page. */
     public static function mapScheduleSection(array $raw): ScheduleSectionContent
     {
         return new ScheduleSectionContent(
@@ -24,6 +24,8 @@ final class ScheduleContentMapper
     }
 
     /**
+     * Extracts the action button texts used by the schedule UI.
+     *
      * @return array<string, ?string>
      */
     private static function mapButtonTexts(array $raw): array
@@ -37,6 +39,8 @@ final class ScheduleContentMapper
     }
 
     /**
+     * Extracts the page heading texts and event counters shown above the schedule.
+     *
      * @return array<string, ?string>
      */
     private static function mapHeaderTexts(array $raw): array
@@ -52,6 +56,8 @@ final class ScheduleContentMapper
     }
 
     /**
+     * Extracts section-level settings such as filter visibility and extra info text.
+     *
      * @return array<string, ?string>
      */
     private static function mapSectionSettings(array $raw): array
@@ -70,6 +76,8 @@ final class ScheduleContentMapper
     }
 
     /**
+     * Extracts service-specific fields that do not fit into the other schedule groups.
+     *
      * @return array<string, ?string>
      */
     private static function mapServiceFields(array $raw): array
@@ -81,6 +89,8 @@ final class ScheduleContentMapper
     }
 
     /**
+     * Extracts all filter labels so the frontend can render consistent filter text.
+     *
      * @return array<string, ?string>
      */
     private static function mapFilterLabels(array $raw): array
@@ -110,6 +120,8 @@ final class ScheduleContentMapper
     }
 
     /**
+     * Copies values from the raw CMS array into the property names expected by the content model.
+     *
      * @param array<string, string> $fieldMap
      * @return array<string, ?string>
      */
@@ -118,6 +130,7 @@ final class ScheduleContentMapper
         $values = [];
 
         foreach ($fieldMap as $field => $key) {
+            // Missing CMS keys are allowed here, so the content model receives null instead of crashing.
             $values[$field] = $raw[$key] ?? null;
         }
 

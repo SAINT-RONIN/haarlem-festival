@@ -60,6 +60,7 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         );
     }
 
+    /** Loads one order by its id. */
     public function findById(int $orderId): ?Order
     {
         return $this->fetchOne(
@@ -69,6 +70,7 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         );
     }
 
+    /** Loads one order only when it belongs to the specified user. */
     public function findByIdAndUserId(int $orderId, int $userId): ?Order
     {
         return $this->fetchOne(
@@ -118,6 +120,7 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         );
     }
 
+    /** Updates the ticket recipient details stored on the order for later fulfillment emails. */
     public function updateTicketRecipient(
         int $orderId,
         string $firstName,
@@ -139,6 +142,7 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         );
     }
 
+    /** Records that the ticket email was sent successfully and clears the previous error message. */
     public function markTicketEmailSent(int $orderId, \DateTimeImmutable $sentAtUtc): void
     {
         $this->execute(
@@ -153,6 +157,7 @@ class OrderRepository extends BaseRepository implements IOrderRepository
         );
     }
 
+    /** Records the latest ticket email failure message so support can diagnose the problem. */
     public function markTicketEmailFailed(int $orderId, string $errorMessage): void
     {
         $this->execute(

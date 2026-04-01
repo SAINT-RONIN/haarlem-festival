@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
+/**
+ * ViewModel for one restaurant row in the CMS restaurant list.
+ */
 final readonly class CmsRestaurantListItemViewModel
 {
     public function __construct(

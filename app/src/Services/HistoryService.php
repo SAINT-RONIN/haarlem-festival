@@ -23,6 +23,7 @@ class HistoryService extends BaseContentService implements IHistoryService
         parent::__construct($globalContentRepo);
     }
 
+    /** Loads every content section needed by the History overview page. */
     public function getHistoryPageData(): HistoryPageData
     {
         return $this->guardPageLoad(
@@ -31,6 +32,7 @@ class HistoryService extends BaseContentService implements IHistoryService
         );
     }
 
+    /** Builds the full History page payload from shared and page-specific content repositories. */
     private function buildPageData(string $pageSlug): HistoryPageData
     {
         return new HistoryPageData(

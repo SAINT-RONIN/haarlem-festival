@@ -17,7 +17,11 @@ use App\Services\Interfaces\IInvoiceFulfillmentService;
 use App\Tickets\Interfaces\IInvoicePdfGenerator;
 
 /**
- * Creates an invoice record, generates a PDF, and emails it after successful payment.
+ * Turns a paid order into an invoice record, a stored PDF, and an outgoing invoice email.
+ *
+ * This service exists because invoice fulfillment is a small workflow rather than one query:
+ * it needs invoice numbering, line generation, PDF storage, and email delivery to happen
+ * in a consistent order after payment succeeds.
  */
 class InvoiceFulfillmentService implements IInvoiceFulfillmentService
 {
@@ -26,6 +30,12 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     private const INVOICE_PDF_FILE_PREFIX = 'Haarlem-Festival-Invoice-';
     private const INVOICE_PDF_ALT_TEXT = 'Invoice PDF';
 
+    /**
+     * Stores the repositories and helpers used during invoice fulfillment.
+     *
+     * The constructor returns nothing because it only wires dependencies together once,
+     * which keeps the actual invoice flow easy to follow.
+     */
     public function __construct(
         private readonly IOrderRepository $orderRepository,
         private readonly IOrderItemRepository $orderItemRepository,
@@ -37,6 +47,13 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     ) {
     }
 
+    /**
+     * Completes invoice fulfillment for one paid order.
+     *
+     * It returns nothing because the value is the side effect: after it runs,
+     * the order should have an invoice record, a stored PDF, and an attempted email delivery.
+     * It exits early when a PDF is already linked so the process stays idempotent.
+     */
     public function fulfillPaidOrder(int $orderId): void
     {
         if ($this->isAlreadyFulfilled($orderId)) {
@@ -52,6 +69,12 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
         $this->sendEmail($order, $invoice->invoiceNumber, $pdfPath);
     }
 
+    /**
+     * Returns true when invoice fulfillment was already completed for this order.
+     *
+     * The PDF asset link is the check used here because a stored PDF means the invoice
+     * was already generated and should not be duplicated on a retry.
+     */
     private function isAlreadyFulfilled(int $orderId): bool
     {
         $existing = $this->invoiceRepository->findByOrderId($orderId);
@@ -59,6 +82,12 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
         return $existing !== null && $existing->pdfAssetId !== null;
     }
 
+    /**
+     * Returns the paid order that the invoice belongs to.
+     *
+     * It throws instead of returning null because the rest of invoice fulfillment
+     * cannot continue meaningfully without a real order.
+     */
     private function requireOrder(int $orderId): Order
     {
         $order = $this->orderRepository->findById($orderId);
@@ -71,6 +100,9 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
 
     /**
      * Generates a unique invoice number in INV-YYYYMMDD-XXXXXX format.
+     *
+     * The returned string is presentation-safe because invoice numbers are shown
+     * to customers and staff, not just stored internally.
      */
     private function generateInvoiceNumber(): string
     {
@@ -81,7 +113,9 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     }
 
     /**
-     * Loads order items with joined event/pass details for building invoice line descriptions.
+     * Loads order items and enriches them with the extra fields needed to build invoice lines.
+     * The returned array is intentionally richer than the raw order items because invoice
+     * descriptions need human-readable session and pass information.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -108,6 +142,11 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     }
 
     /**
+     * Returns the order-item row with session details added to it.
+     *
+     * Event title and start time are added here because the invoice line should explain
+     * what the customer actually booked, not just show internal ids.
+     *
      * @param array<string, mixed> $row
      * @return array<string, mixed>
      */
@@ -130,18 +169,26 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     }
 
     /**
+     * Returns the order-item row with pass display information added.
+     *
+     * Pass purchases do not point to a session, so this method fills in the descriptive
+     * text the invoice mapper expects later.
+     *
      * @param array<string, mixed> $row
      * @return array<string, mixed>
      */
     private function enrichWithPassDetails(array $row, int $passPurchaseId): array
     {
+        // Pass purchases currently use one shared display label in the invoice output.
         $row['PassTypeName'] = self::DEFAULT_PASS_TYPE_NAME;
 
         return $row;
     }
 
     /**
-     * Persists Invoice and InvoiceLine rows, returns the invoice ID.
+     * Creates the invoice header and all invoice line rows, then returns the new invoice id.
+     * The returned id matters because the PDF and asset-linking steps need to know
+     * exactly which invoice row they belong to.
      *
      * @param array<int, array<string, mixed>> $orderItemRows
      */
@@ -152,6 +199,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
 
         $recipientEmail = $order->ticketRecipientEmail ?? '';
         $recipientName = trim(($order->ticketRecipientFirstName ?? '') . ' ' . ($order->ticketRecipientLastName ?? ''));
+        // If the customer name is missing, the email still gives us a usable invoice recipient value.
         if ($recipientName === '') {
             $recipientName = $recipientEmail;
         }
@@ -191,7 +239,9 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     }
 
     /**
-     * Generates the PDF, stores it, creates a media asset, and links it to the invoice.
+     * Builds the invoice PDF, stores it as a media asset, and links that asset back to the invoice.
+     * It returns the absolute file path because the next step, email delivery,
+     * needs the real file location for the attachment.
      */
     private function generateAndStorePdf(int $orderId, int $invoiceId, string $orderNumber): string
     {
@@ -212,6 +262,12 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
         return $storedPdfFile->absolutePath;
     }
 
+    /**
+     * Sends the invoice email when the order contains a recipient address.
+     *
+     * It returns nothing because the useful outcome is delivery itself.
+     * Missing email is treated as a no-op here because there is nowhere valid to send the file.
+     */
     private function sendEmail(Order $order, string $invoiceNumber, string $pdfPath): void
     {
         $recipientEmail = $order->ticketRecipientEmail ?? '';

@@ -42,6 +42,7 @@ class CmsUsersService implements ICmsUsersService
         return $this->usersRepository->findUsersWithRoles($roleFilter, $search, $sortBy, $sortDir);
     }
 
+    /** Loads one user account for the CMS edit page. */
     public function findById(int $id): ?UserAccount
     {
         return $this->usersRepository->findById($id);

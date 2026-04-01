@@ -72,6 +72,7 @@ class RestaurantRepository extends BaseRepository implements IRestaurantReposito
         return $this->fetchAll($sql, $params, fn(array $row) => Restaurant::fromRow($row));
     }
 
+    /** Inserts a new restaurant row from the CMS restaurant form data. */
     public function create(RestaurantUpsertData $data): int
     {
         return $this->executeInsert(
@@ -98,6 +99,7 @@ class RestaurantRepository extends BaseRepository implements IRestaurantReposito
         );
     }
 
+    /** Updates an existing restaurant row from the CMS restaurant form data. */
     public function update(int $id, RestaurantUpsertData $data): void
     {
         $this->execute(
@@ -123,6 +125,7 @@ class RestaurantRepository extends BaseRepository implements IRestaurantReposito
         );
     }
 
+    /** Soft-deletes a restaurant by marking it inactive instead of removing the row. */
     public function delete(int $id): void
     {
         $this->execute('UPDATE Restaurant SET IsActive = 0 WHERE RestaurantId = :id', [':id' => $id]);

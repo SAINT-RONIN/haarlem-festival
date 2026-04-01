@@ -9,6 +9,9 @@ use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\LocationHero;
 
+/**
+ * ViewModel for a single historical location detail page.
+ */
 final readonly class HistoricalLocationViewModel extends BaseViewModel
 {
     public function __construct(

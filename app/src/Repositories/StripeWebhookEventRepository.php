@@ -55,6 +55,7 @@ class StripeWebhookEventRepository extends BaseRepository implements IStripeWebh
         return $stmt->rowCount() > 0;
     }
 
+    /** Removes the idempotency lock when webhook processing fails and needs to be retried later. */
     public function release(string $eventId): void
     {
         $this->execute(
