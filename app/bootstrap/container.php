@@ -28,6 +28,7 @@ use App\Http\Requests\StripeWebhookRequestFactory;
 use App\Infrastructure\CheckoutRuntimeConfig;
 use App\Infrastructure\Database;
 use App\Infrastructure\EmailService;
+use App\Infrastructure\PdfAssetStorage;
 use App\Infrastructure\StripeService;
 use App\Repositories\CmsContentRepository;
 use App\Repositories\CmsOrdersRepository;
@@ -172,6 +173,7 @@ return static function (string $controllerClass): object {
     $cmsItemEnricher = fn() => $make('cmsItemEnricher', fn() => new CmsItemEnricher($mediaAssetRepo()));
     $cmsPreviewUrlResolver = fn() => $make('cmsPreviewUrlResolver', fn() => new CmsPreviewUrlResolver());
     $emailService = fn() => $make('emailService', fn() => new EmailService());
+    $pdfAssetStorage = fn() => $make('pdfAssetStorage', fn() => new PdfAssetStorage($mediaAssetRepo()));
     $ticketFulfillmentService = fn() => $make('ticketFulfillmentService', fn() => new TicketFulfillmentService(
         $orderRepo(),
         $orderItemRepo(),
@@ -180,6 +182,7 @@ return static function (string $controllerClass): object {
         $mediaAssetRepo(),
         $userAccountRepo(),
         $emailService(),
+        $pdfAssetStorage(),
         new QrCodeGenerator(),
         new PdfTicketGenerator(),
         new TicketCodeGenerator(),
@@ -190,10 +193,9 @@ return static function (string $controllerClass): object {
         $orderItemRepo(),
         $eventSessionRepo(),
         $invoiceRepo(),
-        $mediaAssetRepo(),
         new InvoicePdfGenerator(),
         $emailService(),
-        $passTypeRepo(),
+        $pdfAssetStorage(),
     ));
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
@@ -226,6 +228,13 @@ return static function (string $controllerClass): object {
     $cmsArtistsService = fn() => $make('cmsArtistsService', fn() => new CmsArtistsService(new ArtistRepository($pdo())));
     $cmsRestaurantsService = fn() => $make('cmsRestaurantsService', fn() => new CmsRestaurantsService($restaurantRepo()));
     $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService($mediaAssetRepo()));
+    $restaurantService = fn() => $make('restaurantService', fn() => new RestaurantService(
+        $globalContentRepo(),
+        $restaurantContentRepo(),
+        $restaurantRepo(),
+        $eventRepo(),
+        $mediaAssetRepo(),
+    ));
 
     // ── Controller wiring — each arm only creates what it needs ──
 
@@ -242,13 +251,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         RestaurantController::class => new RestaurantController(
-            new RestaurantService(
-                $globalContentRepo(),
-                $restaurantContentRepo(),
-                $restaurantRepo(),
-                $eventRepo(),
-                $mediaAssetRepo(),
-            ),
+            $restaurantService(),
             new RestaurantDetailService(
                 $restaurantContentRepo(),
                 $eventRepo(),
@@ -428,13 +431,7 @@ return static function (string $controllerClass): object {
             $scheduleService(),
         ),
         RestaurantApiController::class => new RestaurantApiController(
-            new RestaurantService(
-                $globalContentRepo(),
-                $restaurantContentRepo(),
-                $restaurantRepo(),
-                $eventRepo(),
-                $mediaAssetRepo(),
-            ),
+            $restaurantService(),
             $sessionService,
         ),
         OrderHistoryController::class => new OrderHistoryController(

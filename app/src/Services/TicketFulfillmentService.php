@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTOs\Files\StoredPdfFile;
 use App\DTOs\Filters\EventSessionFilter;
 use App\DTOs\Schedule\SessionWithEvent;
 use App\DTOs\Tickets\TicketDocumentData;
@@ -12,10 +13,9 @@ use App\DTOs\Tickets\TicketEmailMessage;
 use App\DTOs\Tickets\TicketRecipient;
 use App\Exceptions\TicketDeliveryException;
 use App\Exceptions\TicketEmailDeliveryException;
-use App\Exceptions\TicketPdfGenerationException;
 use App\Exceptions\RepositoryException;
 use App\Infrastructure\Interfaces\IEmailService;
-use App\Infrastructure\PathResolver;
+use App\Infrastructure\PdfAssetStorage;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Ticket;
@@ -35,6 +35,13 @@ use App\Tickets\Interfaces\ITicketPdfGenerator;
  */
 class TicketFulfillmentService implements ITicketFulfillmentService
 {
+    private const MAX_TICKET_CODE_ATTEMPTS = 5;
+    private const DEFAULT_VENUE_NAME = 'Venue to be announced';
+    private const TICKET_PDF_FILE_PREFIX = 'Haarlem-Festival-Ticket-';
+    private const TICKET_PDF_ALT_TEXT = 'Festival ticket PDF';
+    private const DUPLICATE_ERROR_KEYWORD = 'duplicate';
+    private const MAX_STORED_ERROR_MESSAGE_LENGTH = 500;
+
     public function __construct(
         private readonly IOrderRepository $orderRepository,
         private readonly IOrderItemRepository $orderItemRepository,
@@ -43,6 +50,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         private readonly IMediaAssetRepository $mediaAssetRepository,
         private readonly IUserAccountRepository $userAccountRepository,
         private readonly IEmailService $emailService,
+        private readonly PdfAssetStorage $pdfAssetStorage,
         private readonly IQrCodeGenerator $qrCodeGenerator,
         private readonly ITicketPdfGenerator $ticketPdfGenerator,
         private readonly ITicketCodeGenerator $ticketCodeGenerator,
@@ -231,7 +239,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
 
     private function createTicket(int $orderItemId): Ticket
     {
-        for ($attempt = 0; $attempt < 5; $attempt++) {
+        for ($attempt = 0; $attempt < self::MAX_TICKET_CODE_ATTEMPTS; $attempt++) {
             $ticketCode = $this->ticketCodeGenerator->generate();
 
             try {
@@ -258,7 +266,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
 
     private function isDuplicateTicketCodeError(RepositoryException $error): bool
     {
-        return str_contains(strtolower($error->getMessage()), 'duplicate');
+        return str_contains(strtolower($error->getMessage()), self::DUPLICATE_ERROR_KEYWORD);
     }
 
     /**
@@ -312,13 +320,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         $document = $this->buildTicketDocument($order, $recipient, $session, $ticket, $position, $totalForItem);
         $qrCode = $this->qrCodeGenerator->generate($ticket->ticketCode);
         $pdfBinary = $this->ticketPdfGenerator->generatePdf($document, $qrCode);
-        $fileName = 'Haarlem-Festival-Ticket-' . $ticket->ticketCode . '.pdf';
-        $absolutePath = $this->writePdfFile($fileName, $pdfBinary);
-        $relativePath = PathResolver::getTicketAssetRelativePath($fileName);
-        $assetId = $this->storePdfAsset($ticket, $relativePath, $fileName, $absolutePath);
+        $fileName = self::TICKET_PDF_FILE_PREFIX . $ticket->ticketCode . '.pdf';
+        $storedPdfFile = $this->pdfAssetStorage->storeTicketPdfFile($fileName, $pdfBinary);
+        $assetId = $this->storeTicketPdfAsset($ticket, $storedPdfFile);
         $this->ticketRepository->updatePdfAssetId($ticket->ticketId, $assetId);
 
-        return new TicketEmailAttachment($absolutePath, $fileName);
+        return new TicketEmailAttachment($storedPdfFile->absolutePath, $fileName);
     }
 
     private function loadExistingPdfAttachment(Ticket $ticket): ?TicketEmailAttachment
@@ -332,7 +339,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
             return null;
         }
 
-        $absolutePath = $this->resolveAbsolutePublicPath($asset->filePath);
+        $absolutePath = $this->pdfAssetStorage->resolveAbsolutePublicPath($asset->filePath);
         if (!is_file($absolutePath)) {
             return null;
         }
@@ -359,7 +366,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
             recipientName: $recipient->displayName,
             eventTitle: $session->eventTitle,
             eventTypeName: $session->eventTypeName,
-            venueName: $session->venueName ?? 'Venue to be announced',
+            venueName: $session->venueName ?? self::DEFAULT_VENUE_NAME,
             sessionDateLabel: $session->startDateTime->format('l j F Y'),
             sessionTimeLabel: $this->formatSessionTime($session),
         );
@@ -376,46 +383,13 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         return $start . ' - ' . $session->endDateTime->format('H:i');
     }
 
-    private function writePdfFile(string $fileName, string $pdfBinary): string
+    private function storeTicketPdfAsset(Ticket $ticket, StoredPdfFile $storedPdfFile): int
     {
-        $directory = PathResolver::getTicketAssetPath();
-        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
-            throw new TicketPdfGenerationException('Ticket PDF directory could not be created.');
-        }
-
-        $absolutePath = $directory . '/' . $fileName;
-        if (file_put_contents($absolutePath, $pdfBinary) === false) {
-            throw new TicketPdfGenerationException('Ticket PDF could not be written to disk.');
-        }
-
-        return $absolutePath;
-    }
-
-    private function storePdfAsset(Ticket $ticket, string $relativePath, string $fileName, string $absolutePath): int
-    {
-        $data = [
-            'FilePath' => $relativePath,
-            'OriginalFileName' => $fileName,
-            'MimeType' => 'application/pdf',
-            'FileSizeBytes' => (int)filesize($absolutePath),
-            'AltText' => 'Festival ticket PDF',
-        ];
-
-        if ($ticket->pdfAssetId !== null) {
-            $this->mediaAssetRepository->update($ticket->pdfAssetId, $data);
-            return $ticket->pdfAssetId;
-        }
-
-        return $this->mediaAssetRepository->create($data);
-    }
-
-    private function resolveAbsolutePublicPath(string $filePath): string
-    {
-        if (str_starts_with($filePath, '/assets/')) {
-            return PathResolver::getPublicPath() . $filePath;
-        }
-
-        return $filePath;
+        return $this->pdfAssetStorage->upsertPdfAsset(
+            $ticket->pdfAssetId,
+            $storedPdfFile,
+            self::TICKET_PDF_ALT_TEXT,
+        );
     }
 
     /**
@@ -474,7 +448,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
 
     private function truncateErrorMessage(string $message): string
     {
-        return mb_substr($message, 0, 500);
+        return mb_substr($message, 0, self::MAX_STORED_ERROR_MESSAGE_LENGTH);
     }
 
     private function firstNonEmpty(?string ...$values): ?string

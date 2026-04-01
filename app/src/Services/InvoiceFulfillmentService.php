@@ -6,15 +6,13 @@ namespace App\Services;
 
 use App\Exceptions\InvoiceGenerationException;
 use App\Infrastructure\Interfaces\IEmailService;
-use App\Infrastructure\PathResolver;
+use App\Infrastructure\PdfAssetStorage;
 use App\Mappers\InvoiceMapper;
 use App\Models\Order;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IInvoiceRepository;
-use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
-use App\Repositories\Interfaces\IPassTypeRepository;
 use App\Services\Interfaces\IInvoiceFulfillmentService;
 use App\Tickets\Interfaces\IInvoicePdfGenerator;
 
@@ -23,15 +21,19 @@ use App\Tickets\Interfaces\IInvoicePdfGenerator;
  */
 class InvoiceFulfillmentService implements IInvoiceFulfillmentService
 {
+    private const INVOICE_NUMBER_RANDOM_BYTE_COUNT = 3;
+    private const DEFAULT_PASS_TYPE_NAME = 'Festival Pass';
+    private const INVOICE_PDF_FILE_PREFIX = 'Haarlem-Festival-Invoice-';
+    private const INVOICE_PDF_ALT_TEXT = 'Invoice PDF';
+
     public function __construct(
         private readonly IOrderRepository $orderRepository,
         private readonly IOrderItemRepository $orderItemRepository,
         private readonly IEventSessionRepository $eventSessionRepository,
         private readonly IInvoiceRepository $invoiceRepository,
-        private readonly IMediaAssetRepository $mediaAssetRepository,
         private readonly IInvoicePdfGenerator $invoicePdfGenerator,
         private readonly IEmailService $emailService,
-        private readonly IPassTypeRepository $passTypeRepository,
+        private readonly PdfAssetStorage $pdfAssetStorage,
     ) {
     }
 
@@ -73,7 +75,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     private function generateInvoiceNumber(): string
     {
         $date = (new \DateTimeImmutable())->format('Ymd');
-        $hex = strtoupper(bin2hex(random_bytes(3)));
+        $hex = strtoupper(bin2hex(random_bytes(self::INVOICE_NUMBER_RANDOM_BYTE_COUNT)));
 
         return 'INV-' . $date . '-' . $hex;
     }
@@ -133,11 +135,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
      */
     private function enrichWithPassDetails(array $row, int $passPurchaseId): array
     {
-        // PassPurchase links to a PassType — try to find the pass type name
-        // The passPurchaseId is stored on OrderItem; we use the PassTypeRepository
-        // to look up the name. Since we only have passPurchaseId, we set a generic name
-        // if we cannot resolve it further.
-        $row['PassTypeName'] = 'Festival Pass';
+        $row['PassTypeName'] = self::DEFAULT_PASS_TYPE_NAME;
 
         return $row;
     }
@@ -193,7 +191,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     }
 
     /**
-     * Generates the PDF, writes it to disk, creates a MediaAsset, and links it to the invoice.
+     * Generates the PDF, stores it, creates a media asset, and links it to the invoice.
      */
     private function generateAndStorePdf(int $orderId, int $invoiceId, string $orderNumber): string
     {
@@ -206,40 +204,12 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
         $documentData = InvoiceMapper::toDocumentData($invoice, $lines, $orderNumber);
 
         $pdfBinary = $this->invoicePdfGenerator->generatePdf($documentData);
-        $fileName = 'Haarlem-Festival-Invoice-' . $invoice->invoiceNumber . '.pdf';
-        $absolutePath = $this->writePdfFile($fileName, $pdfBinary);
-
-        $relativePath = PathResolver::getInvoiceAssetRelativePath($fileName);
-        $assetId = $this->createMediaAsset($relativePath, $fileName, $absolutePath);
+        $fileName = self::INVOICE_PDF_FILE_PREFIX . $invoice->invoiceNumber . '.pdf';
+        $storedPdfFile = $this->pdfAssetStorage->storeInvoicePdfFile($fileName, $pdfBinary);
+        $assetId = $this->pdfAssetStorage->upsertPdfAsset(null, $storedPdfFile, self::INVOICE_PDF_ALT_TEXT);
         $this->invoiceRepository->updatePdfAssetId($invoiceId, $assetId);
 
-        return $absolutePath;
-    }
-
-    private function writePdfFile(string $fileName, string $pdfBinary): string
-    {
-        $directory = PathResolver::getInvoiceAssetPath();
-        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
-            throw new InvoiceGenerationException('Invoice PDF directory could not be created.');
-        }
-
-        $absolutePath = $directory . '/' . $fileName;
-        if (file_put_contents($absolutePath, $pdfBinary) === false) {
-            throw new InvoiceGenerationException('Invoice PDF could not be written to disk.');
-        }
-
-        return $absolutePath;
-    }
-
-    private function createMediaAsset(string $relativePath, string $fileName, string $absolutePath): int
-    {
-        return $this->mediaAssetRepository->create([
-            'FilePath' => $relativePath,
-            'OriginalFileName' => $fileName,
-            'MimeType' => 'application/pdf',
-            'FileSizeBytes' => (int)filesize($absolutePath),
-            'AltText' => 'Invoice PDF',
-        ]);
+        return $storedPdfFile->absolutePath;
     }
 
     private function sendEmail(Order $order, string $invoiceNumber, string $pdfPath): void
