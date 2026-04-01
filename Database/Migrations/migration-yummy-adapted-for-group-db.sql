@@ -4,30 +4,176 @@
 --
 -- This is the single, combined migration file that:
 --   1. Seeds all Yummy! CMS content (Parts A–H, previously separate)
---   2. Migrates Restaurants to be pure CMS events (Part I, was v40)
+--   2. Adds Yummy event/session/CMS data without breaking Story-page schema
 --
 -- Run order:
+--   A1. Restore/preserve Story-page restaurant schema if it was dropped earlier
 --   A2. Add Slug to Event; insert/guard 7 restaurant Event rows
---   B.  Create / migrate Reservation table (EventId replaces RestaurantId)
+--   B.  Create / repair Reservation table on RestaurantId
 --   C.  MediaAsset seed rows
 --   E.  Set Event.FeaturedImageAssetId via direct MediaAsset lookups
 --   F-PRE. Register all CmsItemKey rows
 --   F.  Seed CMS listing page (CmsPage, sections, items)
 --   G.  Seed per-event CMS sections and items (hardcoded known values)
 --   H.  Add ReservationId to ProgramItem
---   I.  Drop Restaurant table and all related columns / tables
+--   I.  Preserve Story-page restaurant schema (no destructive drops)
 --
--- NOTE: Parts A and D (Restaurant column additions / data population) have been
--- removed because the group DB has no Restaurant table. All data is hardcoded.
+-- NOTE: Story-page is still the source of truth for restaurant architecture.
+-- It still uses Restaurant, Event.RestaurantId, Reservation.RestaurantId,
+-- RestaurantCuisine, and RestaurantImage. This migration therefore restores
+-- those tables/columns when needed and must not drop them.
 --
 -- Everything is idempotent: ADD COLUMN IF NOT EXISTS, CREATE TABLE IF NOT EXISTS,
 -- WHERE NOT EXISTS, INSERT IGNORE, DROP TABLE IF EXISTS, DROP COLUMN IF EXISTS.
 -- =============================================================================
 
 -- ═══════════════════════════════════════════════════════════════════════════
+-- PART A1: Restore / preserve Story-page restaurant schema if missing
+--   Needed by HomeService, restaurant CMS CRUD, reservation persistence,
+--   and Program reservation enrichment on Story-page.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE Event
+    ADD COLUMN IF NOT EXISTS RestaurantId INT NULL AFTER ArtistId;
+
+CREATE TABLE IF NOT EXISTS `CuisineType` (
+    `CuisineTypeId` INT(11) NOT NULL AUTO_INCREMENT,
+    `Name`          VARCHAR(60) NOT NULL,
+    PRIMARY KEY (`CuisineTypeId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO CuisineType (CuisineTypeId, Name) VALUES
+    (1, 'Dutch'),
+    (2, 'European'),
+    (3, 'Fish & Seafood'),
+    (4, 'French'),
+    (5, 'Modern'),
+    (6, 'Vegan');
+
+CREATE TABLE IF NOT EXISTS `Restaurant` (
+    `RestaurantId`            INT(11) NOT NULL AUTO_INCREMENT,
+    `Name`                    VARCHAR(120) NOT NULL,
+    `AddressLine`             VARCHAR(200) NOT NULL DEFAULT '',
+    `City`                    VARCHAR(80) NOT NULL DEFAULT 'Haarlem',
+    `Stars`                   INT(11) DEFAULT NULL,
+    `CuisineType`             VARCHAR(160) NOT NULL DEFAULT '',
+    `DescriptionHtml`         TEXT NOT NULL,
+    `ImageAssetId`            INT(11) DEFAULT NULL,
+    `IsActive`                TINYINT(1) NOT NULL DEFAULT 1,
+    `CreatedAtUtc`            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `Phone`                   VARCHAR(50) DEFAULT NULL,
+    `Email`                   VARCHAR(150) DEFAULT NULL,
+    `Website`                 VARCHAR(255) DEFAULT NULL,
+    `AboutText`               TEXT DEFAULT NULL,
+    `ChefName`                VARCHAR(120) DEFAULT NULL,
+    `ChefText`                TEXT DEFAULT NULL,
+    `MenuDescription`         TEXT DEFAULT NULL,
+    `LocationDescription`     TEXT DEFAULT NULL,
+    `MapEmbedUrl`             TEXT DEFAULT NULL,
+    `MichelinStars`           INT(11) DEFAULT NULL,
+    `SeatsPerSession`         INT(11) DEFAULT NULL,
+    `DurationMinutes`         INT(11) DEFAULT NULL,
+    `SpecialRequestsNote`     TEXT DEFAULT NULL,
+    `GalleryImage1AssetId`    INT(11) DEFAULT NULL,
+    `GalleryImage2AssetId`    INT(11) DEFAULT NULL,
+    `GalleryImage3AssetId`    INT(11) DEFAULT NULL,
+    `AboutImageAssetId`       INT(11) DEFAULT NULL,
+    `ChefImageAssetId`        INT(11) DEFAULT NULL,
+    `MenuImage1AssetId`       INT(11) DEFAULT NULL,
+    `MenuImage2AssetId`       INT(11) DEFAULT NULL,
+    `ReservationImageAssetId` INT(11) DEFAULT NULL,
+    PRIMARY KEY (`RestaurantId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO Restaurant (
+    RestaurantId, Name, AddressLine, City, Stars, CuisineType, DescriptionHtml,
+    ImageAssetId, IsActive, CreatedAtUtc, Phone, Email, Website, AboutText,
+    ChefName, ChefText, MenuDescription, LocationDescription, MapEmbedUrl,
+    MichelinStars, SeatsPerSession, DurationMinutes, SpecialRequestsNote,
+    GalleryImage1AssetId, GalleryImage2AssetId, GalleryImage3AssetId,
+    AboutImageAssetId, ChefImageAssetId, MenuImage1AssetId, MenuImage2AssetId,
+    ReservationImageAssetId
+) VALUES
+    (1, 'Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem', 4, 'French, fish and seafood, European', 'Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.', 76, 1, '2026-02-06 15:30:32', '+31 (0)23 123 4567', 'info@ratatouille.nl', 'ratatouillefoodandwine.nl', NULL, 'Jozua Jaring', NULL, 'For the Yummy! festival, guests enjoy a set menu specially created by Ratatouille.', 'Ratatouille is located by the river Spaarne, right in the center of Haarlem.', 'https://maps.google.com/maps?q=Spaarne+96,+2011+CL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 1, 35, 120, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 82, 83, 84, 85, 86, 87, 88, 89),
+    (2, 'Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem', 3, 'Dutch, fish and seafood, European', 'A cozy city bistro focused on seafood and comforting dishes in a lively central setting.', 81, 1, '2026-02-06 15:30:32', '+31 023 532 1699', 'info@toujours.nl', 'restauranttoujours.nl', NULL, 'Georgiana Viou', NULL, 'Toujours focuses on fresh seafood, Dutch ingredients, and European bistro-style cooking.', 'Toujours is located at Oude Groenmarkt 10-12 in the center of Haarlem.', 'https://maps.google.com/maps?q=Oude+Groenmarkt+10,+2011+HL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 0, 48, 90, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 90, 91, 92, 93, 98, 95, 96, 89),
+    (3, 'Café de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A cozy neighborhood cafe serving honest food and classic flavors in a relaxed setting.', 75, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+    (4, 'Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem', 3, 'Dutch, European, Modern', 'A classic grand cafe on Haarlem''s main square, serving familiar European dishes in the heart of the festival buzz.', 80, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+    (5, 'New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem', 3, 'Vegan', 'A casual spot with an international feel, offering familiar dishes and vegetarian options right in the city center.', 79, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+    (6, 'Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem', 4, 'Dutch, French, European', 'A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.', 78, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+    (7, 'Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A modern fine-dining restaurant known for a refined yet welcoming atmosphere.', 77, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+CREATE TABLE IF NOT EXISTS `RestaurantCuisine` (
+    `RestaurantId`  INT(11) NOT NULL,
+    `CuisineTypeId` INT(11) NOT NULL,
+    PRIMARY KEY (`RestaurantId`, `CuisineTypeId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO RestaurantCuisine (RestaurantId, CuisineTypeId) VALUES
+    (2, 1), (3, 1), (4, 1), (6, 1), (7, 1),
+    (1, 2), (2, 2), (3, 2), (4, 2), (6, 2), (7, 2),
+    (1, 3), (2, 3), (3, 3), (7, 3),
+    (1, 4), (6, 4),
+    (4, 5),
+    (5, 6);
+
+CREATE TABLE IF NOT EXISTS `RestaurantImage` (
+    `RestaurantImageId` INT(11) NOT NULL AUTO_INCREMENT,
+    `RestaurantId`      INT(11) NOT NULL,
+    `MediaAssetId`      INT(11) NOT NULL,
+    `ImageType`         VARCHAR(30) NOT NULL,
+    `SortOrder`         INT(11) NOT NULL DEFAULT 0,
+    PRIMARY KEY (`RestaurantImageId`),
+    UNIQUE KEY `UQ_RestaurantImage` (`RestaurantId`, `ImageType`, `SortOrder`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO RestaurantImage (RestaurantImageId, RestaurantId, MediaAssetId, ImageType, SortOrder) VALUES
+    (1, 1, 82, 'gallery', 1),
+    (2, 2, 90, 'gallery', 1),
+    (3, 1, 83, 'gallery', 2),
+    (4, 2, 91, 'gallery', 2),
+    (5, 1, 84, 'gallery', 3),
+    (6, 2, 92, 'gallery', 3),
+    (7, 1, 85, 'about', 1),
+    (8, 2, 93, 'about', 1),
+    (9, 1, 86, 'chef', 1),
+    (10, 2, 98, 'chef', 1),
+    (11, 1, 87, 'menu', 1),
+    (12, 2, 95, 'menu', 1),
+    (13, 1, 88, 'menu', 2),
+    (14, 2, 96, 'menu', 2),
+    (15, 1, 89, 'reservation', 1),
+    (16, 2, 89, 'reservation', 1);
+
+UPDATE Event SET RestaurantId = 3 WHERE EventId = 47 AND EventTypeId = 5;
+UPDATE Event SET RestaurantId = 1 WHERE EventId = 48 AND EventTypeId = 5;
+UPDATE Event SET RestaurantId = 7 WHERE EventId = 49 AND EventTypeId = 5;
+UPDATE Event SET RestaurantId = 6 WHERE EventId = 50 AND EventTypeId = 5;
+UPDATE Event SET RestaurantId = 5 WHERE EventId = 51 AND EventTypeId = 5;
+UPDATE Event SET RestaurantId = 4 WHERE EventId = 52 AND EventTypeId = 5;
+UPDATE Event SET RestaurantId = 2 WHERE EventId = 53 AND EventTypeId = 5;
+
+SET @fk_event_rest = (
+    SELECT CONSTRAINT_NAME
+    FROM information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'Event'
+      AND COLUMN_NAME  = 'RestaurantId'
+      AND REFERENCED_TABLE_NAME = 'Restaurant'
+    LIMIT 1
+);
+SET @add_event_rest_fk = IF(
+    @fk_event_rest IS NULL,
+    'ALTER TABLE Event ADD CONSTRAINT FK_Event_Restaurant FOREIGN KEY (RestaurantId) REFERENCES Restaurant (RestaurantId)',
+    'SELECT 1'
+);
+PREPARE stmt FROM @add_event_rest_fk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- ═══════════════════════════════════════════════════════════════════════════
 -- PART A2: Event prerequisites (Slug column + 7 restaurant event rows)
---   No Restaurant table dependency — values are hardcoded literals.
---   All 7 rows already exist in the group DB; guards prevent re-insertion.
+--   Restaurant rows are preserved on Story-page; these Event rows remain the
+--   public-facing restaurant pages and reservation session owners.
 -- ═══════════════════════════════════════════════════════════════════════════
 
 ALTER TABLE Event
@@ -78,16 +224,14 @@ WHERE EventTypeId = 5 AND (Slug IS NULL OR Slug = '');
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PART B: Reservation table
---   Fresh installs get the table with EventId from the start.
---   Existing installs (group DB) that already have Reservation with RestaurantId
---   are migrated: EventId is added, backfilled via Event.RestaurantId (which
---   still exists at this point), then RestaurantId is dropped in Part I.
+--   Story-page stores reservations against RestaurantId.
+--   If an earlier Yummy migration created EventId instead, convert it back.
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Fresh-install path: create with EventId directly
+-- Fresh-install path: create with RestaurantId directly
 CREATE TABLE IF NOT EXISTS `Reservation` (
     `ReservationId`   INT UNSIGNED  NOT NULL AUTO_INCREMENT,
-    `EventId`         INT           NOT NULL,
+    `RestaurantId`    INT           NOT NULL,
     `DiningDate`      VARCHAR(20)   NOT NULL COMMENT 'Thursday / Friday / Saturday / Sunday',
     `TimeSlot`        VARCHAR(20)   NOT NULL COMMENT 'e.g. 16:30',
     `AdultsCount`     INT UNSIGNED  NOT NULL DEFAULT 0,
@@ -96,40 +240,38 @@ CREATE TABLE IF NOT EXISTS `Reservation` (
     `TotalFee`        DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT '10 per person reservation deposit',
     `CreatedAt`       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`ReservationId`),
-    INDEX `idx_reservation_event` (`EventId`),
-    CONSTRAINT `FK_Reservation_Event`
-        FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`)
+    INDEX `idx_reservation_restaurant` (`RestaurantId`),
+    CONSTRAINT `FK_Reservation_Restaurant`
+        FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`)
             ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Existing-install path: add EventId if Reservation already exists with RestaurantId
--- (AFTER clause omitted: RestaurantId may not be present on fresh installs)
+-- Existing-install repair path: add RestaurantId if a prior run removed it
 ALTER TABLE Reservation
-    ADD COLUMN IF NOT EXISTS EventId INT NULL;
+    ADD COLUMN IF NOT EXISTS RestaurantId INT NULL;
 
--- Backfill EventId only when RestaurantId exists on Reservation (existing installs).
--- Fresh installs get EventId from the CREATE TABLE above and have no RestaurantId.
-SET @has_res_restaurant_id = (
+-- Backfill RestaurantId when a prior run converted Reservation to EventId
+SET @has_res_event_id = (
     SELECT COUNT(*)
     FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME   = 'Reservation'
-      AND COLUMN_NAME  = 'RestaurantId'
+      AND COLUMN_NAME  = 'EventId'
 );
-SET @backfill_sql = IF(
-    @has_res_restaurant_id > 0,
-    'UPDATE Reservation r JOIN Event e ON e.RestaurantId = r.RestaurantId AND e.EventTypeId = 5 SET r.EventId = e.EventId WHERE r.EventId IS NULL',
+SET @backfill_res_restaurant_sql = IF(
+    @has_res_event_id > 0,
+    'UPDATE Reservation r JOIN Event e ON e.EventId = r.EventId SET r.RestaurantId = e.RestaurantId WHERE r.RestaurantId IS NULL',
     'SELECT 1'
 );
-PREPARE stmt FROM @backfill_sql;
+PREPARE stmt FROM @backfill_res_restaurant_sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- Make EventId NOT NULL
+-- Make RestaurantId authoritative again
 ALTER TABLE Reservation
-    MODIFY COLUMN EventId INT NOT NULL;
+    MODIFY COLUMN RestaurantId INT NOT NULL;
 
--- Add FK_Reservation_Event only if it does not already exist
+-- Remove the EventId FK/column from earlier event-only migrations
 SET @fk_res_event = (
     SELECT CONSTRAINT_NAME
     FROM information_schema.KEY_COLUMN_USAGE
@@ -139,12 +281,33 @@ SET @fk_res_event = (
       AND REFERENCED_TABLE_NAME = 'Event'
     LIMIT 1
 );
-SET @add_res_fk = IF(
-    @fk_res_event IS NULL,
-    'ALTER TABLE Reservation ADD CONSTRAINT FK_Reservation_Event FOREIGN KEY (EventId) REFERENCES Event (EventId) ON DELETE RESTRICT ON UPDATE CASCADE',
+SET @drop_res_event_fk = IF(
+    @fk_res_event IS NOT NULL,
+    CONCAT('ALTER TABLE Reservation DROP FOREIGN KEY `', @fk_res_event, '`'),
     'SELECT 1'
 );
-PREPARE stmt FROM @add_res_fk;
+PREPARE stmt FROM @drop_res_event_fk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+ALTER TABLE Reservation
+    DROP COLUMN IF EXISTS EventId;
+
+SET @fk_res_rest = (
+    SELECT CONSTRAINT_NAME
+    FROM information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'Reservation'
+      AND COLUMN_NAME  = 'RestaurantId'
+      AND REFERENCED_TABLE_NAME = 'Restaurant'
+    LIMIT 1
+);
+SET @add_res_rest_fk = IF(
+    @fk_res_rest IS NULL,
+    'ALTER TABLE Reservation ADD CONSTRAINT FK_Reservation_Restaurant FOREIGN KEY (RestaurantId) REFERENCES Restaurant (RestaurantId) ON DELETE RESTRICT ON UPDATE CASCADE',
+    'SELECT 1'
+);
+PREPARE stmt FROM @add_res_rest_fk;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
@@ -1005,73 +1168,19 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- PART I: Drop Restaurant table and all related columns / tables
---   All data has been extracted into CMS sections above (Parts D–G).
---   Restaurants are now purely identified by Event rows (EventTypeId=5).
+-- PART I: Preserve Story-page restaurant schema
+--   Intentionally no-op.
 --
---   Steps:
---     1. Drop Reservation.RestaurantId FK and column (existing installs only;
---        fresh installs never had this column)
---     2. Drop Event.RestaurantId FK and column
---     3. Drop RestaurantCuisine junction table
---     4. Drop CuisineType table
---     5. Drop RestaurantImage table
---     6. Drop Restaurant table
+--   Story-page still depends on:
+--     - Restaurant
+--     - Event.RestaurantId
+--     - Reservation.RestaurantId
+--     - RestaurantCuisine
+--     - CuisineType
+--     - RestaurantImage
+--
+--   The destructive event-only conversion from Yummy-page must not run here.
 -- ═══════════════════════════════════════════════════════════════════════════
-
--- ─────────────────────────────────────────────────────────────────────────
--- STEP I-1: Drop Reservation.RestaurantId FK and column (if present)
--- ─────────────────────────────────────────────────────────────────────────
-SET @fk_res_rest = (
-    SELECT CONSTRAINT_NAME
-    FROM information_schema.KEY_COLUMN_USAGE
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME   = 'Reservation'
-      AND COLUMN_NAME  = 'RestaurantId'
-      AND REFERENCED_TABLE_NAME IS NOT NULL
-    LIMIT 1
-);
-SET @drop_res_fk = IF(
-    @fk_res_rest IS NOT NULL,
-    CONCAT('ALTER TABLE Reservation DROP FOREIGN KEY `', @fk_res_rest, '`'),
-    'SELECT 1'
-);
-PREPARE stmt FROM @drop_res_fk;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-ALTER TABLE Reservation DROP COLUMN IF EXISTS RestaurantId;
-
--- ─────────────────────────────────────────────────────────────────────────
--- STEP I-2: Drop Event.RestaurantId FK and column
--- ─────────────────────────────────────────────────────────────────────────
-SET @fk_event_rest = (
-    SELECT CONSTRAINT_NAME
-    FROM information_schema.KEY_COLUMN_USAGE
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME   = 'Event'
-      AND COLUMN_NAME  = 'RestaurantId'
-      AND REFERENCED_TABLE_NAME IS NOT NULL
-    LIMIT 1
-);
-SET @drop_event_fk = IF(
-    @fk_event_rest IS NOT NULL,
-    CONCAT('ALTER TABLE Event DROP FOREIGN KEY `', @fk_event_rest, '`'),
-    'SELECT 1'
-);
-PREPARE stmt FROM @drop_event_fk;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-ALTER TABLE Event DROP COLUMN IF EXISTS RestaurantId;
-
--- ─────────────────────────────────────────────────────────────────────────
--- STEP I-3 to I-6: Drop junction, cuisine, image and restaurant tables
--- ─────────────────────────────────────────────────────────────────────────
-DROP TABLE IF EXISTS RestaurantCuisine;
-DROP TABLE IF EXISTS CuisineType;
-DROP TABLE IF EXISTS RestaurantImage;
-DROP TABLE IF EXISTS Restaurant;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PART J: EventSession rows for restaurant events
@@ -1353,4 +1462,4 @@ AND NOT EXISTS (
 );
 
 -- =============================================================================
-SELECT 'Yummy! migration complete — restaurants are now pure CMS events.' AS Status;
+SELECT 'Yummy! migration complete — Story-page restaurant schema preserved.' AS Status;
