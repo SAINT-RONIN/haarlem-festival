@@ -20,7 +20,7 @@ window.initAddToProgramButtons = initAddToProgramButtons;
 
 // Reusable builder for ticket counter rows (single or group)
 function buildTicketCounterRow(initialQuantity) {
-    var quantity = initialQuantity || 1;
+    var quantity = initialQuantity || 0;
 
     var row = document.createElement('div');
     row.className = 'inline-flex items-center gap-2';
@@ -75,9 +75,32 @@ function showCounterWidget(originalBtn) {
     var confirmText = originalBtn.getAttribute('data-confirm-text') || 'Confirm selection';
     var addingText = originalBtn.getAttribute('data-adding-text') || 'Adding...';
     var successText = originalBtn.getAttribute('data-success-text') || 'Added to program';
+    var quantity = isHistoryEvent ? 0 : 1;
 
-    var quantity = 1;
-    var groupTicketQuantity = 1;
+    var groupTicketQuantity = 0;
+
+    // For history events, hide the price display while the widget is visible
+    var historyPriceEl = null;
+    if (isHistoryEvent) {
+        // Look for the price span within the same CTA/price row container
+        var priceRow = container.closest('div.w-full.inline-flex.justify-between.items-center');
+        if (priceRow) {
+            historyPriceEl = priceRow.querySelector('.js-history-price');
+            if (historyPriceEl) {
+                historyPriceEl.style.visibility = 'hidden';
+            }
+        }
+    }
+
+    function cleanupWidget() {
+        if (historyPriceEl) {
+            historyPriceEl.style.visibility = '';
+        }
+        if (widget && widget.parentNode) {
+            widget.remove();
+        }
+        originalBtn.style.display = '';
+    }
 
     originalBtn.style.display = 'none';
 
@@ -89,28 +112,40 @@ function showCounterWidget(originalBtn) {
     var countersWrapper = document.createElement('div');
     countersWrapper.className = 'flex flex-col items-end gap-2';
 
-    // Single tickets section
+    var mainCounter = buildTicketCounterRow(quantity);
+
+    // Single tickets section (history only, label + counter in one row)
     if (isHistoryEvent) {
+        var singleRow = document.createElement('div');
+        singleRow.className = 'inline-flex items-center gap-2 self-end';
+
         var singleLabel = document.createElement('span');
-        singleLabel.className = 'text-xs text-slate-700 font-semibold self-end';
-        singleLabel.textContent = 'Single tickets';
-        countersWrapper.appendChild(singleLabel);
+        singleLabel.className = 'text-xs text-slate-700 font-semibold';
+        singleLabel.textContent = 'Single ticket';
+
+        singleRow.appendChild(singleLabel);
+        singleRow.appendChild(mainCounter.row);
+        countersWrapper.appendChild(singleRow);
+    } else {
+        // Non-history: keep original layout (counter row only)
+        countersWrapper.appendChild(mainCounter.row);
     }
 
-    var mainCounter = buildTicketCounterRow(quantity);
-    countersWrapper.appendChild(mainCounter.row);
-
-    // Group tickets section (history only)
+    // Group tickets section (history only, label + counter in one row)
     var groupCounter = null;
     if (isHistoryEvent) {
-        var groupLabel = document.createElement('span');
-        groupLabel.className = 'text-xs text-slate-700 font-semibold self-end mt-1';
-        groupLabel.textContent = 'Group tickets';
-
         groupCounter = buildTicketCounterRow(groupTicketQuantity);
 
-        countersWrapper.appendChild(groupLabel);
-        countersWrapper.appendChild(groupCounter.row);
+        var groupRow = document.createElement('div');
+        groupRow.className = 'inline-flex items-center gap-2 self-end';
+
+        var groupLabel = document.createElement('span');
+        groupLabel.className = 'text-xs text-slate-700 font-semibold';
+        groupLabel.textContent = 'Group ticket';
+
+        groupRow.appendChild(groupLabel);
+        groupRow.appendChild(groupCounter.row);
+        countersWrapper.appendChild(groupRow);
     }
 
     // Single shared confirm button
@@ -126,7 +161,7 @@ function showCounterWidget(originalBtn) {
     // Single tickets counter wiring
     mainCounter.decreaseBtn.addEventListener('click', function () {
         var current = mainCounter.getQuantity();
-        if (current > 1) {
+        if (current > 1 || (isHistoryEvent && current > 0)) {
             mainCounter.setQuantity(current - 1);
         }
     });
@@ -136,15 +171,15 @@ function showCounterWidget(originalBtn) {
     });
 
     mainCounter.cancelBtn.addEventListener('click', function () {
-        widget.remove();
-        originalBtn.style.display = '';
+        cleanupWidget();
     });
 
     // Group tickets counter wiring
     if (groupCounter) {
         groupCounter.decreaseBtn.addEventListener('click', function () {
+
             var current = groupCounter.getQuantity();
-            if (current > 1) {
+            if (current > 1 || (isHistoryEvent && current > 0)) {
                 groupCounter.setQuantity(current - 1);
             }
         });
@@ -155,7 +190,7 @@ function showCounterWidget(originalBtn) {
 
         groupCounter.cancelBtn.addEventListener('click', function () {
             // Reset group tickets to 1 but keep widget open
-            groupCounter.setQuantity(1);
+            groupCounter.setQuantity(0);
         });
     }
 
@@ -184,13 +219,11 @@ function showCounterWidget(originalBtn) {
                 if (data.success) {
                     showToast(successText);
                 }
-                widget.remove();
-                originalBtn.style.display = '';
+                cleanupWidget();
             })
             .catch(function (err) {
                 console.error('Failed to add to program:', err);
-                widget.remove();
-                originalBtn.style.display = '';
+                cleanupWidget();
             });
     });
 }

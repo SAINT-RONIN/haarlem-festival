@@ -148,7 +148,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                 <div class="w-full inline-flex flex-col justify-start items-start gap-2.5">
                     <div class="w-full h-px bg-gray-200" aria-hidden="true"></div>
                     <div class="w-full inline-flex justify-between items-center">
-                        <span class="text-center text-slate-800 text-base sm:text-lg font-normal font-['Montserrat']">
+                        <span class="text-center text-slate-800 text-base sm:text-lg font-normal font-['Montserrat']<?php if ($isHistoryEvent): ?> js-history-price<?php endif; ?>">
 
                             <?= htmlspecialchars($event->priceDisplay) ?>
                         </span>

@@ -63,7 +63,7 @@ class ProgramController extends BaseController
 
         $eventSessionId = (int)($body['eventSessionId'] ?? 0);
         $quantity = (int)($body['quantity'] ?? 1);
-        $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 1);
+        $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 0);
         $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
         $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $groupTicketQuantity, $donationAmount);
