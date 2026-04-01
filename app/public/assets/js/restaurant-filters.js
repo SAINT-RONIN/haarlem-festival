@@ -1,84 +1,77 @@
 /**
- * Restaurant Filters — AJAX-based server-side filtering.
+ * Restaurant Filters — client-side cuisine filtering.
  *
- * Clicking a cuisine filter fetches the updated restaurant cards HTML from
- * the server and swaps it into the DOM without a full page reload.
- * URL updates via pushState so back/forward and bookmarks work.
- *
- * Follows the same pattern as schedule-filters.js.
+ * Each card has a data-cuisines attribute (lowercase cuisine string).
+ * Clicking a filter button shows only cards whose cuisine matches,
+ * or shows all if "All" is selected. Updates URL via pushState.
  */
 (function () {
     'use strict';
 
-    document.querySelectorAll('[data-restaurant-filters]').forEach(initRestaurantFilter);
-    window.addEventListener('popstate', handlePopState);
+    document.querySelectorAll('[data-restaurant-filters]').forEach(initFilter);
+    window.addEventListener('popstate', applyFromUrl);
 
-    function initRestaurantFilter(filterContainer) {
-        var panel = filterContainer.querySelector('[data-filter-group]');
-        if (!panel) return;
+    // Apply filter from URL on page load
+    applyFromUrl();
 
-        panel.addEventListener('click', function (e) {
+    function initFilter(container) {
+        var group = container.querySelector('[data-filter-group]');
+        if (!group) return;
+
+        group.addEventListener('click', function (e) {
             var btn = e.target.closest('[data-filter-value]');
             if (!btn) return;
 
-            var filterValue = btn.dataset.filterValue;
+            var value = btn.dataset.filterValue;
 
+            // Update URL
             var params = new URLSearchParams(window.location.search);
-            if (filterValue === 'all') {
+            if (value === 'all') {
                 params.delete('cuisine');
             } else {
-                params.set('cuisine', filterValue);
+                params.set('cuisine', value);
             }
+            var qs = params.toString();
+            history.pushState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
 
-            var queryString = params.toString();
-            var newUrl = window.location.pathname + (queryString ? '?' + queryString : '');
-
-            history.pushState({ restaurantFilters: true }, '', newUrl);
-
-            fetchRestaurants(params);
+            applyFilter(value);
         });
     }
 
-    function fetchRestaurants(params) {
-        var section = document.getElementById('restaurants-grid');
-        if (!section) return;
-
-        var queryString = params.toString();
-        var apiUrl = '/api/restaurants' + (queryString ? '?' + queryString : '');
-
-        section.style.opacity = '0.5';
-        section.style.pointerEvents = 'none';
-
-        fetch(apiUrl, { headers: { 'Accept': 'text/html' } })
-            .then(function (response) {
-                if (!response.ok) throw new Error('Filter request failed');
-                return response.text();
-            })
-            .then(function (html) {
-                var temp = document.createElement('div');
-                temp.innerHTML = html;
-                var newSection = temp.querySelector('section') || temp.firstElementChild;
-
-                if (newSection) {
-                    section.parentNode.replaceChild(newSection, section);
-
-                    var newFilter = newSection.querySelector('[data-restaurant-filters]');
-                    if (newFilter) initRestaurantFilter(newFilter);
-
-                    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                        lucide.createIcons();
-                    }
-                }
-            })
-            .catch(function (err) {
-                console.error('Restaurant filter error:', err);
-                section.style.opacity = '1';
-                section.style.pointerEvents = '';
-            });
+    function applyFromUrl() {
+        var cuisine = new URLSearchParams(window.location.search).get('cuisine');
+        applyFilter(cuisine || 'all');
     }
 
-    function handlePopState() {
-        var params = new URLSearchParams(window.location.search);
-        fetchRestaurants(params);
+    function applyFilter(value) {
+        var isAll = !value || value === 'all';
+
+        // Toggle cards
+        document.querySelectorAll('[data-cuisines]').forEach(function (card) {
+            if (isAll || card.dataset.cuisines.indexOf(value) !== -1) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Toggle active button state
+        document.querySelectorAll('[data-filter-value]').forEach(function (btn) {
+            var active = (isAll && btn.dataset.filterValue === 'all') ||
+                         (!isAll && btn.dataset.filterValue === value);
+            btn.setAttribute('aria-checked', active ? 'true' : 'false');
+            if (active) {
+                btn.className = btn.className
+                    .replace('bg-stone-100', 'bg-red')
+                    .replace('text-slate-800', 'text-white');
+                if (btn.className.indexOf('bg-red') === -1) {
+                    btn.className = btn.className.replace('bg-stone-100', '') + ' bg-red';
+                }
+            } else {
+                btn.className = btn.className
+                    .replace('bg-red', 'bg-stone-100')
+                    .replace('text-white', 'text-slate-800');
+            }
+        });
     }
 }());

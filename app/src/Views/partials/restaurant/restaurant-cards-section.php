@@ -129,5 +129,4 @@ $activeFilter = $restaurantCardsSection->activeFilter;
     <?php endif; ?>
 
 </section>
-
-
+<script src="/assets/js/restaurant-filters.js"></script>
