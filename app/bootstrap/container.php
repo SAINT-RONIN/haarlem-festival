@@ -112,6 +112,7 @@ return static function (string $controllerClass): object {
     $userAccountRepository = new UserAccountRepository();
     $passwordResetTokenRepository = new PasswordResetTokenRepository();
     $programRepository = new ProgramRepository();
+    $reservationRepository = new ReservationRepository();
     $orderRepository = new OrderRepository();
     $orderItemRepository = new OrderItemRepository();
     $paymentRepository = new PaymentRepository();
@@ -150,6 +151,7 @@ return static function (string $controllerClass): object {
         $programRepository,
         $eventSessionRepository,
         $eventSessionPriceRepository,
+        $reservationRepository,
     );
 
     // ── Controller wiring ──
@@ -180,7 +182,8 @@ return static function (string $controllerClass): object {
             ),
             new RestaurantReservationService(
                 $eventRepository,
-                new ReservationRepository(),
+                $reservationRepository,
+                $programService,
             ),
             $sessionService,
         ),

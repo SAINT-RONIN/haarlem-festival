@@ -10,6 +10,7 @@ use App\Exceptions\ValidationException;
 use App\Models\Reservation;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\ReservationRepository;
+use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\IRestaurantReservationService;
 
 class RestaurantReservationService implements IRestaurantReservationService
@@ -17,6 +18,7 @@ class RestaurantReservationService implements IRestaurantReservationService
     public function __construct(
         private readonly IEventRepository      $eventRepository,
         private readonly ReservationRepository $reservationRepository,
+        private readonly IProgramService       $programService,
     ) {
     }
 
@@ -25,7 +27,7 @@ class RestaurantReservationService implements IRestaurantReservationService
      * @throws RestaurantEventNotFoundException if the event is not found
      * @throws ValidationException if the submitted data fails validation
      */
-    public function submitReservation(string $slug, array $postData): void
+    public function submitReservation(string $slug, array $postData, string $sessionKey, ?int $userAccountId): void
     {
         $event = $this->eventRepository->findActiveRestaurantBySlug(
             trim(strtolower(rawurldecode($slug)), '-'),
@@ -57,7 +59,7 @@ class RestaurantReservationService implements IRestaurantReservationService
             throw new ValidationException($errors);
         }
 
-        $this->reservationRepository->insert(new Reservation(
+        $reservationId = $this->reservationRepository->insert(new Reservation(
             restaurantId:    $event->restaurantId,
             diningDate:      $date,
             timeSlot:        $timeSlot,
@@ -66,5 +68,7 @@ class RestaurantReservationService implements IRestaurantReservationService
             specialRequests: $specialRequests,
             totalFee:        ($adultsCount + $childrenCount) * RestaurantPageConstants::RESERVATION_FEE,
         ));
+
+        $this->programService->addReservationToProgram($sessionKey, $userAccountId, $reservationId);
     }
 }

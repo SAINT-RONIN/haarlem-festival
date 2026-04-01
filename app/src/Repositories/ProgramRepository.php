@@ -134,6 +134,25 @@ class ProgramRepository implements IProgramRepository
         return $items[0];
     }
 
+    public function addReservationItem(int $programId, int $reservationId): ProgramItem
+    {
+        $stmt = $this->pdo->prepare('
+            INSERT INTO ProgramItem (ProgramId, ReservationId, Quantity, DonationAmount)
+            VALUES (:programId, :reservationId, 1, 0)
+        ');
+
+        $stmt->execute([
+            'programId'     => $programId,
+            'reservationId' => $reservationId,
+        ]);
+
+        $itemId = (int)$this->pdo->lastInsertId();
+
+        $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
+
+        return $items[0];
+    }
+
     public function updateItemQuantity(int $programItemId, int $quantity): void
     {
         $stmt = $this->pdo->prepare('

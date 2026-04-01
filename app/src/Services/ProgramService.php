@@ -16,6 +16,7 @@ use App\Models\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
+use App\Repositories\ReservationRepository;
 use App\Services\Interfaces\IProgramService;
 
 class ProgramService implements IProgramService
@@ -23,9 +24,10 @@ class ProgramService implements IProgramService
     private const VAT_RATE = 0.21;
 
     public function __construct(
-        private readonly IProgramRepository $programRepository,
-        private readonly IEventSessionRepository $sessionRepository,
+        private readonly IProgramRepository          $programRepository,
+        private readonly IEventSessionRepository     $sessionRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
+        private readonly ReservationRepository       $reservationRepository,
     ) {
     }
 
@@ -61,6 +63,13 @@ class ProgramService implements IProgramService
         }
 
         return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $donationAmount);
+    }
+
+    public function addReservationToProgram(string $sessionKey, ?int $userAccountId, int $reservationId): ProgramItem
+    {
+        $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
+
+        return $this->programRepository->addReservationItem($program->programId, $reservationId);
     }
 
     public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void
@@ -201,6 +210,11 @@ class ProgramService implements IProgramService
 
         $enrichedItems = [];
         foreach ($programItems as $item) {
+            if ($item->reservationId !== null) {
+                $enrichedItems[] = $this->buildReservationItemData($item);
+                continue;
+            }
+
             if ($item->eventSessionId === null) {
                 continue;
             }
@@ -212,27 +226,80 @@ class ProgramService implements IProgramService
 
             $prices = $pricesBySession[$item->eventSessionId] ?? [];
             $enrichedItems[] = new ProgramItemData(
-                programItemId: $item->programItemId,
-                eventSessionId: $item->eventSessionId,
-                quantity: $item->quantity,
-                donationAmount: (float)($item->donationAmount ?? '0.00'),
-                eventTitle: $session->eventTitle,
-                venueName: $session->venueName,
-                hallName: $session->hallName,
-                startDateTime: $session->startDateTime->format('Y-m-d H:i:s'),
-                endDateTime: $session->endDateTime?->format('Y-m-d H:i:s'),
-                eventTypeId: $session->eventTypeId,
-                eventTypeName: $session->eventTypeName,
-                eventTypeSlug: $session->eventTypeSlug,
-                languageCode: $session->languageCode,
-                minAge: $session->minAge,
-                maxAge: $session->maxAge,
+                programItemId:    $item->programItemId,
+                eventSessionId:   $item->eventSessionId,
+                quantity:         $item->quantity,
+                donationAmount:   (float)($item->donationAmount ?? '0.00'),
+                eventTitle:       $session->eventTitle,
+                venueName:        $session->venueName,
+                hallName:         $session->hallName,
+                startDateTime:    $session->startDateTime->format('Y-m-d H:i:s'),
+                endDateTime:      $session->endDateTime?->format('Y-m-d H:i:s'),
+                eventTypeId:      $session->eventTypeId,
+                eventTypeName:    $session->eventTypeName,
+                eventTypeSlug:    $session->eventTypeSlug,
+                languageCode:     $session->languageCode,
+                minAge:           $session->minAge,
+                maxAge:           $session->maxAge,
                 isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
-                basePrice: $this->getBasePrice($prices),
+                basePrice:        $this->getBasePrice($prices),
             );
         }
 
         return $enrichedItems;
+    }
+
+    private function buildReservationItemData(ProgramItem $item): ProgramItemData
+    {
+        $reservation = $this->reservationRepository->findWithRestaurant($item->reservationId);
+
+        if ($reservation === null) {
+            // Reservation row deleted — skip gracefully
+            return new ProgramItemData(
+                programItemId:    $item->programItemId,
+                eventSessionId:   null,
+                quantity:         1,
+                donationAmount:   0.0,
+                eventTitle:       'Restaurant Reservation',
+                venueName:        null,
+                hallName:         null,
+                startDateTime:    '',
+                endDateTime:      null,
+                eventTypeId:      \App\Enums\EventTypeId::Restaurant->value,
+                eventTypeName:    'Restaurant',
+                eventTypeSlug:    'yummy',
+                languageCode:     null,
+                minAge:           null,
+                maxAge:           null,
+                isPayWhatYouLike: false,
+                basePrice:        0.0,
+                reservationId:    $item->reservationId,
+            );
+        }
+
+        return new ProgramItemData(
+            programItemId:    $item->programItemId,
+            eventSessionId:   null,
+            quantity:         1,
+            donationAmount:   0.0,
+            eventTitle:       $reservation->restaurantName ?? 'Restaurant Reservation',
+            venueName:        $reservation->restaurantAddress,
+            hallName:         null,
+            startDateTime:    '',
+            endDateTime:      null,
+            eventTypeId:      \App\Enums\EventTypeId::Restaurant->value,
+            eventTypeName:    'Restaurant',
+            eventTypeSlug:    'yummy',
+            languageCode:     null,
+            minAge:           null,
+            maxAge:           null,
+            isPayWhatYouLike: false,
+            basePrice:        $reservation->totalFee,
+            reservationId:    $reservation->reservationId,
+            diningDate:       $reservation->diningDate,
+            timeSlot:         $reservation->timeSlot,
+            guestCount:       $reservation->adultsCount + $reservation->childrenCount,
+        );
     }
 
     /**

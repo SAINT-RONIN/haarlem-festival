@@ -25,6 +25,8 @@ interface IProgramRepository
 
     public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem;
 
+    public function addReservationItem(int $programId, int $reservationId): ProgramItem;
+
     public function updateItemQuantity(int $programItemId, int $quantity): void;
 
     public function updateItemDonation(int $programItemId, float $donationAmount): void;

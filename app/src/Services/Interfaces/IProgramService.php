@@ -14,6 +14,8 @@ interface IProgramService
 
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem;
 
+    public function addReservationToProgram(string $sessionKey, ?int $userAccountId, int $reservationId): ProgramItem;
+
     public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void;
 
     public function updateDonation(string $sessionKey, ?int $userAccountId, int $programItemId, float $donationAmount): void;

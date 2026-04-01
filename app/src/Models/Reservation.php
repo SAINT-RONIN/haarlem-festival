@@ -10,28 +10,33 @@ namespace App\Models;
 class Reservation
 {
     public function __construct(
-        public readonly int    $restaurantId,
-        public readonly string $diningDate,
-        public readonly string $timeSlot,
-        public readonly int    $adultsCount,
-        public readonly int    $childrenCount,
-        public readonly string $specialRequests,
-        public readonly float  $totalFee,
-        public readonly ?int   $reservationId = null,
+        public readonly int     $restaurantId,
+        public readonly string  $diningDate,
+        public readonly string  $timeSlot,
+        public readonly int     $adultsCount,
+        public readonly int     $childrenCount,
+        public readonly string  $specialRequests,
+        public readonly float   $totalFee,
+        public readonly ?int    $reservationId = null,
+        // Populated by JOIN queries (not a DB column on Reservation)
+        public readonly ?string $restaurantName = null,
+        public readonly ?string $restaurantAddress = null,
     ) {
     }
 
     public static function fromRow(array $row): self
     {
         return new self(
-            restaurantId:    (int)$row['RestaurantId'],
-            diningDate:      (string)$row['DiningDate'],
-            timeSlot:        (string)$row['TimeSlot'],
-            adultsCount:     (int)$row['AdultsCount'],
-            childrenCount:   (int)$row['ChildrenCount'],
-            specialRequests: (string)($row['SpecialRequests'] ?? ''),
-            totalFee:        (float)$row['TotalFee'],
-            reservationId:   isset($row['ReservationId']) ? (int)$row['ReservationId'] : null,
+            restaurantId:      (int)$row['RestaurantId'],
+            diningDate:        (string)$row['DiningDate'],
+            timeSlot:          (string)$row['TimeSlot'],
+            adultsCount:       (int)$row['AdultsCount'],
+            childrenCount:     (int)$row['ChildrenCount'],
+            specialRequests:   (string)($row['SpecialRequests'] ?? ''),
+            totalFee:          (float)$row['TotalFee'],
+            reservationId:     isset($row['ReservationId']) ? (int)$row['ReservationId'] : null,
+            restaurantName:    isset($row['RestaurantName']) ? (string)$row['RestaurantName'] : null,
+            restaurantAddress: isset($row['RestaurantAddress']) ? (string)$row['RestaurantAddress'] : null,
         );
     }
 }

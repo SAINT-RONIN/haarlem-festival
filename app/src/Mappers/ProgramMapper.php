@@ -19,27 +19,37 @@ class ProgramMapper
 {
     public static function toItemViewModel(ProgramItemData $item): ProgramItemViewModel
     {
-        $lineTotal = ($item->basePrice * $item->quantity) + $item->donationAmount;
-        $priceDisplay = ($item->isPayWhatYouLike && $item->basePrice <= 0.0) ? 'Free' : self::formatPrice($item->basePrice);
+        $isReservation = $item->reservationId !== null;
+        $lineTotal     = ($item->basePrice * $item->quantity) + $item->donationAmount;
+        $priceDisplay  = ($item->isPayWhatYouLike && $item->basePrice <= 0.0) ? 'Free' : self::formatPrice($item->basePrice);
+
+        $locationDisplay = $isReservation
+            ? ($item->venueName ?? '')
+            : self::buildLocationDisplay($item->venueName ?? '', $item->hallName);
+
+        $dateTimeDisplay = $isReservation
+            ? self::buildReservationDateTimeDisplay($item->diningDate, $item->timeSlot)
+            : self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime);
 
         return new ProgramItemViewModel(
-            programItemId: $item->programItemId,
-            eventSessionId: $item->eventSessionId,
-            eventTitle: $item->eventTitle,
-            locationDisplay: self::buildLocationDisplay($item->venueName ?? '', $item->hallName),
-            dateTimeDisplay: self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime),
-            priceDisplay: $priceDisplay,
-            rawPrice: $item->basePrice,
-            quantity: $item->quantity,
-            donationAmount: $item->donationAmount,
-            donationDisplay: $item->donationAmount > 0 ? self::formatPrice($item->donationAmount) : '',
-            sumDisplay: self::formatPrice($lineTotal),
-            eventTypeSlug: $item->eventTypeSlug,
-            eventTypeLabel: self::getEventTypeLabel($item->eventTypeId, $item->eventTypeName),
+            programItemId:     $item->programItemId,
+            eventSessionId:    $item->eventSessionId,
+            eventTitle:        $item->eventTitle,
+            locationDisplay:   $locationDisplay,
+            dateTimeDisplay:   $dateTimeDisplay,
+            priceDisplay:      $priceDisplay,
+            rawPrice:          $item->basePrice,
+            quantity:          $item->quantity,
+            donationAmount:    $item->donationAmount,
+            donationDisplay:   $item->donationAmount > 0 ? self::formatPrice($item->donationAmount) : '',
+            sumDisplay:        self::formatPrice($lineTotal),
+            eventTypeSlug:     $item->eventTypeSlug,
+            eventTypeLabel:    self::getEventTypeLabel($item->eventTypeId, $item->eventTypeName),
             eventTypeImageUrl: self::getEventTypeImageUrl($item->eventTypeId),
-            isPayWhatYouLike: $item->isPayWhatYouLike,
-            languageLabel: self::buildLanguageLabel($item->languageCode),
-            ageLabel: AgeLabelFormatter::format($item->minAge, $item->maxAge),
+            isPayWhatYouLike:  $item->isPayWhatYouLike,
+            languageLabel:     self::buildLanguageLabel($item->languageCode),
+            ageLabel:          AgeLabelFormatter::format($item->minAge, $item->maxAge),
+            isReservation:     $isReservation,
         );
     }
 
@@ -173,6 +183,26 @@ class ProgramMapper
         }
 
         return "{$dayAndDate} · {$startTime}";
+    }
+
+    private static function buildReservationDateTimeDisplay(?string $diningDate, ?string $timeSlot): string
+    {
+        if ($diningDate === null || $diningDate === '') {
+            return $timeSlot ?? '';
+        }
+
+        try {
+            $date = new \DateTimeImmutable($diningDate);
+            $dayAndDate = $date->format('l, F j');
+        } catch (\Exception) {
+            $dayAndDate = $diningDate;
+        }
+
+        if ($timeSlot !== null && $timeSlot !== '') {
+            return "{$dayAndDate} · {$timeSlot}";
+        }
+
+        return $dayAndDate;
     }
 
     private static function buildLanguageLabel(?string $languageCode): ?string

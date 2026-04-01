@@ -26,6 +26,7 @@ class ProgramItem
         public readonly ?\DateTimeImmutable $passValidDate,
         public readonly int                 $quantity,
         public readonly ?string             $donationAmount,
+        public readonly ?int                $reservationId = null,
     ) {
     }
 
@@ -36,14 +37,15 @@ class ProgramItem
     public static function fromRow(array $row): self
     {
         return new self(
-            programItemId: (int)$row['ProgramItemId'],
-            programId: (int)$row['ProgramId'],
+            programItemId:  (int)$row['ProgramItemId'],
+            programId:      (int)$row['ProgramId'],
             eventSessionId: isset($row['EventSessionId']) ? (int)$row['EventSessionId'] : null,
-            historyTourId: isset($row['HistoryTourId']) ? (int)$row['HistoryTourId'] : null,
-            passTypeId: isset($row['PassTypeId']) ? (int)$row['PassTypeId'] : null,
-            passValidDate: isset($row['PassValidDate']) ? new \DateTimeImmutable($row['PassValidDate']) : null,
-            quantity: (int)$row['Quantity'],
+            historyTourId:  isset($row['HistoryTourId']) ? (int)$row['HistoryTourId'] : null,
+            passTypeId:     isset($row['PassTypeId']) ? (int)$row['PassTypeId'] : null,
+            passValidDate:  isset($row['PassValidDate']) ? new \DateTimeImmutable($row['PassValidDate']) : null,
+            quantity:       (int)$row['Quantity'],
             donationAmount: $row['DonationAmount'] ?? null,
+            reservationId:  isset($row['ReservationId']) ? (int)$row['ReservationId'] : null,
         );
     }
 
@@ -54,14 +56,15 @@ class ProgramItem
     public function toArray(): array
     {
         return [
-            'ProgramItemId' => $this->programItemId,
-            'ProgramId' => $this->programId,
+            'ProgramItemId'  => $this->programItemId,
+            'ProgramId'      => $this->programId,
             'EventSessionId' => $this->eventSessionId,
-            'HistoryTourId' => $this->historyTourId,
-            'PassTypeId' => $this->passTypeId,
-            'PassValidDate' => $this->passValidDate?->format('Y-m-d'),
-            'Quantity' => $this->quantity,
+            'HistoryTourId'  => $this->historyTourId,
+            'PassTypeId'     => $this->passTypeId,
+            'PassValidDate'  => $this->passValidDate?->format('Y-m-d'),
+            'Quantity'       => $this->quantity,
             'DonationAmount' => $this->donationAmount,
+            'ReservationId'  => $this->reservationId,
         ];
     }
 }

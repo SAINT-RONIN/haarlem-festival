@@ -44,4 +44,24 @@ class ReservationRepository
 
         return (int)$this->pdo->lastInsertId();
     }
+
+    /**
+     * Fetches a reservation by ID, JOINed with the Restaurant table for name/address display.
+     */
+    public function findWithRestaurant(int $reservationId): ?Reservation
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT r.*,
+                   rest.Name        AS RestaurantName,
+                   CONCAT(rest.AddressLine, \', \', rest.City) AS RestaurantAddress
+            FROM Reservation r
+            JOIN Restaurant rest ON rest.RestaurantId = r.RestaurantId
+            WHERE r.ReservationId = :reservationId
+        ');
+
+        $stmt->execute(['reservationId' => $reservationId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row !== false ? Reservation::fromRow($row) : null;
+    }
 }

@@ -80,7 +80,12 @@ class RestaurantController extends BaseController
     public function submitReservation(string $slug): void
     {
         try {
-            $this->restaurantReservationService->submitReservation($slug, $_POST);
+            $this->restaurantReservationService->submitReservation(
+                $slug,
+                $_POST,
+                $this->sessionService->getSessionId(),
+                $this->sessionService->getUserId(),
+            );
             header("Location: /restaurant/{$slug}/reservation?success=1");
             exit;
         } catch (RestaurantEventNotFoundException) {
