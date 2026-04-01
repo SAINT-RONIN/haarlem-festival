@@ -58,4 +58,9 @@ interface IProgramService
      * Returns the CMS content for the "My Program" page.
      */
     public function getProgramMainContent(): ProgramMainContent;
+
+    /**
+     * Adds a restaurant reservation to the program.
+     */
+    public function addReservationToProgram(string $sessionKey, ?int $userAccountId, int $reservationId): ProgramItem;
 }

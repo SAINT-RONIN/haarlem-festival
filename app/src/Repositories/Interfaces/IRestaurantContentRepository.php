@@ -6,6 +6,7 @@ namespace App\Repositories\Interfaces;
 
 use App\Content\RestaurantCardsSectionContent;
 use App\Content\RestaurantDetailSectionContent;
+use App\Content\RestaurantEventCmsData;
 use App\Content\RestaurantInstructionsSectionContent;
 use App\Content\RestaurantIntroSectionContent;
 use App\Content\RestaurantIntroSplit2SectionContent;
@@ -29,4 +30,7 @@ interface IRestaurantContentRepository
 
     /** Fetches the restaurant instructions section content. */
     public function findInstructionsContent(string $pageSlug, string $sectionKey): RestaurantInstructionsSectionContent;
+
+    /** Fetches per-event CMS content for a specific restaurant event. */
+    public function findEventCmsData(string $pageSlug, string $sectionKey): RestaurantEventCmsData;
 }

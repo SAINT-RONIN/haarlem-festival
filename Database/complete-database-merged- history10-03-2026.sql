@@ -1,7 +1,7 @@
 -- phpMyAdmin SQL Dump
 -- version 5.2.3
 -- https://www.phpmyadmin.net/
---
+n--
 -- Host: mysql
 -- Generation Time: Mar 10, 2026 at 11:52 AM
 -- Server version: 12.0.2-MariaDB-ubu2404

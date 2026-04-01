@@ -18,6 +18,10 @@ final class RestaurantPageConstants
     public const SECTION_CARDS = 'restaurant_cards_section';
     public const SECTION_DETAIL = 'detail_section';
 
+    public const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
+    public const RESERVATION_FEE = 10.00;
+    public const VALID_DATES = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
+
     private function __construct()
     {
     }

@@ -31,5 +31,10 @@ final readonly class ProgramItemData
         public ?string $passName = null,
         public ?string $passScope = null,
         public ?string $passValidDate = null,
+        // Restaurant reservation fields
+        public ?int $reservationId = null,
+        public ?string $diningDate = null,
+        public ?string $timeSlot = null,
+        public ?int $guestCount = null,
     ) {}
 }

@@ -46,6 +46,7 @@ use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\OrderHistoryController;
 use App\Controllers\ProgramController;
+use App\Controllers\RestaurantApiController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScannerController;
 use App\Controllers\ScheduleApiController;
@@ -88,7 +89,9 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
 
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
-    $r->addRoute('GET', '/restaurant/{id:\d+}', [RestaurantController::class, 'detail']);
+    $r->addRoute('GET', '/restaurant/{slug:[a-z0-9-]+}', [RestaurantController::class, 'detail']);
+    $r->addRoute('GET', '/restaurant/{slug:[a-z0-9-]+}/reservation', [RestaurantController::class, 'reservationPage']);
+    $r->addRoute('POST', '/restaurant/{slug:[a-z0-9-]+}/reservation', [RestaurantController::class, 'submitReservation']);
 
     // Order History
     $r->addRoute('GET', '/my-orders', [OrderHistoryController::class, 'index']);
@@ -156,6 +159,9 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
 
     // Schedule API
     $r->addRoute('GET', '/api/schedule/{pageSlug:[a-z]+}', [ScheduleApiController::class, 'getScheduleHtml']);
+
+    // Restaurant API
+    $r->addRoute('GET', '/api/restaurants', [RestaurantApiController::class, 'getCardsHtml']);
 
     // CMS Media Routes
     $r->addRoute('GET', '/cms/media', [CmsMediaController::class, 'index']);

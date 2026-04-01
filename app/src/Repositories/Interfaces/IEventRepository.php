@@ -9,6 +9,7 @@ use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
 use App\DTOs\Events\JazzArtistDetailEvent;
+use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Events\StorytellingDetailEvent;
 
 /**
@@ -64,4 +65,21 @@ interface IEventRepository
      * Marks an event as deleted without removing the row (sets IsActive to false).
      */
     public function softDelete(int $eventId): bool;
+
+    /**
+     * Finds an active restaurant event by its URL slug.
+     */
+    public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent;
+
+    /**
+     * Returns all active restaurant-type events.
+     *
+     * @return RestaurantDetailEvent[]
+     */
+    public function findActiveRestaurantEvents(): array;
+
+    /**
+     * Finds the active event linked to a given restaurant.
+     */
+    public function findActiveEventByRestaurantId(int $restaurantId): ?Event;
 }

@@ -10,6 +10,7 @@ use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
 use App\DTOs\Events\JazzArtistDetailEvent;
+use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Events\StorytellingDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
@@ -283,5 +284,49 @@ class EventRepository extends BaseRepository implements IEventRepository
         $this->execute('UPDATE Event SET IsActive = 0 WHERE EventId = :eventId', ['eventId' => $eventId]);
 
         return true;
+    }
+
+    /**
+     * Finds a single active restaurant event by its URL slug.
+     *
+     * @return RestaurantDetailEvent|null Null if no matching active restaurant event exists.
+     */
+    public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent
+    {
+        $row = $this->queryActiveEventBySlug($slug, EventTypeId::Restaurant);
+
+        return $row !== null ? RestaurantDetailEvent::fromRow($row) : null;
+    }
+
+    /**
+     * Returns all active restaurant-type events, ordered by RestaurantId.
+     *
+     * @return RestaurantDetailEvent[]
+     */
+    public function findActiveRestaurantEvents(): array
+    {
+        return $this->fetchAll(
+            'SELECT *
+            FROM Event
+            WHERE EventTypeId = :eventTypeId
+              AND IsActive = 1
+            ORDER BY RestaurantId ASC',
+            ['eventTypeId' => EventTypeId::Restaurant->value],
+            fn(array $row) => RestaurantDetailEvent::fromRow($row),
+        );
+    }
+
+    /**
+     * Finds the active event linked to a given restaurant.
+     *
+     * @return Event|null Null if no active event is linked to this restaurant.
+     */
+    public function findActiveEventByRestaurantId(int $restaurantId): ?Event
+    {
+        return $this->fetchOne(
+            'SELECT * FROM Event WHERE RestaurantId = :restaurantId AND IsActive = 1',
+            ['restaurantId' => $restaurantId],
+            fn(array $row) => Event::fromRow($row),
+        );
     }
 }

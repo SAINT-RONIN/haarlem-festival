@@ -25,6 +25,7 @@ final readonly class ProgramItem
         public ?\DateTimeImmutable $passValidDate,
         public int                 $quantity,
         public ?string             $donationAmount,
+        public ?int                $reservationId = null,
     ) {
     }
 
@@ -43,6 +44,7 @@ final readonly class ProgramItem
             passValidDate: isset($row['PassValidDate']) ? new \DateTimeImmutable($row['PassValidDate']) : null,
             quantity: (int)$row['Quantity'],
             donationAmount: $row['DonationAmount'] ?? null,
+            reservationId: isset($row['ReservationId']) ? (int)$row['ReservationId'] : null,
         );
     }
 
@@ -61,6 +63,7 @@ final readonly class ProgramItem
             'PassValidDate' => $this->passValidDate?->format('Y-m-d'),
             'Quantity' => $this->quantity,
             'DonationAmount' => $this->donationAmount,
+            'ReservationId' => $this->reservationId,
         ];
     }
 }

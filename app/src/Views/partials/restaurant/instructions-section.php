@@ -3,9 +3,16 @@
  * Restaurant Instructions section partial.
  * Shows "How reservations work" with numbered step cards.
  *
+ * Expects a \App\ViewModels\Restaurant\RestaurantPageViewModel as $viewModel
+ * and uses its instructionsSection property.
+ *
  * @var \App\ViewModels\Restaurant\InstructionsSectionData $instructionsSection
  */
 
+use App\ViewModels\Restaurant\InstructionsSectionData;
+use App\ViewModels\Restaurant\InstructionCardData;
+
+/** @var InstructionsSectionData $instructionsSection */
 $title = $instructionsSection->title;
 $cards = $instructionsSection->cards;
 ?>
@@ -20,6 +27,7 @@ $cards = $instructionsSection->cards;
     <div class="self-stretch flex flex-col lg:flex-row justify-center items-stretch gap-6 sm:gap-8 md:gap-10 lg:gap-16 xl:gap-24">
 
         <?php foreach ($cards as $card): ?>
+            <?php /** @var InstructionCardData $card */ ?>
             <?php
             $number = $card->number;
             $cardTitle = $card->title;

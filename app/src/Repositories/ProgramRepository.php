@@ -223,4 +223,31 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
             ['programId' => $programId],
         );
     }
+
+    /**
+     * Adds a reservation to the program cart and returns the newly created item
+     * with server-generated fields populated.
+     *
+     * @throws \RuntimeException If the inserted row cannot be read back.
+     */
+    public function addReservationItem(int $programId, int $reservationId, int $quantity): ProgramItem
+    {
+        $itemId = $this->executeInsert(
+            'INSERT INTO ProgramItem (ProgramId, ReservationId, Quantity)
+            VALUES (:programId, :reservationId, :quantity)',
+            [
+                'programId' => $programId,
+                'reservationId' => $reservationId,
+                'quantity' => $quantity,
+            ],
+        );
+
+        $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
+
+        if ($items === []) {
+            throw new \RuntimeException("Failed to retrieve program item after creation (ID: {$itemId})");
+        }
+
+        return $items[0];
+    }
 }

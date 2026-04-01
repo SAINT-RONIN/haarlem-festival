@@ -33,16 +33,24 @@ final class ProgramMapper
     {
         $lineTotal = self::lineTotal($item);
         $priceDisplay = self::buildPriceDisplay($item);
-        $locationDisplay = $item->passTypeId !== null
-            ? self::buildPassLocationDisplay($item->passScope, $item->passValidDate)
-            : self::buildLocationDisplay($item->venueName ?? '', $item->hallName);
+
+        if ($item->reservationId !== null) {
+            $locationDisplay = $item->venueName ?? '';
+            $dateTimeDisplay = self::buildReservationDateTimeDisplay($item->diningDate, $item->timeSlot, $item->guestCount);
+        } elseif ($item->passTypeId !== null) {
+            $locationDisplay = self::buildPassLocationDisplay($item->passScope, $item->passValidDate);
+            $dateTimeDisplay = '';
+        } else {
+            $locationDisplay = self::buildLocationDisplay($item->venueName ?? '', $item->hallName);
+            $dateTimeDisplay = self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime);
+        }
 
         return new ProgramItemViewModel(
             programItemId: $item->programItemId,
             eventSessionId: $item->eventSessionId ?? 0,
             eventTitle: $item->eventTitle,
             locationDisplay: $locationDisplay,
-            dateTimeDisplay: $item->passTypeId !== null ? '' : self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime),
+            dateTimeDisplay: $dateTimeDisplay,
             priceDisplay: $priceDisplay,
             rawPrice: $item->basePrice,
             quantity: $item->quantity,
@@ -230,6 +238,26 @@ final class ProgramMapper
         }
 
         return "{$dayAndDate} · {$startTime}";
+    }
+
+    /** Builds a date/time/guest display for reservation items. */
+    private static function buildReservationDateTimeDisplay(?string $diningDate, ?string $timeSlot, ?int $guestCount): string
+    {
+        $parts = [];
+
+        if ($diningDate !== null && $diningDate !== '') {
+            $parts[] = $diningDate;
+        }
+
+        if ($timeSlot !== null && $timeSlot !== '') {
+            $parts[] = $timeSlot;
+        }
+
+        if ($guestCount !== null && $guestCount > 0) {
+            $parts[] = $guestCount . ' ' . ($guestCount === 1 ? 'guest' : 'guests');
+        }
+
+        return implode(' · ', $parts);
     }
 
     /** Converts an ISO-style language code (NL, ENG, ZH) into a human-readable label. */

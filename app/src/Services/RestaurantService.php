@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\RestaurantDetailConstants;
 use App\Constants\RestaurantPageConstants;
 use App\Constants\SharedSectionKeys;
 use App\DTOs\Pages\RestaurantDetailData;
+use App\DTOs\Pages\RestaurantListingData;
 use App\DTOs\Pages\RestaurantPageData;
 use App\Repositories\Interfaces\ICuisineTypeRepository;
+use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\IRestaurantContentRepository;
 use App\Repositories\Interfaces\IRestaurantImageRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
@@ -33,6 +37,8 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         private readonly IRestaurantRepository $restaurantRepository,
         private readonly IRestaurantImageRepository $restaurantImageRepository,
         private readonly ICuisineTypeRepository $cuisineTypeRepository,
+        private readonly IEventRepository $eventRepository,
+        private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {
         parent::__construct($globalContentRepo);
     }
@@ -68,6 +74,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     {
         $restaurants = $this->restaurantRepository->findAllActive();
         $cuisinesByRestaurant = $this->buildCuisineMap($restaurants);
+        $listings = $this->buildEventListings();
 
         return new RestaurantPageData(
             heroContent: $this->globalContentRepo->findHeroContent(RestaurantPageConstants::PAGE_SLUG),
@@ -79,6 +86,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             cardsSection: $this->restaurantContentRepo->findCardsContent(RestaurantPageConstants::PAGE_SLUG, RestaurantPageConstants::SECTION_CARDS),
             restaurants: $restaurants,
             cuisinesByRestaurant: $cuisinesByRestaurant,
+            listings: $listings,
         );
     }
 
@@ -139,5 +147,35 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             'timeSlots'  => [],
             'priceCards' => [],
         ];
+    }
+
+    /**
+     * Builds event-based listing data for restaurant cards.
+     *
+     * @return RestaurantListingData[]
+     */
+    private function buildEventListings(): array
+    {
+        $events = $this->eventRepository->findActiveRestaurantEvents();
+        $listings = [];
+
+        foreach ($events as $event) {
+            $cms = $this->restaurantContentRepo->findEventCmsData(
+                RestaurantDetailConstants::PAGE_SLUG,
+                RestaurantDetailConstants::eventSectionKey($event->eventId),
+            );
+
+            $imagePath = $event->featuredImageAssetId !== null
+                ? $this->mediaAssetRepository->findById($event->featuredImageAssetId)?->filePath
+                : null;
+
+            $listings[] = new RestaurantListingData(
+                event: $event,
+                cms: $cms,
+                imagePath: $imagePath,
+            );
+        }
+
+        return $listings;
     }
 }

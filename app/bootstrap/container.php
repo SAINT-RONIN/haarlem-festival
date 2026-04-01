@@ -18,6 +18,7 @@ use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
+use App\Controllers\RestaurantApiController;
 use App\Controllers\ScannerController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
@@ -55,6 +56,7 @@ use App\Repositories\CuisineTypeRepository;
 use App\Repositories\RestaurantImageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\ScannerRepository;
+use App\Repositories\ReservationRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\PassPurchaseRepository;
@@ -89,6 +91,8 @@ use App\Services\JazzArtistDetailService;
 use App\Services\JazzService;
 use App\Services\MediaAssetService;
 use App\Services\ProgramService;
+use App\Services\RestaurantDetailService;
+use App\Services\RestaurantReservationService;
 use App\Services\RestaurantService;
 use App\Schedule\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
@@ -142,6 +146,7 @@ return static function (string $controllerClass): object {
     $resetTokenRepo     = fn() => $make('resetTokenRepo', fn() => new PasswordResetTokenRepository($pdo()));
     $programRepo        = fn() => $make('programRepo', fn() => new ProgramRepository($pdo()));
     $passTypeRepo       = fn() => $make('passTypeRepo', fn() => new PassTypeRepository($pdo()));
+    $reservationRepo    = fn() => $make('reservationRepo', fn() => new ReservationRepository($pdo()));
     $passPurchaseRepo   = fn() => $make('passPurchaseRepo', fn() => new PassPurchaseRepository($pdo()));
     $orderRepo          = fn() => $make('orderRepo', fn() => new OrderRepository($pdo()));
     $orderItemRepo      = fn() => $make('orderItemRepo', fn() => new OrderItemRepository($pdo()));
@@ -208,6 +213,7 @@ return static function (string $controllerClass): object {
         $eventSessionPrice(),
         $checkoutContentRepo(),
         $passTypeRepo(),
+        $reservationRepo(),
     ));
 
     $authService = fn() => $make('authService', fn() => new AuthService(
@@ -244,6 +250,19 @@ return static function (string $controllerClass): object {
                 $restaurantRepo(),
                 new RestaurantImageRepository($pdo()),
                 new CuisineTypeRepository($pdo()),
+                $eventRepo(),
+                $mediaAssetRepo(),
+            ),
+            new RestaurantDetailService(
+                $restaurantContentRepo(),
+                $eventRepo(),
+                $mediaAssetRepo(),
+                $globalContentRepo(),
+            ),
+            new RestaurantReservationService(
+                $eventRepo(),
+                $reservationRepo(),
+                $programService(),
             ),
             $sessionService,
         ),
@@ -411,6 +430,18 @@ return static function (string $controllerClass): object {
         ),
         ScheduleApiController::class => new ScheduleApiController(
             $scheduleService(),
+        ),
+        RestaurantApiController::class => new RestaurantApiController(
+            new RestaurantService(
+                $globalContentRepo(),
+                $restaurantContentRepo(),
+                $restaurantRepo(),
+                new RestaurantImageRepository($pdo()),
+                new CuisineTypeRepository($pdo()),
+                $eventRepo(),
+                $mediaAssetRepo(),
+            ),
+            $sessionService,
         ),
         OrderHistoryController::class => new OrderHistoryController(
             new OrderHistoryRepository($pdo()),

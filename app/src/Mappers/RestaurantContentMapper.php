@@ -6,6 +6,7 @@ namespace App\Mappers;
 
 use App\Content\RestaurantCardsSectionContent;
 use App\Content\RestaurantDetailSectionContent;
+use App\Content\RestaurantEventCmsData;
 use App\Content\RestaurantInstructionsSectionContent;
 use App\Content\RestaurantIntroSectionContent;
 use App\Content\RestaurantIntroSplit2SectionContent;
@@ -94,5 +95,11 @@ final class RestaurantContentMapper
             instructionsCard3Title: $raw['instructions_card_3_title'] ?? null,
             instructionsCard3Text: $raw['instructions_card_3_text'] ?? null,
         );
+    }
+
+    /** Maps raw CMS data to per-event restaurant CMS content. */
+    public static function mapEventCmsData(array $raw): RestaurantEventCmsData
+    {
+        return RestaurantEventCmsData::fromRawArray($raw);
     }
 }

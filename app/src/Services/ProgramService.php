@@ -22,6 +22,7 @@ use App\Repositories\Interfaces\IPassTypeRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
+use App\Repositories\Interfaces\IReservationRepository;
 use App\Services\Interfaces\IProgramService;
 
 /**
@@ -41,6 +42,7 @@ class ProgramService implements IProgramService
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly ICheckoutContentRepository $checkoutContentRepository,
         private readonly IPassTypeRepository $passTypeRepository,
+        private readonly IReservationRepository $reservationRepository,
     ) {
     }
 
@@ -102,6 +104,22 @@ class ProgramService implements IProgramService
             throw $error;
         } catch (\Throwable $error) {
             throw new PassPurchaseException('Failed to add pass to program.', 0, $error);
+        }
+    }
+
+    /**
+     * Adds a restaurant reservation to the program.
+     *
+     * @throws ProgramException When the database write fails
+     */
+    public function addReservationToProgram(string $sessionKey, ?int $userAccountId, int $reservationId): ProgramItem
+    {
+        try {
+            $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
+
+            return $this->programRepository->addReservationItem($program->programId, $reservationId, 1);
+        } catch (\Throwable $error) {
+            throw new ProgramException('Failed to add reservation to program.', 0, $error);
         }
     }
 
@@ -326,9 +344,13 @@ class ProgramService implements IProgramService
 
         $enrichedItems = [];
         foreach ($programItems as $item) {
-            $enriched = $item->passTypeId !== null
-                ? $this->buildPassItemData($item)
-                : $this->buildProgramItemData($item, $sessionsById, $pricesBySession);
+            if ($item->reservationId !== null) {
+                $enriched = $this->buildReservationItemData($item);
+            } elseif ($item->passTypeId !== null) {
+                $enriched = $this->buildPassItemData($item);
+            } else {
+                $enriched = $this->buildProgramItemData($item, $sessionsById, $pricesBySession);
+            }
 
             if ($enriched !== null) {
                 $enrichedItems[] = $enriched;
@@ -510,4 +532,34 @@ class ProgramService implements IProgramService
         return 0.0;
     }
 
+    /** Builds a ProgramItemData for a reservation item by looking up the Reservation. */
+    private function buildReservationItemData(ProgramItem $item): ?ProgramItemData
+    {
+        $reservation = $this->reservationRepository->findWithRestaurant($item->reservationId);
+
+        if ($reservation === null) {
+            return null;
+        }
+
+        $totalGuests = $reservation->adultsCount + $reservation->childrenCount;
+        $displayTitle = $reservation->restaurantName ?? 'Restaurant Reservation';
+
+        return new ProgramItemData(
+            programItemId: $item->programItemId,
+            eventSessionId: null,
+            quantity: $totalGuests,
+            donationAmount: 0.0,
+            eventTitle: $displayTitle,
+            venueName: $reservation->restaurantAddress,
+            startDateTime: $reservation->diningDate,
+            eventTypeId: 0,
+            eventTypeName: 'Restaurant',
+            eventTypeSlug: 'restaurant',
+            basePrice: $reservation->totalFee / max($totalGuests, 1),
+            reservationId: $reservation->reservationId,
+            diningDate: $reservation->diningDate,
+            timeSlot: $reservation->timeSlot,
+            guestCount: $totalGuests,
+        );
+    }
 }

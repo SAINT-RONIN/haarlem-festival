@@ -4,24 +4,30 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\RestaurantEventNotFoundException;
+use App\Exceptions\ValidationException;
 use App\Mappers\RestaurantViewMapper;
+use App\Services\Interfaces\IRestaurantDetailService;
+use App\Services\Interfaces\IRestaurantReservationService;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\ISessionService;
 
 /**
- * Controller for Restaurant page.
+ * Controller for Restaurant pages: listing, detail, and reservation.
  */
 class RestaurantController extends BaseController
 {
     public function __construct(
         private readonly IRestaurantService $restaurantService,
+        private readonly IRestaurantDetailService $restaurantDetailService,
+        private readonly IRestaurantReservationService $restaurantReservationService,
         ISessionService $sessionService,
     ) {
         parent::__construct($sessionService);
     }
 
     /**
-     * Displays the restaurant page.
+     * Displays the restaurant listing page.
      *
      * GET /restaurant
      */
@@ -35,28 +41,49 @@ class RestaurantController extends BaseController
     }
 
     /**
-     * Displays a single restaurant detail page.
+     * Displays a single restaurant detail page by slug.
      *
-     * GET /restaurant/{id}
+     * GET /restaurant/{slug}
      */
-    public function detail(int $id): void
+    public function detail(string $slug): void
     {
-        $this->handlePageRequest(function () use ($id): void {
-            $this->renderRestaurantDetail($id);
+        $this->handlePageRequest(function () use ($slug): void {
+            $data = $this->restaurantDetailService->getDetailPageData($slug);
+            $viewModel = RestaurantViewMapper::toDetailViewModel($data, $this->isLoggedIn());
+            $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
         });
     }
 
-    /** Loads restaurant data, returns 404 if not found, otherwise builds VM and renders detail page. */
-    private function renderRestaurantDetail(int $id): void
+    /**
+     * Displays the reservation form for a restaurant.
+     *
+     * GET /restaurant/{slug}/reservation
+     */
+    public function reservationPage(string $slug): void
     {
-        $data = $this->restaurantService->getRestaurantDetailData($id);
+        $this->handlePageRequest(function () use ($slug): void {
+            $data = $this->restaurantDetailService->getDetailPageData($slug);
+            $viewModel = RestaurantViewMapper::toReservationViewModel($data, $this->isLoggedIn());
+            $this->renderPage(__DIR__ . '/../Views/pages/restaurant-reservation.php', $viewModel);
+        });
+    }
 
-        if ($data === null) {
-            $this->renderNotFoundPage();
-            return;
-        }
+    /**
+     * Processes a reservation form submission.
+     *
+     * POST /restaurant/{slug}/reservation
+     */
+    public function submitReservation(string $slug): void
+    {
+        $this->handleJsonRequest(function () use ($slug): void {
+            $this->restaurantReservationService->submitReservation(
+                $slug,
+                $_POST,
+                $this->getSessionKey(),
+                $this->getUserId(),
+            );
 
-        $viewModel = RestaurantViewMapper::toDetailViewModel($data, $this->isLoggedIn());
-        $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
+            $this->json(['success' => true, 'redirect' => '/my-program']);
+        }, [ValidationException::class]);
     }
 }

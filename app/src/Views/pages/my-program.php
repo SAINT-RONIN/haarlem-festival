@@ -181,6 +181,7 @@ $isLoggedIn = $viewModel->isLoggedIn;
                         <!-- Col 4: Quantity Counter -->
                         <div class="p-2.5 bg-stone-100 rounded-[10px] inline-flex justify-center items-center gap-2.5">
                             <div class="flex-1 flex justify-center items-center gap-2.5">
+                                <?php if (!$item->isReservation): ?>
                                 <button type="button"
                                         class="js-qty-decrease w-4 h-4 bg-slate-800 rounded-[5px] flex items-center justify-center hover:bg-slate-700 transition-colors"
                                         aria-label="Decrease quantity">
@@ -189,9 +190,11 @@ $isLoggedIn = $viewModel->isLoggedIn;
                                         <line x1="5" y1="12" x2="19" y2="12"></line>
                                     </svg>
                                 </button>
+                                <?php endif; ?>
                                 <span class="js-qty-value flex-1 text-center text-neutral-600 text-sm font-normal font-['Inter']">
                                     <?= htmlspecialchars((string)$item->quantity) ?>
                                 </span>
+                                <?php if (!$item->isReservation): ?>
                                 <button type="button"
                                         class="js-qty-increase w-4 h-4 bg-slate-800 rounded-[5px] flex items-center justify-center hover:bg-slate-700 transition-colors"
                                         aria-label="Increase quantity">
@@ -201,6 +204,7 @@ $isLoggedIn = $viewModel->isLoggedIn;
                                         <line x1="5" y1="12" x2="19" y2="12"></line>
                                     </svg>
                                 </button>
+                                <?php endif; ?>
                             </div>
                         </div>
 
@@ -339,6 +343,7 @@ $isLoggedIn = $viewModel->isLoggedIn;
                             <div class="flex flex-col gap-1">
                                 <span class="text-slate-500 text-[10px] font-light font-['Montserrat'] uppercase">Quantity</span>
                                 <div class="p-2 bg-stone-100 rounded-lg flex justify-center items-center gap-2.5">
+                                    <?php if (!$item->isReservation): ?>
                                     <button type="button"
                                             class="js-qty-decrease w-4 h-4 bg-slate-800 rounded-[5px] flex items-center justify-center hover:bg-slate-700 transition-colors"
                                             aria-label="Decrease quantity">
@@ -347,9 +352,11 @@ $isLoggedIn = $viewModel->isLoggedIn;
                                             <line x1="5" y1="12" x2="19" y2="12"></line>
                                         </svg>
                                     </button>
+                                    <?php endif; ?>
                                     <span class="js-qty-value text-neutral-600 text-sm font-normal font-['Inter']">
                                         <?= htmlspecialchars((string)$item->quantity) ?>
                                     </span>
+                                    <?php if (!$item->isReservation): ?>
                                     <button type="button"
                                             class="js-qty-increase w-4 h-4 bg-slate-800 rounded-[5px] flex items-center justify-center hover:bg-slate-700 transition-colors"
                                             aria-label="Increase quantity">
@@ -359,6 +366,7 @@ $isLoggedIn = $viewModel->isLoggedIn;
                                             <line x1="5" y1="12" x2="19" y2="12"></line>
                                         </svg>
                                     </button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
 
