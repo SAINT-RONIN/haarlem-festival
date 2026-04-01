@@ -117,16 +117,16 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      *
      * @throws \RuntimeException If the inserted row cannot be read back.
      */
-    public function addItem(int $programId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): ProgramItem
+    public function addItem(int $programId, int $eventSessionId, int $quantity, int $priceTierId, float $donationAmount): ProgramItem
     {
         $itemId = $this->executeInsert(
-            'INSERT INTO ProgramItem (ProgramId, EventSessionId, Quantity, GroupTicketQuantity, DonationAmount)
-            VALUES (:programId, :eventSessionId, :quantity, :groupTicketQuantity, :donationAmount)',
+            'INSERT INTO ProgramItem (ProgramId, EventSessionId, Quantity, PriceTierId, DonationAmount)
+            VALUES (:programId, :eventSessionId, :quantity, :priceTierId, :donationAmount)',
             [
                 'programId' => $programId,
                 'eventSessionId' => $eventSessionId,
                 'quantity' => $quantity,
-                'groupTicketQuantity' => $groupTicketQuantity,
+                'priceTierId' => $priceTierId,
                 'donationAmount' => $donationAmount,
             ],
         );
@@ -175,8 +175,8 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
     public function updateItemQuantity(int $programItemId, int $quantity, int $groupTicketQuantity): void
     {
         $this->execute(
-            'UPDATE ProgramItem SET Quantity = :quantity, GroupTicketQuantity = :groupTicketQuantity WHERE ProgramItemId = :programItemId',
-            ['quantity' => $quantity, 'programItemId' => $programItemId, 'groupTicketQuantity' => $groupTicketQuantity],
+            'UPDATE ProgramItem SET Quantity = :quantity WHERE ProgramItemId = :programItemId',
+            ['quantity' => $quantity, 'programItemId' => $programItemId],
         );
     }
 

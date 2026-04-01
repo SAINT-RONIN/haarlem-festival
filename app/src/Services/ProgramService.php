@@ -64,7 +64,7 @@ class ProgramService implements IProgramService
      * @throws \InvalidArgumentException When eventSessionId or quantity is invalid
      * @throws ProgramException When the database write fails
      */
-    public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): ProgramItem
+    public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): void
     {
         $this->validateAddInput($eventSessionId, $quantity);
 
@@ -73,10 +73,21 @@ class ProgramService implements IProgramService
             $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
 
             if ($existingItem !== null) {
-                return $this->incrementExistingItem($existingItem, $quantity, $groupTicketQuantity);
+                $this->incrementExistingItem($existingItem, $quantity, $groupTicketQuantity);
             }
 
-            return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $groupTicketQuantity, $donationAmount);
+            $prices = $this->priceRepository->findPricesBySessionIds([$eventSessionId])[$eventSessionId] ?? [];
+            usort($prices, fn($a, $b) => $a->price <=> $b->price);
+            $priceTierId = $prices[0]->priceTierId ?? 0;
+            $groupPriceTierId = array_last($prices)->priceTierId ?? 0;
+
+            if ($quantity > 0) {
+                $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $priceTierId, $donationAmount);
+            }
+
+            if ($groupTicketQuantity > 0) {
+                $this->programRepository->addItem($program->programId, $eventSessionId, $groupTicketQuantity, $groupPriceTierId, $donationAmount);
+            }
         } catch (\InvalidArgumentException $error) {
             throw $error;
         } catch (\Throwable $error) {

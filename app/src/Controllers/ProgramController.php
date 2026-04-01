@@ -66,9 +66,9 @@ class ProgramController extends BaseController
         $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 1);
         $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-        $item = $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $groupTicketQuantity, $donationAmount);
+        $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $groupTicketQuantity, $donationAmount);
 
-        $this->json(['success' => true, 'programItemId' => $item->programItemId]);
+        $this->json(['success' => true]);
     }
 
     /**
