@@ -18,6 +18,7 @@ final readonly class RestaurantCardData
         public int $rating,
         public string $image,
         public ?string $slug = null,
+        public bool $isVegan = false,
     ) {
     }
 }

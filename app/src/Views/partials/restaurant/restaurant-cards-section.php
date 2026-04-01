@@ -108,16 +108,18 @@ $activeFilter = $restaurantCardsSection->activeFilter;
                             </p>
                         <?php endif; ?>
 
+                        <?php if ($card->slug !== null): ?>
                         <div class="flex gap-3 mt-auto pt-4 justify-center w-full">
-                            <a href="/restaurant/<?= $card->slug ?>"
+                            <a href="/restaurant/<?= htmlspecialchars($card->slug) ?>"
                                class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 text-center">
                                 <?= htmlspecialchars($labelAbout) ?>
                             </a>
-                            <a href="/restaurant/<?= $card->slug ?>/reservation"
+                            <a href="/restaurant/<?= htmlspecialchars($card->slug) ?>/reservation"
                                class="px-4 sm:px-5 py-2.5 sm:py-3 bg-red hover:bg-royal-blue rounded-2xl text-white text-lg sm:text-xl font-normal font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 text-center">
                                 <?= htmlspecialchars($labelBook) ?>
                             </a>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>

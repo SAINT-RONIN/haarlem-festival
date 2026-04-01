@@ -348,15 +348,17 @@ final class RestaurantViewMapper
     {
         $cards = [];
         foreach ($listings as $listing) {
+            $cuisine = $listing->cms->cuisineType ?? '';
             $cards[] = new RestaurantCardData(
                 id: $listing->event->eventId,
                 name: $listing->event->title,
-                cuisine: $listing->cms->cuisineType ?? '',
+                cuisine: $cuisine,
                 address: trim(($listing->cms->addressLine ?? '') . ', ' . ($listing->cms->city ?? ''), ', '),
                 description: RestaurantContentParser::cleanDescription($listing->event->shortDescription),
                 rating: (int)($listing->cms->stars ?? 0),
                 image: $listing->imagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
                 slug: $listing->event->slug,
+                isVegan: str_contains(mb_strtolower($cuisine), 'vegan'),
             );
         }
 
