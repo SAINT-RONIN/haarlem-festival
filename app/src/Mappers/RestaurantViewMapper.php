@@ -72,12 +72,12 @@ final class RestaurantViewMapper
             slug: $event->slug,
             name: $event->title,
             cms: self::buildCmsArray($cms, $sharedCms),
-            contactSection: self::buildContactSection($cms, $sharedCms),
+            contactSection: self::buildContactSection($cms, $sharedCms, $data->timeSlots),
             aboutSection: self::buildAboutSection($cms, $sharedCms, $event),
             chefSection: self::buildChefSection($cms, $sharedCms),
             menuSection: self::buildMenuSection($cms, $sharedCms),
             locationSection: self::buildLocationSection($cms, $sharedCms),
-            practicalInfoSection: self::buildPracticalInfoSection($cms, $sharedCms),
+            practicalInfoSection: self::buildPracticalInfoSection($cms, $sharedCms, $data->priceCards),
             gallerySection: self::buildGallerySection($cms, $sharedCms),
             reservationSection: self::buildReservationSection($cms, $sharedCms, $data->timeSlots, $data->priceCards),
         );
@@ -125,87 +125,107 @@ final class RestaurantViewMapper
             'seatsPerSession' => $cms->seatsPerSession,
             'durationMinutes' => $cms->durationMinutes,
             'priceAdult' => $cms->priceAdult,
+            'durationLabel' => $sharedCms->detailLabelDuration,
+            'seatsLabel' => $sharedCms->detailLabelSeats,
             'reservationTitle' => $sharedCms->detailReservationTitle,
             'reservationDescription' => $sharedCms->detailReservationDescription,
         ];
     }
 
-    private static function buildContactSection(RestaurantEventCmsData $cms, RestaurantDetailSectionContent $sharedCms): ContactSectionData
+    /**
+     * @param string[] $timeSlots
+     */
+    private static function buildContactSection(
+        RestaurantEventCmsData $cms,
+        RestaurantDetailSectionContent $sharedCms,
+        array $timeSlots,
+    ): ContactSectionData
     {
         return new ContactSectionData(
-            title: $sharedCms->detailContactTitle ?? 'Contact',
-            addressLabel: $sharedCms->detailLabelAddress ?? 'Address',
-            addressLine: $cms->addressLine ?? '',
-            city: $cms->city ?? '',
-            contactLabel: $sharedCms->detailLabelContact ?? 'Contact',
+            address: self::formatAddress($cms->addressLine, $cms->city),
             phone: $cms->phone ?? '',
             email: $cms->email ?? '',
             website: $cms->website ?? '',
-            openHoursLabel: $sharedCms->detailLabelOpenHours ?? 'Opening Hours',
+            timeSlots: $timeSlots,
+            labelTitle: $sharedCms->detailContactTitle ?? 'Contact',
+            labelAddress: $sharedCms->detailLabelAddress ?? 'Address',
+            labelContact: $sharedCms->detailLabelContact ?? 'Contact',
+            labelOpenHours: $sharedCms->detailLabelOpenHours ?? 'Opening Hours',
         );
     }
 
     private static function buildAboutSection(RestaurantEventCmsData $cms, RestaurantDetailSectionContent $sharedCms, RestaurantDetailEvent $event): AboutSectionData
     {
         return new AboutSectionData(
-            titlePrefix: $sharedCms->detailAboutTitlePrefix ?? 'About',
-            restaurantName: $event->title,
-            bodyHtml: $cms->aboutText ?? $event->longDescriptionHtml,
-            imageUrl: $cms->aboutImage ?? '',
+            text: $cms->aboutText ?? $event->longDescriptionHtml,
+            image: RestaurantContentParser::validateImagePath($cms->aboutImage ?? ''),
+            labelTitlePrefix: $sharedCms->detailAboutTitlePrefix ?? 'About',
         );
     }
 
     private static function buildChefSection(RestaurantEventCmsData $cms, RestaurantDetailSectionContent $sharedCms): ChefSectionData
     {
         return new ChefSectionData(
-            title: $sharedCms->detailChefTitle ?? 'The Chef',
-            chefName: $cms->chefName ?? '',
-            bodyHtml: $cms->chefText ?? '',
-            imageUrl: $cms->chefImage ?? '',
+            name: $cms->chefName ?? '',
+            text: $cms->chefText ?? '',
+            image: RestaurantContentParser::validateImagePath($cms->chefImage ?? ''),
+            labelTitle: $sharedCms->detailChefTitle ?? 'The Chef',
         );
     }
 
     private static function buildMenuSection(RestaurantEventCmsData $cms, RestaurantDetailSectionContent $sharedCms): MenuSectionData
     {
+        $images = array_values(array_map(
+            [RestaurantContentParser::class, 'validateImagePath'],
+            array_filter(
+                [$cms->menuImage1 ?? '', $cms->menuImage2 ?? ''],
+                static fn(string $image): bool => $image !== '',
+            ),
+        ));
+
         return new MenuSectionData(
-            title: $sharedCms->detailMenuTitle ?? 'Menu',
-            cuisineLabel: $sharedCms->detailMenuCuisineLabel ?? 'Cuisine',
-            cuisineType: $cms->cuisineType ?? '',
             description: $cms->menuDescription ?? '',
-            menuImage1: $cms->menuImage1 ?? '',
-            menuImage2: $cms->menuImage2 ?? '',
+            cuisineTags: self::parseCuisineTags($cms->cuisineType),
+            images: $images,
+            labelTitle: $sharedCms->detailMenuTitle ?? 'Menu',
+            labelCuisineType: $sharedCms->detailMenuCuisineLabel ?? 'Cuisine',
         );
     }
 
     private static function buildLocationSection(RestaurantEventCmsData $cms, RestaurantDetailSectionContent $sharedCms): LocationSectionData
     {
         return new LocationSectionData(
-            title: $sharedCms->detailLocationTitle ?? 'Location',
-            addressLabel: $sharedCms->detailLocationAddressLabel ?? 'Address',
-            addressLine: $cms->addressLine ?? '',
-            city: $cms->city ?? '',
             description: $cms->locationDescription ?? '',
+            address: self::formatAddress($cms->addressLine, $cms->city),
             mapEmbedUrl: $cms->mapEmbedUrl ?? '',
-            mapFallbackText: $sharedCms->detailMapFallbackText ?? '',
+            labelTitle: $sharedCms->detailLocationTitle ?? 'Location',
+            labelAddress: $sharedCms->detailLocationAddressLabel ?? 'Address',
+            labelMapFallback: $sharedCms->detailMapFallbackText ?? 'Map coming soon',
         );
     }
 
-    private static function buildPracticalInfoSection(RestaurantEventCmsData $cms, RestaurantDetailSectionContent $sharedCms): PracticalInfoSectionData
+    /**
+     * @param array{label: string, price: string}[] $priceCards
+     */
+    private static function buildPracticalInfoSection(
+        RestaurantEventCmsData $cms,
+        RestaurantDetailSectionContent $sharedCms,
+        array $priceCards,
+    ): PracticalInfoSectionData
     {
         return new PracticalInfoSectionData(
-            title: $sharedCms->detailPracticalTitle ?? 'Practical Information',
-            festivalRatedLabel: $sharedCms->detailLabelFestivalRated ?? 'Festival Rating',
-            festivalRating: $cms->stars ?? '',
-            michelinLabel: $sharedCms->detailLabelMichelin ?? 'Michelin',
-            michelinStars: $cms->michelinStars ?? '',
-            durationLabel: $sharedCms->detailLabelDuration ?? 'Duration',
-            durationMinutes: $cms->durationMinutes ?? '',
-            seatsLabel: $sharedCms->detailLabelSeats ?? 'Seats',
-            seatsPerSession: $cms->seatsPerSession ?? '',
-            priceFoodLabel: $sharedCms->detailLabelPriceFood ?? 'Price',
-            priceAdult: $cms->priceAdult ?? '',
-            specialRequestsLabel: $sharedCms->detailLabelSpecialRequests ?? 'Special Requests',
+            cuisine: $cms->cuisineType ?? '',
+            rating: (int)($cms->stars ?? 0),
+            michelinStars: (int)($cms->michelinStars ?? 0),
             specialRequestsNote: $cms->specialRequestsNote ?? '',
+            priceCards: $priceCards,
+            labelTitle: $sharedCms->detailPracticalTitle ?? 'Practical Information',
+            labelPriceFood: $sharedCms->detailLabelPriceFood ?? 'Price',
+            labelRating: $sharedCms->detailLabelRating ?? 'Restaurant Rating',
+            labelSpecialRequests: $sharedCms->detailLabelSpecialRequests ?? 'Special Requests',
+            labelFestivalRated: $sharedCms->detailLabelFestivalRated ?? 'Festival Rating',
+            labelMichelin: $sharedCms->detailLabelMichelin ?? 'Michelin',
+            labelCuisineType: $sharedCms->detailMenuCuisineLabel ?? 'Cuisine',
         );
     }
 
@@ -218,8 +238,11 @@ final class RestaurantViewMapper
         ], fn(string $url) => $url !== '');
 
         return new GallerySectionData(
-            title: $sharedCms->detailGalleryTitle ?? 'Gallery',
-            images: array_values($images),
+            images: array_values(array_map(
+                [RestaurantContentParser::class, 'validateImagePath'],
+                $images,
+            )),
+            labelTitle: $sharedCms->detailGalleryTitle ?? 'Gallery',
         );
     }
 
@@ -241,10 +264,35 @@ final class RestaurantViewMapper
             buttonText: $sharedCms->detailReservationBtn ?? 'Book Now',
             timeSlots: $timeSlots,
             priceCards: $priceCards,
-            reservationImage: $cms->reservationImage ?? '',
+            reservationImage: RestaurantContentParser::validateImagePath($cms->reservationImage ?? ''),
             reservationFee: RestaurantPageConstants::RESERVATION_FEE,
             validDates: RestaurantPageConstants::VALID_DATES,
         );
+    }
+
+    private static function formatAddress(?string $addressLine, ?string $city): string
+    {
+        $parts = array_filter(
+            [trim((string)$addressLine), trim((string)$city)],
+            static fn(string $part): bool => $part !== '',
+        );
+
+        return implode(', ', $parts);
+    }
+
+    /**
+     * @return string[]
+     */
+    private static function parseCuisineTags(?string $cuisineType): array
+    {
+        if ($cuisineType === null || trim($cuisineType) === '') {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map('trim', explode(',', $cuisineType)),
+            static fn(string $tag): bool => $tag !== '',
+        ));
     }
 
     // ── Listing page section builders ──────────────────────────────────
