@@ -32,6 +32,7 @@ use App\ViewModels\Restaurant\RestaurantCardData;
 use App\ViewModels\Restaurant\RestaurantCardsSectionData;
 use App\ViewModels\Restaurant\RestaurantDetailViewModel;
 use App\ViewModels\Restaurant\RestaurantPageViewModel;
+use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 final class RestaurantMapper
 {
@@ -41,8 +42,11 @@ final class RestaurantMapper
     // Public entry points
     // ─────────────────────────────────────────────────────────────────────────
 
-    public static function toPageViewModel(RestaurantPageData $data, bool $isLoggedIn): RestaurantPageViewModel
-    {
+    public static function toPageViewModel(
+        RestaurantPageData $data,
+        bool $isLoggedIn,
+        ?ScheduleSectionViewModel $scheduleSection = null,
+    ): RestaurantPageViewModel {
         $heroData = CmsMapper::toHeroData($data->heroContent, RestaurantPageConstants::CURRENT_PAGE);
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
@@ -54,7 +58,8 @@ final class RestaurantMapper
             introSplitSection:      self::buildIntroSplitSection($data->introSplitSection),
             introSplit2Section:     self::buildIntroSplit2Section($data->introSplit2Section),
             instructionsSection:    self::buildInstructionsSection($data->instructionsSection),
-            restaurantCardsSection: self::buildRestaurantCardsSection($data->cardsSection, $data->restaurants, $data->activeFilter ?? ''),
+            restaurantCardsSection: self::buildRestaurantCardsSection($data->cardsSection, $data->restaurants),
+            scheduleSection:        $scheduleSection,
         );
     }
 
@@ -82,34 +87,15 @@ final class RestaurantMapper
 
     public static function toReservationViewModel(RestaurantDetailPageData $data, bool $isLoggedIn): RestaurantDetailViewModel
     {
-        $cms   = $data->cms;
-        $event = $data->event;
-
-        $heroSubtitle = str_replace(
-            ['{name}', '{cuisine}'],
-            [$event->title, $cms->cuisineType ?? ''],
-            $data->sharedCms->detailHeroSubtitleTemplate ?? '',
-        );
-
-        $heroData = new HeroData(
-            mainTitle:           $event->title,
-            subtitle:            $heroSubtitle,
-            primaryButtonText:   $data->sharedCms->detailHeroBtnPrimary ?? '',
-            primaryButtonLink:   '#reservation-form',
-            secondaryButtonText: '',
-            secondaryButtonLink: '/restaurant/' . $event->slug,
-            backgroundImageUrl:  $data->featuredImagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
-            currentPage:         RestaurantPageConstants::CURRENT_PAGE,
-        );
-
+        $heroData = self::buildDetailHeroData($data, primaryLink: '#reservation-form', secondaryLink: '/restaurant/' . $data->event->slug);
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return new RestaurantDetailViewModel(
             heroData:      $heroData,
             globalUi:      $globalUi,
             cms:           CmsMapper::toCmsData($heroData, $globalUi),
-            slug:          $event->slug,
-            name:          $event->title,
+            slug:          $data->event->slug,
+            name:          $data->event->title,
             contact:       self::buildContactSection($data),
             about:         self::buildAboutSection($data),
             chef:          self::buildChefSection($data),
@@ -177,7 +163,7 @@ final class RestaurantMapper
         $images      = array_values(array_filter([
             self::validateImagePath($cms->menuImage1 ?? ''),
             self::validateImagePath($cms->menuImage2 ?? ''),
-        ], fn(string $p) => $p !== RestaurantPageConstants::DEFAULT_IMAGE || ($cms->menuImage1 ?? '') !== ''));
+        ], fn(string $p) => $p !== RestaurantPageConstants::DEFAULT_IMAGE));
 
         return new MenuSectionData(
             description:      $cms->menuDescription ?? '',
@@ -338,17 +324,15 @@ final class RestaurantMapper
     private static function buildRestaurantCardsSection(
         RestaurantCardsSectionContent $cms,
         array $restaurants,
-        string $activeFilter = '',
     ): RestaurantCardsSectionData {
         return new RestaurantCardsSectionData(
             title:         $cms->cardsTitle    ?? '',
             subtitle:      $cms->cardsSubtitle ?? '',
             filters:       self::buildCuisineFilters($restaurants),
-            cards:         self::buildCards($restaurants, $activeFilter),
+            cards:         self::buildCards($restaurants),
             labelFilters:  $cms->cardsLabelFilters  ?? 'Filters',
             labelAboutBtn: $cms->cardsLabelAboutBtn ?? 'About it',
             labelBookBtn:  $cms->cardsLabelBookBtn  ?? 'Book table',
-            activeFilter:  $activeFilter,
         );
     }
 
@@ -356,9 +340,12 @@ final class RestaurantMapper
     // Hero builder for detail / reservation pages
     // ─────────────────────────────────────────────────────────────────────────
 
-    private static function buildDetailHeroData(RestaurantDetailPageData $data): HeroData
-    {
-        $sharedCms = $data->sharedCms;
+    private static function buildDetailHeroData(
+        RestaurantDetailPageData $data,
+        string $primaryLink  = '',
+        string $secondaryLink = '',
+    ): HeroData {
+        $sharedCms    = $data->sharedCms;
         $heroSubtitle = str_replace(
             ['{name}', '{cuisine}'],
             [$data->event->title, $data->cms->cuisineType ?? ''],
@@ -369,9 +356,9 @@ final class RestaurantMapper
             mainTitle:           $data->event->title,
             subtitle:            $heroSubtitle,
             primaryButtonText:   $sharedCms->detailHeroBtnPrimary ?? '',
-            primaryButtonLink:   '/restaurant/' . $data->event->slug . '/reservation',
+            primaryButtonLink:   $primaryLink !== '' ? $primaryLink : '/restaurant/' . $data->event->slug . '/reservation',
             secondaryButtonText: '',
-            secondaryButtonLink: '',
+            secondaryButtonLink: $secondaryLink,
             backgroundImageUrl:  $data->featuredImagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
             currentPage:         RestaurantPageConstants::CURRENT_PAGE,
         );
@@ -407,19 +394,8 @@ final class RestaurantMapper
      * @param RestaurantListingData[] $restaurants
      * @return RestaurantCardData[]
      */
-    private static function buildCards(array $restaurants, string $activeFilter = ''): array
+    private static function buildCards(array $restaurants): array
     {
-        if ($activeFilter !== '') {
-            $restaurants = array_values(array_filter(
-                $restaurants,
-                fn(RestaurantListingData $r) => in_array(
-                    $activeFilter,
-                    array_map('trim', explode(',', mb_strtolower($r->cms->cuisineType ?? ''))),
-                    true,
-                ),
-            ));
-        }
-
         return array_map(fn(RestaurantListingData $listing) => new RestaurantCardData(
             slug:        $listing->event->slug,
             name:        $listing->event->title,

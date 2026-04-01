@@ -410,6 +410,23 @@ class EventSessionRepository implements IEventSessionRepository
         return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
+    public function incrementSoldReservedSeats(int $eventId, string $isoDate, string $timeSlot, int $count): void
+    {
+        $stmt = $this->pdo->prepare('
+            UPDATE EventSession
+            SET SoldReservedSeats = SoldReservedSeats + :count
+            WHERE EventId = :eventId
+              AND DATE(StartDateTime) = :isoDate
+              AND TIME(StartDateTime) = :timeSlot
+        ');
+        $stmt->execute([
+            'count'    => $count,
+            'eventId'  => $eventId,
+            'isoDate'  => $isoDate,
+            'timeSlot' => $timeSlot . ':00',
+        ]);
+    }
+
     private function dayNameToNumber(string $dayName): ?int
     {
         $map = [

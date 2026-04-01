@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Models\Restaurant;
-use App\Models\RestaurantUpsertData;
+use App\Models\RestaurantDetailEvent;
 use App\ViewModels\Cms\CmsRestaurantFormViewModel;
 use App\ViewModels\Cms\CmsRestaurantListItemViewModel;
 use App\ViewModels\Cms\CmsRestaurantsListViewModel;
@@ -13,7 +12,7 @@ use App\ViewModels\Cms\CmsRestaurantsListViewModel;
 class CmsRestaurantsMapper
 {
     /**
-     * @param Restaurant[] $restaurants
+     * @param RestaurantDetailEvent[] $restaurants
      */
     public static function toListViewModel(
         array $restaurants,
@@ -35,53 +34,47 @@ class CmsRestaurantsMapper
      * @param array<string, string> $errors
      */
     public static function toFormViewModel(
-        ?int $restaurantId,
-        RestaurantUpsertData $data,
+        ?int $eventId,
+        array $data,
         string $csrfToken,
         string $formAction,
         string $pageTitle,
         array $errors,
     ): CmsRestaurantFormViewModel {
         return new CmsRestaurantFormViewModel(
-            restaurantId:    $restaurantId,
-            name:            $data->name,
-            addressLine:     $data->addressLine,
-            city:            $data->city,
-            stars:           $data->stars,
-            cuisineType:     $data->cuisineType,
-            descriptionHtml: $data->descriptionHtml,
-            imageAssetId:    $data->imageAssetId,
-            isActive:        $data->isActive,
-            csrfToken:       $csrfToken,
-            formAction:      $formAction,
-            pageTitle:       $pageTitle,
-            errors:          $errors,
+            eventId:              $eventId,
+            title:                $data['Title'] ?? '',
+            slug:                 $data['Slug'] ?? '',
+            shortDescription:     $data['ShortDescription'] ?? '',
+            longDescriptionHtml:  $data['LongDescriptionHtml'] ?? '',
+            featuredImageAssetId: isset($data['FeaturedImageAssetId']) ? (int)$data['FeaturedImageAssetId'] : null,
+            isActive:             (bool)($data['IsActive'] ?? true),
+            csrfToken:            $csrfToken,
+            formAction:           $formAction,
+            pageTitle:            $pageTitle,
+            errors:               $errors,
         );
     }
 
-    public static function fromRestaurant(Restaurant $r): RestaurantUpsertData
+    public static function fromEvent(RestaurantDetailEvent $e): array
     {
-        return new RestaurantUpsertData(
-            name:            $r->name,
-            addressLine:     $r->addressLine,
-            city:            $r->city,
-            stars:           $r->stars,
-            cuisineType:     $r->cuisineType,
-            descriptionHtml: $r->descriptionHtml,
-            imageAssetId:    $r->imageAssetId,
-            isActive:        $r->isActive,
-        );
+        return [
+            'Title'               => $e->title,
+            'Slug'                => $e->slug,
+            'ShortDescription'    => $e->shortDescription,
+            'LongDescriptionHtml' => $e->longDescriptionHtml,
+            'FeaturedImageAssetId' => $e->featuredImageAssetId,
+            'IsActive'            => true,
+        ];
     }
 
-    private static function toListItemViewModel(Restaurant $r): CmsRestaurantListItemViewModel
+    private static function toListItemViewModel(RestaurantDetailEvent $e): CmsRestaurantListItemViewModel
     {
         return new CmsRestaurantListItemViewModel(
-            restaurantId: $r->restaurantId,
-            name:         $r->name,
-            cuisineType:  $r->cuisineType,
-            city:         $r->city,
-            isActive:     $r->isActive,
-            createdAt:    $r->createdAtUtc->format('Y-m-d'),
+            eventId:  $e->eventId,
+            title:    $e->title,
+            slug:     $e->slug,
+            isActive: true,
         );
     }
 }

@@ -10,14 +10,12 @@ final readonly class CmsRestaurantFormViewModel
      * @param array<string, string> $errors
      */
     public function __construct(
-        public ?int    $restaurantId,
-        public string  $name,
-        public string  $addressLine,
-        public string  $city,
-        public ?int    $stars,
-        public string  $cuisineType,
-        public string  $descriptionHtml,
-        public ?int    $imageAssetId,
+        public ?int    $eventId,
+        public string  $title,
+        public string  $slug,
+        public string  $shortDescription,
+        public string  $longDescriptionHtml,
+        public ?int    $featuredImageAssetId,
         public bool    $isActive,
         public string  $csrfToken,
         public string  $formAction,

@@ -8,14 +8,7 @@
  * @var \App\ViewModels\Restaurant\RestaurantDetailViewModel $viewModel
  */
 
-// Helper: escapes the image path for safe HTML output.
-$img = function (string $path): string {
-    return htmlspecialchars($path, ENT_QUOTES);
-};
-
-$e = function (string $text): string {
-    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-};
+$e = fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 ?>
 
 <!-- ============================================= -->
@@ -147,7 +140,7 @@ $e = function (string $text): string {
         <h2 class="self-stretch text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']"><?= $e($viewModel->gallery->labelTitle) ?></h2>
         <div class="w-full flex flex-col md:flex-row justify-center items-center gap-8 lg:gap-12">
             <?php foreach ($viewModel->gallery->images as $index => $galleryImage): ?>
-                <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $img($galleryImage) ?>" alt="<?= $e($viewModel->name) ?> gallery photo <?= $index + 1 ?>"/>
+                <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $e($galleryImage) ?>" alt="<?= $e($viewModel->name) ?> gallery photo <?= $index + 1 ?>"/>
             <?php endforeach; ?>
         </div>
     </div>
@@ -168,7 +161,7 @@ $e = function (string $text): string {
             </div>
         </div>
         <div class="flex-1 flex items-center justify-center">
-            <img class="w-full h-auto max-h-[500px] rounded-2xl object-cover" src="<?= $img($viewModel->about->image) ?>" alt="About <?= $e($viewModel->name) ?>"/>
+            <img class="w-full h-auto max-h-[500px] rounded-2xl object-cover" src="<?= $e($viewModel->about->image) ?>" alt="About <?= $e($viewModel->name) ?>"/>
         </div>
     </div>
 </section>
@@ -181,7 +174,7 @@ $e = function (string $text): string {
 <section class="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-5">
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
         <div class="flex-1 order-2 lg:order-1 flex items-center justify-center">
-            <img class="w-full h-auto max-h-[500px] rounded-2xl object-cover" src="<?= $img($viewModel->chef->image) ?>" alt="Chef <?= $e($viewModel->chef->name) ?>"/>
+            <img class="w-full h-auto max-h-[500px] rounded-2xl object-cover" src="<?= $e($viewModel->chef->image) ?>" alt="Chef <?= $e($viewModel->chef->name) ?>"/>
         </div>
         <div class="flex-1 flex flex-col gap-5 order-1 lg:order-2">
             <h2 class="text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat'] leading-tight"><?= $e($viewModel->chef->labelTitle) ?></h2>
@@ -217,7 +210,7 @@ $e = function (string $text): string {
         </div>
         <div class="flex-1 flex items-center justify-center gap-4 sm:gap-6 max-w-[45%]">
             <?php foreach ($viewModel->menu->images as $index => $menuImage): ?>
-                <img class="flex-1 min-w-0 h-48 sm:h-56 lg:h-64 rounded-2xl object-cover" src="<?= $img($menuImage) ?>" alt="Menu dish <?= $index + 1 ?>"/>
+                <img class="flex-1 min-w-0 h-48 sm:h-56 lg:h-64 rounded-2xl object-cover" src="<?= $e($menuImage) ?>" alt="Menu dish <?= $index + 1 ?>"/>
             <?php endforeach; ?>
         </div>
     </div>
@@ -335,7 +328,7 @@ $e = function (string $text): string {
 
         <!-- Reservation Image -->
         <div class="flex-1 flex items-center justify-center">
-            <img class="w-full h-auto max-h-[700px] rounded-2xl object-cover" src="<?= $img($viewModel->reservation->image) ?>" alt="<?= $e($viewModel->name) ?> reservation"/>
+            <img class="w-full h-auto max-h-[700px] rounded-2xl object-cover" src="<?= $e($viewModel->reservation->image) ?>" alt="<?= $e($viewModel->name) ?> reservation"/>
         </div>
     </div>
 </section>

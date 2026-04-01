@@ -16,7 +16,6 @@ use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
-use App\Controllers\RestaurantApiController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
@@ -51,9 +50,6 @@ use App\Repositories\EventGalleryImageRepository;
 use App\Repositories\EventHighlightRepository;
 use App\Repositories\PageGalleryImageRepository;
 use App\Repositories\ReservationRepository;
-use App\Repositories\GlobalContentRepository;
-use App\Repositories\RestaurantContentRepository;
-use App\Repositories\RestaurantRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\PassTypeRepository;
@@ -100,7 +96,6 @@ return static function (string $controllerClass): object {
     $venueRepository = new VenueRepository();
     $priceTierRepository = new PriceTierRepository();
     $scheduleDayConfigRepository = new ScheduleDayConfigRepository();
-    $restaurantRepository = new RestaurantRepository();
     $artistAlbumRepository = new ArtistAlbumRepository();
     $artistTrackRepository = new ArtistTrackRepository();
     $artistLineupMemberRepository = new ArtistLineupMemberRepository();
@@ -122,8 +117,6 @@ return static function (string $controllerClass): object {
 
     $sessionService = new SessionService();
     $cmsContent = new CmsContentRepository($cmsRepository, $mediaAssetRepository);
-    $globalContentRepo = new GlobalContentRepository($cmsContent);
-    $restaurantContentRepo = new RestaurantContentRepository($cmsContent);
     $cmsPageContentService = new CmsPageContentService($cmsContent);
 
     $cmsEventsService = new CmsEventsService(
@@ -161,7 +154,7 @@ return static function (string $controllerClass): object {
             new HomeService(
                 $eventTypeRepository,
                 $venueRepository,
-                $restaurantRepository,
+                $eventRepository,
                 $eventSessionRepository,
                 $cmsContent,
             ),
@@ -169,14 +162,12 @@ return static function (string $controllerClass): object {
         ),
         RestaurantController::class => new RestaurantController(
             new RestaurantService(
-                $globalContentRepo,
-                $restaurantContentRepo,
+                $cmsContent,
                 $eventRepository,
                 $mediaAssetRepository,
             ),
             new RestaurantDetailService(
-                $globalContentRepo,
-                $restaurantContentRepo,
+                $cmsContent,
                 $eventRepository,
                 $mediaAssetRepository,
             ),
@@ -184,8 +175,10 @@ return static function (string $controllerClass): object {
                 $eventRepository,
                 $reservationRepository,
                 $programService,
+                $eventSessionRepository,
             ),
             $sessionService,
+            $scheduleService,
         ),
         StorytellingController::class => new StorytellingController(
             new StorytellingService(
@@ -222,7 +215,6 @@ return static function (string $controllerClass): object {
             $cmsEventsService,
             $sessionService,
             new CmsArtistsService(new ArtistRepository()),
-            new CmsRestaurantsService($restaurantRepository),
         ),
         AuthController::class => new AuthController(
             new AuthService(
@@ -301,7 +293,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         CmsRestaurantsController::class => new CmsRestaurantsController(
-            new CmsRestaurantsService($restaurantRepository),
+            new CmsRestaurantsService($eventRepository),
             $sessionService,
         ),
         CmsArtistsController::class => new CmsArtistsController(
@@ -310,9 +302,6 @@ return static function (string $controllerClass): object {
         ),
         ScheduleApiController::class => new ScheduleApiController(
             $scheduleService,
-        ),
-        RestaurantApiController::class => new RestaurantApiController(
-            new RestaurantService($globalContentRepo, $restaurantContentRepo, $eventRepository, $mediaAssetRepository),
         ),
         default => new $controllerClass(),
     };

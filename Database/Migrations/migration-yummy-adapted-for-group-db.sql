@@ -2,87 +2,74 @@
 -- migration-yummy-adapted-for-group-db.sql
 -- Adapted Yummy! migration for the group DB (haarlem_festival_db (19).sql).
 --
--- Differences from migration-yummy-complete-v2.sql:
---   • Image path columns (AboutImagePath, ChefImagePath, etc.) are NOT added
---     because the group DB already uses AssetId FK columns on Restaurant
---     (AboutImageAssetId, ChefImageAssetId, GalleryImage1AssetId, etc.)
---   • RestaurantImage table is NOT dropped or recreated — it already exists
---     with the MediaAssetId FK approach and 16 populated rows
---   • Ratatouille / Toujours UPDATE only sets the three missing columns
---     (TimeSlots, PriceAdult, PriceChild); all other text content is already
---     present in the group DB
---   • Per-event CmsItem image rows in Part G use a MediaAsset JOIN instead of
---     r.AboutImagePath (which does not exist in the group DB)
---   • Everything else is idempotent: ADD COLUMN IF NOT EXISTS, CREATE TABLE IF
---     NOT EXISTS, WHERE NOT EXISTS, INSERT IGNORE
+-- This is the single, combined migration file that:
+--   1. Seeds all Yummy! CMS content (Parts A–H, previously separate)
+--   2. Migrates Restaurants to be pure CMS events (Part I, was v40)
+--
+-- Run order:
+--   A2. Add Slug to Event; insert/guard 7 restaurant Event rows
+--   B.  Create / migrate Reservation table (EventId replaces RestaurantId)
+--   C.  MediaAsset seed rows
+--   E.  Set Event.FeaturedImageAssetId via direct MediaAsset lookups
+--   F-PRE. Register all CmsItemKey rows
+--   F.  Seed CMS listing page (CmsPage, sections, items)
+--   G.  Seed per-event CMS sections and items (hardcoded known values)
+--   H.  Add ReservationId to ProgramItem
+--   I.  Drop Restaurant table and all related columns / tables
+--
+-- NOTE: Parts A and D (Restaurant column additions / data population) have been
+-- removed because the group DB has no Restaurant table. All data is hardcoded.
+--
+-- Everything is idempotent: ADD COLUMN IF NOT EXISTS, CREATE TABLE IF NOT EXISTS,
+-- WHERE NOT EXISTS, INSERT IGNORE, DROP TABLE IF EXISTS, DROP COLUMN IF EXISTS.
 -- =============================================================================
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- PART A: Restaurant column additions
---   Detail columns (Phone … SpecialRequestsNote) already exist → skipped.
---   TimeSlots / PriceAdult / PriceChild are new.
--- ═══════════════════════════════════════════════════════════════════════════
-
-ALTER TABLE Restaurant
-    ADD COLUMN IF NOT EXISTS Phone                VARCHAR(50)   NULL AFTER DescriptionHtml,
-    ADD COLUMN IF NOT EXISTS Email                VARCHAR(150)  NULL AFTER Phone,
-    ADD COLUMN IF NOT EXISTS Website              VARCHAR(255)  NULL AFTER Email,
-    ADD COLUMN IF NOT EXISTS AboutText            TEXT          NULL AFTER Website,
-    ADD COLUMN IF NOT EXISTS ChefName             VARCHAR(150)  NULL AFTER AboutText,
-    ADD COLUMN IF NOT EXISTS ChefText             TEXT          NULL AFTER ChefName,
-    ADD COLUMN IF NOT EXISTS MenuDescription      TEXT          NULL AFTER ChefText,
-    ADD COLUMN IF NOT EXISTS LocationDescription  TEXT          NULL AFTER MenuDescription,
-    ADD COLUMN IF NOT EXISTS MapEmbedUrl          VARCHAR(1024) NULL AFTER LocationDescription,
-    ADD COLUMN IF NOT EXISTS MichelinStars        INT           NULL AFTER MapEmbedUrl,
-    ADD COLUMN IF NOT EXISTS SeatsPerSession      INT           NULL AFTER MichelinStars,
-    ADD COLUMN IF NOT EXISTS DurationMinutes      INT           NULL AFTER SeatsPerSession,
-    ADD COLUMN IF NOT EXISTS SpecialRequestsNote  VARCHAR(500)  NULL AFTER DurationMinutes,
-    ADD COLUMN IF NOT EXISTS TimeSlots            TEXT          NULL AFTER SpecialRequestsNote,
-    ADD COLUMN IF NOT EXISTS PriceAdult           DECIMAL(10,2) NULL AFTER TimeSlots,
-    ADD COLUMN IF NOT EXISTS PriceChild           DECIMAL(10,2) NULL AFTER PriceAdult;
-
--- ═══════════════════════════════════════════════════════════════════════════
 -- PART A2: Event prerequisites (Slug column + 7 restaurant event rows)
+--   No Restaurant table dependency — values are hardcoded literals.
 --   All 7 rows already exist in the group DB; guards prevent re-insertion.
 -- ═══════════════════════════════════════════════════════════════════════════
 
 ALTER TABLE Event
-    ADD COLUMN IF NOT EXISTS Slug VARCHAR(180) NULL AFTER Title;
+    ADD COLUMN IF NOT EXISTS Slug         VARCHAR(180) NULL AFTER Title,
+    ADD COLUMN IF NOT EXISTS DisplayOrder INT          NULL AFTER Slug;
 
-INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
-SELECT 47, 5, 'Café de Roemer - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
-FROM Restaurant r WHERE r.Name = 'Café de Roemer'
-AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 47);
+-- Display order for restaurant cards (1 = first)
+UPDATE Event SET DisplayOrder = 1 WHERE EventId = 48 AND EventTypeId = 5; -- Ratatouille
+UPDATE Event SET DisplayOrder = 2 WHERE EventId = 53 AND EventTypeId = 5; -- Urban Frenchy Bistro Toujours
+UPDATE Event SET DisplayOrder = 3 WHERE EventId = 47 AND EventTypeId = 5; -- Café de Roemer
+UPDATE Event SET DisplayOrder = 4 WHERE EventId = 52 AND EventTypeId = 5; -- Grand Cafe Brinkman
+UPDATE Event SET DisplayOrder = 5 WHERE EventId = 51 AND EventTypeId = 5; -- New Vegas
+UPDATE Event SET DisplayOrder = 6 WHERE EventId = 50 AND EventTypeId = 5; -- Restaurant Fris
+UPDATE Event SET DisplayOrder = 7 WHERE EventId = 49 AND EventTypeId = 5; -- Restaurant ML
 
-INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
-SELECT 48, 5, 'Ratatouille - Festival Dinner', 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
-FROM Restaurant r WHERE r.Name = 'Ratatouille'
-AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 48);
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, IsActive, CreatedAtUtc)
+SELECT 47, 5, 'Café de Roemer - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 1, '2026-02-06 15:30:32'
+WHERE NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 47);
 
-INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
-SELECT 49, 5, 'Restaurant ML - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
-FROM Restaurant r WHERE r.Name = 'Restaurant ML'
-AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 49);
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, IsActive, CreatedAtUtc)
+SELECT 48, 5, 'Ratatouille - Festival Dinner', 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 1, '2026-02-06 15:30:32'
+WHERE NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 48);
 
-INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
-SELECT 50, 5, 'Restaurant Fris - Festival Dinner', 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
-FROM Restaurant r WHERE r.Name = 'Restaurant Fris'
-AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 50);
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, IsActive, CreatedAtUtc)
+SELECT 49, 5, 'Restaurant ML - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 1, '2026-02-06 15:30:32'
+WHERE NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 49);
 
-INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
-SELECT 51, 5, 'New Vegas - Festival Dinner', 'Vegan cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
-FROM Restaurant r WHERE r.Name = 'New Vegas'
-AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 51);
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, IsActive, CreatedAtUtc)
+SELECT 50, 5, 'Restaurant Fris - Festival Dinner', 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 1, '2026-02-06 15:30:32'
+WHERE NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 50);
 
-INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
-SELECT 52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
-FROM Restaurant r WHERE r.Name = 'Grand Cafe Brinkman'
-AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 52);
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, IsActive, CreatedAtUtc)
+SELECT 51, 5, 'New Vegas - Festival Dinner', 'Vegan cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 1, '2026-02-06 15:30:32'
+WHERE NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 51);
 
-INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, RestaurantId, IsActive, CreatedAtUtc)
-SELECT 53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', r.RestaurantId, 1, '2026-02-06 15:30:32'
-FROM Restaurant r WHERE r.Name = 'Urban Frenchy Bistro Toujours'
-AND NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 53);
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, IsActive, CreatedAtUtc)
+SELECT 52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 1, '2026-02-06 15:30:32'
+WHERE NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 52);
+
+INSERT INTO Event (EventId, EventTypeId, Title, ShortDescription, LongDescriptionHtml, IsActive, CreatedAtUtc)
+SELECT 53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 1, '2026-02-06 15:30:32'
+WHERE NOT EXISTS (SELECT 1 FROM Event WHERE EventId = 53);
 
 -- Backfill Slug for any restaurant event that does not have one yet
 UPDATE Event
@@ -91,11 +78,16 @@ WHERE EventTypeId = 5 AND (Slug IS NULL OR Slug = '');
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PART B: Reservation table
+--   Fresh installs get the table with EventId from the start.
+--   Existing installs (group DB) that already have Reservation with RestaurantId
+--   are migrated: EventId is added, backfilled via Event.RestaurantId (which
+--   still exists at this point), then RestaurantId is dropped in Part I.
 -- ═══════════════════════════════════════════════════════════════════════════
 
+-- Fresh-install path: create with EventId directly
 CREATE TABLE IF NOT EXISTS `Reservation` (
     `ReservationId`   INT UNSIGNED  NOT NULL AUTO_INCREMENT,
-    `RestaurantId`    INT           NOT NULL,
+    `EventId`         INT           NOT NULL,
     `DiningDate`      VARCHAR(20)   NOT NULL COMMENT 'Thursday / Friday / Saturday / Sunday',
     `TimeSlot`        VARCHAR(20)   NOT NULL COMMENT 'e.g. 16:30',
     `AdultsCount`     INT UNSIGNED  NOT NULL DEFAULT 0,
@@ -104,11 +96,57 @@ CREATE TABLE IF NOT EXISTS `Reservation` (
     `TotalFee`        DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT '10 per person reservation deposit',
     `CreatedAt`       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`ReservationId`),
-    INDEX `idx_reservation_restaurant` (`RestaurantId`),
-    CONSTRAINT `FK_Reservation_Restaurant`
-        FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`)
-            ON DELETE CASCADE
+    INDEX `idx_reservation_event` (`EventId`),
+    CONSTRAINT `FK_Reservation_Event`
+        FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`)
+            ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Existing-install path: add EventId if Reservation already exists with RestaurantId
+-- (AFTER clause omitted: RestaurantId may not be present on fresh installs)
+ALTER TABLE Reservation
+    ADD COLUMN IF NOT EXISTS EventId INT NULL;
+
+-- Backfill EventId only when RestaurantId exists on Reservation (existing installs).
+-- Fresh installs get EventId from the CREATE TABLE above and have no RestaurantId.
+SET @has_res_restaurant_id = (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'Reservation'
+      AND COLUMN_NAME  = 'RestaurantId'
+);
+SET @backfill_sql = IF(
+    @has_res_restaurant_id > 0,
+    'UPDATE Reservation r JOIN Event e ON e.RestaurantId = r.RestaurantId AND e.EventTypeId = 5 SET r.EventId = e.EventId WHERE r.EventId IS NULL',
+    'SELECT 1'
+);
+PREPARE stmt FROM @backfill_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Make EventId NOT NULL
+ALTER TABLE Reservation
+    MODIFY COLUMN EventId INT NOT NULL;
+
+-- Add FK_Reservation_Event only if it does not already exist
+SET @fk_res_event = (
+    SELECT CONSTRAINT_NAME
+    FROM information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'Reservation'
+      AND COLUMN_NAME  = 'EventId'
+      AND REFERENCED_TABLE_NAME = 'Event'
+    LIMIT 1
+);
+SET @add_res_fk = IF(
+    @fk_res_event IS NULL,
+    'ALTER TABLE Reservation ADD CONSTRAINT FK_Reservation_Event FOREIGN KEY (EventId) REFERENCES Event (EventId) ON DELETE RESTRICT ON UPDATE CASCADE',
+    'SELECT 1'
+);
+PREPARE stmt FROM @add_res_fk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PART C: MediaAsset entries (all already present in group DB; guards ensure
@@ -204,72 +242,38 @@ SELECT '/assets/Image/restaurants/toujours-gallery-3.png', 'toujours-gallery-3.p
 WHERE NOT EXISTS (SELECT 1 FROM MediaAsset WHERE FilePath = '/assets/Image/restaurants/toujours-gallery-3.png');
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- PART D: Restaurant data
+-- PART E: Event.FeaturedImageAssetId — direct MediaAsset lookups
+--   No Restaurant table. Each event is updated directly by its known image path.
+--   ShortDescription was already set in the Part A2 INSERT literals above.
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Card image links (already set in group DB; guard prevents overwrite)
-UPDATE Restaurant r JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-CafeDeRoemer-card.png'
-SET r.ImageAssetId = ma.MediaAssetId WHERE r.Name = 'Café de Roemer' AND r.ImageAssetId IS NULL;
+-- EventId 47: Café de Roemer
+UPDATE Event e JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-CafeDeRoemer-card.png'
+SET e.FeaturedImageAssetId = ma.MediaAssetId WHERE e.EventId = 47 AND e.FeaturedImageAssetId IS NULL;
 
-UPDATE Restaurant r JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-Ratatouille-card.png'
-SET r.ImageAssetId = ma.MediaAssetId WHERE r.Name = 'Ratatouille' AND r.ImageAssetId IS NULL;
+-- EventId 48: Ratatouille
+UPDATE Event e JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-Ratatouille-card.png'
+SET e.FeaturedImageAssetId = ma.MediaAssetId WHERE e.EventId = 48 AND e.FeaturedImageAssetId IS NULL;
 
-UPDATE Restaurant r JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-RestaurantML-card.png'
-SET r.ImageAssetId = ma.MediaAssetId WHERE r.Name = 'Restaurant ML' AND r.ImageAssetId IS NULL;
+-- EventId 49: Restaurant ML
+UPDATE Event e JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-RestaurantML-card.png'
+SET e.FeaturedImageAssetId = ma.MediaAssetId WHERE e.EventId = 49 AND e.FeaturedImageAssetId IS NULL;
 
-UPDATE Restaurant r JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-RestaurantFris-card.png'
-SET r.ImageAssetId = ma.MediaAssetId WHERE r.Name = 'Restaurant Fris' AND r.ImageAssetId IS NULL;
+-- EventId 50: Restaurant Fris
+UPDATE Event e JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-RestaurantFris-card.png'
+SET e.FeaturedImageAssetId = ma.MediaAssetId WHERE e.EventId = 50 AND e.FeaturedImageAssetId IS NULL;
 
-UPDATE Restaurant r JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-NewVegas-card.jpg'
-SET r.ImageAssetId = ma.MediaAssetId WHERE r.Name = 'New Vegas' AND r.ImageAssetId IS NULL;
+-- EventId 51: New Vegas
+UPDATE Event e JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-NewVegas-card.jpg'
+SET e.FeaturedImageAssetId = ma.MediaAssetId WHERE e.EventId = 51 AND e.FeaturedImageAssetId IS NULL;
 
-UPDATE Restaurant r JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-GrandCafeBrinkman-card.png'
-SET r.ImageAssetId = ma.MediaAssetId WHERE r.Name = 'Grand Cafe Brinkman' AND r.ImageAssetId IS NULL;
+-- EventId 52: Grand Cafe Brinkman
+UPDATE Event e JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-GrandCafeBrinkman-card.png'
+SET e.FeaturedImageAssetId = ma.MediaAssetId WHERE e.EventId = 52 AND e.FeaturedImageAssetId IS NULL;
 
-UPDATE Restaurant r JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-UrbanFrenchyBistroToujours-card.png'
-SET r.ImageAssetId = ma.MediaAssetId WHERE r.Name = 'Urban Frenchy Bistro Toujours' AND r.ImageAssetId IS NULL;
-
--- TimeSlots / PriceAdult / PriceChild for Ratatouille
--- (all other text content already present in group DB)
-UPDATE Restaurant SET
-    TimeSlots  = '17:00, 19:15, 21:30',
-    PriceAdult = 45.00,
-    PriceChild = 22.50
-WHERE Name = 'Ratatouille';
-
--- TimeSlots / PriceAdult / PriceChild for Toujours
-UPDATE Restaurant SET
-    TimeSlots  = '17:30, 19:15, 21:00',
-    PriceAdult = 45.00,
-    PriceChild = 22.50
-WHERE Name = 'Urban Frenchy Bistro Toujours';
-
--- Default time slots and prices for all other active restaurants
-UPDATE Restaurant SET TimeSlots = '16:30, 18:30, 20:30'
-WHERE IsActive = 1 AND (TimeSlots IS NULL OR TimeSlots = '');
-
-UPDATE Restaurant SET PriceAdult = 45.00, PriceChild = 22.50
-WHERE IsActive = 1 AND PriceAdult IS NULL;
-
--- ═══════════════════════════════════════════════════════════════════════════
--- PART E: Event updates
--- ═══════════════════════════════════════════════════════════════════════════
-
--- Copy card image from Restaurant to Event.FeaturedImageAssetId
-UPDATE Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-SET e.FeaturedImageAssetId = r.ImageAssetId
-WHERE e.EventTypeId = 5
-  AND e.FeaturedImageAssetId IS NULL
-  AND r.ImageAssetId IS NOT NULL;
-
--- Populate ShortDescription from Restaurant.DescriptionHtml (strips HTML tags)
-UPDATE Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-SET e.ShortDescription = TRIM(REGEXP_REPLACE(r.DescriptionHtml, '<[^>]+>', ''))
-WHERE e.EventTypeId = 5
-  AND r.DescriptionHtml IS NOT NULL
-  AND r.DescriptionHtml <> '';
+-- EventId 53: Urban Frenchy Bistro Toujours
+UPDATE Event e JOIN MediaAsset ma ON ma.FilePath = '/assets/Image/restaurants/Restaurant-UrbanFrenchyBistroToujours-card.png'
+SET e.FeaturedImageAssetId = ma.MediaAssetId WHERE e.EventId = 53 AND e.FeaturedImageAssetId IS NULL;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PART F-PRE: Register ALL CmsItemKey entries used in Parts F and G
@@ -807,7 +811,10 @@ WHERE cp.Slug = 'restaurant' AND cs.SectionKey = 'detail_section'
 AND NOT EXISTS (SELECT 1 FROM CmsItem ci WHERE ci.CmsSectionId = cs.CmsSectionId AND ci.ItemKey = 'detail_label_seats');
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- PART G: CmsItemKey registrations + per-event CMS sections and items
+-- PART G: Per-event CMS sections and items
+--   No Restaurant table. Known values are hardcoded per EventId.
+--   Data we don't have (addresses, phone, chef bios, images) is omitted —
+--   CMS admin fills those in via the UI.
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- Per-event CmsSection rows (one per active restaurant event)
@@ -817,215 +824,152 @@ FROM Event e
 JOIN CmsPage cp ON cp.Slug = 'restaurant'
 WHERE e.EventTypeId = 5 AND e.IsActive = 1;
 
--- Per-event text / html items
+-- ── EventId 47: Café de Roemer ────────────────────────────────────────────
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'address_line', 'TEXT', r.AddressLine
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.AddressLine IS NOT NULL AND r.AddressLine <> '';
+SELECT cs.CmsSectionId, 'cuisine_type', 'TEXT', 'Dutch, Fish and Seafood, European'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_47'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'city', 'TEXT', r.City
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.City IS NOT NULL AND r.City <> '';
+SELECT cs.CmsSectionId, 'time_slots', 'TEXT', '16:30, 18:30, 20:30'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_47'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'phone', 'TEXT', r.Phone
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.Phone IS NOT NULL AND r.Phone <> '';
+SELECT cs.CmsSectionId, 'price_adult', 'TEXT', '45.00'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_47'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'email', 'TEXT', r.Email
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.Email IS NOT NULL AND r.Email <> '';
+SELECT cs.CmsSectionId, 'duration_minutes', 'TEXT', '120'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_47'
+WHERE cp.Slug = 'restaurant';
+
+-- ── EventId 48: Ratatouille ───────────────────────────────────────────────
+INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
+SELECT cs.CmsSectionId, 'cuisine_type', 'TEXT', 'French, Fish and Seafood, European'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_48'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'chef_name', 'TEXT', r.ChefName
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.ChefName IS NOT NULL AND r.ChefName <> '';
+SELECT cs.CmsSectionId, 'time_slots', 'TEXT', '17:00, 19:15, 21:30'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_48'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'cuisine_type', 'TEXT', r.CuisineType
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.CuisineType IS NOT NULL AND r.CuisineType <> '';
+SELECT cs.CmsSectionId, 'price_adult', 'TEXT', '45.00'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_48'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'special_requests_note', 'TEXT', r.SpecialRequestsNote
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.SpecialRequestsNote IS NOT NULL AND r.SpecialRequestsNote <> '';
+SELECT cs.CmsSectionId, 'duration_minutes', 'TEXT', '120'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_48'
+WHERE cp.Slug = 'restaurant';
+
+-- ── EventId 49: Restaurant ML ─────────────────────────────────────────────
+INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
+SELECT cs.CmsSectionId, 'cuisine_type', 'TEXT', 'Dutch, Fish and Seafood, European'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_49'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'stars', 'TEXT', CAST(r.Stars AS CHAR)
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.Stars IS NOT NULL;
+SELECT cs.CmsSectionId, 'time_slots', 'TEXT', '16:30, 18:30, 20:30'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_49'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'michelin_stars', 'TEXT', CAST(r.MichelinStars AS CHAR)
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.MichelinStars IS NOT NULL;
+SELECT cs.CmsSectionId, 'price_adult', 'TEXT', '45.00'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_49'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'seats_per_session', 'TEXT', CAST(r.SeatsPerSession AS CHAR)
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.SeatsPerSession IS NOT NULL;
+SELECT cs.CmsSectionId, 'duration_minutes', 'TEXT', '120'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_49'
+WHERE cp.Slug = 'restaurant';
+
+-- ── EventId 50: Restaurant Fris ───────────────────────────────────────────
+INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
+SELECT cs.CmsSectionId, 'cuisine_type', 'TEXT', 'Dutch, French, European'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_50'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'duration_minutes', 'TEXT', CAST(r.DurationMinutes AS CHAR)
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.DurationMinutes IS NOT NULL;
+SELECT cs.CmsSectionId, 'time_slots', 'TEXT', '16:30, 18:30, 20:30'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_50'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'time_slots', 'TEXT', r.TimeSlots
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.TimeSlots IS NOT NULL AND r.TimeSlots <> '';
+SELECT cs.CmsSectionId, 'price_adult', 'TEXT', '45.00'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_50'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'price_adult', 'TEXT', CAST(r.PriceAdult AS CHAR)
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.PriceAdult IS NOT NULL;
+SELECT cs.CmsSectionId, 'duration_minutes', 'TEXT', '120'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_50'
+WHERE cp.Slug = 'restaurant';
+
+-- ── EventId 51: New Vegas ─────────────────────────────────────────────────
+INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
+SELECT cs.CmsSectionId, 'cuisine_type', 'TEXT', 'Vegan'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_51'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'website', 'LINK', r.Website
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.Website IS NOT NULL AND r.Website <> '';
+SELECT cs.CmsSectionId, 'time_slots', 'TEXT', '16:30, 18:30, 20:30'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_51'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'map_embed_url', 'LINK', r.MapEmbedUrl
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.MapEmbedUrl IS NOT NULL AND r.MapEmbedUrl <> '';
-
-INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, HtmlValue)
-SELECT cs.CmsSectionId, 'about_text', 'HTML', r.AboutText
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.AboutText IS NOT NULL AND r.AboutText <> '';
-
-INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, HtmlValue)
-SELECT cs.CmsSectionId, 'chef_text', 'HTML', r.ChefText
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.ChefText IS NOT NULL AND r.ChefText <> '';
-
-INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, HtmlValue)
-SELECT cs.CmsSectionId, 'menu_description', 'HTML', r.MenuDescription
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.MenuDescription IS NOT NULL AND r.MenuDescription <> '';
-
-INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, HtmlValue)
-SELECT cs.CmsSectionId, 'location_description', 'HTML', r.LocationDescription
-FROM Event e JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.LocationDescription IS NOT NULL AND r.LocationDescription <> '';
-
--- ── Per-event image items ─────────────────────────────────────────────────
--- ADAPTED: group DB uses AssetId FK columns on Restaurant (not ImagePath
--- varchar columns). We JOIN MediaAsset to get the FilePath.
+SELECT cs.CmsSectionId, 'price_adult', 'TEXT', '35.00'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_51'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'about_image', 'IMAGE_PATH', ma.FilePath
-FROM Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN MediaAsset ma ON ma.MediaAssetId = r.AboutImageAssetId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.AboutImageAssetId IS NOT NULL;
+SELECT cs.CmsSectionId, 'duration_minutes', 'TEXT', '120'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_51'
+WHERE cp.Slug = 'restaurant';
+
+-- ── EventId 52: Grand Cafe Brinkman ──────────────────────────────────────
+INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
+SELECT cs.CmsSectionId, 'cuisine_type', 'TEXT', 'Dutch, European, Modern'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_52'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'chef_image', 'IMAGE_PATH', ma.FilePath
-FROM Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN MediaAsset ma ON ma.MediaAssetId = r.ChefImageAssetId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.ChefImageAssetId IS NOT NULL;
+SELECT cs.CmsSectionId, 'time_slots', 'TEXT', '16:30, 18:30, 20:30'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_52'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'menu_image_1', 'IMAGE_PATH', ma.FilePath
-FROM Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN MediaAsset ma ON ma.MediaAssetId = r.MenuImage1AssetId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.MenuImage1AssetId IS NOT NULL;
+SELECT cs.CmsSectionId, 'price_adult', 'TEXT', '35.00'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_52'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'menu_image_2', 'IMAGE_PATH', ma.FilePath
-FROM Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN MediaAsset ma ON ma.MediaAssetId = r.MenuImage2AssetId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.MenuImage2AssetId IS NOT NULL;
+SELECT cs.CmsSectionId, 'duration_minutes', 'TEXT', '120'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_52'
+WHERE cp.Slug = 'restaurant';
+
+-- ── EventId 53: Urban Frenchy Bistro Toujours ─────────────────────────────
+INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
+SELECT cs.CmsSectionId, 'cuisine_type', 'TEXT', 'Dutch, Fish and Seafood, European'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_53'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'gallery_image_1', 'IMAGE_PATH', ma.FilePath
-FROM Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN MediaAsset ma ON ma.MediaAssetId = r.GalleryImage1AssetId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.GalleryImage1AssetId IS NOT NULL;
+SELECT cs.CmsSectionId, 'time_slots', 'TEXT', '17:30, 19:15, 21:00'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_53'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'gallery_image_2', 'IMAGE_PATH', ma.FilePath
-FROM Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN MediaAsset ma ON ma.MediaAssetId = r.GalleryImage2AssetId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.GalleryImage2AssetId IS NOT NULL;
+SELECT cs.CmsSectionId, 'price_adult', 'TEXT', '35.00'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_53'
+WHERE cp.Slug = 'restaurant';
 
 INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'gallery_image_3', 'IMAGE_PATH', ma.FilePath
-FROM Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN MediaAsset ma ON ma.MediaAssetId = r.GalleryImage3AssetId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.GalleryImage3AssetId IS NOT NULL;
-
-INSERT IGNORE INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
-SELECT cs.CmsSectionId, 'reservation_image', 'IMAGE_PATH', ma.FilePath
-FROM Event e
-JOIN Restaurant r ON e.RestaurantId = r.RestaurantId
-JOIN MediaAsset ma ON ma.MediaAssetId = r.ReservationImageAssetId
-JOIN CmsPage cp ON cp.Slug = 'restaurant'
-JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = CONCAT('restaurant_event_', e.EventId)
-WHERE e.EventTypeId = 5 AND r.ReservationImageAssetId IS NOT NULL;
+SELECT cs.CmsSectionId, 'duration_minutes', 'TEXT', '120'
+FROM CmsPage cp JOIN CmsSection cs ON cs.CmsPageId = cp.CmsPageId AND cs.SectionKey = 'restaurant_event_53'
+WHERE cp.Slug = 'restaurant';
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PART H: Add ReservationId to ProgramItem
@@ -1041,10 +985,372 @@ ALTER TABLE ProgramItem
 ALTER TABLE ProgramItem
     MODIFY COLUMN ReservationId INT UNSIGNED NULL DEFAULT NULL;
 
-ALTER TABLE ProgramItem
-    ADD CONSTRAINT FK_ProgramItem_Reservation
-        FOREIGN KEY (ReservationId) REFERENCES Reservation (ReservationId)
-            ON DELETE SET NULL;
+-- Add FK only if it does not already exist
+SET @fk_pi_res = (
+    SELECT CONSTRAINT_NAME
+    FROM information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'ProgramItem'
+      AND COLUMN_NAME  = 'ReservationId'
+      AND REFERENCED_TABLE_NAME = 'Reservation'
+    LIMIT 1
+);
+SET @add_pi_fk = IF(
+    @fk_pi_res IS NULL,
+    'ALTER TABLE ProgramItem ADD CONSTRAINT FK_ProgramItem_Reservation FOREIGN KEY (ReservationId) REFERENCES Reservation (ReservationId) ON DELETE SET NULL',
+    'SELECT 1'
+);
+PREPARE stmt FROM @add_pi_fk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- PART I: Drop Restaurant table and all related columns / tables
+--   All data has been extracted into CMS sections above (Parts D–G).
+--   Restaurants are now purely identified by Event rows (EventTypeId=5).
+--
+--   Steps:
+--     1. Drop Reservation.RestaurantId FK and column (existing installs only;
+--        fresh installs never had this column)
+--     2. Drop Event.RestaurantId FK and column
+--     3. Drop RestaurantCuisine junction table
+--     4. Drop CuisineType table
+--     5. Drop RestaurantImage table
+--     6. Drop Restaurant table
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- STEP I-1: Drop Reservation.RestaurantId FK and column (if present)
+-- ─────────────────────────────────────────────────────────────────────────
+SET @fk_res_rest = (
+    SELECT CONSTRAINT_NAME
+    FROM information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'Reservation'
+      AND COLUMN_NAME  = 'RestaurantId'
+      AND REFERENCED_TABLE_NAME IS NOT NULL
+    LIMIT 1
+);
+SET @drop_res_fk = IF(
+    @fk_res_rest IS NOT NULL,
+    CONCAT('ALTER TABLE Reservation DROP FOREIGN KEY `', @fk_res_rest, '`'),
+    'SELECT 1'
+);
+PREPARE stmt FROM @drop_res_fk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+ALTER TABLE Reservation DROP COLUMN IF EXISTS RestaurantId;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- STEP I-2: Drop Event.RestaurantId FK and column
+-- ─────────────────────────────────────────────────────────────────────────
+SET @fk_event_rest = (
+    SELECT CONSTRAINT_NAME
+    FROM information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'Event'
+      AND COLUMN_NAME  = 'RestaurantId'
+      AND REFERENCED_TABLE_NAME IS NOT NULL
+    LIMIT 1
+);
+SET @drop_event_fk = IF(
+    @fk_event_rest IS NOT NULL,
+    CONCAT('ALTER TABLE Event DROP FOREIGN KEY `', @fk_event_rest, '`'),
+    'SELECT 1'
+);
+PREPARE stmt FROM @drop_event_fk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+ALTER TABLE Event DROP COLUMN IF EXISTS RestaurantId;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- STEP I-3 to I-6: Drop junction, cuisine, image and restaurant tables
+-- ─────────────────────────────────────────────────────────────────────────
+DROP TABLE IF EXISTS RestaurantCuisine;
+DROP TABLE IF EXISTS CuisineType;
+DROP TABLE IF EXISTS RestaurantImage;
+DROP TABLE IF EXISTS Restaurant;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- PART J: EventSession rows for restaurant events
+--   7 restaurants × 4 festival days × 3 time slots = 84 sessions.
+--   Each session also gets two EventSessionPrice rows (Adult + Child U12).
+--
+--   Festival dates:
+--     Thursday  2026-07-23
+--     Friday    2026-07-24
+--     Saturday  2026-07-25
+--     Sunday    2026-07-26
+--
+--   All inserts are idempotent (WHERE NOT EXISTS on EventId + StartDateTime).
+--   CtaUrl is built from Event.Slug so it always matches the live slug.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- ── EventId 47: Café de Roemer — slots 16:30 / 18:30 / 20:30 ─────────────
+INSERT INTO EventSession (
+    EventId, StartDateTime, EndDateTime,
+    CapacityTotal, CapacitySingleTicketLimit,
+    HallName, SessionType, DurationMinutes,
+    LanguageCode, MinAge, MaxAge,
+    ReservationRequired, IsFree, Notes, HistoryTicketLabel,
+    CtaLabel, CtaUrl, IsCancelled, IsActive
+)
+SELECT
+    47,
+    CONCAT(d.festival_date, ' ', s.start_time, ':00'),
+    CONCAT(d.festival_date, ' ', s.end_time,   ':00'),
+    40, 40, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL,
+    'Reserve a Table', CONCAT('/restaurant/', e.Slug, '/reservation'), 0, 1
+FROM (
+    SELECT '2026-07-23' AS festival_date UNION ALL
+    SELECT '2026-07-24' UNION ALL
+    SELECT '2026-07-25' UNION ALL
+    SELECT '2026-07-26'
+) AS d
+CROSS JOIN (
+    SELECT '16:30' AS start_time, '18:30' AS end_time UNION ALL
+    SELECT '18:30', '20:30' UNION ALL
+    SELECT '20:30', '22:30'
+) AS s
+JOIN Event e ON e.EventId = 47
+WHERE NOT EXISTS (
+    SELECT 1 FROM EventSession
+    WHERE EventId = 47 AND StartDateTime = CONCAT(d.festival_date, ' ', s.start_time, ':00')
+);
+
+-- ── EventId 48: Ratatouille — slots 17:00 / 19:15 / 21:30 ────────────────
+INSERT INTO EventSession (
+    EventId, StartDateTime, EndDateTime,
+    CapacityTotal, CapacitySingleTicketLimit,
+    HallName, SessionType, DurationMinutes,
+    LanguageCode, MinAge, MaxAge,
+    ReservationRequired, IsFree, Notes, HistoryTicketLabel,
+    CtaLabel, CtaUrl, IsCancelled, IsActive
+)
+SELECT
+    48,
+    CONCAT(d.festival_date, ' ', s.start_time, ':00'),
+    CONCAT(d.festival_date, ' ', s.end_time,   ':00'),
+    40, 40, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL,
+    'Reserve a Table', CONCAT('/restaurant/', e.Slug, '/reservation'), 0, 1
+FROM (
+    SELECT '2026-07-23' AS festival_date UNION ALL
+    SELECT '2026-07-24' UNION ALL
+    SELECT '2026-07-25' UNION ALL
+    SELECT '2026-07-26'
+) AS d
+CROSS JOIN (
+    SELECT '17:00' AS start_time, '19:00' AS end_time UNION ALL
+    SELECT '19:15', '21:15' UNION ALL
+    SELECT '21:30', '23:30'
+) AS s
+JOIN Event e ON e.EventId = 48
+WHERE NOT EXISTS (
+    SELECT 1 FROM EventSession
+    WHERE EventId = 48 AND StartDateTime = CONCAT(d.festival_date, ' ', s.start_time, ':00')
+);
+
+-- ── EventId 49: Restaurant ML — slots 16:30 / 18:30 / 20:30 ─────────────
+INSERT INTO EventSession (
+    EventId, StartDateTime, EndDateTime,
+    CapacityTotal, CapacitySingleTicketLimit,
+    HallName, SessionType, DurationMinutes,
+    LanguageCode, MinAge, MaxAge,
+    ReservationRequired, IsFree, Notes, HistoryTicketLabel,
+    CtaLabel, CtaUrl, IsCancelled, IsActive
+)
+SELECT
+    49,
+    CONCAT(d.festival_date, ' ', s.start_time, ':00'),
+    CONCAT(d.festival_date, ' ', s.end_time,   ':00'),
+    40, 40, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL,
+    'Reserve a Table', CONCAT('/restaurant/', e.Slug, '/reservation'), 0, 1
+FROM (
+    SELECT '2026-07-23' AS festival_date UNION ALL
+    SELECT '2026-07-24' UNION ALL
+    SELECT '2026-07-25' UNION ALL
+    SELECT '2026-07-26'
+) AS d
+CROSS JOIN (
+    SELECT '16:30' AS start_time, '18:30' AS end_time UNION ALL
+    SELECT '18:30', '20:30' UNION ALL
+    SELECT '20:30', '22:30'
+) AS s
+JOIN Event e ON e.EventId = 49
+WHERE NOT EXISTS (
+    SELECT 1 FROM EventSession
+    WHERE EventId = 49 AND StartDateTime = CONCAT(d.festival_date, ' ', s.start_time, ':00')
+);
+
+-- ── EventId 50: Restaurant Fris — slots 16:30 / 18:30 / 20:30 ───────────
+INSERT INTO EventSession (
+    EventId, StartDateTime, EndDateTime,
+    CapacityTotal, CapacitySingleTicketLimit,
+    HallName, SessionType, DurationMinutes,
+    LanguageCode, MinAge, MaxAge,
+    ReservationRequired, IsFree, Notes, HistoryTicketLabel,
+    CtaLabel, CtaUrl, IsCancelled, IsActive
+)
+SELECT
+    50,
+    CONCAT(d.festival_date, ' ', s.start_time, ':00'),
+    CONCAT(d.festival_date, ' ', s.end_time,   ':00'),
+    40, 40, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL,
+    'Reserve a Table', CONCAT('/restaurant/', e.Slug, '/reservation'), 0, 1
+FROM (
+    SELECT '2026-07-23' AS festival_date UNION ALL
+    SELECT '2026-07-24' UNION ALL
+    SELECT '2026-07-25' UNION ALL
+    SELECT '2026-07-26'
+) AS d
+CROSS JOIN (
+    SELECT '16:30' AS start_time, '18:30' AS end_time UNION ALL
+    SELECT '18:30', '20:30' UNION ALL
+    SELECT '20:30', '22:30'
+) AS s
+JOIN Event e ON e.EventId = 50
+WHERE NOT EXISTS (
+    SELECT 1 FROM EventSession
+    WHERE EventId = 50 AND StartDateTime = CONCAT(d.festival_date, ' ', s.start_time, ':00')
+);
+
+-- ── EventId 51: New Vegas — slots 16:30 / 18:30 / 20:30 ─────────────────
+INSERT INTO EventSession (
+    EventId, StartDateTime, EndDateTime,
+    CapacityTotal, CapacitySingleTicketLimit,
+    HallName, SessionType, DurationMinutes,
+    LanguageCode, MinAge, MaxAge,
+    ReservationRequired, IsFree, Notes, HistoryTicketLabel,
+    CtaLabel, CtaUrl, IsCancelled, IsActive
+)
+SELECT
+    51,
+    CONCAT(d.festival_date, ' ', s.start_time, ':00'),
+    CONCAT(d.festival_date, ' ', s.end_time,   ':00'),
+    40, 40, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL,
+    'Reserve a Table', CONCAT('/restaurant/', e.Slug, '/reservation'), 0, 1
+FROM (
+    SELECT '2026-07-23' AS festival_date UNION ALL
+    SELECT '2026-07-24' UNION ALL
+    SELECT '2026-07-25' UNION ALL
+    SELECT '2026-07-26'
+) AS d
+CROSS JOIN (
+    SELECT '16:30' AS start_time, '18:30' AS end_time UNION ALL
+    SELECT '18:30', '20:30' UNION ALL
+    SELECT '20:30', '22:30'
+) AS s
+JOIN Event e ON e.EventId = 51
+WHERE NOT EXISTS (
+    SELECT 1 FROM EventSession
+    WHERE EventId = 51 AND StartDateTime = CONCAT(d.festival_date, ' ', s.start_time, ':00')
+);
+
+-- ── EventId 52: Grand Cafe Brinkman — slots 16:30 / 18:30 / 20:30 ────────
+INSERT INTO EventSession (
+    EventId, StartDateTime, EndDateTime,
+    CapacityTotal, CapacitySingleTicketLimit,
+    HallName, SessionType, DurationMinutes,
+    LanguageCode, MinAge, MaxAge,
+    ReservationRequired, IsFree, Notes, HistoryTicketLabel,
+    CtaLabel, CtaUrl, IsCancelled, IsActive
+)
+SELECT
+    52,
+    CONCAT(d.festival_date, ' ', s.start_time, ':00'),
+    CONCAT(d.festival_date, ' ', s.end_time,   ':00'),
+    40, 40, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL,
+    'Reserve a Table', CONCAT('/restaurant/', e.Slug, '/reservation'), 0, 1
+FROM (
+    SELECT '2026-07-23' AS festival_date UNION ALL
+    SELECT '2026-07-24' UNION ALL
+    SELECT '2026-07-25' UNION ALL
+    SELECT '2026-07-26'
+) AS d
+CROSS JOIN (
+    SELECT '16:30' AS start_time, '18:30' AS end_time UNION ALL
+    SELECT '18:30', '20:30' UNION ALL
+    SELECT '20:30', '22:30'
+) AS s
+JOIN Event e ON e.EventId = 52
+WHERE NOT EXISTS (
+    SELECT 1 FROM EventSession
+    WHERE EventId = 52 AND StartDateTime = CONCAT(d.festival_date, ' ', s.start_time, ':00')
+);
+
+-- ── EventId 53: Urban Frenchy Bistro Toujours — slots 17:30 / 19:15 / 21:00
+INSERT INTO EventSession (
+    EventId, StartDateTime, EndDateTime,
+    CapacityTotal, CapacitySingleTicketLimit,
+    HallName, SessionType, DurationMinutes,
+    LanguageCode, MinAge, MaxAge,
+    ReservationRequired, IsFree, Notes, HistoryTicketLabel,
+    CtaLabel, CtaUrl, IsCancelled, IsActive
+)
+SELECT
+    53,
+    CONCAT(d.festival_date, ' ', s.start_time, ':00'),
+    CONCAT(d.festival_date, ' ', s.end_time,   ':00'),
+    40, 40, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL,
+    'Reserve a Table', CONCAT('/restaurant/', e.Slug, '/reservation'), 0, 1
+FROM (
+    SELECT '2026-07-23' AS festival_date UNION ALL
+    SELECT '2026-07-24' UNION ALL
+    SELECT '2026-07-25' UNION ALL
+    SELECT '2026-07-26'
+) AS d
+CROSS JOIN (
+    SELECT '17:30' AS start_time, '19:30' AS end_time UNION ALL
+    SELECT '19:15', '21:15' UNION ALL
+    SELECT '21:00', '23:00'
+) AS s
+JOIN Event e ON e.EventId = 53
+WHERE NOT EXISTS (
+    SELECT 1 FROM EventSession
+    WHERE EventId = 53 AND StartDateTime = CONCAT(d.festival_date, ' ', s.start_time, ':00')
+);
+
+-- ── EventSessionPrice: Adult €45 — Café de Roemer, Ratatouille, Restaurant ML, Restaurant Fris
+INSERT INTO EventSessionPrice (EventSessionId, PriceTierId, Price, CurrencyCode, VatRate)
+SELECT es.EventSessionId, 1, 45.00, 'EUR', 21.00
+FROM EventSession es
+WHERE es.EventId IN (47, 48, 49, 50)
+AND NOT EXISTS (
+    SELECT 1 FROM EventSessionPrice esp
+    WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = 1
+);
+
+-- ── EventSessionPrice: Child U12 €22.50 — same four restaurants
+INSERT INTO EventSessionPrice (EventSessionId, PriceTierId, Price, CurrencyCode, VatRate)
+SELECT es.EventSessionId, 2, 22.50, 'EUR', 21.00
+FROM EventSession es
+WHERE es.EventId IN (47, 48, 49, 50)
+AND NOT EXISTS (
+    SELECT 1 FROM EventSessionPrice esp
+    WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = 2
+);
+
+-- ── EventSessionPrice: Adult €35 — New Vegas, Grand Cafe Brinkman, Urban Frenchy Bistro Toujours
+INSERT INTO EventSessionPrice (EventSessionId, PriceTierId, Price, CurrencyCode, VatRate)
+SELECT es.EventSessionId, 1, 35.00, 'EUR', 21.00
+FROM EventSession es
+WHERE es.EventId IN (51, 52, 53)
+AND NOT EXISTS (
+    SELECT 1 FROM EventSessionPrice esp
+    WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = 1
+);
+
+-- ── EventSessionPrice: Child U12 €17.50 — same three restaurants
+INSERT INTO EventSessionPrice (EventSessionId, PriceTierId, Price, CurrencyCode, VatRate)
+SELECT es.EventSessionId, 2, 17.50, 'EUR', 21.00
+FROM EventSession es
+WHERE es.EventId IN (51, 52, 53)
+AND NOT EXISTS (
+    SELECT 1 FROM EventSessionPrice esp
+    WHERE esp.EventSessionId = es.EventSessionId AND esp.PriceTierId = 2
+);
 
 -- =============================================================================
-SELECT 'Yummy! adapted migration complete.' AS Status;
+SELECT 'Yummy! migration complete — restaurants are now pure CMS events.' AS Status;

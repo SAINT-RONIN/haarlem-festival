@@ -8,21 +8,22 @@ use App\Constants\GlobalUiConstants;
 use App\Constants\RestaurantDetailConstants;
 use App\Constants\RestaurantPageConstants;
 use App\Exceptions\RestaurantEventNotFoundException;
+use App\Models\GlobalUiContent;
 use App\Models\RestaurantDetailEvent;
 use App\Models\RestaurantDetailPageData;
-use App\Repositories\GlobalContentRepository;
+use App\Models\RestaurantDetailSectionContent;
+use App\Models\RestaurantEventCmsData;
+use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
-use App\Repositories\RestaurantContentRepository;
 use App\Services\Interfaces\IRestaurantDetailService;
 
 class RestaurantDetailService implements IRestaurantDetailService
 {
     public function __construct(
-        private readonly GlobalContentRepository     $globalContentRepo,
-        private readonly RestaurantContentRepository $restaurantContentRepo,
-        private readonly IEventRepository            $eventRepository,
-        private readonly IMediaAssetRepository       $mediaAssetRepository,
+        private readonly ICmsContentRepository $cmsContent,
+        private readonly IEventRepository      $eventRepository,
+        private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {
     }
 
@@ -33,21 +34,27 @@ class RestaurantDetailService implements IRestaurantDetailService
     {
         $normalizedSlug = $this->normalizeSlug($slug);
         $event          = $this->findRestaurantEventBySlug($normalizedSlug);
-        $cms            = $this->restaurantContentRepo->findEventCmsData(
-            RestaurantDetailConstants::PAGE_SLUG,
-            RestaurantDetailConstants::eventSectionKey($event->eventId),
+        $cms            = RestaurantEventCmsData::fromRawArray(
+            $this->cmsContent->getSectionContent(
+                RestaurantDetailConstants::PAGE_SLUG,
+                RestaurantDetailConstants::eventSectionKey($event->eventId),
+            ),
         );
 
         return new RestaurantDetailPageData(
             event:             $event,
             cms:               $cms,
-            sharedCms:         $this->restaurantContentRepo->findDetailContent(
-                                   RestaurantPageConstants::PAGE_SLUG,
-                                   RestaurantPageConstants::SECTION_DETAIL,
+            sharedCms:         RestaurantDetailSectionContent::fromRawArray(
+                                   $this->cmsContent->getSectionContent(
+                                       RestaurantPageConstants::PAGE_SLUG,
+                                       RestaurantPageConstants::SECTION_DETAIL,
+                                   ),
                                ),
-            globalUiContent:   $this->globalContentRepo->findGlobalUiContent(
-                                   GlobalUiConstants::PAGE_SLUG,
-                                   GlobalUiConstants::SECTION_KEY,
+            globalUiContent:   GlobalUiContent::fromRawArray(
+                                   $this->cmsContent->getSectionContent(
+                                       GlobalUiConstants::PAGE_SLUG,
+                                       GlobalUiConstants::SECTION_KEY,
+                                   ),
                                ),
             featuredImagePath: $this->resolveImagePath($event->featuredImageAssetId),
             timeSlots:         $this->parseTimeSlots($cms->timeSlots),

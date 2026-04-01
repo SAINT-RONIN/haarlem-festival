@@ -26,7 +26,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900"><?= htmlspecialchars($viewModel->pageTitle) ?></h1>
-                    <p class="text-gray-600 mt-1">Update the details for this restaurant listing.</p>
+                    <p class="text-gray-600 mt-1">Update the details for this restaurant event.</p>
                 </div>
                 <a href="/cms/restaurants" class="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800">
                     <i data-lucide="arrow-left" class="w-4 h-4" aria-hidden="true"></i>
@@ -44,90 +44,58 @@
                     <h2 class="text-lg font-semibold text-gray-900">Basic Info</h2>
                 </div>
                 <div class="p-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <!-- Name -->
+                    <!-- Title -->
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                            Name <span class="text-red-500">*</span>
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
+                            Title <span class="text-red-500">*</span>
                         </label>
                         <input type="text"
-                               name="name"
-                               id="name"
-                               value="<?= htmlspecialchars($viewModel->name) ?>"
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border <?= isset($viewModel->errors['name']) ? 'border-red-500' : '' ?>">
-                        <?php if (isset($viewModel->errors['name'])): ?>
-                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['name']) ?></p>
+                               name="title"
+                               id="title"
+                               value="<?= htmlspecialchars($viewModel->title) ?>"
+                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border <?= isset($viewModel->errors['title']) ? 'border-red-500' : '' ?>">
+                        <?php if (isset($viewModel->errors['title'])): ?>
+                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['title']) ?></p>
                         <?php endif; ?>
                     </div>
 
-                    <!-- Address Line -->
+                    <!-- Slug -->
                     <div>
-                        <label for="addressLine" class="block text-sm font-medium text-gray-700 mb-1">
-                            Address Line <span class="text-red-500">*</span>
+                        <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">
+                            Slug <span class="text-red-500">*</span>
                         </label>
                         <input type="text"
-                               name="addressLine"
-                               id="addressLine"
-                               value="<?= htmlspecialchars($viewModel->addressLine) ?>"
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border <?= isset($viewModel->errors['addressLine']) ? 'border-red-500' : '' ?>">
-                        <?php if (isset($viewModel->errors['addressLine'])): ?>
-                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['addressLine']) ?></p>
+                               name="slug"
+                               id="slug"
+                               value="<?= htmlspecialchars($viewModel->slug) ?>"
+                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border <?= isset($viewModel->errors['slug']) ? 'border-red-500' : '' ?>">
+                        <?php if (isset($viewModel->errors['slug'])): ?>
+                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['slug']) ?></p>
                         <?php endif; ?>
+                        <p class="mt-1 text-xs text-gray-500">Used in the URL: /restaurant/{slug}</p>
                     </div>
 
-                    <!-- City -->
-                    <div>
-                        <label for="city" class="block text-sm font-medium text-gray-700 mb-1">
-                            City <span class="text-red-500">*</span>
+                    <!-- Short Description -->
+                    <div class="md:col-span-2">
+                        <label for="shortDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                            Short Description
                         </label>
                         <input type="text"
-                               name="city"
-                               id="city"
-                               value="<?= htmlspecialchars($viewModel->city) ?>"
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border <?= isset($viewModel->errors['city']) ? 'border-red-500' : '' ?>">
-                        <?php if (isset($viewModel->errors['city'])): ?>
-                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['city']) ?></p>
-                        <?php endif; ?>
+                               name="shortDescription"
+                               id="shortDescription"
+                               value="<?= htmlspecialchars($viewModel->shortDescription) ?>"
+                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                     </div>
 
-                    <!-- Cuisine Type -->
+                    <!-- Featured Image Asset ID -->
                     <div>
-                        <label for="cuisineType" class="block text-sm font-medium text-gray-700 mb-1">
-                            Cuisine Type <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text"
-                               name="cuisineType"
-                               id="cuisineType"
-                               value="<?= htmlspecialchars($viewModel->cuisineType) ?>"
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border <?= isset($viewModel->errors['cuisineType']) ? 'border-red-500' : '' ?>">
-                        <?php if (isset($viewModel->errors['cuisineType'])): ?>
-                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['cuisineType']) ?></p>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Stars -->
-                    <div>
-                        <label for="stars" class="block text-sm font-medium text-gray-700 mb-1">Stars</label>
-                        <select name="stars"
-                                id="stars"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
-                            <option value="">-- Select --</option>
-                            <?php foreach ([0, 1, 2, 3, 4, 5] as $star): ?>
-                                <option value="<?= $star ?>" <?= $viewModel->stars === $star ? 'selected' : '' ?>>
-                                    <?= $star ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <!-- Image Asset ID -->
-                    <div>
-                        <label for="imageAssetId" class="block text-sm font-medium text-gray-700 mb-1">
-                            Image Asset ID
+                        <label for="featuredImageAssetId" class="block text-sm font-medium text-gray-700 mb-1">
+                            Featured Image Asset ID
                         </label>
                         <input type="number"
-                               name="imageAssetId"
-                               id="imageAssetId"
-                               value="<?= $viewModel->imageAssetId !== null ? htmlspecialchars((string) $viewModel->imageAssetId) : '' ?>"
+                               name="featuredImageAssetId"
+                               id="featuredImageAssetId"
+                               value="<?= $viewModel->featuredImageAssetId !== null ? htmlspecialchars((string) $viewModel->featuredImageAssetId) : '' ?>"
                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                         <p class="mt-1 text-xs text-gray-500">Media Asset ID from the media library</p>
                     </div>
@@ -145,23 +113,20 @@
                 </div>
             </div>
 
-            <!-- Description -->
+            <!-- Long Description -->
             <div class="bg-white rounded-lg shadow mb-6">
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900">Description</h2>
                 </div>
                 <div class="p-6">
-                    <label for="descriptionHtml" class="block text-sm font-medium text-gray-700 mb-1">
-                        Description <span class="text-red-500">*</span>
+                    <label for="longDescriptionHtml" class="block text-sm font-medium text-gray-700 mb-1">
+                        Long Description
                     </label>
-                    <textarea name="descriptionHtml"
-                              id="descriptionHtml"
+                    <textarea name="longDescriptionHtml"
+                              id="longDescriptionHtml"
                               rows="8"
                               data-tinymce
-                              class="block w-full rounded-md border-gray-300 shadow-sm py-2 px-3 border <?= isset($viewModel->errors['descriptionHtml']) ? 'border-red-500' : '' ?>"><?= htmlspecialchars($viewModel->descriptionHtml) ?></textarea>
-                    <?php if (isset($viewModel->errors['descriptionHtml'])): ?>
-                        <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['descriptionHtml']) ?></p>
-                    <?php endif; ?>
+                              class="block w-full rounded-md border-gray-300 shadow-sm py-2 px-3 border"><?= htmlspecialchars($viewModel->longDescriptionHtml) ?></textarea>
                 </div>
             </div>
 

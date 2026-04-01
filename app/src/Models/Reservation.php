@@ -10,7 +10,7 @@ namespace App\Models;
 class Reservation
 {
     public function __construct(
-        public readonly int     $restaurantId,
+        public readonly int     $eventId,
         public readonly string  $diningDate,
         public readonly string  $timeSlot,
         public readonly int     $adultsCount,
@@ -27,7 +27,7 @@ class Reservation
     public static function fromRow(array $row): self
     {
         return new self(
-            restaurantId:      (int)$row['RestaurantId'],
+            eventId:           (int)($row['EventId'] ?? $row['RestaurantId']),
             diningDate:        (string)$row['DiningDate'],
             timeSlot:          (string)$row['TimeSlot'],
             adultsCount:       (int)$row['AdultsCount'],

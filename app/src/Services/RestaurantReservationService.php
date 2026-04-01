@@ -9,6 +9,7 @@ use App\Exceptions\RestaurantEventNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Models\Reservation;
 use App\Repositories\Interfaces\IEventRepository;
+use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\ReservationRepository;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\IRestaurantReservationService;
@@ -16,9 +17,10 @@ use App\Services\Interfaces\IRestaurantReservationService;
 class RestaurantReservationService implements IRestaurantReservationService
 {
     public function __construct(
-        private readonly IEventRepository      $eventRepository,
-        private readonly ReservationRepository $reservationRepository,
-        private readonly IProgramService       $programService,
+        private readonly IEventRepository        $eventRepository,
+        private readonly ReservationRepository   $reservationRepository,
+        private readonly IProgramService         $programService,
+        private readonly IEventSessionRepository $eventSessionRepository,
     ) {
     }
 
@@ -60,7 +62,7 @@ class RestaurantReservationService implements IRestaurantReservationService
         }
 
         $reservationId = $this->reservationRepository->insert(new Reservation(
-            restaurantId:    $event->restaurantId,
+            eventId:         $event->eventId,
             diningDate:      $date,
             timeSlot:        $timeSlot,
             adultsCount:     $adultsCount,
@@ -68,6 +70,16 @@ class RestaurantReservationService implements IRestaurantReservationService
             specialRequests: $specialRequests,
             totalFee:        ($adultsCount + $childrenCount) * RestaurantPageConstants::RESERVATION_FEE,
         ));
+
+        $isoDate = RestaurantPageConstants::FESTIVAL_DATE_MAP[$date] ?? null;
+        if ($isoDate !== null) {
+            $this->eventSessionRepository->incrementSoldReservedSeats(
+                $event->eventId,
+                $isoDate,
+                $timeSlot,
+                $adultsCount + $childrenCount,
+            );
+        }
 
         $this->programService->addReservationToProgram($sessionKey, $userAccountId, $reservationId);
     }

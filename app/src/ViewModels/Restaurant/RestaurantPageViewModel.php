@@ -9,6 +9,7 @@ use App\ViewModels\GlobalUiData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
+use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
  * ViewModel for the Restaurant page.
@@ -24,6 +25,7 @@ final readonly class RestaurantPageViewModel extends BaseViewModel
         public ?IntroSplitSectionData $introSplit2Section = null,
         public ?InstructionsSectionData $instructionsSection = null,
         public ?RestaurantCardsSectionData $restaurantCardsSection = null,
+        public ?ScheduleSectionViewModel $scheduleSection = null,
     ) {
         parent::__construct(
             heroData: $heroData,

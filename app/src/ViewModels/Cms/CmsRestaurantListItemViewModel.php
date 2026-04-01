@@ -7,11 +7,9 @@ namespace App\ViewModels\Cms;
 final readonly class CmsRestaurantListItemViewModel
 {
     public function __construct(
-        public int    $restaurantId,
-        public string $name,
-        public string $cuisineType,
-        public string $city,
+        public int    $eventId,
+        public string $title,
+        public string $slug,
         public bool   $isActive,
-        public string $createdAt,
     ) {}
 }

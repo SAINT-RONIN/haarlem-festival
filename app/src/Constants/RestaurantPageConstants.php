@@ -32,6 +32,17 @@ final class RestaurantPageConstants
     // Valid festival days shown in the reservation date selector
     public const VALID_DATES = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+    // Max days shown in the schedule grid on the listing page
+    public const SCHEDULE_MAX_DAYS = 4;
+
+    // Day-name → ISO date mapping for capacity tracking
+    public const FESTIVAL_DATE_MAP = [
+        'Thursday' => '2026-07-23',
+        'Friday'   => '2026-07-24',
+        'Saturday' => '2026-07-25',
+        'Sunday'   => '2026-07-26',
+    ];
+
     private function __construct()
     {
     }

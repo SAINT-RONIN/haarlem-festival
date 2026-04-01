@@ -10,7 +10,6 @@ use App\Exceptions\ValidationException;
 use App\Mappers\CmsEventsMapper;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
-use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ISessionService;
 
 class CmsEventsController
@@ -19,7 +18,6 @@ class CmsEventsController
         private ICmsEventsService $eventsService,
         private readonly ISessionService $sessionService,
         private readonly ICmsArtistsService $artistsService,
-        private readonly ICmsRestaurantsService $restaurantsService,
     ) {
     }
 
@@ -63,7 +61,6 @@ class CmsEventsController
             $eventTypes     = $this->eventsService->getEventTypes();
             $venues         = $this->eventsService->getVenues();
             $artists        = $this->artistsService->getArtists(null);
-            $restaurants    = $this->restaurantsService->getRestaurants(null);
             $errorMessage   = $_GET['error'] ?? null;
             $preselectedDay = $_GET['day'] ?? '';
 
@@ -110,7 +107,6 @@ class CmsEventsController
 
             $priceTiers  = $this->eventsService->getPriceTiers();
             $artists     = $this->artistsService->getArtists(null);
-            $restaurants = $this->restaurantsService->getRestaurants(null);
             $successMessage = $_GET['success'] ?? null;
             $errorMessage = $_GET['error'] ?? null;
 

@@ -150,7 +150,7 @@ class EventRepository implements IEventRepository
             FROM Event
             WHERE EventTypeId = :eventTypeId
               AND IsActive = 1
-            ORDER BY RestaurantId ASC
+            ORDER BY DisplayOrder ASC
         ');
         $stmt->execute(['eventTypeId' => EventTypeId::Restaurant->value]);
         return array_map([RestaurantDetailEvent::class, 'fromRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
@@ -179,23 +179,23 @@ class EventRepository implements IEventRepository
             INSERT INTO Event (
                 EventTypeId,
                 Title,
+                Slug,
                 ShortDescription,
                 LongDescriptionHtml,
                 FeaturedImageAssetId,
                 VenueId,
                 ArtistId,
-                RestaurantId,
                 IsActive
             )
             VALUES (
                 :eventTypeId,
                 :title,
+                :slug,
                 :shortDescription,
                 :longDescriptionHtml,
                 :featuredImageAssetId,
                 :venueId,
                 :artistId,
-                :restaurantId,
                 1
             )
         ');
@@ -203,12 +203,12 @@ class EventRepository implements IEventRepository
         $stmt->execute([
             'eventTypeId' => $data['EventTypeId'],
             'title' => $data['Title'],
+            'slug' => $data['Slug'] ?? null,
             'shortDescription' => $data['ShortDescription'] ?? '',
             'longDescriptionHtml' => $data['LongDescriptionHtml'] ?? '<p></p>',
             'featuredImageAssetId' => $data['FeaturedImageAssetId'] ?? null,
             'venueId' => $data['VenueId'] ?? null,
             'artistId' => $data['ArtistId'] ?? null,
-            'restaurantId' => $data['RestaurantId'] ?? null,
         ]);
 
         return (int)$this->pdo->lastInsertId();
@@ -220,12 +220,12 @@ class EventRepository implements IEventRepository
             UPDATE Event
             SET
                 Title = :title,
+                Slug = :slug,
                 ShortDescription = :shortDescription,
                 LongDescriptionHtml = :longDescriptionHtml,
                 FeaturedImageAssetId = :featuredImageAssetId,
                 VenueId = :venueId,
                 ArtistId = :artistId,
-                RestaurantId = :restaurantId,
                 IsActive = :isActive
             WHERE EventId = :eventId
         ');
@@ -233,12 +233,12 @@ class EventRepository implements IEventRepository
         return $stmt->execute([
             'eventId' => $eventId,
             'title' => $data['Title'],
+            'slug' => $data['Slug'] ?? null,
             'shortDescription' => $data['ShortDescription'] ?? '',
             'longDescriptionHtml' => $data['LongDescriptionHtml'] ?? '<p></p>',
             'featuredImageAssetId' => isset($data['FeaturedImageAssetId']) && is_numeric($data['FeaturedImageAssetId']) ? (int)$data['FeaturedImageAssetId'] : null,
             'venueId' => $data['VenueId'] ?? null,
             'artistId' => isset($data['ArtistId']) && is_numeric($data['ArtistId']) ? (int)$data['ArtistId'] : null,
-            'restaurantId' => isset($data['RestaurantId']) && is_numeric($data['RestaurantId']) ? (int)$data['RestaurantId'] : null,
             'isActive' => $data['IsActive'] ?? 1,
         ]);
     }
@@ -268,11 +268,4 @@ class EventRepository implements IEventRepository
         return $stmt->execute(['eventId' => $eventId]);
     }
 
-    public function findActiveEventByRestaurantId(int $restaurantId): ?Event
-    {
-        $stmt = $this->pdo->prepare('SELECT * FROM Event WHERE RestaurantId = :restaurantId AND IsActive = 1 LIMIT 1');
-        $stmt->execute(['restaurantId' => $restaurantId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row ? Event::fromRow($row) : null;
-    }
 }

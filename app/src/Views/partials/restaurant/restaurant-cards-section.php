@@ -16,7 +16,6 @@ $cards        = $restaurantCardsSection->cards;
 $labelFilters = $restaurantCardsSection->labelFilters;
 $labelAbout   = $restaurantCardsSection->labelAboutBtn;
 $labelBook    = $restaurantCardsSection->labelBookBtn;
-$activeFilter = $restaurantCardsSection->activeFilter;
 ?>
 
 <section id="restaurants-grid" class="self-stretch px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-12 flex flex-col justify-start items-start gap-6 sm:gap-8 md:gap-10">
@@ -46,15 +45,12 @@ $activeFilter = $restaurantCardsSection->activeFilter;
         <div class="flex justify-start items-center gap-2 sm:gap-3 overflow-x-auto flex-shrink-0"
              data-filter-group="cuisine" role="radiogroup" aria-label="Filter by cuisine">
             <?php foreach ($filters as $idx => $label): ?>
-                <?php
-                    $filterValue = ($idx === 0) ? 'all' : strtolower(trim($label));
-                    $isActive    = ($activeFilter === '' && $idx === 0) || ($activeFilter !== '' && $filterValue === $activeFilter);
-                ?>
+                <?php $filterValue = ($idx === 0) ? 'all' : strtolower(trim($label)); ?>
                 <button type="button"
                         data-filter-value="<?= htmlspecialchars($filterValue) ?>"
                         role="radio"
-                        aria-checked="<?= $isActive ? 'true' : 'false' ?>"
-                        class="px-4 sm:px-5 py-2.5 sm:py-3 <?= $isActive ? 'bg-red text-white hover:bg-royal-blue' : 'bg-stone-100 text-slate-800 hover:bg-red hover:text-white' ?> rounded-lg sm:rounded-xl text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                        aria-checked="<?= $idx === 0 ? 'true' : 'false' ?>"
+                        class="px-4 sm:px-5 py-2.5 sm:py-3 <?= $idx === 0 ? 'bg-red text-white' : 'bg-stone-100 text-slate-800 hover:bg-red hover:text-white' ?> rounded-lg sm:rounded-xl text-lg sm:text-xl font-normal font-['Montserrat'] whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                     <?= htmlspecialchars($label) ?>
                 </button>
             <?php endforeach; ?>
@@ -122,8 +118,6 @@ $activeFilter = $restaurantCardsSection->activeFilter;
                 </div>
             <?php endforeach; ?>
         </div>
-    <?php else: ?>
-        <!-- No cards available (CMS-only mode) -->
     <?php endif; ?>
 
 </section>

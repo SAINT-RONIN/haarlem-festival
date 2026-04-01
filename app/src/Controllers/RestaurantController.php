@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Constants\RestaurantPageConstants;
 use App\Controllers\Support\ControllerErrorResponder;
+use App\Enums\EventTypeId;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Mappers\RestaurantMapper;
+use App\Mappers\ScheduleMapper;
 use App\Services\Interfaces\IRestaurantDetailService;
 use App\Services\Interfaces\IRestaurantReservationService;
 use App\Services\Interfaces\IRestaurantService;
+use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
 
 /**
@@ -23,6 +27,7 @@ class RestaurantController extends BaseController
         private readonly IRestaurantDetailService      $restaurantDetailService,
         private readonly IRestaurantReservationService $restaurantReservationService,
         private readonly ISessionService               $sessionService,
+        private readonly IScheduleService              $scheduleService,
     ) {
     }
 
@@ -32,8 +37,15 @@ class RestaurantController extends BaseController
     public function index(): void
     {
         try {
-            $data      = $this->restaurantService->getRestaurantPageData();
-            $viewModel = RestaurantMapper::toPageViewModel($data, $this->sessionService->isLoggedIn());
+            $data          = $this->restaurantService->getRestaurantPageData();
+            $scheduleData  = $this->scheduleService->getScheduleData(
+                RestaurantPageConstants::PAGE_SLUG,
+                EventTypeId::Restaurant->value,
+                RestaurantPageConstants::SCHEDULE_MAX_DAYS,
+                filterParams: $this->readScheduleFilterParams(),
+            );
+            $scheduleSection = ScheduleMapper::toScheduleSection($scheduleData);
+            $viewModel = RestaurantMapper::toPageViewModel($data, $this->sessionService->isLoggedIn(), $scheduleSection);
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);

@@ -11,7 +11,11 @@
       "Bash(ls \"Database/haarlem_festival_db \\(19\\).sql\")",
       "Bash(wc -l \"Database/haarlem_festival_db \\(19\\).sql\")",
       "Bash(head -30 \"Database/haarlem_festival_db \\(19\\).sql\")",
-      "Bash(find /c/Users/mathe/PhpstormProjects/haarlem-festival -name *.png -path *my-program*)"
+      "Bash(find /c/Users/mathe/PhpstormProjects/haarlem-festival -name *.png -path *my-program*)",
+      "Bash(cd:*)",
+      "Bash(find C:UsersmathePhpstormProjectshaarlem-festival -name *RestaurantRepository* -o -name *restaurant*repository*)",
+      "Bash(find C:UsersmathePhpstormProjectshaarlem-festival -path *migration* -name *.php)",
+      "Bash(cat:*)"
     ]
   }
 }

@@ -6,10 +6,8 @@ namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
 use App\Mappers\CmsRestaurantsMapper;
-use App\Models\RestaurantUpsertData;
 use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ISessionService;
-use App\ViewModels\Cms\CmsRestaurantFormViewModel;
 
 class CmsRestaurantsController
 {
@@ -43,8 +41,7 @@ class CmsRestaurantsController
         try {
             CmsAuthController::requireAdmin($this->sessionService);
             $currentView = 'restaurants';
-            $emptyData   = new RestaurantUpsertData('', '', '', null, '', '', null, true);
-            $viewModel   = $this->buildFormViewModel(null, $emptyData, []);
+            $viewModel   = $this->buildFormViewModel(null, [], []);
             require __DIR__ . '/../Views/pages/cms/restaurant-create.php';
         } catch (\Throwable $error) {
             ControllerErrorResponder::respond($error);
@@ -73,14 +70,14 @@ class CmsRestaurantsController
     {
         try {
             CmsAuthController::requireAdmin($this->sessionService);
-            $restaurant = $this->restaurantsService->findById((int) $id);
-            if ($restaurant === null) {
+            $event = $this->restaurantsService->findById((int) $id);
+            if ($event === null) {
                 http_response_code(404);
                 require __DIR__ . '/../Views/pages/errors/404.php';
                 return;
             }
             $currentView = 'restaurants';
-            $data = CmsRestaurantsMapper::fromRestaurant($restaurant);
+            $data = CmsRestaurantsMapper::fromEvent($event);
             $viewModel = $this->buildFormViewModel((int) $id, $data, []);
             require __DIR__ . '/../Views/pages/cms/restaurant-edit.php';
         } catch (\Throwable $error) {
@@ -134,31 +131,31 @@ class CmsRestaurantsController
         exit;
     }
 
-    private function extractFormData(): RestaurantUpsertData
+    private function extractFormData(): array
     {
-        return new RestaurantUpsertData(
-            name:            trim($_POST['name'] ?? ''),
-            addressLine:     trim($_POST['addressLine'] ?? ''),
-            city:            trim($_POST['city'] ?? ''),
-            stars:           isset($_POST['stars']) && is_numeric($_POST['stars']) ? (int) $_POST['stars'] : null,
-            cuisineType:     trim($_POST['cuisineType'] ?? ''),
-            descriptionHtml: $_POST['descriptionHtml'] ?? '',
-            imageAssetId:    isset($_POST['imageAssetId']) && is_numeric($_POST['imageAssetId']) ? (int) $_POST['imageAssetId'] : null,
-            isActive:        isset($_POST['isActive']) && $_POST['isActive'] === '1',
-        );
+        return [
+            'Title'               => trim($_POST['title'] ?? ''),
+            'Slug'                => trim(strtolower($_POST['slug'] ?? '')),
+            'ShortDescription'    => trim($_POST['shortDescription'] ?? ''),
+            'LongDescriptionHtml' => $_POST['longDescriptionHtml'] ?? '',
+            'FeaturedImageAssetId' => isset($_POST['featuredImageAssetId']) && is_numeric($_POST['featuredImageAssetId'])
+                ? (int) $_POST['featuredImageAssetId']
+                : null,
+            'IsActive' => isset($_POST['isActive']) && $_POST['isActive'] === '1',
+        ];
     }
 
     /** @param array<string, string> $errors */
-    private function buildFormViewModel(?int $restaurantId, RestaurantUpsertData $data, array $errors): CmsRestaurantFormViewModel
+    private function buildFormViewModel(?int $eventId, array $data, array $errors): \App\ViewModels\Cms\CmsRestaurantFormViewModel
     {
-        $scope  = $restaurantId === null ? 'cms_restaurant_create' : 'cms_restaurant_edit_' . $restaurantId;
-        $action = $restaurantId === null ? '/cms/restaurants' : '/cms/restaurants/' . $restaurantId . '/edit';
-        $title  = $restaurantId === null ? 'Create Restaurant' : 'Edit Restaurant';
-        return CmsRestaurantsMapper::toFormViewModel($restaurantId, $data, $this->sessionService->getCsrfToken($scope), $action, $title, $errors);
+        $scope  = $eventId === null ? 'cms_restaurant_create' : 'cms_restaurant_edit_' . $eventId;
+        $action = $eventId === null ? '/cms/restaurants' : '/cms/restaurants/' . $eventId . '/edit';
+        $title  = $eventId === null ? 'Create Restaurant' : 'Edit Restaurant';
+        return CmsRestaurantsMapper::toFormViewModel($eventId, $data, $this->sessionService->getCsrfToken($scope), $action, $title, $errors);
     }
 
     /** @param array<string, string> $errors */
-    private function renderCreateForm(RestaurantUpsertData $data, array $errors): void
+    private function renderCreateForm(array $data, array $errors): void
     {
         $currentView = 'restaurants';
         $viewModel   = $this->buildFormViewModel(null, $data, $errors);
@@ -166,7 +163,7 @@ class CmsRestaurantsController
     }
 
     /** @param array<string, string> $errors */
-    private function renderEditForm(int $id, RestaurantUpsertData $data, array $errors): void
+    private function renderEditForm(int $id, array $data, array $errors): void
     {
         $currentView = 'restaurants';
         $viewModel   = $this->buildFormViewModel($id, $data, $errors);

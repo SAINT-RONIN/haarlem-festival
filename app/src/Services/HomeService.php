@@ -13,13 +13,14 @@ use App\Models\HomeLocationData;
 use App\Models\HomePageData;
 use App\Models\HomeScheduleDayData;
 use App\Models\HomeScheduleSessionData;
-use App\Models\Restaurant;
+use App\Constants\RestaurantPageConstants;
+use App\Models\RestaurantDetailEvent;
 use App\Models\Venue;
 use App\Models\VenueFilter;
 use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
-use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Services\Interfaces\IHomeService;
 use App\Utils\HomeUiConfig;
@@ -35,7 +36,7 @@ class HomeService implements IHomeService
     public function __construct(
         private IEventTypeRepository $eventTypeRepository,
         private IVenueRepository $venueRepository,
-        private IRestaurantRepository $restaurantRepository,
+        private IEventRepository $eventRepository,
         private IEventSessionRepository $eventSessionRepository,
         private ICmsContentRepository $cmsService,
     ) {
@@ -142,8 +143,8 @@ class HomeService implements IHomeService
             $locations[] = $this->buildVenueLocation($venue);
         }
 
-        foreach ($this->restaurantRepository->findAllActive() as $restaurant) {
-            $locations[] = $this->buildRestaurantLocation($restaurant);
+        foreach ($this->eventRepository->findActiveRestaurantEvents() as $event) {
+            $locations[] = $this->buildRestaurantEventLocation($event);
         }
 
         return $locations;
@@ -167,13 +168,19 @@ class HomeService implements IHomeService
     }
 
     /**
-     * Builds location data for a single restaurant.
+     * Builds location data for a single restaurant event using CMS address data.
      */
-    private function buildRestaurantLocation(Restaurant $restaurant): HomeLocationData
+    private function buildRestaurantEventLocation(RestaurantDetailEvent $event): HomeLocationData
     {
+        $cms = $this->cmsService->getSectionContent(
+            RestaurantPageConstants::PAGE_SLUG,
+            'restaurant_event_' . $event->eventId,
+        );
+        $address = trim(($cms['address_line'] ?? '') . ', ' . ($cms['city'] ?? ''), ', ');
+
         return new HomeLocationData(
-            name: $restaurant->name,
-            address: $restaurant->addressLine,
+            name: $event->title,
+            address: $address !== '' ? $address : null,
             category: 'restaurant',
             badgeClass: HomeUiConfig::BADGE_COLORS['restaurant'],
             lat: null,

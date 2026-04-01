@@ -104,7 +104,6 @@ class CmsEventsMapper
             venueId: $event->venueId,
             venueName: $event->venueName,
             artistId: $event->artistId,
-            restaurantId: $event->restaurantId,
             isActive: $event->isActive,
             sessions: $sessionViewModels,
             sessionPrices: $pricesData,
