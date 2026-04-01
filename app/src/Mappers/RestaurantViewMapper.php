@@ -16,6 +16,7 @@ use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Pages\RestaurantDetailPageData;
 use App\DTOs\Pages\RestaurantListingData;
 use App\DTOs\Pages\RestaurantPageData;
+use App\Models\Restaurant;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
@@ -375,10 +376,13 @@ final class RestaurantViewMapper
     {
         $unique = [];
         foreach ($listings as $listing) {
-            $cuisine = $listing->cms->cuisineType ?? '';
-            $key = mb_strtolower($cuisine);
-            if ($key !== '' && !isset($unique[$key])) {
-                $unique[$key] = $cuisine;
+            foreach (self::parseCuisineTags($listing->cms->cuisineType) as $cuisineTag) {
+                $key = mb_strtolower($cuisineTag);
+                if ($key === '' || isset($unique[$key])) {
+                    continue;
+                }
+
+                $unique[$key] = self::formatCuisineFilterLabel($cuisineTag);
             }
         }
 
@@ -386,6 +390,16 @@ final class RestaurantViewMapper
         sort($labels, SORT_NATURAL | SORT_FLAG_CASE);
 
         return ['All', ...$labels];
+    }
+
+    private static function formatCuisineFilterLabel(string $cuisineTag): string
+    {
+        $normalized = mb_strtolower(trim($cuisineTag));
+
+        return match ($normalized) {
+            'fish and seafood' => 'fish and seafood',
+            default => mb_convert_case($normalized, MB_CASE_TITLE, 'UTF-8'),
+        };
     }
 
     /**
@@ -396,14 +410,15 @@ final class RestaurantViewMapper
     {
         $cards = [];
         foreach ($listings as $listing) {
-            $cuisine = $listing->cms->cuisineType ?? '';
+            $restaurant = $listing->restaurant;
+            $cuisine = self::firstNonEmpty($listing->cms->cuisineType, $restaurant?->cuisineType);
             $cards[] = new RestaurantCardData(
                 id: $listing->event->eventId,
                 name: $listing->event->title,
                 cuisine: $cuisine,
-                address: trim(($listing->cms->addressLine ?? '') . ', ' . ($listing->cms->city ?? ''), ', '),
-                description: RestaurantContentParser::cleanDescription($listing->event->shortDescription),
-                rating: (int)($listing->cms->stars ?? 0),
+                address: self::buildCardAddress($listing, $restaurant),
+                description: self::buildCardDescription($listing, $restaurant),
+                rating: self::buildCardRating($listing, $restaurant),
                 image: $listing->imagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
                 slug: $listing->event->slug,
                 isVegan: str_contains(mb_strtolower($cuisine), 'vegan'),
@@ -411,5 +426,57 @@ final class RestaurantViewMapper
         }
 
         return $cards;
+    }
+
+    private static function buildCardAddress(RestaurantListingData $listing, ?Restaurant $restaurant): string
+    {
+        $address = self::formatAddress($listing->cms->addressLine, $listing->cms->city);
+        if ($address !== '') {
+            return $address;
+        }
+
+        return self::formatAddress($restaurant?->addressLine, $restaurant?->city);
+    }
+
+    private static function buildCardDescription(RestaurantListingData $listing, ?Restaurant $restaurant): string
+    {
+        $candidates = [
+            $restaurant?->descriptionHtml,
+            $listing->cms->aboutText,
+            $listing->cms->locationDescription,
+            $listing->event->longDescriptionHtml,
+            $listing->event->shortDescription,
+        ];
+
+        foreach ($candidates as $candidate) {
+            $description = RestaurantContentParser::cleanDescription((string)($candidate ?? ''));
+            if ($description !== '') {
+                return $description;
+            }
+        }
+
+        return '';
+    }
+
+    private static function buildCardRating(RestaurantListingData $listing, ?Restaurant $restaurant): int
+    {
+        $cmsStars = trim((string)($listing->cms->stars ?? ''));
+        if ($cmsStars !== '' && is_numeric($cmsStars)) {
+            return (int)$cmsStars;
+        }
+
+        return (int)($restaurant?->stars ?? 0);
+    }
+
+    private static function firstNonEmpty(?string ...$values): string
+    {
+        foreach ($values as $value) {
+            $trimmed = trim((string)($value ?? ''));
+            if ($trimmed !== '') {
+                return $trimmed;
+            }
+        }
+
+        return '';
     }
 }

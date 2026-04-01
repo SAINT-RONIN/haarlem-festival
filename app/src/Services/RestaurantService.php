@@ -13,6 +13,7 @@ use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\IRestaurantContentRepository;
+use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
 
 /**
@@ -26,6 +27,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     public function __construct(
         IGlobalContentRepository $globalContentRepo,
         private readonly IRestaurantContentRepository $restaurantContentRepo,
+        private readonly IRestaurantRepository $restaurantRepository,
         private readonly IEventRepository $eventRepository,
         private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {
@@ -60,6 +62,12 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     private function buildEventListings(): array
     {
         $events = $this->eventRepository->findActiveRestaurantEvents();
+        $restaurantsById = [];
+
+        foreach ($this->restaurantRepository->findAllActive() as $restaurant) {
+            $restaurantsById[$restaurant->restaurantId] = $restaurant;
+        }
+
         $listings = [];
 
         foreach ($events as $event) {
@@ -76,6 +84,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
                 event: $event,
                 cms: $cms,
                 imagePath: $imagePath,
+                restaurant: $restaurantsById[$event->restaurantId] ?? null,
             );
         }
 

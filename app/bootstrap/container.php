@@ -245,6 +245,7 @@ return static function (string $controllerClass): object {
             new RestaurantService(
                 $globalContentRepo(),
                 $restaurantContentRepo(),
+                $restaurantRepo(),
                 $eventRepo(),
                 $mediaAssetRepo(),
             ),
@@ -430,6 +431,7 @@ return static function (string $controllerClass): object {
             new RestaurantService(
                 $globalContentRepo(),
                 $restaurantContentRepo(),
+                $restaurantRepo(),
                 $eventRepo(),
                 $mediaAssetRepo(),
             ),

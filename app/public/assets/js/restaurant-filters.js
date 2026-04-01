@@ -46,32 +46,31 @@
     function applyFilter(value) {
         var isAll = !value || value === 'all';
 
-        // Toggle cards
         document.querySelectorAll('[data-cuisines]').forEach(function (card) {
-            if (isAll || card.dataset.cuisines.indexOf(value) !== -1) {
+            var cuisines = (card.dataset.cuisines || '')
+                .split('|')
+                .map(function (tag) { return tag.trim(); })
+                .filter(Boolean);
+
+            if (isAll || cuisines.indexOf(value) !== -1) {
                 card.style.display = '';
             } else {
                 card.style.display = 'none';
             }
         });
 
-        // Toggle active button state
         document.querySelectorAll('[data-filter-value]').forEach(function (btn) {
             var active = (isAll && btn.dataset.filterValue === 'all') ||
                          (!isAll && btn.dataset.filterValue === value);
+
             btn.setAttribute('aria-checked', active ? 'true' : 'false');
-            if (active) {
-                btn.className = btn.className
-                    .replace('bg-stone-100', 'bg-red')
-                    .replace('text-slate-800', 'text-white');
-                if (btn.className.indexOf('bg-red') === -1) {
-                    btn.className = btn.className.replace('bg-stone-100', '') + ' bg-red';
-                }
-            } else {
-                btn.className = btn.className
-                    .replace('bg-red', 'bg-stone-100')
-                    .replace('text-white', 'text-slate-800');
-            }
+            btn.classList.toggle('bg-red', active);
+            btn.classList.toggle('text-white', active);
+            btn.classList.toggle('hover:bg-royal-blue', active);
+            btn.classList.toggle('bg-stone-100', !active);
+            btn.classList.toggle('text-slate-800', !active);
+            btn.classList.toggle('hover:bg-red', !active);
+            btn.classList.toggle('hover:text-white', !active);
         });
     }
 }());
