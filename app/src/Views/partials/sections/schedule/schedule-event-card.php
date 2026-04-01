@@ -172,6 +172,8 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                             <button
                                     type="button"
                                     data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
+                                    data-event-id="<?= htmlspecialchars((string)$event->eventId) ?>"
+                                    data-datetime="<?= htmlspecialchars($event->datetime->format('U')) ?>"
                                     data-price="<?= htmlspecialchars($event->priceDisplay) ?>"
                                     data-is-pay-what-you-like="<?= $event->isPayWhatYouLike ? '1' : '0' ?>"
                                     data-is-history-event="1"

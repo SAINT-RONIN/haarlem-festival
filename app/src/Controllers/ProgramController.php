@@ -201,4 +201,20 @@ class ProgramController extends BaseController
             'canCheckout' => $programData->items !== [],
         ]);
     }
+
+    public function getTourInfo(): void
+    {
+        $this->handleJsonRequest(function (): void {
+            $body = $this->readJsonBody();
+            $eventId = (int)($body['eventId'] ?? 0);
+            $dateTime = isset($body['dateTime']) ? (string)$body['dateTime'] : '';
+
+            $tours = $this->programService->getTourInfo($eventId, $dateTime);
+
+            $this->json([
+                'success' => true,
+                'tours' => $tours,
+            ]);});
+
+    }
 }

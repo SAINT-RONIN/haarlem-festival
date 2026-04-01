@@ -98,6 +98,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     // Route aliases to prevent user-facing 404s from variant links.
     $r->addRoute('GET', '/my program', [ProgramController::class, 'index']);
     $r->addRoute('GET', '/program', [ProgramController::class, 'index']);
+    $r->addRoute('POST', '/api/program/get-tour-info', [ProgramController::class, 'getTourInfo']);
     $r->addRoute('POST', '/api/program/add', [ProgramController::class, 'add']);
     $r->addRoute('POST', '/api/program/add-pass', [ProgramController::class, 'addPass']);
     $r->addRoute('POST', '/api/program/update-quantity', [ProgramController::class, 'updateQuantity']);

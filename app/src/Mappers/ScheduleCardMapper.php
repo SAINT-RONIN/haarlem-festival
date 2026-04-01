@@ -63,6 +63,7 @@ final class ScheduleCardMapper
         $cardData['confirmText']       = $confirmText;
         $cardData['addingText']      = $addingText;
         $cardData['successText']     = $successText;
+        $cardData['datetime'] = $startDateTime;
 
         return $cardData;
     }

@@ -70,6 +70,7 @@ function buildTicketCounterRow(initialQuantity) {
 
 function showCounterWidget(originalBtn) {
     var sessionId = parseInt(originalBtn.getAttribute('data-event-session-id'), 10);
+    var selectedSessionId = sessionId;
     var container = originalBtn.parentElement;
     var isHistoryEvent = originalBtn.getAttribute('data-is-history-event') === '1';
     var confirmText = originalBtn.getAttribute('data-confirm-text') || 'Confirm selection';
@@ -112,18 +113,48 @@ function showCounterWidget(originalBtn) {
     var countersWrapper = document.createElement('div');
     countersWrapper.className = 'flex flex-col items-end gap-2';
 
+    // Language selector (history page only, populated after fetching tour info)
+    var languageSelectorWrapper = null;
+    var languageSelect = null;
+    var singleLabelPriceEl = null;
+    var groupLabelPriceEl = null;
+    var tourInfo = null; // full response from getTourInfo
+
+    if (isHistoryEvent) {
+        languageSelectorWrapper = document.createElement('div');
+        languageSelectorWrapper.className = 'flex items-center gap-2 self-end mb-1';
+
+        var langLabel = document.createElement('span');
+        langLabel.className = 'text-xs text-slate-700 font-semibold';
+        langLabel.textContent = 'Language';
+
+        languageSelect = document.createElement('select');
+        languageSelect.className = 'border border-gray-300 rounded px-2 py-1 text-xs text-slate-800 bg-white';
+
+        languageSelectorWrapper.appendChild(langLabel);
+        languageSelectorWrapper.appendChild(languageSelect);
+
+        widget.appendChild(languageSelectorWrapper);
+    }
+
     var mainCounter = buildTicketCounterRow(quantity);
 
     // Single tickets section (history only, label + counter in one row)
+    var singleRow;
     if (isHistoryEvent) {
-        var singleRow = document.createElement('div');
+        singleRow = document.createElement('div');
         singleRow.className = 'inline-flex items-center gap-2 self-end';
 
         var singleLabel = document.createElement('span');
         singleLabel.className = 'text-xs text-slate-700 font-semibold';
-        singleLabel.textContent = 'Single ticket';
+        singleLabel.textContent = 'Single tickets';
+
+        // price placeholder next to label (updated from tour info)
+        singleLabelPriceEl = document.createElement('span');
+        singleLabelPriceEl.className = 'text-xs text-slate-700 font-normal';
 
         singleRow.appendChild(singleLabel);
+        singleRow.appendChild(singleLabelPriceEl);
         singleRow.appendChild(mainCounter.row);
         countersWrapper.appendChild(singleRow);
     } else {
@@ -133,17 +164,23 @@ function showCounterWidget(originalBtn) {
 
     // Group tickets section (history only, label + counter in one row)
     var groupCounter = null;
+    var groupRow = null;
     if (isHistoryEvent) {
         groupCounter = buildTicketCounterRow(groupTicketQuantity);
 
-        var groupRow = document.createElement('div');
+        groupRow = document.createElement('div');
         groupRow.className = 'inline-flex items-center gap-2 self-end';
 
         var groupLabel = document.createElement('span');
         groupLabel.className = 'text-xs text-slate-700 font-semibold';
-        groupLabel.textContent = 'Group ticket';
+        groupLabel.textContent = 'Group tickets';
+
+        // price placeholder next to label (updated from tour info)
+        groupLabelPriceEl = document.createElement('span');
+        groupLabelPriceEl.className = 'text-xs text-slate-700 font-normal';
 
         groupRow.appendChild(groupLabel);
+        groupRow.appendChild(groupLabelPriceEl);
         groupRow.appendChild(groupCounter.row);
         countersWrapper.appendChild(groupRow);
     }
@@ -158,6 +195,107 @@ function showCounterWidget(originalBtn) {
     widget.appendChild(confirmBtn);
     container.appendChild(widget);
 
+    // Helper to format price (assumes numeric price and currencyCode)
+    function formatPrice(priceObj) {
+        if (!priceObj) {
+            return '';
+        }
+        var amount = parseFloat(priceObj.price);
+        if (isNaN(amount)) {
+            return '';
+        }
+
+        return amount.toFixed(2) + '€';
+    }
+
+    // Update label prices + group counter visibility for a given session info
+    function applySessionPricing(infoForSession) {
+        if (!isHistoryEvent || !infoForSession) {
+            return;
+        }
+
+        var prices = infoForSession.prices || [];
+        if (prices.length > 0) {
+            // Sort by numeric price ascending
+            prices.sort(function (a, b) {
+                return parseFloat(a.price) - parseFloat(b.price);
+            });
+
+            var lowest = prices[0];
+            var highest = prices[prices.length - 1];
+
+            if (singleLabelPriceEl) {
+                singleLabelPriceEl.textContent = ' (' + formatPrice(lowest) + ')';
+            }
+
+            if (groupLabelPriceEl) {
+                groupLabelPriceEl.textContent = ' (' + formatPrice(highest) + ')';
+            }
+        }
+
+        // Hide group counter if seatsAvailable < 4
+        if (groupRow && infoForSession.seatsAvailable < 4) {
+            groupRow.style.display = 'none';
+        } else if (groupRow) {
+            groupRow.style.display = '';
+        }
+    }
+
+    // If this is a history event, fetch tour info to populate dropdown and prices
+    if (isHistoryEvent && languageSelect) {
+        var eventId = originalBtn.getAttribute('data-event-id');
+        var dateTime = originalBtn.getAttribute('data-datetime');
+
+        if (eventId && dateTime) {
+            fetch('/api/program/get-tour-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    eventId: parseInt(eventId, 10),
+                    dateTime: String(dateTime)
+                })
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (!data || !data.success || !data.tours) {
+                        return;
+                    }
+
+                    tourInfo = data.tours;
+
+                    // Build options from tourInfo (map of sessionId -> info)
+                    var firstSessionId = null;
+                    Object.keys(tourInfo).forEach(function (sessionKey) {
+                        var info = tourInfo[sessionKey];
+                        if (!info) return;
+                        var option = document.createElement('option');
+                        option.value = sessionKey;
+                        option.textContent = info.language || sessionKey;
+                        languageSelect.appendChild(option);
+                        if (firstSessionId === null) {
+                            firstSessionId = sessionKey;
+                        }
+                    });
+
+                    // When language changes, update prices and group-row visibility
+                    languageSelect.addEventListener('change', function () {
+                        var selectedId = languageSelect.value;
+                        selectedSessionId = parseInt(selectedId, 10) || sessionId;
+                        applySessionPricing(tourInfo[selectedId]);
+                    });
+
+                    if (firstSessionId !== null) {
+                        languageSelect.value = firstSessionId;
+                        selectedSessionId = parseInt(firstSessionId, 10) || sessionId;
+                        applySessionPricing(tourInfo[firstSessionId]);
+                    }
+                })
+                .catch(function (err) {
+                    console.error('Failed to load tour info:', err);
+                });
+        }
+    }
+
     // Single tickets counter wiring
     mainCounter.decreaseBtn.addEventListener('click', function () {
         var current = mainCounter.getQuantity();
@@ -171,13 +309,18 @@ function showCounterWidget(originalBtn) {
     });
 
     mainCounter.cancelBtn.addEventListener('click', function () {
-        cleanupWidget();
+        if (isHistoryEvent) {
+            // For history events, do not close the widget, just reset to 0
+            mainCounter.setQuantity(0);
+        } else {
+            // For non-history events, keep existing behavior: close the widget
+            cleanupWidget();
+        }
     });
 
     // Group tickets counter wiring
     if (groupCounter) {
         groupCounter.decreaseBtn.addEventListener('click', function () {
-
             var current = groupCounter.getQuantity();
             if (current > 1 || (isHistoryEvent && current > 0)) {
                 groupCounter.setQuantity(current - 1);
@@ -204,11 +347,22 @@ function showCounterWidget(originalBtn) {
             groupTicketQuantity = groupCounter.getQuantity();
         }
 
+        // For history events, use the session id corresponding to the selected language.
+        // For non-history events, this will still be the original sessionId.
+        var effectiveSessionId = isHistoryEvent ? selectedSessionId : sessionId;
+
+        if (isHistoryEvent && quantity === 0 && groupTicketQuantity === 0) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = confirmText;
+            showToast('Please select at least 1 ticket');
+            return;
+        }
+
         fetch('/api/program/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                eventSessionId: sessionId,
+                eventSessionId: effectiveSessionId,
                 quantity: quantity,
                 groupTicketQuantity: groupTicketQuantity,
                 donationAmount: 0

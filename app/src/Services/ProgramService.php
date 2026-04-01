@@ -521,4 +521,48 @@ class ProgramService implements IProgramService
         return 0.0;
     }
 
+    /**
+     * @param array<int, array> $infoByEventSessionId
+     */
+    public function getTourInfo(int $eventId, string $dateTime): array
+    {
+        $infoByEventSessionId = [];
+
+        if ($eventId <= 0 || $dateTime === '') {
+            return $infoByEventSessionId;
+        }
+
+        $parsedDateTime = \DateTimeImmutable::createFromFormat('U', $dateTime);
+        if ($parsedDateTime === false) {
+            return $infoByEventSessionId;
+        }
+
+        $startDate = $parsedDateTime->format('Y-m-d');
+        $startTime = $parsedDateTime->format('H:i:s');
+
+        $sessions = $this->sessionRepository->findSessions(
+            new EventSessionFilter(eventId: $eventId, startDate: $startDate, endDate: $startDate, startTime: $startTime, )
+        );
+
+        foreach ($sessions->sessions as $session) {
+            $prices = $this->priceRepository
+                ->findPricesBySessionIds([$session->eventSessionId])[$session->eventSessionId] ?? [];
+
+            $infoByEventSessionId[$session->eventSessionId] = [
+                'dateTime'       => $session->startDateTime->format('Y-m-d H:i:s'),
+                'language'       => $session->languageCode,
+                'seatsAvailable' => $session->seatsAvailable,
+                'prices'         => array_map(
+                    fn($price) => [
+                        'priceTierId'  => $price->priceTierId,
+                        'price'        => $price->price,
+                    ],
+                    $prices
+                ),
+            ];
+        }
+
+        return $infoByEventSessionId;
+    }
+
 }

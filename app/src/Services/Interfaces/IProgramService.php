@@ -58,4 +58,9 @@ interface IProgramService
      * Returns the CMS content for the "My Program" page.
      */
     public function getProgramMainContent(): ProgramMainContent;
+
+    /**
+     * Returns the info about event sessions, their languages, and prices for historical tours.
+     */
+    public function getTourInfo(int $eventId, string $dateTime): array;
 }
