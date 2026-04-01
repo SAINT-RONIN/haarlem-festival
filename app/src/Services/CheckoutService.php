@@ -272,25 +272,22 @@ class CheckoutService implements ICheckoutService
         string $orderNumber,
         PaymentMethod $method,
     ): array {
-        $appUrl = $this->runtimeConfig->getAppUrl();
-
-        return [
-            'mode' => 'payment',
-            'success_url' => $appUrl . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => $appUrl . '/checkout/cancel?order_id=' . $orderId . '&payment_id=' . $paymentId,
-            'payment_method_types' => $this->mapStripePaymentMethodTypes($method),
-            'line_items' => $this->buildStripeLineItems($programData->total, $orderNumber),
-            'customer_email' => (string)$payload['email'],
-            'client_reference_id' => $orderNumber,
-            'metadata' => [
-                'order_id' => (string)$orderId,
-                'payment_id' => (string)$paymentId,
-                'program_id' => (string)$programData->program->programId,
-                'user_id' => (string)$userId,
-                'first_name' => (string)$payload['firstName'],
-                'last_name' => (string)$payload['lastName'],
-            ],
-        ];
+        return $this->buildStripeCheckoutParams(
+            orderId: $orderId,
+            paymentId: $paymentId,
+            method: $method,
+            total: $programData->total,
+            orderNumber: $orderNumber,
+            customerEmail: (string)$payload['email'],
+            metadata: $this->buildStripeMetadata(
+                orderId: $orderId,
+                paymentId: $paymentId,
+                programId: $programData->program->programId,
+                userId: $userId,
+                firstName: (string)$payload['firstName'],
+                lastName: (string)$payload['lastName'],
+            ),
+        );
     }
 
     /** Links Stripe session and payment intent identifiers back to the payment record. */
@@ -388,24 +385,86 @@ class CheckoutService implements ICheckoutService
      */
     private function buildRetryStripeParams(\App\Models\Order $order, int $paymentId, PaymentMethod $method): array
     {
+        return $this->buildStripeCheckoutParams(
+            orderId: $order->orderId,
+            paymentId: $paymentId,
+            method: $method,
+            total: (float)$order->totalAmount,
+            orderNumber: $order->orderNumber,
+            customerEmail: $order->ticketRecipientEmail ?? '',
+            metadata: $this->buildStripeMetadata(
+                orderId: $order->orderId,
+                paymentId: $paymentId,
+                programId: $order->programId,
+                userId: $order->userAccountId,
+                firstName: (string)($order->ticketRecipientFirstName ?? ''),
+                lastName: (string)($order->ticketRecipientLastName ?? ''),
+            ),
+        );
+    }
+
+    /**
+     * @param array<string, string> $metadata
+     * @return array<string, mixed>
+     */
+    private function buildStripeCheckoutParams(
+        int $orderId,
+        int $paymentId,
+        PaymentMethod $method,
+        float $total,
+        string $orderNumber,
+        string $customerEmail,
+        array $metadata,
+    ): array {
+        return [
+            'mode' => 'payment',
+            ...$this->buildStripeUrls($orderId, $paymentId),
+            'payment_method_types' => $this->mapStripePaymentMethodTypes($method),
+            'line_items' => $this->buildStripeLineItems($total, $orderNumber),
+            'customer_email' => $customerEmail,
+            'client_reference_id' => $orderNumber,
+            'metadata' => $metadata,
+        ];
+    }
+
+    /**
+     * @return array{success_url: string, cancel_url: string}
+     */
+    private function buildStripeUrls(int $orderId, int $paymentId): array
+    {
         $appUrl = $this->runtimeConfig->getAppUrl();
 
         return [
-            'mode' => 'payment',
             'success_url' => $appUrl . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => $appUrl . '/checkout/cancel?order_id=' . $order->orderId . '&payment_id=' . $paymentId,
-            'payment_method_types' => $this->mapStripePaymentMethodTypes($method),
-            'line_items' => $this->buildStripeLineItems((float) $order->totalAmount, $order->orderNumber),
-            'customer_email' => $order->ticketRecipientEmail ?? '',
-            'client_reference_id' => $order->orderNumber,
-            'metadata' => [
-                'order_id' => (string) $order->orderId,
-                'payment_id' => (string) $paymentId,
-                'program_id' => (string) $order->programId,
-                'user_id' => (string) $order->userAccountId,
-                'first_name' => (string) ($order->ticketRecipientFirstName ?? ''),
-                'last_name' => (string) ($order->ticketRecipientLastName ?? ''),
-            ],
+            'cancel_url' => $appUrl . '/checkout/cancel?order_id=' . $orderId . '&payment_id=' . $paymentId,
+        ];
+    }
+
+    /**
+     * @return array{
+     *     order_id: string,
+     *     payment_id: string,
+     *     program_id: string,
+     *     user_id: string,
+     *     first_name: string,
+     *     last_name: string
+     * }
+     */
+    private function buildStripeMetadata(
+        int $orderId,
+        int $paymentId,
+        int $programId,
+        int $userId,
+        string $firstName,
+        string $lastName,
+    ): array {
+        return [
+            'order_id' => (string)$orderId,
+            'payment_id' => (string)$paymentId,
+            'program_id' => (string)$programId,
+            'user_id' => (string)$userId,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
         ];
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Exceptions\ProgramPersistenceException;
 use App\Models\Program;
 use App\DTOs\Filters\ProgramFilter;
 use App\Models\ProgramItem;
@@ -92,7 +93,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      *
      * @param string $sessionKey Browser session identifier for anonymous users.
      * @param int|null $userAccountId Null for guest users, set for authenticated users.
-     * @throws \RuntimeException If the inserted row cannot be read back.
+     * @throws ProgramPersistenceException If the inserted row cannot be read back.
      */
     public function createProgram(string $sessionKey, ?int $userAccountId): Program
     {
@@ -105,7 +106,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         $programs = $this->findPrograms(new ProgramFilter(programId: $programId));
 
         if ($programs === []) {
-            throw new \RuntimeException("Failed to retrieve program after creation (ID: {$programId})");
+            throw new ProgramPersistenceException("Failed to retrieve program after creation (ID: {$programId})");
         }
 
         return $programs[0];
@@ -115,7 +116,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      * Adds an event session to the program cart and returns the newly created item
      * with server-generated fields populated.
      *
-     * @throws \RuntimeException If the inserted row cannot be read back.
+     * @throws ProgramPersistenceException If the inserted row cannot be read back.
      */
     public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
     {
@@ -133,7 +134,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
 
         if ($items === []) {
-            throw new \RuntimeException("Failed to retrieve program item after creation (ID: {$itemId})");
+            throw new ProgramPersistenceException("Failed to retrieve program item after creation (ID: {$itemId})");
         }
 
         return $items[0];
@@ -143,7 +144,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      * Adds a pass to the program cart and returns the newly created item
      * with server-generated fields populated.
      *
-     * @throws \RuntimeException If the inserted row cannot be read back.
+     * @throws ProgramPersistenceException If the inserted row cannot be read back.
      */
     public function addPassItem(int $programId, int $passTypeId, ?string $passValidDate, int $quantity, float $donationAmount): ProgramItem
     {
@@ -162,7 +163,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
 
         if ($items === []) {
-            throw new \RuntimeException("Failed to retrieve program item after creation (ID: {$itemId})");
+            throw new ProgramPersistenceException("Failed to retrieve program item after creation (ID: {$itemId})");
         }
 
         return $items[0];
@@ -228,7 +229,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      * Adds a reservation to the program cart and returns the newly created item
      * with server-generated fields populated.
      *
-     * @throws \RuntimeException If the inserted row cannot be read back.
+     * @throws ProgramPersistenceException If the inserted row cannot be read back.
      */
     public function addReservationItem(int $programId, int $reservationId, int $quantity): ProgramItem
     {
@@ -245,7 +246,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
 
         if ($items === []) {
-            throw new \RuntimeException("Failed to retrieve program item after creation (ID: {$itemId})");
+            throw new ProgramPersistenceException("Failed to retrieve program item after creation (ID: {$itemId})");
         }
 
         return $items[0];

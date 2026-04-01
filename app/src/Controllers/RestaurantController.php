@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Mappers\RestaurantViewMapper;
+use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\IRestaurantDetailService;
 use App\Services\Interfaces\IRestaurantReservationService;
 use App\Services\Interfaces\IRestaurantService;
@@ -21,6 +22,7 @@ class RestaurantController extends BaseController
         private readonly IRestaurantService $restaurantService,
         private readonly IRestaurantDetailService $restaurantDetailService,
         private readonly IRestaurantReservationService $restaurantReservationService,
+        private readonly IProgramService $programService,
         ISessionService $sessionService,
     ) {
         parent::__construct($sessionService);
@@ -76,11 +78,13 @@ class RestaurantController extends BaseController
     public function submitReservation(string $slug): void
     {
         $this->handleJsonRequest(function () use ($slug): void {
-            $this->restaurantReservationService->submitReservation(
-                $slug,
-                $_POST,
-                $this->getSessionKey(),
-                $this->getUserId(),
+            $sessionContext = $this->resolveSessionContext();
+            $result = $this->restaurantReservationService->submitReservation($slug, $_POST);
+
+            $this->programService->addReservationToProgram(
+                $sessionContext->sessionKey,
+                $sessionContext->userId,
+                $result->reservationId,
             );
 
             $this->json(['success' => true, 'redirect' => '/my-program']);

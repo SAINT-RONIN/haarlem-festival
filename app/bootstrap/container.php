@@ -258,8 +258,8 @@ return static function (string $controllerClass): object {
             new RestaurantReservationService(
                 $eventRepo(),
                 $reservationRepo(),
-                $programService(),
             ),
+            $programService(),
             $sessionService,
         ),
         StorytellingController::class => new StorytellingController(

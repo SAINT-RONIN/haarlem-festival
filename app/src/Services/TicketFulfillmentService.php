@@ -26,9 +26,9 @@ use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\ITicketFulfillmentService;
+use App\Tickets\Interfaces\ITicketCodeGenerator;
 use App\Tickets\Interfaces\IQrCodeGenerator;
 use App\Tickets\Interfaces\ITicketPdfGenerator;
-use App\Tickets\TicketCodeGenerator;
 
 /**
  * Creates durable ticket records and delivers them after successful payment.
@@ -45,7 +45,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         private readonly IEmailService $emailService,
         private readonly IQrCodeGenerator $qrCodeGenerator,
         private readonly ITicketPdfGenerator $ticketPdfGenerator,
-        private readonly TicketCodeGenerator $ticketCodeGenerator,
+        private readonly ITicketCodeGenerator $ticketCodeGenerator,
     ) {
     }
 

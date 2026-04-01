@@ -266,7 +266,13 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     {
         try {
             $this->webhookEventRepository->release($eventId);
-        } catch (\Throwable) {
+        } catch (\Throwable $error) {
+            error_log(
+                'Failed to release Stripe webhook reservation for event '
+                . $eventId
+                . ': '
+                . $error->getMessage()
+            );
         }
     }
 }

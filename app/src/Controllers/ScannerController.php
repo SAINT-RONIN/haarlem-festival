@@ -25,11 +25,12 @@ class ScannerController extends BaseController
         ISessionService $sessionService,
     ) {
         parent::__construct($sessionService);
-        $this->requireEmployeeOrAdmin();
     }
 
     public function index(): void
     {
+        $this->requireEmployeeOrAdmin();
+
         $this->handlePageRequest(function (): void {
             $currentView = 'scanner';
             require __DIR__ . '/../Views/pages/cms/scanner.php';
@@ -38,6 +39,8 @@ class ScannerController extends BaseController
 
     public function scan(): void
     {
+        $this->requireEmployeeOrAdmin();
+
         $this->handleJsonRequest(function (): void {
             $body = $this->readJsonBody();
             $ticketCode = strtoupper(trim((string) ($body['ticketCode'] ?? '')));
@@ -64,10 +67,10 @@ class ScannerController extends BaseController
     private function requireEmployeeOrAdmin(): void
     {
         try {
-            $this->requireSessionService()->start();
+            $sessionService = $this->requireSessionService();
+            $sessionService->start();
 
-            if (!$this->requireSessionService()->isLoggedIn()
-                || !$this->requireSessionService()->isEmployeeOrAdmin()) {
+            if (!$sessionService->isLoggedIn() || !$sessionService->isEmployeeOrAdmin()) {
                 $this->redirectAndExit('/cms/login');
             }
         } catch (\Throwable $error) {

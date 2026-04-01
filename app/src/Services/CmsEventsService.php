@@ -440,18 +440,34 @@ class CmsEventsService implements ICmsEventsService
         }
 
         if ($data->startDateTime !== '' && $data->endDateTime !== '') {
-            try {
-                $start = new \DateTimeImmutable($data->startDateTime);
-                $end = new \DateTimeImmutable($data->endDateTime);
-                if ($end <= $start) {
-                    $errors[] = 'End time must be after start time';
-                }
-            } catch (\Exception $e) {
+            $start = $this->parseSessionDateTime($data->startDateTime);
+            $end = $this->parseSessionDateTime($data->endDateTime);
+
+            if ($start === null || $end === null) {
                 $errors[] = 'Invalid date/time format';
+            } elseif ($end <= $start) {
+                $errors[] = 'End time must be after start time';
             }
         }
 
         return $errors;
+    }
+
+    private function parseSessionDateTime(string $value): ?\DateTimeImmutable
+    {
+        foreach (['Y-m-d\TH:i', 'Y-m-d H:i:s', 'Y-m-d H:i'] as $format) {
+            $dateTime = \DateTimeImmutable::createFromFormat($format, $value);
+            $errors = \DateTimeImmutable::getLastErrors();
+
+            if (
+                $dateTime !== false
+                && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))
+            ) {
+                return $dateTime;
+            }
+        }
+
+        return null;
     }
 
     /** Validates CTA URL is absolute or site-relative. */
