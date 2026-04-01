@@ -208,6 +208,7 @@ return static function (string $controllerClass): object {
         $eventSessionPrice(),
         $checkoutContentRepo(),
         $passTypeRepo(),
+        new PriceTierRepository($pdo()),
     ));
 
     $authService = fn() => $make('authService', fn() => new AuthService(

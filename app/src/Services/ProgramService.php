@@ -19,6 +19,7 @@ use App\Content\ProgramMainContent;
 use App\Exceptions\PassPurchaseException;
 use App\Repositories\Interfaces\ICheckoutContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
+use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -41,6 +42,7 @@ class ProgramService implements IProgramService
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly ICheckoutContentRepository $checkoutContentRepository,
         private readonly IPassTypeRepository $passTypeRepository,
+        private readonly IPriceTierRepository $priceTierRepository,
     ) {
     }
 
@@ -461,7 +463,8 @@ class ProgramService implements IProgramService
             minAge: $session->minAge,
             maxAge: $session->maxAge,
             isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
-            basePrice: $this->resolveBasePrice($prices),
+            basePrice: $this->resolveBasePrice($prices, $item->priceTierId),
+            priceTier: $this->priceTierRepository->findById($item->priceTierId)->name,
         );
     }
 
@@ -516,16 +519,10 @@ class ProgramService implements IProgramService
     /**
      * @param EventSessionPrice[] $prices
      */
-    private function resolveBasePrice(array $prices): float
+    private function resolveBasePrice(array $prices, int $priceTierId): float
     {
         foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::Adult->value) {
-                return (float)$price->price;
-            }
-        }
-
-        foreach ($prices as $price) {
-            if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
+            if ($price->priceTierId === $priceTierId) {
                 return (float)$price->price;
             }
         }

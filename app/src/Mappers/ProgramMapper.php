@@ -37,10 +37,11 @@ final class ProgramMapper
             ? self::buildPassLocationDisplay($item->passScope, $item->passValidDate)
             : self::buildLocationDisplay($item->venueName ?? '', $item->hallName);
 
+
         return new ProgramItemViewModel(
             programItemId: $item->programItemId,
             eventSessionId: $item->eventSessionId ?? 0,
-            eventTitle: $item->eventTitle,
+            eventTitle: $item->eventTypeSlug === 'history' ? $item->eventTitle . ' (' . $item->priceTier.' ticket)' : $item->eventTitle,
             locationDisplay: $locationDisplay,
             dateTimeDisplay: $item->passTypeId !== null ? '' : self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime),
             priceDisplay: $priceDisplay,
