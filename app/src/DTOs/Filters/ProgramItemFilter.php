@@ -13,5 +13,6 @@ final readonly class ProgramItemFilter
         public ?int $programItemId = null,
         public ?int $programId = null,
         public ?int $eventSessionId = null,
+        public ?int $priceTierId = null,
     ) {}
 }

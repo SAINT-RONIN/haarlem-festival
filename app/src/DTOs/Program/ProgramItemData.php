@@ -27,6 +27,7 @@ final readonly class ProgramItemData
         public ?int $maxAge = null,
         public bool $isPayWhatYouLike = false,
         public float $basePrice = 0.0,
+        public ?string $priceTier = null,
         public ?int $passTypeId = null,
         public ?string $passName = null,
         public ?string $passScope = null,

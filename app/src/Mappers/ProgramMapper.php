@@ -33,6 +33,9 @@ final class ProgramMapper
     {
         $lineTotal = self::lineTotal($item);
         $priceDisplay = self::buildPriceDisplay($item);
+        $eventTitle = $item->eventTypeSlug === 'history' && $item->priceTier !== null
+            ? $item->eventTitle . ' (' . $item->priceTier . ' ticket)'
+            : $item->eventTitle;
 
         if ($item->reservationId !== null) {
             $locationDisplay = $item->venueName ?? '';
@@ -45,10 +48,11 @@ final class ProgramMapper
             $dateTimeDisplay = self::buildDateTimeDisplay($item->startDateTime, $item->endDateTime);
         }
 
+
         return new ProgramItemViewModel(
             programItemId: $item->programItemId,
-            eventSessionId: $item->eventSessionId ?? 0,
-            eventTitle: $item->eventTitle,
+            eventSessionId: $item->eventSessionId,
+            eventTitle: $eventTitle,
             locationDisplay: $locationDisplay,
             dateTimeDisplay: $dateTimeDisplay,
             priceDisplay: $priceDisplay,
@@ -63,6 +67,7 @@ final class ProgramMapper
             isPayWhatYouLike: $item->isPayWhatYouLike,
             languageLabel: self::buildLanguageLabel($item->languageCode),
             ageLabel: AgeLabelFormatter::format($item->minAge, $item->maxAge),
+            isReservation: $item->reservationId !== null,
         );
     }
 

@@ -63,11 +63,12 @@ class ProgramController extends BaseController
 
         $eventSessionId = (int)($body['eventSessionId'] ?? 0);
         $quantity = (int)($body['quantity'] ?? 1);
+        $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 0);
         $donationAmount = (float)($body['donationAmount'] ?? 0.0);
 
-        $item = $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $donationAmount);
+        $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $groupTicketQuantity, $donationAmount);
 
-        $this->json(['success' => true, 'programItemId' => $item->programItemId]);
+        $this->json(['success' => true]);
     }
 
     /**
@@ -115,8 +116,9 @@ class ProgramController extends BaseController
 
         $programItemId = (int)($body['programItemId'] ?? 0);
         $quantity = (int)($body['quantity'] ?? 0);
+        $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 0);
 
-        $this->programService->updateQuantity($context->sessionKey, $context->userId, $programItemId, $quantity);
+        $this->programService->updateQuantity($context->sessionKey, $context->userId, $programItemId, $quantity, $groupTicketQuantity);
 
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }
@@ -198,5 +200,21 @@ class ProgramController extends BaseController
             'total' => $totals['total'],
             'canCheckout' => $programData->items !== [],
         ]);
+    }
+
+    public function getTourInfo(): void
+    {
+        $this->handleJsonRequest(function (): void {
+            $body = $this->readJsonBody();
+            $eventId = (int)($body['eventId'] ?? 0);
+            $dateTime = isset($body['dateTime']) ? (string)$body['dateTime'] : '';
+
+            $tours = $this->programService->getTourInfo($eventId, $dateTime);
+
+            $this->json([
+                'success' => true,
+                'tours' => $tours,
+            ]);});
+
     }
 }

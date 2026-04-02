@@ -216,6 +216,7 @@ return static function (string $controllerClass): object {
         $checkoutContentRepo(),
         $passTypeRepo(),
         $reservationRepo(),
+        new PriceTierRepository($pdo()),
     ));
 
     $authService = fn() => $make('authService', fn() => new AuthService(
