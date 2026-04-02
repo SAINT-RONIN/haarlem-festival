@@ -174,7 +174,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         };
     }
 
-    /** Filters by exact start hour (e.g. "10:00" matches sessions starting at 10:xx). */
+    /** Filters by exact session start time, accepting either HH:MM or HH:MM:SS input. */
     private function addStartTimeFilter(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->startTime === null) {
@@ -182,7 +182,9 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         }
 
         $conditions[] = 'TIME(es.StartDateTime) = :startTime';
-        $params['startTime'] = $filters->startTime . ':00';
+        $params['startTime'] = preg_match('/^\d{2}:\d{2}$/', $filters->startTime) === 1
+            ? $filters->startTime . ':00'
+            : $filters->startTime;
     }
 
     /** Classifies sessions as free, fixed-price, or pay-what-you-like via subqueries. */
