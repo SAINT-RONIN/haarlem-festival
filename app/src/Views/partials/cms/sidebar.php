@@ -4,7 +4,10 @@
  *
  * @var string $currentView Current navigation state ('dashboard' or 'pages')
  */
+use App\Services\SessionService;
+
 $currentView = $currentView ?? 'dashboard';
+$logoutCsrfToken = (new SessionService())->getCsrfToken('cms_logout');
 ?>
 <!-- Sidebar -->
 <aside class="w-64 bg-white border-r border-gray-200 flex flex-col" aria-label="CMS sidebar">
@@ -101,11 +104,13 @@ $currentView = $currentView ?? 'dashboard';
     </nav>
 
     <footer class="p-4 border-t border-gray-200">
-        <a href="/cms/logout"
-           class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200">
-            <i data-lucide="log-out" class="w-5 h-5" aria-hidden="true"></i>
-            <span class="font-medium">Logout</span>
-        </a>
+        <form action="/cms/logout" method="post">
+            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($logoutCsrfToken) ?>">
+            <button type="submit"
+                    class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                <i data-lucide="log-out" class="w-5 h-5" aria-hidden="true"></i>
+                <span class="font-medium">Logout</span>
+            </button>
+        </form>
     </footer>
 </aside>
-

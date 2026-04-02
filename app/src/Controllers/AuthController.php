@@ -17,6 +17,8 @@ use App\Services\Interfaces\ISessionService;
  */
 class AuthController extends BaseController
 {
+    private const CSRF_SCOPE_LOGOUT = 'logout';
+
     public function __construct(
         private readonly IAuthService $authService,
         ISessionService $sessionService,
@@ -59,6 +61,10 @@ class AuthController extends BaseController
     public function logout(): void
     {
         $this->handlePageRequest(function (): void {
+            if (!$this->sessionService->isValidCsrfToken(self::CSRF_SCOPE_LOGOUT, $this->readStringPostParam('_csrf'))) {
+                $this->redirectAndExit('/');
+            }
+
             $this->sessionService->logout();
             $this->redirectAndExit('/');
         });

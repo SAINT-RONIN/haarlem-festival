@@ -132,7 +132,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
     $r->addRoute('POST', '/login', [AuthController::class, 'login']);
-    $r->addRoute('GET', '/logout', [AuthController::class, 'logout']);
+    $r->addRoute('POST', '/logout', [AuthController::class, 'logout']);
     $r->addRoute('GET', '/register', [AuthController::class, 'showRegister']);
     $r->addRoute('POST', '/register', [AuthController::class, 'register']);
     $r->addRoute('GET', '/forgot-password', [AuthController::class, 'showForgotPassword']);
@@ -143,7 +143,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     // CMS Authentication Routes
     $r->addRoute('GET', '/cms/login', [CmsAuthController::class, 'showLogin']);
     $r->addRoute('POST', '/cms/login', [CmsAuthController::class, 'login']);
-    $r->addRoute('GET', '/cms/logout', [CmsAuthController::class, 'logout']);
+    $r->addRoute('POST', '/cms/logout', [CmsAuthController::class, 'logout']);
 
     // CMS Dashboard Routes
     $r->addRoute('GET', '/cms', [CmsDashboardController::class, 'index']);
