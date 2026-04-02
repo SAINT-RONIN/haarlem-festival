@@ -214,7 +214,7 @@ class ProgramController extends BaseController
             $this->json([
                 'success' => true,
                 'tours' => $tours,
-            ]);});
-
+            ]);
+        });
     }
 }

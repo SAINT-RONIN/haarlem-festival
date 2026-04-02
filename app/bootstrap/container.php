@@ -147,6 +147,7 @@ return static function (string $controllerClass): object {
     $resetTokenRepo     = fn() => $make('resetTokenRepo', fn() => new PasswordResetTokenRepository($pdo()));
     $programRepo        = fn() => $make('programRepo', fn() => new ProgramRepository($pdo()));
     $passTypeRepo       = fn() => $make('passTypeRepo', fn() => new PassTypeRepository($pdo()));
+    $priceTierRepo      = fn() => $make('priceTierRepo', fn() => new PriceTierRepository($pdo()));
     $reservationRepo    = fn() => $make('reservationRepo', fn() => new ReservationRepository($pdo()));
     $passPurchaseRepo   = fn() => $make('passPurchaseRepo', fn() => new PassPurchaseRepository($pdo()));
     $orderRepo          = fn() => $make('orderRepo', fn() => new OrderRepository($pdo()));
@@ -212,11 +213,12 @@ return static function (string $controllerClass): object {
     $programService = fn() => $make('programService', fn() => new ProgramService(
         $programRepo(),
         $eventSessionRepo(),
+        $eventSessionLabel(),
         $eventSessionPrice(),
         $checkoutContentRepo(),
         $passTypeRepo(),
+        $priceTierRepo(),
         $reservationRepo(),
-        new PriceTierRepository($pdo()),
     ));
 
     $authService = fn() => $make('authService', fn() => new AuthService(
@@ -313,7 +315,7 @@ return static function (string $controllerClass): object {
                 $eventSessionPrice(),
                 $eventTypeRepo(),
                 $venueRepo(),
-                new PriceTierRepository($pdo()),
+                $priceTierRepo(),
                 $orderItemRepo(),
             ),
             $sessionService,

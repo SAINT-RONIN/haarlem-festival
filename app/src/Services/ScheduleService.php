@@ -10,6 +10,7 @@ use App\Helpers\FormatHelper;
 use App\Helpers\SessionGroupingHelper;
 use App\DTOs\Filters\EventSessionFilter;
 use App\DTOs\Schedule\ScheduleSectionData;
+use App\DTOs\Schedule\SessionWithEvent;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
 use App\DTOs\Filters\EventTypeFilter;
@@ -267,14 +268,23 @@ class ScheduleService implements IScheduleService
     ): array {
         $date = $day->date;
         $daySessions = $sessionsByDate[$date] ?? [];
+        $historyTourOptionsMap = [];
 
         if ($eventTypeId === EventTypeId::History->value) {
-            [$daySessions, $labelsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap);
+            [$daySessions, $labelsMap, $historyTourOptionsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap, $pricesMap);
         }
 
         $events = [];
         foreach ($daySessions as $session) {
-            $events[] = $this->buildEventCard($session, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings);
+            $events[] = $this->buildEventCard(
+                $session,
+                $eventTypeSlug,
+                $eventTypeId,
+                $labelsMap,
+                $pricesMap,
+                $displayStrings,
+                $historyTourOptionsMap[$session->eventSessionId] ?? [],
+            );
         }
 
         return [
@@ -291,22 +301,36 @@ class ScheduleService implements IScheduleService
      * Multiple sessions at the same time slot (one per language) are merged
      * into a single session with combined labels for the schedule card.
      *
-     * @param array $sessions Sessions for a single day
+     * @param SessionWithEvent[] $sessions Sessions for a single day
      * @param array $labelsMap Pre-loaded labels indexed by session ID
-     * @return array{0: array, 1: array} [groupedSessions, updatedLabelsMap]
+     * @param array<int, EventSessionPrice[]> $pricesMap
+     * @return array{0: SessionWithEvent[], 1: array, 2: array<int, array<int, array<string, mixed>>>}
      */
-    private function groupSessionsByTimeSlot(array $sessions, array $labelsMap): array
+    private function groupSessionsByTimeSlot(array $sessions, array $labelsMap, array $pricesMap): array
     {
         $grouped = [];
+        $groupedSessionsByTime = [];
         foreach ($sessions as $session) {
             $timeKey = $session->startDateTime->format('Y-m-d H:i:s');
             if (!isset($grouped[$timeKey])) {
                 $grouped[$timeKey] = $session;
+                $groupedSessionsByTime[$timeKey] = [$session];
             } else {
+                $groupedSessionsByTime[$timeKey][] = $session;
                 $labelsMap = $this->mergeSessionLabels($labelsMap, $grouped[$timeKey]->eventSessionId, $session->eventSessionId);
             }
         }
-        return [array_values($grouped), $labelsMap];
+
+        $historyTourOptionsMap = [];
+        foreach ($grouped as $timeKey => $primarySession) {
+            $historyTourOptionsMap[$primarySession->eventSessionId] = $this->buildHistoryTourOptions(
+                $groupedSessionsByTime[$timeKey] ?? [$primarySession],
+                $labelsMap,
+                $pricesMap,
+            );
+        }
+
+        return [array_values($grouped), $labelsMap, $historyTourOptionsMap];
     }
 
     /** Merges unique labels from a secondary session into the primary session's label list. */
@@ -342,6 +366,7 @@ class ScheduleService implements IScheduleService
         array $labelsMap,
         array $pricesMap,
         array $displayStrings,
+        array $historyTourOptions = [],
     ): array {
         $sessionId = $session->eventSessionId;
 
@@ -350,7 +375,7 @@ class ScheduleService implements IScheduleService
         $priceData = $this->resolvePrice($pricesMap[$sessionId] ?? []);
         $cta = $this->resolveCta($session, $eventTypeSlug, $displayStrings['ctaButtonText']);
 
-        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $displayStrings);
+        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $displayStrings, $historyTourOptions);
     }
 
     /**
@@ -416,13 +441,14 @@ class ScheduleService implements IScheduleService
         array $priceData,
         array $cta,
         array $displayStrings,
+        array $historyTourOptions = [],
     ): array {
         return array_merge(
             $this->buildCardIdentityFields($session, $eventTypeSlug, $eventTypeId),
             $this->buildCardPriceFields($priceData, $cta, $displayStrings),
             $this->buildCardLocationFields($session, $displayStrings['startPoint']),
             $this->buildCardTimeFields($session),
-            $this->buildCardDetailFields($session, $labels, $minAge, $maxAge, $priceData, $displayStrings['groupTicketFallback']),
+            $this->buildCardDetailFields($session, $labels, $minAge, $maxAge, $priceData, $displayStrings['groupTicketFallback'], $historyTourOptions),
         );
     }
 
@@ -484,6 +510,7 @@ class ScheduleService implements IScheduleService
         ?int $maxAge,
         array $priceData,
         string $groupTicketFallback,
+        array $historyTourOptions = [],
     ): array {
         return [
             'labels' => $labels,
@@ -495,7 +522,186 @@ class ScheduleService implements IScheduleService
             'artistName' => $session->artistName,
             'artistImageUrl' => $session->artistImageUrl,
             'historyTicketLabel' => $session->historyTicketLabel ?? $groupTicketFallback ?: null,
+            'historyTourOptions' => $historyTourOptions,
         ];
+    }
+
+    /**
+     * @param SessionWithEvent[] $sessions
+     * @param array<int, EventSessionLabel[]> $labelsMap
+     * @param array<int, EventSessionPrice[]> $pricesMap
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildHistoryTourOptions(array $sessions, array $labelsMap, array $pricesMap): array
+    {
+        $options = [];
+        $seenLanguageKeys = [];
+        $sharedPrices = $this->buildSharedHistoryPrices($sessions, $pricesMap);
+
+        foreach ($sessions as $session) {
+            $labels = $labelsMap[$session->eventSessionId] ?? [];
+            $languageLabel = $this->resolveHistoryLanguageLabel($session->languageCode, $labels);
+            $languageKey = $this->resolveHistoryLanguageKey($session->languageCode, $labels);
+
+            if ($languageLabel === null || $languageLabel === '') {
+                continue;
+            }
+
+            if ($languageKey !== null && isset($seenLanguageKeys[$languageKey])) {
+                continue;
+            }
+
+            if ($languageKey !== null) {
+                $seenLanguageKeys[$languageKey] = true;
+            }
+
+            $options[$session->eventSessionId] = [
+                'language' => $languageLabel,
+                'seatsAvailable' => $this->resolveHistorySeatsAvailable($session),
+                'prices' => $sharedPrices,
+            ];
+        }
+
+        return $options;
+    }
+
+    /**
+     * @param SessionWithEvent[] $sessions
+     * @param array<int, EventSessionPrice[]> $pricesMap
+     * @return array<int, array{priceTierId: int, price: string}>
+     */
+    private function buildSharedHistoryPrices(array $sessions, array $pricesMap): array
+    {
+        $sharedPrices = [];
+
+        foreach ($sessions as $session) {
+            foreach ($pricesMap[$session->eventSessionId] ?? [] as $price) {
+                $priceKey = $this->resolveHistoryPriceKey($price);
+
+                if (!isset($sharedPrices[$priceKey])) {
+                    $sharedPrices[$priceKey] = [
+                        'priceTierId' => $price->priceTierId,
+                        'price' => $price->price,
+                    ];
+                    continue;
+                }
+
+                if ((float)$price->price > (float)$sharedPrices[$priceKey]['price']) {
+                    $sharedPrices[$priceKey] = [
+                        'priceTierId' => $price->priceTierId,
+                        'price' => $price->price,
+                    ];
+                }
+            }
+        }
+
+        return array_values($sharedPrices);
+    }
+
+    private function resolveHistorySeatsAvailable(SessionWithEvent $session): int
+    {
+        if ($session->seatsAvailable !== null) {
+            return max(0, $session->seatsAvailable);
+        }
+
+        $available = $session->capacityTotal - $session->soldSingleTickets - $session->soldReservedSeats;
+        return max(0, $available);
+    }
+
+    private function resolveHistoryLanguageLabel(?string $languageCode, array $labels): ?string
+    {
+        foreach ($labels as $label) {
+            $normalized = $this->normalizeHistoryLanguageLabel($label->labelText);
+            if ($normalized !== null) {
+                return $normalized;
+            }
+        }
+
+        return $this->mapHistoryLanguageCodeToLabel($languageCode);
+    }
+
+    private function resolveHistoryLanguageKey(?string $languageCode, array $labels): ?string
+    {
+        $codeKey = $this->normalizeHistoryLanguageCode($languageCode);
+        if ($codeKey !== null) {
+            return $codeKey;
+        }
+
+        foreach ($labels as $label) {
+            $labelKey = $this->normalizeHistoryLanguageKeyFromText($label->labelText);
+            if ($labelKey !== null) {
+                return $labelKey;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeHistoryLanguageLabel(string $labelText): ?string
+    {
+        $trimmed = trim($labelText);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (stripos($trimmed, 'In ') === 0) {
+            $trimmed = trim(substr($trimmed, 3));
+        }
+
+        return $this->mapHistoryLanguageCodeToLabel($trimmed) ?? $trimmed;
+    }
+
+    private function normalizeHistoryLanguageKeyFromText(string $labelText): ?string
+    {
+        $trimmed = trim($labelText);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (stripos($trimmed, 'In ') === 0) {
+            $trimmed = trim(substr($trimmed, 3));
+        }
+
+        return $this->normalizeHistoryLanguageCode($trimmed) ?? strtoupper($trimmed);
+    }
+
+    private function mapHistoryLanguageCodeToLabel(?string $languageCode): ?string
+    {
+        return match ($this->normalizeHistoryLanguageCode($languageCode)) {
+            'ENG' => 'English',
+            'NL' => 'Dutch',
+            'ZH' => 'Chinese',
+            default => $languageCode !== null && trim($languageCode) !== '' ? trim($languageCode) : null,
+        };
+    }
+
+    private function normalizeHistoryLanguageCode(?string $languageCode): ?string
+    {
+        if ($languageCode === null) {
+            return null;
+        }
+
+        $normalized = strtoupper(trim($languageCode));
+        if ($normalized === '') {
+            return null;
+        }
+
+        return match ($normalized) {
+            'ENGLISH' => 'ENG',
+            'DUTCH', 'NEDERLANDS' => 'NL',
+            'CHINESE', 'MANDARIN' => 'ZH',
+            default => $normalized,
+        };
+    }
+
+    private function resolveHistoryPriceKey(EventSessionPrice $price): string
+    {
+        return match ($price->priceTierId) {
+            PriceTierId::Adult->value, PriceTierId::Single->value => 'single',
+            PriceTierId::Family->value, PriceTierId::Group->value => 'group',
+            PriceTierId::PayWhatYouLike->value => 'pay-what-you-like',
+            default => 'tier-' . $price->priceTierId,
+        };
     }
 
     /** Maps price data to a human-readable price type string. */

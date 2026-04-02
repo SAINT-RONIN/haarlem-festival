@@ -41,6 +41,7 @@ final readonly class ScheduleEventCardViewModel
      * @param string|null $artistImageUrl Artist image URL (Jazz specific)
      * @param string|null $historyVenue Start venue name for history tours (History specific)
      * @param string|null $groupTicketInfo Group ticket information text (History specific)
+     * @param array<int, array<string, mixed>> $historyTourOptions Preloaded language/price options for history cards
      */
     public function __construct(
         public int     $eventSessionId,
@@ -73,6 +74,7 @@ final readonly class ScheduleEventCardViewModel
         public ?string $artistImageUrl = null,
         public ?string $historyVenue = null,
         public ?string $groupTicketInfo = null,
+        public array   $historyTourOptions = [],
         public string  $confirmText = '',
         public string  $addingText = '',
         public string  $successText = '',
