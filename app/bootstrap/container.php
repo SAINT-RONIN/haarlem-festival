@@ -104,6 +104,7 @@ use App\Services\SessionService;
 use App\Services\StorytellingDetailService;
 use App\Services\StorytellingService;
 use App\Services\InvoiceFulfillmentService;
+use App\Services\OrderHistoryService;
 use App\Services\TicketFulfillmentService;
 use App\Repositories\InvoiceRepository;
 use App\Tickets\InvoicePdfGenerator;
@@ -447,7 +448,7 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         OrderHistoryController::class => new OrderHistoryController(
-            new OrderHistoryRepository($pdo()),
+            new OrderHistoryService(new OrderHistoryRepository($pdo())),
             $sessionService,
         ),
         default => new $controllerClass(),
