@@ -37,5 +37,9 @@ interface IOrderItemRepository
      * @return \App\Models\OrderItem[]
      */
     public function findByOrderId(int $orderId): array;
-}
 
+    /**
+     * Finds a single order item by its primary key.
+     */
+    public function findById(int $orderItemId): ?\App\Models\OrderItem;
+}

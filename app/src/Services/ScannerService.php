@@ -16,6 +16,8 @@ use App\Services\Interfaces\IScannerService;
  */
 class ScannerService implements IScannerService
 {
+    private const TICKET_CODE_PATTERN = '/HF-[A-Z0-9]+/';
+
     public function __construct(
         private readonly IScannerRepository $scannerRepository,
         private readonly ITicketRepository $ticketRepository,
@@ -24,12 +26,28 @@ class ScannerService implements IScannerService
 
     public function scanTicket(string $ticketCode, int $scannedByUserId): TicketScanDetail
     {
-        $this->validateTicketCode($ticketCode);
-        $detail = $this->findTicketOrFail($ticketCode);
+        $normalizedTicketCode = $this->normalizeTicketCode($ticketCode);
+        $this->validateTicketCode($normalizedTicketCode);
+        $detail = $this->findTicketOrFail($normalizedTicketCode);
         $this->validateNotAlreadyScanned($detail);
         $this->markAsScanned($detail->ticketId, $scannedByUserId);
 
         return $detail;
+    }
+
+    private function normalizeTicketCode(string $ticketCode): string
+    {
+        $normalizedTicketCode = strtoupper(trim($ticketCode));
+
+        if ($normalizedTicketCode === '') {
+            return '';
+        }
+
+        if (preg_match(self::TICKET_CODE_PATTERN, $normalizedTicketCode, $matches) === 1) {
+            return $matches[0];
+        }
+
+        return $normalizedTicketCode;
     }
 
     private function validateTicketCode(string $ticketCode): void

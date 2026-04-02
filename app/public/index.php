@@ -29,7 +29,12 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
 }
 
 $appEnv = strtolower((string)(getenv('APP_ENV') ?: 'local'));
-$disableRouteCache = in_array($appEnv, ['local', 'development', 'dev'], true);
+$appUrlHost = strtolower((string)(parse_url((string)(getenv('APP_URL') ?: ''), PHP_URL_HOST) ?: ''));
+$requestHost = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+$isLocalHost = in_array($appUrlHost, ['localhost', '127.0.0.1'], true)
+    || str_starts_with($requestHost, 'localhost')
+    || str_starts_with($requestHost, '127.0.0.1');
+$disableRouteCache = in_array($appEnv, ['local', 'development', 'dev'], true) || $isLocalHost;
 
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
@@ -41,6 +46,7 @@ use App\Controllers\CmsArtistsController;
 use App\Controllers\CmsOrdersController;
 use App\Controllers\CmsRestaurantsController;
 use App\Controllers\CmsUsersController;
+use App\Controllers\EmployeeScannerController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
@@ -60,8 +66,9 @@ use FastRoute\RouteCollector;
 // Load controller factory — returns a closure keyed by controller class name.
 $container = require __DIR__ . '/../bootstrap/container.php';
 
-// Ensure the route cache directory exists before FastRoute tries to write into it.
-$routeCacheFile = __DIR__ . '/../storage/cache/route.cache';
+// Use a versioned cache filename so route changes cannot reuse stale compiled tables.
+$routeCacheVersion = md5_file(__FILE__) ?: 'default';
+$routeCacheFile = __DIR__ . '/../storage/cache/route.' . $routeCacheVersion . '.cache';
 $routeCacheDir = dirname($routeCacheFile);
 if (!is_dir($routeCacheDir)) {
     mkdir($routeCacheDir, 0775, true);
@@ -114,6 +121,8 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/api/checkout/retry-session', [CheckoutController::class, 'retrySession']);
     $r->addRoute('POST', '/api/stripe/webhook', [CheckoutController::class, 'webhook']);
     $r->addRoute('POST', '/checkout/webhook', [CheckoutController::class, 'webhook']);
+    $r->addRoute('GET', '/employee/scanner', [EmployeeScannerController::class, 'index']);
+    $r->addRoute('POST', '/api/employee/scanner/scan', [EmployeeScannerController::class, 'scan']);
 
 
     // Website Authentication Routes

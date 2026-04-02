@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsArtistsController;
+use App\Controllers\EmployeeScannerController;
 use App\Controllers\OrderHistoryController;
 use App\Repositories\OrderHistoryRepository;
 use App\Controllers\CmsAuthController;
@@ -82,6 +83,7 @@ use App\Services\CmsOrdersService;
 use App\Services\CmsUsersService;
 use App\Services\CheckoutService;
 use App\Services\StripeWebhookHandler;
+use App\Services\TicketScannerService;
 use App\Services\HistoricalLocationService;
 use App\Services\HistoryService;
 use App\Services\HomeService;
@@ -408,6 +410,12 @@ return static function (string $controllerClass): object {
                 $ticketRepo(),
             ),
             $sessionService,
+        ),
+        EmployeeScannerController::class => new EmployeeScannerController(
+            $sessionService,
+            new TicketScannerService(
+                $ticketRepo(),
+            ),
         ),
         ScheduleApiController::class => new ScheduleApiController(
             $scheduleService(),

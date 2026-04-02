@@ -19,6 +19,16 @@
     let html5QrCode = null;
     let isScanning = false;
 
+    function normalizeTicketCode(rawValue) {
+        var normalizedValue = (rawValue || '').trim().toUpperCase();
+        if (normalizedValue === '') {
+            return '';
+        }
+
+        var match = normalizedValue.match(/HF-[A-Z0-9]+/);
+        return match ? match[0] : normalizedValue;
+    }
+
     // ── Camera Scanner ──
 
     function startScanner() {
@@ -54,14 +64,14 @@
 
     function onQrCodeDecoded(decodedText) {
         stopScanner();
-        submitScan(decodedText.trim());
+        submitScan(normalizeTicketCode(decodedText));
     }
 
     // ── Manual Input ──
 
     manualForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        var code = manualInput.value.trim();
+        var code = normalizeTicketCode(manualInput.value);
         if (code === '') return;
         submitScan(code);
     });

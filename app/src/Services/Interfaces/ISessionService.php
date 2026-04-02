@@ -37,6 +37,11 @@ interface ISessionService
     public function isAdmin(): bool;
 
     /**
+     * Checks if the current user has the Employee role.
+     */
+    public function isEmployee(): bool;
+
+    /**
      * Checks if the current user is an employee or administrator.
      */
     public function isEmployeeOrAdmin(): bool;

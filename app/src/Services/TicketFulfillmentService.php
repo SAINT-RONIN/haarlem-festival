@@ -87,6 +87,26 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         }
     }
 
+    public function regenerateTicketDocumentsByTicketCode(string $ticketCode): void
+    {
+        $normalizedTicketCode = strtoupper(trim($ticketCode));
+        if ($normalizedTicketCode === '') {
+            throw new TicketDeliveryException('Ticket code is required to regenerate ticket documents.');
+        }
+
+        $ticket = $this->ticketRepository->findByCode($normalizedTicketCode);
+        if ($ticket === null) {
+            throw new TicketDeliveryException("Ticket {$normalizedTicketCode} could not be found.");
+        }
+
+        $orderItem = $this->orderItemRepository->findById($ticket->orderItemId);
+        if ($orderItem === null) {
+            throw new TicketDeliveryException("Order item {$ticket->orderItemId} for ticket {$normalizedTicketCode} could not be found.");
+        }
+
+        $this->regenerateTicketDocumentsForOrder($orderItem->orderId);
+    }
+
     private function requireOrder(int $orderId): Order
     {
         $order = $this->orderRepository->findById($orderId);
@@ -155,6 +175,16 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         }
 
         return $items;
+    }
+
+    private function regenerateTicketDocumentsForOrder(int $orderId): void
+    {
+        $order = $this->requireOrder($orderId);
+        $recipient = $this->resolveRecipient($order, null, null, null);
+        $orderItems = $this->loadTicketableOrderItems($orderId);
+        $sessionsById = $this->loadSessionsById($orderItems);
+        $ticketsByItemId = $this->ensureTicketsForOrderItems($orderItems);
+        $this->ensurePdfAttachments($order, $recipient, $orderItems, $sessionsById, $ticketsByItemId, true);
     }
 
     /**
@@ -273,6 +303,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         array $orderItems,
         array $sessionsById,
         array $ticketsByItemId,
+        bool $forcePdfRegeneration = false,
     ): array {
         $attachments = [];
 
@@ -289,6 +320,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
                     $ticket,
                     $index + 1,
                     $ticketCount,
+                    $forcePdfRegeneration,
                 );
             }
         }
@@ -303,8 +335,9 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         Ticket $ticket,
         int $position,
         int $totalForItem,
+        bool $forcePdfRegeneration = false,
     ): TicketEmailAttachment {
-        $existingAttachment = $this->loadExistingPdfAttachment($ticket);
+        $existingAttachment = $forcePdfRegeneration ? null : $this->loadExistingPdfAttachment($ticket);
         if ($existingAttachment !== null) {
             return $existingAttachment;
         }

@@ -59,9 +59,9 @@ class TicketRepository extends BaseRepository implements ITicketRepository
         );
     }
 
-    public function markScanned(int $ticketId, int $scannedByUserId, ?\DateTimeImmutable $scannedAtUtc = null): void
+    public function markScanned(int $ticketId, int $scannedByUserId, ?\DateTimeImmutable $scannedAtUtc = null): bool
     {
-        $this->execute(
+        $statement = $this->execute(
             'UPDATE Ticket
             SET IsScanned = 1,
                 ScannedAtUtc = :scannedAtUtc,
@@ -73,5 +73,7 @@ class TicketRepository extends BaseRepository implements ITicketRepository
                 'ticketId' => $ticketId,
             ],
         );
+
+        return $statement->rowCount() > 0;
     }
 }
