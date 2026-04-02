@@ -81,5 +81,13 @@ class OrderItemRepository extends BaseRepository implements IOrderItemRepository
             fn(array $row) => OrderItem::fromRow($row),
         );
     }
-}
 
+    public function findById(int $orderItemId): ?OrderItem
+    {
+        return $this->fetchOne(
+            'SELECT * FROM OrderItem WHERE OrderItemId = :orderItemId',
+            [':orderItemId' => $orderItemId],
+            fn(array $row) => OrderItem::fromRow($row),
+        );
+    }
+}

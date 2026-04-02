@@ -13,6 +13,9 @@ use App\Tickets\Interfaces\ITicketPdfGenerator;
  */
 final class PdfTicketGenerator extends BasePdfWriter implements ITicketPdfGenerator
 {
+    private const QR_QUIET_ZONE_MODULES = 4;
+    private const QR_MODULE_SIZE = 7.0;
+
     public function generatePdf(TicketDocumentData $document, QrCodeMatrix $qrCode): string
     {
         $content = $this->buildContentStream($document, $qrCode);
@@ -65,17 +68,25 @@ final class PdfTicketGenerator extends BasePdfWriter implements ITicketPdfGenera
 
     private function drawQrCard(TicketDocumentData $document, QrCodeMatrix $qrCode): string
     {
+        $cardX = 56.0;
+        $cardY = 286.0;
+        $cardWidth = 236.0;
+        $cardHeight = 344.0;
+        $qrTotalSize = ($qrCode->size + (self::QR_QUIET_ZONE_MODULES * 2)) * self::QR_MODULE_SIZE;
+        $qrOriginX = floor($cardX + (($cardWidth - $qrTotalSize) / 2));
+        $qrOriginY = 392.0;
+
         $commands = [];
-        $commands[] = $this->fillRect(56, 286, 236, 344, '0.98 0.98 0.99');
-        $commands[] = $this->strokeRect(56, 286, 236, 344, '0.88 0.90 0.94');
-        $commands[] = $this->drawQrMatrix($qrCode, 82, 406, 184);
-        $commands[] = $this->writeText('Scan at the venue entrance', 102, 372, 11, true, '0.10 0.16 0.26');
+        $commands[] = $this->fillRect($cardX, $cardY, $cardWidth, $cardHeight, '1 1 1');
+        $commands[] = $this->strokeRect($cardX, $cardY, $cardWidth, $cardHeight, '0.88 0.90 0.94');
+        $commands[] = $this->drawQrMatrix($qrCode, $qrOriginX, $qrOriginY, self::QR_MODULE_SIZE, self::QR_QUIET_ZONE_MODULES);
+        $commands[] = $this->writeText('Scan at the venue entrance', 94, 362, 11, true, '0.10 0.16 0.26');
         $commands[] = $this->writeWrappedText(
-            $document->eventTitle,
-            86,
-            344,
+            'Ticket code: ' . $document->ticketCode,
+            82,
+            338,
             10,
-            28,
+            24,
             false,
             '0.31 0.37 0.48',
         );
@@ -83,12 +94,19 @@ final class PdfTicketGenerator extends BasePdfWriter implements ITicketPdfGenera
         return implode("\n", $commands);
     }
 
-    private function drawQrMatrix(QrCodeMatrix $qrCode, float $originX, float $originY, float $size): string
+    private function drawQrMatrix(
+        QrCodeMatrix $qrCode,
+        float $originX,
+        float $originY,
+        float $moduleSize,
+        int $quietZoneModules,
+    ): string
     {
-        $moduleSize = $size / $qrCode->size;
+        $matrixSize = $qrCode->size * $moduleSize;
+        $quietZoneSize = $quietZoneModules * $moduleSize;
+        $totalSize = $matrixSize + ($quietZoneSize * 2);
         $commands = [
-            $this->fillRect($originX - 10, $originY - 10, $size + 20, $size + 20, '1 1 1'),
-            $this->fillRect($originX - 2, $originY - 2, $size + 4, $size + 4, '0.90 0.92 0.95'),
+            $this->fillRect($originX, $originY, $totalSize, $totalSize, '1 1 1'),
         ];
 
         for ($row = 0; $row < $qrCode->size; $row++) {
@@ -97,8 +115,8 @@ final class PdfTicketGenerator extends BasePdfWriter implements ITicketPdfGenera
                     continue;
                 }
 
-                $x = $originX + ($column * $moduleSize);
-                $y = $originY + (($qrCode->size - 1 - $row) * $moduleSize);
+                $x = $originX + $quietZoneSize + ($column * $moduleSize);
+                $y = $originY + $quietZoneSize + (($qrCode->size - 1 - $row) * $moduleSize);
                 $commands[] = $this->fillRect($x, $y, $moduleSize, $moduleSize, '0 0 0');
             }
         }

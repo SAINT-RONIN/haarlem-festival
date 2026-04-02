@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\DTOs\Auth\RegistrationFormData;
+use App\Enums\UserRoleId;
 use App\Mappers\AuthMapper;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ICaptchaService;
@@ -215,7 +216,7 @@ class AuthController extends BaseController
     private function redirectIfLoggedIn(string $url): void
     {
         if ($this->sessionService->isLoggedIn()) {
-            $this->redirectAndExit($url);
+            $this->redirectAndExit($this->resolvePostLoginRedirect());
         }
     }
 
@@ -233,6 +234,25 @@ class AuthController extends BaseController
 
         $user = $result['user'];
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
-        $this->redirectAndExit('/');
+        $this->redirectAndExit($this->resolvePostLoginRedirect($user->userRoleId));
+    }
+
+    private function resolvePostLoginRedirect(?int $roleId = null): string
+    {
+        $resolvedRoleId = $roleId;
+
+        if ($resolvedRoleId === null) {
+            if ($this->sessionService->isEmployee()) {
+                $resolvedRoleId = UserRoleId::Employee->value;
+            } elseif ($this->sessionService->isAdmin()) {
+                $resolvedRoleId = UserRoleId::Administrator->value;
+            }
+        }
+
+        return match ($resolvedRoleId) {
+            UserRoleId::Employee->value => '/employee/scanner',
+            UserRoleId::Administrator->value => '/cms',
+            default => '/',
+        };
     }
 }

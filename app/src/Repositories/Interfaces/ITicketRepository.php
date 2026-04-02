@@ -23,5 +23,5 @@ interface ITicketRepository
 
     public function updatePdfAssetId(int $ticketId, ?int $pdfAssetId): void;
 
-    public function markScanned(int $ticketId, int $scannedByUserId, ?\DateTimeImmutable $scannedAtUtc = null): void;
+    public function markScanned(int $ticketId, int $scannedByUserId, ?\DateTimeImmutable $scannedAtUtc = null): bool;
 }

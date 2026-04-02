@@ -15,4 +15,6 @@ interface ITicketFulfillmentService
         ?string $fallbackFirstName = null,
         ?string $fallbackLastName = null,
     ): void;
+
+    public function regenerateTicketDocumentsByTicketCode(string $ticketCode): void;
 }
