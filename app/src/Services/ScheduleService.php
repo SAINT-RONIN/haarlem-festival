@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
 use App\Helpers\FormatHelper;
+use App\Helpers\HistorySessionHelper;
 use App\Helpers\SessionGroupingHelper;
 use App\DTOs\Filters\EventSessionFilter;
 use App\DTOs\Schedule\ScheduleSectionData;
@@ -540,8 +541,8 @@ class ScheduleService implements IScheduleService
 
         foreach ($sessions as $session) {
             $labels = $labelsMap[$session->eventSessionId] ?? [];
-            $languageLabel = $this->resolveHistoryLanguageLabel($session->languageCode, $labels);
-            $languageKey = $this->resolveHistoryLanguageKey($session->languageCode, $labels);
+            $languageLabel = HistorySessionHelper::resolveLanguageLabel($session->languageCode, $labels);
+            $languageKey = HistorySessionHelper::resolveLanguageKey($session->languageCode, $labels);
 
             if ($languageLabel === null || $languageLabel === '') {
                 continue;
@@ -557,7 +558,7 @@ class ScheduleService implements IScheduleService
 
             $options[$session->eventSessionId] = [
                 'language' => $languageLabel,
-                'seatsAvailable' => $this->resolveHistorySeatsAvailable($session),
+                'seatsAvailable' => HistorySessionHelper::resolveSeatsAvailable($session),
                 'prices' => $sharedPrices,
             ];
         }
@@ -575,133 +576,19 @@ class ScheduleService implements IScheduleService
         $sharedPrices = [];
 
         foreach ($sessions as $session) {
-            foreach ($pricesMap[$session->eventSessionId] ?? [] as $price) {
-                $priceKey = $this->resolveHistoryPriceKey($price);
-
-                if (!isset($sharedPrices[$priceKey])) {
-                    $sharedPrices[$priceKey] = [
-                        'priceTierId' => $price->priceTierId,
-                        'price' => $price->price,
-                    ];
-                    continue;
-                }
-
-                if ((float)$price->price > (float)$sharedPrices[$priceKey]['price']) {
-                    $sharedPrices[$priceKey] = [
-                        'priceTierId' => $price->priceTierId,
-                        'price' => $price->price,
-                    ];
-                }
-            }
+            $sharedPrices = HistorySessionHelper::mergeHighestPricesByKey(
+                $sharedPrices,
+                $pricesMap[$session->eventSessionId] ?? [],
+            );
         }
 
-        return array_values($sharedPrices);
-    }
-
-    private function resolveHistorySeatsAvailable(SessionWithEvent $session): int
-    {
-        if ($session->seatsAvailable !== null) {
-            return max(0, $session->seatsAvailable);
-        }
-
-        $available = $session->capacityTotal - $session->soldSingleTickets - $session->soldReservedSeats;
-        return max(0, $available);
-    }
-
-    private function resolveHistoryLanguageLabel(?string $languageCode, array $labels): ?string
-    {
-        foreach ($labels as $label) {
-            $normalized = $this->normalizeHistoryLanguageLabel($label->labelText);
-            if ($normalized !== null) {
-                return $normalized;
-            }
-        }
-
-        return $this->mapHistoryLanguageCodeToLabel($languageCode);
-    }
-
-    private function resolveHistoryLanguageKey(?string $languageCode, array $labels): ?string
-    {
-        $codeKey = $this->normalizeHistoryLanguageCode($languageCode);
-        if ($codeKey !== null) {
-            return $codeKey;
-        }
-
-        foreach ($labels as $label) {
-            $labelKey = $this->normalizeHistoryLanguageKeyFromText($label->labelText);
-            if ($labelKey !== null) {
-                return $labelKey;
-            }
-        }
-
-        return null;
-    }
-
-    private function normalizeHistoryLanguageLabel(string $labelText): ?string
-    {
-        $trimmed = trim($labelText);
-        if ($trimmed === '') {
-            return null;
-        }
-
-        if (stripos($trimmed, 'In ') === 0) {
-            $trimmed = trim(substr($trimmed, 3));
-        }
-
-        return $this->mapHistoryLanguageCodeToLabel($trimmed) ?? $trimmed;
-    }
-
-    private function normalizeHistoryLanguageKeyFromText(string $labelText): ?string
-    {
-        $trimmed = trim($labelText);
-        if ($trimmed === '') {
-            return null;
-        }
-
-        if (stripos($trimmed, 'In ') === 0) {
-            $trimmed = trim(substr($trimmed, 3));
-        }
-
-        return $this->normalizeHistoryLanguageCode($trimmed) ?? strtoupper($trimmed);
-    }
-
-    private function mapHistoryLanguageCodeToLabel(?string $languageCode): ?string
-    {
-        return match ($this->normalizeHistoryLanguageCode($languageCode)) {
-            'ENG' => 'English',
-            'NL' => 'Dutch',
-            'ZH' => 'Chinese',
-            default => $languageCode !== null && trim($languageCode) !== '' ? trim($languageCode) : null,
-        };
-    }
-
-    private function normalizeHistoryLanguageCode(?string $languageCode): ?string
-    {
-        if ($languageCode === null) {
-            return null;
-        }
-
-        $normalized = strtoupper(trim($languageCode));
-        if ($normalized === '') {
-            return null;
-        }
-
-        return match ($normalized) {
-            'ENGLISH' => 'ENG',
-            'DUTCH', 'NEDERLANDS' => 'NL',
-            'CHINESE', 'MANDARIN' => 'ZH',
-            default => $normalized,
-        };
-    }
-
-    private function resolveHistoryPriceKey(EventSessionPrice $price): string
-    {
-        return match ($price->priceTierId) {
-            PriceTierId::Adult->value, PriceTierId::Single->value => 'single',
-            PriceTierId::Family->value, PriceTierId::Group->value => 'group',
-            PriceTierId::PayWhatYouLike->value => 'pay-what-you-like',
-            default => 'tier-' . $price->priceTierId,
-        };
+        return array_values(array_map(
+            static fn(EventSessionPrice $price): array => [
+                'priceTierId' => $price->priceTierId,
+                'price' => $price->price,
+            ],
+            $sharedPrices,
+        ));
     }
 
     /** Maps price data to a human-readable price type string. */

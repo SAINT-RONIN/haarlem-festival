@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\CmsItemType;
 use App\Models\CmsItem;
 use App\DTOs\Cms\CmsItemEditData;
 use App\DTOs\Cms\CmsMediaAssetData;
@@ -86,11 +87,11 @@ final class CmsItemEnricher implements ICmsItemEnricher
 
     private function resolveInputType(CmsItem $item): string
     {
-        $type = $item->itemType->value;
-        $inputType = CmsContentLimits::getInputType($type);
+        $type = $item->itemType;
+        $inputType = CmsContentLimits::getInputType($type->value);
 
         // Certain TEXT keys (e.g. long descriptions) are edited via TinyMCE instead of a plain input
-        if (strtoupper($type) === 'TEXT' && CmsContentLimits::textKeyUsesTinyMce($item->itemKey)) {
+        if ($type === CmsItemType::Text && CmsContentLimits::textKeyUsesTinyMce($item->itemKey)) {
             return 'tinymce';
         }
 
@@ -99,28 +100,28 @@ final class CmsItemEnricher implements ICmsItemEnricher
 
     private function buildEnrichedItem(CmsItem $item, ?MediaAsset $mediaAsset, ?string $resolvedFilePath, string $inputType): CmsItemEditData
     {
-        $type = $item->itemType->value;
+        $type = $item->itemType;
 
         return new CmsItemEditData(
             itemId: $item->cmsItemId,
             itemKey: $item->itemKey,
             displayName: $item->itemKey,
-            type: $type,
-            typeLabel: CmsContentLimits::getLabelForType($type),
+            type: $type->value,
+            typeLabel: CmsContentLimits::getLabelForType($type->value),
             inputType: $inputType,
-            maxChars: CmsContentLimits::getCharLimitForType($type),
+            maxChars: CmsContentLimits::getCharLimitForType($type->value),
             value: $this->getItemValue($item),
             mediaAssetId: $item->mediaAssetId,
             mediaAsset: $this->buildMediaAssetData($item, $mediaAsset, $resolvedFilePath, $type),
         );
     }
 
-    private function buildMediaAssetData(CmsItem $item, ?MediaAsset $mediaAsset, ?string $resolvedFilePath, string $type): ?CmsMediaAssetData
+    private function buildMediaAssetData(CmsItem $item, ?MediaAsset $mediaAsset, ?string $resolvedFilePath, CmsItemType $type): ?CmsMediaAssetData
     {
         if ($mediaAsset !== null) {
             return $this->mediaAssetDataFromAsset($mediaAsset);
         }
-        if ($resolvedFilePath !== null && strtoupper($type) === 'IMAGE_PATH') {
+        if ($resolvedFilePath !== null && $type === CmsItemType::ImagePath) {
             return $this->mediaAssetDataFromFilePath($item->itemKey, $resolvedFilePath);
         }
         return null;
@@ -150,14 +151,14 @@ final class CmsItemEnricher implements ICmsItemEnricher
      */
     private function getItemValue(CmsItem $item): string
     {
-        $type = strtoupper($item->itemType->value);
+        $type = $item->itemType;
 
-        if ($type === 'HTML') {
+        if ($type === CmsItemType::Html) {
             return (string)($item->htmlValue ?? '');
         }
 
         $value = (string)($item->textValue ?? '');
-        if ($type === 'TEXT' && $value !== '' && preg_match('/<[^>]+>/', $value) === 1) {
+        if ($type === CmsItemType::Text && $value !== '' && preg_match('/<[^>]+>/', $value) === 1) {
             return trim(strip_tags(html_entity_decode($value)));
         }
 

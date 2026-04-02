@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\CmsItemType;
 use App\Enums\EventTypeId;
 use App\Helpers\FormatHelper;
 use App\Models\CmsItem;
@@ -191,7 +192,7 @@ class CmsEditService implements ICmsEditService
             throw new \App\Exceptions\CmsEditException("Item ID {$itemId} not found");
         }
 
-        $type = $item->itemType->value;
+        $type = $item->itemType;
         $validationError = $this->validateItemValue($rawValue, $type, $item->itemKey);
         if ($validationError !== null) {
             return $validationError;
@@ -241,9 +242,9 @@ class CmsEditService implements ICmsEditService
      *
      * @return string|null Error message or null if valid
      */
-    private function validateItemValue(string $value, string $type, string $itemKey): ?string
+    private function validateItemValue(string $value, CmsItemType $type, string $itemKey): ?string
     {
-        $maxChars = CmsContentLimits::getCharLimitForType($type);
+        $maxChars = CmsContentLimits::getCharLimitForType($type->value);
         $plainText = $this->stripHtmlForCount($value);
 
         if (strlen($plainText) > $maxChars) {
@@ -264,16 +265,14 @@ class CmsEditService implements ICmsEditService
      *
      * @return array{HtmlValue: ?string, TextValue: ?string}
      */
-    private function prepareUpdateData(string $value, string $type): array
+    private function prepareUpdateData(string $value, CmsItemType $type): array
     {
-        $normalizedType = strtoupper($type);
-
-        if ($normalizedType === 'HTML') {
+        if ($type === CmsItemType::Html) {
             return ['HtmlValue' => $value, 'TextValue' => null];
         }
 
         // TEXT items strip all HTML and decode entities so the stored value is always plain text
-        if ($normalizedType === 'TEXT') {
+        if ($type === CmsItemType::Text) {
             $decoded = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $plain = trim(strip_tags($decoded));
             return ['TextValue' => $plain, 'HtmlValue' => null];

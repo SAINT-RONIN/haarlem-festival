@@ -15,8 +15,8 @@ use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
 use App\Exceptions\PassPurchaseException;
 use App\Exceptions\ProgramException;
+use App\Helpers\HistorySessionHelper;
 use App\Models\EventSessionPrice;
-use App\Models\EventSessionLabel;
 use App\Models\Program;
 use App\Models\ProgramItem;
 use App\Repositories\Interfaces\ICheckoutContentRepository;
@@ -691,8 +691,8 @@ class ProgramService implements IProgramService
 
         foreach ($sessions->sessions as $session) {
             $labels = $labelsBySessionId[$session->eventSessionId] ?? [];
-            $languageLabel = $this->resolveHistoryLanguageLabel($session->languageCode, $labels);
-            $languageKey = $this->resolveHistoryLanguageKey($session->languageCode, $labels);
+            $languageLabel = HistorySessionHelper::resolveLanguageLabel($session->languageCode, $labels);
+            $languageKey = HistorySessionHelper::resolveLanguageKey($session->languageCode, $labels);
 
             if ($languageKey !== null && isset($seenLanguageKeys[$languageKey])) {
                 continue;
@@ -708,7 +708,7 @@ class ProgramService implements IProgramService
             $infoByEventSessionId[$session->eventSessionId] = [
                 'dateTime' => $session->startDateTime->format('Y-m-d H:i:s'),
                 'language' => $languageLabel,
-                'seatsAvailable' => $this->resolveHistorySeatsAvailable($session),
+                'seatsAvailable' => HistorySessionHelper::resolveSeatsAvailable($session),
                 'prices' => array_map(
                     static fn(EventSessionPrice $price) => [
                         'priceTierId' => $price->priceTierId,
@@ -733,135 +733,12 @@ class ProgramService implements IProgramService
 
         foreach ($sessions as $session) {
             $timeKey = $session->startDateTime->format('Y-m-d H:i:s');
-            if (!isset($sharedPricesByTimeKey[$timeKey])) {
-                $sharedPricesByTimeKey[$timeKey] = [];
-            }
-
-            foreach ($pricesBySessionId[$session->eventSessionId] ?? [] as $price) {
-                $priceKey = $this->resolveHistoryPriceKey($price);
-                if (!isset($sharedPricesByTimeKey[$timeKey][$priceKey])) {
-                    $sharedPricesByTimeKey[$timeKey][$priceKey] = $price;
-                    continue;
-                }
-
-                if ((float)$price->price > (float)$sharedPricesByTimeKey[$timeKey][$priceKey]->price) {
-                    $sharedPricesByTimeKey[$timeKey][$priceKey] = $price;
-                }
-            }
+            $sharedPricesByTimeKey[$timeKey] = HistorySessionHelper::mergeHighestPricesByKey(
+                $sharedPricesByTimeKey[$timeKey] ?? [],
+                $pricesBySessionId[$session->eventSessionId] ?? [],
+            );
         }
 
         return array_map(static fn(array $prices): array => array_values($prices), $sharedPricesByTimeKey);
-    }
-
-    private function resolveHistorySeatsAvailable(SessionWithEvent $session): int
-    {
-        if ($session->seatsAvailable !== null) {
-            return max(0, $session->seatsAvailable);
-        }
-
-        $available = $session->capacityTotal - $session->soldSingleTickets - $session->soldReservedSeats;
-        return max(0, $available);
-    }
-
-    /**
-     * @param EventSessionLabel[] $labels
-     */
-    private function resolveHistoryLanguageLabel(?string $languageCode, array $labels): ?string
-    {
-        foreach ($labels as $label) {
-            $normalized = $this->normalizeHistoryLanguageLabel($label->labelText);
-            if ($normalized !== null) {
-                return $normalized;
-            }
-        }
-
-        return $this->mapLanguageCodeToLabel($languageCode);
-    }
-
-    /**
-     * @param EventSessionLabel[] $labels
-     */
-    private function resolveHistoryLanguageKey(?string $languageCode, array $labels): ?string
-    {
-        $codeKey = $this->normalizeLanguageCode($languageCode);
-        if ($codeKey !== null) {
-            return $codeKey;
-        }
-
-        foreach ($labels as $label) {
-            $labelKey = $this->normalizeHistoryLanguageKeyFromText($label->labelText);
-            if ($labelKey !== null) {
-                return $labelKey;
-            }
-        }
-
-        return null;
-    }
-
-    private function normalizeHistoryLanguageLabel(string $labelText): ?string
-    {
-        $trimmed = trim($labelText);
-        if ($trimmed === '') {
-            return null;
-        }
-
-        if (stripos($trimmed, 'In ') === 0) {
-            $trimmed = trim(substr($trimmed, 3));
-        }
-
-        return $this->mapLanguageCodeToLabel($trimmed) ?? $trimmed;
-    }
-
-    private function normalizeHistoryLanguageKeyFromText(string $labelText): ?string
-    {
-        $trimmed = trim($labelText);
-        if ($trimmed === '') {
-            return null;
-        }
-
-        if (stripos($trimmed, 'In ') === 0) {
-            $trimmed = trim(substr($trimmed, 3));
-        }
-
-        return $this->normalizeLanguageCode($trimmed) ?? strtoupper($trimmed);
-    }
-
-    private function mapLanguageCodeToLabel(?string $languageCode): ?string
-    {
-        return match ($this->normalizeLanguageCode($languageCode)) {
-            'ENG' => 'English',
-            'NL' => 'Dutch',
-            'ZH' => 'Chinese',
-            default => $languageCode !== null && trim($languageCode) !== '' ? trim($languageCode) : null,
-        };
-    }
-
-    private function normalizeLanguageCode(?string $languageCode): ?string
-    {
-        if ($languageCode === null) {
-            return null;
-        }
-
-        $normalized = strtoupper(trim($languageCode));
-        if ($normalized === '') {
-            return null;
-        }
-
-        return match ($normalized) {
-            'ENGLISH' => 'ENG',
-            'DUTCH', 'NEDERLANDS' => 'NL',
-            'CHINESE', 'MANDARIN' => 'ZH',
-            default => $normalized,
-        };
-    }
-
-    private function resolveHistoryPriceKey(EventSessionPrice $price): string
-    {
-        return match ($price->priceTierId) {
-            PriceTierId::Adult->value, PriceTierId::Single->value => 'single',
-            PriceTierId::Family->value, PriceTierId::Group->value => 'group',
-            PriceTierId::PayWhatYouLike->value => 'pay-what-you-like',
-            default => 'tier-' . $price->priceTierId,
-        };
     }
 }

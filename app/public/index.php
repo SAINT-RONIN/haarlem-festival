@@ -40,6 +40,8 @@ use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
+use App\Controllers\CmsPageEditorController;
+use App\Controllers\CmsPageImageController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsArtistsController;
@@ -212,14 +214,14 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/artists/{id:\d+}/delete',           [CmsArtistsController::class, 'delete']);
 
     // Slug-aware routes (preferred)
-    $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);
-    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'update']);
-    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
+    $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsPageEditorController::class, 'edit']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsPageEditorController::class, 'update']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/upload-image', [CmsPageImageController::class, 'uploadImage']);
 
     // Legacy routes (id-only)
-    $r->addRoute('GET', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'edit']);
-    $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'update']);
-    $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
+    $r->addRoute('GET', '/cms/pages/{id:\d+}/edit', [CmsPageEditorController::class, 'edit']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsPageEditorController::class, 'update']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsPageImageController::class, 'uploadImage']);
 
 }, [
     'cacheFile' => $routeCacheFile,

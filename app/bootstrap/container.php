@@ -10,6 +10,8 @@ use App\Controllers\OrderHistoryController;
 use App\Repositories\OrderHistoryRepository;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
+use App\Controllers\CmsPageEditorController;
+use App\Controllers\CmsPageImageController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsOrdersController;
@@ -336,6 +338,18 @@ return static function (string $controllerClass): object {
         CmsDashboardController::class => new CmsDashboardController(
             $sessionService,
             new CmsDashboardService($cmsRepo()),
+        ),
+        CmsPageEditorController::class => new CmsPageEditorController(
+            $sessionService,
+            new CmsEditService(
+                $cmsRepo(),
+                $eventRepo(),
+                $cmsItemEnricher(),
+                $cmsPreviewUrlResolver(),
+            ),
+        ),
+        CmsPageImageController::class => new CmsPageImageController(
+            $sessionService,
             new CmsEditService(
                 $cmsRepo(),
                 $eventRepo(),
