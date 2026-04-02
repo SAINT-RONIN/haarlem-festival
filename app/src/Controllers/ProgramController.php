@@ -197,7 +197,7 @@ class ProgramController extends BaseController
             'subtotal' => $totals['subtotal'],
             'taxAmount' => $totals['taxAmount'],
             'total' => $totals['total'],
-            'canCheckout' => $programData->items !== [],
+            'canCheckout' => $programData->canCheckout,
         ]);
     }
 

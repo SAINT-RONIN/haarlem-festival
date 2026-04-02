@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsEventsInputMapper;
 use App\Mappers\CmsEventsViewMapper;
@@ -331,10 +330,10 @@ class CmsEventsController extends CmsBaseController
         );
     }
 
-    /** Defaults to the Adult price tier if none is specified in the form. */
+    /** Forwards the posted session price to the service layer. */
     private function handleSetPrice(int $sessionId, int $eventId): void
     {
-        $priceTierId = $this->readOptionalIntPostParam('PriceTierId') ?? PriceTierId::Adult->value;
+        $priceTierId = $this->readOptionalIntPostParam('PriceTierId');
         $this->eventsService->setSessionPrice($sessionId, $priceTierId, $this->readStringPostParam('Price') ?? '0');
         $this->redirectWithFlash('Price updated successfully.', 'success', "/cms/events/{$eventId}/edit");
     }

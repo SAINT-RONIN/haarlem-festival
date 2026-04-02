@@ -287,7 +287,7 @@ class ProgramService implements IProgramService
     /** Builds a ProgramData with no items and zero totals. */
     private function buildEmptyProgramData(?Program $program): ProgramData
     {
-        return new ProgramData(program: $program, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0);
+        return new ProgramData(program: $program, items: [], subtotal: 0.0, taxAmount: 0.0, total: 0.0, canCheckout: false);
     }
 
     /** Enriches items and calculates financial totals for a non-empty program. */
@@ -303,6 +303,7 @@ class ProgramService implements IProgramService
             subtotal: $subtotal,
             taxAmount: $taxAmount,
             total: $subtotal + $taxAmount,
+            canCheckout: $enrichedItems !== [],
         );
     }
 

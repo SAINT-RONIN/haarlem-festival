@@ -128,7 +128,7 @@ final class ProgramMapper
             taxAmount: FormatHelper::price($programData->taxAmount),
             total: FormatHelper::price($programData->total),
             checkoutButtonText: $cmsContent->checkoutButtonText ?? '',
-            canCheckout: $itemViewModels !== [],
+            canCheckout: $programData->canCheckout,
             isLoggedIn: $isLoggedIn,
         );
     }

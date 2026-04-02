@@ -70,4 +70,9 @@ interface IAuthService
      * @return array{success: bool, error?: string}
      */
     public function resetPassword(string $rawToken, string $newPassword, string $confirmPassword): array;
+
+    /**
+     * Resolves the correct post-login redirect path for the given role.
+     */
+    public function resolvePostLoginRedirect(?int $roleId): string;
 }

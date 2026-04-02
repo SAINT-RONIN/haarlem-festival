@@ -31,6 +31,7 @@ use App\Exceptions\RetryPaymentException;
 use App\Services\Interfaces\ICheckoutService;
 use App\Services\Interfaces\ICheckoutRuntimeConfig;
 use App\Services\Interfaces\ITicketFulfillmentService;
+use App\DTOs\Events\SessionCapacityInfo;
 use PDO;
 
 /**
@@ -891,9 +892,15 @@ class CheckoutService implements ICheckoutService
             throw new CheckoutInputException("Session for '{$item->eventTitle}' no longer exists.");
         }
 
-        $available = $capacity->getAvailableSeats();
+        $available = $this->calculateAvailableSeats($capacity);
         $this->validateSeatAvailability($item, $available);
         $this->validateSingleTicketCap($item, $capacity);
+    }
+
+    /** Returns remaining seats for one session from the repository capacity snapshot. */
+    private function calculateAvailableSeats(SessionCapacityInfo $capacity): int
+    {
+        return max(0, $capacity->capacityTotal - $capacity->soldSingleTickets - $capacity->soldReservedSeats);
     }
 
     /**

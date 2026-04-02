@@ -370,16 +370,23 @@ class CmsEventsService implements ICmsEventsService
      *
      * @throws ValidationException
      */
-    public function setSessionPrice(int $sessionId, int $priceTierId, string $rawPrice): bool
+    public function setSessionPrice(int $sessionId, ?int $priceTierId, string $rawPrice): bool
     {
+        $resolvedPriceTierId = $this->resolvePriceTierId($priceTierId);
         // Normalize comma decimal separators (e.g. "12,50" -> "12.50") for European input
         $price = (float) str_replace(',', '.', $rawPrice);
-        $errors = $this->validatePrice($priceTierId, $price);
+        $errors = $this->validatePrice($resolvedPriceTierId, $price);
         if (!empty($errors)) {
             throw new ValidationException($errors);
         }
 
-        return $this->priceRepository->upsert($sessionId, $priceTierId, $price);
+        return $this->priceRepository->upsert($sessionId, $resolvedPriceTierId, $price);
+    }
+
+    /** Applies the default Adult tier when the CMS form omits a price tier. */
+    private function resolvePriceTierId(?int $priceTierId): int
+    {
+        return $priceTierId ?? PriceTierId::Adult->value;
     }
 
     /**

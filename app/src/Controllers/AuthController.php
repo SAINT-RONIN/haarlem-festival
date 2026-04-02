@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\DTOs\Auth\RegistrationFormData;
-use App\Enums\UserRoleId;
 use App\Mappers\AuthMapper;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ICaptchaService;
@@ -34,7 +33,7 @@ class AuthController extends BaseController
     public function showLogin(): void
     {
         $this->handlePageRequest(function (): void {
-            $this->redirectIfLoggedIn('/');
+            $this->redirectIfLoggedIn();
 
             $error = $this->sessionService->consumeFlash('login_error');
             $success = $this->sessionService->consumeFlash('login_success');
@@ -77,7 +76,7 @@ class AuthController extends BaseController
     public function showRegister(): void
     {
         $this->handlePageRequest(function (): void {
-            $this->redirectIfLoggedIn('/');
+            $this->redirectIfLoggedIn();
 
             $recaptchaSiteKey = $this->captchaService->getSiteKey();
             $errors = $this->sessionService->consumeFlash('register_errors') ?? [];
@@ -219,10 +218,10 @@ class AuthController extends BaseController
     }
 
     /** Redirects already-authenticated users away from login/register pages. */
-    private function redirectIfLoggedIn(string $url): void
+    private function redirectIfLoggedIn(): void
     {
         if ($this->sessionService->isLoggedIn()) {
-            $this->redirectAndExit($this->resolvePostLoginRedirect());
+            $this->redirectAndExit($this->authService->resolvePostLoginRedirect($this->sessionService->getRoleId()));
         }
     }
 
@@ -240,25 +239,6 @@ class AuthController extends BaseController
 
         $user = $result['user'];
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
-        $this->redirectAndExit($this->resolvePostLoginRedirect($user->userRoleId));
-    }
-
-    private function resolvePostLoginRedirect(?int $roleId = null): string
-    {
-        $resolvedRoleId = $roleId;
-
-        if ($resolvedRoleId === null) {
-            if ($this->sessionService->isEmployee()) {
-                $resolvedRoleId = UserRoleId::Employee->value;
-            } elseif ($this->sessionService->isAdmin()) {
-                $resolvedRoleId = UserRoleId::Administrator->value;
-            }
-        }
-
-        return match ($resolvedRoleId) {
-            UserRoleId::Employee->value => '/employee/scanner',
-            UserRoleId::Administrator->value => '/cms',
-            default => '/',
-        };
+        $this->redirectAndExit($this->authService->resolvePostLoginRedirect($user->userRoleId));
     }
 }
