@@ -180,7 +180,7 @@ class ProgramService implements IProgramService
     private function incrementExistingItem(ProgramItem $existingItem, int $additionalQuantity): ProgramItem
     {
         $newQuantity = $existingItem->quantity + $additionalQuantity;
-        $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity, 0);
+        $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
 
         $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
 
@@ -192,7 +192,7 @@ class ProgramService implements IProgramService
      *
      * @throws \InvalidArgumentException When the item does not belong to the user's program
      */
-    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity, int $groupTicketQuantity): void
+    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void
     {
         if ($programItemId <= 0) {
             throw new \InvalidArgumentException('programItemId is required');
@@ -204,7 +204,7 @@ class ProgramService implements IProgramService
             return;
         }
 
-        $this->programRepository->updateItemQuantity($programItemId, $quantity, $groupTicketQuantity);
+        $this->programRepository->updateItemQuantity($programItemId, $quantity);
     }
 
     /**

@@ -178,7 +178,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
     /**
      * Updates the ticket quantity for a cart item (e.g. user changes "2 tickets" to "3").
      */
-    public function updateItemQuantity(int $programItemId, int $quantity, int $groupTicketQuantity): void
+    public function updateItemQuantity(int $programItemId, int $quantity): void
     {
         $this->execute(
             'UPDATE ProgramItem SET Quantity = :quantity WHERE ProgramItemId = :programItemId',

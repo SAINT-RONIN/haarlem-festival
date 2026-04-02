@@ -52,7 +52,7 @@ interface IProgramRepository
     /**
      * Updates the ticket quantity on an existing program item.
      */
-    public function updateItemQuantity(int $programItemId, int $quantity, int $groupTicketQuantity): void;
+    public function updateItemQuantity(int $programItemId, int $quantity): void;
 
     /**
      * Updates the donation amount on an existing program item.

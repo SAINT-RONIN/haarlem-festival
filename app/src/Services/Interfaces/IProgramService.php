@@ -32,7 +32,7 @@ interface IProgramService
     /**
      * Updates the ticket quantity for an existing program item.
      */
-    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity, int $groupTicketQuantity): void;
+    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void;
 
     /**
      * Updates the donation amount for an existing program item.
