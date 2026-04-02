@@ -23,7 +23,7 @@ $isLoggedIn = $isLoggedIn ?? false;
     <meta name="description" content="Four Days, Countless Experiences">
     <link rel="icon" href="/assets/Icons/Logo.svg" type="image/svg+xml" sizes="any">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0"></script>
     <script src="/assets/js/lucide-init.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

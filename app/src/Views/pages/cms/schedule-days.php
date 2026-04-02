@@ -15,7 +15,7 @@ $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule Day Visibility - CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 <div class="flex">
@@ -114,4 +114,3 @@ $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
 <script src="/assets/js/cms/cms-common.js"></script>
 </body>
 </html>
-

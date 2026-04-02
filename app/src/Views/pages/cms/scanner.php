@@ -13,7 +13,7 @@ $currentView = $currentView ?? 'scanner';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket Scanner — Haarlem CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/tokens.css">

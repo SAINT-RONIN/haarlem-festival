@@ -21,7 +21,7 @@ $userName = $userName ?? 'Administrator';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit <?= htmlspecialchars($page->title) ?> | CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0"></script>
 
     <!-- TinyMCE (CDN, keyless/community build) -->
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
@@ -108,4 +108,3 @@ $userName = $userName ?? 'Administrator';
 <script src="/assets/js/cms/page-edit.js"></script>
 </body>
 </html>
-
