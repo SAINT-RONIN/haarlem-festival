@@ -24,9 +24,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
         <!-- Back to restaurant link -->
         <a href="/restaurant/<?= $viewModel->slug ?>"
            class="inline-flex items-center gap-2 text-slate-800 hover:text-red font-['Montserrat'] font-medium transition-colors duration-200">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-            </svg>
+            <img src="/assets/Icons/Restaurant/arrow-left-icon.svg" alt="Back arrow" class="w-5 h-5" aria-hidden="true">
             Back to <?= $e($viewModel->name) ?>
         </a>
 
@@ -60,9 +58,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
 
             <?php if ($viewModel->reservation->priceAdult !== null): ?>
                 <div class="px-4 py-5 bg-stone-100 rounded-lg flex flex-col items-center gap-2 text-center">
-                    <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
-                    </svg>
+                    <img src="/assets/Icons/Restaurant/person-icon.svg" alt="Person icon" class="w-8 h-8" aria-hidden="true">
                     <span class="text-slate-800 text-sm font-light font-['Montserrat']">Per adult</span>
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']">€ <?= number_format($viewModel->reservation->priceAdult, 2) ?></span>
                 </div>
@@ -70,9 +66,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
 
             <?php if ($viewModel->reservation->priceChild !== null): ?>
                 <div class="px-4 py-5 bg-stone-100 rounded-lg flex flex-col items-center gap-2 text-center">
-                    <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
-                    </svg>
+                    <img src="/assets/Icons/Restaurant/person-icon.svg" alt="Person icon" class="w-8 h-8" aria-hidden="true">
                     <span class="text-slate-800 text-sm font-light font-['Montserrat']">Under 12</span>
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']">€ <?= number_format($viewModel->reservation->priceChild, 2) ?></span>
                 </div>
@@ -80,9 +74,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
 
             <?php if ($viewModel->reservation->durationMinutes > 0): ?>
                 <div class="px-4 py-5 bg-stone-100 rounded-lg flex flex-col items-center gap-2 text-center">
-                    <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+                    <img src="/assets/Icons/Restaurant/clock-icon.svg" alt="Clock icon" class="w-8 h-8" aria-hidden="true">
                     <span class="text-slate-800 text-sm font-light font-['Montserrat']"><?= $e($viewModel->reservation->labelDuration) ?></span>
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= (int)($viewModel->reservation->durationMinutes / 60) ?> hours</span>
                 </div>
@@ -90,9 +82,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
 
             <?php if ($viewModel->reservation->seatsPerSession > 0): ?>
                 <div class="px-4 py-5 bg-stone-100 rounded-lg flex flex-col items-center gap-2 text-center">
-                    <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
-                    </svg>
+                    <img src="/assets/Icons/Restaurant/people-icon.svg" alt="People icon" class="w-8 h-8" aria-hidden="true">
                     <span class="text-slate-800 text-sm font-light font-['Montserrat']"><?= $e($viewModel->reservation->labelSeats) ?></span>
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $viewModel->reservation->seatsPerSession ?> per session</span>
                 </div>
@@ -112,9 +102,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
                 <!-- Date -->
                 <div class="flex flex-col gap-2">
                     <label for="dining_date" class="flex items-center gap-2 text-slate-800 text-lg font-bold font-['Montserrat']">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5"/>
-                        </svg>
+                        <img src="/assets/Icons/Restaurant/calendar-icon.svg" alt="Calendar icon" class="w-5 h-5" aria-hidden="true">
                         Date
                     </label>
                     <select id="dining_date" name="dining_date"
@@ -132,9 +120,7 @@ $reservationFee = $viewModel->reservation->reservationFeePerPerson;
                 <!-- Time -->
                 <div class="flex flex-col gap-2">
                     <label for="time_slot" class="flex items-center gap-2 text-slate-800 text-lg font-bold font-['Montserrat']">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+                        <img src="/assets/Icons/Restaurant/clock-icon.svg" alt="Clock icon" class="w-5 h-5" aria-hidden="true">
                         Time
                     </label>
                     <select id="time_slot" name="time_slot"

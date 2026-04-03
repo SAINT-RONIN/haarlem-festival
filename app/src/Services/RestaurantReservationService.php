@@ -16,6 +16,10 @@ use App\Services\Interfaces\IRestaurantReservationService;
 
 class RestaurantReservationService implements IRestaurantReservationService
 {
+    private const ERR_INVALID_DATE  = 'Please select a valid dining date.';
+    private const ERR_NO_TIME_SLOT  = 'Please select a time slot.';
+    private const ERR_NO_GUESTS     = 'Please add at least one guest.';
+
     public function __construct(
         private readonly IEventRepository        $eventRepository,
         private readonly ReservationRepository   $reservationRepository,
@@ -48,13 +52,13 @@ class RestaurantReservationService implements IRestaurantReservationService
         $errors = [];
 
         if (!in_array($date, RestaurantPageConstants::VALID_DATES, true)) {
-            $errors[] = 'Please select a valid dining date.';
+            $errors[] = self::ERR_INVALID_DATE;
         }
         if ($timeSlot === '') {
-            $errors[] = 'Please select a time slot.';
+            $errors[] = self::ERR_NO_TIME_SLOT;
         }
         if ($adultsCount + $childrenCount < 1) {
-            $errors[] = 'Please add at least one guest.';
+            $errors[] = self::ERR_NO_GUESTS;
         }
 
         if ($errors !== []) {

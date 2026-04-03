@@ -125,7 +125,7 @@ final class RestaurantMapper
             phone:          $cms->phone    ?? '',
             email:          $cms->email    ?? '',
             website:        $cms->website  ?? '',
-            timeSlots:      $data->timeSlots,
+            timeSlots:      self::parseTimeSlots($data->cms->timeSlots),
             labelTitle:     $sharedCms->detailContactTitle    ?? '',
             labelAddress:   $sharedCms->detailLabelAddress    ?? '',
             labelContact:   $sharedCms->detailLabelContact    ?? '',
@@ -197,7 +197,7 @@ final class RestaurantMapper
             rating:               (int) ($cms->stars         ?? 0),
             michelinStars:        (int) ($cms->michelinStars ?? 0),
             specialRequestsNote:  $cms->specialRequestsNote  ?? '',
-            priceCards:           $data->priceCards,
+            priceCards:           self::buildPriceCards($data->cms->priceAdult),
             labelTitle:           $data->sharedCms->detailPracticalTitle       ?? '',
             labelPriceFood:       $data->sharedCms->detailLabelPriceFood       ?? '',
             labelRating:          $data->sharedCms->detailLabelRating          ?? '',
@@ -239,8 +239,8 @@ final class RestaurantMapper
 
         return new ReservationSectionData(
             image:                   self::validateImagePath($cms->reservationImage ?? ''),
-            timeSlots:               $data->timeSlots,
-            priceCards:              $data->priceCards,
+            timeSlots:               self::parseTimeSlots($data->cms->timeSlots),
+            priceCards:              self::buildPriceCards($data->cms->priceAdult),
             durationMinutes:         (int) ($cms->durationMinutes  ?? 0),
             seatsPerSession:         (int) ($cms->seatsPerSession   ?? 0),
             priceAdult:              $priceAdult,
@@ -411,6 +411,36 @@ final class RestaurantMapper
     // ─────────────────────────────────────────────────────────────────────────
     // Shared helpers
     // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * @return string[]
+     */
+    private static function parseTimeSlots(?string $raw): array
+    {
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+        return array_values(array_filter(array_map('trim', explode(',', $raw))));
+    }
+
+    /**
+     * Builds display price cards. Under-12 price is always half the adult price.
+     *
+     * @return array{label: string, price: string}[]
+     */
+    private static function buildPriceCards(?string $priceAdultStr): array
+    {
+        if ($priceAdultStr === null || $priceAdultStr === '') {
+            return [];
+        }
+
+        $adult = (float) $priceAdultStr;
+
+        return [
+            ['label' => 'Per adult', 'price' => '€ ' . number_format($adult, 2)],
+            ['label' => 'Under 12', 'price' => '€ ' . number_format($adult / 2, 2)],
+        ];
+    }
 
     private static function buildAddress(RestaurantEventCmsData $cms): string
     {

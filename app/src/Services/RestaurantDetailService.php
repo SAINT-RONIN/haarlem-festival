@@ -57,8 +57,6 @@ class RestaurantDetailService implements IRestaurantDetailService
                                    ),
                                ),
             featuredImagePath: $this->resolveImagePath($event->featuredImageAssetId),
-            timeSlots:         $this->parseTimeSlots($cms->timeSlots),
-            priceCards:        $this->buildPriceCards($cms->priceAdult),
         );
     }
 
@@ -94,33 +92,4 @@ class RestaurantDetailService implements IRestaurantDetailService
         return $this->mediaAssetRepository->findById($assetId)?->filePath;
     }
 
-    /**
-     * @return string[]
-     */
-    private function parseTimeSlots(?string $raw): array
-    {
-        if ($raw === null || $raw === '') {
-            return [];
-        }
-        return array_values(array_filter(array_map('trim', explode(',', $raw))));
-    }
-
-    /**
-     * Builds price cards from the adult price. Under-12 price is always half the adult price.
-     *
-     * @return array{label: string, price: string}[]
-     */
-    private function buildPriceCards(?string $priceAdultStr): array
-    {
-        if ($priceAdultStr === null || $priceAdultStr === '') {
-            return [];
-        }
-
-        $adult = (float) $priceAdultStr;
-
-        return [
-            ['label' => 'Per adult', 'price' => '€ ' . number_format($adult, 2)],
-            ['label' => 'Under 12', 'price' => '€ ' . number_format($adult / 2, 2)],
-        ];
-    }
 }

@@ -43,23 +43,11 @@ $cards = $instructionsSection->cards;
                 </div>
                 <div class="self-stretch flex flex-col justify-center items-center gap-3">
                     <div class="w-16 h-14 bg-stone-100 rounded-full flex justify-center items-center">
-                        <?php if ($icon === 'calendar'): ?>
-                            <svg class="w-6 h-6 text-slate-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/>
-                                <line x1="8" y1="2" x2="8" y2="6"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                        <?php elseif ($icon === 'check'): ?>
-                            <svg class="w-6 h-6 text-slate-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"/>
-                            </svg>
-                        <?php else: ?>
-                            <svg class="w-6 h-6 text-slate-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="m21 21-4.35-4.35"/>
-                            </svg>
-                        <?php endif; ?>
+                        <img
+                            src="/assets/Icons/Restaurant/<?= htmlspecialchars($icon) ?>-icon.svg"
+                            alt="<?= htmlspecialchars($icon) ?> icon"
+                            class="w-6 h-6"
+                            aria-hidden="true">
                     </div>
                     <div class="self-stretch flex flex-col justify-start items-start gap-1.5">
                         <h3 class="self-stretch text-center text-slate-800 text-xl sm:text-2xl font-bold font-['Montserrat']">
