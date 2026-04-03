@@ -91,10 +91,10 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
 
                         <div class="space-y-2">
                             <?php if ($card->cuisine !== ''): ?>
-                                <p class="text-slate-800 text-sm sm:text-base font-['Montserrat']"><span class="font-bold">Cuisine:</span> <?= htmlspecialchars($card->cuisine) ?></p>
+                                <p class="text-slate-800 text-sm sm:text-base font-['Montserrat']"><span class="font-bold"><?= htmlspecialchars($restaurantCardsSection->labelCuisine) ?></span> <?= htmlspecialchars($card->cuisine) ?></p>
                             <?php endif; ?>
                             <?php if ($card->address !== ''): ?>
-                                <p class="text-slate-800 text-sm sm:text-base font-['Montserrat']"><span class="font-bold">Address:</span> <?= htmlspecialchars($card->address) ?></p>
+                                <p class="text-slate-800 text-sm sm:text-base font-['Montserrat']"><span class="font-bold"><?= htmlspecialchars($restaurantCardsSection->labelAddress) ?></span> <?= htmlspecialchars($card->address) ?></p>
                             <?php endif; ?>
                         </div>
 

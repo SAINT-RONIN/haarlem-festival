@@ -192,18 +192,26 @@ final class RestaurantMapper
     {
         $cms = $data->cms;
 
+        $rating        = (int) ($cms->stars         ?? 0);
+        $michelinStars = (int) ($cms->michelinStars ?? 0);
+        $michelinLabel = $data->sharedCms->detailLabelMichelin ?? 'Michelin-star';
+
         return new PracticalInfoSectionData(
-            cuisine:              $cms->cuisineType          ?? '',
-            rating:               (int) ($cms->stars         ?? 0),
-            michelinStars:        (int) ($cms->michelinStars ?? 0),
-            specialRequestsNote:  $cms->specialRequestsNote  ?? '',
+            cuisine:              $cms->cuisineType         ?? '',
+            rating:               $rating,
+            michelinStars:        $michelinStars,
+            specialRequestsNote:  $cms->specialRequestsNote ?? '',
             priceCards:           self::buildPriceCards($data->cms->priceAdult),
+            ratingStars:          str_repeat('★', $rating),
+            michelinDisplay:      $michelinStars > 0
+                ? $michelinStars . ' ' . $michelinLabel . ($michelinStars > 1 ? 's' : '')
+                : '',
             labelTitle:           $data->sharedCms->detailPracticalTitle       ?? '',
             labelPriceFood:       $data->sharedCms->detailLabelPriceFood       ?? '',
             labelRating:          $data->sharedCms->detailLabelRating          ?? '',
             labelSpecialRequests: $data->sharedCms->detailLabelSpecialRequests ?? '',
             labelFestivalRated:   $data->sharedCms->detailLabelFestivalRated   ?? '',
-            labelMichelin:        $data->sharedCms->detailLabelMichelin        ?? '',
+            labelMichelin:        $michelinLabel,
             labelCuisineType:     $data->sharedCms->detailMenuCuisineLabel     ?? '',
         );
     }
@@ -237,16 +245,21 @@ final class RestaurantMapper
         $priceAdult = $cms->priceAdult !== null ? (float) $cms->priceAdult : null;
         $priceChild = $priceAdult !== null ? $priceAdult / 2 : null;
 
+        $durationMinutes = (int) ($cms->durationMinutes ?? 0);
+        $seatsPerSession = (int) ($cms->seatsPerSession  ?? 0);
+
         return new ReservationSectionData(
             image:                   self::validateImagePath($cms->reservationImage ?? ''),
             timeSlots:               self::parseTimeSlots($data->cms->timeSlots),
             priceCards:              self::buildPriceCards($data->cms->priceAdult),
-            durationMinutes:         (int) ($cms->durationMinutes  ?? 0),
-            seatsPerSession:         (int) ($cms->seatsPerSession   ?? 0),
+            durationMinutes:         $durationMinutes,
+            seatsPerSession:         $seatsPerSession,
             priceAdult:              $priceAdult,
             priceChild:              $priceChild,
             festivalDates:           $festivalDates,
             reservationFeePerPerson: $reservationFeePerPerson,
+            durationFormatted:       $durationMinutes > 0 ? (int) ($durationMinutes / 60) . ' hours' : '',
+            seatsFormatted:          $seatsPerSession > 0 ? $seatsPerSession . ' per session' : '',
             labelTitle:              $sharedCms->detailReservationTitle       ?? '',
             labelDesc:               $sharedCms->detailReservationDescription ?? '',
             labelSlots:              $sharedCms->detailReservationSlotsLabel  ?? '',

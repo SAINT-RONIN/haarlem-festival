@@ -26,6 +26,8 @@ final readonly class RestaurantCardsSectionData
         public string $labelFilters  = 'Filters',
         public string $labelAboutBtn = 'About it',
         public string $labelBookBtn  = 'Book table',
+        public string $labelCuisine  = 'Cuisine:',
+        public string $labelAddress  = 'Address:',
     ) {
     }
 }

@@ -42,13 +42,13 @@ $e = fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
                 <div class="flex flex-col gap-1">
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $e($viewModel->contact->labelContact) ?></span>
                     <?php if ($viewModel->contact->phone !== ''): ?>
-                        <span class="text-slate-800 text-lg font-normal font-['Montserrat']">Phone: <?= $e($viewModel->contact->phone) ?></span>
+                        <span class="text-slate-800 text-lg font-normal font-['Montserrat']"><?= $e($viewModel->contact->labelPhone) ?> <?= $e($viewModel->contact->phone) ?></span>
                     <?php endif; ?>
                     <?php if ($viewModel->contact->email !== ''): ?>
-                        <span class="text-slate-800 text-lg font-normal font-['Montserrat']">E-mail: <?= $e($viewModel->contact->email) ?></span>
+                        <span class="text-slate-800 text-lg font-normal font-['Montserrat']"><?= $e($viewModel->contact->labelEmail) ?> <?= $e($viewModel->contact->email) ?></span>
                     <?php endif; ?>
                     <?php if ($viewModel->contact->website !== ''): ?>
-                        <span class="text-slate-800 text-lg font-normal font-['Montserrat']">Website: <?= $e($viewModel->contact->website) ?></span>
+                        <span class="text-slate-800 text-lg font-normal font-['Montserrat']"><?= $e($viewModel->contact->labelWebsite) ?> <?= $e($viewModel->contact->website) ?></span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -95,11 +95,11 @@ $e = fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
                 <div class="flex flex-col gap-1">
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $e($viewModel->practicalInfo->labelRating) ?></span>
                     <span class="text-slate-800 text-lg font-normal font-['Montserrat']">
-                        <?= $e($viewModel->practicalInfo->labelFestivalRated) ?> <?= str_repeat('★', $viewModel->practicalInfo->rating) ?>
+                        <?= $e($viewModel->practicalInfo->labelFestivalRated) ?> <?= $e($viewModel->practicalInfo->ratingStars) ?>
                     </span>
-                    <?php if ($viewModel->practicalInfo->michelinStars > 0): ?>
+                    <?php if ($viewModel->practicalInfo->michelinDisplay !== ''): ?>
                         <span class="text-slate-800 text-lg font-normal font-['Montserrat']">
-                            <?= $viewModel->practicalInfo->michelinStars ?> <?= $e($viewModel->practicalInfo->labelMichelin) ?><?= $viewModel->practicalInfo->michelinStars > 1 ? 's' : '' ?>
+                            <?= $e($viewModel->practicalInfo->michelinDisplay) ?>
                         </span>
                     <?php endif; ?>
                 </div>
@@ -264,19 +264,19 @@ $e = fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
                     </div>
                 <?php endforeach; ?>
 
-                <?php if ($viewModel->reservation->durationMinutes > 0): ?>
+                <?php if ($viewModel->reservation->durationFormatted !== ''): ?>
                 <div class="px-4 py-5 bg-white rounded-lg flex flex-col items-center gap-3">
                     <img src="/assets/Icons/Restaurant/clock-icon.svg" alt="Clock icon" class="w-10 h-10" aria-hidden="true">
                     <span class="text-slate-800 text-lg font-medium font-['Montserrat']"><?= $e($viewModel->reservation->labelDuration) ?></span>
-                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= (int)($viewModel->reservation->durationMinutes / 60) ?> hours</span>
+                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= $e($viewModel->reservation->durationFormatted) ?></span>
                 </div>
                 <?php endif; ?>
 
-                <?php if ($viewModel->reservation->seatsPerSession > 0): ?>
+                <?php if ($viewModel->reservation->seatsFormatted !== ''): ?>
                 <div class="px-4 py-5 bg-white rounded-lg flex flex-col items-center gap-3">
                     <img src="/assets/Icons/Restaurant/people-icon.svg" alt="People icon" class="w-10 h-10" aria-hidden="true">
                     <span class="text-slate-800 text-lg font-medium font-['Montserrat']"><?= $e($viewModel->reservation->labelSeats) ?></span>
-                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= $viewModel->reservation->seatsPerSession ?> per session</span>
+                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= $e($viewModel->reservation->seatsFormatted) ?></span>
                 </div>
                 <?php endif; ?>
             </div>

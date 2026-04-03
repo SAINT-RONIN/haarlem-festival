@@ -26,6 +26,10 @@ final readonly class ReservationSectionData
         public array  $festivalDates,
         public float  $reservationFeePerPerson,
 
+        // Pre-formatted display strings (computed by RestaurantMapper)
+        public string $durationFormatted = '',   // e.g. "2 hours"
+        public string $seatsFormatted    = '',   // e.g. "40 per session"
+
         // CMS labels
         public string $labelTitle    = 'Make your Reservation',
         public string $labelDesc     = '',
@@ -34,6 +38,23 @@ final readonly class ReservationSectionData
         public string $labelButton   = 'Continue to Reservation',
         public string $labelDuration = 'Duration',
         public string $labelSeats    = 'Seats',
+
+        // Reservation form labels
+        public string $labelSuccess                  = 'Your reservation has been submitted! We will confirm your booking shortly.',
+        public string $labelErrorHeading             = 'Please fix the following:',
+        public string $labelDate                     = 'Date',
+        public string $labelSelectDay                = 'Select a day',
+        public string $labelTime                     = 'Time',
+        public string $labelSelectTime               = 'Select a time',
+        public string $labelGuestsTitle              = 'Number of Guests',
+        public string $labelAdult                    = 'Adult',
+        public string $labelChildren                 = 'Children',
+        public string $labelSpecialRequests          = 'Special requests',
+        public string $labelSpecialRequestsDesc      = 'Diet, allergies, accessibility needs',
+        public string $labelSpecialRequestsNote      = 'Let us know if you have any special requirements',
+        public string $labelTotalTitle               = 'Total to be paid',
+        public string $labelFeeNote                  = 'To complete your reservation, you pay a {fee} fee per person. This amount is deducted from your final bill at the restaurant, so you simply pay the remaining amount after your meal.',
+        public string $labelBack                     = 'Back to Restaurant',
     ) {
     }
 }

@@ -22,6 +22,10 @@ final readonly class PracticalInfoSectionData
         public string $specialRequestsNote,
         public array  $priceCards,
 
+        // Pre-formatted display strings (computed by RestaurantMapper)
+        public string $ratingStars     = '',   // e.g. "★★★"
+        public string $michelinDisplay = '',   // e.g. "2 Michelin-stars" or ""
+
         // CMS labels
         public string $labelTitle           = 'Practical Info',
         public string $labelPriceFood       = 'PRICE AND FOOD',
