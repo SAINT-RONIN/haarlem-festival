@@ -23,4 +23,5 @@ enum PriceTierId: int
     case ReservationFee = 4;
     case PayWhatYouLike = 5;
     case Single = 6;
+    case Group = 7;
 }

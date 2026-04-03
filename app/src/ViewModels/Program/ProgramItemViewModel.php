@@ -20,6 +20,7 @@ final readonly class ProgramItemViewModel
         public string $priceDisplay,
         public float $rawPrice,
         public int $quantity,
+
         public float $donationAmount,
         public string $donationDisplay,
         public string $sumDisplay,

@@ -78,6 +78,7 @@ final readonly class ScheduleEventCardViewModel
         public string  $successText = '',
         public string  $timeRange = '',
         public string  $priceType = '',
+        public ?\DateTimeImmutable $datetime = null,
     ) {
     }
 }

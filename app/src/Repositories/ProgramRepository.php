@@ -80,6 +80,11 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
             $params['eventSessionId'] = $filter->eventSessionId;
         }
 
+        if ($filter->eventSessionId !== null) {
+            $conditions[] = 'pi.PriceTierId = :priceTierId';
+            $params['priceTierId'] = $filter->priceTierId;
+        }
+
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
         $sql = "SELECT * FROM ProgramItem pi {$whereClause} ORDER BY pi.ProgramItemId ASC";
 
@@ -117,15 +122,16 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      *
      * @throws \RuntimeException If the inserted row cannot be read back.
      */
-    public function addItem(int $programId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
+    public function addItem(int $programId, int $eventSessionId, int $quantity, int $priceTierId, float $donationAmount): ProgramItem
     {
         $itemId = $this->executeInsert(
-            'INSERT INTO ProgramItem (ProgramId, EventSessionId, Quantity, DonationAmount)
-            VALUES (:programId, :eventSessionId, :quantity, :donationAmount)',
+            'INSERT INTO ProgramItem (ProgramId, EventSessionId, Quantity, PriceTierId, DonationAmount)
+            VALUES (:programId, :eventSessionId, :quantity, :priceTierId, :donationAmount)',
             [
                 'programId' => $programId,
                 'eventSessionId' => $eventSessionId,
                 'quantity' => $quantity,
+                'priceTierId' => $priceTierId,
                 'donationAmount' => $donationAmount,
             ],
         );
@@ -171,7 +177,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
     /**
      * Updates the ticket quantity for a cart item (e.g. user changes "2 tickets" to "3").
      */
-    public function updateItemQuantity(int $programItemId, int $quantity): void
+    public function updateItemQuantity(int $programItemId, int $quantity, int $groupTicketQuantity): void
     {
         $this->execute(
             'UPDATE ProgramItem SET Quantity = :quantity WHERE ProgramItemId = :programItemId',

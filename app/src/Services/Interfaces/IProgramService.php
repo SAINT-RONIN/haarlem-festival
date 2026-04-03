@@ -22,7 +22,7 @@ interface IProgramService
     /**
      * Adds an event session to the program with the given quantity and optional donation.
      */
-    public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem;
+    public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): void;
 
     /**
      * Adds a festival pass to the program with the given quantity.
@@ -32,7 +32,7 @@ interface IProgramService
     /**
      * Updates the ticket quantity for an existing program item.
      */
-    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void;
+    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity, int $groupTicketQuantity): void;
 
     /**
      * Updates the donation amount for an existing program item.
@@ -58,4 +58,9 @@ interface IProgramService
      * Returns the CMS content for the "My Program" page.
      */
     public function getProgramMainContent(): ProgramMainContent;
+
+    /**
+     * Returns the info about event sessions, their languages, and prices for historical tours.
+     */
+    public function getTourInfo(int $eventId, string $dateTime): array;
 }

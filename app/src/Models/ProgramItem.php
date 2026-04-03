@@ -24,6 +24,7 @@ final readonly class ProgramItem
         public ?int                $passTypeId,
         public ?\DateTimeImmutable $passValidDate,
         public int                 $quantity,
+        public ?int                $priceTierId,
         public ?string             $donationAmount,
     ) {
     }
@@ -42,6 +43,7 @@ final readonly class ProgramItem
             passTypeId: isset($row['PassTypeId']) ? (int)$row['PassTypeId'] : null,
             passValidDate: isset($row['PassValidDate']) ? new \DateTimeImmutable($row['PassValidDate']) : null,
             quantity: (int)$row['Quantity'],
+            priceTierId: isset($row['PriceTierId']) ? (int)$row['PriceTierId'] : null,
             donationAmount: $row['DonationAmount'] ?? null,
         );
     }

@@ -19,6 +19,7 @@ use App\Content\ProgramMainContent;
 use App\Exceptions\PassPurchaseException;
 use App\Repositories\Interfaces\ICheckoutContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
+use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -41,6 +42,7 @@ class ProgramService implements IProgramService
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly ICheckoutContentRepository $checkoutContentRepository,
         private readonly IPassTypeRepository $passTypeRepository,
+        private readonly IPriceTierRepository $priceTierRepository,
     ) {
     }
 
@@ -64,19 +66,41 @@ class ProgramService implements IProgramService
      * @throws \InvalidArgumentException When eventSessionId or quantity is invalid
      * @throws ProgramException When the database write fails
      */
-    public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, float $donationAmount): ProgramItem
+    public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): void
     {
-        $this->validateAddInput($eventSessionId, $quantity);
+
+        $this->validateAddInput($eventSessionId, $quantity, $groupTicketQuantity);
 
         try {
             $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
-            $existingItem = $this->findExistingItem($program->programId, $eventSessionId);
 
-            if ($existingItem !== null) {
-                return $this->incrementExistingItem($existingItem, $quantity);
+
+            $prices = $this->priceRepository->findPricesBySessionIds([$eventSessionId])[$eventSessionId] ?? [];
+            usort($prices, fn($a, $b) => $a->price <=> $b->price);
+            $priceTierId = $prices[0]->priceTierId ?? 0;
+            $groupPriceTierId = array_last($prices)->priceTierId ?? 0;
+
+            if ($quantity > 0) {
+                $existingItem = $this->findExistingItem($program->programId, $eventSessionId, $priceTierId);
+
+                if ($existingItem !== null) {
+                    $this->incrementExistingItem($existingItem, $quantity, $groupTicketQuantity);
+                }
+                else {
+                    $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $priceTierId, $donationAmount);
+                }
             }
 
-            return $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $donationAmount);
+            if ($groupTicketQuantity > 0) {
+                $existingItem = $this->findExistingItem($program->programId, $eventSessionId, $groupPriceTierId);
+
+                if ($existingItem !== null) {
+                    $this->incrementExistingItem($existingItem, $quantity, $groupTicketQuantity);
+                }
+                else{
+                    $this->programRepository->addItem($program->programId, $eventSessionId, $groupTicketQuantity, $groupPriceTierId, $donationAmount);
+                }
+            }
         } catch (\InvalidArgumentException $error) {
             throw $error;
         } catch (\Throwable $error) {
@@ -117,21 +141,21 @@ class ProgramService implements IProgramService
     }
 
     /** Validates input parameters for adding an item to the program. */
-    private function validateAddInput(int $eventSessionId, int $quantity): void
+    private function validateAddInput(int $eventSessionId, int $quantity, int $groupTicketQuantity): void
     {
         if ($eventSessionId <= 0) {
             throw new \InvalidArgumentException('eventSessionId is required');
         }
-        if ($quantity <= 0) {
+        if ($quantity <= 0 && $groupTicketQuantity <= 0) {
             throw new \InvalidArgumentException('quantity must be at least 1');
         }
     }
 
     /** Increases quantity on an existing program item and returns the updated item. */
-    private function incrementExistingItem(ProgramItem $existingItem, int $additionalQuantity): ProgramItem
+    private function incrementExistingItem(ProgramItem $existingItem, int $additionalQuantity, int $additionalGroupTicketQuantity): ProgramItem
     {
         $newQuantity = $existingItem->quantity + $additionalQuantity;
-        $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity);
+        $this->programRepository->updateItemQuantity($existingItem->programItemId, $newQuantity, $additionalGroupTicketQuantity);
 
         $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $existingItem->programItemId));
         return $items[0];
@@ -142,7 +166,7 @@ class ProgramService implements IProgramService
      *
      * @throws \InvalidArgumentException When the item does not belong to the user's program
      */
-    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void
+    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity, int $groupTicketQuantity): void
     {
         if ($programItemId <= 0) {
             throw new \InvalidArgumentException('programItemId is required');
@@ -154,7 +178,7 @@ class ProgramService implements IProgramService
             return;
         }
 
-        $this->programRepository->updateItemQuantity($programItemId, $quantity);
+        $this->programRepository->updateItemQuantity($programItemId, $quantity, $groupTicketQuantity);
     }
 
     /**
@@ -304,11 +328,12 @@ class ProgramService implements IProgramService
         return $programs !== [] ? $programs[0] : null;
     }
 
-    private function findExistingItem(int $programId, int $eventSessionId): ?ProgramItem
+    private function findExistingItem(int $programId, int $eventSessionId, int $priceTierId): ?ProgramItem
     {
         $items = $this->programRepository->findProgramItems(new ProgramItemFilter(
             programId: $programId,
             eventSessionId: $eventSessionId,
+            priceTierId: $priceTierId,
         ));
 
         return $items !== [] ? $items[0] : null;
@@ -438,7 +463,8 @@ class ProgramService implements IProgramService
             minAge: $session->minAge,
             maxAge: $session->maxAge,
             isPayWhatYouLike: $this->hasPayWhatYouLikeTier($prices),
-            basePrice: $this->resolveBasePrice($prices),
+            basePrice: $this->resolveBasePrice($prices, $item->priceTierId),
+            priceTier: $this->priceTierRepository->findById($item->priceTierId)->name,
         );
     }
 
@@ -493,21 +519,59 @@ class ProgramService implements IProgramService
     /**
      * @param EventSessionPrice[] $prices
      */
-    private function resolveBasePrice(array $prices): float
+    private function resolveBasePrice(array $prices, int $priceTierId): float
     {
         foreach ($prices as $price) {
-            if ($price->priceTierId === PriceTierId::Adult->value) {
-                return (float)$price->price;
-            }
-        }
-
-        foreach ($prices as $price) {
-            if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
+            if ($price->priceTierId === $priceTierId) {
                 return (float)$price->price;
             }
         }
 
         return 0.0;
+    }
+
+    /**
+     * @param array<int, array> $infoByEventSessionId
+     */
+    public function getTourInfo(int $eventId, string $dateTime): array
+    {
+        $infoByEventSessionId = [];
+
+        if ($eventId <= 0 || $dateTime === '') {
+            return $infoByEventSessionId;
+        }
+
+        $parsedDateTime = \DateTimeImmutable::createFromFormat('U', $dateTime);
+        if ($parsedDateTime === false) {
+            return $infoByEventSessionId;
+        }
+
+        $startDate = $parsedDateTime->format('Y-m-d');
+        $startTime = $parsedDateTime->format('H:i:s');
+
+        $sessions = $this->sessionRepository->findSessions(
+            new EventSessionFilter(eventId: $eventId, startDate: $startDate, endDate: $startDate, startTime: $startTime, )
+        );
+
+        foreach ($sessions->sessions as $session) {
+            $prices = $this->priceRepository
+                ->findPricesBySessionIds([$session->eventSessionId])[$session->eventSessionId] ?? [];
+
+            $infoByEventSessionId[$session->eventSessionId] = [
+                'dateTime'       => $session->startDateTime->format('Y-m-d H:i:s'),
+                'language'       => $session->languageCode,
+                'seatsAvailable' => $session->seatsAvailable,
+                'prices'         => array_map(
+                    fn($price) => [
+                        'priceTierId'  => $price->priceTierId,
+                        'price'        => $price->price,
+                    ],
+                    $prices
+                ),
+            ];
+        }
+
+        return $infoByEventSessionId;
     }
 
 }
