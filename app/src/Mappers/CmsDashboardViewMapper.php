@@ -9,7 +9,10 @@ use App\Helpers\FormatHelper;
 use App\DTOs\Cms\ActivityData;
 use App\DTOs\Cms\CmsItemEditData;
 use App\DTOs\Cms\CmsMediaAssetData;
+use App\DTOs\Cms\JazzLineupManagerData;
+use App\DTOs\Events\JazzArtistCardRecord;
 use App\Models\CmsPage;
+use App\Models\Artist;
 use App\DTOs\Cms\CmsPageEditData;
 use App\DTOs\Cms\CmsSectionEditData;
 use App\Utils\CmsContentLimits;
@@ -17,6 +20,9 @@ use App\Utils\TimeFormatter;
 use App\ViewModels\Cms\ActivityViewModel;
 use App\ViewModels\Cms\CmsImageLimitsViewModel;
 use App\ViewModels\Cms\CmsItemDisplayViewModel;
+use App\ViewModels\Cms\CmsJazzLineupAvailableArtistViewModel;
+use App\ViewModels\Cms\CmsJazzLineupCardViewModel;
+use App\ViewModels\Cms\CmsJazzLineupManagerViewModel;
 use App\ViewModels\Cms\CmsMediaAssetDisplayViewModel;
 use App\ViewModels\Cms\CmsPageEditViewModel;
 use App\ViewModels\Cms\CmsPageInfoViewModel;
@@ -106,13 +112,22 @@ final class CmsDashboardViewMapper
      * Builds the full page-editor ViewModel: page info, grouped sections/items,
      * and content/image upload limits. Consumed by the CMS page-edit view.
      */
-    public static function toPageEditViewData(CmsPageEditData $pageData): CmsPageEditViewModel
+    public static function toPageEditViewData(
+        CmsPageEditData $pageData,
+        string $jazzOverviewAddCsrfToken = '',
+        string $jazzOverviewRemoveCsrfToken = '',
+    ): CmsPageEditViewModel
     {
         return new CmsPageEditViewModel(
             page: self::formatPage($pageData->page),
             sections: array_map([self::class, 'formatSingleSection'], $pageData->sections),
             contentLimits: self::getContentLimits(),
             imageLimits: self::getImageLimits(),
+            jazzLineupManager: self::toJazzLineupManagerViewModel(
+                $pageData,
+                $jazzOverviewAddCsrfToken,
+                $jazzOverviewRemoveCsrfToken,
+            ),
         );
     }
 
@@ -233,6 +248,94 @@ final class CmsDashboardViewMapper
     {
         $nonEditableSections = ['global_ui'];
         return !in_array($sectionKey, $nonEditableSections, true);
+    }
+
+    private static function toJazzLineupManagerViewModel(
+        CmsPageEditData $pageData,
+        string $jazzOverviewAddCsrfToken,
+        string $jazzOverviewRemoveCsrfToken,
+    ): ?CmsJazzLineupManagerViewModel
+    {
+        $managerData = $pageData->jazzLineupManager;
+        if (!$managerData instanceof JazzLineupManagerData) {
+            return null;
+        }
+
+        $returnTo = sprintf(
+            '/cms/pages/%d/%s/edit#section-artists_section',
+            $pageData->page->cmsPageId,
+            $pageData->page->slug,
+        );
+
+        return new CmsJazzLineupManagerViewModel(
+            sectionKey: 'artists_section',
+            returnTo: $returnTo,
+            createCardUrl: '/cms/jazz-lineup/cards/create?returnTo=' . urlencode($returnTo),
+            addCsrfToken: $jazzOverviewAddCsrfToken,
+            removeCsrfToken: $jazzOverviewRemoveCsrfToken,
+            cards: array_map(
+                static fn(JazzArtistCardRecord $artist): CmsJazzLineupCardViewModel => self::toJazzLineupCardViewModel($artist, $returnTo),
+                $managerData->visibleArtists,
+            ),
+            availableArtists: array_map(
+                static fn(Artist $artist): CmsJazzLineupAvailableArtistViewModel => self::toAvailableJazzArtistViewModel($artist, $returnTo),
+                $managerData->availableArtists,
+            ),
+        );
+    }
+
+    private static function toJazzLineupCardViewModel(
+        JazzArtistCardRecord $artist,
+        string $returnTo,
+    ): CmsJazzLineupCardViewModel {
+        $performanceSummary = $artist->performanceCount > 0
+            ? sprintf(
+                '%d performance%s%s',
+                $artist->performanceCount,
+                $artist->performanceCount === 1 ? '' : 's',
+                self::formatPerformanceTimingSuffix($artist),
+            )
+            : 'No performances scheduled yet';
+
+        return new CmsJazzLineupCardViewModel(
+            artistId: $artist->artistId,
+            name: $artist->artistName,
+            style: $artist->artistStyle,
+            description: $artist->cardDescription,
+            imageUrl: $artist->imageUrl,
+            performanceSummary: $performanceSummary,
+            sortOrder: $artist->cardSortOrder,
+            profileUrl: $artist->eventSlug !== '' ? '/jazz/' . $artist->eventSlug : null,
+            editUrl: '/cms/jazz-lineup/cards/' . $artist->artistId . '/edit?returnTo=' . urlencode($returnTo),
+            removeAction: '/cms/artists/' . $artist->artistId . '/jazz-overview/remove',
+        );
+    }
+
+    private static function toAvailableJazzArtistViewModel(
+        Artist $artist,
+        string $returnTo,
+    ): CmsJazzLineupAvailableArtistViewModel {
+        return new CmsJazzLineupAvailableArtistViewModel(
+            artistId: $artist->artistId,
+            name: $artist->name,
+            style: $artist->style,
+            description: $artist->cardDescription,
+            imageUrl: $artist->imagePath ?? '',
+            sortOrder: $artist->cardSortOrder,
+            addAction: '/cms/artists/' . $artist->artistId . '/jazz-overview/add',
+        );
+    }
+
+    private static function formatPerformanceTimingSuffix(JazzArtistCardRecord $artist): string
+    {
+        if ($artist->firstPerformanceAt === null) {
+            return '';
+        }
+
+        $formatted = $artist->firstPerformanceAt->format(' - D H:i');
+        $location = trim($artist->firstPerformanceLocation);
+
+        return $location !== '' ? $formatted . ' - ' . $location : $formatted;
     }
 
     /**

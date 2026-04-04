@@ -293,11 +293,12 @@ return static function (string $controllerClass): object {
             new JazzService(
                 $globalContentRepo(),
                 $jazzContentRepo(),
+                $eventRepo(),
                 new PassTypeRepository($pdo()),
             ),
             new JazzArtistDetailService(
-                $jazzContentRepo(),
                 $eventRepo(),
+                new ArtistRepository($pdo()),
                 new ArtistDetailRepository(
                     new ArtistAlbumRepository($pdo()),
                     new ArtistTrackRepository($pdo()),
@@ -344,6 +345,7 @@ return static function (string $controllerClass): object {
             new CmsEditService(
                 $cmsRepo(),
                 $eventRepo(),
+                new ArtistRepository($pdo()),
                 $cmsItemEnricher(),
                 $cmsPreviewUrlResolver(),
             ),
@@ -353,6 +355,7 @@ return static function (string $controllerClass): object {
             new CmsEditService(
                 $cmsRepo(),
                 $eventRepo(),
+                new ArtistRepository($pdo()),
                 $cmsItemEnricher(),
                 $cmsPreviewUrlResolver(),
             ),

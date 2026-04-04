@@ -3,6 +3,7 @@
  * Footer partial - Site footer with navigation and copyright.
  *
  * @var \App\ViewModels\GlobalUiData|null $globalUi
+ * @var string|null $currentPage
  * @var bool $useLayoutWrapper
  */
 
@@ -11,6 +12,13 @@ use App\ViewModels\GlobalUiData;
 $footerGlobalUi = ($globalUi ?? null) instanceof GlobalUiData
     ? $globalUi
     : null;
+$footerCurrentPage = isset($currentPage) && is_string($currentPage)
+    ? $currentPage
+    : '';
+
+$footerLinkClass = static fn(bool $isActive): string => $isActive
+    ? 'p-1.5 sm:p-2 md:p-2.5 border-b-2 border-royal-blue flex justify-center items-center gap-2.5 transition-colors duration-200'
+    : 'p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200';
 ?>
 <!-- Footer -->
 <div class="w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 flex flex-col justify-end items-center gap-2.5 overflow-hidden">
@@ -19,27 +27,27 @@ $footerGlobalUi = ($globalUi ?? null) instanceof GlobalUiData
         <div class="self-stretch flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4 lg:gap-0 overflow-hidden">
             <div class="flex flex-wrap justify-start items-center gap-1 sm:gap-2 md:gap-3 lg:gap-5">
                 <a href="/"
-                   class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-royal-blue flex justify-center items-center gap-2.5 transition-colors duration-200">
+                   class="<?= $footerLinkClass($footerCurrentPage === 'home') ?>" <?= $footerCurrentPage === 'home' ? 'aria-current="page"' : '' ?>>
                     <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navHome ?? 'Home') ?></span>
                 </a>
                 <a href="/jazz"
-                   class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
+                   class="<?= $footerLinkClass($footerCurrentPage === 'jazz') ?>" <?= $footerCurrentPage === 'jazz' ? 'aria-current="page"' : '' ?>>
                     <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navJazz ?? 'Jazz') ?></span>
                 </a>
                 <a href="/dance"
-                   class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
+                   class="<?= $footerLinkClass($footerCurrentPage === 'dance') ?>" <?= $footerCurrentPage === 'dance' ? 'aria-current="page"' : '' ?>>
                     <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navDance ?? 'Dance') ?></span>
                 </a>
                 <a href="/history"
-                   class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
+                   class="<?= $footerLinkClass($footerCurrentPage === 'history') ?>" <?= $footerCurrentPage === 'history' ? 'aria-current="page"' : '' ?>>
                     <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navHistory ?? 'History') ?></span>
                 </a>
                 <a href="/restaurant"
-                   class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
+                   class="<?= $footerLinkClass($footerCurrentPage === 'restaurant') ?>" <?= $footerCurrentPage === 'restaurant' ? 'aria-current="page"' : '' ?>>
                     <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navRestaurant ?? 'Restaurants') ?></span>
                 </a>
                 <a href="/storytelling"
-                   class="p-1.5 sm:p-2 md:p-2.5 border-b-2 border-transparent hover:border-royal-blue flex justify-center items-center gap-2.5 transition-all duration-200">
+                   class="<?= $footerLinkClass($footerCurrentPage === 'storytelling') ?>" <?= $footerCurrentPage === 'storytelling' ? 'aria-current="page"' : '' ?>>
                     <span class="text-center text-royal-blue text-sm sm:text-base md:text-lg lg:text-xl font-normal"><?= htmlspecialchars($footerGlobalUi?->navStorytelling ?? 'Storytelling') ?></span>
                 </a>
             </div>

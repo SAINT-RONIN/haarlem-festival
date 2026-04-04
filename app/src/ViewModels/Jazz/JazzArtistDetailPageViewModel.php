@@ -23,6 +23,5 @@ final readonly class JazzArtistDetailPageViewModel
         public JazzArtistMediaData $media,
         public JazzArtistCtaData $cta,
         public array $performances,
-        public string $shareUrl,
     ) {}
 }

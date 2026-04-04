@@ -17,7 +17,9 @@
         <div class="self-stretch flex flex-col justify-start items-start">
             <p class="self-stretch text-royal-blue text-lg sm:text-xl font-medium font-['Montserrat']"><?= $artist->performanceCount ?> PERFORMANCE<?= $artist->performanceCount > 1 ? 'S' : '' ?></p>
             <div class="self-stretch flex justify-start items-start gap-5">
-                <p class="flex-1 text-royal-blue text-base sm:text-lg font-normal font-['Montserrat']"><?= htmlspecialchars($artist->firstPerformance) ?></p>
+                <p class="flex-1 text-royal-blue text-base sm:text-lg font-normal font-['Montserrat']">
+                    <?= htmlspecialchars($artist->firstPerformance !== '' ? $artist->firstPerformance : 'Schedule coming soon') ?>
+                </p>
                 <?php if ($artist->morePerformancesText): ?>
                     <p class="text-royal-blue text-lg sm:text-xl font-normal font-['Montserrat']"><?= htmlspecialchars($artist->morePerformancesText) ?></p>
                 <?php endif; ?>
@@ -30,10 +32,10 @@
                 <span class="text-center text-white text-xl sm:text-2xl font-normal font-['Montserrat'] leading-7">+</span>
             </a>
         <?php else: ?>
-            <button type="button" class="self-stretch h-11 px-4 bg-royal-blue hover:bg-royal-blue-dark rounded-md flex justify-between items-center transition-colors duration-200">
-                <span class="flex-1 text-left text-white text-lg sm:text-xl font-normal font-['Montserrat'] leading-5">View full profile</span>
+            <div class="self-stretch h-11 px-4 bg-slate-300 rounded-md flex justify-between items-center">
+                <span class="flex-1 text-left text-white text-lg sm:text-xl font-normal font-['Montserrat'] leading-5">Profile coming soon</span>
                 <span class="text-center text-white text-xl sm:text-2xl font-normal font-['Montserrat'] leading-7">+</span>
-            </button>
+            </div>
         <?php endif; ?>
     </div>
 </div>

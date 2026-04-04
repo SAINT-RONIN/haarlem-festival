@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Constants\JazzPageConstants;
+use App\DTOs\Events\JazzArtistCardRecord;
 use App\Helpers\FormatHelper;
+use App\Helpers\TextHelper;
 use App\Enums\PassScope;
 use App\Models\ArtistAlbum;
 use App\Models\ArtistGalleryImage;
 use App\Models\ArtistHighlight;
 use App\Models\ArtistLineupMember;
 use App\Models\ArtistTrack;
-use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Pages\JazzArtistDetailPageData;
 use App\Content\JazzArtistsSectionContent;
 use App\Content\JazzBookingCtaSectionContent;
@@ -23,6 +24,8 @@ use App\Content\JazzVenuesSectionContent;
 use App\Models\PassType;
 use App\ViewModels\Jazz\ArtistCardData;
 use App\ViewModels\Jazz\ArtistsData;
+use App\ViewModels\Jazz\BookingCardData;
+use App\ViewModels\Jazz\BookingCardRowData;
 use App\ViewModels\Jazz\BookingCallToActionData;
 use App\ViewModels\Jazz\HallData;
 use App\ViewModels\Jazz\JazzArtistAlbumData;
@@ -58,16 +61,19 @@ final class JazzMapper
     {
         $heroData = CmsMapper::toHeroData($domain->heroSection, JazzPageConstants::CURRENT_PAGE);
         $globalUi = CmsMapper::toGlobalUiData($domain->globalUiContent, $isLoggedIn);
+        $venuesData = self::buildVenuesData($domain->venuesSection);
+        $pricingData = self::buildPricingData($domain->pricingSection, $domain->passPrices);
 
         return new JazzPageViewModel(
             heroData: $heroData, globalUi: $globalUi,
             gradientSection: CmsMapper::toGradientSection($domain->gradientSection, JazzPageConstants::DEFAULT_GRADIENT_BACKGROUND_IMAGE),
             introSplitSection: CmsMapper::toIntroSplitSection($domain->introSection, JazzPageConstants::DEFAULT_INTRO_IMAGE, JazzPageConstants::DEFAULT_INTRO_IMAGE_ALT),
-            venuesData: self::buildVenuesData($domain->venuesSection),
-            pricingData: self::buildPricingData($domain->pricingSection, $domain->passPrices),
+            venuesData: $venuesData,
+            pricingData: $pricingData,
             scheduleCtaData: self::buildScheduleCtaData($domain->scheduleCtaSection),
-            artistsData: self::buildArtistsData($domain->artistsSection),
-            bookingCtaData: self::buildBookingCtaData($domain->bookingCtaSection), scheduleSection: $scheduleSection,
+            artistsData: self::buildArtistsData($domain->artistsSection, $domain->featuredArtists),
+            bookingCtaData: self::buildBookingCtaData($domain->bookingCtaSection, $venuesData, $pricingData),
+            scheduleSection: $scheduleSection,
         );
     }
 
@@ -83,88 +89,116 @@ final class JazzMapper
         string $currentUri,
         string $appUrl,
     ): JazzArtistDetailPageViewModel {
-        $shareUrl = rtrim($appUrl, '/') . $currentUri;
-
         return new JazzArtistDetailPageViewModel(
-            hero: self::buildArtistHeroData($pageData),
+            hero: self::buildArtistHeroData($pageData, $performances),
             overview: self::buildArtistOverviewData($pageData),
             lineup: self::buildArtistLineupData($pageData),
             media: self::buildArtistMediaData($pageData),
-            cta: self::buildArtistCtaData($pageData),
+            cta: self::buildArtistCtaData($pageData, $performances),
             performances: $performances,
-            shareUrl: $shareUrl,
         );
     }
 
-    private static function buildArtistHeroData(JazzArtistDetailPageData $pageData): JazzArtistHeroData
+    /**
+     * @param ScheduleEventCardViewModel[] $performances
+     */
+    private static function buildArtistHeroData(JazzArtistDetailPageData $pageData, array $performances): JazzArtistHeroData
     {
         $event = $pageData->event;
-        $cms   = $pageData->cms;
+        $artist = $pageData->artist;
 
         return new JazzArtistHeroData(
-            heroTitle: $event->title, heroSubtitle: self::firstNonEmpty($cms->heroSubtitle ?? '', $event->shortDescription),
-            heroBackgroundImageUrl: $cms->heroBackgroundImage ?? '',
-            originText: $cms->originText ?? '', formedText: $cms->formedText ?? '', performancesText: $cms->performancesText ?? '',
-            heroBackButtonText: $cms->heroBackButtonText ?? '', heroBackButtonUrl: $cms->heroBackButtonUrl ?? '',
-            heroReserveButtonText: $cms->heroReserveButtonText ?? '',
+            heroTitle: TextHelper::firstNonEmpty($artist->name, $event->title),
+            heroSubtitle: TextHelper::firstNonEmpty($artist->heroSubtitle, $event->shortDescription),
+            heroBackgroundImageUrl: TextHelper::firstNonEmpty(
+                $artist->heroImagePath,
+                $event->featuredImageUrl,
+                $artist->imagePath ?? '',
+                JazzPageConstants::DEFAULT_HERO_BACKGROUND_IMAGE,
+            ),
+            originText: $artist->originText,
+            formedText: $artist->formedText,
+            performancesText: self::buildPerformancesText(count($performances)),
+            heroBackButtonText: 'Back to Jazz',
+            heroBackButtonUrl: '/jazz',
+            heroReserveButtonText: 'Reserve your spot',
         );
     }
 
     private static function buildArtistOverviewData(JazzArtistDetailPageData $pageData): JazzArtistOverviewData
     {
         $event   = $pageData->event;
-        $cms     = $pageData->cms;
-        $primary = self::firstNonEmpty($cms->overviewBodyPrimary ?? '', self::buildPrimaryOverviewFallbackFromModel($event));
+        $artist  = $pageData->artist;
+        $primary = TextHelper::firstNonEmpty(
+            TextHelper::stripHtmlToText($artist->bioHtml),
+            self::buildPrimaryOverviewFallbackFromModel($event),
+        );
 
         return new JazzArtistOverviewData(
-            overviewHeading: self::firstNonEmpty($cms->overviewHeading ?? '', $event->title),
-            overviewLead: self::firstNonEmpty($cms->overviewLead ?? '', $event->shortDescription),
+            overviewHeading: TextHelper::firstNonEmpty($artist->name, $event->title),
+            overviewLead: TextHelper::firstNonEmpty($artist->overviewLead, $event->shortDescription),
             overviewBodyPrimary: $primary,
-            overviewBodySecondary: $cms->overviewBodySecondary ?? '',
+            overviewBodySecondary: $artist->overviewBodySecondary,
         );
     }
 
     private static function buildArtistLineupData(JazzArtistDetailPageData $pageData): JazzArtistLineupData
     {
-        $cms = $pageData->cms;
+        $artist = $pageData->artist;
 
         return new JazzArtistLineupData(
-            lineupHeading: $cms->lineupHeading ?? '',
+            lineupHeading: TextHelper::firstNonEmpty($artist->lineupHeading, 'Band Lineup'),
             lineup: array_map(fn(ArtistLineupMember $m) => $m->memberText, $pageData->lineupMembers),
-            highlightsHeading: $cms->highlightsHeading ?? '',
+            highlightsHeading: TextHelper::firstNonEmpty($artist->highlightsHeading, 'Career Highlights'),
             highlights: array_map(fn(ArtistHighlight $h) => $h->highlightText, $pageData->highlights),
-            photoGalleryHeading: $cms->photoGalleryHeading ?? '',
-            photoGalleryDescription: $cms->photoGalleryDescription ?? '',
+            photoGalleryHeading: TextHelper::firstNonEmpty($artist->photoGalleryHeading, 'Photo Gallery'),
+            photoGalleryDescription: $artist->photoGalleryDescription,
             galleryImages: array_map(fn(ArtistGalleryImage $g) => $g->imagePath, $pageData->galleryImages),
         );
     }
 
     private static function buildArtistMediaData(JazzArtistDetailPageData $pageData): JazzArtistMediaData
     {
-        $cms = $pageData->cms;
+        $artist = $pageData->artist;
 
         return new JazzArtistMediaData(
-            albumsHeading: $cms->albumsHeading ?? '', albumsDescription: $cms->albumsDescription ?? '',
+            albumsHeading: TextHelper::firstNonEmpty($artist->albumsHeading, 'Featured Albums'),
+            albumsDescription: $artist->albumsDescription,
             albums: self::buildAlbumsFromTable($pageData->albums),
-            listenHeading: $cms->listenHeading ?? '', listenSubheading: $cms->listenSubheading ?? '',
-            listenDescription: $cms->listenDescription ?? '',
-            listenPlayButtonLabel: $cms->listenPlayButtonLabel ?? '', listenPlayExcerptText: $cms->listenPlayExcerptText ?? '',
-            listenTrackArtworkAltSuffix: $cms->listenTrackArtworkAltSuffix ?? '',
+            listenHeading: TextHelper::firstNonEmpty($artist->listenHeading, 'LISTEN NOW'),
+            listenSubheading: TextHelper::firstNonEmpty($artist->listenSubheading, 'Important Tracks'),
+            listenDescription: $artist->listenDescription,
+            listenPlayButtonLabel: 'Play excerpt',
+            listenPlayExcerptText: 'Click to Play Excerpt',
+            listenTrackArtworkAltSuffix: 'track artwork',
             tracks: self::buildTracksFromTable($pageData->tracks),
         );
     }
 
-    private static function buildArtistCtaData(JazzArtistDetailPageData $pageData): JazzArtistCtaData
+    /**
+     * @param ScheduleEventCardViewModel[] $performances
+     */
+    private static function buildArtistCtaData(JazzArtistDetailPageData $pageData, array $performances): JazzArtistCtaData
     {
-        $cms = $pageData->cms;
+        $artist = $pageData->artist;
+        $artistName = TextHelper::firstNonEmpty($artist->name, $pageData->event->title);
+        $performanceCount = count($performances);
 
         return new JazzArtistCtaData(
-            liveCtaHeading: $cms->liveCtaHeading ?? '', liveCtaDescription: $cms->liveCtaDescription ?? '',
-            liveCtaBookButtonText: $cms->liveCtaBookButtonText ?? '',
-            liveCtaScheduleButtonText: $cms->liveCtaScheduleButtonText ?? '', liveCtaScheduleButtonUrl: $cms->liveCtaScheduleButtonUrl ?? '',
-            performancesSectionId: $cms->performancesSectionId ?? '',
-            performancesHeading: $cms->performancesHeading ?? '',
-            performancesDescription: $cms->performancesDescription ?? '',
+            liveCtaHeading: TextHelper::firstNonEmpty($artist->liveCtaHeading, 'Experience ' . $artistName . ' Live'),
+            liveCtaDescription: TextHelper::firstNonEmpty(
+                $artist->liveCtaDescription,
+                self::buildLiveCtaDescription($artistName, $performanceCount),
+            ),
+            liveCtaBookButtonText: 'Book Tickets',
+            liveCtaScheduleButtonText: 'View Full Schedule',
+            liveCtaScheduleButtonUrl: '/jazz#jazz-schedule',
+            performancesSectionId: 'artist-performances',
+            performancesHeading: TextHelper::firstNonEmpty($artist->performancesHeading, $artistName . ' at Haarlem Jazz 2026'),
+            performancesDescription: TextHelper::firstNonEmpty(
+                $artist->performancesDescription,
+                self::buildPerformancesDescription($artistName),
+            ),
         );
     }
 
@@ -403,77 +437,208 @@ final class JazzMapper
             headingText: $section->scheduleCtaHeading ?? '',
             descriptionText: $section->scheduleCtaDescription ?? '',
             buttonText: $section->scheduleCtaButton ?? '',
-            buttonLink: $section->scheduleCtaButtonLink ?? '#schedule',
-        );
-    }
-
-    private static function buildArtistsData(JazzArtistsSectionContent $section): ArtistsData
-    {
-        return new ArtistsData(
-            headingText: $section->artistsHeading ?? '',
-            artists: self::buildArtistCards($section),
-            currentPage: JazzPageConstants::ARTISTS_CURRENT_PAGE,
-            totalPages: JazzPageConstants::ARTISTS_TOTAL_PAGES,
-            totalArtists: JazzPageConstants::ARTISTS_TOTAL_COUNT,
-        );
-    }
-
-    /** @return ArtistCardData[] */
-    private static function buildArtistCards(JazzArtistsSectionContent $section): array
-    {
-        $artists = [
-            ['prefix' => 'GumboKings', 'slug' => 'gumbo-kings', 'defaultImage' => JazzPageConstants::DEFAULT_GUMBO_KINGS_IMAGE],
-            ['prefix' => 'Evolve',     'slug' => 'evolve',      'defaultImage' => JazzPageConstants::DEFAULT_EVOLVE_IMAGE],
-            ['prefix' => 'Ntjam',      'slug' => 'ntjam-rosie', 'defaultImage' => JazzPageConstants::DEFAULT_NTJAM_IMAGE],
-        ];
-
-        return array_map(
-            fn(array $a) => self::buildArtistCard($section, $a['prefix'], $a['slug'], $a['defaultImage']),
-            $artists,
-        );
-    }
-
-    /** Builds a single artist card from CMS content using the property prefix pattern. */
-    private static function buildArtistCard(JazzArtistsSectionContent $section, string $prefix, string $slug, string $defaultImage): ArtistCardData
-    {
-        $name = 'artists' . $prefix . 'Name';
-        $genre = 'artists' . $prefix . 'Genre';
-        $desc = 'artists' . $prefix . 'Description';
-        $image = 'artists' . $prefix . 'Image';
-        $count = 'artists' . $prefix . 'PerformanceCount';
-        $first = 'artists' . $prefix . 'FirstPerformance';
-        $more = 'artists' . $prefix . 'MorePerformancesText';
-        $url = 'artists' . $prefix . 'ProfileUrl';
-
-        return new ArtistCardData(
-            name: $section->$name ?? '',
-            genre: $section->$genre ?? '',
-            description: $section->$desc ?? '',
-            imageUrl: $section->$image ?? $defaultImage,
-            performanceCount: (int)($section->$count ?? 0),
-            firstPerformance: $section->$first ?? '',
-            morePerformancesText: $section->$more ?? '',
-            profileUrl: self::resolveProfileUrl($section->$url, $slug),
+            buttonLink: self::normalizeJazzScheduleLink($section->scheduleCtaButtonLink),
         );
     }
 
     /**
-     * Returns the CMS-provided profile URL if set, otherwise generates
-     * the default detail page URL from the event slug (e.g., /jazz/gumbo-kings).
+     * @param JazzArtistCardRecord[] $featuredArtists
      */
-    private static function resolveProfileUrl(?string $cmsUrl, string $eventSlug): string
+    private static function buildArtistsData(JazzArtistsSectionContent $section, array $featuredArtists): ArtistsData
     {
-        if ($cmsUrl !== null && $cmsUrl !== '') {
-            return $cmsUrl;
-        }
-        return '/jazz/' . $eventSlug;
+        $artistCount = count($featuredArtists);
+
+        return new ArtistsData(
+            headingText: $section->artistsHeading ?? '',
+            artists: self::buildArtistCards($featuredArtists),
+            currentPage: 1,
+            totalPages: max(1, (int)ceil(max($artistCount, 1) / 3)),
+            totalArtists: $artistCount,
+        );
     }
 
-    private static function buildBookingCtaData(JazzBookingCtaSectionContent $section): BookingCallToActionData
+    /**
+     * @param JazzArtistCardRecord[] $featuredArtists
+     * @return ArtistCardData[]
+     */
+    private static function buildArtistCards(array $featuredArtists): array
+    {
+        return array_map(
+            static function (JazzArtistCardRecord $artist): ArtistCardData {
+                $morePerformances = max(0, $artist->performanceCount - 1);
+
+                return new ArtistCardData(
+                    name: $artist->artistName,
+                    genre: $artist->artistStyle,
+                    description: $artist->cardDescription,
+                    imageUrl: TextHelper::firstNonEmpty($artist->imageUrl, JazzPageConstants::DEFAULT_HERO_BACKGROUND_IMAGE),
+                    performanceCount: $artist->performanceCount,
+                    firstPerformance: self::formatFirstPerformance($artist),
+                    morePerformancesText: $morePerformances > 0 ? '+' . $morePerformances . ' more' : '',
+                    profileUrl: '/jazz/' . $artist->eventSlug,
+                );
+            },
+            $featuredArtists,
+        );
+    }
+
+    private static function buildBookingCtaData(
+        JazzBookingCtaSectionContent $section,
+        VenuesData $venuesData,
+        PricingData $pricingData,
+    ): BookingCallToActionData
     {
         return new BookingCallToActionData(
             headingText: $section->bookingCtaHeading ?? '',
             descriptionText: $section->bookingCtaDescription ?? '',
+            cards: [
+                self::buildBookingContactCard($section),
+                self::buildBookingVenueCard($section, $venuesData),
+                self::buildBookingTicketsCard($section, $pricingData),
+            ],
+        );
+    }
+
+    private static function buildBookingContactCard(JazzBookingCtaSectionContent $section): BookingCardData
+    {
+        return new BookingCardData(
+            eyebrowText: $section->bookingContactEyebrow ?? 'CONTACT US',
+            titleText: $section->bookingContactTitle ?? 'Get Information',
+            descriptionText: $section->bookingContactDescription ?? '',
+            rows: array_values(array_filter([
+                self::buildBookingRow('phone', [$section->bookingContactPhoneOffice ?? '']),
+                self::buildBookingRow('phone', [$section->bookingContactPhoneCashDesk ?? '']),
+                self::buildBookingRow('clock', [$section->bookingContactHours ?? '']),
+            ], static fn(?BookingCardRowData $row): bool => $row !== null)),
+        );
+    }
+
+    private static function buildBookingVenueCard(JazzBookingCtaSectionContent $section, VenuesData $venuesData): BookingCardData
+    {
+        $venue = self::findVenueByName($venuesData, 'Patronaat') ?? ($venuesData->venues[0] ?? null);
+        $addressLines = $venue instanceof VenueData
+            ? array_values(array_filter([$venue->addressLine1, $venue->addressLine2], static fn(string $line): bool => $line !== ''))
+            : [];
+
+        return new BookingCardData(
+            eyebrowText: $section->bookingVenueEyebrow ?? 'VENUE DETAILS',
+            titleText: $section->bookingVenueTitle ?? 'Visit Patronaat',
+            descriptionText: $section->bookingVenueDescription ?? '',
+            rows: array_values(array_filter([
+                self::buildBookingRow('location', $addressLines),
+            ], static fn(?BookingCardRowData $row): bool => $row !== null)),
+        );
+    }
+
+    private static function buildBookingTicketsCard(JazzBookingCtaSectionContent $section, PricingData $pricingData): BookingCardData
+    {
+        return new BookingCardData(
+            eyebrowText: $section->bookingTicketsEyebrow ?? 'TICKETS',
+            titleText: $section->bookingTicketsTitle ?? 'Purchase Tickets',
+            descriptionText: $section->bookingTicketsDescription ?? '',
+            rows: self::buildTicketSummaryRows($pricingData),
+            isHighlighted: true,
+        );
+    }
+
+    private static function findVenueByName(VenuesData $venuesData, string $name): ?VenueData
+    {
+        foreach ($venuesData->venues as $venue) {
+            if (strcasecmp($venue->name, $name) === 0) {
+                return $venue;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return BookingCardRowData[]
+     */
+    private static function buildTicketSummaryRows(PricingData $pricingData): array
+    {
+        $rows = [];
+
+        foreach ($pricingData->pricingCards as $card) {
+            if ($card->items !== []) {
+                $summary = self::buildIndividualTicketSummary($card);
+                if ($summary !== '') {
+                    $rows[] = new BookingCardRowData('', [$summary]);
+                }
+
+                continue;
+            }
+
+            $title = strtolower($card->title);
+            if (str_contains($title, 'day pass')) {
+                $rows[] = new BookingCardRowData('', ['Day Pass: ' . $card->price]);
+                continue;
+            }
+
+            if (str_contains($title, '3-day') || str_contains($title, 'all-access')) {
+                $rows[] = new BookingCardRowData('', ['3-Day Pass: ' . $card->price]);
+            }
+        }
+
+        return $rows;
+    }
+
+    private static function buildIndividualTicketSummary(PricingCardData $card): string
+    {
+        $prices = [];
+
+        foreach ($card->items as $item) {
+            $amount = self::parsePriceAmount($item->price);
+            if ($amount !== null) {
+                $prices[] = $amount;
+            }
+        }
+
+        if ($prices === []) {
+            return '';
+        }
+
+        $min = min($prices);
+        $max = max($prices);
+
+        if ($min === $max) {
+            return 'Single Shows: ' . self::formatCompactPrice($min);
+        }
+
+        return 'Single Shows: ' . self::formatCompactPrice($min) . '-' . ltrim(self::formatCompactPrice($max), '€');
+    }
+
+    private static function parsePriceAmount(string $price): ?float
+    {
+        if (preg_match('/(\d+(?:\.\d+)?)/', $price, $matches) !== 1) {
+            return null;
+        }
+
+        return (float) $matches[1];
+    }
+
+    private static function formatCompactPrice(float $amount): string
+    {
+        if (fmod($amount, 1.0) === 0.0) {
+            return '€' . (string)((int)$amount);
+        }
+
+        return FormatHelper::price($amount);
+    }
+
+    /**
+     * @param string[] $lines
+     */
+    private static function buildBookingRow(string $icon, array $lines): ?BookingCardRowData
+    {
+        $filteredLines = array_values(array_filter($lines, static fn(string $line): bool => trim($line) !== ''));
+        if ($filteredLines === []) {
+            return null;
+        }
+
+        return new BookingCardRowData(
+            icon: $icon,
+            lines: $filteredLines,
         );
     }
 
@@ -508,18 +673,72 @@ final class JazzMapper
         ), $tracks);
     }
 
-    private static function buildPrimaryOverviewFallbackFromModel(JazzArtistDetailEvent $event): string
+    private static function buildPrimaryOverviewFallbackFromModel(\App\DTOs\Events\JazzArtistDetailEvent $event): string
     {
         if ($event->longDescriptionHtml === '') {
             return '';
         }
 
-        return trim(strip_tags($event->longDescriptionHtml));
+        return TextHelper::stripHtmlToText($event->longDescriptionHtml);
     }
 
-    /** Returns the first non-empty string, used to prefer CMS content over model fallbacks. */
-    private static function firstNonEmpty(string $value, string $fallback): string
+    private static function buildPerformancesText(int $performanceCount): string
     {
-        return $value ?: $fallback;
+        if ($performanceCount === 0) {
+            return 'No performances currently scheduled';
+        }
+
+        return sprintf(
+            '%d performance%s at Haarlem Jazz 2026',
+            $performanceCount,
+            $performanceCount === 1 ? '' : 's',
+        );
+    }
+
+    private static function buildLiveCtaDescription(string $artistName, int $performanceCount): string
+    {
+        if ($performanceCount === 0) {
+            return 'Do not miss the chance to see ' . $artistName . ' at Haarlem Jazz 2026. Check the schedule for upcoming appearances.';
+        }
+
+        $opportunities = $performanceCount <= 1
+            ? 'there is one opportunity'
+            : 'there are multiple opportunities';
+
+        return 'Do not miss the chance to see ' . $artistName . ' perform live at Haarlem Jazz 2026. With '
+            . $performanceCount . ' performance' . ($performanceCount === 1 ? '' : 's')
+            . ' scheduled, ' . $opportunities . ' to experience the show.';
+    }
+
+    private static function buildPerformancesDescription(string $artistName): string
+    {
+        return 'Catch ' . $artistName . ' performing during the Haarlem Jazz Festival. Each performance offers a unique experience.';
+    }
+
+    private static function formatFirstPerformance(JazzArtistCardRecord $artist): string
+    {
+        if ($artist->firstPerformanceAt === null) {
+            return '';
+        }
+
+        $prefix = $artist->firstPerformanceAt->format('D H:i');
+        $location = trim($artist->firstPerformanceLocation);
+
+        return $location !== '' ? $prefix . ' - ' . $location : $prefix;
+    }
+
+    private static function normalizeJazzScheduleLink(?string $link): string
+    {
+        $trimmed = trim((string)$link);
+
+        if ($trimmed === '' || $trimmed === '#schedule' || $trimmed === '/jazz#schedule') {
+            return '#jazz-schedule';
+        }
+
+        if ($trimmed === '/jazz#jazz-schedule') {
+            return '#jazz-schedule';
+        }
+
+        return $trimmed;
     }
 }

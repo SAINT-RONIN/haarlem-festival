@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
+use App\DTOs\Events\JazzArtistCardRecord;
 use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Events\StorytellingDetailEvent;
@@ -145,8 +146,9 @@ class EventRepository extends BaseRepository implements IEventRepository
     private function queryActiveEventBySlug(string $slug, EventTypeId $eventType): ?array
     {
         $stmt = $this->execute(
-            'SELECT *
+            'SELECT e.*, featured_image.FilePath AS FeaturedImageUrl
             FROM Event e
+            LEFT JOIN MediaAsset featured_image ON featured_image.MediaAssetId = e.FeaturedImageAssetId
             WHERE e.EventTypeId = :eventTypeId
               AND e.IsActive = 1
               AND e.Slug = :slug
@@ -170,6 +172,14 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
+     * @return JazzArtistCardRecord[]
+     */
+    public function findJazzOverviewArtists(): array
+    {
+        return $this->fetchJazzArtistCards(true);
+    }
+
+    /**
      * Finds an active Storytelling event by its URL slug for the detail page.
      *
      * @return StorytellingDetailEvent|null Null when no active Storytelling event matches the slug.
@@ -178,6 +188,84 @@ class EventRepository extends BaseRepository implements IEventRepository
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
         return $row !== null ? StorytellingDetailEvent::fromRow($row) : null;
+    }
+
+    /**
+     * @return JazzArtistCardRecord[]
+     */
+    private function fetchJazzArtistCards(bool $featuredOnly): array
+    {
+        $sql = '
+            SELECT
+                a.ArtistId,
+                COALESCE(MIN(e.EventId), 0) AS EventId,
+                COALESCE(
+                    SUBSTRING_INDEX(
+                        GROUP_CONCAT(
+                            DISTINCT NULLIF(e.Slug, \'\')
+                            ORDER BY e.EventId ASC
+                            SEPARATOR \'||\'
+                        ),
+                        \'||\',
+                        1
+                    ),
+                    \'\'
+                ) AS Slug,
+                COALESCE(NULLIF(a.Name, \'\'), \'\') AS ArtistName,
+                COALESCE(NULLIF(a.Style, \'\'), \'Jazz\') AS ArtistStyle,
+                COALESCE(NULLIF(a.CardDescription, \'\'), \'\') AS CardDescription,
+                COALESCE(card_image.FilePath, \'\') AS ImageUrl,
+                a.CardSortOrder,
+                COUNT(DISTINCT es.EventSessionId) AS PerformanceCount,
+                MIN(es.StartDateTime) AS FirstPerformanceAt,
+                COALESCE(TRIM(SUBSTRING_INDEX(
+                    GROUP_CONCAT(
+                        TRIM(CONCAT_WS(\' \', COALESCE(sv.Name, v.Name, \'\'), COALESCE(NULLIF(es.HallName, \'\'), \'\')))
+                        ORDER BY es.StartDateTime ASC
+                        SEPARATOR \'||\'
+                    ),
+                    \'||\',
+                    1
+                )), \'\') AS FirstPerformanceLocation
+            FROM Artist a
+            LEFT JOIN MediaAsset card_image ON card_image.MediaAssetId = a.ImageAssetId
+            LEFT JOIN Event e
+                ON e.ArtistId = a.ArtistId
+               AND e.EventTypeId = :eventTypeId
+               AND e.IsActive = 1
+            LEFT JOIN EventSession es
+                ON es.EventId = e.EventId
+               AND es.IsActive = 1
+               AND es.IsCancelled = 0
+            LEFT JOIN Venue sv ON sv.VenueId = es.VenueId
+            LEFT JOIN Venue v ON v.VenueId = e.VenueId
+            WHERE a.IsActive = 1
+        ';
+
+        $params = ['eventTypeId' => EventTypeId::Jazz->value];
+        if ($featuredOnly) {
+            $sql .= ' AND a.ShowOnJazzOverview = 1';
+        }
+
+        $sql .= '
+            GROUP BY
+                a.ArtistId,
+                a.Name,
+                a.Style,
+                a.CardDescription,
+                card_image.FilePath,
+                a.CardSortOrder
+            ORDER BY
+                CASE WHEN a.CardSortOrder = 0 THEN 1 ELSE 0 END,
+                a.CardSortOrder ASC,
+                ArtistName ASC
+        ';
+
+        return $this->fetchAll(
+            $sql,
+            $params,
+            fn(array $row) => JazzArtistCardRecord::fromRow($row),
+        );
     }
 
     /**

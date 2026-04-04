@@ -7,14 +7,14 @@ namespace App\Repositories\Interfaces;
 use App\Models\ArtistHighlight;
 
 /**
- * Defines persistence operations for artist highlights linked to events.
+ * Defines persistence operations for artist highlights linked to artists.
  */
 interface IArtistHighlightRepository
 {
     /**
-     * Returns all highlights for an event, ordered by SortOrder.
+     * Returns all highlights for an artist, ordered by SortOrder.
      *
      * @return ArtistHighlight[]
      */
-    public function findByEventId(int $eventId): array;
+    public function findByArtistId(int $artistId): array;
 }

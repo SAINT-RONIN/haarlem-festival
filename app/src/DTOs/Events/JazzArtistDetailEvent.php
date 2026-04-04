@@ -14,10 +14,12 @@ final readonly class JazzArtistDetailEvent
 {
     public function __construct(
         public int $eventId,
+        public ?int $artistId,
         public string $title,
         public string $shortDescription,
         public string $longDescriptionHtml,
         public string $slug,
+        public string $featuredImageUrl,
     ) {
     }
 
@@ -28,10 +30,12 @@ final readonly class JazzArtistDetailEvent
     {
         return new self(
             eventId: (int)($row['EventId'] ?? 0),
+            artistId: isset($row['ArtistId']) ? (int)$row['ArtistId'] : null,
             title: (string)($row['Title'] ?? ''),
             shortDescription: (string)($row['ShortDescription'] ?? ''),
             longDescriptionHtml: (string)($row['LongDescriptionHtml'] ?? ''),
             slug: (string)($row['Slug'] ?? ''),
+            featuredImageUrl: (string)($row['FeaturedImageUrl'] ?? ''),
         );
     }
 }

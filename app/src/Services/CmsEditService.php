@@ -6,8 +6,10 @@ namespace App\Services;
 
 use App\Enums\CmsItemType;
 use App\Enums\EventTypeId;
+use App\DTOs\Cms\JazzLineupManagerData;
 use App\Helpers\FormatHelper;
 use App\Models\CmsItem;
+use App\Repositories\Interfaces\IArtistRepository;
 use App\DTOs\Filters\CmsItemFilter;
 use App\Models\CmsPage;
 use App\DTOs\Cms\CmsPageEditData;
@@ -36,6 +38,7 @@ class CmsEditService implements ICmsEditService
     public function __construct(
         private readonly ICmsRepository $cmsRepository,
         private readonly IEventRepository $eventRepository,
+        private readonly IArtistRepository $artistRepository,
         private readonly ICmsItemEnricher $itemEnricher,
         private readonly ICmsPreviewUrlResolver $previewUrlResolver,
     ) {
@@ -57,7 +60,11 @@ class CmsEditService implements ICmsEditService
 
         $sections = $this->buildSectionsWithItems($page);
 
-        return new CmsPageEditData(page: $page, sections: $sections);
+        return new CmsPageEditData(
+            page: $page,
+            sections: $sections,
+            jazzLineupManager: $this->buildJazzLineupManagerData($page),
+        );
     }
 
     /**
@@ -134,10 +141,24 @@ class CmsEditService implements ICmsEditService
         if ($pageSlug === 'storytelling-detail') {
             return $this->buildEventNameMap(EventTypeId::Storytelling->value);
         }
-        if ($pageSlug === 'jazz-artist-detail') {
-            return $this->buildEventNameMap(EventTypeId::Jazz->value);
-        }
         return [];
+    }
+
+    private function buildJazzLineupManagerData(CmsPage $page): ?JazzLineupManagerData
+    {
+        if ($page->slug !== 'jazz') {
+            return null;
+        }
+
+        $availableArtists = array_values(array_filter(
+            $this->artistRepository->findAll(),
+            static fn(\App\Models\Artist $artist): bool => $artist->isActive && !$artist->showOnJazzOverview,
+        ));
+
+        return new JazzLineupManagerData(
+            visibleArtists: $this->eventRepository->findJazzOverviewArtists(),
+            availableArtists: $availableArtists,
+        );
     }
 
     /**

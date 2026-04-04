@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Mappers\JazzContentMapper;
-use App\Content\JazzArtistDetailCmsData;
 use App\Content\JazzArtistsSectionContent;
 use App\Content\JazzBookingCtaSectionContent;
 use App\Content\JazzPricingSectionContent;
@@ -53,12 +52,5 @@ class JazzContentRepository extends BaseContentRepository implements Interfaces\
     {
         $raw = $this->fetchSectionContent($pageSlug, $sectionKey);
         return JazzContentMapper::mapBookingCta($raw);
-    }
-
-    /** Fetches the artist detail CMS data for a specific event section. */
-    public function findArtistDetailCmsData(string $pageSlug, string $sectionKey): JazzArtistDetailCmsData
-    {
-        $raw = $this->fetchSectionContent($pageSlug, $sectionKey);
-        return JazzContentMapper::mapArtistDetail($raw);
     }
 }

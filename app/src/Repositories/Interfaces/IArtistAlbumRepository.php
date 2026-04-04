@@ -7,14 +7,14 @@ namespace App\Repositories\Interfaces;
 use App\Models\ArtistAlbum;
 
 /**
- * Defines persistence operations for artist albums linked to events.
+ * Defines persistence operations for artist albums linked to artists.
  */
 interface IArtistAlbumRepository
 {
     /**
-     * Returns all albums for an event, ordered by SortOrder.
+     * Returns all albums for an artist, ordered by SortOrder.
      *
      * @return ArtistAlbum[]
      */
-    public function findByEventId(int $eventId): array;
+    public function findByArtistId(int $artistId): array;
 }

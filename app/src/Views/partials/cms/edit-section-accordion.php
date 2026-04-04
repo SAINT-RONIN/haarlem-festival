@@ -12,7 +12,7 @@ $defaultColor = CmsEditorStyles::DEFAULT_COLOR;
 $columnClassMap = CmsEditorStyles::COLUMN_CLASS_MAP;
 ?>
 
-<div class="accordion-section bg-white border border-gray-200 rounded-xl overflow-hidden">
+<div id="section-<?= htmlspecialchars($section->key) ?>" class="accordion-section bg-white border border-gray-200 rounded-xl overflow-hidden">
     <!-- Section Header -->
     <button type="button"
             data-accordion-toggle
@@ -88,6 +88,10 @@ $columnClassMap = CmsEditorStyles::COLUMN_CLASS_MAP;
                     ?>
                 <?php endforeach; ?>
             </div>
+        <?php endif; ?>
+
+        <?php if (isset($jazzLineupManager) && $jazzLineupManager instanceof \App\ViewModels\Cms\CmsJazzLineupManagerViewModel && $section->key === $jazzLineupManager->sectionKey): ?>
+            <?php require __DIR__ . '/jazz-lineup-manager.php'; ?>
         <?php endif; ?>
     </div>
 </div>

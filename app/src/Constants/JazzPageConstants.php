@@ -20,14 +20,6 @@ final class JazzPageConstants
     public const DEFAULT_INTRO_IMAGE = '/assets/Image/Jazz/Jazz-third-section.png';
     public const DEFAULT_INTRO_IMAGE_ALT = 'Jazz musicians performing at Haarlem Festival';
 
-    public const DEFAULT_GUMBO_KINGS_IMAGE = '/assets/Image/Jazz/Jazz-Gumbokings.png';
-    public const DEFAULT_EVOLVE_IMAGE = '/assets/Image/Jazz/Jazz-evolve.png';
-    public const DEFAULT_NTJAM_IMAGE = '/assets/Image/Jazz/Jazz-Ntjam.png';
-
-    public const ARTISTS_CURRENT_PAGE = 1;
-    public const ARTISTS_TOTAL_PAGES = 4;
-    public const ARTISTS_TOTAL_COUNT = 12;
-
     private function __construct()
     {
     }

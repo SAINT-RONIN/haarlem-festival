@@ -4,6 +4,7 @@
  *
  * @var \App\ViewModels\Cms\CmsPageInfoViewModel $page
  * @var \App\ViewModels\Cms\CmsSectionDisplayViewModel[] $sections
+ * @var \App\ViewModels\Cms\CmsJazzLineupManagerViewModel|null $jazzLineupManager
  * @var array{HEADING: int, TEXT: int, HTML: int, BUTTON_TEXT: int} $contentLimits
  * @var \App\ViewModels\Cms\CmsImageLimitsViewModel $imageLimits
  * @var string|null $successMessage

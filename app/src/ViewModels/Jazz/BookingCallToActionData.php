@@ -9,9 +9,13 @@ namespace App\ViewModels\Jazz;
  */
 final readonly class BookingCallToActionData
 {
+    /**
+     * @param BookingCardData[] $cards
+     */
     public function __construct(
         public string $headingText,
         public string $descriptionText,
+        public array $cards,
     ) {
     }
 }

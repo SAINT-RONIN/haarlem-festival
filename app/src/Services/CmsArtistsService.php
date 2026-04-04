@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Artist;
 use App\DTOs\Cms\ArtistUpsertData;
+use App\DTOs\Cms\JazzLineupCardUpsertData;
 use App\Exceptions\CmsOperationException;
 use App\Helpers\FieldValidator;
 use App\Repositories\Interfaces\IArtistRepository;
@@ -68,6 +69,21 @@ class CmsArtistsService implements ICmsArtistsService
         }
     }
 
+    public function validateJazzOverviewCard(JazzLineupCardUpsertData $data): array
+    {
+        return $this->validateJazzCard($data);
+    }
+
+    /** @throws CmsOperationException When the database write fails */
+    public function createJazzOverviewCard(JazzLineupCardUpsertData $data): int
+    {
+        try {
+            return $this->artistRepository->createJazzOverviewCard($data);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to create Jazz lineup card.', 0, $error);
+        }
+    }
+
     /** @throws CmsOperationException When the database write fails */
     public function updateArtist(int $id, ArtistUpsertData $data): void
     {
@@ -75,6 +91,31 @@ class CmsArtistsService implements ICmsArtistsService
             $this->artistRepository->update($id, $data);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to update artist.', 0, $error);
+        }
+    }
+
+    /** @throws CmsOperationException When the database write fails */
+    public function updateJazzOverviewCard(int $id, JazzLineupCardUpsertData $data): void
+    {
+        try {
+            $this->artistRepository->updateJazzOverviewCard($id, $data);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to update Jazz lineup card.', 0, $error);
+        }
+    }
+
+    public function getNextJazzOverviewSortOrder(): int
+    {
+        return $this->artistRepository->getNextJazzOverviewSortOrder();
+    }
+
+    /** @throws CmsOperationException When the database write fails */
+    public function setJazzOverviewVisibility(int $id, bool $visible): void
+    {
+        try {
+            $this->artistRepository->setJazzOverviewVisibility($id, $visible);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to update Jazz lineup visibility.', 0, $error);
         }
     }
 
@@ -94,7 +135,25 @@ class CmsArtistsService implements ICmsArtistsService
         $errors = [];
         FieldValidator::requireNonEmpty('name', $data->name, 'Name', $errors);
         FieldValidator::requireNonEmpty('style', $data->style, 'Style', $errors);
+        FieldValidator::requireNonEmpty('cardDescription', $data->cardDescription, 'Card description', $errors);
         FieldValidator::requireNonEmpty('bioHtml', $data->bioHtml, 'Bio', $errors);
+        if ($data->cardSortOrder < 0) {
+            $errors['cardSortOrder'] = 'Card sort order must be 0 or greater.';
+        }
+        return $errors;
+    }
+
+    /** @return array<string, string> */
+    private function validateJazzCard(JazzLineupCardUpsertData $data): array
+    {
+        $errors = [];
+        FieldValidator::requireNonEmpty('name', $data->name, 'Name', $errors);
+        FieldValidator::requireNonEmpty('style', $data->style, 'Style', $errors);
+        FieldValidator::requireNonEmpty('cardDescription', $data->cardDescription, 'Card description', $errors);
+        if ($data->cardSortOrder < 0) {
+            $errors['cardSortOrder'] = 'Card sort order must be 0 or greater.';
+        }
+
         return $errors;
     }
 }

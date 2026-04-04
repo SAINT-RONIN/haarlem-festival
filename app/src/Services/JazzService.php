@@ -8,6 +8,7 @@ use App\Constants\JazzPageConstants;
 use App\Constants\SharedSectionKeys;
 use App\Enums\EventTypeId;
 use App\DTOs\Pages\JazzPageData;
+use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IJazzContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
@@ -24,6 +25,7 @@ class JazzService extends BaseContentService implements IJazzService
     public function __construct(
         IGlobalContentRepository $globalContentRepo,
         private readonly IJazzContentRepository $jazzContentRepo,
+        private readonly IEventRepository $eventRepository,
         private readonly IPassTypeRepository $passTypeRepository,
     ) {
         parent::__construct($globalContentRepo);
@@ -56,6 +58,7 @@ class JazzService extends BaseContentService implements IJazzService
             scheduleCtaSection: $this->jazzContentRepo->findScheduleCtaContent($pageSlug, JazzPageConstants::SECTION_SCHEDULE_CTA),
             artistsSection:     $this->jazzContentRepo->findArtistsContent($pageSlug, JazzPageConstants::SECTION_ARTISTS),
             bookingCtaSection:  $this->jazzContentRepo->findBookingCtaContent($pageSlug, JazzPageConstants::SECTION_BOOKING_CTA),
+            featuredArtists: $this->eventRepository->findJazzOverviewArtists(),
             passPrices: $this->passTypeRepository->findByEventType(EventTypeId::Jazz->value),
             globalUiContent: $this->loadGlobalUi(),
         );

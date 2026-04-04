@@ -55,14 +55,26 @@ class CmsPageEditorController extends CmsBaseController
 
     private function buildEditViewData(CmsPageEditData $pageData): array
     {
-        $viewData = CmsDashboardViewMapper::toPageEditViewData($pageData);
+        $viewData = CmsDashboardViewMapper::toPageEditViewData(
+            $pageData,
+            $this->sessionService->getCsrfToken('cms_artist_jazz_overview_add'),
+            $this->sessionService->getCsrfToken('cms_artist_jazz_overview_remove'),
+        );
         $previewUrl = $this->cmsEditService->resolvePreviewUrl($pageData->page, $pageData->sections);
         return array_merge($this->viewFields($viewData, $previewUrl), $this->sessionFields());
     }
 
     private function viewFields(CmsPageEditViewModel $viewData, string $previewUrl): array
     {
-        return ['page' => $viewData->page, 'sections' => $viewData->sections, 'previewUrl' => $previewUrl, 'contentLimits' => $viewData->contentLimits, 'imageLimits' => $viewData->imageLimits, 'userName' => $this->userName()];
+        return [
+            'page' => $viewData->page,
+            'sections' => $viewData->sections,
+            'previewUrl' => $previewUrl,
+            'contentLimits' => $viewData->contentLimits,
+            'imageLimits' => $viewData->imageLimits,
+            'jazzLineupManager' => $viewData->jazzLineupManager,
+            'userName' => $this->userName(),
+        ];
     }
 
     private function sessionFields(): array

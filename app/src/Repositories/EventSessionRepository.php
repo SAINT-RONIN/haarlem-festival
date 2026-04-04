@@ -218,7 +218,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
     private function addTextFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->venueName !== null && $filters->venueName !== '') {
-            $conditions[] = 'LOWER(v.Name) = :venueName';
+            $conditions[] = 'LOWER(COALESCE(sv.Name, v.Name)) = :venueName';
             $params['venueName'] = strtolower($filters->venueName);
         }
 
@@ -254,6 +254,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             FROM EventSession es
             INNER JOIN Event e ON es.EventId = e.EventId
             INNER JOIN EventType et ON e.EventTypeId = et.EventTypeId
+            LEFT JOIN Venue sv ON es.VenueId = sv.VenueId
             LEFT JOIN Venue v ON e.VenueId = v.VenueId
             LEFT JOIN Artist a ON e.ArtistId = a.ArtistId
             LEFT JOIN MediaAsset ma ON a.ImageAssetId = ma.MediaAssetId
@@ -273,7 +274,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
                 e.EventTypeId,
                 et.Name AS EventTypeName,
                 et.Slug AS EventTypeSlug,
-                v.Name AS VenueName,
+                COALESCE(sv.Name, v.Name) AS VenueName,
                 a.Name AS ArtistName,
                 ma.FilePath AS ArtistImageUrl
         ';

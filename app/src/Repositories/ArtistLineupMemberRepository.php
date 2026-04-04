@@ -10,21 +10,21 @@ use App\Repositories\Interfaces\IArtistLineupMemberRepository;
 /**
  * Read-only access to the ArtistLineupMember table.
  *
- * Lineup members represent individual band/ensemble members for a Jazz event,
+ * Lineup members represent individual band/ensemble members for a Jazz artist,
  * displayed on the artist detail page in SortOrder.
  */
 class ArtistLineupMemberRepository extends BaseRepository implements IArtistLineupMemberRepository
 {
     /**
-     * Returns all lineup members for an event, ordered by SortOrder.
+     * Returns all lineup members for an artist, ordered by SortOrder.
      *
      * @return ArtistLineupMember[]
      */
-    public function findByEventId(int $eventId): array
+    public function findByArtistId(int $artistId): array
     {
         return $this->fetchAll(
-            'SELECT * FROM ArtistLineupMember WHERE EventId = :eventId ORDER BY SortOrder ASC',
-            ['eventId' => $eventId],
+            'SELECT * FROM ArtistLineupMember WHERE ArtistId = :artistId ORDER BY SortOrder ASC',
+            ['artistId' => $artistId],
             fn(array $row) => ArtistLineupMember::fromRow($row),
         );
     }

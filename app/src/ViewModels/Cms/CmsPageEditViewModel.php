@@ -20,5 +20,6 @@ final readonly class CmsPageEditViewModel
         public array                   $sections,
         public array                   $contentLimits,
         public CmsImageLimitsViewModel $imageLimits,
+        public ?CmsJazzLineupManagerViewModel $jazzLineupManager = null,
     ) {}
 }

@@ -68,4 +68,4 @@ $introSplitSection = property_exists($viewModel, 'introSplitSection') && $viewMo
     <?php endforeach; ?>
 </main>
 
-<?php ViewRenderer::render(__DIR__ . '/footer.php', ['globalUi' => $globalUi]); ?>
+<?php ViewRenderer::render(__DIR__ . '/footer.php', ['globalUi' => $globalUi, 'currentPage' => $currentPage]); ?>

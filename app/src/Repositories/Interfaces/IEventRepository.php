@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
+use App\DTOs\Events\JazzArtistCardRecord;
 use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Events\StorytellingDetailEvent;
@@ -25,6 +26,13 @@ interface IEventRepository
      * @return EventWithDetails[]
      */
     public function findEvents(EventFilter $filters = new EventFilter()): array;
+
+    /**
+     * Returns the artists currently visible in the Jazz overview lineup section.
+     *
+     * @return JazzArtistCardRecord[]
+     */
+    public function findJazzOverviewArtists(): array;
 
     /**
      * Finds an active jazz event by its URL slug, including artist-specific detail fields.

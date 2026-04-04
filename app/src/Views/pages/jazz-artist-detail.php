@@ -13,14 +13,6 @@ $includeNav = false;
 <main class="w-full bg-sand flex flex-col justify-start items-center">
     <?php require __DIR__ . '/../partials/jazz/detail/hero-section.php'; ?>
     <?php require __DIR__ . '/../partials/jazz/detail/overview-section.php'; ?>
-
-    <?php
-    // Social sharing buttons — placed after the overview for discoverability
-    $shareUrl = $viewModel->shareUrl;
-    $shareTitle = $viewModel->hero->heroTitle;
-    require __DIR__ . '/../partials/sections/_social-share.php';
-    ?>
-
     <?php require __DIR__ . '/../partials/jazz/detail/photo-gallery-section.php'; ?>
     <?php require __DIR__ . '/../partials/jazz/detail/featured-albums-section.php'; ?>
     <?php require __DIR__ . '/../partials/jazz/detail/listen-now-section.php'; ?>

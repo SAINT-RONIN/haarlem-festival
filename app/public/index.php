@@ -211,6 +211,12 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/artists',                           [CmsArtistsController::class, 'store']);
     $r->addRoute('GET',  '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'edit']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'update']);
+    $r->addRoute('GET',  '/cms/jazz-lineup/cards/create',          [CmsArtistsController::class, 'createJazzOverviewCard']);
+    $r->addRoute('POST', '/cms/jazz-lineup/cards',                 [CmsArtistsController::class, 'storeJazzOverviewCard']);
+    $r->addRoute('GET',  '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsArtistsController::class, 'editJazzOverviewCard']);
+    $r->addRoute('POST', '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsArtistsController::class, 'updateJazzOverviewCard']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/add',[CmsArtistsController::class, 'addToJazzOverview']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/remove', [CmsArtistsController::class, 'removeFromJazzOverview']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/delete',           [CmsArtistsController::class, 'delete']);
 
     // Slug-aware routes (preferred)
