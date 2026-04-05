@@ -290,15 +290,16 @@ class EventRepository extends BaseRepository implements IEventRepository
     {
         return $this->executeInsert(
             'INSERT INTO Event (
-                EventTypeId, Title, ShortDescription, LongDescriptionHtml,
+                EventTypeId, Title, Slug, ShortDescription, LongDescriptionHtml,
                 FeaturedImageAssetId, VenueId, ArtistId, RestaurantId, IsActive
             ) VALUES (
-                :eventTypeId, :title, :shortDescription, :longDescriptionHtml,
+                :eventTypeId, :title, :slug, :shortDescription, :longDescriptionHtml,
                 :featuredImageAssetId, :venueId, :artistId, :restaurantId, :isActive
             )',
             [
                 'eventTypeId' => $data->eventTypeId,
                 'title' => $data->title,
+                'slug' => $data->slug,
                 'shortDescription' => $data->shortDescription,
                 'longDescriptionHtml' => $data->longDescriptionHtml,
                 'featuredImageAssetId' => $data->featuredImageAssetId,
@@ -337,6 +338,27 @@ class EventRepository extends BaseRepository implements IEventRepository
         );
 
         return true;
+    }
+
+    /**
+     * Checks whether any event row uses the given slug (case-sensitive).
+     * Pass $excludeEventId to skip one row — used when updating an event's own slug.
+     */
+    public function slugExists(string $slug, ?int $excludeEventId = null): bool
+    {
+        if ($excludeEventId !== null) {
+            $stmt = $this->execute(
+                'SELECT EventId FROM Event WHERE Slug = :slug AND EventId != :excludeId LIMIT 1',
+                ['slug' => $slug, 'excludeId' => $excludeEventId],
+            );
+        } else {
+            $stmt = $this->execute(
+                'SELECT EventId FROM Event WHERE Slug = :slug LIMIT 1',
+                ['slug' => $slug],
+            );
+        }
+
+        return $stmt->fetch() !== false;
     }
 
     /**

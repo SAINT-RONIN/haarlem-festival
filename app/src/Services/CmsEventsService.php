@@ -213,11 +213,43 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException($errors);
         }
 
+        $slug = $this->resolveUniqueSlug($data->slug ?? '');
+        $data = new EventUpsertData(
+            eventTypeId: $data->eventTypeId,
+            title: $data->title,
+            shortDescription: $data->shortDescription,
+            longDescriptionHtml: $data->longDescriptionHtml,
+            featuredImageAssetId: $data->featuredImageAssetId,
+            venueId: $data->venueId,
+            artistId: $data->artistId,
+            restaurantId: $data->restaurantId,
+            isActive: $data->isActive,
+            slug: $slug,
+        );
+
         try {
             return $this->eventRepository->create($data);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to create event.', 0, $error);
         }
+    }
+
+    private function resolveUniqueSlug(string $base): string
+    {
+        if ($base === '') {
+            $base = 'event';
+        }
+
+        if (!$this->eventRepository->slugExists($base)) {
+            return $base;
+        }
+
+        $counter = 2;
+        while ($this->eventRepository->slugExists("{$base}-{$counter}")) {
+            $counter++;
+        }
+
+        return "{$base}-{$counter}";
     }
 
     /**
@@ -287,8 +319,28 @@ class CmsEventsService implements ICmsEventsService
             throw new ValidationException($errors);
         }
 
+        $existing = $this->eventRepository->findById($eventId);
+        if ($existing === null) {
+            throw new ValidationException(['Event not found']);
+        }
+
+        // Preserve type-specific FK columns that the edit form may not include,
+        // and never overwrite the slug (it is set once at creation and then immutable).
+        $merged = new EventUpsertData(
+            eventTypeId: $data->eventTypeId,
+            title: $data->title,
+            shortDescription: $data->shortDescription,
+            longDescriptionHtml: $data->longDescriptionHtml,
+            featuredImageAssetId: $data->featuredImageAssetId,
+            venueId: $data->venueId,
+            artistId: $data->artistId ?? $existing->artistId,
+            restaurantId: $data->restaurantId ?? $existing->restaurantId,
+            isActive: $data->isActive,
+            slug: $existing->slug,
+        );
+
         try {
-            return $this->eventRepository->update($eventId, $data);
+            return $this->eventRepository->update($eventId, $merged);
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to update event.', 0, $error);
         }

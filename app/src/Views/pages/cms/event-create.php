@@ -37,6 +37,7 @@
         <form action="/cms/events" method="POST" class="max-w-2xl"
               data-jazz-type-id="<?= \App\Enums\EventTypeId::Jazz->value ?>"
               data-restaurant-type-id="<?= \App\Enums\EventTypeId::Restaurant->value ?>">
+            <input type="hidden" name="IsActive" value="1">
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900">Event Details</h2>

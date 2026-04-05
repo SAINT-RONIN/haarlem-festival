@@ -90,4 +90,9 @@ interface IEventRepository
      * Finds the active event linked to a given restaurant.
      */
     public function findActiveEventByRestaurantId(int $restaurantId): ?Event;
+
+    /**
+     * Returns true if any event row has the given slug (optionally excluding one event ID).
+     */
+    public function slugExists(string $slug, ?int $excludeEventId = null): bool;
 }
