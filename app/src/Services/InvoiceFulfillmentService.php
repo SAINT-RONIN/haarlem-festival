@@ -107,6 +107,8 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     private function generateInvoiceNumber(): string
     {
         $date = (new \DateTimeImmutable())->format('Ymd');
+        // random_bytes gives us cryptographically random bytes; bin2hex turns them into a
+        // readable uppercase hex string for the invoice number suffix (e.g. "A3F2B1").
         $hex = strtoupper(bin2hex(random_bytes(self::INVOICE_NUMBER_RANDOM_BYTE_COUNT)));
 
         return 'INV-' . $date . '-' . $hex;
@@ -218,11 +220,27 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
             paymentDateUtc: $now,
         );
 
+        $this->createInvoiceLines($invoiceId, $orderItemRows);
+
+        return $invoiceId;
+    }
+
+    /**
+     * Creates one invoice line row for every item in the order.
+     *
+     * The line subtotal is stored as a fixed-precision decimal string rather than a float
+     * to avoid floating-point rounding artifacts on invoice documents that customers see.
+     *
+     * @param array<int, array<string, mixed>> $orderItemRows
+     */
+    private function createInvoiceLines(int $invoiceId, array $orderItemRows): void
+    {
         foreach ($orderItemRows as $row) {
             $description = InvoiceMapper::buildLineDescription($row);
             $quantity = (int)$row['Quantity'];
             $unitPrice = (string)$row['UnitPrice'];
             $vatRate = (string)$row['VatRate'];
+            // Calculate the line subtotal as a fixed-precision decimal string — invoices must show exact amounts.
             $lineSubtotal = number_format($quantity * (float)$unitPrice, 2, '.', '');
 
             $this->invoiceRepository->createInvoiceLine(
@@ -234,8 +252,6 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
                 lineSubtotal: $lineSubtotal,
             );
         }
-
-        return $invoiceId;
     }
 
     /**
@@ -280,6 +296,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
 
         $message = InvoiceMapper::toEmailMessage(
             $recipientEmail,
+            // When the customer has no name on record, show their email as the display name in the email.
             $recipientName !== '' ? $recipientName : $recipientEmail,
             $order->orderNumber,
             $invoiceNumber,
