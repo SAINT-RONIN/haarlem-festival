@@ -3532,7 +3532,8 @@ CREATE TABLE `Reservation` (
   `SpecialRequests` text DEFAULT NULL,
   `TotalFee` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT '10 per person reservation deposit',
   `CreatedAt` datetime NOT NULL DEFAULT current_timestamp(),
-  `RestaurantId` int(11) NOT NULL
+  `RestaurantId` int(11) DEFAULT NULL,
+  `EventId` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- --------------------------------------------------------
@@ -4307,7 +4308,8 @@ ALTER TABLE `ProgramItem`
 --
 ALTER TABLE `Reservation`
   ADD PRIMARY KEY (`ReservationId`),
-  ADD KEY `FK_Reservation_Restaurant` (`RestaurantId`);
+  ADD KEY `FK_Reservation_Restaurant` (`RestaurantId`),
+  ADD KEY `FK_Reservation_Event` (`EventId`);
 
 --
 -- Indexes for table `Restaurant`
@@ -4880,7 +4882,8 @@ ALTER TABLE `ProgramItem`
 -- Constraints for table `Reservation`
 --
 ALTER TABLE `Reservation`
-  ADD CONSTRAINT `FK_Reservation_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `FK_Reservation_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_Reservation_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`);
 
 --
 -- Constraints for table `ScheduleDay`

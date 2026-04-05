@@ -149,7 +149,7 @@ class RestaurantReservationService implements IRestaurantReservationService
     private function buildReservation(RestaurantDetailEvent $event, array $reservationData): Reservation
     {
         return new Reservation(
-            restaurantId: $event->restaurantId,
+            eventId: $event->eventId,
             diningDate: $reservationData['date'],
             timeSlot: $reservationData['timeSlot'],
             adultsCount: $reservationData['adultsCount'],

@@ -10,7 +10,7 @@ namespace App\Models;
 final readonly class Reservation
 {
     public function __construct(
-        public int     $restaurantId,
+        public int     $eventId,
         public string  $diningDate,
         public string  $timeSlot,
         public int     $adultsCount,
@@ -27,7 +27,7 @@ final readonly class Reservation
     public static function fromRow(array $row): self
     {
         return new self(
-            restaurantId:      (int)$row['RestaurantId'],
+            eventId:           (int)($row['EventId'] ?? throw new \InvalidArgumentException('Missing required field: EventId')),
             diningDate:        (string)$row['DiningDate'],
             timeSlot:          (string)$row['TimeSlot'],
             adultsCount:       (int)$row['AdultsCount'],

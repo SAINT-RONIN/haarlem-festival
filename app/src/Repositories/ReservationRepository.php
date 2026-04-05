@@ -19,11 +19,11 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
     {
         return $this->executeInsert(
             'INSERT INTO Reservation
-                (RestaurantId, DiningDate, TimeSlot, AdultsCount, ChildrenCount, SpecialRequests, TotalFee)
+                (EventId, DiningDate, TimeSlot, AdultsCount, ChildrenCount, SpecialRequests, TotalFee)
             VALUES
-                (:restaurantId, :diningDate, :timeSlot, :adultsCount, :childrenCount, :specialRequests, :totalFee)',
+                (:eventId, :diningDate, :timeSlot, :adultsCount, :childrenCount, :specialRequests, :totalFee)',
             [
-                'restaurantId' => $r->restaurantId,
+                'eventId' => $r->eventId,
                 'diningDate' => $r->diningDate,
                 'timeSlot' => $r->timeSlot,
                 'adultsCount' => $r->adultsCount,
@@ -35,7 +35,7 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
     }
 
     /**
-     * Fetches a reservation by ID, JOINed with the Restaurant table for name/address display.
+     * Fetches a reservation by ID, JOINed via Event → Restaurant for name/address display.
      */
     public function findWithRestaurant(int $reservationId): ?Reservation
     {
@@ -44,7 +44,8 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
                    rest.Name AS RestaurantName,
                    CONCAT(rest.AddressLine, \', \', rest.City) AS RestaurantAddress
             FROM Reservation r
-            JOIN Restaurant rest ON rest.RestaurantId = r.RestaurantId
+            JOIN Event e ON e.EventId = r.EventId
+            LEFT JOIN Restaurant rest ON rest.RestaurantId = e.RestaurantId
             WHERE r.ReservationId = :reservationId',
             ['reservationId' => $reservationId],
             fn(array $row) => Reservation::fromRow($row),
