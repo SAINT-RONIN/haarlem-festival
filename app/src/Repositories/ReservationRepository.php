@@ -35,17 +35,14 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
     }
 
     /**
-     * Fetches a reservation by ID, JOINed via Event → Restaurant for name/address display.
+     * Fetches a reservation by ID with display name from the linked Event.
      */
     public function findWithRestaurant(int $reservationId): ?Reservation
     {
         return $this->fetchOne(
-            'SELECT r.*,
-                   rest.Name AS RestaurantName,
-                   CONCAT(rest.AddressLine, \', \', rest.City) AS RestaurantAddress
+            'SELECT r.*, e.Title AS RestaurantName, NULL AS RestaurantAddress
             FROM Reservation r
             JOIN Event e ON e.EventId = r.EventId
-            LEFT JOIN Restaurant rest ON rest.RestaurantId = e.RestaurantId
             WHERE r.ReservationId = :reservationId',
             ['reservationId' => $reservationId],
             fn(array $row) => Reservation::fromRow($row),

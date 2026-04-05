@@ -55,7 +55,6 @@ use App\Repositories\ArtistGalleryImageRepository;
 use App\Repositories\ArtistHighlightRepository;
 use App\Repositories\ArtistLineupMemberRepository;
 use App\Repositories\ArtistTrackRepository;
-use App\Repositories\RestaurantRepository;
 use App\Repositories\ScannerRepository;
 use App\Repositories\ReservationRepository;
 use App\Repositories\StripeWebhookEventRepository;
@@ -143,7 +142,6 @@ return static function (string $controllerClass): object {
     $eventTypeRepo      = fn() => $make('eventTypeRepo', fn() => new EventTypeRepository($pdo()));
     $venueRepo          = fn() => $make('venueRepo', fn() => new VenueRepository($pdo()));
     $scheduleDayConfig  = fn() => $make('scheduleDayConfig', fn() => new ScheduleDayConfigRepository($pdo()));
-    $restaurantRepo     = fn() => $make('restaurantRepo', fn() => new RestaurantRepository($pdo()));
     $userAccountRepo    = fn() => $make('userAccountRepo', fn() => new UserAccountRepository($pdo()));
     $resetTokenRepo     = fn() => $make('resetTokenRepo', fn() => new PasswordResetTokenRepository($pdo()));
     $programRepo        = fn() => $make('programRepo', fn() => new ProgramRepository($pdo()));
@@ -236,7 +234,6 @@ return static function (string $controllerClass): object {
     $restaurantService = fn() => $make('restaurantService', fn() => new RestaurantService(
         $globalContentRepo(),
         $restaurantContentRepo(),
-        $restaurantRepo(),
         $eventRepo(),
         $mediaAssetRepo(),
     ));
@@ -248,7 +245,6 @@ return static function (string $controllerClass): object {
             new HomeService(
                 $eventTypeRepo(),
                 $venueRepo(),
-                $restaurantRepo(),
                 $eventSessionRepo(),
                 $cmsContent(),
                 $globalContentRepo(),

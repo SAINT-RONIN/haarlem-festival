@@ -13,13 +13,11 @@ use App\DTOs\Pages\HomeEventTypeData;
 use App\DTOs\Pages\HomeLocationData;
 use App\DTOs\Filters\VenueFilter;
 use App\Helpers\SessionGroupingHelper;
-use App\Models\Restaurant;
 use App\Models\Venue;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
-use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Services\Interfaces\IHomeService;
 use App\Constants\HomeUiConfig;
@@ -37,7 +35,6 @@ class HomeService extends BaseContentService implements IHomeService
     public function __construct(
         private readonly IEventTypeRepository $eventTypeRepository,
         private readonly IVenueRepository $venueRepository,
-        private readonly IRestaurantRepository $restaurantRepository,
         private readonly IEventSessionRepository $eventSessionRepository,
         private readonly ICmsContentRepository $cmsContentRepository,
         IGlobalContentRepository $globalContentRepo,
@@ -164,10 +161,6 @@ class HomeService extends BaseContentService implements IHomeService
 
         foreach ($this->venueRepository->findVenues(new VenueFilter(isActive: true)) as $venue) {
             $locations[] = $this->buildVenueLocation($venue);
-        }
-
-        foreach ($this->restaurantRepository->findAllActive() as $restaurant) {
-            $locations[] = $this->buildRestaurantLocation($restaurant);
         }
 
         return $locations;
@@ -310,17 +303,6 @@ class HomeService extends BaseContentService implements IHomeService
             name: $venue->name,
             address: $venue->addressLine,
             category: $this->determineVenueCategory($venue->name),
-            lat: null,
-            lng: null,
-        );
-    }
-
-    private function buildRestaurantLocation(Restaurant $restaurant): HomeLocationData
-    {
-        return new HomeLocationData(
-            name: $restaurant->name,
-            address: $restaurant->addressLine,
-            category: 'restaurant',
             lat: null,
             lng: null,
         );

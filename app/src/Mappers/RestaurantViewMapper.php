@@ -16,7 +16,6 @@ use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Pages\RestaurantDetailPageData;
 use App\DTOs\Pages\RestaurantListingData;
 use App\DTOs\Pages\RestaurantPageData;
-use App\Models\Restaurant;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
@@ -410,15 +409,14 @@ final class RestaurantViewMapper
     {
         $cards = [];
         foreach ($listings as $listing) {
-            $restaurant = $listing->restaurant;
-            $cuisine = self::firstNonEmpty($listing->cms->cuisineType, $restaurant?->cuisineType);
+            $cuisine = self::firstNonEmpty($listing->cms->cuisineType);
             $cards[] = new RestaurantCardData(
                 id: $listing->event->eventId,
                 name: $listing->event->title,
                 cuisine: $cuisine,
-                address: self::buildCardAddress($listing, $restaurant),
-                description: self::buildCardDescription($listing, $restaurant),
-                rating: self::buildCardRating($listing, $restaurant),
+                address: self::buildCardAddress($listing),
+                description: self::buildCardDescription($listing),
+                rating: self::buildCardRating($listing),
                 image: $listing->imagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
                 slug: $listing->event->slug,
                 isVegan: str_contains(mb_strtolower($cuisine), 'vegan'),
@@ -428,20 +426,14 @@ final class RestaurantViewMapper
         return $cards;
     }
 
-    private static function buildCardAddress(RestaurantListingData $listing, ?Restaurant $restaurant): string
+    private static function buildCardAddress(RestaurantListingData $listing): string
     {
-        $address = self::formatAddress($listing->cms->addressLine, $listing->cms->city);
-        if ($address !== '') {
-            return $address;
-        }
-
-        return self::formatAddress($restaurant?->addressLine, $restaurant?->city);
+        return self::formatAddress($listing->cms->addressLine, $listing->cms->city);
     }
 
-    private static function buildCardDescription(RestaurantListingData $listing, ?Restaurant $restaurant): string
+    private static function buildCardDescription(RestaurantListingData $listing): string
     {
         $candidates = [
-            $restaurant?->descriptionHtml,
             $listing->cms->aboutText,
             $listing->cms->locationDescription,
             $listing->event->longDescriptionHtml,
@@ -458,14 +450,14 @@ final class RestaurantViewMapper
         return '';
     }
 
-    private static function buildCardRating(RestaurantListingData $listing, ?Restaurant $restaurant): int
+    private static function buildCardRating(RestaurantListingData $listing): int
     {
         $cmsStars = trim((string)($listing->cms->stars ?? ''));
         if ($cmsStars !== '' && is_numeric($cmsStars)) {
             return (int)$cmsStars;
         }
 
-        return (int)($restaurant?->stars ?? 0);
+        return 0;
     }
 
     private static function firstNonEmpty(?string ...$values): string

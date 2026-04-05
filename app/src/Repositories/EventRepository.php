@@ -281,8 +281,8 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
-     * Inserts a new event. Nullable foreign keys (VenueId, ArtistId, RestaurantId)
-     * allow events that aren't tied to a specific venue, artist, or restaurant.
+     * Inserts a new event. Nullable foreign keys (VenueId, ArtistId) allow events
+     * that aren't tied to a specific venue or artist.
      *
      * @return int The auto-incremented EventId of the new row.
      */
@@ -291,10 +291,10 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $this->executeInsert(
             'INSERT INTO Event (
                 EventTypeId, Title, Slug, ShortDescription, LongDescriptionHtml,
-                FeaturedImageAssetId, VenueId, ArtistId, RestaurantId, IsActive
+                FeaturedImageAssetId, VenueId, ArtistId, IsActive
             ) VALUES (
                 :eventTypeId, :title, :slug, :shortDescription, :longDescriptionHtml,
-                :featuredImageAssetId, :venueId, :artistId, :restaurantId, :isActive
+                :featuredImageAssetId, :venueId, :artistId, :isActive
             )',
             [
                 'eventTypeId' => $data->eventTypeId,
@@ -305,7 +305,6 @@ class EventRepository extends BaseRepository implements IEventRepository
                 'featuredImageAssetId' => $data->featuredImageAssetId,
                 'venueId' => $data->venueId,
                 'artistId' => $data->artistId,
-                'restaurantId' => $data->restaurantId,
                 'isActive' => $data->isActive ? 1 : 0,
             ],
         );
@@ -322,7 +321,7 @@ class EventRepository extends BaseRepository implements IEventRepository
                 LongDescriptionHtml = :longDescriptionHtml,
                 FeaturedImageAssetId = :featuredImageAssetId,
                 VenueId = :venueId, ArtistId = :artistId,
-                RestaurantId = :restaurantId, IsActive = :isActive
+                IsActive = :isActive
             WHERE EventId = :eventId',
             [
                 'eventId' => $eventId,
@@ -332,7 +331,6 @@ class EventRepository extends BaseRepository implements IEventRepository
                 'featuredImageAssetId' => $data->featuredImageAssetId,
                 'venueId' => $data->venueId,
                 'artistId' => $data->artistId,
-                'restaurantId' => $data->restaurantId,
                 'isActive' => $data->isActive ? 1 : 0,
             ],
         );
@@ -409,7 +407,7 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
-     * Returns all active restaurant-type events, ordered by RestaurantId.
+     * Returns all active restaurant-type events, ordered by EventId.
      *
      * @return RestaurantDetailEvent[]
      */
@@ -420,23 +418,9 @@ class EventRepository extends BaseRepository implements IEventRepository
             FROM Event
             WHERE EventTypeId = :eventTypeId
               AND IsActive = 1
-            ORDER BY RestaurantId ASC',
+            ORDER BY EventId ASC',
             ['eventTypeId' => EventTypeId::Restaurant->value],
             fn(array $row) => RestaurantDetailEvent::fromRow($row),
-        );
-    }
-
-    /**
-     * Finds the active event linked to a given restaurant.
-     *
-     * @return Event|null Null if no active event is linked to this restaurant.
-     */
-    public function findActiveEventByRestaurantId(int $restaurantId): ?Event
-    {
-        return $this->fetchOne(
-            'SELECT * FROM Event WHERE RestaurantId = :restaurantId AND IsActive = 1',
-            ['restaurantId' => $restaurantId],
-            fn(array $row) => Event::fromRow($row),
         );
     }
 }

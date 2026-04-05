@@ -123,7 +123,6 @@ final class CmsEventsViewMapper
             venueId: $event->venueId,
             venueName: $event->venueName,
             artistId: $event->artistId,
-            restaurantId: $event->restaurantId,
             isActive: $event->isActive,
             sessions: $sessionViewModels,
             sessionPrices: $enrichedPrices,

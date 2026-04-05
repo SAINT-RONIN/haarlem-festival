@@ -1809,7 +1809,6 @@ CREATE TABLE `Event` (
   `FeaturedImageAssetId` int(11) DEFAULT NULL,
   `VenueId` int(11) DEFAULT NULL,
   `ArtistId` int(11) DEFAULT NULL,
-  `RestaurantId` int(11) DEFAULT NULL,
   `IsActive` tinyint(1) NOT NULL DEFAULT 1,
   `CreatedAtUtc` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -1818,63 +1817,63 @@ CREATE TABLE `Event` (
 -- Dumping data for table `Event`
 --
 
-INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `DisplayOrder`, `ShortDescription`, `LongDescriptionHtml`, `FeaturedImageAssetId`, `VenueId`, `ArtistId`, `RestaurantId`, `IsActive`, `CreatedAtUtc`) VALUES
-(1, 1, 'Gumbo Kings', 'gumbo-kings', NULL, 'Live jazz performance by Gumbo Kings', '<p></p>', NULL, 2, 1, NULL, 1, '2026-02-06 15:30:32'),
-(2, 1, 'Evolve', 'evolve', NULL, 'Live jazz performance by Evolve', '<p></p>', NULL, 2, 2, NULL, 1, '2026-02-06 15:30:32'),
-(3, 1, 'Ntjam Rosie', 'ntjam-rosie', NULL, 'Live jazz performance by Ntjam Rosie', '<p></p>', NULL, 1, 3, NULL, 1, '2026-02-06 15:30:32'),
-(4, 1, 'Wicked Jazz Sounds', 'wicked-jazz-sounds', NULL, 'Live jazz performance by Wicked Jazz Sounds', '<p></p>', NULL, 2, 4, NULL, 1, '2026-02-06 15:30:32'),
-(5, 1, 'Wouter Hamel', 'wouter-hamel', NULL, 'Live jazz performance by Wouter Hamel', '<p></p>', NULL, 1, 5, NULL, 1, '2026-02-06 15:30:32'),
-(6, 1, 'Jonna Frazer', 'jonna-frazer', NULL, 'Live jazz performance by Jonna Frazer', '<p></p>', NULL, 1, 6, NULL, 1, '2026-02-06 15:30:32'),
-(7, 1, 'Karsu', 'karsu', NULL, 'Live jazz performance by Karsu', '<p></p>', NULL, 1, 7, NULL, 1, '2026-02-06 15:30:32'),
-(8, 1, 'Uncle Sue', 'uncle-sue', NULL, 'Live jazz performance by Uncle Sue', '<p></p>', NULL, 1, 8, NULL, 1, '2026-02-06 15:30:32'),
-(9, 1, 'Chris Allen', 'chris-allen', NULL, 'Live jazz performance by Chris Allen', '<p></p>', NULL, 1, 9, NULL, 1, '2026-02-06 15:30:32'),
-(10, 1, 'Myles Sanko', 'myles-sanko', NULL, 'Live jazz performance by Myles Sanko', '<p></p>', NULL, 1, 10, NULL, 1, '2026-02-06 15:30:32'),
-(11, 1, 'Ilse Huizinga', 'ilse-huizinga', NULL, 'Live jazz performance by Ilse Huizinga', '<p></p>', NULL, 1, 11, NULL, 1, '2026-02-06 15:30:32'),
-(12, 1, 'Eric Vloeimans and Hotspot!', 'eric-vloeimans-and-hotspot', NULL, 'Live jazz performance by Eric Vloeimans and Hotspot!', '<p></p>', NULL, 1, 12, NULL, 1, '2026-02-06 15:30:32'),
-(13, 1, 'Gare du Nord', 'gare-du-nord', NULL, 'Live jazz performance by Gare du Nord', '<p></p>', NULL, 2, 13, NULL, 1, '2026-02-06 15:30:32'),
-(14, 1, 'Rilan & The Bombadiers', 'rilan-the-bombadiers', NULL, 'Live jazz performance by Rilan & The Bombadiers', '<p></p>', NULL, 1, 14, NULL, 1, '2026-02-06 15:30:32'),
-(15, 1, 'Soul Six', 'soul-six', NULL, 'Live jazz performance by Soul Six', '<p></p>', NULL, 1, 15, NULL, 1, '2026-02-06 15:30:32'),
-(16, 1, 'Han Bennink', 'han-bennink', NULL, 'Live jazz performance by Han Bennink', '<p></p>', NULL, 1, 16, NULL, 1, '2026-02-06 15:30:32'),
-(17, 1, 'The Nordanians', 'the-nordanians', NULL, 'Live jazz performance by The Nordanians', '<p></p>', NULL, 2, 17, NULL, 1, '2026-02-06 15:30:32'),
-(18, 1, 'Lilith Merlot', 'lilith-merlot', NULL, 'Live jazz performance by Lilith Merlot', '<p></p>', NULL, 1, 18, NULL, 1, '2026-02-06 15:30:32'),
-(19, 1, 'Ruis Soundsystem', 'ruis-soundsystem', NULL, 'Live jazz performance by Ruis Soundsystem', '<p></p>', NULL, 2, 19, NULL, 1, '2026-02-06 15:30:32'),
-(20, 2, 'Nicky Romero / Afrojack - Back2Back', 'nicky-romero-afrojack-back2back', NULL, 'Back2Back session featuring Nicky Romero and Afrojack', '<p></p>', NULL, 3, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(21, 2, 'Tiësto - Club', 'ti-sto-club', NULL, 'Club session by Tiësto', '<p></p>', NULL, 4, 22, NULL, 1, '2026-02-06 15:30:32'),
-(22, 2, 'Hardwell - Club', 'hardwell-club', NULL, 'Club session by Hardwell', '<p></p>', NULL, 5, 23, NULL, 1, '2026-02-06 15:30:32'),
-(23, 2, 'Armin van Buuren - Club', 'armin-van-buuren-club', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
-(24, 2, 'Martin Garrix - Club', 'martin-garrix-club', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 7, 24, NULL, 1, '2026-02-06 15:30:32'),
-(25, 2, 'Hardwell / Martin Garrix / Armin van Buuren - Back2Back', 'hardwell-martin-garrix-armin-van-buuren-back2back', NULL, 'Back2Back session featuring Hardwell, Martin Garrix and Armin van Buuren', '<p></p>', NULL, 8, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(26, 2, 'Afrojack - Club', 'afrojack-club', NULL, 'Club session by Afrojack', '<p></p>', NULL, NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
-(27, 2, 'Tiësto - TiëstoWorld', 'ti-sto-ti-stoworld', NULL, 'TiëstoWorld session by Tiësto', '<p></p>', NULL, 3, 22, NULL, 1, '2026-02-06 15:30:32'),
-(28, 2, 'Nicky Romero - Club', 'nicky-romero-club', NULL, 'Club session by Nicky Romero', '<p></p>', NULL, 4, 20, NULL, 1, '2026-02-06 15:30:32'),
-(29, 2, 'Afrojack / Tiësto / Nicky Romero - Back2Back', 'afrojack-ti-sto-nicky-romero-back2back', NULL, 'Back2Back session featuring Afrojack, Tiësto and Nicky Romero', '<p></p>', NULL, NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
-(30, 2, 'Armin van Buuren - Club (Sunday)', 'armin-van-buuren-club-sunday', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, 5, 25, NULL, 1, '2026-02-06 15:30:32'),
-(31, 2, 'Hardwell - Club (Sunday)', 'hardwell-club-sunday', NULL, 'Club session by Hardwell', '<p></p>', NULL, 6, 23, NULL, 1, '2026-02-06 15:30:32'),
-(32, 2, 'Martin Garrix - Club (Sunday)', 'martin-garrix-club-sunday', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 4, 24, NULL, 1, '2026-02-06 15:30:32'),
-(33, 3, 'A Stroll Through History', 'a-stroll-through-history', NULL, 'Guided walking tour through historic Haarlem. Due to the nature of this walk, participants must be a minimum of 12 years old and no strollers are allowed.', '<p></p>', NULL, 15, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(34, 4, 'Winnie de Poeh (4+)', 'winnie-de-poeh-4', NULL, 'Stories for the whole family', '<p></p>', NULL, NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(35, 4, 'Omdenken Podcast', 'omdenken-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(36, 4, 'The story of Buurderij Haarlem', 'the-story-of-buurderij-haarlem', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(37, 4, 'Corrie voor kinderen', 'corrie-voor-kinderen', NULL, 'Stories for the whole family', '<p></p>', NULL, 13, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(38, 4, 'Winnaars van verhalenvertel wedstrijd, verhalen voor Haarlem', 'winnaars-van-verhalenvertel-wedstrijd-verhalen-voor-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(39, 4, 'Het verhaal van de Oeserzwammerij', 'het-verhaal-van-de-oeserzwammerij', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(40, 4, 'Flip Thinking Podcast', 'flip-thinking-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(42, 4, 'Mister Anansi', 'mister-anansi', NULL, 'Stories for the whole family', '<p></p>', NULL, 14, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(43, 4, 'Podcastlast Haarlem Special', 'podcastlast-haarlem-special', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(44, 4, 'De geschiedenis van familie ten Boom', 'de-geschiedenis-van-familie-ten-boom', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(45, 4, 'The history of the Ten Boom Family', 'the-history-of-the-ten-boom-family', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(46, 4, 'Winners of story telling competition, stories for Haarlem', 'winners-of-story-telling-competition-stories-for-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(47, 5, 'Café de Roemer - Festival Dinner', 'caf-de-roemer-festival-dinner', 3, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 75, NULL, NULL, 3, 1, '2026-02-06 15:30:32'),
-(48, 5, 'Ratatouille - Festival Dinner', 'ratatouille-festival-dinner', 1, 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 76, NULL, NULL, 1, 1, '2026-02-06 15:30:32'),
-(49, 5, 'Restaurant ML - Festival Dinner', 'restaurant-ml-festival-dinner', 7, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 77, NULL, NULL, 7, 1, '2026-02-06 15:30:32'),
-(50, 5, 'Restaurant Fris - Festival Dinner', 'restaurant-fris-festival-dinner', 6, 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 78, NULL, NULL, 6, 1, '2026-02-06 15:30:32'),
-(51, 5, 'New Vegas - Festival Dinner', 'new-vegas-festival-dinner', 5, 'Vegan cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 79, NULL, NULL, 5, 1, '2026-02-06 15:30:32'),
-(52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'grand-cafe-brinkman-festival-dinner', 4, 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 80, NULL, NULL, 4, 1, '2026-02-06 15:30:32'),
-(53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'urban-frenchy-bistro-toujours-festival-dinner', 2, 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 81, NULL, NULL, 2, 1, '2026-02-06 15:30:32'),
-(57, 3, 'E2E Test History Tour', NULL, NULL, 'Automated test history tour', '<p>A guided walking tour through historic Haarlem.</p>', NULL, 15, NULL, NULL, 0, '2026-03-30 17:57:20'),
-(58, 4, 'E2E Test Storytelling Event', NULL, NULL, 'Automated test storytelling session', '<p>An evening of captivating stories.</p>', NULL, NULL, NULL, NULL, 0, '2026-03-30 17:57:24'),
-(59, 5, 'E2E Test Restaurant Event', 'e2e-test-restaurant-event', NULL, 'Automated test restaurant dinner', '<p>Fine dining experience for the festival.</p>', NULL, NULL, NULL, NULL, 0, '2026-03-30 17:57:29'),
-(66, 4, 'test', NULL, NULL, 'testing just because yest', '<p></p>', NULL, NULL, NULL, NULL, 0, '2026-04-02 17:51:22');
+INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `DisplayOrder`, `ShortDescription`, `LongDescriptionHtml`, `FeaturedImageAssetId`, `VenueId`, `ArtistId`, `IsActive`, `CreatedAtUtc`) VALUES
+(1, 1, 'Gumbo Kings', 'gumbo-kings', NULL, 'Live jazz performance by Gumbo Kings', '<p></p>', NULL, 2, 1, 1, '2026-02-06 15:30:32'),
+(2, 1, 'Evolve', 'evolve', NULL, 'Live jazz performance by Evolve', '<p></p>', NULL, 2, 2, 1, '2026-02-06 15:30:32'),
+(3, 1, 'Ntjam Rosie', 'ntjam-rosie', NULL, 'Live jazz performance by Ntjam Rosie', '<p></p>', NULL, 1, 3, 1, '2026-02-06 15:30:32'),
+(4, 1, 'Wicked Jazz Sounds', 'wicked-jazz-sounds', NULL, 'Live jazz performance by Wicked Jazz Sounds', '<p></p>', NULL, 2, 4, 1, '2026-02-06 15:30:32'),
+(5, 1, 'Wouter Hamel', 'wouter-hamel', NULL, 'Live jazz performance by Wouter Hamel', '<p></p>', NULL, 1, 5, 1, '2026-02-06 15:30:32'),
+(6, 1, 'Jonna Frazer', 'jonna-frazer', NULL, 'Live jazz performance by Jonna Frazer', '<p></p>', NULL, 1, 6, 1, '2026-02-06 15:30:32'),
+(7, 1, 'Karsu', 'karsu', NULL, 'Live jazz performance by Karsu', '<p></p>', NULL, 1, 7, 1, '2026-02-06 15:30:32'),
+(8, 1, 'Uncle Sue', 'uncle-sue', NULL, 'Live jazz performance by Uncle Sue', '<p></p>', NULL, 1, 8, 1, '2026-02-06 15:30:32'),
+(9, 1, 'Chris Allen', 'chris-allen', NULL, 'Live jazz performance by Chris Allen', '<p></p>', NULL, 1, 9, 1, '2026-02-06 15:30:32'),
+(10, 1, 'Myles Sanko', 'myles-sanko', NULL, 'Live jazz performance by Myles Sanko', '<p></p>', NULL, 1, 10, 1, '2026-02-06 15:30:32'),
+(11, 1, 'Ilse Huizinga', 'ilse-huizinga', NULL, 'Live jazz performance by Ilse Huizinga', '<p></p>', NULL, 1, 11, 1, '2026-02-06 15:30:32'),
+(12, 1, 'Eric Vloeimans and Hotspot!', 'eric-vloeimans-and-hotspot', NULL, 'Live jazz performance by Eric Vloeimans and Hotspot!', '<p></p>', NULL, 1, 12, 1, '2026-02-06 15:30:32'),
+(13, 1, 'Gare du Nord', 'gare-du-nord', NULL, 'Live jazz performance by Gare du Nord', '<p></p>', NULL, 2, 13, 1, '2026-02-06 15:30:32'),
+(14, 1, 'Rilan & The Bombadiers', 'rilan-the-bombadiers', NULL, 'Live jazz performance by Rilan & The Bombadiers', '<p></p>', NULL, 1, 14, 1, '2026-02-06 15:30:32'),
+(15, 1, 'Soul Six', 'soul-six', NULL, 'Live jazz performance by Soul Six', '<p></p>', NULL, 1, 15, 1, '2026-02-06 15:30:32'),
+(16, 1, 'Han Bennink', 'han-bennink', NULL, 'Live jazz performance by Han Bennink', '<p></p>', NULL, 1, 16, 1, '2026-02-06 15:30:32'),
+(17, 1, 'The Nordanians', 'the-nordanians', NULL, 'Live jazz performance by The Nordanians', '<p></p>', NULL, 2, 17, 1, '2026-02-06 15:30:32'),
+(18, 1, 'Lilith Merlot', 'lilith-merlot', NULL, 'Live jazz performance by Lilith Merlot', '<p></p>', NULL, 1, 18, 1, '2026-02-06 15:30:32'),
+(19, 1, 'Ruis Soundsystem', 'ruis-soundsystem', NULL, 'Live jazz performance by Ruis Soundsystem', '<p></p>', NULL, 2, 19, 1, '2026-02-06 15:30:32'),
+(20, 2, 'Nicky Romero / Afrojack - Back2Back', 'nicky-romero-afrojack-back2back', NULL, 'Back2Back session featuring Nicky Romero and Afrojack', '<p></p>', NULL, 3, NULL, 1, '2026-02-06 15:30:32'),
+(21, 2, 'Tiësto - Club', 'ti-sto-club', NULL, 'Club session by Tiësto', '<p></p>', NULL, 4, 22, 1, '2026-02-06 15:30:32'),
+(22, 2, 'Hardwell - Club', 'hardwell-club', NULL, 'Club session by Hardwell', '<p></p>', NULL, 5, 23, 1, '2026-02-06 15:30:32'),
+(23, 2, 'Armin van Buuren - Club', 'armin-van-buuren-club', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
+(24, 2, 'Martin Garrix - Club', 'martin-garrix-club', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 7, 24, 1, '2026-02-06 15:30:32'),
+(25, 2, 'Hardwell / Martin Garrix / Armin van Buuren - Back2Back', 'hardwell-martin-garrix-armin-van-buuren-back2back', NULL, 'Back2Back session featuring Hardwell, Martin Garrix and Armin van Buuren', '<p></p>', NULL, 8, NULL, 1, '2026-02-06 15:30:32'),
+(26, 2, 'Afrojack - Club', 'afrojack-club', NULL, 'Club session by Afrojack', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
+(27, 2, 'Tiësto - TiëstoWorld', 'ti-sto-ti-stoworld', NULL, 'TiëstoWorld session by Tiësto', '<p></p>', NULL, 3, 22, 1, '2026-02-06 15:30:32'),
+(28, 2, 'Nicky Romero - Club', 'nicky-romero-club', NULL, 'Club session by Nicky Romero', '<p></p>', NULL, 4, 20, 1, '2026-02-06 15:30:32'),
+(29, 2, 'Afrojack / Tiësto / Nicky Romero - Back2Back', 'afrojack-ti-sto-nicky-romero-back2back', NULL, 'Back2Back session featuring Afrojack, Tiësto and Nicky Romero', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
+(30, 2, 'Armin van Buuren - Club (Sunday)', 'armin-van-buuren-club-sunday', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, 5, 25, 1, '2026-02-06 15:30:32'),
+(31, 2, 'Hardwell - Club (Sunday)', 'hardwell-club-sunday', NULL, 'Club session by Hardwell', '<p></p>', NULL, 6, 23, 1, '2026-02-06 15:30:32'),
+(32, 2, 'Martin Garrix - Club (Sunday)', 'martin-garrix-club-sunday', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 4, 24, 1, '2026-02-06 15:30:32'),
+(33, 3, 'A Stroll Through History', 'a-stroll-through-history', NULL, 'Guided walking tour through historic Haarlem. Due to the nature of this walk, participants must be a minimum of 12 years old and no strollers are allowed.', '<p></p>', NULL, 15, NULL, 1, '2026-02-06 15:30:32'),
+(34, 4, 'Winnie de Poeh (4+)', 'winnie-de-poeh-4', NULL, 'Stories for the whole family', '<p></p>', NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(35, 4, 'Omdenken Podcast', 'omdenken-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
+(36, 4, 'The story of Buurderij Haarlem', 'the-story-of-buurderij-haarlem', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, 1, '2026-02-06 15:30:32'),
+(37, 4, 'Corrie voor kinderen', 'corrie-voor-kinderen', NULL, 'Stories for the whole family', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
+(38, 4, 'Winnaars van verhalenvertel wedstrijd, verhalen voor Haarlem', 'winnaars-van-verhalenvertel-wedstrijd-verhalen-voor-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, '2026-02-06 15:30:32'),
+(39, 4, 'Het verhaal van de Oeserzwammerij', 'het-verhaal-van-de-oeserzwammerij', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, 1, '2026-02-06 15:30:32'),
+(40, 4, 'Flip Thinking Podcast', 'flip-thinking-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
+(42, 4, 'Mister Anansi', 'mister-anansi', NULL, 'Stories for the whole family', '<p></p>', NULL, 14, NULL, 1, '2026-02-06 15:30:32'),
+(43, 4, 'Podcastlast Haarlem Special', 'podcastlast-haarlem-special', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
+(44, 4, 'De geschiedenis van familie ten Boom', 'de-geschiedenis-van-familie-ten-boom', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
+(45, 4, 'The history of the Ten Boom Family', 'the-history-of-the-ten-boom-family', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
+(46, 4, 'Winners of story telling competition, stories for Haarlem', 'winners-of-story-telling-competition-stories-for-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, '2026-02-06 15:30:32'),
+(47, 5, 'Café de Roemer - Festival Dinner', 'caf-de-roemer-festival-dinner', 3, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 75, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(48, 5, 'Ratatouille - Festival Dinner', 'ratatouille-festival-dinner', 1, 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 76, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(49, 5, 'Restaurant ML - Festival Dinner', 'restaurant-ml-festival-dinner', 7, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 77, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(50, 5, 'Restaurant Fris - Festival Dinner', 'restaurant-fris-festival-dinner', 6, 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 78, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(51, 5, 'New Vegas - Festival Dinner', 'new-vegas-festival-dinner', 5, 'Vegan cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 79, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'grand-cafe-brinkman-festival-dinner', 4, 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 80, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'urban-frenchy-bistro-toujours-festival-dinner', 2, 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 81, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(57, 3, 'E2E Test History Tour', NULL, NULL, 'Automated test history tour', '<p>A guided walking tour through historic Haarlem.</p>', NULL, 15, NULL, 0, '2026-03-30 17:57:20'),
+(58, 4, 'E2E Test Storytelling Event', NULL, NULL, 'Automated test storytelling session', '<p>An evening of captivating stories.</p>', NULL, NULL, NULL, 0, '2026-03-30 17:57:24'),
+(59, 5, 'E2E Test Restaurant Event', 'e2e-test-restaurant-event', NULL, 'Automated test restaurant dinner', '<p>Fine dining experience for the festival.</p>', NULL, NULL, NULL, 0, '2026-03-30 17:57:29'),
+(66, 4, 'test', NULL, NULL, 'testing just because yest', '<p></p>', NULL, NULL, NULL, 0, '2026-04-02 17:51:22');
 
 -- --------------------------------------------------------
 
@@ -3532,134 +3531,8 @@ CREATE TABLE `Reservation` (
   `SpecialRequests` text DEFAULT NULL,
   `TotalFee` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT '10 per person reservation deposit',
   `CreatedAt` datetime NOT NULL DEFAULT current_timestamp(),
-  `RestaurantId` int(11) DEFAULT NULL,
   `EventId` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Restaurant`
---
-
-CREATE TABLE `Restaurant` (
-  `RestaurantId` int(11) NOT NULL,
-  `Name` varchar(120) NOT NULL,
-  `AddressLine` varchar(200) NOT NULL DEFAULT '',
-  `City` varchar(80) NOT NULL DEFAULT 'Haarlem',
-  `Stars` int(11) DEFAULT NULL,
-  `CuisineType` varchar(160) NOT NULL DEFAULT '',
-  `DescriptionHtml` text NOT NULL,
-  `ImageAssetId` int(11) DEFAULT NULL,
-  `IsActive` tinyint(1) NOT NULL DEFAULT 1,
-  `CreatedAtUtc` datetime NOT NULL DEFAULT current_timestamp(),
-  `Phone` varchar(50) DEFAULT NULL,
-  `Email` varchar(150) DEFAULT NULL,
-  `Website` varchar(255) DEFAULT NULL,
-  `AboutText` text DEFAULT NULL,
-  `ChefName` varchar(120) DEFAULT NULL,
-  `ChefText` text DEFAULT NULL,
-  `MenuDescription` text DEFAULT NULL,
-  `LocationDescription` text DEFAULT NULL,
-  `MapEmbedUrl` text DEFAULT NULL,
-  `MichelinStars` int(11) DEFAULT NULL,
-  `SeatsPerSession` int(11) DEFAULT NULL,
-  `DurationMinutes` int(11) DEFAULT NULL,
-  `SpecialRequestsNote` text DEFAULT NULL,
-  `GalleryImage1AssetId` int(11) DEFAULT NULL,
-  `GalleryImage2AssetId` int(11) DEFAULT NULL,
-  `GalleryImage3AssetId` int(11) DEFAULT NULL,
-  `AboutImageAssetId` int(11) DEFAULT NULL,
-  `ChefImageAssetId` int(11) DEFAULT NULL,
-  `MenuImage1AssetId` int(11) DEFAULT NULL,
-  `MenuImage2AssetId` int(11) DEFAULT NULL,
-  `ReservationImageAssetId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `Restaurant`
---
-
-INSERT INTO `Restaurant` (`RestaurantId`, `Name`, `AddressLine`, `City`, `Stars`, `CuisineType`, `DescriptionHtml`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`, `Phone`, `Email`, `Website`, `AboutText`, `ChefName`, `ChefText`, `MenuDescription`, `LocationDescription`, `MapEmbedUrl`, `MichelinStars`, `SeatsPerSession`, `DurationMinutes`, `SpecialRequestsNote`, `GalleryImage1AssetId`, `GalleryImage2AssetId`, `GalleryImage3AssetId`, `AboutImageAssetId`, `ChefImageAssetId`, `MenuImage1AssetId`, `MenuImage2AssetId`, `ReservationImageAssetId`) VALUES
-(1, 'Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem', 4, 'French, fish and seafood, European', 'Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.', 76, 1, '2026-02-06 15:30:32', '+31 (0)23 123 4567', 'info@ratatouille.nl', 'ratatouillefoodandwine.nl', NULL, 'Jozua Jaring', NULL, 'For the Yummy! festival, guests enjoy a set menu specially created by Ratatouille.', 'Ratatouille is located by the river Spaarne, right in the center of Haarlem.', 'https://maps.google.com/maps?q=Spaarne+96,+2011+CL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 1, 35, 120, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 82, 83, 84, 85, 86, 87, 88, 89),
-(2, 'Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem', 3, 'Dutch, fish and seafood, European', 'A cozy city bistro focused on seafood and comforting dishes in a lively central setting.', 81, 1, '2026-02-06 15:30:32', '+31 023 532 1699', 'info@toujours.nl', 'restauranttoujours.nl', NULL, 'Georgiana Viou', NULL, 'Toujours focuses on fresh seafood, Dutch ingredients, and European bistro-style cooking.', 'Toujours is located at Oude Groenmarkt 10-12 in the center of Haarlem.', 'https://maps.google.com/maps?q=Oude+Groenmarkt+10,+2011+HL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 0, 48, 90, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 90, 91, 92, 93, 98, 95, 96, 89),
-(3, 'Caf?? de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A cozy neighborhood cafe serving honest food and classic flavors in a relaxed setting.', 75, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 'Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem', 3, 'Dutch, European, Modern', 'A classic grand cafe on Haarlem\'s main square, serving familiar European dishes in the heart of the festival buzz.', 80, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(5, 'New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem', 3, 'Vegan', 'A casual spot with an international feel, offering familiar dishes and vegetarian options right in the city center.', 79, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(6, 'Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem', 4, 'Dutch, French, European', 'A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.', 78, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 'Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A modern fine-dining restaurant known for a refined yet welcoming atmosphere.', 77, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `RestaurantCuisine`
---
-
-CREATE TABLE `RestaurantCuisine` (
-  `RestaurantId` int(11) NOT NULL,
-  `CuisineTypeId` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `RestaurantCuisine`
---
-
-INSERT INTO `RestaurantCuisine` (`RestaurantId`, `CuisineTypeId`) VALUES
-(1, 2),
-(1, 3),
-(1, 4),
-(2, 1),
-(2, 2),
-(2, 3),
-(3, 1),
-(3, 2),
-(3, 3),
-(4, 1),
-(4, 2),
-(4, 5),
-(5, 6),
-(6, 1),
-(6, 2),
-(6, 4),
-(7, 1),
-(7, 2),
-(7, 3);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `RestaurantImage`
---
-
-CREATE TABLE `RestaurantImage` (
-  `RestaurantImageId` int(11) NOT NULL,
-  `RestaurantId` int(11) NOT NULL,
-  `MediaAssetId` int(11) NOT NULL,
-  `ImageType` varchar(30) NOT NULL,
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `RestaurantImage`
---
-
-INSERT INTO `RestaurantImage` (`RestaurantImageId`, `RestaurantId`, `MediaAssetId`, `ImageType`, `SortOrder`) VALUES
-(1, 1, 82, 'gallery', 1),
-(2, 2, 90, 'gallery', 1),
-(3, 1, 83, 'gallery', 2),
-(4, 2, 91, 'gallery', 2),
-(5, 1, 84, 'gallery', 3),
-(6, 2, 92, 'gallery', 3),
-(7, 1, 85, 'about', 1),
-(8, 2, 93, 'about', 1),
-(9, 1, 86, 'chef', 1),
-(10, 2, 98, 'chef', 1),
-(11, 1, 87, 'menu', 1),
-(12, 2, 95, 'menu', 1),
-(13, 1, 88, 'menu', 2),
-(14, 2, 96, 'menu', 2),
-(15, 1, 89, 'reservation', 1),
-(16, 2, 89, 'reservation', 1);
 
 -- --------------------------------------------------------
 
@@ -4090,8 +3963,7 @@ ALTER TABLE `Event`
   ADD KEY `FK_Event_Venue` (`VenueId`),
   ADD KEY `FK_Event_Artist` (`ArtistId`),
   ADD KEY `IX_Event_Type` (`EventTypeId`,`IsActive`),
-  ADD KEY `IX_Event_Active` (`IsActive`,`EventId`),
-  ADD KEY `FK_Event_Restaurant` (`RestaurantId`);
+  ADD KEY `IX_Event_Active` (`IsActive`,`EventId`);
 
 --
 -- Indexes for table `EventGalleryImage`
@@ -4308,27 +4180,7 @@ ALTER TABLE `ProgramItem`
 --
 ALTER TABLE `Reservation`
   ADD PRIMARY KEY (`ReservationId`),
-  ADD KEY `FK_Reservation_Restaurant` (`RestaurantId`),
   ADD KEY `FK_Reservation_Event` (`EventId`);
-
---
--- Indexes for table `Restaurant`
---
-ALTER TABLE `Restaurant`
-  ADD PRIMARY KEY (`RestaurantId`);
-
---
--- Indexes for table `RestaurantCuisine`
---
-ALTER TABLE `RestaurantCuisine`
-  ADD PRIMARY KEY (`RestaurantId`,`CuisineTypeId`);
-
---
--- Indexes for table `RestaurantImage`
---
-ALTER TABLE `RestaurantImage`
-  ADD PRIMARY KEY (`RestaurantImageId`),
-  ADD UNIQUE KEY `UQ_RestaurantImage` (`RestaurantId`,`ImageType`,`SortOrder`);
 
 --
 -- Indexes for table `ScheduleDay`
@@ -4615,18 +4467,6 @@ ALTER TABLE `Reservation`
   MODIFY `ReservationId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `Restaurant`
---
-ALTER TABLE `Restaurant`
-  MODIFY `RestaurantId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `RestaurantImage`
---
-ALTER TABLE `RestaurantImage`
-  MODIFY `RestaurantImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
-
---
 -- AUTO_INCREMENT for table `ScheduleDay`
 --
 ALTER TABLE `ScheduleDay`
@@ -4747,7 +4587,6 @@ ALTER TABLE `EmailConfirmationToken`
 ALTER TABLE `Event`
   ADD CONSTRAINT `FK_Event_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`),
   ADD CONSTRAINT `FK_Event_Image` FOREIGN KEY (`FeaturedImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Event_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`),
   ADD CONSTRAINT `FK_Event_Type` FOREIGN KEY (`EventTypeId`) REFERENCES `EventType` (`EventTypeId`),
   ADD CONSTRAINT `FK_Event_Venue` FOREIGN KEY (`VenueId`) REFERENCES `Venue` (`VenueId`);
 
@@ -4882,7 +4721,6 @@ ALTER TABLE `ProgramItem`
 -- Constraints for table `Reservation`
 --
 ALTER TABLE `Reservation`
-  ADD CONSTRAINT `FK_Reservation_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`) ON UPDATE CASCADE,
   ADD CONSTRAINT `FK_Reservation_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`);
 
 --

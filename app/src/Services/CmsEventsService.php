@@ -226,7 +226,6 @@ class CmsEventsService implements ICmsEventsService
             featuredImageAssetId: $data->featuredImageAssetId,
             venueId: $data->venueId,
             artistId: $data->artistId,
-            restaurantId: $data->restaurantId,
             isActive: $data->isActive,
             slug: $slug,
         );
@@ -371,7 +370,6 @@ class CmsEventsService implements ICmsEventsService
             featuredImageAssetId: $data->featuredImageAssetId,
             venueId: $data->venueId,
             artistId: $data->artistId ?? $existing->artistId,
-            restaurantId: $data->restaurantId ?? $existing->restaurantId,
             isActive: $data->isActive,
             slug: $existing->slug,
         );

@@ -6,7 +6,6 @@ namespace App\DTOs\Pages;
 
 use App\Content\RestaurantEventCmsData;
 use App\DTOs\Events\RestaurantDetailEvent;
-use App\Models\Restaurant;
 
 /**
  * Intermediate data holder for a single restaurant card on the listing page.
@@ -21,7 +20,6 @@ final readonly class RestaurantListingData
         public RestaurantDetailEvent $event,
         public RestaurantEventCmsData $cms,
         public ?string $imagePath,
-        public ?Restaurant $restaurant = null,
     ) {
     }
 }
