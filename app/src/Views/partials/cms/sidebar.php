@@ -92,6 +92,14 @@ $logoutCsrfToken = (new SessionService())->getCsrfToken('cms_logout');
                     <span class="font-medium">Artists</span>
                 </a>
             </li>
+            <li>
+                <a href="/cms/venues"
+                   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'venues' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
+                        <?= $currentView === 'venues' ? 'aria-current="page"' : '' ?>>
+                    <i data-lucide="map-pin" class="w-5 h-5" aria-hidden="true"></i>
+                    <span class="font-medium">Venues</span>
+                </a>
+            </li>
         </ul>
     </nav>
 

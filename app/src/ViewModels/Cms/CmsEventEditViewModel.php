@@ -45,10 +45,13 @@ final readonly class CmsEventEditViewModel
         public readonly array   $sessions,
         public readonly array   $sessionPrices,
         public readonly array   $sessionLabels,
+        public readonly array   $venues = [],
         public readonly ?string $cmsDetailEditUrl = null,
         public readonly ?string $successMessage = null,
         public readonly ?string $errorMessage = null,
         public readonly ?string $restaurantStars = null,
+        public readonly ?string $restaurantCuisine = null,
+        public readonly ?string $restaurantShortDescription = null,
     ) {
     }
 

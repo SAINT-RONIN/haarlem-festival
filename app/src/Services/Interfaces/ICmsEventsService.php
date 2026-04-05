@@ -127,4 +127,9 @@ interface ICmsEventsService
      */
     public function deleteEvent(int $eventId): void;
 
+    /**
+     * Soft-deletes a venue.
+     */
+    public function deleteVenue(int $venueId): bool;
+
 }

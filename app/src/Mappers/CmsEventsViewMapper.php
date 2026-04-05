@@ -83,11 +83,14 @@ final class CmsEventsViewMapper
         array $priceTiers = [],
         ?string $cmsDetailEditUrl = null,
         ?string $restaurantStars = null,
+        ?string $restaurantCuisine = null,
+        ?string $restaurantShortDescription = null,
+        array $venues = [],
     ): CmsEventEditViewModel {
         $sessionViewModels = self::buildSessionViewModels($sessions, $event->title, $event->eventTypeSlug);
         $enrichedPrices = self::enrichPricesWithTierNames($pricesData, $priceTiers);
 
-        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $cmsDetailEditUrl, $successMessage, $errorMessage, $restaurantStars);
+        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $cmsDetailEditUrl, $successMessage, $errorMessage, $restaurantStars, $restaurantCuisine, $restaurantShortDescription, $venues);
     }
 
     /**
@@ -113,6 +116,9 @@ final class CmsEventsViewMapper
         ?string $successMessage,
         ?string $errorMessage,
         ?string $restaurantStars = null,
+        ?string $restaurantCuisine = null,
+        ?string $restaurantShortDescription = null,
+        array $venues = [],
     ): CmsEventEditViewModel {
         return new CmsEventEditViewModel(
             eventId: $event->eventId,
@@ -130,10 +136,13 @@ final class CmsEventsViewMapper
             sessions: $sessionViewModels,
             sessionPrices: $enrichedPrices,
             sessionLabels: $labelsData,
+            venues: $venues,
             cmsDetailEditUrl: $cmsDetailEditUrl,
             successMessage: $successMessage,
             errorMessage: $errorMessage,
             restaurantStars: $restaurantStars,
+            restaurantCuisine: $restaurantCuisine,
+            restaurantShortDescription: $restaurantShortDescription,
         );
     }
 

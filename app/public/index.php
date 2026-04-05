@@ -164,7 +164,9 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/sessions/{id:\d+}/labels', [CmsEventsController::class, 'addLabel']);
     $r->addRoute('POST', '/cms/labels/{id:\d+}/delete', [CmsEventsController::class, 'deleteLabel']);
     $r->addRoute('POST', '/cms/sessions/{id:\d+}/price', [CmsEventsController::class, 'setPrice']);
+    $r->addRoute('GET',  '/cms/venues', [CmsEventsController::class, 'venues']);
     $r->addRoute('POST', '/cms/venues', [CmsEventsController::class, 'createVenue']);
+    $r->addRoute('POST', '/cms/venues/{id:\d+}/delete', [CmsEventsController::class, 'deleteVenue']);
     $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
     $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
 

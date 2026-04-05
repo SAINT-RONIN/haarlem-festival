@@ -54,6 +54,61 @@
                         </p>
                     </div>
                     <div class="md:col-span-2">
+                        <label for="VenueId" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+                        <div class="flex gap-2">
+                            <select name="VenueId" id="VenueId"
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">No venue selected</option>
+                                <?php foreach ($viewModel->venues as $venue): ?>
+                                    <?php /** @var \App\Models\Venue $venue */ ?>
+                                    <option value="<?= $venue->venueId ?>"
+                                        <?= $viewModel->venueId === $venue->venueId ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($venue->name) ?>
+                                        <?php if (!empty($venue->addressLine)): ?>
+                                            - <?= htmlspecialchars($venue->addressLine) ?>
+                                        <?php endif; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button type="button" data-toggle="newVenueForm"
+                                    class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm whitespace-nowrap">
+                                + New Venue
+                            </button>
+                        </div>
+                        <div id="newVenueForm" class="hidden mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 class="text-sm font-medium text-blue-900 mb-3">Create New Venue</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label for="NewVenueName" class="block text-xs font-medium text-gray-700 mb-1">
+                                        Venue Name <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="NewVenueName"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border text-sm"
+                                           placeholder="e.g., Patronaat, Jopenkerk">
+                                </div>
+                                <div>
+                                    <label for="NewVenueAddress" class="block text-xs font-medium text-gray-700 mb-1">
+                                        Address
+                                    </label>
+                                    <input type="text" id="NewVenueAddress"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border text-sm"
+                                           placeholder="e.g., Zijlsingel 2">
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="button" data-action="createVenue"
+                                            class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                        Create Venue
+                                    </button>
+                                    <button type="button" data-toggle="newVenueForm"
+                                            class="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">
+                                        Cancel
+                                    </button>
+                                </div>
+                                <p id="venueError" class="hidden text-xs text-red-600"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
                         <label for="ShortDescription" class="block text-sm font-medium text-gray-700 mb-1">Short
                             Description</label>
                         <textarea name="ShortDescription" id="ShortDescription" rows="2"
@@ -94,9 +149,30 @@
                                placeholder="1-5">
                         <p class="text-xs text-amber-600 mt-1">Star rating shown on restaurant cards</p>
                     </div>
+                    <div>
+                        <label for="RestaurantCuisine" class="block text-sm font-medium text-gray-700 mb-1">
+                            Cuisine
+                        </label>
+                        <input type="text" name="RestaurantCuisine" id="RestaurantCuisine"
+                               value="<?= htmlspecialchars($viewModel->restaurantCuisine ?? '') ?>"
+                               class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 bg-amber-50"
+                               placeholder="e.g., Dutch, fish and seafood, European">
+                        <p class="text-xs text-amber-600 mt-1">Comma-separated cuisine types</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="RestaurantShortDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                            Short Description
+                        </label>
+                        <input type="text" name="RestaurantShortDescription" id="RestaurantShortDescription"
+                               value="<?= htmlspecialchars($viewModel->restaurantShortDescription ?? '') ?>"
+                               class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 bg-amber-50"
+                               placeholder="e.g., 3-star restaurant experience during Haarlem Festival">
+                        <p class="text-xs text-amber-600 mt-1">Brief description shown on restaurant cards</p>
+                    </div>
                     <?php endif; ?>
 
-                    <!-- Featured Image -->
+                    <?php if ($viewModel->eventTypeSlug === 'restaurant'): ?>
+                    <!-- Featured Image (Restaurant only) -->
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
                         <div class="flex items-start gap-4">
@@ -123,6 +199,7 @@
                             </div>
                         </div>
                     </div>
+                    <?php endif; ?>
 
                 </div>
                 <div class="mt-6 flex items-center gap-6">

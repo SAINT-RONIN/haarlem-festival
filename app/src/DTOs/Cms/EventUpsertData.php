@@ -21,5 +21,7 @@ final readonly class EventUpsertData
         public bool    $isActive,
         public ?string $slug = null,
         public ?int    $restaurantStars = null,
+        public ?string $restaurantCuisine = null,
+        public ?string $restaurantShortDescription = null,
     ) {}
 }

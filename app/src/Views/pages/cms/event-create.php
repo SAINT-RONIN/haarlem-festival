@@ -160,8 +160,8 @@
                         </div>
                     </div>
 
-                    <!-- Featured Image -->
-                    <div>
+                    <!-- Featured Image (shown for Restaurant events only) -->
+                    <div id="featuredImageField" class="hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
                         <div class="flex items-start gap-4">
                             <div id="featuredImagePreview" class="w-32 h-24 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -216,6 +216,28 @@
                         <p class="mt-1 text-xs text-amber-600">Star rating shown on restaurant cards</p>
                     </div>
 
+                    <!-- Cuisine (shown for Restaurant events only) -->
+                    <div id="cuisineField" class="hidden">
+                        <label for="RestaurantCuisine" class="block text-sm font-medium text-gray-700 mb-1">
+                            Cuisine
+                        </label>
+                        <input type="text" name="RestaurantCuisine" id="RestaurantCuisine"
+                               class="block w-full rounded-md border-amber-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-amber-50"
+                               placeholder="e.g., Dutch, fish and seafood, European">
+                        <p class="mt-1 text-xs text-amber-600">Comma-separated cuisine types</p>
+                    </div>
+
+                    <!-- Short Description (shown for Restaurant events only) -->
+                    <div id="restaurantDescField" class="hidden">
+                        <label for="RestaurantShortDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                            Short Description
+                        </label>
+                        <input type="text" name="RestaurantShortDescription" id="RestaurantShortDescription"
+                               class="block w-full rounded-md border-amber-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-amber-50"
+                               placeholder="e.g., 3-star restaurant experience during Haarlem Festival">
+                        <p class="mt-1 text-xs text-amber-600">Brief description shown on restaurant cards</p>
+                    </div>
+
                 </div>
 
                 <!-- Form Actions -->
@@ -264,13 +286,20 @@
     var typeSelect = document.getElementById('EventTypeId');
     var artistField = document.getElementById('artistField');
     var starsField = document.getElementById('starsField');
+    var cuisineField = document.getElementById('cuisineField');
+    var restaurantDescField = document.getElementById('restaurantDescField');
+    var featuredImageField = document.getElementById('featuredImageField');
     var JAZZ_TYPE = parseInt(form.dataset.jazzTypeId, 10);
     var RESTAURANT_TYPE = parseInt(form.dataset.restaurantTypeId, 10);
 
     function updateVisibility() {
         var val = parseInt(typeSelect.value, 10);
+        var isRestaurant = val === RESTAURANT_TYPE;
         artistField.classList.toggle('hidden', val !== JAZZ_TYPE);
-        starsField.classList.toggle('hidden', val !== RESTAURANT_TYPE);
+        starsField.classList.toggle('hidden', !isRestaurant);
+        cuisineField.classList.toggle('hidden', !isRestaurant);
+        restaurantDescField.classList.toggle('hidden', !isRestaurant);
+        featuredImageField.classList.toggle('hidden', !isRestaurant);
     }
 
     typeSelect.addEventListener('change', updateVisibility);

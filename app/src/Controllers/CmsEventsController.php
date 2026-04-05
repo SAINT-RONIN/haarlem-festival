@@ -205,6 +205,33 @@ class CmsEventsController extends CmsBaseController
     }
 
     /**
+     * Displays the venues management page.
+     * GET /cms/venues
+     */
+    public function venues(): void
+    {
+        $this->handleCmsPageRequest(function (): void {
+            $currentView = 'venues';
+            $venues = $this->eventsService->getVenues();
+            $successMessage = $this->sessionService->consumeFlash('success');
+            $errorMessage = $this->sessionService->consumeFlash('error');
+            require __DIR__ . '/../Views/pages/cms/venues.php';
+        });
+    }
+
+    /**
+     * Soft-deletes a venue.
+     * POST /cms/venues/{id}/delete
+     */
+    public function deleteVenue(int $id): void
+    {
+        $this->handleCmsValidationRequest(function () use ($id): void {
+            $this->eventsService->deleteVenue($id);
+            $this->redirectWithFlash('Venue deleted successfully.', 'success', '/cms/venues');
+        }, '/cms/venues');
+    }
+
+    /**
      * Deletes an event and all its associated sessions.
      * POST /cms/events/{id}/delete
      */
@@ -322,6 +349,9 @@ class CmsEventsController extends CmsBaseController
             $priceTiers,
             $editData->cmsDetailEditUrl,
             $editData->restaurantStars,
+            $editData->restaurantCuisine,
+            $editData->restaurantShortDescription,
+            $this->eventsService->getVenues(),
         );
     }
 
@@ -346,15 +376,17 @@ class CmsEventsController extends CmsBaseController
     private function extractEventFormData(): EventUpsertData
     {
         return CmsEventsInputMapper::fromEventFormInput([
-            'EventTypeId'          => $this->readOptionalIntPostParam('EventTypeId'),
-            'Title'                => $this->readStringPostParam('Title'),
-            'ShortDescription'     => $this->readStringPostParam('ShortDescription', 1000),
-            'LongDescriptionHtml'  => $this->readStringPostParam('LongDescriptionHtml', 65535),
-            'FeaturedImageAssetId' => $this->readOptionalIntPostParam('FeaturedImageAssetId'),
-            'VenueId'              => $this->readOptionalIntPostParam('VenueId'),
-            'ArtistId'             => $this->readOptionalIntPostParam('ArtistId'),
-            'RestaurantId'         => $this->readOptionalIntPostParam('RestaurantId'),
-            'IsActive'             => $this->readBoolPostParam('IsActive'),
+            'EventTypeId'                => $this->readOptionalIntPostParam('EventTypeId'),
+            'Title'                      => $this->readStringPostParam('Title'),
+            'ShortDescription'           => $this->readStringPostParam('ShortDescription', 1000),
+            'LongDescriptionHtml'        => $this->readStringPostParam('LongDescriptionHtml', 65535),
+            'FeaturedImageAssetId'       => $this->readOptionalIntPostParam('FeaturedImageAssetId'),
+            'VenueId'                    => $this->readOptionalIntPostParam('VenueId'),
+            'ArtistId'                   => $this->readOptionalIntPostParam('ArtistId'),
+            'IsActive'                   => $this->readBoolPostParam('IsActive'),
+            'RestaurantStars'            => $this->readOptionalIntPostParam('RestaurantStars'),
+            'RestaurantCuisine'          => $this->readStringPostParam('RestaurantCuisine'),
+            'RestaurantShortDescription' => $this->readStringPostParam('RestaurantShortDescription'),
         ]);
     }
 
