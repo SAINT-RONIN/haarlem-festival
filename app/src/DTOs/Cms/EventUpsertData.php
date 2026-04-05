@@ -20,5 +20,6 @@ final readonly class EventUpsertData
         public ?int    $artistId,
         public bool    $isActive,
         public ?string $slug = null,
+        public ?int    $restaurantStars = null,
     ) {}
 }

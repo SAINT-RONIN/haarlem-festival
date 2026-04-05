@@ -35,7 +35,8 @@
 
         <!-- Create Form -->
         <form action="/cms/events" method="POST" class="max-w-2xl"
-              data-jazz-type-id="<?= \App\Enums\EventTypeId::Jazz->value ?>">
+              data-jazz-type-id="<?= \App\Enums\EventTypeId::Jazz->value ?>"
+              data-restaurant-type-id="<?= \App\Enums\EventTypeId::Restaurant->value ?>">
             <input type="hidden" name="IsActive" value="1">
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6 border-b border-gray-200">
@@ -159,6 +160,26 @@
                         </div>
                     </div>
 
+                    <!-- Featured Image -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+                        <div class="flex items-start gap-4">
+                            <div id="featuredImagePreview" class="w-32 h-24 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                <span id="noImageText" class="text-gray-400 text-xs text-center px-2">No image</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <input type="hidden" name="FeaturedImageAssetId" id="FeaturedImageAssetId" value="">
+                                <button type="button" onclick="openEventImagePicker()"
+                                        class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm">
+                                    Choose from Library
+                                </button>
+                                <button type="button" id="clearImageBtn" onclick="clearEventImage()" class="hidden px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Artist (shown for Jazz events only) -->
                     <div id="artistField" class="hidden">
                         <label for="ArtistId" class="block text-sm font-medium text-gray-700 mb-1">
@@ -181,6 +202,18 @@
                             Select the artist performing at this Jazz event.
                             <a href="/cms/artists/create" class="text-blue-600 hover:underline" target="_blank">Create a new artist</a>
                         </p>
+                    </div>
+
+                    <!-- Stars (shown for Restaurant events only) -->
+                    <div id="starsField" class="hidden">
+                        <label for="RestaurantStars" class="block text-sm font-medium text-gray-700 mb-1">
+                            <span class="text-amber-500">★</span> Restaurant Stars (1-5)
+                        </label>
+                        <input type="number" name="RestaurantStars" id="RestaurantStars"
+                               min="1" max="5"
+                               class="block w-full rounded-md border-amber-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-amber-50"
+                               placeholder="1-5">
+                        <p class="mt-1 text-xs text-amber-600">Star rating shown on restaurant cards</p>
                     </div>
 
                 </div>
@@ -230,11 +263,14 @@
     var form = document.querySelector('form[data-jazz-type-id]');
     var typeSelect = document.getElementById('EventTypeId');
     var artistField = document.getElementById('artistField');
+    var starsField = document.getElementById('starsField');
     var JAZZ_TYPE = parseInt(form.dataset.jazzTypeId, 10);
+    var RESTAURANT_TYPE = parseInt(form.dataset.restaurantTypeId, 10);
 
     function updateVisibility() {
         var val = parseInt(typeSelect.value, 10);
         artistField.classList.toggle('hidden', val !== JAZZ_TYPE);
+        starsField.classList.toggle('hidden', val !== RESTAURANT_TYPE);
     }
 
     typeSelect.addEventListener('change', updateVisibility);

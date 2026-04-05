@@ -58,4 +58,9 @@ interface ICmsRepository
      * Inserts a new CmsSection under the given page and returns the new section ID.
      */
     public function insertSection(int $cmsPageId, string $sectionKey): int;
+
+    /**
+     * Inserts or updates a TEXT CmsItem by section + key. Creates if not exists, updates if it does.
+     */
+    public function upsertCmsTextItem(int $cmsSectionId, string $itemKey, string $textValue): void;
 }

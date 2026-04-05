@@ -205,4 +205,22 @@ class CmsRepository extends BaseRepository implements ICmsRepository
             ['cmsPageId' => $cmsPageId, 'sectionKey' => $sectionKey],
         );
     }
+
+    /**
+     * Inserts or updates a TEXT CmsItem by section + key. Creates if not exists, updates if it does.
+     */
+    public function upsertCmsTextItem(int $cmsSectionId, string $itemKey, string $textValue): void
+    {
+        $this->execute(
+            'INSERT INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
+             VALUES (:sectionId, :key, :type, :value)
+             ON DUPLICATE KEY UPDATE TextValue = VALUES(TextValue)',
+            [
+                'sectionId' => $cmsSectionId,
+                'key' => $itemKey,
+                'type' => 'TEXT',
+                'value' => $textValue,
+            ],
+        );
+    }
 }

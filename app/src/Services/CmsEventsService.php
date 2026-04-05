@@ -218,6 +218,7 @@ class CmsEventsService implements ICmsEventsService
         }
 
         $slug = $this->resolveUniqueSlug($data->slug ?? '');
+        $restaurantStars = $data->restaurantStars;
         $data = new EventUpsertData(
             eventTypeId: $data->eventTypeId,
             title: $data->title,
@@ -228,11 +229,15 @@ class CmsEventsService implements ICmsEventsService
             artistId: $data->artistId,
             isActive: $data->isActive,
             slug: $slug,
+            restaurantStars: $restaurantStars,
         );
 
         try {
             $newEventId = $this->eventRepository->create($data);
             $this->autoCreateCmsSection($data->eventTypeId, $newEventId);
+            if ($data->restaurantStars !== null) {
+                $this->saveRestaurantStars($data->eventTypeId, $newEventId, $data->restaurantStars);
+            }
             return $newEventId;
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to create event.', 0, $error);
@@ -252,6 +257,60 @@ class CmsEventsService implements ICmsEventsService
         }
 
         $this->cmsRepository->insertSection($page->cmsPageId, SharedSectionKeys::eventSectionKey($eventId));
+    }
+
+    private function saveRestaurantStars(int $eventTypeId, int $eventId, int $stars): void
+    {
+        $config = EventDetailCmsHelper::forEventType($eventTypeId);
+        if ($config === null) {
+            return;
+        }
+        $page = $this->cmsRepository->findPageBySlug($config->detailPageSlug);
+        if ($page === null) {
+            return;
+        }
+        $sections = $this->cmsRepository->findSections(
+            new \App\DTOs\Filters\CmsSectionFilter(
+                cmsPageId: $page->cmsPageId,
+                sectionKey: SharedSectionKeys::eventSectionKey($eventId),
+            )
+        );
+        if (empty($sections)) {
+            return;
+        }
+        $this->cmsRepository->upsertCmsTextItem($sections[0]->cmsSectionId, 'stars', (string)$stars);
+    }
+
+    private function loadRestaurantStars(int $eventTypeId, int $eventId): ?string
+    {
+        $config = EventDetailCmsHelper::forEventType($eventTypeId);
+        if ($config === null) {
+            return null;
+        }
+        $page = $this->cmsRepository->findPageBySlug($config->detailPageSlug);
+        if ($page === null) {
+            return null;
+        }
+        $sections = $this->cmsRepository->findSections(
+            new \App\DTOs\Filters\CmsSectionFilter(
+                cmsPageId: $page->cmsPageId,
+                sectionKey: SharedSectionKeys::eventSectionKey($eventId),
+            )
+        );
+        if (empty($sections)) {
+            return null;
+        }
+        $items = $this->cmsRepository->findItems(
+            new \App\DTOs\Filters\CmsItemFilter(
+                cmsSectionId: $sections[0]->cmsSectionId,
+            )
+        );
+        foreach ($items as $item) {
+            if ($item->itemKey === 'stars') {
+                return $item->textValue;
+            }
+        }
+        return null;
     }
 
     private function resolveCmsDetailEditUrl(int $eventTypeId): ?string
@@ -312,12 +371,15 @@ class CmsEventsService implements ICmsEventsService
         // Batch-load prices and labels for all sessions
         [$pricesMap, $labelsMap] = $this->loadSessionPricesAndLabels($sessions);
 
+        $restaurantStars = $this->loadRestaurantStars($event->eventTypeId, $eventId);
+
         return new EventEditBundle(
             event: $event,
             sessions: $sessions,
             pricesMap: $pricesMap,
             labelsMap: $labelsMap,
             cmsDetailEditUrl: $this->resolveCmsDetailEditUrl($event->eventTypeId),
+            restaurantStars: $restaurantStars,
         );
     }
 
@@ -375,7 +437,11 @@ class CmsEventsService implements ICmsEventsService
         );
 
         try {
-            return $this->eventRepository->update($eventId, $merged);
+            $result = $this->eventRepository->update($eventId, $merged);
+            if ($data->restaurantStars !== null) {
+                $this->saveRestaurantStars($data->eventTypeId, $eventId, $data->restaurantStars);
+            }
+            return $result;
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to update event.', 0, $error);
         }

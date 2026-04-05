@@ -82,11 +82,12 @@ final class CmsEventsViewMapper
         ?string $errorMessage = null,
         array $priceTiers = [],
         ?string $cmsDetailEditUrl = null,
+        ?string $restaurantStars = null,
     ): CmsEventEditViewModel {
         $sessionViewModels = self::buildSessionViewModels($sessions, $event->title, $event->eventTypeSlug);
         $enrichedPrices = self::enrichPricesWithTierNames($pricesData, $priceTiers);
 
-        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $cmsDetailEditUrl, $successMessage, $errorMessage);
+        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $cmsDetailEditUrl, $successMessage, $errorMessage, $restaurantStars);
     }
 
     /**
@@ -111,6 +112,7 @@ final class CmsEventsViewMapper
         ?string $cmsDetailEditUrl,
         ?string $successMessage,
         ?string $errorMessage,
+        ?string $restaurantStars = null,
     ): CmsEventEditViewModel {
         return new CmsEventEditViewModel(
             eventId: $event->eventId,
@@ -123,6 +125,7 @@ final class CmsEventsViewMapper
             venueId: $event->venueId,
             venueName: $event->venueName,
             artistId: $event->artistId,
+            featuredImageAssetId: $event->featuredImageAssetId,
             isActive: $event->isActive,
             sessions: $sessionViewModels,
             sessionPrices: $enrichedPrices,
@@ -130,6 +133,7 @@ final class CmsEventsViewMapper
             cmsDetailEditUrl: $cmsDetailEditUrl,
             successMessage: $successMessage,
             errorMessage: $errorMessage,
+            restaurantStars: $restaurantStars,
         );
     }
 

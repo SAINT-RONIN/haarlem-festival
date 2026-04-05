@@ -23,6 +23,7 @@ final readonly class EventEditBundle
         public array $pricesMap,
         public array $labelsMap,
         public ?string $cmsDetailEditUrl = null,
+        public ?string $restaurantStars = null,
     ) {
     }
 }

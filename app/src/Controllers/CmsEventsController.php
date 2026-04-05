@@ -321,6 +321,7 @@ class CmsEventsController extends CmsBaseController
             $this->sessionService->consumeFlash('error'),
             $priceTiers,
             $editData->cmsDetailEditUrl,
+            $editData->restaurantStars,
         );
     }
 

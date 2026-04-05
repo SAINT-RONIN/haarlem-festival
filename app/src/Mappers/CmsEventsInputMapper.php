@@ -30,6 +30,7 @@ final class CmsEventsInputMapper
             artistId: self::intOrNull($input['ArtistId'] ?? null),
             isActive: (bool)($input['IsActive'] ?? false),
             slug: SlugHelper::generate($title),
+            restaurantStars: isset($input['RestaurantStars']) && $input['RestaurantStars'] !== '' ? (int)$input['RestaurantStars'] : null,
         );
     }
 

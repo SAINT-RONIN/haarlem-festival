@@ -83,6 +83,47 @@
                     </div>
                     <?php endif; ?>
 
+                    <?php if ($viewModel->eventTypeSlug === 'restaurant'): ?>
+                    <div>
+                        <label for="RestaurantStars" class="block text-sm font-medium text-gray-700 mb-1">
+                            <span class="text-amber-500">★</span> Restaurant Stars (1-5)
+                        </label>
+                        <input type="number" name="RestaurantStars" id="RestaurantStars"
+                               min="1" max="5" value="<?= htmlspecialchars($viewModel->restaurantStars ?? '') ?>"
+                               class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 bg-amber-50"
+                               placeholder="1-5">
+                        <p class="text-xs text-amber-600 mt-1">Star rating shown on restaurant cards</p>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Featured Image -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+                        <div class="flex items-start gap-4">
+                            <div id="featuredImagePreview" class="w-32 h-24 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                <?php if ($viewModel->featuredImageAssetId !== null): ?>
+                                    <img id="featuredImagePreviewImg" src="" alt="Featured image" class="w-full h-full object-cover">
+                                <?php else: ?>
+                                    <span class="text-gray-400 text-xs text-center px-2">No image</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <input type="hidden" name="FeaturedImageAssetId" id="FeaturedImageAssetId"
+                                       value="<?= $viewModel->featuredImageAssetId ?? '' ?>">
+                                <button type="button" onclick="openEventImagePicker()"
+                                        class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm">
+                                    Choose from Library
+                                </button>
+                                <?php if ($viewModel->featuredImageAssetId !== null): ?>
+                                    <button type="button" onclick="clearEventImage()"
+                                            class="px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm">
+                                        Remove
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="mt-6 flex items-center gap-6">
                     <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
@@ -200,6 +241,7 @@
                                 <option value="">Not specified</option>
                                 <option value="NL">Dutch (NL)</option>
                                 <option value="ENG">English (ENG)</option>
+                                <option value="ZH">Chinese (ZH)</option>
                             </select>
                         </div>
                     </div>
@@ -225,7 +267,9 @@
                     <?php foreach ($viewModel->sessions as $session): ?>
                         <?php
                         /** @var \App\ViewModels\Cms\CmsEventSessionViewModel $session */
+                        /** @var \App\Models\EventSessionLabel[] $sessionLabels */
                         $sessionLabels = $viewModel->sessionLabels[$session->eventSessionId] ?? [];
+                        /** @var \App\ViewModels\Cms\CmsSessionPriceViewModel[] $sessionPrices */
                         $sessionPrices = $viewModel->sessionPrices[$session->eventSessionId] ?? [];
                         ?>
                         <div class="p-6">
@@ -363,6 +407,7 @@
                                             <option value="">Not specified</option>
                                             <option value="NL" <?= $session->languageCode === 'NL' ? 'selected' : '' ?>>Dutch (NL)</option>
                                             <option value="ENG" <?= $session->languageCode === 'ENG' ? 'selected' : '' ?>>English (ENG)</option>
+                                            <option value="ZH" <?= $session->languageCode === 'ZH' ? 'selected' : '' ?>>Chinese (ZH)</option>
                                         </select>
                                     </div>
                                     <!-- Min Age -->
@@ -505,5 +550,21 @@
 
 <script src="/assets/js/cms/cms-common.js"></script>
 <script src="/assets/js/cms/event-edit.js"></script>
+<?php if ($viewModel->featuredImageAssetId !== null): ?>
+<script>
+(function() {
+    var assetId = <?= (int)$viewModel->featuredImageAssetId ?>;
+    fetch('/api/cms/media')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success || !data.assets) return;
+            var asset = data.assets.find(function(a) { return a.mediaAssetId === assetId; });
+            if (!asset) return;
+            var img = document.getElementById('featuredImagePreviewImg');
+            if (img) img.src = asset.filePath;
+        });
+}());
+</script>
+<?php endif; ?>
 </body>
 </html>
