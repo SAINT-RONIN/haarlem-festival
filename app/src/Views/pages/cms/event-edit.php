@@ -117,6 +117,12 @@
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         Save Changes
                     </button>
+                    <?php if ($viewModel->cmsDetailEditUrl !== null): ?>
+                        <a href="<?= htmlspecialchars($viewModel->cmsDetailEditUrl) ?>"
+                           class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+                            Edit detail page content
+                        </a>
+                    <?php endif; ?>
                 </div>
             </form>
         </div>

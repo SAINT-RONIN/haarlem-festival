@@ -6,10 +6,13 @@ namespace App\Services;
 
 use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
+use App\Constants\SharedSectionKeys;
+use App\Helpers\EventDetailCmsHelper;
 use App\Helpers\FormatHelper;
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\Exceptions\CmsOperationException;
 use App\Exceptions\ValidationException;
+use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
@@ -51,6 +54,7 @@ class CmsEventsService implements ICmsEventsService
         private readonly IVenueRepository $venueRepository,
         private readonly IPriceTierRepository $priceTierRepository,
         private readonly IOrderItemRepository $orderItemRepository,
+        private readonly ICmsRepository $cmsRepository,
     ) {
     }
 
@@ -228,10 +232,42 @@ class CmsEventsService implements ICmsEventsService
         );
 
         try {
-            return $this->eventRepository->create($data);
+            $newEventId = $this->eventRepository->create($data);
+            $this->autoCreateCmsSection($data->eventTypeId, $newEventId);
+            return $newEventId;
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to create event.', 0, $error);
         }
+    }
+
+    private function autoCreateCmsSection(int $eventTypeId, int $eventId): void
+    {
+        $config = EventDetailCmsHelper::forEventType($eventTypeId);
+        if ($config === null) {
+            return;
+        }
+
+        $page = $this->cmsRepository->findPageBySlug($config->detailPageSlug);
+        if ($page === null) {
+            return;
+        }
+
+        $this->cmsRepository->insertSection($page->cmsPageId, SharedSectionKeys::eventSectionKey($eventId));
+    }
+
+    private function resolveCmsDetailEditUrl(int $eventTypeId): ?string
+    {
+        $config = EventDetailCmsHelper::forEventType($eventTypeId);
+        if ($config === null) {
+            return null;
+        }
+
+        $page = $this->cmsRepository->findPageBySlug($config->detailPageSlug);
+        if ($page === null) {
+            return null;
+        }
+
+        return "/cms/pages/{$page->cmsPageId}/{$page->slug}/edit";
     }
 
     private function resolveUniqueSlug(string $base): string
@@ -282,6 +318,7 @@ class CmsEventsService implements ICmsEventsService
             sessions: $sessions,
             pricesMap: $pricesMap,
             labelsMap: $labelsMap,
+            cmsDetailEditUrl: $this->resolveCmsDetailEditUrl($event->eventTypeId),
         );
     }
 

@@ -7,18 +7,17 @@ namespace App\Constants;
 /**
  * Constants for the Restaurant detail page feature.
  *
- * Mirrors StorytellingDetailConstants: per-restaurant content is stored as
- * individual CMS sections keyed by event ID (restaurant_event_{id}), all
- * under the shared 'restaurant' page slug.
+ * Per-restaurant CMS content is stored as individual sections keyed by event ID
+ * (event_{id}) under the 'restaurant-detail' page — the same pattern as Storytelling.
  */
 final class RestaurantDetailConstants
 {
-    public const PAGE_SLUG            = 'restaurant';
-    public const EVENT_SECTION_PREFIX = 'restaurant_event_';
+    public const PAGE_SLUG            = 'restaurant-detail';
+    public const EVENT_SECTION_PREFIX = SharedSectionKeys::EVENT_SECTION_PREFIX;
 
     public static function eventSectionKey(int $eventId): string
     {
-        return self::EVENT_SECTION_PREFIX . $eventId;
+        return SharedSectionKeys::eventSectionKey($eventId);
     }
 
     private function __construct() {}

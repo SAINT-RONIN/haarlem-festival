@@ -182,4 +182,27 @@ class CmsRepository extends BaseRepository implements ICmsRepository
 
         return true;
     }
+
+    /**
+     * Returns the CmsPage with the given slug, or null if not found.
+     */
+    public function findPageBySlug(string $slug): ?CmsPage
+    {
+        return $this->fetchOne(
+            'SELECT * FROM CmsPage WHERE Slug = :slug LIMIT 1',
+            ['slug' => $slug],
+            fn(array $row) => CmsPage::fromRow($row),
+        );
+    }
+
+    /**
+     * Inserts a new CmsSection row and returns the auto-incremented ID.
+     */
+    public function insertSection(int $cmsPageId, string $sectionKey): int
+    {
+        return $this->executeInsert(
+            'INSERT INTO CmsSection (CmsPageId, SectionKey) VALUES (:cmsPageId, :sectionKey)',
+            ['cmsPageId' => $cmsPageId, 'sectionKey' => $sectionKey],
+        );
+    }
 }

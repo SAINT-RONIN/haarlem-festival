@@ -321,6 +321,7 @@ return static function (string $controllerClass): object {
                 $venueRepo(),
                 $priceTierRepo(),
                 $orderItemRepo(),
+                $cmsRepo(),
             ),
             $sessionService,
             $cmsArtistsService(),

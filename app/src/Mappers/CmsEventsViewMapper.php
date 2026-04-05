@@ -83,11 +83,12 @@ final class CmsEventsViewMapper
         ?string $successMessage = null,
         ?string $errorMessage = null,
         array $priceTiers = [],
+        ?string $cmsDetailEditUrl = null,
     ): CmsEventEditViewModel {
         $sessionViewModels = self::buildSessionViewModels($sessions, $event->title, $event->eventTypeSlug);
         $enrichedPrices = self::enrichPricesWithTierNames($pricesData, $priceTiers);
 
-        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $successMessage, $errorMessage);
+        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $cmsDetailEditUrl, $successMessage, $errorMessage);
     }
 
     /**
@@ -109,6 +110,7 @@ final class CmsEventsViewMapper
         array $sessionViewModels,
         array $enrichedPrices,
         array $labelsData,
+        ?string $cmsDetailEditUrl,
         ?string $successMessage,
         ?string $errorMessage,
     ): CmsEventEditViewModel {
@@ -128,6 +130,7 @@ final class CmsEventsViewMapper
             sessions: $sessionViewModels,
             sessionPrices: $enrichedPrices,
             sessionLabels: $labelsData,
+            cmsDetailEditUrl: $cmsDetailEditUrl,
             successMessage: $successMessage,
             errorMessage: $errorMessage,
         );

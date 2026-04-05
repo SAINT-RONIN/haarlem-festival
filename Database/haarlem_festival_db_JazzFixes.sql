@@ -1659,7 +1659,8 @@ INSERT INTO `CmsPage` (`CmsPageId`, `Slug`, `Title`) VALUES
 (10, 'checkout', 'Checkout'),
 (11, 'grote-markt', 'Grote Markt'),
 (12, 'amsterdamse-poort', 'Amsterdaamse Poort'),
-(13, 'molen-de-adriaan', 'Molen De Adriaan');
+(13, 'molen-de-adriaan', 'Molen De Adriaan'),
+(14, 'restaurant-detail', 'Restaurant Detail Pages');
 
 -- --------------------------------------------------------
 
@@ -1720,13 +1721,13 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (57, 6, 'intro_split_section'),
 (58, 6, 'intro_split2_section'),
 (60, 6, 'restaurant_cards_section'),
-(93, 6, 'restaurant_event_47'),
-(94, 6, 'restaurant_event_48'),
-(95, 6, 'restaurant_event_49'),
-(96, 6, 'restaurant_event_50'),
-(97, 6, 'restaurant_event_51'),
-(98, 6, 'restaurant_event_52'),
-(99, 6, 'restaurant_event_53'),
+(93, 14, 'event_47'),
+(94, 14, 'event_48'),
+(95, 14, 'event_49'),
+(96, 14, 'event_50'),
+(97, 14, 'event_51'),
+(98, 14, 'event_52'),
+(99, 14, 'event_53'),
 (61, 7, 'event_34'),
 (62, 7, 'event_35'),
 (63, 7, 'event_36'),

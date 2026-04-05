@@ -48,4 +48,14 @@ interface ICmsRepository
      * Sets or clears the media asset linked to a CMS item.
      */
     public function updateItemMediaAsset(int $cmsItemId, ?int $mediaAssetId): bool;
+
+    /**
+     * Returns the CmsPage with the given slug, or null if not found.
+     */
+    public function findPageBySlug(string $slug): ?CmsPage;
+
+    /**
+     * Inserts a new CmsSection under the given page and returns the new section ID.
+     */
+    public function insertSection(int $cmsPageId, string $sectionKey): int;
 }
