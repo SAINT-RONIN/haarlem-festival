@@ -12,7 +12,6 @@ use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Events\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
-use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ICmsScheduleDayService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsEventCreateViewModel;
@@ -27,9 +26,6 @@ use App\ViewModels\Cms\CmsScheduleDaysViewModel;
  * Events own Sessions (bookable time-slots), each session can carry Labels
  * (e.g. "Sold Out") and per-tier Prices (Adult, Child, etc.). The schedule-day
  * feature controls which days appear on the public schedule for each event type.
- *
- * Collaborates with ICmsArtistsService and ICmsRestaurantsService because the
- * event edit form needs artist/restaurant dropdowns for Jazz and Dining events.
  */
 class CmsEventsController extends CmsBaseController
 {
@@ -37,7 +33,6 @@ class CmsEventsController extends CmsBaseController
         private readonly ICmsEventsService $eventsService,
         ISessionService $sessionService,
         private readonly ICmsArtistsService $artistsService,
-        private readonly ICmsRestaurantsService $restaurantsService,
         private readonly ICmsScheduleDayService $scheduleDayService,
     ) {
         parent::__construct($sessionService);
@@ -255,7 +250,6 @@ class CmsEventsController extends CmsBaseController
             $this->eventsService->getEventTypes(),
             $this->eventsService->getVenues(),
             $this->artistsService->getArtists(null),
-            $this->restaurantsService->getRestaurants(null),
             $this->sessionService->consumeFlash('error'),
             $this->sessionService->consumeFlash('success'),
             $this->readStringQueryParam('day') ?? '',
@@ -310,10 +304,9 @@ class CmsEventsController extends CmsBaseController
 
     private function renderEventEditPage(EventEditBundle $editData): void
     {
-        $priceTiers  = $this->eventsService->getPriceTiers();
-        $viewModel   = $this->buildEventEditViewModel($editData, $priceTiers);
-        $artists     = $this->artistsService->getArtists(null);
-        $restaurants = $this->restaurantsService->getRestaurants(null);
+        $priceTiers = $this->eventsService->getPriceTiers();
+        $viewModel  = $this->buildEventEditViewModel($editData, $priceTiers);
+        $artists    = $this->artistsService->getArtists(null);
         require __DIR__ . '/../Views/pages/cms/event-edit.php';
     }
 

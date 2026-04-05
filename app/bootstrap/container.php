@@ -15,7 +15,6 @@ use App\Controllers\CmsPageImageController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsOrdersController;
-use App\Controllers\CmsRestaurantsController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
@@ -76,7 +75,6 @@ use App\Repositories\ScheduleContentRepository;
 use App\Repositories\StorytellingContentRepository;
 use App\Services\CmsArtistsService;
 use App\Services\CmsDashboardService;
-use App\Services\CmsRestaurantsService;
 use App\Services\CmsEventsService;
 use App\Services\CmsScheduleDayService;
 use App\Services\CmsEditService;
@@ -234,7 +232,6 @@ return static function (string $controllerClass): object {
     // ── Lazy service singletons shared across multiple controllers ──
 
     $cmsArtistsService = fn() => $make('cmsArtistsService', fn() => new CmsArtistsService(new ArtistRepository($pdo())));
-    $cmsRestaurantsService = fn() => $make('cmsRestaurantsService', fn() => new CmsRestaurantsService($restaurantRepo()));
     $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService($mediaAssetRepo()));
     $restaurantService = fn() => $make('restaurantService', fn() => new RestaurantService(
         $globalContentRepo(),
@@ -325,7 +322,6 @@ return static function (string $controllerClass): object {
             ),
             $sessionService,
             $cmsArtistsService(),
-            $cmsRestaurantsService(),
             new CmsScheduleDayService(
                 $scheduleDayConfig(),
                 $eventTypeRepo(),
@@ -435,10 +431,6 @@ return static function (string $controllerClass): object {
         ),
         CmsUsersController::class => new CmsUsersController(
             new CmsUsersService(new CmsUsersRepository($pdo()), $userAccountRepo()),
-            $sessionService,
-        ),
-        CmsRestaurantsController::class => new CmsRestaurantsController(
-            $cmsRestaurantsService(),
             $sessionService,
         ),
         CmsArtistsController::class => new CmsArtistsController(

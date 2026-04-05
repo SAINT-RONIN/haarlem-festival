@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Restaurant;
-use App\DTOs\Cms\RestaurantUpsertData;
 
 /**
  * Interface for Restaurant repository.
@@ -30,10 +29,6 @@ interface IRestaurantRepository
      * @return Restaurant[]
      */
     public function findAll(?string $search = null): array;
-
-    public function create(RestaurantUpsertData $data): int;
-
-    public function update(int $id, RestaurantUpsertData $data): void;
 
     public function delete(int $id): void;
 }

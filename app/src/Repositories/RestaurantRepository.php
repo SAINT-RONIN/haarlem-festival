@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Restaurant;
-use App\DTOs\Cms\RestaurantUpsertData;
 use App\Repositories\Interfaces\IRestaurantRepository;
 
 /**
@@ -70,59 +69,6 @@ class RestaurantRepository extends BaseRepository implements IRestaurantReposito
         $sql .= ' ORDER BY r.Name ASC';
 
         return $this->fetchAll($sql, $params, fn(array $row) => Restaurant::fromRow($row));
-    }
-
-    /** Inserts a new restaurant row from the CMS restaurant form data. */
-    public function create(RestaurantUpsertData $data): int
-    {
-        return $this->executeInsert(
-            'INSERT INTO Restaurant
-            (Name, AddressLine, City, Stars, CuisineType, DescriptionHtml, ImageAssetId, IsActive,
-             Phone, Email, Website, AboutText, ChefName, ChefText, MenuDescription,
-             LocationDescription, MapEmbedUrl, MichelinStars, SeatsPerSession, DurationMinutes,
-             SpecialRequestsNote, CreatedAtUtc)
-            VALUES
-            (:name, :address, :city, :stars, :cuisine, :desc, :imageId, :active,
-             :phone, :email, :website, :about, :chef, :chefText, :menu,
-             :location, :mapUrl, :michelin, :seats, :duration, :special, NOW())',
-            [
-                ':name' => $data->name, ':address' => $data->addressLine, ':city' => $data->city,
-                ':stars' => $data->stars, ':cuisine' => $data->cuisineType, ':desc' => $data->descriptionHtml,
-                ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
-                ':phone' => $data->phone, ':email' => $data->email, ':website' => $data->website,
-                ':about' => $data->aboutText, ':chef' => $data->chefName, ':chefText' => $data->chefText,
-                ':menu' => $data->menuDescription, ':location' => $data->locationDescription,
-                ':mapUrl' => $data->mapEmbedUrl, ':michelin' => $data->michelinStars,
-                ':seats' => $data->seatsPerSession, ':duration' => $data->durationMinutes,
-                ':special' => $data->specialRequestsNote,
-            ],
-        );
-    }
-
-    /** Updates an existing restaurant row from the CMS restaurant form data. */
-    public function update(int $id, RestaurantUpsertData $data): void
-    {
-        $this->execute(
-            'UPDATE Restaurant SET
-            Name=:name, AddressLine=:address, City=:city, Stars=:stars, CuisineType=:cuisine,
-            DescriptionHtml=:desc, ImageAssetId=:imageId, IsActive=:active,
-            Phone=:phone, Email=:email, Website=:website, AboutText=:about,
-            ChefName=:chef, ChefText=:chefText, MenuDescription=:menu,
-            LocationDescription=:location, MapEmbedUrl=:mapUrl, MichelinStars=:michelin,
-            SeatsPerSession=:seats, DurationMinutes=:duration, SpecialRequestsNote=:special
-            WHERE RestaurantId=:id',
-            [
-                ':id' => $id, ':name' => $data->name, ':address' => $data->addressLine, ':city' => $data->city,
-                ':stars' => $data->stars, ':cuisine' => $data->cuisineType, ':desc' => $data->descriptionHtml,
-                ':imageId' => $data->imageAssetId, ':active' => $data->isActive ? 1 : 0,
-                ':phone' => $data->phone, ':email' => $data->email, ':website' => $data->website,
-                ':about' => $data->aboutText, ':chef' => $data->chefName, ':chefText' => $data->chefText,
-                ':menu' => $data->menuDescription, ':location' => $data->locationDescription,
-                ':mapUrl' => $data->mapEmbedUrl, ':michelin' => $data->michelinStars,
-                ':seats' => $data->seatsPerSession, ':duration' => $data->durationMinutes,
-                ':special' => $data->specialRequestsNote,
-            ],
-        );
     }
 
     /** Soft-deletes a restaurant by marking it inactive instead of removing the row. */
