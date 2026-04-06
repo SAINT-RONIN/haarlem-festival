@@ -179,7 +179,7 @@
                     <div class="p-2.5 flex flex-col gap-6">
                         <!-- Payment Options -->
                         <div class="px-3 sm:px-3.5 py-3.5 rounded-2xl outline outline-2 outline-offset-[-2px] outline-gray-300 flex flex-col gap-3.5">
-                            <!-- Credit Card -->
+                            <!-- Stripe -->
                             <label class="px-3 py-2.5 bg-white rounded-2xl outline outline-2 outline-offset-[-2px] outline-gray-200
                                           flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors">
                                 <svg class="w-7 h-7 text-gray-600 flex-shrink-0" viewBox="0 0 24 24" fill="none"
@@ -189,34 +189,16 @@
                                     <line x1="1" y1="10" x2="23" y2="10"></line>
                                 </svg>
                                 <div class="flex-1 flex flex-col gap-0.5">
-                                    <span class="text-gray-900 text-base sm:text-lg font-normal font-['Montserrat'] leading-5">Credit Card</span>
+                                    <span class="text-gray-900 text-base sm:text-lg font-normal font-['Montserrat'] leading-5">Stripe</span>
                                     <span class="text-gray-500 text-xs sm:text-sm font-normal font-['Montserrat'] leading-4">Visa, Mastercard, American Express(Amex)</span>
                                 </div>
                                 <input type="radio" name="paymentMethod" value="credit_card" checked
                                        class="w-5 h-5 accent-slate-800">
                             </label>
 
-                            <!-- iDEAL -->
-                            <label class="px-3 py-2.5 bg-white rounded-2xl outline outline-2 outline-offset-[-2px] outline-gray-200
-                                          flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors">
-                                <svg class="w-7 h-7 text-gray-600 flex-shrink-0" viewBox="0 0 24 24" fill="none"
-                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                     aria-hidden="true">
-                                    <rect x="1" y="3" width="22" height="18" rx="2"></rect>
-                                    <path d="M12 8v8"></path>
-                                    <path d="M8 12h8"></path>
-                                </svg>
-                                <div class="flex-1 flex flex-col gap-0.5">
-                                    <span class="text-gray-900 text-base font-normal font-['Montserrat'] leading-5">iDEAL</span>
-                                    <span class="text-gray-500 text-xs sm:text-sm font-normal font-['Montserrat'] leading-4">Pay with your bank</span>
-                                </div>
-                                <input type="radio" name="paymentMethod" value="ideal"
-                                       class="w-5 h-5 accent-slate-800">
-                            </label>
-
                             <!-- PayPal -->
                             <p class="text-gray-500 text-xs sm:text-sm font-normal font-['Montserrat'] leading-4 px-1">
-                                Powered by Stripe Checkout (card and iDEAL).
+                                Powered by Stripe Checkout.
                             </p>
                         </div>
 

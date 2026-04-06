@@ -6,7 +6,9 @@ namespace App\Controllers;
 
 use App\DTOs\Cms\JazzLineupCardUpsertData;
 use App\Services\Interfaces\ICmsArtistsService;
+use App\Services\Interfaces\IMediaAssetService;
 use App\Services\Interfaces\ISessionService;
+use App\ViewModels\Cms\CmsArtistOptionViewModel;
 use App\ViewModels\Cms\CmsJazzLineupCardFormViewModel;
 
 /**
@@ -32,6 +34,7 @@ class CmsJazzCardsController extends CmsBaseController
      */
     public function __construct(
         private readonly ICmsArtistsService $artistsService,
+        private readonly IMediaAssetService $mediaAssetService,
         ISessionService $sessionService,
     ) {
         parent::__construct($sessionService);
@@ -197,8 +200,10 @@ class CmsJazzCardsController extends CmsBaseController
             style:           $data->style,
             cardDescription: $data->cardDescription,
             imageAssetId:    $data->imageAssetId,
+            imageUrl:        $this->resolveImageUrl($data->imageAssetId),
             cardSortOrder:   $data->cardSortOrder,
             isActive:        $data->isActive,
+            artists:         $this->buildArtistOptions(),
             csrfToken:       $this->sessionService->getCsrfToken($scope),
             formAction:      $action,
             pageTitle:       $title,
@@ -233,6 +238,49 @@ class CmsJazzCardsController extends CmsBaseController
         $currentView = 'pages';
         $viewModel   = $this->buildFormViewModel($id, $data, $errors);
         require __DIR__ . '/../Views/pages/cms/jazz-lineup-card-form.php';
+    }
+
+    /**
+     * Builds a list of all active artists for the dropdown selector.
+     *
+     * @return CmsArtistOptionViewModel[]
+     */
+    private function buildArtistOptions(): array
+    {
+        $artists = $this->artistsService->getArtists(null);
+        return array_values(array_map(
+            function (\App\Models\Artist $artist): CmsArtistOptionViewModel {
+                return new CmsArtistOptionViewModel(
+                    artistId:    $artist->artistId,
+                    name:        $artist->name,
+                    style:       $artist->style,
+                    description: $artist->cardDescription,
+                    imageAssetId: $artist->imageAssetId,
+                    imageUrl:     $artist->imagePath ?? '',
+                );
+            },
+            $artists,
+        ));
+    }
+
+    /**
+     * Resolves the public URL for a media asset by its ID.
+     *
+     * @param int|null $imageAssetId
+     * @return string Empty string when no asset is linked or not found.
+     */
+    private function resolveImageUrl(?int $imageAssetId): string
+    {
+        if ($imageAssetId === null || $imageAssetId <= 0) {
+            return '';
+        }
+
+        $asset = $this->mediaAssetService->getAssetById($imageAssetId);
+        if ($asset === null) {
+            return '';
+        }
+
+        return $asset->filePath;
     }
 
     /**

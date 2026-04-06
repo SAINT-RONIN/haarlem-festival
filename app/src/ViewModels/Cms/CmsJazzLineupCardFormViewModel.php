@@ -7,6 +7,7 @@ namespace App\ViewModels\Cms;
 final readonly class CmsJazzLineupCardFormViewModel
 {
     /**
+     * @param CmsArtistOptionViewModel[] $artists
      * @param array<string, string> $errors
      */
     public function __construct(
@@ -15,8 +16,10 @@ final readonly class CmsJazzLineupCardFormViewModel
         public string $style,
         public string $cardDescription,
         public ?int $imageAssetId,
+        public string $imageUrl,
         public int $cardSortOrder,
         public bool $isActive,
+        public array $artists,
         public string $csrfToken,
         public string $formAction,
         public string $pageTitle,

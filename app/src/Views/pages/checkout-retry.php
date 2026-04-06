@@ -60,22 +60,14 @@ $isLoggedIn = $viewModel->isLoggedIn;
                 <!-- Payment Method -->
                 <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm mb-6">
                     <h2 class="text-lg font-semibold text-slate-800 mb-4">Payment Method</h2>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 gap-4">
                         <button type="button" data-method="credit_card"
                                 class="js-payment-method p-4 border-2 border-gray-200 rounded-xl flex flex-col items-center gap-2 hover:border-slate-800 transition-colors cursor-pointer">
                             <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <rect x="1" y="4" width="22" height="16" rx="2" ry="2" stroke-width="2"/>
                                 <line x1="1" y1="10" x2="23" y2="10" stroke-width="2"/>
                             </svg>
-                            <span class="text-sm font-medium text-slate-700">Credit Card</span>
-                        </button>
-                        <button type="button" data-method="ideal"
-                                class="js-payment-method p-4 border-2 border-gray-200 rounded-xl flex flex-col items-center gap-2 hover:border-slate-800 transition-colors cursor-pointer">
-                            <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke-width="2"/>
-                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke-width="2"/>
-                            </svg>
-                            <span class="text-sm font-medium text-slate-700">iDEAL</span>
+                            <span class="text-sm font-medium text-slate-700">Stripe</span>
                         </button>
                     </div>
                 </div>

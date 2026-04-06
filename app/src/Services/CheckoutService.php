@@ -836,7 +836,6 @@ class CheckoutService implements ICheckoutService
     {
         return match ($rawMethod) {
             'credit_card' => PaymentMethod::CreditCard,
-            'ideal' => PaymentMethod::Ideal,
             default => throw new \InvalidArgumentException('Unsupported payment method.'),
         };
     }
@@ -853,7 +852,6 @@ class CheckoutService implements ICheckoutService
     {
         return match ($method) {
             PaymentMethod::CreditCard => ['card'],
-            PaymentMethod::Ideal => ['ideal'],
             default => ['card'],
         };
     }

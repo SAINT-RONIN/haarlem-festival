@@ -338,6 +338,7 @@ return static function (string $controllerClass): object {
         ),
         CmsJazzCardsController::class => new CmsJazzCardsController(
             $cmsArtistsService(),
+            $mediaAssetService(),
             $sessionService,
         ),
         AuthController::class => new AuthController(
