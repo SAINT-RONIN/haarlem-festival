@@ -257,7 +257,22 @@ class ScheduleService implements IScheduleService
             : [];
     }
 
-    /** Assembles a single day's event cards, applying History time-slot grouping if needed. */
+    /**
+     * Assembles a single day's event cards, applying History time-slot grouping if needed.
+     *
+     * For History tours, sessions at the same time slot (one per language) are first merged
+     * into a single session via groupSessionsByTimeSlot before building cards. For all other
+     * event types, sessions are used as-is.
+     *
+     * @param object                          $day            Day object with a `date` property ("Y-m-d").
+     * @param array<string, SessionWithEvent[]> $sessionsByDate Sessions indexed by ISO date string.
+     * @param string                          $eventTypeSlug  URL slug for the event type (e.g. "history").
+     * @param int                             $eventTypeId    Numeric event type ID from EventTypeId enum.
+     * @param array                           $labelsMap      Labels indexed by session ID (passed by reference — History grouping may add merged labels).
+     * @param array<int, EventSessionPrice[]> $pricesMap      Prices indexed by session ID.
+     * @param array                           $displayStrings Translated UI strings for card rendering.
+     * @return array{dayName: string, isoDate: string, events: array, isEmpty: bool}
+     */
     private function buildSingleDay(
         object $day,
         array $sessionsByDate,
@@ -267,7 +282,7 @@ class ScheduleService implements IScheduleService
         array $pricesMap,
         array $displayStrings,
     ): array {
-        $date = $day->date;
+        $date        = $day->date;
         $daySessions = $sessionsByDate[$date] ?? [];
         $historyTourOptionsMap = [];
 
@@ -275,7 +290,43 @@ class ScheduleService implements IScheduleService
             [$daySessions, $labelsMap, $historyTourOptionsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap, $pricesMap);
         }
 
+        $events = $this->buildEventCardsForDay($daySessions, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings, $historyTourOptionsMap);
+
+        return [
+            'dayName' => (new \DateTimeImmutable($date))->format('l'),
+            'isoDate' => $date,
+            'events'  => $events,
+            'isEmpty' => empty($events),
+        ];
+    }
+
+    /**
+     * Builds an array of event card arrays for a single day's sessions.
+     *
+     * Iterates each session and delegates to buildEventCard for the per-session shape.
+     * History tour booking options are looked up by session ID from $historyTourOptionsMap
+     * (empty array for non-History event types).
+     *
+     * @param SessionWithEvent[]                               $daySessions          Sessions to render.
+     * @param string                                           $eventTypeSlug        URL slug for card links.
+     * @param int                                              $eventTypeId          Numeric event type ID.
+     * @param array                                            $labelsMap            Labels indexed by session ID.
+     * @param array<int, EventSessionPrice[]>                  $pricesMap            Prices indexed by session ID.
+     * @param array                                            $displayStrings       Translated UI strings.
+     * @param array<int, array<int, array<string, mixed>>>     $historyTourOptionsMap Booking options for History tours, keyed by session ID.
+     * @return array[]
+     */
+    private function buildEventCardsForDay(
+        array $daySessions,
+        string $eventTypeSlug,
+        int $eventTypeId,
+        array $labelsMap,
+        array $pricesMap,
+        array $displayStrings,
+        array $historyTourOptionsMap,
+    ): array {
         $events = [];
+
         foreach ($daySessions as $session) {
             $events[] = $this->buildEventCard(
                 $session,
@@ -288,12 +339,7 @@ class ScheduleService implements IScheduleService
             );
         }
 
-        return [
-            'dayName'  => (new \DateTimeImmutable($date))->format('l'),
-            'isoDate'  => $date,
-            'events'   => $events,
-            'isEmpty'  => empty($events),
-        ];
+        return $events;
     }
 
     /**

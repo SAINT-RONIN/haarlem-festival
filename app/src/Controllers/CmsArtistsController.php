@@ -283,36 +283,60 @@ class CmsArtistsController extends CmsBaseController
         $this->redirectWithFlash('Artist updated successfully.', 'success', $this->readSafeReturnTo('/cms/artists'));
     }
 
+    /**
+     * Reads and maps all artist form fields from the current POST request.
+     *
+     * Rich-text fields (bioHtml, overviewLead, etc.) are read directly from $_POST because
+     * they contain TinyMCE HTML and must not be filtered by readStringPostParam, which strips
+     * tags. All other fields use the controller helper that trims and length-limits the value.
+     *
+     * @return ArtistUpsertData Typed data object ready for validation by CmsArtistsService.
+     */
     private function extractFormData(): ArtistUpsertData
     {
         return CmsArtistsMapper::fromFormInput([
-            'name' => $this->readStringPostParam('name') ?? '',
-            'style' => $this->readStringPostParam('style') ?? '',
-            'cardDescription' => $_POST['cardDescription'] ?? '',
-            'heroSubtitle' => $this->readStringPostParam('heroSubtitle') ?? '',
-            'heroImagePath' => $this->readStringPostParam('heroImagePath') ?? '',
-            'originText' => $this->readStringPostParam('originText') ?? '',
-            'formedText' => $this->readStringPostParam('formedText') ?? '',
-            'bioHtml' => $_POST['bioHtml'] ?? '',
-            'overviewLead' => $_POST['overviewLead'] ?? '',
-            'overviewBodySecondary' => $_POST['overviewBodySecondary'] ?? '',
-            'lineupHeading' => $this->readStringPostParam('lineupHeading') ?? '',
-            'highlightsHeading' => $this->readStringPostParam('highlightsHeading') ?? '',
-            'photoGalleryHeading' => $this->readStringPostParam('photoGalleryHeading') ?? '',
+            // Identity and card fields
+            'name'                   => $this->readStringPostParam('name') ?? '',
+            'style'                  => $this->readStringPostParam('style') ?? '',
+            'cardDescription'        => $_POST['cardDescription'] ?? '',
+            'cardSortOrder'          => $this->readOptionalIntPostParam('cardSortOrder') ?? 0,
+            'showOnJazzOverview'     => $this->readBoolPostParam('showOnJazzOverview'),
+
+            // Hero section
+            'heroSubtitle'           => $this->readStringPostParam('heroSubtitle') ?? '',
+            'heroImagePath'          => $this->readStringPostParam('heroImagePath') ?? '',
+
+            // Biography section — rich-text fields read directly from $_POST (TinyMCE HTML)
+            'originText'             => $this->readStringPostParam('originText') ?? '',
+            'formedText'             => $this->readStringPostParam('formedText') ?? '',
+            'bioHtml'                => $_POST['bioHtml'] ?? '',
+
+            // Overview section
+            'overviewLead'           => $_POST['overviewLead'] ?? '',
+            'overviewBodySecondary'  => $_POST['overviewBodySecondary'] ?? '',
+
+            // Gallery and media section headings
+            'lineupHeading'          => $this->readStringPostParam('lineupHeading') ?? '',
+            'highlightsHeading'      => $this->readStringPostParam('highlightsHeading') ?? '',
+            'photoGalleryHeading'    => $this->readStringPostParam('photoGalleryHeading') ?? '',
             'photoGalleryDescription' => $_POST['photoGalleryDescription'] ?? '',
-            'albumsHeading' => $this->readStringPostParam('albumsHeading') ?? '',
-            'albumsDescription' => $_POST['albumsDescription'] ?? '',
-            'listenHeading' => $this->readStringPostParam('listenHeading') ?? '',
-            'listenSubheading' => $this->readStringPostParam('listenSubheading') ?? '',
-            'listenDescription' => $_POST['listenDescription'] ?? '',
-            'liveCtaHeading' => $this->readStringPostParam('liveCtaHeading') ?? '',
-            'liveCtaDescription' => $_POST['liveCtaDescription'] ?? '',
-            'performancesHeading' => $this->readStringPostParam('performancesHeading') ?? '',
+            'albumsHeading'          => $this->readStringPostParam('albumsHeading') ?? '',
+            'albumsDescription'      => $_POST['albumsDescription'] ?? '',
+
+            // Listen section
+            'listenHeading'          => $this->readStringPostParam('listenHeading') ?? '',
+            'listenSubheading'       => $this->readStringPostParam('listenSubheading') ?? '',
+            'listenDescription'      => $_POST['listenDescription'] ?? '',
+
+            // CTA and performances sections
+            'liveCtaHeading'         => $this->readStringPostParam('liveCtaHeading') ?? '',
+            'liveCtaDescription'     => $_POST['liveCtaDescription'] ?? '',
+            'performancesHeading'    => $this->readStringPostParam('performancesHeading') ?? '',
             'performancesDescription' => $_POST['performancesDescription'] ?? '',
-            'cardSortOrder' => $this->readOptionalIntPostParam('cardSortOrder') ?? 0,
-            'showOnJazzOverview' => $this->readBoolPostParam('showOnJazzOverview'),
-            'imageAssetId' => $this->readOptionalIntPostParam('imageAssetId'),
-            'isActive' => $this->readBoolPostParam('isActive'),
+
+            // Media and status
+            'imageAssetId'           => $this->readOptionalIntPostParam('imageAssetId'),
+            'isActive'               => $this->readBoolPostParam('isActive'),
         ]);
     }
 
@@ -349,41 +373,21 @@ class CmsArtistsController extends CmsBaseController
         require __DIR__ . '/../Views/pages/cms/artist-edit.php';
     }
 
+    /**
+     * Builds the default form data for the "Create Artist" page.
+     *
+     * When the page is opened via the Jazz Overview card list (query flag ?showOnJazzOverview=true),
+     * the Jazz Overview checkbox is pre-checked and the sort order is pre-filled so the new artist
+     * lands in the right position without manual adjustment.
+     *
+     * @return ArtistUpsertData Blank defaults, optionally pre-configured for the Jazz Overview list.
+     */
     private function buildCreateDefaults(): ArtistUpsertData
     {
         $data = CmsArtistsMapper::emptyData();
-        $showOnJazzOverview = $this->readBoolQueryFlag('showOnJazzOverview');
 
-        if ($showOnJazzOverview) {
-            $data = new ArtistUpsertData(
-                name: $data->name,
-                style: $data->style,
-                cardDescription: $data->cardDescription,
-                heroSubtitle: $data->heroSubtitle,
-                heroImagePath: $data->heroImagePath,
-                originText: $data->originText,
-                formedText: $data->formedText,
-                bioHtml: $data->bioHtml,
-                overviewLead: $data->overviewLead,
-                overviewBodySecondary: $data->overviewBodySecondary,
-                lineupHeading: $data->lineupHeading,
-                highlightsHeading: $data->highlightsHeading,
-                photoGalleryHeading: $data->photoGalleryHeading,
-                photoGalleryDescription: $data->photoGalleryDescription,
-                albumsHeading: $data->albumsHeading,
-                albumsDescription: $data->albumsDescription,
-                listenHeading: $data->listenHeading,
-                listenSubheading: $data->listenSubheading,
-                listenDescription: $data->listenDescription,
-                liveCtaHeading: $data->liveCtaHeading,
-                liveCtaDescription: $data->liveCtaDescription,
-                performancesHeading: $data->performancesHeading,
-                performancesDescription: $data->performancesDescription,
-                cardSortOrder: $this->resolveInitialJazzCardSortOrder(),
-                showOnJazzOverview: true,
-                imageAssetId: $data->imageAssetId,
-                isActive: $data->isActive,
-            );
+        if ($this->readBoolQueryFlag('showOnJazzOverview')) {
+            return $data->withJazzOverview($this->resolveInitialJazzCardSortOrder());
         }
 
         return $data;

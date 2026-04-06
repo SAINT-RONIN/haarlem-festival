@@ -70,52 +70,70 @@ class ProgramService implements IProgramService
     /**
      * Adds an event session to the program, or increases quantity if already present.
      *
-     * @throws \InvalidArgumentException When eventSessionId or quantity is invalid
-     * @throws ProgramException When the database write fails
+     * Resolves price tiers for both single and group tickets from the session's configured
+     * prices, then persists each ticket type that has a positive quantity. If a matching
+     * program item already exists for that session + price tier, its quantity is incremented
+     * instead of inserting a duplicate row.
+     *
+     * @param string   $sessionKey         Browser session key used to identify the program.
+     * @param int|null $userAccountId      Logged-in user's account ID, or null for guests.
+     * @param int      $eventSessionId     The session being added to the program.
+     * @param int      $quantity           Number of single (adult) tickets to add. 0 to skip.
+     * @param int      $groupTicketQuantity Number of group tickets to add. 0 to skip.
+     * @param float    $donationAmount     Optional donation amount attached to the item.
+     * @throws \InvalidArgumentException When $eventSessionId is invalid or both quantities are zero.
+     * @throws ProgramException          When the database write fails.
      */
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): void
     {
         $this->validateAddInput($eventSessionId, $quantity, $groupTicketQuantity);
 
         try {
-            $program = $this->getOrCreateProgram($sessionKey, $userAccountId);
-            $prices = $this->priceRepository->findPricesBySessionIds([$eventSessionId])[$eventSessionId] ?? [];
-            $priceTierId = $this->resolveSinglePriceTierId($prices);
+            $program          = $this->getOrCreateProgram($sessionKey, $userAccountId);
+            $prices           = $this->priceRepository->findPricesBySessionIds([$eventSessionId])[$eventSessionId] ?? [];
+            $priceTierId      = $this->resolveSinglePriceTierId($prices);
             $groupPriceTierId = $this->resolveGroupPriceTierId($prices, $priceTierId);
 
-            // Handle single-ticket quantity using the single/adult price tier.
             if ($quantity > 0) {
-                if ($priceTierId === null) {
-                    throw new \InvalidArgumentException('No ticket price is configured for this session.');
-                }
-
-                $existingItem = $this->findExistingItem($program->programId, $eventSessionId, $priceTierId);
-
-                if ($existingItem !== null) {
-                    $this->incrementExistingItem($existingItem, $quantity);
-                } else {
-                    $this->programRepository->addItem($program->programId, $eventSessionId, $quantity, $priceTierId, $donationAmount);
-                }
+                $this->upsertProgramTicket($program->programId, $eventSessionId, $quantity, $priceTierId, $donationAmount, 'single');
             }
 
-            // Handle group-ticket quantity using the group price tier.
             if ($groupTicketQuantity > 0) {
-                if ($groupPriceTierId === null) {
-                    throw new \InvalidArgumentException('No group ticket price is configured for this session.');
-                }
-
-                $existingItem = $this->findExistingItem($program->programId, $eventSessionId, $groupPriceTierId);
-
-                if ($existingItem !== null) {
-                    $this->incrementExistingItem($existingItem, $groupTicketQuantity);
-                } else {
-                    $this->programRepository->addItem($program->programId, $eventSessionId, $groupTicketQuantity, $groupPriceTierId, $donationAmount);
-                }
+                $this->upsertProgramTicket($program->programId, $eventSessionId, $groupTicketQuantity, $groupPriceTierId, $donationAmount, 'group');
             }
         } catch (\InvalidArgumentException $error) {
             throw $error;
         } catch (\Throwable $error) {
             throw new ProgramException('Failed to add item to program.', 0, $error);
+        }
+    }
+
+    /**
+     * Adds a ticket to the program or increments its quantity if an identical item already exists.
+     *
+     * "Identical" means the same session ID and price tier. If a row already exists,
+     * its quantity is incremented. If no row exists, a new program item is inserted.
+     *
+     * @param int    $programId      The program to add the item to.
+     * @param int    $eventSessionId The session being booked.
+     * @param int    $quantity       Number of tickets to add (must be > 0).
+     * @param int|null $priceTierId  The price tier to use. Null means the session has no price configured.
+     * @param float  $donationAmount Donation amount attached to this item.
+     * @param string $ticketKind     Human-readable label for error messages ("single" or "group").
+     * @throws \InvalidArgumentException When no price tier is configured for this session and ticket kind.
+     */
+    private function upsertProgramTicket(int $programId, int $eventSessionId, int $quantity, ?int $priceTierId, float $donationAmount, string $ticketKind): void
+    {
+        if ($priceTierId === null) {
+            throw new \InvalidArgumentException("No {$ticketKind} ticket price is configured for this session.");
+        }
+
+        $existingItem = $this->findExistingItem($programId, $eventSessionId, $priceTierId);
+
+        if ($existingItem !== null) {
+            $this->incrementExistingItem($existingItem, $quantity);
+        } else {
+            $this->programRepository->addItem($programId, $eventSessionId, $quantity, $priceTierId, $donationAmount);
         }
     }
 
@@ -787,46 +805,107 @@ class ProgramService implements IProgramService
      *
      * @param array<int, array> $infoByEventSessionId
      */
+    /**
+     * Returns booking info for all History tour sessions at a given event and start time.
+     *
+     * Looks up every session for $eventId that starts at the moment encoded in $dateTime
+     * (a plain Unix timestamp string, e.g. "1717200000"). Multiple sessions can share the
+     * same time slot when offered in different languages — duplicates are collapsed so each
+     * language appears only once. Prices are merged across sessions at the same slot so the
+     * booking widget shows one combined price list.
+     *
+     * Returns an array keyed by eventSessionId. Each value contains:
+     *   - dateTime       — "Y-m-d H:i:s" start time
+     *   - language       — human-readable language label
+     *   - seatsAvailable — remaining seat count
+     *   - prices         — list of [ priceTierId, price ] maps
+     *
+     * Returns an empty array when $eventId is invalid, $dateTime cannot be parsed,
+     * or no sessions are found.
+     *
+     * @param int    $eventId  The event to look up sessions for.
+     * @param string $dateTime Unix timestamp string (digits only, e.g. "1717200000").
+     * @return array<int, array{dateTime: string, language: string, seatsAvailable: int, prices: array}>
+     */
     public function getTourInfo(int $eventId, string $dateTime): array
     {
-        $infoByEventSessionId = [];
-
         if ($eventId <= 0 || $dateTime === '') {
-            return $infoByEventSessionId;
+            return [];
         }
 
         $parsedDateTime = $this->parseTourTimestamp($dateTime);
         if ($parsedDateTime === null) {
-            return $infoByEventSessionId;
+            return [];
         }
 
-        $startDate = $parsedDateTime->format('Y-m-d');
-        $startTime = $parsedDateTime->format('H:i:s');
+        $sessions = $this->loadTourSessionsForEventAt($eventId, $parsedDateTime);
+        if ($sessions === []) {
+            return [];
+        }
 
-        $sessions = $this->sessionRepository->findSessions(
+        $sessionIds          = array_map(static fn(SessionWithEvent $s): int => $s->eventSessionId, $sessions);
+        $labelsBySessionId   = $this->labelRepository->findLabelsBySessionIds($sessionIds);
+        $pricesBySessionId   = $this->priceRepository->findPricesBySessionIds($sessionIds);
+        $sharedPricesByTimeKey = $this->buildSharedHistoryPricesByTimeKey($sessions, $pricesBySessionId);
+
+        return $this->buildTourInfoByLanguage($sessions, $labelsBySessionId, $pricesBySessionId, $sharedPricesByTimeKey);
+    }
+
+    /**
+     * Fetches all sessions for $eventId that start on the date and time of $when.
+     *
+     * Uses only the date ("Y-m-d") and time ("H:i:s") parts of $when to query the
+     * session repository — timezone conversions happen before this call.
+     *
+     * @param int                $eventId The event whose sessions to load.
+     * @param \DateTimeImmutable $when    The exact start moment to match (date + time).
+     * @return SessionWithEvent[]         Empty array when no sessions match.
+     */
+    private function loadTourSessionsForEventAt(int $eventId, \DateTimeImmutable $when): array
+    {
+        $startDate = $when->format('Y-m-d');
+        $startTime = $when->format('H:i:s');
+
+        $result = $this->sessionRepository->findSessions(
             new EventSessionFilter(eventId: $eventId, startDate: $startDate, endDate: $startDate, startTime: $startTime)
         );
 
-        if ($sessions->sessions === []) {
-            return $infoByEventSessionId;
-        }
+        return $result->sessions;
+    }
 
-        $sessionIds = array_map(
-            static fn(SessionWithEvent $session): int => $session->eventSessionId,
-            $sessions->sessions,
-        );
-        $labelsBySessionId = $this->labelRepository->findLabelsBySessionIds($sessionIds);
-        $pricesBySessionId = $this->priceRepository->findPricesBySessionIds($sessionIds);
-        $sharedPricesByTimeKey = $this->buildSharedHistoryPricesByTimeKey($sessions->sessions, $pricesBySessionId);
-        $seenLanguageKeys = [];
+    /**
+     * Builds the tour-info map from a list of sessions, collapsing duplicate languages.
+     *
+     * Iterates sessions and skips any whose language key has already been seen in this
+     * time slot — this prevents the same tour appearing twice in the booking widget when
+     * multiple DB sessions represent the same language offering.
+     *
+     * For each unique language, prices are taken from the shared time-slot pool first
+     * (all sessions at the same start time share one merged price list). If no shared
+     * prices exist, the session's own prices are used as a fallback.
+     *
+     * @param SessionWithEvent[]                     $sessions             All sessions for the time slot.
+     * @param array<int, array>                      $labelsBySessionId    Labels keyed by session ID.
+     * @param array<int, EventSessionPrice[]>        $pricesBySessionId    Prices keyed by session ID.
+     * @param array<string, EventSessionPrice[]>     $sharedPricesByTimeKey Merged prices keyed by "Y-m-d H:i:s".
+     * @return array<int, array{dateTime: string, language: string, seatsAvailable: int, prices: array}>
+     */
+    private function buildTourInfoByLanguage(
+        array $sessions,
+        array $labelsBySessionId,
+        array $pricesBySessionId,
+        array $sharedPricesByTimeKey,
+    ): array {
+        $infoByEventSessionId = [];
+        $seenLanguageKeys     = [];
 
-        foreach ($sessions->sessions as $session) {
-            $labels = $labelsBySessionId[$session->eventSessionId] ?? [];
+        foreach ($sessions as $session) {
+            $labels       = $labelsBySessionId[$session->eventSessionId] ?? [];
             $languageLabel = HistorySessionHelper::resolveLanguageLabel($session->languageCode, $labels);
-            $languageKey = HistorySessionHelper::resolveLanguageKey($session->languageCode, $labels);
+            $languageKey   = HistorySessionHelper::resolveLanguageKey($session->languageCode, $labels);
 
-            // When multiple sessions share the same language and time slot, only keep the first.
-            // This prevents the same tour appearing twice in the booking widget.
+            // When multiple sessions share the same language key, only the first is kept.
+            // Why: the booking widget must show each language once, not once per DB session.
             if ($languageKey !== null && isset($seenLanguageKeys[$languageKey])) {
                 continue;
             }
@@ -836,24 +915,40 @@ class ProgramService implements IProgramService
             }
 
             $timeKey = $session->startDateTime->format('Y-m-d H:i:s');
-            // For History tours, all sessions at the same time share prices — show one combined list.
+            // Why shared prices: History tours at the same time share pricing — show one list.
             $prices = $sharedPricesByTimeKey[$timeKey] ?? ($pricesBySessionId[$session->eventSessionId] ?? []);
 
-            $infoByEventSessionId[$session->eventSessionId] = [
-                'dateTime' => $session->startDateTime->format('Y-m-d H:i:s'),
-                'language' => $languageLabel,
-                'seatsAvailable' => HistorySessionHelper::resolveSeatsAvailable($session),
-                'prices' => array_map(
-                    static fn(EventSessionPrice $price) => [
-                        'priceTierId' => $price->priceTierId,
-                        'price' => $price->price,
-                    ],
-                    $prices,
-                ),
-            ];
+            $infoByEventSessionId[$session->eventSessionId] = $this->buildSingleTourInfoEntry($session, $languageLabel, $prices);
         }
 
         return $infoByEventSessionId;
+    }
+
+    /**
+     * Builds the info array for one tour session entry.
+     *
+     * Formats the start time as a "Y-m-d H:i:s" string, resolves available seats,
+     * and maps each price to the [ priceTierId, price ] shape expected by the booking widget.
+     *
+     * @param SessionWithEvent   $session       The session to describe.
+     * @param string             $languageLabel Human-readable language label (e.g. "English").
+     * @param EventSessionPrice[] $prices        Prices to include (may be a shared time-slot pool).
+     * @return array{dateTime: string, language: string, seatsAvailable: int, prices: array}
+     */
+    private function buildSingleTourInfoEntry(SessionWithEvent $session, string $languageLabel, array $prices): array
+    {
+        return [
+            'dateTime'       => $session->startDateTime->format('Y-m-d H:i:s'),
+            'language'       => $languageLabel,
+            'seatsAvailable' => HistorySessionHelper::resolveSeatsAvailable($session),
+            'prices'         => array_map(
+                static fn(EventSessionPrice $price): array => [
+                    'priceTierId' => $price->priceTierId,
+                    'price'       => $price->price,
+                ],
+                $prices,
+            ),
+        ];
     }
 
     /**
