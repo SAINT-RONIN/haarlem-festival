@@ -16,7 +16,7 @@ use chillerlan\QRCode\QROptions;
  */
 final class QrCodeGenerator implements IQrCodeGenerator
 {
-    private const FIXED_VERSION = 2;
+    private const FIXED_VERSION = 4;
 
     public function generate(string $payload): QrCodeMatrix
     {

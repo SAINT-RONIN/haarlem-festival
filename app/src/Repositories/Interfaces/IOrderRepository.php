@@ -67,4 +67,10 @@ interface IOrderRepository
     public function markTicketEmailSent(int $orderId, \DateTimeImmutable $sentAtUtc): void;
 
     public function markTicketEmailFailed(int $orderId, string $errorMessage): void;
+
+    /**
+     * Clears the ticket email sent timestamp and last error so the fulfillment service
+     * can re-run the full send flow for an order that was already delivered or failed.
+     */
+    public function resetTicketEmailState(int $orderId): void;
 }

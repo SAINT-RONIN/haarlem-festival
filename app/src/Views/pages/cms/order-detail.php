@@ -227,8 +227,17 @@ use App\Helpers\FormatHelper;
 
         <!-- Tickets Card -->
         <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
-            <div class="p-4 border-b border-gray-200">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-900">Tickets</h2>
+                <?php if ($viewModel->order->status === 'Paid'): ?>
+                    <form method="POST" action="/cms/orders/<?= (int) $viewModel->order->orderId ?>/resend-tickets">
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors">
+                            <i data-lucide="send" class="w-4 h-4" aria-hidden="true"></i>
+                            Resend Ticket Email
+                        </button>
+                    </form>
+                <?php endif; ?>
             </div>
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">

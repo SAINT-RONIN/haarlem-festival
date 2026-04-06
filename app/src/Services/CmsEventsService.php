@@ -16,6 +16,7 @@ use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
+use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IVenueRepository;
@@ -56,6 +57,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
      * @param IPriceTierRepository          $priceTierRepository Price tier lookups for dropdowns.
      * @param IOrderItemRepository          $orderItemRepository Used to guard session deletion.
      * @param ICmsRepository                $cmsRepository     Passed to parent for CMS section helpers.
+     * @param IMediaAssetRepository         $mediaAssetRepository Used to resolve featured image paths for the edit form.
      */
     public function __construct(
         private readonly \PDO $pdo,
@@ -68,6 +70,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         private readonly IPriceTierRepository $priceTierRepository,
         private readonly IOrderItemRepository $orderItemRepository,
         ICmsRepository $cmsRepository,
+        private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {
         // Pass the three repositories that the base class helpers use.
         parent::__construct($eventRepository, $venueRepository, $cmsRepository);
@@ -298,6 +301,10 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         [$pricesMap, $labelsMap] = $this->loadSessionPricesAndLabels($sessions);
         $restaurantCms = $this->loadRestaurantCmsItems($event->eventTypeId, $eventId);
 
+        $featuredImagePath = $event->featuredImageAssetId !== null
+            ? $this->mediaAssetRepository->findById($event->featuredImageAssetId)?->filePath
+            : null;
+
         return new EventEditBundle(
             event:                       $event,
             sessions:                    $sessions,
@@ -307,6 +314,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
             restaurantStars:             $restaurantCms['stars'],
             restaurantCuisine:           $restaurantCms['cuisine'],
             restaurantShortDescription:  $restaurantCms['shortDescription'],
+            featuredImagePath:           $featuredImagePath,
         );
     }
 
@@ -317,9 +325,9 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
      * has — loading it here avoids a second query from the controller.
      *
      * @param int $eventId The event to load.
-     * @return \App\Models\Event|null Null when no matching event exists.
+     * @return \App\DTOs\Events\EventWithDetails|null Null when no matching event exists.
      */
-    private function loadEventWithSessionCount(int $eventId): ?\App\Models\Event
+    private function loadEventWithSessionCount(int $eventId): ?\App\DTOs\Events\EventWithDetails
     {
         return $this->eventRepository->findEvents(new EventFilter(
             eventId:             $eventId,

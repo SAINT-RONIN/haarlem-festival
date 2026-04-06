@@ -8,19 +8,25 @@ use App\Exceptions\NotFoundException;
 use App\Mappers\CmsOrdersMapper;
 use App\Services\Interfaces\ICmsOrdersService;
 use App\Services\Interfaces\ISessionService;
+use App\Services\Interfaces\ITicketFulfillmentService;
 
 /**
- * CMS controller for viewing customer orders.
+ * CMS controller for viewing customer orders and triggering ticket resends.
  *
  * Provides a read-only list of orders with optional payment-status filtering
- * for admin review and support purposes. Intentionally read-only: order
- * mutations (payment confirmation, refunds) happen through the payment
- * provider webhooks, not through this controller.
+ * for admin review and support purposes. The one write action is resendTickets(),
+ * which lets admins force a re-delivery of the ticket email after a failed send.
  */
 class CmsOrdersController extends CmsBaseController
 {
+    /**
+     * @param ICmsOrdersService         $ordersService       Read-only order queries and detail loading.
+     * @param ITicketFulfillmentService  $fulfillmentService  Ticket PDF generation and email delivery.
+     * @param ISessionService            $sessionService      Session, CSRF, and flash-message support.
+     */
     public function __construct(
         private readonly ICmsOrdersService $ordersService,
+        private readonly ITicketFulfillmentService $fulfillmentService,
         ISessionService $sessionService,
     ) {
         parent::__construct($sessionService);
@@ -51,6 +57,25 @@ class CmsOrdersController extends CmsBaseController
             $viewModel = $this->buildOrderDetailViewModel($id);
             require __DIR__ . '/../Views/pages/cms/order-detail.php';
         });
+    }
+
+    /**
+     * Re-runs the ticket fulfillment flow and redirects back to the order detail page.
+     *
+     * Clears the prior send state so the email is delivered even if it was already sent
+     * once. Existing ticket rows and PDFs are reused — only the email is re-sent.
+     * Intended for support use when the original delivery failed (e.g. QR library error).
+     *
+     * POST /cms/orders/{id}/resend-tickets
+     *
+     * @param int $id The order ID to resend tickets for.
+     */
+    public function resendTickets(int $id): void
+    {
+        $this->handleCmsValidationRequest(function () use ($id): void {
+            $this->fulfillmentService->resendTicketEmailForOrder($id);
+            $this->redirectWithFlash('Ticket email resent successfully.', 'success', "/cms/orders/{$id}");
+        }, "/cms/orders/{$id}");
     }
 
     /** Fetches orders from the service and maps them to the list view model. */

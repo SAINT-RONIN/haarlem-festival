@@ -139,14 +139,17 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
     }
 
     /**
-     * Returns all media assets ordered by newest first.
+     * Returns all image media assets (MIME type starting with "image/") ordered by newest first.
+     *
+     * Ticket PDFs share the same MediaAsset table but must not appear in the CMS image
+     * library or featured-image pickers — they would render as broken image icons.
      *
      * @return MediaAsset[]
      */
     public function findAll(): array
     {
         return $this->fetchAll(
-            'SELECT * FROM MediaAsset ORDER BY CreatedAtUtc DESC',
+            "SELECT * FROM MediaAsset WHERE MimeType LIKE 'image/%' ORDER BY CreatedAtUtc DESC",
             [],
             fn(array $row) => MediaAsset::fromRow($row),
         );

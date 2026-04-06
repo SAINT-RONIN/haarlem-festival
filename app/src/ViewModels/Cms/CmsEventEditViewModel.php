@@ -52,6 +52,7 @@ final readonly class CmsEventEditViewModel
         public readonly ?string $restaurantStars = null,
         public readonly ?string $restaurantCuisine = null,
         public readonly ?string $restaurantShortDescription = null,
+        public readonly ?string $featuredImagePath = null,
     ) {
     }
 

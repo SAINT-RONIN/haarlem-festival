@@ -171,4 +171,16 @@ class OrderRepository extends BaseRepository implements IOrderRepository
             ],
         );
     }
+
+    /** Clears ticket email state so the fulfillment service can re-run the full send flow. */
+    public function resetTicketEmailState(int $orderId): void
+    {
+        $this->execute(
+            'UPDATE `Order`
+            SET TicketEmailSentAtUtc = NULL,
+                TicketEmailLastError = NULL
+            WHERE OrderId = :orderId',
+            ['orderId' => $orderId],
+        );
+    }
 }

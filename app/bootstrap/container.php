@@ -244,6 +244,7 @@ return static function (string $controllerClass): object {
         $priceTierRepo(),
         $orderItemRepo(),
         $cmsRepo(),
+        $mediaAssetRepo(),
     ));
     $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService($mediaAssetRepo()));
     $restaurantService = fn() => $make('restaurantService', fn() => new RestaurantService(
@@ -438,6 +439,7 @@ return static function (string $controllerClass): object {
         ),
         CmsOrdersController::class => new CmsOrdersController(
             new CmsOrdersService(new CmsOrdersRepository($pdo()), $invoiceRepo(), $mediaAssetRepo()),
+            $ticketFulfillmentService(),
             $sessionService,
         ),
         CmsUsersController::class => new CmsUsersController(

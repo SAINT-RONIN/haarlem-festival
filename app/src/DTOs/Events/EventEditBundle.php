@@ -26,6 +26,7 @@ final readonly class EventEditBundle
         public ?string $restaurantStars = null,
         public ?string $restaurantCuisine = null,
         public ?string $restaurantShortDescription = null,
+        public ?string $featuredImagePath = null,
     ) {
     }
 }

@@ -17,4 +17,16 @@ interface ITicketFulfillmentService
     ): void;
 
     public function regenerateTicketDocumentsByTicketCode(string $ticketCode): void;
+
+    /**
+     * Clears any prior send state and re-runs the full fulfillment flow for the order.
+     *
+     * Unlike fulfillPaidOrder(), this ignores the idempotency guard so admins can
+     * force a resend even when the email was already delivered once. All existing
+     * ticket rows and PDFs are reused; only the email delivery step runs unconditionally.
+     *
+     * @throws \App\Exceptions\TicketDeliveryException When the order cannot be found or has no ticketable items.
+     * @throws \App\Exceptions\TicketEmailDeliveryException When SMTP delivery fails.
+     */
+    public function resendTicketEmailForOrder(int $orderId): void;
 }

@@ -177,8 +177,8 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
                         <div class="flex items-start gap-4">
                             <div id="featuredImagePreview" class="w-32 h-24 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                                <?php if ($viewModel->featuredImageAssetId !== null): ?>
-                                    <img id="featuredImagePreviewImg" src="" alt="Featured image" class="w-full h-full object-cover">
+                                <?php if ($viewModel->featuredImagePath !== null): ?>
+                                    <img id="featuredImagePreviewImg" src="<?= htmlspecialchars($viewModel->featuredImagePath) ?>" alt="Featured image" class="w-full h-full object-cover">
                                 <?php else: ?>
                                     <span class="text-gray-400 text-xs text-center px-2">No image</span>
                                 <?php endif; ?>

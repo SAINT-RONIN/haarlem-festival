@@ -615,6 +615,24 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     }
 
     /**
+     * Clears any prior send state and re-runs the full fulfillment flow.
+     *
+     * Resets TicketEmailSentAtUtc and TicketEmailLastError first so the
+     * idempotency guard inside fulfillPaidOrder() does not skip the send.
+     * Existing ticket rows and PDFs are reused — only the email is re-sent.
+     *
+     * @throws \App\Exceptions\TicketDeliveryException When the order cannot be found or has no ticketable items.
+     * @throws \App\Exceptions\TicketEmailDeliveryException When SMTP delivery fails.
+     */
+    public function resendTicketEmailForOrder(int $orderId): void
+    {
+        // Why: fulfillPaidOrder() exits early when ticketEmailSentAtUtc is set.
+        // Clearing it here lets the admin force a resend regardless of prior state.
+        $this->orderRepository->resetTicketEmailState($orderId);
+        $this->fulfillPaidOrder($orderId);
+    }
+
+    /**
      * Returns the first non-empty string from the given fallback values, or null if none exist.
      *
      * This helper keeps the recipient-resolution code readable by centralizing the

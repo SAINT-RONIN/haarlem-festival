@@ -264,6 +264,7 @@ class CmsEventsController extends CmsBaseController
             $editData->restaurantCuisine,
             $editData->restaurantShortDescription,
             $this->eventsService->getVenues(),
+            $editData->featuredImagePath,
         );
     }
 
