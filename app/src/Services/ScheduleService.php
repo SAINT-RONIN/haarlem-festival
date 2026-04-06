@@ -23,7 +23,7 @@ use App\Repositories\Interfaces\IEventSessionLabelRepository;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IEventTypeRepository;
-use App\Schedule\Interfaces\IScheduleDayVisibilityResolver;
+use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 use App\Exceptions\PageLoadException;
 use App\Services\Interfaces\IScheduleService;
 use App\Helpers\AgeLabelFormatter;

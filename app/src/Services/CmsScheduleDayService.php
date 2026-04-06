@@ -12,7 +12,7 @@ use App\DTOs\Filters\EventTypeFilter;
 use App\DTOs\Filters\ScheduleDayConfigFilter;
 use App\DTOs\Pages\ScheduleDaysPageData;
 use App\DTOs\Schedule\GroupedScheduleDayConfigs;
-use App\Schedule\Interfaces\IScheduleDayVisibilityResolver;
+use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 use App\Services\Interfaces\ICmsScheduleDayService;
 
 /**

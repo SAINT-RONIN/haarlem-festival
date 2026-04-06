@@ -97,7 +97,7 @@ use App\Services\ProgramService;
 use App\Services\RestaurantDetailService;
 use App\Services\RestaurantReservationService;
 use App\Services\RestaurantService;
-use App\Schedule\ScheduleDayVisibilityResolver;
+use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
 use App\Services\AuthService;
 use App\Services\CaptchaService;

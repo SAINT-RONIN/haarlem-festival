@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Schedule;
+namespace App\Services;
 
 use App\DTOs\Filters\ScheduleDayConfigFilter;
 use App\Enums\DayOfWeek;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
-use App\Schedule\Interfaces\IScheduleDayVisibilityResolver;
+use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 
 /**
  * Pure schedule-domain helper for resolving visible days from global and per-type config.

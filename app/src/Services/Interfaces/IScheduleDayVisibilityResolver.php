@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Schedule\Interfaces;
+namespace App\Services\Interfaces;
 
 interface IScheduleDayVisibilityResolver
 {
