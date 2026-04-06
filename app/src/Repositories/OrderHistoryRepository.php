@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTOs\OrderHistory\OrderSummaryDto;
+use App\DTOs\OrderHistory\TicketPdfDto;
 use App\Repositories\Interfaces\IOrderHistoryRepository;
 
 /**
@@ -13,7 +15,12 @@ use App\Repositories\Interfaces\IOrderHistoryRepository;
  */
 final class OrderHistoryRepository extends BaseRepository implements IOrderHistoryRepository
 {
-    /** @inheritDoc */
+    /**
+     * Returns all orders placed by the given user, newest first, with payment status
+     * and item count resolved via correlated subqueries.
+     *
+     * @return OrderSummaryDto[]
+     */
     public function findOrdersForUser(int $userId): array
     {
         $sql = <<<'SQL'
@@ -31,12 +38,18 @@ final class OrderHistoryRepository extends BaseRepository implements IOrderHisto
             ORDER BY o.CreatedAtUtc DESC
         SQL;
 
-        $statement = $this->execute($sql, [':userId' => $userId]);
-
-        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->fetchAll(
+            $sql,
+            [':userId' => $userId],
+            fn(array $row) => OrderSummaryDto::fromRow($row),
+        );
     }
 
-    /** @inheritDoc */
+    /**
+     * Returns ticket-code → PDF path rows for every ticket in the order that has a generated PDF.
+     *
+     * @return TicketPdfDto[]
+     */
     public function findTicketPdfPathsForOrder(int $orderId): array
     {
         $sql = <<<'SQL'
@@ -48,8 +61,10 @@ final class OrderHistoryRepository extends BaseRepository implements IOrderHisto
             ORDER BY t.TicketId ASC
         SQL;
 
-        $statement = $this->execute($sql, [':orderId' => $orderId]);
-
-        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->fetchAll(
+            $sql,
+            [':orderId' => $orderId],
+            fn(array $row) => TicketPdfDto::fromRow($row),
+        );
     }
 }

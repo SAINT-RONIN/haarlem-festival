@@ -81,7 +81,11 @@ class InvoiceRepository extends BaseRepository implements IInvoiceRepository
         );
     }
 
-    /** Returns every invoice line for one invoice in display order. */
+    /**
+     * Returns every invoice line for one invoice in display order.
+     *
+     * @return InvoiceLine[]
+     */
     public function findLinesByInvoiceId(int $invoiceId): array
     {
         return $this->fetchAll(

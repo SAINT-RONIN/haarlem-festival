@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\Checkout\OrderWithDetails;
+use App\DTOs\Cms\CmsOrderDetailDto;
+use App\DTOs\Cms\CmsOrderItemDto;
+use App\DTOs\Cms\CmsOrderPaymentDto;
+use App\DTOs\Cms\CmsOrderTicketDto;
+use App\Models\Invoice;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
 use App\Repositories\Interfaces\IInvoiceRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
@@ -48,7 +53,7 @@ class CmsOrdersService implements ICmsOrdersService
      * The null-safe ?-> on the last line also handles the case where the media
      * asset row was deleted without the invoice record being cleaned up.
      */
-    private function resolveInvoicePdfPath(?\App\Models\Invoice $invoice): ?string
+    private function resolveInvoicePdfPath(?Invoice $invoice): ?string
     {
         if ($invoice === null || $invoice->pdfAssetId === null) {
             return null;
@@ -65,9 +70,15 @@ class CmsOrdersService implements ICmsOrdersService
      *
      * It returns null instead of throwing when the order doesn't exist because the
      * controller uses the null to send a 404 response — not every missing order is an error.
-     * The returned array contains: order, items, payments, tickets, invoice, invoicePdfPath.
      *
-     * @return array{order: mixed, items: array, payments: array, tickets: array, invoice: mixed, invoicePdfPath: ?string}|null
+     * @return array{
+     *     order: CmsOrderDetailDto,
+     *     items: CmsOrderItemDto[],
+     *     payments: CmsOrderPaymentDto[],
+     *     tickets: CmsOrderTicketDto[],
+     *     invoice: ?Invoice,
+     *     invoicePdfPath: ?string
+     * }|null
      */
     public function getOrderDetail(int $orderId): ?array
     {

@@ -13,16 +13,21 @@ This document describes the coding rules used in this project. The goal is to ke
 
 ## Method length
 
-* **Public and private methods should not be longer than 10 lines.**
-* Breaking this rule is only allowed in specific situations:
+Method length targets are layer-aware because controllers orchestrate requests while services carry multi-step business flows:
 
-    * There is genuinely no other reasonable way to shorten the method.
-    * The method exceeds the limit slightly (for example 12–13 lines) and splitting it would reduce readability.
+* **Controllers (public and private methods) target 10 lines.**
+* **Services (public and private methods) target 15 lines.**
 
-**Preferred solution:**
+These are targets, not hard ceilings. Breaking them is acceptable when:
 
-* If a method grows too long, extract part of the logic into a **private method**.
-* Use judgement. Do not blindly split methods if it makes the code harder to understand.
+* There is genuinely no other reasonable way to shorten the method without scattering related logic.
+* A method reads linearly and does one clearly named thing — splitting it further would harm readability.
+* The method exceeds the target slightly (e.g. a controller at 12 lines, a service at 17 lines).
+
+**Preferred solution** when a method is clearly doing too much:
+
+* Extract related steps into a named `private` helper with a single responsibility.
+* Use judgement. Trivial extraction that harms readability is not required — a linear method that does one named thing is preferable to a cluster of one-line helpers.
 
 ---
 

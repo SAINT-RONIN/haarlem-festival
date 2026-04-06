@@ -439,7 +439,7 @@
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                                    <!-- Capacity: single ticket limit -->
+                                    <!-- Ticket limit per person -->
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Ticket Limit / Person</label>
                                         <input type="number" name="CapacitySingleTicketLimit" min="1"

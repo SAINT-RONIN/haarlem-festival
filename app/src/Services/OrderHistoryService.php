@@ -24,8 +24,7 @@ class OrderHistoryService implements IOrderHistoryService
      */
     public function getOrderHistoryData(int $userId): array
     {
-        $orderRows = $this->orderHistoryRepository->findOrdersForUser($userId);
-        $orderDtos = array_map([OrderSummaryDto::class, 'fromRow'], $orderRows);
+        $orderDtos = $this->orderHistoryRepository->findOrdersForUser($userId);
 
         return [
             'orders' => $orderDtos,
@@ -46,8 +45,7 @@ class OrderHistoryService implements IOrderHistoryService
                 continue;
             }
 
-            $rows = $this->orderHistoryRepository->findTicketPdfPathsForOrder($dto->orderId);
-            $ticketsByOrder[$dto->orderId] = array_map([TicketPdfDto::class, 'fromRow'], $rows);
+            $ticketsByOrder[$dto->orderId] = $this->orderHistoryRepository->findTicketPdfPathsForOrder($dto->orderId);
         }
 
         return $ticketsByOrder;

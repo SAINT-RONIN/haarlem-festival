@@ -24,7 +24,12 @@ class TicketRepository extends BaseRepository implements ITicketRepository
         );
     }
 
-    /** Loads all ticket rows for the given order item ids, ordered by ticket id. */
+    /**
+     * Loads all ticket rows for the given order item ids, ordered by ticket id.
+     *
+     * @param int[] $orderItemIds
+     * @return Ticket[]
+     */
     public function findByOrderItemIds(array $orderItemIds): array
     {
         $orderItemIds = array_values(array_filter(array_map('intval', $orderItemIds), fn(int $id) => $id > 0));
