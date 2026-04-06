@@ -4,7 +4,11 @@
 .DS_Store
 Thumbs.db
 ehthumbs.db
-Icon?
+# macOS custom folder icon file (Icon with carriage return)
+Icon
+
+# Exclude our Icons folder from being ignored
+!app/public/assets/Icons/
 
 # ==============================
 # Editor / IDE
@@ -44,6 +48,14 @@ app/cache/
 app/var/
 .phpunit.result.cache
 coverage/
+!app/storage/
+app/storage/*
+!app/storage/.gitkeep
+!app/storage/cache/
+app/storage/cache/*
+!app/storage/cache/.gitkeep
+app/public/assets/tickets/*
+!app/public/assets/tickets/.gitkeep
 
 # ==============================
 # Node (if present)

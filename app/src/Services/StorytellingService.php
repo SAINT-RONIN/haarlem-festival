@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Constants\SharedSectionKeys;
+use App\Constants\StorytellingPageConstants;
+use App\DTOs\Pages\StorytellingPageData;
+use App\Repositories\Interfaces\IGlobalContentRepository;
+use App\Repositories\Interfaces\IStorytellingContentRepository;
+use App\Services\Interfaces\IStorytellingService;
+
+/**
+ * Composes the CMS-driven domain payload for the Storytelling overview page.
+ *
+ * Fetches hero, gradient, intro-split, masonry, and global-UI sections
+ * from the content repositories and bundles them into a StorytellingPageData object.
+ */
+class StorytellingService extends BaseContentService implements IStorytellingService
+{
+    public function __construct(
+        IGlobalContentRepository $globalContentRepo,
+        private readonly IStorytellingContentRepository $storyContentRepo,
+    ) {
+        parent::__construct($globalContentRepo);
+    }
+
+    /**
+     * Fetches all CMS sections needed to render the storytelling overview page.
+     *
+     * The service layer is the only place allowed to call repositories;
+     * the returned payload is passed to the mapper layer for UI formatting.
+     */
+    public function getStorytellingPageData(): StorytellingPageData
+    {
+        return $this->guardPageLoad(
+            fn (): StorytellingPageData => $this->assembleStorytellingPageData(),
+            'Failed to load the Storytelling page.',
+        );
+    }
+
+    /** Fetches all CMS sections and assembles the storytelling page data. */
+    private function assembleStorytellingPageData(): StorytellingPageData
+    {
+        $slug = StorytellingPageConstants::PAGE_SLUG;
+        return new StorytellingPageData(
+            heroSection:       $this->globalContentRepo->findHeroContent($slug),
+            gradientSection:   $this->globalContentRepo->findGradientContent($slug, SharedSectionKeys::SECTION_GRADIENT),
+            introSplitSection: $this->globalContentRepo->findIntroContent($slug, SharedSectionKeys::SECTION_INTRO_SPLIT),
+            masonrySection:    $this->storyContentRepo->findMasonryContent($slug, StorytellingPageConstants::SECTION_MASONRY),
+            globalUiContent:   $this->loadGlobalUi(),
+        );
+    }
+}

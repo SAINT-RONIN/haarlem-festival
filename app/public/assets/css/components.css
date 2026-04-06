@@ -1,0 +1,139 @@
+/**
+ * Custom component styles for Haarlem Festival.
+ * Use this file for styles that cannot be expressed with Tailwind utility classes.
+ */
+
+/* Hero section background base (gradient only, image set via inline style) */
+.hero-background-base {
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* Hero section background with gradient overlay (legacy, for homepage) */
+.hero-background {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)),
+    url('/assets/Image/HeroImageHome.png');
+    background-position: center;
+    background-size: cover;
+}
+
+/* Explore banner background with gradient overlay */
+.explore-banner-background {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8)),
+    url('/assets/Image/explore-incoming-events.png');
+    background-position: center;
+    background-size: cover;
+}
+
+/* Masonry size variants - varying heights for true masonry effect */
+/* Used with CSS multi-column layout in partial */
+.masonry-tall {
+    aspect-ratio: 3/4;
+}
+
+.masonry-medium {
+    aspect-ratio: 4/3;
+}
+
+.masonry-short {
+    aspect-ratio: 16/9;
+}
+
+/* Global font and container styles */
+@font-face {
+    font-family: 'Zorus Serif';
+    src: url('/assets/fonts/zorus-serif/ZorusSerif-Regular.woff2') format('woff2'),
+    url('/assets/fonts/zorus-serif/ZorusSerif-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.5;
+}
+
+.font-serif-display {
+    font-family: 'Georgia', serif;
+}
+
+.hf-container {
+    max-width: 90rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+    .hf-container {
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .hf-container {
+        padding-left: 4rem;
+        padding-right: 4rem;
+    }
+}
+
+@media (min-width: 1280px) {
+    .hf-container {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+}
+
+.map-embed-borderless {
+    border: 0;
+}
+
+/* QR code grid: 15-column layout used on checkout success page */
+.grid-cols-qr {
+    grid-template-columns: repeat(15, minmax(0, 1fr));
+}
+
+/* Dynamic background image via CSS custom property --bg-url.
+   Set style="--bg-url: url('...')" on the element; the class provides gradient + positioning. */
+.bg-dynamic {
+    background-image: var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.bg-dynamic-fade-light {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.65)), var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.bg-dynamic-fade-medium {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.bg-dynamic-fade {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.bg-dynamic-fade-strong {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8)), var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}

@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Interfaces;
+
+use App\DTOs\Pages\JazzPageData;
+
+/**
+ * Interface for Jazz page service.
+ */
+interface IJazzService
+{
+    /**
+     * Assembles the complete domain payload for the Jazz overview page, including CMS content, artists, and sessions.
+     */
+    public function getJazzPageData(): JazzPageData;
+}
