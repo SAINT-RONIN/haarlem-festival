@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Generation Time: Mar 30, 2026 at 12:52 PM
+-- Generation Time: Apr 06, 2026 at 08:42 AM
 -- Server version: 12.0.2-MariaDB-ubu2404
 -- PHP Version: 8.3.27
 
@@ -31,7 +31,29 @@ CREATE TABLE `Artist` (
   `ArtistId` int(11) NOT NULL,
   `Name` varchar(120) NOT NULL,
   `Style` varchar(120) NOT NULL DEFAULT '',
+  `CardDescription` text NOT NULL DEFAULT '',
+  `HeroSubtitle` varchar(200) NOT NULL DEFAULT '',
+  `HeroImagePath` varchar(500) NOT NULL DEFAULT '',
+  `OriginText` varchar(200) NOT NULL DEFAULT '',
+  `FormedText` varchar(120) NOT NULL DEFAULT '',
   `BioHtml` text NOT NULL DEFAULT '<p></p>',
+  `OverviewLead` text NOT NULL DEFAULT '',
+  `OverviewBodySecondary` text NOT NULL DEFAULT '',
+  `LineupHeading` varchar(120) NOT NULL DEFAULT '',
+  `HighlightsHeading` varchar(120) NOT NULL DEFAULT '',
+  `PhotoGalleryHeading` varchar(120) NOT NULL DEFAULT '',
+  `PhotoGalleryDescription` text NOT NULL DEFAULT '',
+  `AlbumsHeading` varchar(120) NOT NULL DEFAULT '',
+  `AlbumsDescription` text NOT NULL DEFAULT '',
+  `ListenHeading` varchar(120) NOT NULL DEFAULT '',
+  `ListenSubheading` varchar(120) NOT NULL DEFAULT '',
+  `ListenDescription` text NOT NULL DEFAULT '',
+  `LiveCtaHeading` varchar(160) NOT NULL DEFAULT '',
+  `LiveCtaDescription` text NOT NULL DEFAULT '',
+  `PerformancesHeading` varchar(160) NOT NULL DEFAULT '',
+  `PerformancesDescription` text NOT NULL DEFAULT '',
+  `CardSortOrder` int(11) NOT NULL DEFAULT 0,
+  `ShowOnJazzOverview` tinyint(1) NOT NULL DEFAULT 0,
   `ImageAssetId` int(11) DEFAULT NULL,
   `IsActive` tinyint(1) NOT NULL DEFAULT 1,
   `CreatedAtUtc` datetime NOT NULL DEFAULT current_timestamp()
@@ -41,32 +63,32 @@ CREATE TABLE `Artist` (
 -- Dumping data for table `Artist`
 --
 
-INSERT INTO `Artist` (`ArtistId`, `Name`, `Style`, `BioHtml`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`) VALUES
-(1, 'Gumbo Kings', 'Soul', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(2, 'Evolve', 'Alternative', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(3, 'Ntjam Rosie', 'Soul', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(4, 'Wicked Jazz Sounds', 'Alternative', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(5, 'Wouter Hamel', 'Pop', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(6, 'Jonna Frazer', 'Soul', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(7, 'Karsu', 'Folk', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(8, 'Uncle Sue', 'Rock', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(9, 'Chris Allen', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(10, 'Myles Sanko', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(11, 'Ilse Huizinga', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(12, 'Eric Vloeimans and Hotspot!', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(13, 'Gare du Nord', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(14, 'Rilan & The Bombadiers', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(15, 'Soul Six', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(16, 'Han Bennink', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(17, 'The Nordanians', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(18, 'Lilith Merlot', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(19, 'Ruis Soundsystem', 'Jazz', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(20, 'Nicky Romero', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(21, 'Afrojack', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(22, 'Tiësto', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(23, 'Hardwell', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(24, 'Martin Garrix', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32'),
-(25, 'Armin van Buuren', 'Dance/EDM', '<p></p>', NULL, 1, '2026-02-06 15:30:32');
+INSERT INTO `Artist` (`ArtistId`, `Name`, `Style`, `CardDescription`, `HeroSubtitle`, `HeroImagePath`, `OriginText`, `FormedText`, `BioHtml`, `OverviewLead`, `OverviewBodySecondary`, `LineupHeading`, `HighlightsHeading`, `PhotoGalleryHeading`, `PhotoGalleryDescription`, `AlbumsHeading`, `AlbumsDescription`, `ListenHeading`, `ListenSubheading`, `ListenDescription`, `LiveCtaHeading`, `LiveCtaDescription`, `PerformancesHeading`, `PerformancesDescription`, `CardSortOrder`, `ShowOnJazzOverview`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`) VALUES
+(1, 'Gumbo Kings', 'Soul', 'High-energy New Orleans style jazz band bringing authentic Big Easy sound to Haarlem. Known for infectious rhythms.', 'New Orleans Jazz', '/assets/Image/Jazz/GubmboKings-Hero.png', 'Origin: New Orleans, Louisiana, USA', 'Formed: 2015', 'The Gumbo Kings deliver an electrifying blend of traditional New Orleans jazz, funk, and second-line grooves. With a powerful horn section, driving rhythm section, and authentic Crescent City soul, they transport audiences straight to the streets of the French Quarter. Their performances are known for spontaneous moments of musical magic and infectious energy that keeps crowds dancing all night long. Since their formation in 2015, they have become one of the most sought-after New Orleans jazz acts in Europe.', 'High-energy New Orleans style jazz band bringing authentic Big Easy sound to Haarlem. Known for their infectious rhythms and crowd-pleasing performances that get audiences on their feet.', 'Drawing inspiration from the rich musical heritage of New Orleans, the Gumbo Kings have mastered the art of combining traditional jazz elements with contemporary energy. Their repertoire spans classic jazz standards, original compositions, and reimagined funk grooves. The band has performed at major jazz festivals across Europe and the United States, earning acclaim for their authentic sound and dynamic stage presence. Their commitment to preserving and evolving the New Orleans jazz tradition has made them favorites among both purists and new jazz audiences.', 'Band Lineup', 'Career Highlights', 'Photo Gallery', 'Experience the energy and passion of Gumbo Kings through these performance and portrait photographs.', 'Featured Albums', 'Explore the studio recordings that capture the magic of Gumbo Kings. Each album showcases their evolution and mastery of the New Orleans jazz tradition.', 'LISTEN NOW', 'Important Tracks', 'Listen to excerpts from Gumbo Kings\'s most important and popular tracks. Experience the energy and musicianship that defines their sound.', 'Experience Gumbo Kings Live', 'Do not miss the chance to see Gumbo Kings perform live at Haarlem Jazz 2026. With 2 performances scheduled, there are multiple opportunities to experience their incredible energy and musicianship.', 'Gumbo Kings at Haarlem Jazz 2026', 'Catch Gumbo Kings performing during the Haarlem Jazz Festival. Each performance offers a unique experience from intimate indoor shows to free outdoor concerts.', 1, 1, 72, 1, '2026-02-06 15:30:32'),
+(2, 'Evolve', 'Alternative', 'Progressive jazz ensemble pushing boundaries with innovative compositions. A fresh take on modern jazz traditions.', 'Live jazz performance by Evolve', '', '', '', '<p></p>', 'Live jazz performance by Evolve', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 2, 1, 73, 1, '2026-02-06 15:30:32'),
+(3, 'Ntjam Rosie', 'Soul', 'Sultry vocals meet classic jazz standards. Rosie brings timeless elegance and powerful vocal performances to every show.', 'Vocal Jazz', '/assets/Image/Jazz/Ntjamhero.png', 'Origin: Cameroon / Netherlands', 'Formed: 2008', 'Her debut album, Atouba, released in 2008, was the first to showcase that hybrid style, mixing African rhythms with soul and jazz influences. Since then she has developed a distinctive musical voice across several albums and performances.', 'Ntjam Rosie was born in Cameroon on March 18, 1983, and moved to the Netherlands at the age of nine. She blends her West-African roots with Western musical traditions, combining jazz, soul, pop and Afro influences.', 'Ntjam Rosie has built a reputation for compelling live performances and wide appeal. She has performed at major festivals and toured internationally. Her music resonates with both jazz and soul audiences, and she continues to evolve by blending tradition and innovation.', 'Band Lineup', 'Career Highlights', 'Photo Gallery', 'Experience the soulful elegance of Ntjam Rosie through these intimate performance and portrait photographs.', 'Featured Albums', 'Explore the studio recordings that capture the soulful artistry of Ntjam Rosie. Each album reflects her evolving blend of jazz, soul, and Afro-inspired sound.', 'LISTEN NOW', 'Important Tracks', 'Listen to excerpts from Ntjam Rosie\'s most celebrated and influential tracks. Immerse yourself in the soulful energy and refined musicianship that define her signature sound.', 'Experience Ntjam Rosie Live', 'Do not miss the chance to see Ntjam Rosie perform live at Haarlem Jazz 2026. With 2 performances scheduled, there are multiple opportunities to experience her incredible energy and musicianship.', 'Ntjam Rosie at Haarlem Jazz 2026', 'Catch Ntjam Rosie performing during the Haarlem Jazz Festival. Each performance offers a unique experience from intimate indoor shows to free outdoor concerts.', 3, 1, 74, 1, '2026-02-06 15:30:32'),
+(4, 'Wicked Jazz Sounds', 'Alternative', 'Live jazz performance by Wicked Jazz Sounds', 'Live jazz performance by Wicked Jazz Sounds', '', '', '', '<p></p>', 'Live jazz performance by Wicked Jazz Sounds', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(5, 'Wouter Hamel', 'Pop', 'Live jazz performance by Wouter Hamel', 'Live jazz performance by Wouter Hamel', '', '', '', '<p></p>', 'Live jazz performance by Wouter Hamel', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(6, 'Jonna Frazer', 'Soul', 'Live jazz performance by Jonna Frazer', 'Live jazz performance by Jonna Frazer', '', '', '', '<p></p>', 'Live jazz performance by Jonna Frazer', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(7, 'Karsu', 'Folk', 'Live jazz performance by Karsu', 'Live jazz performance by Karsu', '', '', '', '<p></p>', 'Live jazz performance by Karsu', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(8, 'Uncle Sue', 'Rock', 'Live jazz performance by Uncle Sue', 'Live jazz performance by Uncle Sue', '', '', '', '<p></p>', 'Live jazz performance by Uncle Sue', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(9, 'Chris Allen', 'Jazz', 'Live jazz performance by Chris Allen', 'Live jazz performance by Chris Allen', '', '', '', '<p></p>', 'Live jazz performance by Chris Allen', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(10, 'Myles Sanko', 'Jazz', 'Live jazz performance by Myles Sanko', 'Live jazz performance by Myles Sanko', '', '', '', '<p></p>', 'Live jazz performance by Myles Sanko', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(11, 'Ilse Huizinga', 'Jazz', 'Live jazz performance by Ilse Huizinga', 'Live jazz performance by Ilse Huizinga', '', '', '', '<p></p>', 'Live jazz performance by Ilse Huizinga', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(12, 'Eric Vloeimans and Hotspot!', 'Jazz', 'Live jazz performance by Eric Vloeimans and Hotspot!', 'Live jazz performance by Eric Vloeimans and Hotspot!', '', '', '', '<p></p>', 'Live jazz performance by Eric Vloeimans and Hotspot!', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(13, 'Gare du Nord', 'Jazz', 'Live jazz performance by Gare du Nord', 'Live jazz performance by Gare du Nord', '', '', '', '<p></p>', 'Live jazz performance by Gare du Nord', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(14, 'Rilan & The Bombadiers', 'Jazz', 'Live jazz performance by Rilan & The Bombadiers', 'Live jazz performance by Rilan & The Bombadiers', '', '', '', '<p></p>', 'Live jazz performance by Rilan & The Bombadiers', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(15, 'Soul Six', 'Jazz', 'Live jazz performance by Soul Six', 'Live jazz performance by Soul Six', '', '', '', '<p></p>', 'Live jazz performance by Soul Six', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(16, 'Han Bennink', 'Jazz', 'Live jazz performance by Han Bennink', 'Live jazz performance by Han Bennink', '', '', '', '<p></p>', 'Live jazz performance by Han Bennink', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(17, 'The Nordanians', 'Jazz', 'Live jazz performance by The Nordanians', 'Live jazz performance by The Nordanians', '', '', '', '<p></p>', 'Live jazz performance by The Nordanians', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(18, 'Lilith Merlot', 'Jazz', 'Live jazz performance by Lilith Merlot', 'Live jazz performance by Lilith Merlot', '', '', '', '<p></p>', 'Live jazz performance by Lilith Merlot', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(19, 'Ruis Soundsystem', 'Jazz', 'Live jazz performance by Ruis Soundsystem', 'Live jazz performance by Ruis Soundsystem', '', '', '', '<p></p>', 'Live jazz performance by Ruis Soundsystem', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(20, 'Nicky Romero', 'Dance/EDM', '', '', '', '', '', '<p></p>', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(22, 'Tiësto', 'Dance/EDM', '', '', '', '', '', '<p></p>', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(23, 'Hardwell', 'Dance/EDM', '', '', '', '', '', '<p></p>', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(24, 'Martin Garrix', 'Dance/EDM', '', '', '', '', '', '<p></p>', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 1, '2026-02-06 15:30:32'),
+(25, 'Armin van Buuren', 'Dance/EDM', '', '', '', '', '', '<p></p>', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, NULL, 0, '2026-02-06 15:30:32'),
+(29, 'Test', 'test style', 'this is just test', '', '', '', '', '<p></p>', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 4, 0, 4, 1, '2026-04-04 20:32:57');
 
 -- --------------------------------------------------------
 
@@ -76,7 +98,7 @@ INSERT INTO `Artist` (`ArtistId`, `Name`, `Style`, `BioHtml`, `ImageAssetId`, `I
 
 CREATE TABLE `ArtistAlbum` (
   `ArtistAlbumId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
+  `ArtistId` int(11) NOT NULL,
   `Title` varchar(160) NOT NULL,
   `Description` text NOT NULL DEFAULT '',
   `Year` varchar(10) NOT NULL DEFAULT '',
@@ -89,7 +111,7 @@ CREATE TABLE `ArtistAlbum` (
 -- Dumping data for table `ArtistAlbum`
 --
 
-INSERT INTO `ArtistAlbum` (`ArtistAlbumId`, `EventId`, `Title`, `Description`, `Year`, `Tag`, `ImagePath`, `SortOrder`) VALUES
+INSERT INTO `ArtistAlbum` (`ArtistAlbumId`, `ArtistId`, `Title`, `Description`, `Year`, `Tag`, `ImagePath`, `SortOrder`) VALUES
 (1, 1, 'Second Line Swing', 'Their breakthrough album featuring traditional second line rhythms mixed with contemporary jazz sensibilities. The title track became a festival favorite across Europe.', '2019', 'JAZZ', '/assets/Image/Jazz/GumboKingsAlbum1.png', 1),
 (2, 1, 'Big Easy', 'A love letter to New Orleans featuring reimagined classics and original compositions inspired by the city\'s rich musical heritage.', '2021', 'JAZZ', '/assets/Image/Jazz/GumboKingsAlbum2.png', 2),
 (3, 1, 'Live at Paradiso', 'Recorded live at Amsterdam\'s legendary Paradiso venue, this album captures the raw energy and spontaneity of their live performances.', '2023', 'LIVE', '/assets/Image/Jazz/GumboKingsAlbum3.png', 3),
@@ -105,7 +127,7 @@ INSERT INTO `ArtistAlbum` (`ArtistAlbumId`, `EventId`, `Title`, `Description`, `
 
 CREATE TABLE `ArtistGalleryImage` (
   `ArtistGalleryImageId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
+  `ArtistId` int(11) NOT NULL,
   `ImagePath` varchar(500) NOT NULL,
   `SortOrder` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -114,7 +136,7 @@ CREATE TABLE `ArtistGalleryImage` (
 -- Dumping data for table `ArtistGalleryImage`
 --
 
-INSERT INTO `ArtistGalleryImage` (`ArtistGalleryImageId`, `EventId`, `ImagePath`, `SortOrder`) VALUES
+INSERT INTO `ArtistGalleryImage` (`ArtistGalleryImageId`, `ArtistId`, `ImagePath`, `SortOrder`) VALUES
 (1, 1, '/assets/Image/Jazz/GumboGallery1.png', 1),
 (2, 1, '/assets/Image/Jazz/GumboGallery2.png', 2),
 (3, 1, '/assets/Image/Jazz/GumboGallery3.png', 3),
@@ -130,7 +152,7 @@ INSERT INTO `ArtistGalleryImage` (`ArtistGalleryImageId`, `EventId`, `ImagePath`
 
 CREATE TABLE `ArtistHighlight` (
   `ArtistHighlightId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
+  `ArtistId` int(11) NOT NULL,
   `HighlightText` varchar(400) NOT NULL,
   `SortOrder` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -139,7 +161,7 @@ CREATE TABLE `ArtistHighlight` (
 -- Dumping data for table `ArtistHighlight`
 --
 
-INSERT INTO `ArtistHighlight` (`ArtistHighlightId`, `EventId`, `HighlightText`, `SortOrder`) VALUES
+INSERT INTO `ArtistHighlight` (`ArtistHighlightId`, `ArtistId`, `HighlightText`, `SortOrder`) VALUES
 (1, 1, 'Featured performers at New Orleans Jazz and Heritage Festival 2023', 1),
 (2, 1, 'Touring Europe extensively since 2019, performing at 50+ major festivals', 2),
 (3, 1, 'Authentic brass band sound with modern energy and innovation', 3),
@@ -161,7 +183,7 @@ INSERT INTO `ArtistHighlight` (`ArtistHighlightId`, `EventId`, `HighlightText`, 
 
 CREATE TABLE `ArtistLineupMember` (
   `ArtistLineupMemberId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
+  `ArtistId` int(11) NOT NULL,
   `MemberText` varchar(200) NOT NULL,
   `SortOrder` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -170,7 +192,7 @@ CREATE TABLE `ArtistLineupMember` (
 -- Dumping data for table `ArtistLineupMember`
 --
 
-INSERT INTO `ArtistLineupMember` (`ArtistLineupMemberId`, `EventId`, `MemberText`, `SortOrder`) VALUES
+INSERT INTO `ArtistLineupMember` (`ArtistLineupMemberId`, `ArtistId`, `MemberText`, `SortOrder`) VALUES
 (1, 1, 'Marcus Johnson - Trumpet, Band Leader', 1),
 (2, 1, 'DeShawn Williams - Trombone', 2),
 (3, 1, 'Antoine Davis - Tenor Saxophone', 3),
@@ -191,7 +213,7 @@ INSERT INTO `ArtistLineupMember` (`ArtistLineupMemberId`, `EventId`, `MemberText
 
 CREATE TABLE `ArtistTrack` (
   `ArtistTrackId` int(11) NOT NULL,
-  `EventId` int(11) NOT NULL,
+  `ArtistId` int(11) NOT NULL,
   `Title` varchar(160) NOT NULL,
   `Album` varchar(160) NOT NULL DEFAULT '',
   `Description` text NOT NULL DEFAULT '',
@@ -205,7 +227,7 @@ CREATE TABLE `ArtistTrack` (
 -- Dumping data for table `ArtistTrack`
 --
 
-INSERT INTO `ArtistTrack` (`ArtistTrackId`, `EventId`, `Title`, `Album`, `Description`, `Duration`, `ImagePath`, `ProgressClass`, `SortOrder`) VALUES
+INSERT INTO `ArtistTrack` (`ArtistTrackId`, `ArtistId`, `Title`, `Album`, `Description`, `Duration`, `ImagePath`, `ProgressClass`, `SortOrder`) VALUES
 (1, 1, 'All Night Long', 'Live in the Quarter', 'Classic New Orleans standard with powerful brass arrangements', '4:32', '/assets/Image/Jazz/Allnightlong.png', 'w-[5%]', 1),
 (2, 1, 'Hot Damn!', 'Brass and Soul', 'Original composition featuring traditional second-line rhythms', '3:45', '/assets/Image/Jazz/Container.png', 'w-[15%]', 2),
 (3, 1, 'Valenzuela', 'Big Easy Nights', 'Fast-paced instrumental showcasing virtuoso musicianship', '4:18', '/assets/Image/Jazz/Listennowsection.png', 'w-full', 3),
@@ -237,7 +259,7 @@ CREATE TABLE `CmsItem` (
 --
 
 INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
-(1, 1, 'hero_main_title', 'HEADING', 'Haarlem Festivals', NULL, NULL, '2026-02-10 15:05:23'),
+(1, 1, 'hero_main_title', 'HEADING', 'Haarlem Festivals', NULL, NULL, '2026-04-01 19:09:48'),
 (2, 1, 'hero_subtitle', 'TEXT', 'Four July Days Bringing People Together', NULL, NULL, '2026-02-06 14:13:59'),
 (3, 1, 'hero_button_primary', 'BUTTON_TEXT', 'Discover all types of events', NULL, NULL, '2026-02-06 14:13:59'),
 (4, 1, 'hero_button_secondary', 'BUTTON_TEXT', 'Events schedule', NULL, NULL, '2026-02-06 14:13:59'),
@@ -312,7 +334,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (100, 9, 'storytelling_image', 'MEDIA', NULL, NULL, 8, '2026-02-08 13:54:33'),
 (113, 14, 'gradient_background_image', 'IMAGE_PATH', '/assets/Image/storytelling/picture-looking-text.jpg', NULL, NULL, '2026-02-08 14:32:21'),
 (114, 15, 'intro_image_alt', 'TEXT', 'Stories in Haarlem', NULL, NULL, '2026-02-08 14:34:54'),
-(115, 28, 'hero_main_title', 'HEADING', 'HAARLEM JAZZ', NULL, NULL, '2026-02-10 15:02:54'),
+(115, 28, 'hero_main_title', 'HEADING', 'HAARLEM JAZZ', NULL, NULL, '2026-04-04 19:04:58'),
 (116, 28, 'hero_subtitle', 'TEXT', 'Experience world-class jazz performances at Haarlem\'s premier music festival. Discover our complete lineup, detailed schedules, and venue information.', NULL, NULL, '2026-02-10 14:12:56'),
 (117, 28, 'hero_button_primary', 'BUTTON_TEXT', 'Discover all performances', NULL, NULL, '2026-02-10 12:02:48'),
 (118, 28, 'hero_button_primary_link', 'LINK', '#artists', NULL, NULL, '2026-02-10 12:02:48'),
@@ -329,19 +351,19 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (129, 31, 'venue_patronaat_address1', 'TEXT', 'Zijlsingel 2', NULL, NULL, '2026-02-10 13:40:15'),
 (130, 31, 'venue_patronaat_address2', 'TEXT', '2013 DN Haarlem', NULL, NULL, '2026-02-10 13:40:15'),
 (131, 31, 'venue_patronaat_contact', 'TEXT', 'E-mail/reception available', NULL, NULL, '2026-02-10 13:40:15'),
-(132, 31, 'venue_patronaat_hall1_name', 'TEXT', 'First Hall', NULL, NULL, '2026-02-10 13:40:15'),
-(133, 31, 'venue_patronaat_hall1_desc', 'TEXT', 'Intimate performances - €10.00 per show', NULL, NULL, '2026-02-10 14:13:58'),
-(134, 31, 'venue_patronaat_hall1_capacity', 'TEXT', '150 seats', NULL, NULL, '2026-02-10 13:40:15'),
+(132, 31, 'venue_patronaat_hall1_name', 'TEXT', 'Main Hall', NULL, NULL, '2026-04-04 19:13:25'),
+(133, 31, 'venue_patronaat_hall1_desc', 'TEXT', 'Headliner performances - €15.00 per show', NULL, NULL, '2026-04-04 19:13:25'),
+(134, 31, 'venue_patronaat_hall1_capacity', 'TEXT', '300 seats', NULL, NULL, '2026-04-04 19:13:25'),
 (135, 31, 'venue_patronaat_hall2_name', 'TEXT', 'Second Hall', NULL, NULL, '2026-02-10 13:40:15'),
 (136, 31, 'venue_patronaat_hall2_desc', 'TEXT', 'Intimate performances - €10.00 per show', NULL, NULL, '2026-02-10 14:13:58'),
-(137, 31, 'venue_patronaat_hall2_capacity', 'TEXT', '150 seats', NULL, NULL, '2026-02-10 13:40:15'),
+(137, 31, 'venue_patronaat_hall2_capacity', 'TEXT', '200 seats', NULL, NULL, '2026-04-04 19:13:25'),
 (138, 31, 'venue_patronaat_hall3_name', 'TEXT', 'Third Hall', NULL, NULL, '2026-02-10 13:40:15'),
 (139, 31, 'venue_patronaat_hall3_desc', 'TEXT', 'Intimate performances - €10.00 per show', NULL, NULL, '2026-02-10 14:13:58'),
 (140, 31, 'venue_patronaat_hall3_capacity', 'TEXT', '150 seats', NULL, NULL, '2026-02-10 13:40:15'),
 (141, 31, 'venue_grotemarkt_name', 'TEXT', 'Grote Markt', NULL, NULL, '2026-02-10 13:40:15'),
 (142, 31, 'venue_grotemarkt_location1', 'TEXT', 'Historic Market Square', NULL, NULL, '2026-02-10 13:40:15'),
 (143, 31, 'venue_grotemarkt_location2', 'TEXT', 'Haarlem City Center', NULL, NULL, '2026-02-10 13:40:15'),
-(144, 31, 'venue_grotemarkt_hall_name', 'TEXT', 'Open Air Stage', NULL, NULL, '2026-02-10 13:40:15'),
+(144, 31, 'venue_grotemarkt_hall_name', 'TEXT', 'Outdoor Stage', NULL, NULL, '2026-04-04 19:13:25'),
 (145, 31, 'venue_grotemarkt_hall_desc', 'TEXT', 'Sunday performances are free for all visitors. No reservation needed.', NULL, NULL, '2026-02-10 13:40:15'),
 (146, 31, 'venue_grotemarkt_hall_info', 'TEXT', 'The Grote Markt outdoor performances provide a wonderful opportunity to experience jazz in Haarlem\'s beautiful historic market square. Bring your family and friends for a free afternoon and evening of world-class music in the heart of the city.', NULL, NULL, '2026-02-10 14:12:56'),
 (147, 31, 'venue_grotemarkt_hall_price', 'TEXT', 'FREE ENTRY', NULL, NULL, '2026-02-10 13:40:15'),
@@ -359,8 +381,8 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (159, 32, 'pricing_daypass_include2', 'TEXT', 'All performances on selected day', NULL, NULL, '2026-02-10 13:40:15'),
 (160, 32, 'pricing_daypass_include3', 'TEXT', 'Thursday, Friday, or Saturday', NULL, NULL, '2026-02-10 13:40:15'),
 (161, 32, 'pricing_daypass_include4', 'TEXT', 'Best value for multiple shows', NULL, NULL, '2026-02-10 13:40:15'),
-(162, 32, 'pricing_daypass_info', 'TEXT', 'All-Access pass for this day €35,00. Valid for unlimited entry to Main Hall, Second Hall, and Third Hall performances on the selected day.', NULL, NULL, '2026-02-10 14:13:58'),
-(163, 32, 'pricing_3day_title', 'TEXT', 'All-Access Day Pass', NULL, NULL, '2026-02-10 13:40:15'),
+(162, 32, 'pricing_daypass_info', 'TEXT', 'All-Access pass for this day: €35.00. Valid for unlimited entry to Main Hall, Second Hall, and Third Hall performances on the selected day.', NULL, NULL, '2026-04-04 19:13:25'),
+(163, 32, 'pricing_3day_title', 'TEXT', 'All-Access 3-Day Pass', NULL, NULL, '2026-04-04 19:13:25'),
 (164, 32, 'pricing_3day_price', 'TEXT', '€80.00', NULL, NULL, '2026-02-10 14:13:58'),
 (165, 32, 'pricing_3day_desc', 'TEXT', 'Thursday + Friday + Saturday', NULL, NULL, '2026-02-10 13:40:15'),
 (166, 32, 'pricing_3day_include1', 'TEXT', 'Unlimited access all 3 days', NULL, NULL, '2026-02-10 13:40:15'),
@@ -369,36 +391,15 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (169, 32, 'pricing_3day_include4', 'TEXT', 'Save €25 vs. day passes', NULL, NULL, '2026-02-10 14:13:58'),
 (170, 32, 'pricing_3day_info', 'TEXT', 'All-Access pass for Thu, Fri, Sat: €80.00. Complete festival access for three full days of jazz performances.', NULL, NULL, '2026-02-10 14:13:58'),
 (171, 33, 'schedule_cta_heading', 'HEADING', 'Ready to Plan Your Festival Experience?', NULL, NULL, '2026-02-10 12:02:48'),
-(172, 33, 'schedule_cta_description', 'TEXT', 'Now that you\'ve explored our artists, check out the complete performance schedule below to see exact times, venues, and ticket availability. You can filter by day to plan your perfect jazz weekend.', NULL, NULL, '2026-02-10 14:12:56'),
+(172, 33, 'schedule_cta_description', 'TEXT', 'Now that you\'ve explored our artists, check out the complete performance schedule below to see exact times, venues, and ticket availability. You can filter by day to plan your perfect jazz weekend.', NULL, NULL, '2026-04-04 19:05:27'),
 (173, 33, 'schedule_cta_button', 'BUTTON_TEXT', 'View complete schedule', NULL, NULL, '2026-02-10 12:02:48'),
-(174, 33, 'schedule_cta_button_link', 'LINK', '#schedule', NULL, NULL, '2026-02-10 12:02:48'),
+(174, 33, 'schedule_cta_button_link', 'LINK', '#jazz-schedule', NULL, NULL, '2026-04-04 19:13:25'),
 (175, 34, 'artists_heading', 'HEADING', 'Discover our lineup', NULL, NULL, '2026-02-10 12:02:48'),
 (176, 35, 'booking_cta_heading', 'HEADING', 'Book Your Experience', NULL, NULL, '2026-02-10 12:02:48'),
 (177, 35, 'booking_cta_description', 'TEXT', 'Secure your tickets now for the last weekend of July. With limited seating at Patronaat and free performances at Grote Markt, there\'s an option for every jazz lover. Don\'t miss out on this year\'s incredible lineup.', NULL, NULL, '2026-02-10 14:12:56'),
 (178, 28, 'jazz_hero_background_image', 'MEDIA', '/assets/Image/Jazz/Jazz-hero.png', NULL, 66, '2026-03-23 09:01:47'),
 (179, 29, 'jazz_gradient_background_image', 'MEDIA', '/assets/Image/Jazz/Jazz-second-section.png', NULL, 67, '2026-03-23 09:01:47'),
 (180, 30, 'jazz_intro_image', 'MEDIA', '/assets/Image/Jazz/Jazz-third-section.png', NULL, 68, '2026-03-23 09:01:47'),
-(181, 34, 'artists_gumbokings_image', 'MEDIA', '/assets/Image/Jazz/Jazz-Gumbokings.png', NULL, 72, '2026-03-23 09:01:47'),
-(182, 34, 'artists_evolve_image', 'MEDIA', '/assets/Image/Jazz/Jazz-evolve.png', NULL, 73, '2026-03-23 09:01:47'),
-(183, 34, 'artists_ntjam_image', 'MEDIA', '/assets/Image/Jazz/Jazz-Ntjam.png', NULL, 74, '2026-03-23 09:01:47'),
-(184, 34, 'artists_gumbokings_name', 'TEXT', 'Gumbo Kings', NULL, NULL, '2026-02-10 13:56:11'),
-(185, 34, 'artists_gumbokings_genre', 'TEXT', 'New Orleans Jazz', NULL, NULL, '2026-02-10 13:56:11'),
-(186, 34, 'artists_gumbokings_description', 'TEXT', 'High-energy New Orleans style jazz band bringing authentic Big Easy sound to Haarlem. Known for infectious rhythms.', NULL, NULL, '2026-02-10 14:12:56'),
-(187, 34, 'artists_gumbokings_performance_count', 'TEXT', '2', NULL, NULL, '2026-02-10 13:56:11'),
-(188, 34, 'artists_gumbokings_first_performance', 'TEXT', 'Thu 18:00 - Patronaat Main Hall', NULL, NULL, '2026-02-10 13:56:11'),
-(189, 34, 'artists_gumbokings_more_performances_text', 'TEXT', '+1 more', NULL, NULL, '2026-02-10 13:56:11'),
-(190, 34, 'artists_evolve_name', 'TEXT', 'Evolve', NULL, NULL, '2026-02-10 13:56:11'),
-(191, 34, 'artists_evolve_genre', 'TEXT', 'Contemporary Jazz', NULL, NULL, '2026-02-10 13:56:11'),
-(192, 34, 'artists_evolve_description', 'TEXT', 'Progressive jazz ensemble pushing boundaries with innovative compositions. A fresh take on modern jazz traditions.', NULL, NULL, '2026-02-10 14:12:56'),
-(193, 34, 'artists_evolve_performance_count', 'TEXT', '2', NULL, NULL, '2026-02-10 13:56:11'),
-(194, 34, 'artists_evolve_first_performance', 'TEXT', 'Thu 18:00 - Patronaat Main Hall', NULL, NULL, '2026-02-10 13:56:11'),
-(195, 34, 'artists_evolve_more_performances_text', 'TEXT', '+1 more', NULL, NULL, '2026-02-10 13:56:11'),
-(196, 34, 'artists_ntjam_name', 'TEXT', 'Ntjam Rosie', NULL, NULL, '2026-02-10 13:56:11'),
-(197, 34, 'artists_ntjam_genre', 'TEXT', 'Vocal Jazz', NULL, NULL, '2026-02-10 13:56:11'),
-(198, 34, 'artists_ntjam_description', 'TEXT', 'Sultry vocals meet classic jazz standards. Rosie brings timeless elegance and powerful vocal performances to every show.', NULL, NULL, '2026-02-10 14:12:56'),
-(199, 34, 'artists_ntjam_performance_count', 'TEXT', '2', NULL, NULL, '2026-02-10 13:56:11'),
-(200, 34, 'artists_ntjam_first_performance', 'TEXT', 'Thu 21:00 - Patronaat Main Hall', NULL, NULL, '2026-02-10 13:56:11'),
-(201, 34, 'artists_ntjam_more_performances_text', 'TEXT', '', NULL, NULL, '2026-02-10 13:56:11'),
 (202, 36, 'schedule_title', 'HEADING', 'Storytelling schedule', NULL, NULL, '2026-02-10 17:17:49'),
 (203, 36, 'schedule_year', 'TEXT', '2026', NULL, NULL, '2026-02-10 17:17:49'),
 (204, 36, 'schedule_filters_button_text', 'BUTTON_TEXT', 'Filters', NULL, NULL, '2026-02-10 17:17:49'),
@@ -486,7 +487,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (286, 55, 'hero_main_title', 'HEADING', 'Yummy Gourmet with a Twist', NULL, NULL, '2026-02-16 16:31:14'),
 (287, 55, 'hero_subtitle', 'TEXT', 'Discover 7 gourmet restaurants offering exclusive festival\nmenus crafted by top local chefs.', NULL, NULL, '2026-02-16 16:31:14'),
 (288, 55, 'hero_button_primary', 'BUTTON_TEXT', 'Discover restaurants', NULL, NULL, '2026-02-16 16:31:14'),
-(289, 55, 'hero_button_primary_link', 'LINK', '#restaurants', NULL, NULL, '2026-02-16 16:31:14'),
+(289, 55, 'hero_button_primary_link', 'LINK', '#restaurants-grid', NULL, NULL, '2026-04-01 19:35:39'),
 (290, 55, 'hero_button_secondary', 'BUTTON_TEXT', 'About Yummy', NULL, NULL, '2026-02-16 16:31:14'),
 (291, 55, 'hero_button_secondary_link', 'LINK', '#about', NULL, NULL, '2026-02-16 16:31:14'),
 (292, 55, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/restaurants/hero-picture.png', NULL, NULL, '2026-02-16 16:31:14'),
@@ -588,71 +589,6 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (669, 76, 'schedule_show_filters', 'TEXT', '1', NULL, NULL, '2026-02-18 14:37:27'),
 (670, 76, 'schedule_start_point', 'TEXT', 'A giant flag near Church of St. Bavo at Grote Markt', NULL, NULL, '2026-03-09 20:41:13'),
 (671, 76, 'schedule_title', 'HEADING', 'Tour Schedule', NULL, NULL, '2026-02-18 14:37:27'),
-(682, 77, 'hero_subtitle', 'TEXT', 'New Orleans Jazz', NULL, NULL, '2026-03-15 16:01:52'),
-(683, 77, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/Jazz/GubmboKings-Hero.png', NULL, NULL, '2026-03-15 16:01:52'),
-(684, 77, 'origin_text', 'TEXT', 'Origin: New Orleans, Louisiana, USA', NULL, NULL, '2026-03-16 14:51:53'),
-(685, 77, 'formed_text', 'TEXT', 'Formed: 2015', NULL, NULL, '2026-03-15 16:01:52'),
-(686, 77, 'performances_text', 'TEXT', '2 performances at Haarlem Jazz 2026', NULL, NULL, '2026-03-15 16:01:52'),
-(687, 77, 'overview_heading', 'HEADING', 'Gumbo Kings', NULL, NULL, '2026-03-15 16:01:52'),
-(688, 77, 'overview_lead', 'TEXT', 'High-energy New Orleans style jazz band bringing authentic Big Easy sound to Haarlem. Known for their infectious rhythms and crowd-pleasing performances that get audiences on their feet.', NULL, NULL, '2026-03-15 16:01:52');
-INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
-(689, 77, 'overview_body_primary', 'TEXT', 'The Gumbo Kings deliver an electrifying blend of traditional New Orleans jazz, funk, and second-line grooves. With a powerful horn section, driving rhythm section, and authentic Crescent City soul, they transport audiences straight to the streets of the French Quarter. Their performances are known for spontaneous moments of musical magic and infectious energy that keeps crowds dancing all night long. Since their formation in 2015, they have become one of the most sought-after New Orleans jazz acts in Europe.', NULL, NULL, '2026-03-15 16:01:52'),
-(690, 77, 'overview_body_secondary', 'TEXT', 'Drawing inspiration from the rich musical heritage of New Orleans, the Gumbo Kings have mastered the art of combining traditional jazz elements with contemporary energy. Their repertoire spans classic jazz standards, original compositions, and reimagined funk grooves. The band has performed at major jazz festivals across Europe and the United States, earning acclaim for their authentic sound and dynamic stage presence. Their commitment to preserving and evolving the New Orleans jazz tradition has made them favorites among both purists and new jazz audiences.', NULL, NULL, '2026-03-15 16:01:52'),
-(691, 77, 'lineup_heading', 'TEXT', 'Band Lineup', NULL, NULL, '2026-03-15 16:01:52'),
-(698, 77, 'highlights_heading', 'TEXT', 'Career Highlights', NULL, NULL, '2026-03-15 16:01:52'),
-(705, 77, 'photo_gallery_heading', 'TEXT', 'Photo Gallery', NULL, NULL, '2026-03-15 16:01:52'),
-(706, 77, 'photo_gallery_description', 'TEXT', 'Experience the energy and passion of Gumbo Kings through these performance and portrait photographs.', NULL, NULL, '2026-03-15 16:01:52'),
-(710, 77, 'albums_heading', 'TEXT', 'Featured Albums', NULL, NULL, '2026-03-15 16:01:52'),
-(711, 77, 'albums_description', 'TEXT', 'Explore the studio recordings that capture the magic of Gumbo Kings. Each album showcases their evolution and mastery of the New Orleans jazz tradition.', NULL, NULL, '2026-03-15 16:01:52'),
-(727, 77, 'listen_heading', 'TEXT', 'LISTEN NOW', NULL, NULL, '2026-03-15 16:01:52'),
-(728, 77, 'listen_subheading', 'TEXT', 'Important Tracks', NULL, NULL, '2026-03-15 16:01:52'),
-(729, 77, 'listen_description', 'TEXT', 'Listen to excerpts from Gumbo Kings\'s most important and popular tracks. Experience the energy and musicianship that defines their sound.', NULL, NULL, '2026-03-15 16:01:52'),
-(754, 77, 'live_cta_heading', 'TEXT', 'Experience Gumbo Kings Live', NULL, NULL, '2026-03-15 16:01:52'),
-(755, 77, 'live_cta_description', 'TEXT', 'Do not miss the chance to see Gumbo Kings perform live at Haarlem Jazz 2026. With 2 performances scheduled, there are multiple opportunities to experience their incredible energy and musicianship.', NULL, NULL, '2026-03-15 16:01:52'),
-(756, 77, 'performances_section_id', 'TEXT', 'artist-performances', NULL, NULL, '2026-03-15 16:15:19'),
-(757, 77, 'performances_heading', 'TEXT', 'Gumbo Kings at Haarlem Jazz 2026', NULL, NULL, '2026-03-15 16:01:52'),
-(758, 77, 'performances_description', 'TEXT', 'Catch Gumbo Kings performing during the Haarlem Jazz Festival. Each performance offers a unique experience from intimate indoor shows to free outdoor concerts.', NULL, NULL, '2026-03-15 16:01:52'),
-(759, 78, 'hero_subtitle', 'TEXT', 'Vocal Jazz', NULL, NULL, '2026-03-15 16:01:52'),
-(760, 78, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/Jazz/Ntjamhero.png', NULL, NULL, '2026-03-15 16:01:52'),
-(761, 78, 'origin_text', 'TEXT', 'Origin: Cameroon / Netherlands', NULL, NULL, '2026-03-15 16:01:52'),
-(762, 78, 'formed_text', 'TEXT', 'Formed: 2008', NULL, NULL, '2026-03-15 16:01:52'),
-(763, 78, 'performances_text', 'TEXT', '2 performances at Haarlem Jazz 2026', NULL, NULL, '2026-03-15 16:01:52'),
-(764, 78, 'overview_heading', 'HEADING', 'Ntjam Rosie', NULL, NULL, '2026-03-15 16:01:52'),
-(765, 78, 'overview_lead', 'TEXT', 'Ntjam Rosie was born in Cameroon on March 18, 1983, and moved to the Netherlands at the age of nine. She blends her West-African roots with Western musical traditions, combining jazz, soul, pop and Afro influences.', NULL, NULL, '2026-03-15 16:01:52'),
-(766, 78, 'overview_body_primary', 'TEXT', 'Her debut album, Atouba, released in 2008, was the first to showcase that hybrid style, mixing African rhythms with soul and jazz influences. Since then she has developed a distinctive musical voice across several albums and performances.', NULL, NULL, '2026-03-15 16:01:52'),
-(767, 78, 'overview_body_secondary', 'TEXT', 'Ntjam Rosie has built a reputation for compelling live performances and wide appeal. She has performed at major festivals and toured internationally. Her music resonates with both jazz and soul audiences, and she continues to evolve by blending tradition and innovation.', NULL, NULL, '2026-03-15 16:01:52'),
-(768, 78, 'lineup_heading', 'TEXT', 'Band Lineup', NULL, NULL, '2026-03-15 16:01:52'),
-(774, 78, 'highlights_heading', 'TEXT', 'Career Highlights', NULL, NULL, '2026-03-15 16:01:52'),
-(781, 78, 'photo_gallery_heading', 'TEXT', 'Photo Gallery', NULL, NULL, '2026-03-15 16:01:52'),
-(782, 78, 'photo_gallery_description', 'TEXT', 'Experience the soulful elegance of Ntjam Rosie through these intimate performance and portrait photographs.', NULL, NULL, '2026-03-15 16:01:52'),
-(786, 78, 'albums_heading', 'TEXT', 'Featured Albums', NULL, NULL, '2026-03-15 16:01:52'),
-(787, 78, 'albums_description', 'TEXT', 'Explore the studio recordings that capture the soulful artistry of Ntjam Rosie. Each album reflects her evolving blend of jazz, soul, and Afro-inspired sound.', NULL, NULL, '2026-03-15 16:01:53'),
-(803, 78, 'listen_heading', 'TEXT', 'LISTEN NOW', NULL, NULL, '2026-03-15 16:01:53'),
-(804, 78, 'listen_subheading', 'TEXT', 'Important Tracks', NULL, NULL, '2026-03-15 16:01:53'),
-(805, 78, 'listen_description', 'TEXT', 'Listen to excerpts from Ntjam Rosie\'s most celebrated and influential tracks. Immerse yourself in the soulful energy and refined musicianship that define her signature sound.', NULL, NULL, '2026-03-15 16:01:53'),
-(830, 78, 'live_cta_heading', 'TEXT', 'Experience Ntjam Rosie Live', NULL, NULL, '2026-03-15 16:01:53'),
-(831, 78, 'live_cta_description', 'TEXT', 'Do not miss the chance to see Ntjam Rosie perform live at Haarlem Jazz 2026. With 2 performances scheduled, there are multiple opportunities to experience her incredible energy and musicianship.', NULL, NULL, '2026-03-15 16:01:53'),
-(832, 78, 'performances_section_id', 'TEXT', 'artist-performances', NULL, NULL, '2026-03-15 16:15:19'),
-(833, 78, 'performances_heading', 'TEXT', 'Ntjam Rosie at Haarlem Jazz 2026', NULL, NULL, '2026-03-15 16:01:53'),
-(834, 78, 'performances_description', 'TEXT', 'Catch Ntjam Rosie performing during the Haarlem Jazz Festival. Each performance offers a unique experience from intimate indoor shows to free outdoor concerts.', NULL, NULL, '2026-03-15 16:01:53'),
-(835, 77, 'hero_back_button_text', 'TEXT', 'Back to Jazz', NULL, NULL, '2026-03-15 16:15:19'),
-(836, 77, 'hero_reserve_button_text', 'TEXT', 'Reserve your spot', NULL, NULL, '2026-03-15 16:15:19'),
-(837, 77, 'live_cta_book_button_text', 'TEXT', 'Book Tickets', NULL, NULL, '2026-03-15 16:15:19'),
-(838, 77, 'live_cta_schedule_button_text', 'TEXT', 'View Full Schedule', NULL, NULL, '2026-03-15 16:15:19'),
-(839, 77, 'listen_play_button_label', 'TEXT', 'Play excerpt', NULL, NULL, '2026-03-15 16:15:19'),
-(840, 77, 'listen_play_excerpt_text', 'TEXT', 'Click to Play Excerpt', NULL, NULL, '2026-03-15 16:15:19'),
-(842, 78, 'hero_back_button_text', 'TEXT', 'Back to Jazz', NULL, NULL, '2026-03-15 16:15:19'),
-(843, 78, 'hero_reserve_button_text', 'TEXT', 'Reserve your spot', NULL, NULL, '2026-03-15 16:15:19'),
-(844, 78, 'live_cta_book_button_text', 'TEXT', 'Book Tickets', NULL, NULL, '2026-03-15 16:15:19'),
-(845, 78, 'live_cta_schedule_button_text', 'TEXT', 'View Full Schedule', NULL, NULL, '2026-03-15 16:15:19'),
-(846, 78, 'listen_play_button_label', 'TEXT', 'Play excerpt', NULL, NULL, '2026-03-15 16:15:19'),
-(847, 78, 'listen_play_excerpt_text', 'TEXT', 'Click to Play Excerpt', NULL, NULL, '2026-03-15 16:15:19'),
-(849, 77, 'hero_back_button_url', 'LINK', '/jazz', NULL, NULL, '2026-03-16 14:06:12'),
-(850, 77, 'live_cta_schedule_button_url', 'LINK', '/jazz#jazz-schedule', NULL, NULL, '2026-03-16 14:06:12'),
-(851, 77, 'listen_track_artwork_alt_suffix', 'TEXT', 'track artwork', NULL, NULL, '2026-03-16 14:06:12'),
-(852, 78, 'hero_back_button_url', 'LINK', '/jazz', NULL, NULL, '2026-03-16 14:06:12'),
-(853, 78, 'live_cta_schedule_button_url', 'LINK', '/jazz#jazz-schedule', NULL, NULL, '2026-03-16 14:06:12'),
-(854, 78, 'listen_track_artwork_alt_suffix', 'TEXT', 'track artwork', NULL, NULL, '2026-03-16 14:06:12'),
 (855, 79, 'page_title', 'HEADING', 'My Program', NULL, NULL, '2026-03-19 00:00:00'),
 (856, 79, 'selected_events_heading', 'HEADING', 'Your Selected Events', NULL, NULL, '2026-03-19 00:00:00'),
 (857, 79, 'pay_what_you_like_message', 'TEXT', 'Choose the amount you want to pay for this story. Any contribution is welcome and supports the initiative sharing their story.\nYou can adjust the amount before confirming your reservation.', NULL, NULL, '2026-03-19 00:00:00'),
@@ -690,7 +626,8 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (890, 72, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
 (891, 73, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
 (892, 61, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(893, 61, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
+(893, 61, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01');
+INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
 (894, 62, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
 (895, 62, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
 (896, 63, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
@@ -977,8 +914,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1289, 85, 'hero_button', 'BUTTON_TEXT', 'Back to history', NULL, NULL, '2026-03-16 15:08:32'),
 (1290, 85, 'hero_button_link', 'LINK', '/history', NULL, NULL, '2026-03-16 15:08:32'),
 (1291, 86, 'intro_heading', 'HEADING', 'Explore the last surviving city gate of Haarlem.', NULL, NULL, '2026-03-16 15:47:48'),
-(1292, 86, 'intro_text', 'TEXT', 'Amsterdamse Poort marks the threshold between historic Haarlem and the ancient road that once connected the city to Amsterdam. As the only remaining city gate, it offers a rare glimpse into the defensive structures that once protected citizens of Haarlem from outside threats. Today, its towers, arches, and brickwork tell stories of trade, travel, and transformation throughout the centuries. During the tour, this landmark invites visitors to slow down, look closer, and imagine the many journeys that began and ended at its impressive walls. Let this gateway introduce you to a chapter of the history of Haarlem where architecture, strategy, and daily life intertwined.', NULL, NULL, '2026-03-16 15:47:48');
-INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
+(1292, 86, 'intro_text', 'TEXT', 'Amsterdamse Poort marks the threshold between historic Haarlem and the ancient road that once connected the city to Amsterdam. As the only remaining city gate, it offers a rare glimpse into the defensive structures that once protected citizens of Haarlem from outside threats. Today, its towers, arches, and brickwork tell stories of trade, travel, and transformation throughout the centuries. During the tour, this landmark invites visitors to slow down, look closer, and imagine the many journeys that began and ended at its impressive walls. Let this gateway introduce you to a chapter of the history of Haarlem where architecture, strategy, and daily life intertwined.', NULL, NULL, '2026-03-16 15:47:48'),
 (1293, 86, 'intro_fact', 'TEXT', 'In the late Middle Ages, Amsterdamse Poort played a crucial role during periods of conflict, serving as both a defensive stronghold and a primary checkpoint for goods entering the city. During times of heightened tension, the gate was heavily fortified, illustrating its strategic importance to Haarlem\'s security. Its presence helped shape the flow of commerce and movement, making it central to the city\'s resilience and growth.', NULL, NULL, '2026-03-16 15:47:48'),
 (1294, 86, 'intro_image', 'IMAGE_PATH', '/assets/Image/History/AmsterdamsePoort-intro.png', NULL, NULL, '2026-03-16 15:47:48'),
 (1295, 87, 'facts_heading', 'HEADING', 'Did you know that...', NULL, NULL, '2026-03-21 23:35:14'),
@@ -1034,7 +970,85 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1346, 76, 'schedule_show_event_count', 'TEXT', '0', NULL, NULL, '2026-03-30 12:49:17'),
 (1347, 76, 'schedule_show_additional_info', 'TEXT', '0', NULL, NULL, '2026-03-30 12:49:17'),
 (1348, 76, 'schedule_year', 'TEXT', '2026', NULL, NULL, '2026-03-30 12:49:17'),
-(1349, 76, 'schedule_pay_what_you_like_text', 'TEXT', 'Pay what you like', NULL, NULL, '2026-03-30 12:49:17');
+(1349, 76, 'schedule_pay_what_you_like_text', 'TEXT', 'Pay what you like', NULL, NULL, '2026-03-30 12:49:17'),
+(1360, 93, 'cuisine_type', 'TEXT', 'Dutch, fish and seafood, European', NULL, NULL, '2026-04-01 12:33:53'),
+(1361, 94, 'cuisine_type', 'TEXT', 'French, fish and seafood, European', NULL, NULL, '2026-04-01 12:33:53'),
+(1362, 95, 'cuisine_type', 'TEXT', 'Dutch, fish and seafood, European', NULL, NULL, '2026-04-01 12:33:53'),
+(1363, 96, 'cuisine_type', 'TEXT', 'Dutch, French, European', NULL, NULL, '2026-04-01 12:33:53'),
+(1364, 97, 'cuisine_type', 'TEXT', 'Vegan', NULL, NULL, '2026-04-05 21:27:41'),
+(1365, 98, 'cuisine_type', 'TEXT', 'Dutch, European, Modern', NULL, NULL, '2026-04-01 12:33:53'),
+(1366, 99, 'cuisine_type', 'TEXT', 'Dutch, fish and seafood, European', NULL, NULL, '2026-04-01 12:33:53'),
+(1367, 93, 'address_line', 'TEXT', 'Botermarkt 17, 2011 XL Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1368, 94, 'address_line', 'TEXT', 'Spaarne 96, 2011 CL Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1369, 95, 'address_line', 'TEXT', 'Kleine Houtstraat 70, 2011 DR Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1370, 96, 'address_line', 'TEXT', 'Twijnderslaan 7, 2012 BG Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1371, 97, 'address_line', 'TEXT', 'Koningstraat 5, 2011 TB Haarlem', NULL, NULL, '2026-04-05 21:27:41'),
+(1372, 98, 'address_line', 'TEXT', 'Grote Markt 13, 2011 RC Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1373, 99, 'address_line', 'TEXT', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1374, 93, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1375, 94, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1376, 95, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1377, 96, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1378, 97, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1379, 98, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54');
+INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
+(1380, 99, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
+(1381, 93, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-01 12:33:54'),
+(1382, 94, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-01 12:33:54'),
+(1383, 95, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-01 12:33:54'),
+(1384, 96, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-01 12:33:54'),
+(1385, 97, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-05 21:27:41'),
+(1386, 98, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-01 12:33:54'),
+(1387, 99, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-01 12:33:54'),
+(1388, 57, 'intro_sub1_heading', 'TEXT', 'What is Yummy?', NULL, NULL, '2026-04-01 19:35:39'),
+(1389, 57, 'intro_sub1_text', 'TEXT', 'A festival of food where each restaurant offers one unique menu, set time slots, and special prices.', NULL, NULL, '2026-04-01 19:35:39'),
+(1390, 57, 'intro_sub2_heading', 'TEXT', 'Who takes part?', NULL, NULL, '2026-04-01 19:35:39'),
+(1391, 57, 'intro_sub2_text', 'TEXT', 'Local chefs and restaurants from all around Haarlem, prepare with their own style a great variety of dishes, such as: Dutch-French-European-Fish & Seafood-Modern Vegan.', NULL, NULL, '2026-04-01 19:35:39'),
+(1392, 57, 'intro_sub3_heading', 'TEXT', 'How does it work?', NULL, NULL, '2026-04-01 19:35:39'),
+(1393, 57, 'intro_sub3_text', 'TEXT', 'Choose a restaurant, pick a time slot, and make a reservation. Seats are limited, so booking ahead is important.', NULL, NULL, '2026-04-01 19:35:39'),
+(1394, 57, 'intro_closing', 'TEXT', 'Come enjoy great food, good company, and a warm festival atmosphere.', NULL, NULL, '2026-04-01 19:35:39'),
+(1396, 93, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
+(1397, 93, 'price_adult', 'TEXT', '45.00', NULL, NULL, '2026-04-01 19:35:39'),
+(1398, 93, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
+(1400, 94, 'time_slots', 'TEXT', '17:00, 19:15, 21:30', NULL, NULL, '2026-04-01 19:35:39'),
+(1401, 94, 'price_adult', 'TEXT', '45.00', NULL, NULL, '2026-04-01 19:35:39'),
+(1402, 94, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
+(1404, 95, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
+(1405, 95, 'price_adult', 'TEXT', '45.00', NULL, NULL, '2026-04-01 19:35:39'),
+(1406, 95, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
+(1408, 96, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
+(1409, 96, 'price_adult', 'TEXT', '45.00', NULL, NULL, '2026-04-01 19:35:39'),
+(1410, 96, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
+(1412, 97, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
+(1413, 97, 'price_adult', 'TEXT', '35.00', NULL, NULL, '2026-04-01 19:35:39'),
+(1414, 97, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
+(1416, 98, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
+(1417, 98, 'price_adult', 'TEXT', '35.00', NULL, NULL, '2026-04-01 19:35:39'),
+(1418, 98, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
+(1420, 99, 'time_slots', 'TEXT', '17:30, 19:15, 21:00', NULL, NULL, '2026-04-01 19:35:39'),
+(1421, 99, 'price_adult', 'TEXT', '35.00', NULL, NULL, '2026-04-01 19:35:39'),
+(1422, 99, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
+(1452, 35, 'booking_contact_eyebrow', 'TEXT', 'CONTACT US', NULL, NULL, '2026-04-04 19:34:48'),
+(1453, 35, 'booking_contact_title', 'TEXT', 'Get Information', NULL, NULL, '2026-04-04 19:34:48'),
+(1454, 35, 'booking_contact_description', 'TEXT', 'Questions about the festival, venues, or artists? Contact our office during business hours.', NULL, NULL, '2026-04-04 19:34:48'),
+(1455, 35, 'booking_contact_phone_office', 'TEXT', '023 - 517 58 50 (Office)', NULL, NULL, '2026-04-04 19:34:48'),
+(1456, 35, 'booking_contact_phone_cash_desk', 'TEXT', '023 - 517 58 58 (Cash Desk)', NULL, NULL, '2026-04-04 19:34:48'),
+(1457, 35, 'booking_contact_hours', 'TEXT', '10:00 - 17:00', NULL, NULL, '2026-04-04 19:34:48'),
+(1458, 35, 'booking_venue_eyebrow', 'TEXT', 'VENUE DETAILS', NULL, NULL, '2026-04-04 19:34:48'),
+(1459, 35, 'booking_venue_title', 'TEXT', 'Visit Patronaat', NULL, NULL, '2026-04-04 19:34:48'),
+(1460, 35, 'booking_venue_description', 'TEXT', 'Learn more about our main indoor venue, accessibility options, and facilities.', NULL, NULL, '2026-04-04 19:34:48'),
+(1461, 35, 'booking_tickets_eyebrow', 'TEXT', 'TICKETS', NULL, NULL, '2026-04-04 19:34:48'),
+(1462, 35, 'booking_tickets_title', 'TEXT', 'Purchase Tickets', NULL, NULL, '2026-04-04 19:34:48'),
+(1463, 35, 'booking_tickets_description', 'TEXT', 'Individual show tickets, day passes, and 3-day all-access passes available now. Book early for best selection.', NULL, NULL, '2026-04-04 19:34:48'),
+(1467, 97, 'about_text', 'TEXT', '3-star restaurant experience during Haarlem Festival', NULL, NULL, '2026-04-05 21:27:41'),
+(1472, 106, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-05 21:28:15'),
+(1473, 106, 'cuisine_type', 'TEXT', 'French, Modern', NULL, NULL, '2026-04-05 21:28:15'),
+(1474, 106, 'address_line', 'TEXT', 'Nieuwe Straat 1, 2011 XY Haarlem', NULL, NULL, '2026-04-05 21:28:15'),
+(1475, 106, 'about_text', 'TEXT', '4-star French cuisine experience', NULL, NULL, '2026-04-05 21:28:15'),
+(1476, 105, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-05 21:30:05'),
+(1477, 105, 'cuisine_type', 'TEXT', 'italian food', NULL, NULL, '2026-04-05 21:30:05'),
+(1478, 105, 'address_line', 'TEXT', 'Hoge Duin en Daalseweg 2', NULL, NULL, '2026-04-05 21:56:56'),
+(1479, 105, 'about_text', 'TEXT', 'heh', NULL, NULL, '2026-04-05 21:30:05');
 
 -- --------------------------------------------------------
 
@@ -1146,12 +1160,17 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('venues_heading', 'HEADING'),
 ('about_body', 'HTML'),
 ('about_description', 'HTML'),
+('about_text', 'HTML'),
+('chef_text', 'HTML'),
+('location_description', 'HTML'),
+('menu_description', 'HTML'),
 ('schedule_additional_info_body', 'HTML'),
 ('about_image_1', 'IMAGE_PATH'),
 ('about_image_2', 'IMAGE_PATH'),
 ('album_1_image', 'IMAGE_PATH'),
 ('album_2_image', 'IMAGE_PATH'),
 ('album_3_image', 'IMAGE_PATH'),
+('chef_image', 'IMAGE_PATH'),
 ('gallery_image_1', 'IMAGE_PATH'),
 ('gallery_image_2', 'IMAGE_PATH'),
 ('gallery_image_3', 'IMAGE_PATH'),
@@ -1180,6 +1199,9 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('masonry_image_10', 'IMAGE_PATH'),
 ('masonry_image_11', 'IMAGE_PATH'),
 ('masonry_image_12', 'IMAGE_PATH'),
+('menu_image_1', 'IMAGE_PATH'),
+('menu_image_2', 'IMAGE_PATH'),
+('reservation_image', 'IMAGE_PATH'),
 ('restaurant_1_image', 'IMAGE_PATH'),
 ('restaurant_5_image', 'IMAGE_PATH'),
 ('restaurant_6_image', 'IMAGE_PATH'),
@@ -1200,7 +1222,9 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('history_molendeadriaan_link', 'LINK'),
 ('history_single_ticket_icon', 'LINK'),
 ('live_cta_schedule_button_url', 'LINK'),
+('map_embed_url', 'LINK'),
 ('schedule_cta_button_link', 'LINK'),
+('website', 'LINK'),
 ('about_image', 'MEDIA'),
 ('artists_evolve_image', 'MEDIA'),
 ('artists_gumbokings_image', 'MEDIA'),
@@ -1215,6 +1239,7 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('restaurant_image', 'MEDIA'),
 ('storytelling_image', 'MEDIA'),
 ('about_tagline', 'TEXT'),
+('address_line', 'TEXT'),
 ('album_1_description', 'TEXT'),
 ('album_1_tag', 'TEXT'),
 ('album_1_title', 'TEXT'),
@@ -1251,12 +1276,27 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('back_button_label', 'TEXT'),
 ('back_button_text', 'TEXT'),
 ('banner_subtitle', 'TEXT'),
+('booking_contact_description', 'TEXT'),
+('booking_contact_eyebrow', 'TEXT'),
+('booking_contact_hours', 'TEXT'),
+('booking_contact_phone_cash_desk', 'TEXT'),
+('booking_contact_phone_office', 'TEXT'),
+('booking_contact_title', 'TEXT'),
 ('booking_cta_description', 'TEXT'),
+('booking_tickets_description', 'TEXT'),
+('booking_tickets_eyebrow', 'TEXT'),
+('booking_tickets_title', 'TEXT'),
+('booking_venue_description', 'TEXT'),
+('booking_venue_eyebrow', 'TEXT'),
+('booking_venue_title', 'TEXT'),
 ('btn_explore_template', 'TEXT'),
 ('cards_subtitle', 'TEXT'),
 ('checkout_button_text', 'TEXT'),
+('chef_name', 'TEXT'),
+('city', 'TEXT'),
 ('clear_button_text', 'TEXT'),
 ('continue_exploring_text', 'TEXT'),
+('cuisine_type', 'TEXT'),
 ('dance_description', 'TEXT'),
 ('detail_hero_subtitle_template', 'TEXT'),
 ('detail_label_address', 'TEXT'),
@@ -1275,6 +1315,8 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('detail_reservation_description', 'TEXT'),
 ('detail_reservation_note', 'TEXT'),
 ('detail_reservation_slots_label', 'TEXT'),
+('duration_minutes', 'TEXT'),
+('email', 'TEXT'),
 ('email_label', 'TEXT'),
 ('email_placeholder', 'TEXT'),
 ('events_subtitle', 'TEXT'),
@@ -1334,8 +1376,15 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('instructions_card_2_text', 'TEXT'),
 ('instructions_card_3_text', 'TEXT'),
 ('intro_body', 'TEXT'),
+('intro_closing', 'TEXT'),
 ('intro_fact', 'TEXT'),
 ('intro_image_alt', 'TEXT'),
+('intro_sub1_heading', 'TEXT'),
+('intro_sub1_text', 'TEXT'),
+('intro_sub2_heading', 'TEXT'),
+('intro_sub2_text', 'TEXT'),
+('intro_sub3_heading', 'TEXT'),
+('intro_sub3_text', 'TEXT'),
 ('intro_text', 'TEXT'),
 ('intro2_body', 'TEXT'),
 ('intro2_image_alt', 'TEXT'),
@@ -1361,6 +1410,7 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('live_cta_description', 'TEXT'),
 ('live_cta_heading', 'TEXT'),
 ('live_cta_schedule_button_text', 'TEXT'),
+('michelin_stars', 'TEXT'),
 ('nav_dance', 'TEXT'),
 ('nav_history', 'TEXT'),
 ('nav_home', 'TEXT'),
@@ -1382,8 +1432,10 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('performances_text', 'TEXT'),
 ('personal_info_heading', 'TEXT'),
 ('personal_info_subtext', 'TEXT'),
+('phone', 'TEXT'),
 ('photo_gallery_description', 'TEXT'),
 ('photo_gallery_heading', 'TEXT'),
+('price_adult', 'TEXT'),
 ('pricing_3day_desc', 'TEXT'),
 ('pricing_3day_include1', 'TEXT'),
 ('pricing_3day_include2', 'TEXT'),
@@ -1510,11 +1562,15 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('schedule_subtitle_1', 'TEXT'),
 ('schedule_subtitle_2', 'TEXT'),
 ('schedule_year', 'TEXT'),
+('seats_per_session', 'TEXT'),
 ('selected_events_heading', 'TEXT'),
 ('site_name', 'TEXT'),
+('special_requests_note', 'TEXT'),
+('stars', 'TEXT'),
 ('storytelling_description', 'TEXT'),
 ('tax_label', 'TEXT'),
 ('ticket_options_subheading', 'TEXT'),
+('time_slots', 'TEXT'),
 ('track_1_album', 'TEXT'),
 ('track_1_description', 'TEXT'),
 ('track_1_duration', 'TEXT'),
@@ -1608,12 +1664,12 @@ INSERT INTO `CmsPage` (`CmsPageId`, `Slug`, `Title`) VALUES
 (5, 'jazz', 'Haarlem Jazz Festival'),
 (6, 'restaurant', 'Yummy! Restaurant Experience'),
 (7, 'storytelling-detail', 'Storytelling Detail Pages'),
-(8, 'jazz-artist-detail', 'Jazz Artist Detail Pages'),
 (9, 'my-program', 'My Program'),
 (10, 'checkout', 'Checkout'),
 (11, 'grote-markt', 'Grote Markt'),
 (12, 'amsterdamse-poort', 'Amsterdaamse Poort'),
-(13, 'molen-de-adriaan', 'Molen De Adriaan');
+(13, 'molen-de-adriaan', 'Molen De Adriaan'),
+(14, 'restaurant-detail', 'Restaurant Detail Pages');
 
 -- --------------------------------------------------------
 
@@ -1686,8 +1742,8 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (71, 7, 'event_44'),
 (72, 7, 'event_45'),
 (73, 7, 'event_46'),
-(77, 8, 'event_1'),
-(78, 8, 'event_3'),
+(102, 7, 'event_67'),
+(104, 7, 'event_69'),
 (79, 9, 'main'),
 (80, 10, 'main'),
 (83, 11, 'facts_section'),
@@ -1701,7 +1757,17 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (91, 13, 'facts_section'),
 (89, 13, 'hero_section'),
 (90, 13, 'intro_section'),
-(92, 13, 'significance_section');
+(92, 13, 'significance_section'),
+(93, 14, 'event_47'),
+(94, 14, 'event_48'),
+(95, 14, 'event_49'),
+(96, 14, 'event_50'),
+(97, 14, 'event_51'),
+(98, 14, 'event_52'),
+(99, 14, 'event_53'),
+(103, 14, 'event_68'),
+(105, 14, 'event_72'),
+(106, 14, 'event_73');
 
 -- --------------------------------------------------------
 
@@ -1751,12 +1817,12 @@ CREATE TABLE `Event` (
   `EventTypeId` int(11) NOT NULL,
   `Title` varchar(160) NOT NULL,
   `Slug` varchar(180) DEFAULT NULL,
+  `DisplayOrder` int(11) DEFAULT NULL,
   `ShortDescription` varchar(300) NOT NULL DEFAULT '',
   `LongDescriptionHtml` text NOT NULL DEFAULT '<p></p>',
   `FeaturedImageAssetId` int(11) DEFAULT NULL,
   `VenueId` int(11) DEFAULT NULL,
   `ArtistId` int(11) DEFAULT NULL,
-  `RestaurantId` int(11) DEFAULT NULL,
   `IsActive` tinyint(1) NOT NULL DEFAULT 1,
   `CreatedAtUtc` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -1765,59 +1831,71 @@ CREATE TABLE `Event` (
 -- Dumping data for table `Event`
 --
 
-INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `ShortDescription`, `LongDescriptionHtml`, `FeaturedImageAssetId`, `VenueId`, `ArtistId`, `RestaurantId`, `IsActive`, `CreatedAtUtc`) VALUES
-(1, 1, 'Gumbo Kings', 'gumbo-kings', 'Live jazz performance by Gumbo Kings', '<p></p>', NULL, 2, 1, NULL, 1, '2026-02-06 15:30:32'),
-(2, 1, 'Evolve', 'evolve', 'Live jazz performance by Evolve', '<p></p>', NULL, 2, 2, NULL, 1, '2026-02-06 15:30:32'),
-(3, 1, 'Ntjam Rosie', 'ntjam-rosie', 'Live jazz performance by Ntjam Rosie', '<p></p>', NULL, 1, 3, NULL, 1, '2026-02-06 15:30:32'),
-(4, 1, 'Wicked Jazz Sounds', 'wicked-jazz-sounds', 'Live jazz performance by Wicked Jazz Sounds', '<p></p>', NULL, 2, 4, NULL, 1, '2026-02-06 15:30:32'),
-(5, 1, 'Wouter Hamel', 'wouter-hamel', 'Live jazz performance by Wouter Hamel', '<p></p>', NULL, 1, 5, NULL, 1, '2026-02-06 15:30:32'),
-(6, 1, 'Jonna Frazer', 'jonna-frazer', 'Live jazz performance by Jonna Frazer', '<p></p>', NULL, 1, 6, NULL, 1, '2026-02-06 15:30:32'),
-(7, 1, 'Karsu', 'karsu', 'Live jazz performance by Karsu', '<p></p>', NULL, 1, 7, NULL, 1, '2026-02-06 15:30:32'),
-(8, 1, 'Uncle Sue', 'uncle-sue', 'Live jazz performance by Uncle Sue', '<p></p>', NULL, 1, 8, NULL, 1, '2026-02-06 15:30:32'),
-(9, 1, 'Chris Allen', 'chris-allen', 'Live jazz performance by Chris Allen', '<p></p>', NULL, NULL, 9, NULL, 1, '2026-02-06 15:30:32'),
-(10, 1, 'Myles Sanko', 'myles-sanko', 'Live jazz performance by Myles Sanko', '<p></p>', NULL, 1, 10, NULL, 1, '2026-02-06 15:30:32'),
-(11, 1, 'Ilse Huizinga', 'ilse-huizinga', 'Live jazz performance by Ilse Huizinga', '<p></p>', NULL, 1, 11, NULL, 1, '2026-02-06 15:30:32'),
-(12, 1, 'Eric Vloeimans and Hotspot!', 'eric-vloeimans-and-hotspot', 'Live jazz performance by Eric Vloeimans and Hotspot!', '<p></p>', NULL, 1, 12, NULL, 1, '2026-02-06 15:30:32'),
-(13, 1, 'Gare du Nord', 'gare-du-nord', 'Live jazz performance by Gare du Nord', '<p></p>', NULL, 2, 13, NULL, 1, '2026-02-06 15:30:32'),
-(14, 1, 'Rilan & The Bombadiers', 'rilan-the-bombadiers', 'Live jazz performance by Rilan & The Bombadiers', '<p></p>', NULL, 1, 14, NULL, 1, '2026-02-06 15:30:32'),
-(15, 1, 'Soul Six', 'soul-six', 'Live jazz performance by Soul Six', '<p></p>', NULL, 1, 15, NULL, 1, '2026-02-06 15:30:32'),
-(16, 1, 'Han Bennink', 'han-bennink', 'Live jazz performance by Han Bennink', '<p></p>', NULL, 1, 16, NULL, 1, '2026-02-06 15:30:32'),
-(17, 1, 'The Nordanians', 'the-nordanians', 'Live jazz performance by The Nordanians', '<p></p>', NULL, 2, 17, NULL, 1, '2026-02-06 15:30:32'),
-(18, 1, 'Lilith Merlot', 'lilith-merlot', 'Live jazz performance by Lilith Merlot', '<p></p>', NULL, 1, 18, NULL, 1, '2026-02-06 15:30:32'),
-(19, 1, 'Ruis Soundsystem', 'ruis-soundsystem', 'Live jazz performance by Ruis Soundsystem', '<p></p>', NULL, 2, 19, NULL, 1, '2026-02-06 15:30:32'),
-(20, 2, 'Nicky Romero / Afrojack - Back2Back', 'nicky-romero-afrojack-back2back', 'Back2Back session featuring Nicky Romero and Afrojack', '<p></p>', NULL, 3, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(21, 2, 'Tiësto - Club', 'ti-sto-club', 'Club session by Tiësto', '<p></p>', NULL, 4, 22, NULL, 1, '2026-02-06 15:30:32'),
-(22, 2, 'Hardwell - Club', 'hardwell-club', 'Club session by Hardwell', '<p></p>', NULL, 5, 23, NULL, 1, '2026-02-06 15:30:32'),
-(23, 2, 'Armin van Buuren - Club', 'armin-van-buuren-club', 'Club session by Armin van Buuren', '<p></p>', NULL, 6, 25, NULL, 1, '2026-02-06 15:30:32'),
-(24, 2, 'Martin Garrix - Club', 'martin-garrix-club', 'Club session by Martin Garrix', '<p></p>', NULL, 7, 24, NULL, 1, '2026-02-06 15:30:32'),
-(25, 2, 'Hardwell / Martin Garrix / Armin van Buuren - Back2Back', 'hardwell-martin-garrix-armin-van-buuren-back2back', 'Back2Back session featuring Hardwell, Martin Garrix and Armin van Buuren', '<p></p>', NULL, 8, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(26, 2, 'Afrojack - Club', 'afrojack-club', 'Club session by Afrojack', '<p></p>', NULL, 5, 21, NULL, 1, '2026-02-06 15:30:32'),
-(27, 2, 'Tiësto - TiëstoWorld', 'ti-sto-ti-stoworld', 'TiëstoWorld session by Tiësto', '<p></p>', NULL, 3, 22, NULL, 1, '2026-02-06 15:30:32'),
-(28, 2, 'Nicky Romero - Club', 'nicky-romero-club', 'Club session by Nicky Romero', '<p></p>', NULL, 4, 20, NULL, 1, '2026-02-06 15:30:32'),
-(29, 2, 'Afrojack / Tiësto / Nicky Romero - Back2Back', 'afrojack-ti-sto-nicky-romero-back2back', 'Back2Back session featuring Afrojack, Tiësto and Nicky Romero', '<p></p>', NULL, 8, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(30, 2, 'Armin van Buuren - Club (Sunday)', 'armin-van-buuren-club-sunday', 'Club session by Armin van Buuren', '<p></p>', NULL, 5, 25, NULL, 1, '2026-02-06 15:30:32'),
-(31, 2, 'Hardwell - Club (Sunday)', 'hardwell-club-sunday', 'Club session by Hardwell', '<p></p>', NULL, 6, 23, NULL, 1, '2026-02-06 15:30:32'),
-(32, 2, 'Martin Garrix - Club (Sunday)', 'martin-garrix-club-sunday', 'Club session by Martin Garrix', '<p></p>', NULL, 4, 24, NULL, 1, '2026-02-06 15:30:32'),
-(33, 3, 'A Stroll Through History', 'a-stroll-through-history', 'Guided walking tour through historic Haarlem. Due to the nature of this walk, participants must be a minimum of 12 years old and no strollers are allowed.', '<p></p>', NULL, 15, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(34, 4, 'Winnie de Poeh (4+)', 'winnie-de-poeh-4', 'Stories for the whole family', '<p></p>', NULL, NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(35, 4, 'Omdenken Podcast', 'omdenken-podcast', 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(36, 4, 'The story of Buurderij Haarlem', 'the-story-of-buurderij-haarlem', 'Stories with impact', '<p></p>', NULL, 12, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(37, 4, 'Corrie voor kinderen', 'corrie-voor-kinderen', 'Stories for the whole family', '<p></p>', NULL, 13, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(38, 4, 'Winnaars van verhalenvertel wedstrijd, verhalen voor Haarlem', 'winnaars-van-verhalenvertel-wedstrijd-verhalen-voor-haarlem', 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(39, 4, 'Het verhaal van de Oeserzwammerij', 'het-verhaal-van-de-oeserzwammerij', 'Stories with impact', '<p></p>', NULL, 12, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(40, 4, 'Flip Thinking Podcast', 'flip-thinking-podcast', 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(42, 4, 'Mister Anansi', 'mister-anansi', 'Stories for the whole family', '<p></p>', NULL, 14, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(43, 4, 'Podcastlast Haarlem Special', 'podcastlast-haarlem-special', 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(44, 4, 'De geschiedenis van familie ten Boom', 'de-geschiedenis-van-familie-ten-boom', 'Stories with impact', '<p></p>', NULL, 13, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(45, 4, 'The history of the Ten Boom Family', 'the-history-of-the-ten-boom-family', 'Stories with impact', '<p></p>', NULL, 13, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(46, 4, 'Winners of story telling competition, stories for Haarlem', 'winners-of-story-telling-competition-stories-for-haarlem', 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(47, 5, 'Café de Roemer - Festival Dinner', 'caf-de-roemer-festival-dinner', 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 3, 1, '2026-02-06 15:30:32'),
-(48, 5, 'Ratatouille - Festival Dinner', 'ratatouille-festival-dinner', 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 1, 1, '2026-02-06 15:30:32'),
-(49, 5, 'Restaurant ML - Festival Dinner', 'restaurant-ml-festival-dinner', 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 7, 1, '2026-02-06 15:30:32'),
-(50, 5, 'Restaurant Fris - Festival Dinner', 'restaurant-fris-festival-dinner', 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 6, 1, '2026-02-06 15:30:32'),
-(51, 5, 'New Vegas - Festival Dinner', 'new-vegas-festival-dinner', 'Vegan cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 5, 1, '2026-02-06 15:30:32'),
-(52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'grand-cafe-brinkman-festival-dinner', 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 4, 1, '2026-02-06 15:30:32'),
-(53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'urban-frenchy-bistro-toujours-festival-dinner', 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', NULL, NULL, NULL, 2, 1, '2026-02-06 15:30:32');
+INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `DisplayOrder`, `ShortDescription`, `LongDescriptionHtml`, `FeaturedImageAssetId`, `VenueId`, `ArtistId`, `IsActive`, `CreatedAtUtc`) VALUES
+(1, 1, 'Gumbo Kings', 'gumbo-kings', NULL, 'Live jazz performance by Gumbo Kings', '<p></p>', NULL, 2, 1, 1, '2026-02-06 15:30:32'),
+(2, 1, 'Evolve', 'evolve', NULL, 'Live jazz performance by Evolve', '<p></p>', NULL, 2, 2, 1, '2026-02-06 15:30:32'),
+(3, 1, 'Ntjam Rosie', 'ntjam-rosie', NULL, '', '<p></p>', NULL, 1, 3, 1, '2026-02-06 15:30:32'),
+(4, 1, 'Wicked Jazz Sounds', 'wicked-jazz-sounds', NULL, 'Live jazz performance by Wicked Jazz Sounds', '<p></p>', NULL, 2, 4, 1, '2026-02-06 15:30:32'),
+(5, 1, 'Wouter Hamel', 'wouter-hamel', NULL, 'Live jazz performance by Wouter Hamel', '<p></p>', NULL, 1, 5, 1, '2026-02-06 15:30:32'),
+(6, 1, 'Jonna Frazer', 'jonna-frazer', NULL, 'Live jazz performance by Jonna Frazer', '<p></p>', NULL, 1, 6, 1, '2026-02-06 15:30:32'),
+(7, 1, 'Karsu', 'karsu', NULL, 'Live jazz performance by Karsu', '<p></p>', NULL, 1, 7, 1, '2026-02-06 15:30:32'),
+(8, 1, 'Uncle Sue', 'uncle-sue', NULL, 'Live jazz performance by Uncle Sue', '<p></p>', NULL, 1, 8, 1, '2026-02-06 15:30:32'),
+(9, 1, 'Chris Allen', 'chris-allen', NULL, 'Live jazz performance by Chris Allen', '<p></p>', NULL, 1, 9, 1, '2026-02-06 15:30:32'),
+(10, 1, 'Myles Sanko', 'myles-sanko', NULL, 'Live jazz performance by Myles Sanko', '<p></p>', NULL, 1, 10, 1, '2026-02-06 15:30:32'),
+(11, 1, 'Ilse Huizinga', 'ilse-huizinga', NULL, 'Live jazz performance by Ilse Huizinga', '<p></p>', NULL, 1, 11, 1, '2026-02-06 15:30:32'),
+(12, 1, 'Eric Vloeimans and Hotspot!', 'eric-vloeimans-and-hotspot', NULL, 'Live jazz performance by Eric Vloeimans and Hotspot!', '<p></p>', NULL, 1, 12, 1, '2026-02-06 15:30:32'),
+(13, 1, 'Gare du Nord', 'gare-du-nord', NULL, 'Live jazz performance by Gare du Nord', '<p></p>', NULL, 2, 13, 1, '2026-02-06 15:30:32'),
+(14, 1, 'Rilan & The Bombadiers', 'rilan-the-bombadiers', NULL, 'Live jazz performance by Rilan & The Bombadiers', '<p></p>', NULL, 1, 14, 1, '2026-02-06 15:30:32'),
+(15, 1, 'Soul Six', 'soul-six', NULL, 'Live jazz performance by Soul Six', '<p></p>', NULL, 1, 15, 1, '2026-02-06 15:30:32'),
+(16, 1, 'Han Bennink', 'han-bennink', NULL, 'Live jazz performance by Han Bennink', '<p></p>', NULL, 1, 16, 1, '2026-02-06 15:30:32'),
+(17, 1, 'The Nordanians', 'the-nordanians', NULL, 'Live jazz performance by The Nordanians', '<p></p>', NULL, 2, 17, 1, '2026-02-06 15:30:32'),
+(18, 1, 'Lilith Merlot', 'lilith-merlot', NULL, 'Live jazz performance by Lilith Merlot', '<p></p>', NULL, 1, 18, 1, '2026-02-06 15:30:32'),
+(19, 1, 'Ruis Soundsystem', 'ruis-soundsystem', NULL, 'Live jazz performance by Ruis Soundsystem', '<p></p>', NULL, 2, 19, 1, '2026-02-06 15:30:32'),
+(20, 2, 'Nicky Romero / Afrojack - Back2Back', 'nicky-romero-afrojack-back2back', NULL, 'Back2Back session featuring Nicky Romero and Afrojack', '<p></p>', NULL, 3, NULL, 1, '2026-02-06 15:30:32'),
+(21, 2, 'Tiësto - Club', 'ti-sto-club', NULL, 'Club session by Tiësto', '<p></p>', NULL, 4, 22, 1, '2026-02-06 15:30:32'),
+(22, 2, 'Hardwell - Club', 'hardwell-club', NULL, 'Club session by Hardwell', '<p></p>', NULL, 5, 23, 1, '2026-02-06 15:30:32'),
+(23, 2, 'Armin van Buuren - Club', 'armin-van-buuren-club', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
+(24, 2, 'Martin Garrix - Club', 'martin-garrix-club', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 7, 24, 1, '2026-02-06 15:30:32'),
+(25, 2, 'Hardwell / Martin Garrix / Armin van Buuren - Back2Back', 'hardwell-martin-garrix-armin-van-buuren-back2back', NULL, 'Back2Back session featuring Hardwell, Martin Garrix and Armin van Buuren', '<p></p>', NULL, 8, NULL, 1, '2026-02-06 15:30:32'),
+(26, 2, 'Afrojack - Club', 'afrojack-club', NULL, 'Club session by Afrojack', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
+(27, 2, 'Tiësto - TiëstoWorld', 'ti-sto-ti-stoworld', NULL, 'TiëstoWorld session by Tiësto', '<p></p>', NULL, 3, 22, 1, '2026-02-06 15:30:32'),
+(28, 2, 'Nicky Romero - Club', 'nicky-romero-club', NULL, 'Club session by Nicky Romero', '<p></p>', NULL, 4, 20, 1, '2026-02-06 15:30:32'),
+(29, 2, 'Afrojack / Tiësto / Nicky Romero - Back2Back', 'afrojack-ti-sto-nicky-romero-back2back', NULL, 'Back2Back session featuring Afrojack, Tiësto and Nicky Romero', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
+(30, 2, 'Armin van Buuren - Club (Sunday)', 'armin-van-buuren-club-sunday', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, 5, 25, 1, '2026-02-06 15:30:32'),
+(31, 2, 'Hardwell - Club (Sunday)', 'hardwell-club-sunday', NULL, 'Club session by Hardwell', '<p></p>', NULL, 6, 23, 1, '2026-02-06 15:30:32'),
+(32, 2, 'Martin Garrix - Club (Sunday)', 'martin-garrix-club-sunday', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 4, 24, 1, '2026-02-06 15:30:32'),
+(33, 3, 'A Stroll Through History', 'a-stroll-through-history', NULL, 'Guided walking tour through historic Haarlem. Due to the nature of this walk, participants must be a minimum of 12 years old and no strollers are allowed.', '<p></p>', NULL, 15, NULL, 1, '2026-02-06 15:30:32'),
+(34, 4, 'Winnie de Poeh (4+)', 'winnie-de-poeh-4', NULL, 'Stories for the whole family', '<p></p>', NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(35, 4, 'Omdenken Podcast', 'omdenken-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
+(36, 4, 'The story of Buurderij Haarlem', 'the-story-of-buurderij-haarlem', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, 1, '2026-02-06 15:30:32'),
+(37, 4, 'Corrie voor kinderen', 'corrie-voor-kinderen', NULL, 'Stories for the whole family', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
+(38, 4, 'Winnaars van verhalenvertel wedstrijd, verhalen voor Haarlem', 'winnaars-van-verhalenvertel-wedstrijd-verhalen-voor-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, '2026-02-06 15:30:32'),
+(39, 4, 'Het verhaal van de Oeserzwammerij', 'het-verhaal-van-de-oeserzwammerij', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, 1, '2026-02-06 15:30:32'),
+(40, 4, 'Flip Thinking Podcast', 'flip-thinking-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
+(42, 4, 'Mister Anansi', 'mister-anansi', NULL, 'Stories for the whole family', '<p></p>', NULL, 14, NULL, 1, '2026-02-06 15:30:32'),
+(43, 4, 'Podcastlast Haarlem Special', 'podcastlast-haarlem-special', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
+(44, 4, 'De geschiedenis van familie ten Boom', 'de-geschiedenis-van-familie-ten-boom', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
+(45, 4, 'The history of the Ten Boom Family', 'the-history-of-the-ten-boom-family', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
+(46, 4, 'Winners of story telling competition, stories for Haarlem', 'winners-of-story-telling-competition-stories-for-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, '2026-02-06 15:30:32'),
+(47, 5, 'Café de Roemer - Festival Dinner', 'caf-de-roemer-festival-dinner', 3, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 75, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(48, 5, 'Ratatouille - Festival Dinner', 'ratatouille-festival-dinner', 1, 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 76, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(49, 5, 'Restaurant ML - Festival Dinner', 'restaurant-ml-festival-dinner', 7, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 77, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(50, 5, 'Restaurant Fris - Festival Dinner', 'restaurant-fris-festival-dinner', 6, 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 78, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(51, 5, 'New Vegas - Festival Dinner', 'new-vegas-festival-dinner', 5, '', '<p></p>', NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'grand-cafe-brinkman-festival-dinner', 4, 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 80, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'urban-frenchy-bistro-toujours-festival-dinner', 2, 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 81, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(57, 3, 'E2E Test History Tour', NULL, NULL, 'Automated test history tour', '<p>A guided walking tour through historic Haarlem.</p>', NULL, 15, NULL, 0, '2026-03-30 17:57:20'),
+(58, 4, 'E2E Test Storytelling Event', NULL, NULL, 'Automated test storytelling session', '<p>An evening of captivating stories.</p>', NULL, NULL, NULL, 0, '2026-03-30 17:57:24'),
+(59, 5, 'E2E Test Restaurant Event', 'e2e-test-restaurant-event', NULL, 'Automated test restaurant dinner', '<p>Fine dining experience for the festival.</p>', NULL, NULL, NULL, 0, '2026-03-30 17:57:29'),
+(66, 4, 'test', NULL, NULL, 'testing just because yest', '<p></p>', NULL, NULL, NULL, 0, '2026-04-02 17:51:22'),
+(67, 4, 'Test Storytelling Event Commit3', 'test-storytelling-event-commit3', NULL, 'Test', '<p>Test</p>', NULL, NULL, NULL, 1, '2026-04-05 19:33:14'),
+(68, 5, 'Test Restaurant Event Commit3', 'test-restaurant-event-commit3', NULL, 'Test', '<p>Test</p>', NULL, NULL, NULL, 1, '2026-04-05 19:33:23'),
+(69, 4, 'this is test 1', 'this-is-test-1', NULL, 'this is test 1', 'this is test 1', NULL, 12, NULL, 1, '2026-04-05 20:09:38'),
+(70, 1, 'this is test 2', 'this-is-test-2', NULL, 'this is test 2', '<p></p>', NULL, 6, 25, 0, '2026-04-05 20:11:55'),
+(71, 3, 'this is test 3', 'this-is-test-3', NULL, 'this is test 3', 'this is test 3', NULL, 15, NULL, 1, '2026-04-05 20:13:29'),
+(72, 5, 'test number 5', 'test-number-5', NULL, 'test number 5', '<p></p>', 119, 8, NULL, 1, '2026-04-05 20:16:11'),
+(73, 5, 'Test CMS Create Restaurant', 'test-cms-create-restaurant', NULL, 'Test desc', '<p>Test</p>', NULL, NULL, NULL, 0, '2026-04-05 21:28:15'),
+(74, 1, 'TESTING with kian', 'testing-with-kian', NULL, 'kian', 'kian', NULL, 2, 15, 0, '2026-04-06 08:26:14');
 
 -- --------------------------------------------------------
 
@@ -1984,6 +2062,7 @@ INSERT INTO `EventHighlight` (`EventHighlightId`, `EventId`, `Title`, `Descripti
 CREATE TABLE `EventSession` (
   `EventSessionId` int(11) NOT NULL,
   `EventId` int(11) NOT NULL,
+  `VenueId` int(11) DEFAULT NULL,
   `StartDateTime` datetime NOT NULL,
   `EndDateTime` datetime DEFAULT NULL,
   `CapacityTotal` int(11) NOT NULL,
@@ -2012,111 +2091,195 @@ CREATE TABLE `EventSession` (
 -- Dumping data for table `EventSession`
 --
 
-INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `StartDateTime`, `EndDateTime`, `CapacityTotal`, `CapacitySingleTicketLimit`, `SeatsAvailable`, `SoldSingleTickets`, `SoldReservedSeats`, `HallName`, `SessionType`, `DurationMinutes`, `LanguageCode`, `MinAge`, `MaxAge`, `ReservationRequired`, `IsFree`, `Notes`, `HistoryTicketLabel`, `CtaLabel`, `CtaUrl`, `IsCancelled`, `CreatedAtUtc`, `IsActive`) VALUES
-(1, 1, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 300, 270, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(2, 2, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(3, 3, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(4, 4, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 200, 180, NULL, 4, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(5, 5, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(6, 6, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(7, 7, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(8, 8, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(9, 9, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(10, 10, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(11, 11, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(12, 12, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(13, 13, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(14, 14, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(15, 15, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(16, 16, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(17, 17, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(18, 18, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(19, 19, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, 'Free for all visitors. No reservation needed.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(20, 4, '2026-07-26 16:00:00', '2026-07-26 17:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(21, 2, '2026-07-26 17:00:00', '2026-07-26 18:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(22, 17, '2026-07-26 18:00:00', '2026-07-26 19:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(23, 1, '2026-07-26 19:00:00', '2026-07-26 20:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(24, 13, '2026-07-26 20:00:00', '2026-07-26 21:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(25, 20, '2026-07-24 20:00:00', '2026-07-25 02:00:00', 1500, 1350, NULL, 0, 0, NULL, 'Back2Back', 360, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €125,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(26, 21, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(27, 22, '2026-07-24 23:00:00', '2026-07-25 00:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(28, 23, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(29, 24, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(30, 25, '2026-07-25 14:00:00', '2026-07-25 23:00:00', 2000, 1800, NULL, 0, 0, NULL, 'Back2Back', 540, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €150,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(31, 26, '2026-07-25 22:00:00', '2026-07-25 23:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(32, 27, '2026-07-25 21:00:00', '2026-07-26 01:00:00', 1500, 1350, NULL, 0, 0, NULL, 'TiëstoWorld', 240, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(33, 28, '2026-07-25 23:00:00', '2026-07-26 00:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(34, 29, '2026-07-26 14:00:00', '2026-07-26 23:00:00', 2000, 1800, NULL, 0, 0, NULL, 'Back2Back', 540, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €150,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(35, 30, '2026-07-26 19:00:00', '2026-07-26 20:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(36, 31, '2026-07-26 21:00:00', '2026-07-26 22:30:00', 1500, 1350, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(37, 32, '2026-07-26 18:00:00', '2026-07-26 19:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(38, 33, '2026-07-23 10:00:00', '2026-07-23 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, 'Due to the nature of this walk participants must be a minimum of 12 years old and no strollers are allowed. Groups will consist of 12 participants + 1 guide.', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(39, 33, '2026-07-23 13:00:00', '2026-07-23 15:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(40, 33, '2026-07-23 16:00:00', '2026-07-23 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(41, 33, '2026-07-24 10:00:00', '2026-07-24 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(42, 33, '2026-07-24 13:00:00', '2026-07-24 15:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(43, 33, '2026-07-24 16:00:00', '2026-07-24 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(44, 33, '2026-07-25 10:00:00', '2026-07-25 12:00:00', 48, 43, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(45, 33, '2026-07-25 13:00:00', '2026-07-25 15:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(46, 33, '2026-07-25 16:00:00', '2026-07-25 18:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(47, 33, '2026-07-26 10:00:00', '2026-07-26 12:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(48, 33, '2026-07-26 13:00:00', '2026-07-26 15:00:00', 96, 86, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(49, 33, '2026-07-26 16:00:00', '2026-07-26 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(50, 34, '2026-07-23 16:00:00', '2026-07-23 17:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 4, NULL, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(51, 35, '2026-07-23 19:00:00', '2026-07-23 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(52, 36, '2026-07-23 20:30:00', '2026-07-23 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'ENG', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(53, 37, '2026-07-24 16:00:00', '2026-07-24 17:00:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 10, NULL, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(54, 38, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(55, 39, '2026-07-24 19:00:00', '2026-07-24 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'NL', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(56, 40, '2026-07-24 20:30:00', '2026-07-24 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'ENG', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(57, 42, '2026-07-25 10:00:00', '2026-07-25 11:00:00', 100, 90, NULL, 6, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(58, 42, '2026-07-25 15:00:00', '2026-07-25 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(59, 43, '2026-07-25 14:00:00', '2026-07-25 15:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 12, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(60, 44, '2026-07-25 13:00:00', '2026-07-25 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(61, 42, '2026-07-26 10:00:00', '2026-07-26 11:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(62, 42, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(63, 45, '2026-07-26 13:00:00', '2026-07-26 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'ENG', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(64, 46, '2026-07-26 16:00:00', '2026-07-26 17:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'ENG', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(65, 47, '2026-07-24 18:00:00', '2026-07-24 19:30:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(66, 47, '2026-07-24 19:30:00', '2026-07-24 21:00:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(67, 47, '2026-07-24 21:00:00', '2026-07-24 22:30:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(68, 48, '2026-07-24 17:00:00', '2026-07-24 19:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(69, 48, '2026-07-24 19:00:00', '2026-07-24 21:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(70, 48, '2026-07-24 21:00:00', '2026-07-24 23:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(71, 49, '2026-07-24 17:00:00', '2026-07-24 19:00:00', 60, 54, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(72, 49, '2026-07-24 19:00:00', '2026-07-24 21:00:00', 60, 54, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(73, 50, '2026-07-24 17:30:00', '2026-07-24 19:00:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(74, 50, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(75, 50, '2026-07-24 20:30:00', '2026-07-24 22:00:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(76, 51, '2026-07-24 17:00:00', '2026-07-24 18:30:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(77, 51, '2026-07-24 18:30:00', '2026-07-24 20:00:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(78, 51, '2026-07-24 20:00:00', '2026-07-24 21:30:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(79, 52, '2026-07-24 16:30:00', '2026-07-24 18:00:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(80, 52, '2026-07-24 18:00:00', '2026-07-24 19:30:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(81, 52, '2026-07-24 19:30:00', '2026-07-24 21:00:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(82, 53, '2026-07-24 17:30:00', '2026-07-24 19:00:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(83, 53, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(84, 53, '2026-07-24 20:30:00', '2026-07-24 22:00:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(90, 33, '2026-07-23 10:00:00', '2026-07-23 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 12:06:20', 1),
-(91, 33, '2026-07-23 13:00:00', '2026-07-23 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:11:18', 1),
-(92, 33, '2026-07-23 16:00:00', '2026-07-23 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:11:18', 1),
-(93, 33, '2026-07-24 10:00:00', '2026-07-24 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(94, 33, '2026-07-24 13:00:00', '2026-07-24 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(95, 33, '2026-07-24 13:00:00', '2026-07-24 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(96, 33, '2026-07-24 16:00:00', '2026-07-24 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(97, 33, '2026-07-25 10:00:00', '2026-07-25 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(98, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(99, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(100, 33, '2026-07-25 10:00:00', '2026-07-25 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(101, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(102, 33, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(103, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(104, 33, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(105, 33, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(106, 33, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(107, 33, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(108, 33, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(109, 33, '2026-07-26 16:00:00', '2026-07-26 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1);
+INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTime`, `EndDateTime`, `CapacityTotal`, `CapacitySingleTicketLimit`, `SeatsAvailable`, `SoldSingleTickets`, `SoldReservedSeats`, `HallName`, `SessionType`, `DurationMinutes`, `LanguageCode`, `MinAge`, `MaxAge`, `ReservationRequired`, `IsFree`, `Notes`, `HistoryTicketLabel`, `CtaLabel`, `CtaUrl`, `IsCancelled`, `CreatedAtUtc`, `IsActive`) VALUES
+(1, 1, 1, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 300, 270, NULL, 5, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(2, 2, 1, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(3, 3, 1, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(4, 4, 1, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 200, 180, NULL, 10, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(5, 5, 1, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(6, 6, 1, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(7, 7, 1, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(8, 8, 1, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(9, 9, 1, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(10, 10, 1, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(11, 11, 1, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(12, 12, 1, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(13, 13, 1, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(14, 14, 1, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(15, 15, 1, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(16, 16, 1, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(17, 17, 1, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(18, 18, 1, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(19, 19, 2, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, 'Free for all visitors. No reservation needed.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(20, 4, 2, '2026-07-26 16:00:00', '2026-07-26 17:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(21, 2, 2, '2026-07-26 17:00:00', '2026-07-26 18:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(22, 17, 2, '2026-07-26 18:00:00', '2026-07-26 19:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(23, 1, 2, '2026-07-26 19:00:00', '2026-07-26 20:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(24, 13, 2, '2026-07-26 20:00:00', '2026-07-26 21:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(25, 20, 3, '2026-07-24 20:00:00', '2026-07-25 02:00:00', 1500, 1350, NULL, 0, 0, NULL, 'Back2Back', 360, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €125,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(26, 21, 4, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(27, 22, 5, '2026-07-24 23:00:00', '2026-07-25 00:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(28, 23, NULL, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(29, 24, 7, '2026-07-24 22:00:00', '2026-07-24 23:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(30, 25, 8, '2026-07-25 14:00:00', '2026-07-25 23:00:00', 2000, 1800, NULL, 0, 0, NULL, 'Back2Back', 540, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €150,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(31, 26, NULL, '2026-07-25 22:00:00', '2026-07-25 23:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(32, 27, 3, '2026-07-25 21:00:00', '2026-07-26 01:00:00', 1500, 1350, NULL, 0, 0, NULL, 'TiëstoWorld', 240, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(33, 28, 4, '2026-07-25 23:00:00', '2026-07-26 00:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(34, 29, NULL, '2026-07-26 14:00:00', '2026-07-26 23:00:00', 2000, 1800, NULL, 0, 0, NULL, 'Back2Back', 540, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €150,00, All-Access pass for Fri, Sat, Sun: €250,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(35, 30, 5, '2026-07-26 19:00:00', '2026-07-26 20:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(36, 31, 6, '2026-07-26 21:00:00', '2026-07-26 22:30:00', 1500, 1350, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(37, 32, 4, '2026-07-26 18:00:00', '2026-07-26 19:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(38, 33, 15, '2026-07-23 10:00:00', '2026-07-23 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, 'Due to the nature of this walk participants must be a minimum of 12 years old and no strollers are allowed. Groups will consist of 12 participants + 1 guide.', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(39, 33, 15, '2026-07-23 13:00:00', '2026-07-23 15:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(40, 33, 15, '2026-07-23 16:00:00', '2026-07-23 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(41, 33, 15, '2026-07-24 10:00:00', '2026-07-24 12:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(42, 33, 15, '2026-07-24 13:00:00', '2026-07-24 15:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(43, 33, 15, '2026-07-24 16:00:00', '2026-07-24 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(44, 33, 15, '2026-07-25 10:00:00', '2026-07-25 12:00:00', 48, 43, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(45, 33, 15, '2026-07-25 13:00:00', '2026-07-25 15:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(46, 33, 15, '2026-07-25 16:00:00', '2026-07-25 18:00:00', 36, 32, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(47, 33, 15, '2026-07-26 10:00:00', '2026-07-26 12:00:00', 60, 54, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(48, 33, 15, '2026-07-26 13:00:00', '2026-07-26 15:00:00', 96, 86, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(49, 33, 15, '2026-07-26 16:00:00', '2026-07-26 18:00:00', 24, 21, NULL, 0, 0, NULL, 'Tour', 120, NULL, 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(50, 34, NULL, '2026-07-23 16:00:00', '2026-07-23 17:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 4, NULL, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(51, 35, 11, '2026-07-23 19:00:00', '2026-07-23 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(52, 36, 12, '2026-07-23 20:30:00', '2026-07-23 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'ENG', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(53, 37, 13, '2026-07-24 16:00:00', '2026-07-24 17:00:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 10, NULL, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(54, 38, 10, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(55, 39, 12, '2026-07-24 19:00:00', '2026-07-24 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'NL', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(56, 40, 11, '2026-07-24 20:30:00', '2026-07-24 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'ENG', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(57, 42, 14, '2026-07-25 10:00:00', '2026-07-25 11:00:00', 100, 90, NULL, 6, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(58, 42, 14, '2026-07-25 15:00:00', '2026-07-25 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(59, 43, 11, '2026-07-25 14:00:00', '2026-07-25 15:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 12, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(60, 44, 13, '2026-07-25 13:00:00', '2026-07-25 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(61, 42, 14, '2026-07-26 10:00:00', '2026-07-26 11:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(62, 42, 14, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(63, 45, 13, '2026-07-26 13:00:00', '2026-07-26 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'ENG', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(64, 46, 10, '2026-07-26 16:00:00', '2026-07-26 17:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'ENG', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(65, 47, NULL, '2026-07-24 18:00:00', '2026-07-24 19:30:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(66, 47, NULL, '2026-07-24 19:30:00', '2026-07-24 21:00:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(67, 47, NULL, '2026-07-24 21:00:00', '2026-07-24 22:30:00', 35, 31, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(68, 48, NULL, '2026-07-24 17:00:00', '2026-07-24 19:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(69, 48, NULL, '2026-07-24 19:00:00', '2026-07-24 21:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(70, 48, NULL, '2026-07-24 21:00:00', '2026-07-24 23:00:00', 52, 46, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(71, 49, NULL, '2026-07-24 17:00:00', '2026-07-24 19:00:00', 60, 54, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(72, 49, NULL, '2026-07-24 19:00:00', '2026-07-24 21:00:00', 60, 54, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(73, 50, NULL, '2026-07-24 17:30:00', '2026-07-24 19:00:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(74, 50, NULL, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(75, 50, NULL, '2026-07-24 20:30:00', '2026-07-24 22:00:00', 45, 40, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(76, 51, NULL, '2026-07-24 17:00:00', '2026-07-24 18:30:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(77, 51, NULL, '2026-07-24 18:30:00', '2026-07-24 20:00:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(78, 51, NULL, '2026-07-24 20:00:00', '2026-07-24 21:30:00', 36, 32, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(79, 52, NULL, '2026-07-24 16:30:00', '2026-07-24 18:00:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(80, 52, NULL, '2026-07-24 18:00:00', '2026-07-24 19:30:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(81, 52, NULL, '2026-07-24 19:30:00', '2026-07-24 21:00:00', 100, 90, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(82, 53, NULL, '2026-07-24 17:30:00', '2026-07-24 19:00:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(83, 53, NULL, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(84, 53, NULL, '2026-07-24 20:30:00', '2026-07-24 22:00:00', 48, 43, NULL, 0, 0, NULL, 'Dinner', 90, NULL, NULL, NULL, 1, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(90, 33, 15, '2026-07-23 10:00:00', '2026-07-23 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 12:06:20', 1),
+(91, 33, 15, '2026-07-23 13:00:00', '2026-07-23 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:11:18', 1),
+(92, 33, 15, '2026-07-23 16:00:00', '2026-07-23 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:11:18', 1),
+(93, 33, 15, '2026-07-24 10:00:00', '2026-07-24 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(94, 33, 15, '2026-07-24 13:00:00', '2026-07-24 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(95, 33, 15, '2026-07-24 13:00:00', '2026-07-24 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(96, 33, 15, '2026-07-24 16:00:00', '2026-07-24 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(97, 33, 15, '2026-07-25 10:00:00', '2026-07-25 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(98, 33, 15, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(99, 33, 15, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(100, 33, 15, '2026-07-25 10:00:00', '2026-07-25 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(101, 33, 15, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(102, 33, 15, '2026-07-25 13:00:00', '2026-07-25 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(103, 33, 15, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(104, 33, 15, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(105, 33, 15, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(106, 33, 15, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(107, 33, 15, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(108, 33, 15, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(109, 33, 15, '2026-07-26 16:00:00', '2026-07-26 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(110, 30, 5, '2026-07-15 20:00:00', '2026-07-15 22:00:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, 'ENG', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-03-30 18:13:26', 0),
+(111, 47, NULL, '2026-07-23 16:30:00', '2026-07-23 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(112, 47, NULL, '2026-07-23 18:30:00', '2026-07-23 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(113, 47, NULL, '2026-07-23 20:30:00', '2026-07-23 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(114, 47, NULL, '2026-07-24 16:30:00', '2026-07-24 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(115, 47, NULL, '2026-07-24 18:30:00', '2026-07-24 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(116, 47, NULL, '2026-07-24 20:30:00', '2026-07-24 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(117, 47, NULL, '2026-07-25 16:30:00', '2026-07-25 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(118, 47, NULL, '2026-07-25 18:30:00', '2026-07-25 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(119, 47, NULL, '2026-07-25 20:30:00', '2026-07-25 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(120, 47, NULL, '2026-07-26 16:30:00', '2026-07-26 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(121, 47, NULL, '2026-07-26 18:30:00', '2026-07-26 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(122, 47, NULL, '2026-07-26 20:30:00', '2026-07-26 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/caf-de-roemer-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(126, 48, NULL, '2026-07-23 17:00:00', '2026-07-23 19:00:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(127, 48, NULL, '2026-07-23 19:15:00', '2026-07-23 21:15:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(128, 48, NULL, '2026-07-23 21:30:00', '2026-07-23 23:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(129, 48, NULL, '2026-07-24 19:15:00', '2026-07-24 21:15:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(130, 48, NULL, '2026-07-24 21:30:00', '2026-07-24 23:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(131, 48, NULL, '2026-07-25 17:00:00', '2026-07-25 19:00:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(132, 48, NULL, '2026-07-25 19:15:00', '2026-07-25 21:15:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(133, 48, NULL, '2026-07-25 21:30:00', '2026-07-25 23:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(134, 48, NULL, '2026-07-26 17:00:00', '2026-07-26 19:00:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(135, 48, NULL, '2026-07-26 19:15:00', '2026-07-26 21:15:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(136, 48, NULL, '2026-07-26 21:30:00', '2026-07-26 23:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/ratatouille-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(141, 49, NULL, '2026-07-23 16:30:00', '2026-07-23 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(142, 49, NULL, '2026-07-23 18:30:00', '2026-07-23 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(143, 49, NULL, '2026-07-23 20:30:00', '2026-07-23 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(144, 49, NULL, '2026-07-24 16:30:00', '2026-07-24 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(145, 49, NULL, '2026-07-24 18:30:00', '2026-07-24 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(146, 49, NULL, '2026-07-24 20:30:00', '2026-07-24 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(147, 49, NULL, '2026-07-25 16:30:00', '2026-07-25 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(148, 49, NULL, '2026-07-25 18:30:00', '2026-07-25 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(149, 49, NULL, '2026-07-25 20:30:00', '2026-07-25 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(150, 49, NULL, '2026-07-26 16:30:00', '2026-07-26 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(151, 49, NULL, '2026-07-26 18:30:00', '2026-07-26 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(152, 49, NULL, '2026-07-26 20:30:00', '2026-07-26 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-ml-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(156, 50, NULL, '2026-07-23 16:30:00', '2026-07-23 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(157, 50, NULL, '2026-07-23 18:30:00', '2026-07-23 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(158, 50, NULL, '2026-07-23 20:30:00', '2026-07-23 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(159, 50, NULL, '2026-07-24 16:30:00', '2026-07-24 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(160, 50, NULL, '2026-07-24 18:30:00', '2026-07-24 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(161, 50, NULL, '2026-07-25 16:30:00', '2026-07-25 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(162, 50, NULL, '2026-07-25 18:30:00', '2026-07-25 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(163, 50, NULL, '2026-07-25 20:30:00', '2026-07-25 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(164, 50, NULL, '2026-07-26 16:30:00', '2026-07-26 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(165, 50, NULL, '2026-07-26 18:30:00', '2026-07-26 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(166, 50, NULL, '2026-07-26 20:30:00', '2026-07-26 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/restaurant-fris-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(171, 51, NULL, '2026-07-23 16:30:00', '2026-07-23 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(172, 51, NULL, '2026-07-23 18:30:00', '2026-07-23 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(173, 51, NULL, '2026-07-23 20:30:00', '2026-07-23 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(174, 51, NULL, '2026-07-24 16:30:00', '2026-07-24 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(175, 51, NULL, '2026-07-24 20:30:00', '2026-07-24 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(176, 51, NULL, '2026-07-25 16:30:00', '2026-07-25 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(177, 51, NULL, '2026-07-25 18:30:00', '2026-07-25 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(178, 51, NULL, '2026-07-25 20:30:00', '2026-07-25 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(179, 51, NULL, '2026-07-26 16:30:00', '2026-07-26 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(180, 51, NULL, '2026-07-26 18:30:00', '2026-07-26 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(181, 51, NULL, '2026-07-26 20:30:00', '2026-07-26 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/new-vegas-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(186, 52, NULL, '2026-07-23 16:30:00', '2026-07-23 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(187, 52, NULL, '2026-07-23 18:30:00', '2026-07-23 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(188, 52, NULL, '2026-07-23 20:30:00', '2026-07-23 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(189, 52, NULL, '2026-07-24 18:30:00', '2026-07-24 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(190, 52, NULL, '2026-07-24 20:30:00', '2026-07-24 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(191, 52, NULL, '2026-07-25 16:30:00', '2026-07-25 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(192, 52, NULL, '2026-07-25 18:30:00', '2026-07-25 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(193, 52, NULL, '2026-07-25 20:30:00', '2026-07-25 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(194, 52, NULL, '2026-07-26 16:30:00', '2026-07-26 18:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(195, 52, NULL, '2026-07-26 18:30:00', '2026-07-26 20:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(196, 52, NULL, '2026-07-26 20:30:00', '2026-07-26 22:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/grand-cafe-brinkman-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(201, 53, NULL, '2026-07-23 17:30:00', '2026-07-23 19:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(202, 53, NULL, '2026-07-23 19:15:00', '2026-07-23 21:15:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(203, 53, NULL, '2026-07-23 21:00:00', '2026-07-23 23:00:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(204, 53, NULL, '2026-07-24 19:15:00', '2026-07-24 21:15:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(205, 53, NULL, '2026-07-24 21:00:00', '2026-07-24 23:00:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(206, 53, NULL, '2026-07-25 17:30:00', '2026-07-25 19:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(207, 53, NULL, '2026-07-25 19:15:00', '2026-07-25 21:15:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(208, 53, NULL, '2026-07-25 21:00:00', '2026-07-25 23:00:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(209, 53, NULL, '2026-07-26 17:30:00', '2026-07-26 19:30:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(210, 53, NULL, '2026-07-26 19:15:00', '2026-07-26 21:15:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(211, 53, NULL, '2026-07-26 21:00:00', '2026-07-26 23:00:00', 40, 40, NULL, 0, 0, NULL, 'Dinner', 120, NULL, NULL, NULL, 1, 0, '', NULL, 'Reserve a Table', '/restaurant/urban-frenchy-bistro-toujours-festival-dinner/reservation', 0, '2026-04-01 19:35:40', 1),
+(213, 69, NULL, '2026-07-23 22:09:00', '2026-07-23 23:09:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, 'NL', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-05 20:10:06', 1),
+(214, 70, NULL, '2026-07-23 17:12:00', '2026-07-23 22:12:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-05 20:12:44', 0),
+(215, 71, NULL, '2026-07-23 17:13:00', '2026-07-23 22:13:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-05 20:13:53', 1),
+(216, 74, NULL, '2026-04-08 10:26:00', '2026-04-10 10:26:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 08:28:06', 0);
 
 -- --------------------------------------------------------
 
@@ -2208,7 +2371,8 @@ INSERT INTO `EventSessionLabel` (`EventSessionLabelId`, `EventSessionId`, `Label
 (111, 107, 'In Dutch'),
 (112, 108, 'In Chinese'),
 (113, 49, 'In English'),
-(114, 109, 'In Dutch');
+(114, 109, 'In Dutch'),
+(116, 213, 'test label');
 
 -- --------------------------------------------------------
 
@@ -2365,7 +2529,186 @@ INSERT INTO `EventSessionPrice` (`EventSessionPriceId`, `EventSessionId`, `Price
 (205, 106, 6, 17.50, 'EUR', 21.00),
 (207, 107, 6, 17.50, 'EUR', 21.00),
 (208, 108, 6, 17.50, 'EUR', 21.00),
-(210, 109, 6, 17.50, 'EUR', 21.00);
+(210, 109, 6, 17.50, 'EUR', 21.00),
+(211, 111, 1, 45.00, 'EUR', 21.00),
+(212, 112, 1, 45.00, 'EUR', 21.00),
+(213, 113, 1, 45.00, 'EUR', 21.00),
+(214, 114, 1, 45.00, 'EUR', 21.00),
+(215, 115, 1, 45.00, 'EUR', 21.00),
+(216, 116, 1, 45.00, 'EUR', 21.00),
+(217, 117, 1, 45.00, 'EUR', 21.00),
+(218, 118, 1, 45.00, 'EUR', 21.00),
+(219, 119, 1, 45.00, 'EUR', 21.00),
+(220, 120, 1, 45.00, 'EUR', 21.00),
+(221, 121, 1, 45.00, 'EUR', 21.00),
+(222, 122, 1, 45.00, 'EUR', 21.00),
+(223, 126, 1, 45.00, 'EUR', 21.00),
+(224, 127, 1, 45.00, 'EUR', 21.00),
+(225, 128, 1, 45.00, 'EUR', 21.00),
+(226, 129, 1, 45.00, 'EUR', 21.00),
+(227, 130, 1, 45.00, 'EUR', 21.00),
+(228, 131, 1, 45.00, 'EUR', 21.00),
+(229, 132, 1, 45.00, 'EUR', 21.00),
+(230, 133, 1, 45.00, 'EUR', 21.00),
+(231, 134, 1, 45.00, 'EUR', 21.00),
+(232, 135, 1, 45.00, 'EUR', 21.00),
+(233, 136, 1, 45.00, 'EUR', 21.00),
+(234, 141, 1, 45.00, 'EUR', 21.00),
+(235, 142, 1, 45.00, 'EUR', 21.00),
+(236, 143, 1, 45.00, 'EUR', 21.00),
+(237, 144, 1, 45.00, 'EUR', 21.00),
+(238, 145, 1, 45.00, 'EUR', 21.00),
+(239, 146, 1, 45.00, 'EUR', 21.00),
+(240, 147, 1, 45.00, 'EUR', 21.00),
+(241, 148, 1, 45.00, 'EUR', 21.00),
+(242, 149, 1, 45.00, 'EUR', 21.00),
+(243, 150, 1, 45.00, 'EUR', 21.00),
+(244, 151, 1, 45.00, 'EUR', 21.00),
+(245, 152, 1, 45.00, 'EUR', 21.00),
+(246, 156, 1, 45.00, 'EUR', 21.00),
+(247, 157, 1, 45.00, 'EUR', 21.00),
+(248, 158, 1, 45.00, 'EUR', 21.00),
+(249, 159, 1, 45.00, 'EUR', 21.00),
+(250, 160, 1, 45.00, 'EUR', 21.00),
+(251, 161, 1, 45.00, 'EUR', 21.00),
+(252, 162, 1, 45.00, 'EUR', 21.00),
+(253, 163, 1, 45.00, 'EUR', 21.00),
+(254, 164, 1, 45.00, 'EUR', 21.00),
+(255, 165, 1, 45.00, 'EUR', 21.00),
+(256, 166, 1, 45.00, 'EUR', 21.00),
+(274, 111, 2, 22.50, 'EUR', 21.00),
+(275, 112, 2, 22.50, 'EUR', 21.00),
+(276, 113, 2, 22.50, 'EUR', 21.00),
+(277, 114, 2, 22.50, 'EUR', 21.00),
+(278, 115, 2, 22.50, 'EUR', 21.00),
+(279, 116, 2, 22.50, 'EUR', 21.00),
+(280, 117, 2, 22.50, 'EUR', 21.00),
+(281, 118, 2, 22.50, 'EUR', 21.00),
+(282, 119, 2, 22.50, 'EUR', 21.00),
+(283, 120, 2, 22.50, 'EUR', 21.00),
+(284, 121, 2, 22.50, 'EUR', 21.00),
+(285, 122, 2, 22.50, 'EUR', 21.00),
+(286, 126, 2, 22.50, 'EUR', 21.00),
+(287, 127, 2, 22.50, 'EUR', 21.00),
+(288, 128, 2, 22.50, 'EUR', 21.00),
+(289, 129, 2, 22.50, 'EUR', 21.00),
+(290, 130, 2, 22.50, 'EUR', 21.00),
+(291, 131, 2, 22.50, 'EUR', 21.00),
+(292, 132, 2, 22.50, 'EUR', 21.00),
+(293, 133, 2, 22.50, 'EUR', 21.00),
+(294, 134, 2, 22.50, 'EUR', 21.00),
+(295, 135, 2, 22.50, 'EUR', 21.00),
+(296, 136, 2, 22.50, 'EUR', 21.00),
+(297, 141, 2, 22.50, 'EUR', 21.00),
+(298, 142, 2, 22.50, 'EUR', 21.00),
+(299, 143, 2, 22.50, 'EUR', 21.00),
+(300, 144, 2, 22.50, 'EUR', 21.00),
+(301, 145, 2, 22.50, 'EUR', 21.00),
+(302, 146, 2, 22.50, 'EUR', 21.00),
+(303, 147, 2, 22.50, 'EUR', 21.00),
+(304, 148, 2, 22.50, 'EUR', 21.00),
+(305, 149, 2, 22.50, 'EUR', 21.00),
+(306, 150, 2, 22.50, 'EUR', 21.00),
+(307, 151, 2, 22.50, 'EUR', 21.00),
+(308, 152, 2, 22.50, 'EUR', 21.00),
+(309, 156, 2, 22.50, 'EUR', 21.00),
+(310, 157, 2, 22.50, 'EUR', 21.00),
+(311, 158, 2, 22.50, 'EUR', 21.00),
+(312, 159, 2, 22.50, 'EUR', 21.00),
+(313, 160, 2, 22.50, 'EUR', 21.00),
+(314, 161, 2, 22.50, 'EUR', 21.00),
+(315, 162, 2, 22.50, 'EUR', 21.00),
+(316, 163, 2, 22.50, 'EUR', 21.00),
+(317, 164, 2, 22.50, 'EUR', 21.00),
+(318, 165, 2, 22.50, 'EUR', 21.00),
+(319, 166, 2, 22.50, 'EUR', 21.00),
+(337, 171, 1, 35.00, 'EUR', 21.00),
+(338, 172, 1, 35.00, 'EUR', 21.00),
+(339, 173, 1, 35.00, 'EUR', 21.00),
+(340, 174, 1, 35.00, 'EUR', 21.00),
+(341, 175, 1, 35.00, 'EUR', 21.00),
+(342, 176, 1, 35.00, 'EUR', 21.00),
+(343, 177, 1, 35.00, 'EUR', 21.00),
+(344, 178, 1, 35.00, 'EUR', 21.00),
+(345, 179, 1, 35.00, 'EUR', 21.00),
+(346, 180, 1, 35.00, 'EUR', 21.00),
+(347, 181, 1, 35.00, 'EUR', 21.00),
+(348, 186, 1, 35.00, 'EUR', 21.00),
+(349, 187, 1, 35.00, 'EUR', 21.00),
+(350, 188, 1, 35.00, 'EUR', 21.00),
+(351, 189, 1, 35.00, 'EUR', 21.00),
+(352, 190, 1, 35.00, 'EUR', 21.00),
+(353, 191, 1, 35.00, 'EUR', 21.00),
+(354, 192, 1, 35.00, 'EUR', 21.00),
+(355, 193, 1, 35.00, 'EUR', 21.00),
+(356, 194, 1, 35.00, 'EUR', 21.00),
+(357, 195, 1, 35.00, 'EUR', 21.00),
+(358, 196, 1, 35.00, 'EUR', 21.00),
+(359, 201, 1, 35.00, 'EUR', 21.00),
+(360, 202, 1, 35.00, 'EUR', 21.00),
+(361, 203, 1, 35.00, 'EUR', 21.00),
+(362, 204, 1, 35.00, 'EUR', 21.00),
+(363, 205, 1, 35.00, 'EUR', 21.00),
+(364, 206, 1, 35.00, 'EUR', 21.00),
+(365, 207, 1, 35.00, 'EUR', 21.00),
+(366, 208, 1, 35.00, 'EUR', 21.00),
+(367, 209, 1, 35.00, 'EUR', 21.00),
+(368, 210, 1, 35.00, 'EUR', 21.00),
+(369, 211, 1, 35.00, 'EUR', 21.00),
+(400, 171, 2, 17.50, 'EUR', 21.00),
+(401, 172, 2, 17.50, 'EUR', 21.00),
+(402, 173, 2, 17.50, 'EUR', 21.00),
+(403, 174, 2, 17.50, 'EUR', 21.00),
+(404, 175, 2, 17.50, 'EUR', 21.00),
+(405, 176, 2, 17.50, 'EUR', 21.00),
+(406, 177, 2, 17.50, 'EUR', 21.00),
+(407, 178, 2, 17.50, 'EUR', 21.00),
+(408, 179, 2, 17.50, 'EUR', 21.00),
+(409, 180, 2, 17.50, 'EUR', 21.00),
+(410, 181, 2, 17.50, 'EUR', 21.00),
+(411, 186, 2, 17.50, 'EUR', 21.00),
+(412, 187, 2, 17.50, 'EUR', 21.00),
+(413, 188, 2, 17.50, 'EUR', 21.00),
+(414, 189, 2, 17.50, 'EUR', 21.00),
+(415, 190, 2, 17.50, 'EUR', 21.00),
+(416, 191, 2, 17.50, 'EUR', 21.00),
+(417, 192, 2, 17.50, 'EUR', 21.00),
+(418, 193, 2, 17.50, 'EUR', 21.00),
+(419, 194, 2, 17.50, 'EUR', 21.00),
+(420, 195, 2, 17.50, 'EUR', 21.00),
+(421, 196, 2, 17.50, 'EUR', 21.00),
+(422, 201, 2, 17.50, 'EUR', 21.00),
+(423, 202, 2, 17.50, 'EUR', 21.00),
+(424, 203, 2, 17.50, 'EUR', 21.00),
+(425, 204, 2, 17.50, 'EUR', 21.00),
+(426, 205, 2, 17.50, 'EUR', 21.00),
+(427, 206, 2, 17.50, 'EUR', 21.00),
+(428, 207, 2, 17.50, 'EUR', 21.00),
+(429, 208, 2, 17.50, 'EUR', 21.00),
+(430, 209, 2, 17.50, 'EUR', 21.00),
+(431, 210, 2, 17.50, 'EUR', 21.00),
+(432, 211, 2, 17.50, 'EUR', 21.00),
+(433, 90, 3, 60.00, 'EUR', 21.00),
+(434, 91, 3, 60.00, 'EUR', 21.00),
+(435, 92, 3, 60.00, 'EUR', 21.00),
+(436, 93, 3, 60.00, 'EUR', 21.00),
+(437, 94, 3, 60.00, 'EUR', 21.00),
+(438, 95, 3, 60.00, 'EUR', 21.00),
+(439, 96, 3, 60.00, 'EUR', 21.00),
+(440, 97, 3, 60.00, 'EUR', 21.00),
+(441, 98, 3, 60.00, 'EUR', 21.00),
+(442, 99, 3, 60.00, 'EUR', 21.00),
+(443, 100, 3, 60.00, 'EUR', 21.00),
+(444, 101, 3, 60.00, 'EUR', 21.00),
+(445, 102, 3, 60.00, 'EUR', 21.00),
+(446, 103, 3, 60.00, 'EUR', 21.00),
+(447, 104, 3, 60.00, 'EUR', 21.00),
+(448, 105, 3, 60.00, 'EUR', 21.00),
+(449, 106, 3, 60.00, 'EUR', 21.00),
+(450, 107, 3, 60.00, 'EUR', 21.00),
+(451, 108, 3, 60.00, 'EUR', 21.00),
+(452, 109, 3, 60.00, 'EUR', 21.00),
+(465, 213, 1, 10.00, 'EUR', 21.00);
 
 -- --------------------------------------------------------
 
@@ -2704,7 +3047,13 @@ INSERT INTO `MediaAsset` (`MediaAssetId`, `FilePath`, `OriginalFileName`, `MimeT
 (122, '/assets/tickets/Haarlem-Festival-Ticket-HF-6NTWU8BPC9FKTKMW.pdf', 'Haarlem-Festival-Ticket-HF-6NTWU8BPC9FKTKMW.pdf', 'application/pdf', 14618, 'Festival ticket PDF', '2026-03-28 22:05:44'),
 (123, '/assets/tickets/Haarlem-Festival-Ticket-HF-E7YK5KEMMPB5WNFD.pdf', 'Haarlem-Festival-Ticket-HF-E7YK5KEMMPB5WNFD.pdf', 'application/pdf', 14542, 'Festival ticket PDF', '2026-03-30 11:30:18'),
 (124, '/assets/tickets/Haarlem-Festival-Ticket-HF-6APKWGDAPU3J2QNV.pdf', 'Haarlem-Festival-Ticket-HF-6APKWGDAPU3J2QNV.pdf', 'application/pdf', 14428, 'Festival ticket PDF', '2026-03-30 11:30:18'),
-(125, '/assets/tickets/Haarlem-Festival-Ticket-HF-P6PCVLZPNT7L7BQ5.pdf', 'Haarlem-Festival-Ticket-HF-P6PCVLZPNT7L7BQ5.pdf', 'application/pdf', 14390, 'Festival ticket PDF', '2026-03-30 11:30:18');
+(125, '/assets/tickets/Haarlem-Festival-Ticket-HF-P6PCVLZPNT7L7BQ5.pdf', 'Haarlem-Festival-Ticket-HF-P6PCVLZPNT7L7BQ5.pdf', 'application/pdf', 14390, 'Festival ticket PDF', '2026-03-30 11:30:18'),
+(126, '/assets/Image/cms/img_69caa874b3ab95.23757361.png', 'test-image.png', 'image/png', 69, '', '2026-03-30 16:44:36'),
+(127, '/assets/Image/cms/img_69caae4f3219a3.72077547.png', 'test-image.png', 'image/png', 69, '', '2026-03-30 17:09:35'),
+(128, '/assets/Image/cms/img_69cab9c7291477.91677702.png', 'test-image.png', 'image/png', 69, '', '2026-03-30 17:58:31'),
+(129, '/assets/tickets/Haarlem-Festival-Ticket-HF-9TCZWTJAZY3NPWMJ.pdf', 'Haarlem-Festival-Ticket-HF-9TCZWTJAZY3NPWMJ.pdf', 'application/pdf', 14688, 'Festival ticket PDF', '2026-04-01 18:39:40'),
+(130, '/assets/tickets/Haarlem-Festival-Ticket-HF-PZQWQDUKS49Q5HUT.pdf', 'Haarlem-Festival-Ticket-HF-PZQWQDUKS49Q5HUT.pdf', 'application/pdf', 14650, 'Festival ticket PDF', '2026-04-01 18:47:10'),
+(131, '/assets/tickets/Haarlem-Festival-Ticket-HF-DKB3GQQKTQWKBQKF.pdf', 'Haarlem-Festival-Ticket-HF-DKB3GQQKTQWKBQKF.pdf', 'application/pdf', 14384, 'Festival ticket PDF', '2026-04-01 18:49:15');
 
 -- --------------------------------------------------------
 
@@ -2747,7 +3096,16 @@ INSERT INTO `Order` (`OrderId`, `OrderNumber`, `UserAccountId`, `ProgramId`, `St
 (19, 'HF-20260328-220509-D197A3', 2, 3, 'Pending', '2026-03-28 22:05:09', '2026-03-29 22:05:09', 30.00, 6.30, 36.30, 'Leandro', 'Test', 'propipplayer@gmail.com', '2026-03-28 22:05:47', NULL),
 (20, 'HF-20260330-112938-A27321', 1, 1, 'Pending', '2026-03-30 11:29:38', '2026-03-31 11:29:38', 30.00, 6.30, 36.30, 'Leandro', 'Test', 'propipplayer@gmail.com', '2026-03-30 11:30:20', NULL),
 (21, 'HF-20260330-120216-44AC09', 2, 3, 'Pending', '2026-03-30 12:02:16', '2026-03-31 12:02:16', 10.00, 2.10, 12.10, 'Test', 'User', 'test@example.com', NULL, NULL),
-(22, 'HF-20260330-122634-B1484E', 2, 3, 'Pending', '2026-03-30 12:26:34', '2026-03-31 12:26:34', 75.50, 15.85, 91.36, 'Test', 'User', 'test@example.com', NULL, NULL);
+(22, 'HF-20260330-122634-B1484E', 2, 3, 'Pending', '2026-03-30 12:26:34', '2026-03-31 12:26:34', 75.50, 15.85, 91.36, 'Test', 'User', 'test@example.com', NULL, NULL),
+(23, 'HF-20260330-175449-7F8448', 35, 10, 'Pending', '2026-03-30 17:54:49', '2026-03-31 17:54:49', 15.00, 3.15, 18.15, 'E2E', 'Tester_mndhmqz4', 'e2e_mndhmqz4@test.com', NULL, NULL),
+(24, 'HF-20260330-180423-305204', 42, 14, 'Pending', '2026-03-30 18:04:23', '2026-03-31 18:04:23', 30.00, 6.30, 36.30, 'E2E', 'Tester_mndhyni2', 'e2e_mndhyni2@test.com', NULL, NULL),
+(25, 'HF-20260330-180945-C829F1', 43, 15, 'Pending', '2026-03-30 18:09:45', '2026-03-31 18:09:45', 30.00, 6.30, 36.30, 'E2E', 'Tester_mndi5mfs', 'e2e_mndi5mfs@test.com', NULL, NULL),
+(26, 'HF-20260401-183334-B37491', 2, 3, 'Pending', '2026-04-01 18:33:34', '2026-04-02 18:33:34', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', NULL, NULL),
+(27, 'HF-20260401-183412-C016F4', 2, 3, 'Pending', '2026-04-01 18:34:12', '2026-04-02 18:34:12', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', NULL, NULL),
+(28, 'HF-20260401-183844-805998', 2, 3, 'Pending', '2026-04-01 18:38:44', '2026-04-02 18:38:44', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', NULL, NULL),
+(29, 'HF-20260401-183929-3BF9D8', 2, 3, 'Paid', '2026-04-01 18:39:29', '2026-04-02 18:39:29', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', '2026-04-01 18:39:42', NULL),
+(30, 'HF-20260401-184657-E9650F', 2, 17, 'Paid', '2026-04-01 18:46:57', '2026-04-02 18:46:57', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', '2026-04-01 18:47:11', NULL),
+(31, 'HF-20260401-184900-080019', 2, 18, 'Paid', '2026-04-01 18:49:00', '2026-04-02 18:49:00', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', '2026-04-01 18:49:17', NULL);
 
 -- --------------------------------------------------------
 
@@ -2791,7 +3149,16 @@ INSERT INTO `OrderItem` (`OrderItemId`, `OrderId`, `EventSessionId`, `HistoryTou
 (33, 20, 57, NULL, NULL, 3, 10.00, 21.00, 0.00, ''),
 (34, 21, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
 (35, 22, 4, NULL, NULL, 3, 10.00, 21.00, 10.50, ''),
-(36, 22, NULL, NULL, 1, 1, 35.00, 21.00, 0.00, '');
+(36, 22, NULL, NULL, 1, 1, 35.00, 21.00, 0.00, ''),
+(37, 23, 1, NULL, NULL, 1, 15.00, 21.00, 0.00, ''),
+(38, 24, 1, NULL, NULL, 2, 15.00, 21.00, 0.00, ''),
+(39, 25, 1, NULL, NULL, 2, 15.00, 21.00, 0.00, ''),
+(40, 26, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
+(41, 27, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
+(42, 28, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
+(43, 29, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
+(44, 30, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
+(45, 31, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, '');
 
 -- --------------------------------------------------------
 
@@ -2986,7 +3353,16 @@ INSERT INTO `Payment` (`PaymentId`, `OrderId`, `Method`, `Status`, `ProviderRef`
 (26, 21, 'CreditCard', 'Pending', 'cs_test_a1VnSCadz6RG0LMbzKxiCPQX7wiRSMreTYa1gSQi89ZJP6aoXE4CuWXOfn', 'cs_test_a1VnSCadz6RG0LMbzKxiCPQX7wiRSMreTYa1gSQi89ZJP6aoXE4CuWXOfn', NULL, '2026-03-30 12:03:11', NULL),
 (27, 21, 'CreditCard', 'Pending', 'cs_test_a15lCjd04iZxp9hidF5VoYg89lpbKppDRVafDGRcnMEk8HkquqPEcakXgK', 'cs_test_a15lCjd04iZxp9hidF5VoYg89lpbKppDRVafDGRcnMEk8HkquqPEcakXgK', NULL, '2026-03-30 12:04:55', NULL),
 (28, 22, 'CreditCard', 'Pending', 'cs_test_a1s0wV85ymDI0RgWZAc18PG1DUSwNSZFN0YfsJjG69dXRIn7HPlZW1HsGA', 'cs_test_a1s0wV85ymDI0RgWZAc18PG1DUSwNSZFN0YfsJjG69dXRIn7HPlZW1HsGA', NULL, '2026-03-30 12:26:34', NULL),
-(29, 22, 'Ideal', 'Pending', 'cs_test_a181w5oQzAZunkAHNk4VCuS0GuZYLriwPxUYFhQyEoIDjoUXg2KnkWm17m', 'cs_test_a181w5oQzAZunkAHNk4VCuS0GuZYLriwPxUYFhQyEoIDjoUXg2KnkWm17m', NULL, '2026-03-30 12:27:14', NULL);
+(29, 22, 'Ideal', 'Pending', 'cs_test_a181w5oQzAZunkAHNk4VCuS0GuZYLriwPxUYFhQyEoIDjoUXg2KnkWm17m', 'cs_test_a181w5oQzAZunkAHNk4VCuS0GuZYLriwPxUYFhQyEoIDjoUXg2KnkWm17m', NULL, '2026-03-30 12:27:14', NULL),
+(30, 23, 'CreditCard', 'Pending', 'cs_test_a1RyeIwIMPXkxYmkldGnVp2hHPIeuKRkOuSU61iaTbv3cEDcnx38SGfg0y', 'cs_test_a1RyeIwIMPXkxYmkldGnVp2hHPIeuKRkOuSU61iaTbv3cEDcnx38SGfg0y', NULL, '2026-03-30 17:54:49', NULL),
+(31, 24, 'CreditCard', 'Pending', 'cs_test_a1OtN1luzDcCcCUMKdpoUhntpHXedm2ehba6eRUbBeezoqrGS6i5RXpGW8', 'cs_test_a1OtN1luzDcCcCUMKdpoUhntpHXedm2ehba6eRUbBeezoqrGS6i5RXpGW8', NULL, '2026-03-30 18:04:23', NULL),
+(32, 25, 'CreditCard', 'Pending', 'cs_test_a1SS2jTnYsTaLIqM8fU1YYqxKERgkFvVucLsRgEB2YHNYOH0sNs0V2zOXP', 'cs_test_a1SS2jTnYsTaLIqM8fU1YYqxKERgkFvVucLsRgEB2YHNYOH0sNs0V2zOXP', NULL, '2026-03-30 18:09:45', NULL),
+(33, 26, 'CreditCard', 'Pending', 'cs_test_a1lxL4sKpHhcbZ7242dWFOKf07FwDPzjIJs8pYwyYQkvDFK9jR5psshMSY', 'cs_test_a1lxL4sKpHhcbZ7242dWFOKf07FwDPzjIJs8pYwyYQkvDFK9jR5psshMSY', NULL, '2026-04-01 18:33:34', NULL),
+(34, 27, 'CreditCard', 'Pending', 'cs_test_a1zLVQ8ci6JIvnyVlLuVubr4EgDxwE3niUezYXw8Qo8VikYF7lCDDJ7SaV', 'cs_test_a1zLVQ8ci6JIvnyVlLuVubr4EgDxwE3niUezYXw8Qo8VikYF7lCDDJ7SaV', NULL, '2026-04-01 18:34:12', NULL),
+(35, 28, 'CreditCard', 'Pending', 'cs_test_a1vzdZD14hoYID6ja1CurazY27FG6odHqPPEQV48hVRYPWyVvsJRk91kiR', 'cs_test_a1vzdZD14hoYID6ja1CurazY27FG6odHqPPEQV48hVRYPWyVvsJRk91kiR', NULL, '2026-04-01 18:38:44', NULL),
+(36, 29, 'CreditCard', 'Paid', 'cs_test_a1lNiZbyxsCVxcNwMhsEDK7z0jx0JMi5o4ytyL5JP4qKhgUQDS697a2Ntv', 'cs_test_a1lNiZbyxsCVxcNwMhsEDK7z0jx0JMi5o4ytyL5JP4qKhgUQDS697a2Ntv', NULL, '2026-04-01 18:39:29', '2026-04-01 18:39:40'),
+(37, 30, 'CreditCard', 'Paid', 'cs_test_a1ZdFaCy2JzSjyNYDwHwSSTyaKfJtSEfpxqjluSKFT7hOteqAzU2puRUIh', 'cs_test_a1ZdFaCy2JzSjyNYDwHwSSTyaKfJtSEfpxqjluSKFT7hOteqAzU2puRUIh', NULL, '2026-04-01 18:46:57', '2026-04-01 18:47:10'),
+(38, 31, 'CreditCard', 'Paid', 'cs_test_a1WPzEXr6rYYmsx4CnePZ317Dj6H3i6XzUqWgFbqoXM45KaqeXpktAacgW', 'cs_test_a1WPzEXr6rYYmsx4CnePZ317Dj6H3i6XzUqWgFbqoXM45KaqeXpktAacgW', NULL, '2026-04-01 18:49:00', '2026-04-01 18:49:15');
 
 --
 -- Triggers `Payment`
@@ -3072,6 +3448,7 @@ INSERT INTO `PriceTier` (`PriceTierId`, `Name`) VALUES
 (1, 'Adult'),
 (2, 'ChildU12'),
 (3, 'Family'),
+(7, 'Group'),
 (5, 'PayWhatYouLike'),
 (4, 'ReservationFee'),
 (6, 'Single');
@@ -3097,7 +3474,25 @@ CREATE TABLE `Program` (
 INSERT INTO `Program` (`ProgramId`, `UserAccountId`, `SessionKey`, `CreatedAtUtc`, `IsCheckedOut`) VALUES
 (1, 1, 'a166ed007a98ae89b75febd35432ef5f', '2026-03-16 15:04:58', 0),
 (2, 4, 'aaf6d15d725c84ed94159af85e4036f5', '2026-03-16 17:40:46', 0),
-(3, 2, '4a6c387b60526f45ee14d9c0f7dfdafe', '2026-03-28 22:04:42', 0);
+(3, 2, '4a6c387b60526f45ee14d9c0f7dfdafe', '2026-03-28 22:04:42', 1),
+(4, 12, 'fec4419921fa42732201c957ceaf4c4d', '2026-03-30 17:04:36', 0),
+(5, 30, '463e5fcb1f7fdba341e1b9a7acec85a1', '2026-03-30 17:53:41', 0),
+(6, 31, '3fcefc01a93f0b22a7b4f5ee3685e96c', '2026-03-30 17:53:50', 0),
+(7, 32, '14018a1182379107ad0f7bd35ae24059', '2026-03-30 17:54:01', 0),
+(8, 33, 'f63fafd749677dea372afd1a08928e05', '2026-03-30 17:54:24', 0),
+(9, 34, 'a0fb5de74088bdcff8ca10c2743ee914', '2026-03-30 17:54:37', 0),
+(10, 35, 'd72e39510d05a871ebe11dab1ec3a099', '2026-03-30 17:54:47', 0),
+(11, 36, '7bf3aa1baeab418d2ebf820091219827', '2026-03-30 17:54:56', 0),
+(12, 37, 'd1188d3234381636b0fd3e119a16c9ea', '2026-03-30 17:55:05', 0),
+(13, 38, 'ab02bf3d430e4bf64a566a666d68f929', '2026-03-30 17:55:15', 0),
+(14, 42, 'b1dbb65017d9d373e5ab9f28e613daaa', '2026-03-30 18:04:16', 0),
+(15, 43, 'bda1a0c3a469314244e966ce3ffe1c22', '2026-03-30 18:09:36', 0),
+(16, 44, 'ecd6cb7265cc7747bd49f538fe58a646', '2026-03-30 18:15:07', 0),
+(17, 2, '7151f068ff6634a7345b24b370485f1a', '2026-04-01 18:46:52', 1),
+(18, 2, 'aae088b32af5d9dfc8a125e222e2a6e5', '2026-04-01 18:48:55', 1),
+(19, NULL, '19a9f23a5c68b6695853e909f50f7dd4', '2026-04-02 15:19:55', 0),
+(21, NULL, '8679027338ca45f4f7cba8d1ca5f6a08', '2026-04-02 15:27:41', 0),
+(23, NULL, 'e6b58a3268bf414a7a35a8cff3622b1d', '2026-04-02 15:42:20', 0);
 
 -- --------------------------------------------------------
 
@@ -3110,9 +3505,11 @@ CREATE TABLE `ProgramItem` (
   `ProgramId` int(11) NOT NULL,
   `EventSessionId` int(11) DEFAULT NULL,
   `HistoryTourId` int(11) DEFAULT NULL,
+  `ReservationId` int(10) UNSIGNED DEFAULT NULL,
   `PassTypeId` int(11) DEFAULT NULL,
   `PassValidDate` date DEFAULT NULL,
   `Quantity` int(11) NOT NULL,
+  `PriceTierId` int(11) DEFAULT NULL,
   `DonationAmount` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
@@ -3120,137 +3517,50 @@ CREATE TABLE `ProgramItem` (
 -- Dumping data for table `ProgramItem`
 --
 
-INSERT INTO `ProgramItem` (`ProgramItemId`, `ProgramId`, `EventSessionId`, `HistoryTourId`, `PassTypeId`, `PassValidDate`, `Quantity`, `DonationAmount`) VALUES
-(6, 2, 1, NULL, NULL, NULL, 2, 0.00),
-(7, 2, 4, NULL, NULL, NULL, 2, 0.00),
-(10, 2, 52, NULL, NULL, NULL, 2, 0.00),
-(11, 2, 50, NULL, NULL, NULL, 1, 0.00),
-(15, 1, 57, NULL, NULL, NULL, 3, 0.00);
+INSERT INTO `ProgramItem` (`ProgramItemId`, `ProgramId`, `EventSessionId`, `HistoryTourId`, `ReservationId`, `PassTypeId`, `PassValidDate`, `Quantity`, `PriceTierId`, `DonationAmount`) VALUES
+(6, 2, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
+(7, 2, 4, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
+(10, 2, 52, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
+(11, 2, 50, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(15, 1, 57, NULL, NULL, NULL, NULL, 3, NULL, 0.00),
+(34, 4, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(35, 5, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(36, 6, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(37, 7, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
+(39, 9, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(40, 10, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(41, 11, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
+(42, 12, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(43, 13, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(44, 14, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
+(45, 15, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
+(46, 16, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
+(50, 3, 4, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(51, 17, 4, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(52, 18, 4, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
+(54, 21, 38, NULL, NULL, NULL, NULL, 1, 1, 0.00),
+(57, 23, 90, NULL, NULL, NULL, NULL, 1, 3, 0.00),
+(59, 1, 106, NULL, NULL, NULL, NULL, 1, 6, 0.00),
+(60, 1, 106, NULL, NULL, NULL, NULL, 3, 3, 0.00),
+(61, 1, 4, NULL, NULL, NULL, NULL, 1, 1, 0.00);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Restaurant`
+-- Table structure for table `Reservation`
 --
 
-CREATE TABLE `Restaurant` (
-  `RestaurantId` int(11) NOT NULL,
-  `Name` varchar(120) NOT NULL,
-  `AddressLine` varchar(200) NOT NULL DEFAULT '',
-  `City` varchar(80) NOT NULL DEFAULT 'Haarlem',
-  `Stars` int(11) DEFAULT NULL,
-  `CuisineType` varchar(160) NOT NULL DEFAULT '',
-  `DescriptionHtml` text NOT NULL DEFAULT '<p></p>',
-  `ImageAssetId` int(11) DEFAULT NULL,
-  `IsActive` tinyint(1) NOT NULL DEFAULT 1,
-  `CreatedAtUtc` datetime NOT NULL DEFAULT current_timestamp(),
-  `Phone` varchar(50) DEFAULT NULL,
-  `Email` varchar(150) DEFAULT NULL,
-  `Website` varchar(255) DEFAULT NULL,
-  `AboutText` text DEFAULT NULL,
-  `ChefName` varchar(150) DEFAULT NULL,
-  `ChefText` text DEFAULT NULL,
-  `MenuDescription` text DEFAULT NULL,
-  `LocationDescription` text DEFAULT NULL,
-  `MapEmbedUrl` varchar(1024) DEFAULT NULL,
-  `MichelinStars` int(11) DEFAULT NULL,
-  `SeatsPerSession` int(11) DEFAULT NULL,
-  `DurationMinutes` int(11) DEFAULT NULL,
-  `SpecialRequestsNote` varchar(500) DEFAULT NULL,
-  `GalleryImage1AssetId` int(11) DEFAULT NULL,
-  `GalleryImage2AssetId` int(11) DEFAULT NULL,
-  `GalleryImage3AssetId` int(11) DEFAULT NULL,
-  `AboutImageAssetId` int(11) DEFAULT NULL,
-  `ChefImageAssetId` int(11) DEFAULT NULL,
-  `MenuImage1AssetId` int(11) DEFAULT NULL,
-  `MenuImage2AssetId` int(11) DEFAULT NULL,
-  `ReservationImageAssetId` int(11) DEFAULT NULL
+CREATE TABLE `Reservation` (
+  `ReservationId` int(10) UNSIGNED NOT NULL,
+  `DiningDate` varchar(20) NOT NULL COMMENT 'Thursday / Friday / Saturday / Sunday',
+  `TimeSlot` varchar(20) NOT NULL COMMENT 'e.g. 16:30',
+  `AdultsCount` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `ChildrenCount` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `SpecialRequests` text DEFAULT NULL,
+  `TotalFee` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT '10 per person reservation deposit',
+  `CreatedAt` datetime NOT NULL DEFAULT current_timestamp(),
+  `EventId` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `Restaurant`
---
-
-INSERT INTO `Restaurant` (`RestaurantId`, `Name`, `AddressLine`, `City`, `Stars`, `CuisineType`, `DescriptionHtml`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`, `Phone`, `Email`, `Website`, `AboutText`, `ChefName`, `ChefText`, `MenuDescription`, `LocationDescription`, `MapEmbedUrl`, `MichelinStars`, `SeatsPerSession`, `DurationMinutes`, `SpecialRequestsNote`, `GalleryImage1AssetId`, `GalleryImage2AssetId`, `GalleryImage3AssetId`, `AboutImageAssetId`, `ChefImageAssetId`, `MenuImage1AssetId`, `MenuImage2AssetId`, `ReservationImageAssetId`) VALUES
-(1, 'Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem', 4, 'French, fish and seafood, European', 'Refined dining with a warm touch, where seasonal ingredients and creative flavors come together for an elegant experience.', 76, 1, '2026-02-06 15:30:32', '+31 (0)23 123 4567', 'info@ratatouille.nl', 'ratatouillefoodandwine.nl', 'Welcome to <strong>Ratatouille</strong>, a Michelin-starred French restaurant on the Spaarne, known for turning fine dining into something <strong>warm, creative, and surprisingly accessible</strong>.\n\nEvery dish is prepared with <strong>seasonal ingredients, bright flavors,</strong> and a touch of <strong>French elegance.</strong> For the Yummy! festival, Ratatouille offers one special menu.\n\n<strong>Expect plates that feel refined,</strong> crafted with the same <strong>creativity</strong> that makes Ratatouille so loved.', 'Jozua Jaring', '<strong>Jozua Jaring</strong> leads the kitchen at Ratatouille. Under his leadership, the restaurant earned a <strong>Michelin star</strong>.\n\nHis cooking style is simple at its core. He starts with good ingredients and then adds creativity.\n\nFor the <strong>Yummy! festival</strong>, Chef Jaring designed a special menu.', 'For the Yummy! festival, guests enjoy a set menu specially created by Ratatouille.', 'Ratatouille is located by the river Spaarne, right in the center of Haarlem.\n\nThe <strong>Patronaat</strong> is just a 5-minute walk away.\n\nWhether you want to explore the city, enjoy a show, or continue your festival evening, Ratatouille is in a perfect location.', 'https://maps.google.com/maps?q=Spaarne+96,+2011+CL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 1, 35, 120, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 82, 83, 84, 85, 86, 87, 88, 89),
-(2, 'Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem', 3, 'Dutch, fish and seafood, European', 'A cozy city bistro focused on seafood and comforting dishes in a lively central setting.', 81, 1, '2026-02-06 15:30:32', '+31 023 532 1699', 'info@toujours.nl', 'restauranttoujours.nl', '<strong>Urban Frenchy Bistro Toujours </strong>is a stylish and welcoming spot in the heart of Haarlem. The restaurant is known for its <strong>cozy boudoir-style interior, warm lighting, and relaxed atmosphere</strong> that makes every visit feel special. Toujours brings together Dutch freshness, European comfort, and a strong focus on seafood, creating a menu that feels both modern and approachable.\n\nFor the Yummy! festival, Toujours offers a special menu built around the dishes they do best: <strong>bright seafood plates, familiar European flavors, </strong>and<strong> ingredients that celebrate local Dutch products</strong>. It\'s a perfect stop for anyone who wants a relaxed, flavorful meal before exploring the rest of the festival.\n\nWhether you\'re visiting with friends, family, or enjoying the evening on your own, Toujours brings together great food and a warm setting to make your festival night feel complete.', 'Georgiana Viou', 'Chef <strong>Georgiana Viou </strong>guides the Toujours kitchen with a focus on fresh seafood, seasonal produce, and relaxed European flavors. His cooking is warm, welcoming, and built around good ingredients.\n\n<strong>For Yummy!, the chef created a menu</strong> that reflects what Toujours is known for. Every dish is prepared with care, keeping the <strong>experience warm, relaxed, and enjoyable for everyone.</strong>', 'Toujours focuses on fresh seafood, Dutch ingredients, and European bistro-style cooking. Their plates often feature fish, seasonal produce, and comforting flavors that feel both elevated and easy to enjoy.\n\nExpect dishes that highlight seafood, local produce, and warm European influences. It\'s perfect for a relaxed and tasty festival dinner.', 'Toujours is located at <strong>Oude Groenmarkt 10-12</strong>, a lively square in the center of Haarlem and only steps away from the <strong>Grote Markt</strong>, one of the festival\'s busiest spots. Its central location makes it an easy stop before or after concerts, events, and evening activities.\n\nThe <strong>Jopenkerk</strong> is only 2 minutes walk away and the area is full of energy, history, and festival life. A great combination for anyone wanting to combine great food with a memorable night out.\n\n<strong>Address: </strong> Oude Groenmarkt 10-12, 2011 HL Haarlem, Nederland', 'https://maps.google.com/maps?q=Oude+Groenmarkt+10,+2011+HL+Haarlem,+Netherlands&t=&z=16&ie=UTF8&iwloc=&output=embed', 0, 48, 90, 'Dietary needs, allergies, or accessibility requests can be added during the reservation.', 90, 91, 92, 93, 98, 95, 96, 89),
-(3, 'Café de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A cozy neighborhood café serving honest food and classic flavors in a relaxed and friendly setting.', 75, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 'Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem', 3, 'Dutch, European, Modern', 'A classic grand café on Haarlem\'s main square, serving familiar European dishes in the heart of the festival buzz.', 80, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(5, 'New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem', 3, 'Vegan', 'A casual spot with an international feel, offering familiar dishes and vegetarian options right in the city center.', 79, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(6, 'Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem', 4, 'Dutch, French, European', 'A contemporary restaurant focused on seasonal ingredients, thoughtful cooking, and elegant flavors without the formality.', 78, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 'Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem', 4, 'Dutch, fish and seafood, European', 'A modern fine-dining restaurant known for a refined yet welcoming atmosphere.', 77, 1, '2026-02-06 15:30:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `RestaurantCuisine`
---
-
-CREATE TABLE `RestaurantCuisine` (
-  `RestaurantId` int(11) NOT NULL,
-  `CuisineTypeId` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `RestaurantCuisine`
---
-
-INSERT INTO `RestaurantCuisine` (`RestaurantId`, `CuisineTypeId`) VALUES
-(2, 1),
-(3, 1),
-(4, 1),
-(6, 1),
-(7, 1),
-(1, 2),
-(2, 2),
-(3, 2),
-(4, 2),
-(6, 2),
-(7, 2),
-(1, 3),
-(2, 3),
-(3, 3),
-(7, 3),
-(1, 4),
-(6, 4),
-(4, 5),
-(5, 6);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `RestaurantImage`
---
-
-CREATE TABLE `RestaurantImage` (
-  `RestaurantImageId` int(11) NOT NULL,
-  `RestaurantId` int(11) NOT NULL,
-  `MediaAssetId` int(11) NOT NULL,
-  `ImageType` varchar(30) NOT NULL,
-  `SortOrder` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
---
--- Dumping data for table `RestaurantImage`
---
-
-INSERT INTO `RestaurantImage` (`RestaurantImageId`, `RestaurantId`, `MediaAssetId`, `ImageType`, `SortOrder`) VALUES
-(1, 1, 82, 'gallery', 1),
-(2, 2, 90, 'gallery', 1),
-(3, 1, 83, 'gallery', 2),
-(4, 2, 91, 'gallery', 2),
-(5, 1, 84, 'gallery', 3),
-(6, 2, 92, 'gallery', 3),
-(7, 1, 85, 'about', 1),
-(8, 2, 93, 'about', 1),
-(9, 1, 86, 'chef', 1),
-(10, 2, 98, 'chef', 1),
-(11, 1, 87, 'menu', 1),
-(12, 2, 95, 'menu', 1),
-(13, 1, 88, 'menu', 2),
-(14, 2, 96, 'menu', 2),
-(15, 1, 89, 'reservation', 1),
-(16, 2, 89, 'reservation', 1);
 
 -- --------------------------------------------------------
 
@@ -3310,7 +3620,7 @@ CREATE TABLE `ScheduleDayConfig` (
 --
 
 INSERT INTO `ScheduleDayConfig` (`ScheduleDayConfigId`, `EventTypeId`, `DayOfWeek`, `IsVisible`, `UpdatedAtUtc`) VALUES
-(1, 0, 0, 1, '2026-03-19 13:45:00'),
+(1, 0, 0, 1, '2026-03-30 18:01:52'),
 (2, 0, 1, 1, '2026-03-19 13:44:24'),
 (3, 0, 2, 1, '2026-03-19 13:44:25'),
 (4, 0, 3, 1, '2026-03-19 13:44:30'),
@@ -3322,7 +3632,8 @@ INSERT INTO `ScheduleDayConfig` (`ScheduleDayConfigId`, `EventTypeId`, `DayOfWee
 (35, 3, 5, 1, '2026-02-16 21:10:40'),
 (38, 3, 3, 1, '2026-03-19 13:44:43'),
 (44, 1, 3, 1, '2026-03-19 13:41:37'),
-(49, 5, 3, 1, '2026-03-19 13:41:42');
+(49, 5, 3, 1, '2026-03-19 13:41:42'),
+(69, 2, 0, 1, '2026-03-30 18:02:06');
 
 -- --------------------------------------------------------
 
@@ -3433,7 +3744,10 @@ INSERT INTO `Ticket` (`TicketId`, `OrderItemId`, `TicketCode`, `IsScanned`, `Sca
 (3, 32, 'HF-6NTWU8BPC9FKTKMW', 1, '2026-03-30 12:27:11', 1, 122),
 (4, 33, 'HF-E7YK5KEMMPB5WNFD', 1, '2026-03-30 11:30:56', 1, 123),
 (5, 33, 'HF-6APKWGDAPU3J2QNV', 1, '2026-03-30 12:01:40', 1, 124),
-(6, 33, 'HF-P6PCVLZPNT7L7BQ5', 1, '2026-03-30 12:01:40', 1, 125);
+(6, 33, 'HF-P6PCVLZPNT7L7BQ5', 1, '2026-03-30 12:01:40', 1, 125),
+(7, 43, 'HF-9TCZWTJAZY3NPWMJ', 0, NULL, NULL, 129),
+(8, 44, 'HF-PZQWQDUKS49Q5HUT', 0, NULL, NULL, 130),
+(9, 45, 'HF-DKB3GQQKTQWKBQKF', 0, NULL, NULL, 131);
 
 -- --------------------------------------------------------
 
@@ -3462,10 +3776,51 @@ CREATE TABLE `UserAccount` (
 --
 
 INSERT INTO `UserAccount` (`UserAccountId`, `UserRoleId`, `Username`, `Email`, `PasswordHash`, `PasswordSalt`, `FirstName`, `LastName`, `ProfilePictureAssetId`, `IsEmailConfirmed`, `IsActive`, `RegisteredAtUtc`, `UpdatedAtUtc`) VALUES
-(1, 3, 'testadmin', 'admin@test.com', '$argon2id$v=19$m=65536,t=4,p=1$eHJiQWthdmVFOHhXaFdSOQ$8wLiRCDwXY3hyC4kDM+QUkYEu6kpQhQmFxmSjh5JhiY', NULL, 'Test', 'Admin', NULL, 1, 1, '2026-02-07 19:39:57', '2026-02-07 19:39:57'),
+(1, 3, 'testadmin', 'admin@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SHlsUUo3eXBCY01WV1VJZQ$6n1f58bJE7i4MYphBXDuvpR4G+N261zuEVZde8BYGjY', NULL, 'Test', 'Admin', NULL, 1, 1, '2026-02-07 19:39:57', '2026-04-05 20:08:11'),
 (2, 1, 'testuser', 'user@test.com', '$argon2id$v=19$m=65536,t=4,p=1$amsvVU9QNU5QL1dKM3QzeQ$xmHiIhwxaWEOu5RXiOKUc5KPFex/JL0NV2cmtM0IKhc', NULL, 'Test', 'User', NULL, 1, 1, '2026-02-07 19:39:57', '2026-02-07 19:39:57'),
 (3, 2, 'leandro', 'propipplayer@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$YnBXZktSVEl6THJFUkQuLw$VDzijF0bET0wUsjprdH+3/kSW6Iit5wbErVX+ClELdE', NULL, 'Leandro', 'Nunez', NULL, 0, 1, '2026-02-07 20:19:38', '2026-03-30 10:25:37'),
-(4, 1, 'kianeutron', 'kianexample@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$bnkvRXZCYmlQdmgyUU9Jaw$7ewAMpBbmPhemB/2LRncDOALwuaSH1uCmHI+AdMIlKI', NULL, 'Kian', 'Khatibi', NULL, 0, 1, '2026-03-16 17:40:26', '2026-03-16 17:40:26');
+(4, 1, 'kianeutron', 'kianexample@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$bnkvRXZCYmlQdmgyUU9Jaw$7ewAMpBbmPhemB/2LRncDOALwuaSH1uCmHI+AdMIlKI', NULL, 'Kian', 'Khatibi', NULL, 0, 1, '2026-03-16 17:40:26', '2026-03-16 17:40:26'),
+(5, 1, 'e2euser_mndfak80', 'e2e_mndfak80@test.com', '$argon2id$v=19$m=65536,t=4,p=1$L3NFdk1DSU11WHBpZnJDaw$8H9m/n33fmclpzeVPk8FdkLv2UhkRa8pdSJSRevPixs', NULL, 'E2E', 'Tester_mndfak80', NULL, 0, 1, '2026-03-30 16:49:11', '2026-03-30 16:50:00'),
+(6, 3, 'admin_e2euser_mndfao8y', 'admin_e2e_mndfao8y@test.com', '$argon2id$v=19$m=65536,t=4,p=1$WnR0UERtREo3ZXRjT2ZIbw$3kBFtoFKGK3x1t18pj8cAukagkaWPyOJGB29FaECNos', NULL, 'Admin', 'Tester_mndfao8y', NULL, 0, 0, '2026-03-30 16:49:17', '2026-04-01 19:51:53'),
+(7, 1, 'e2euser_mndfstzz', 'e2e_mndfstzz@test.com', '$argon2id$v=19$m=65536,t=4,p=1$RklLUW9nZTIySTZmYy5Zcg$+VBYsfXjKmDI7zrKU+g6j1j0BE67SoyjGPy1T3/nRko', NULL, 'E2E', 'Tester_mndfstzz', NULL, 0, 1, '2026-03-30 17:03:37', '2026-03-30 17:03:37'),
+(8, 1, 'e2euser_mndft6pq', 'e2e_mndft6pq@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Ym10M2ZsZHRWUGsxcC80QQ$dKnF73rp7sawDAHxzE5dPR+f2jEbnYk8dBsMasyXBt8', NULL, 'E2E', 'Tester_mndft6pq', NULL, 0, 1, '2026-03-30 17:03:42', '2026-03-30 17:03:42'),
+(9, 1, 'e2euser_mndftj65', 'e2e_mndftj65@test.com', '$argon2id$v=19$m=65536,t=4,p=1$eGpWOWREeXk2Q1oxM0VFYg$WbeJbSEkKr45Q0s2oSloJyJ7T3PlQF1tK/4x0//e/j0', NULL, 'E2E', 'Tester_mndftj65', NULL, 0, 1, '2026-03-30 17:03:58', '2026-03-30 17:03:58'),
+(10, 1, 'e2euser_mndftn9p', 'e2e_mndftn9p@test.com', '$argon2id$v=19$m=65536,t=4,p=1$MlNxVngub3Fvc3hPUVd0QQ$YT3pDnROjf6e1BLvgNQX86yMyJSPyZAa5c4cX8hO1j4', NULL, 'E2E', 'Tester_mndftn9p', NULL, 0, 1, '2026-03-30 17:04:04', '2026-03-30 17:04:04'),
+(11, 1, 'e2euser_mndftu5e', 'e2e_mndftu5e@test.com', '$argon2id$v=19$m=65536,t=4,p=1$YXpBcGV0TjZicVdrZHNaTA$f+HZINHsuhIr4F75FbbXsCNb+9ZdswLhlV1Jot1pfs4', NULL, 'E2E', 'Tester_mndftu5e', NULL, 0, 1, '2026-03-30 17:04:13', '2026-03-30 17:04:13'),
+(12, 1, 'e2euser_mndfu23q', 'e2e_mndfu23q@test.com', '$argon2id$v=19$m=65536,t=4,p=1$N1JxaDgvSjdxdUEyMUdnQg$kQgh++65QljjOnD1CUMzmDC34217pQQ8fPyrIMRFhfM', NULL, 'E2E', 'Tester_mndfu23q', NULL, 0, 1, '2026-03-30 17:04:23', '2026-03-30 17:04:23'),
+(13, 1, 'e2euser_mndfufjy', 'e2e_mndfufjy@test.com', '$argon2id$v=19$m=65536,t=4,p=1$UGpoOVUwTGlLVVJBL3U2ZQ$pto1RsjWr6HoONWXOGk/Gf1yboHKrepVDJx0eZz1LmU', NULL, 'E2E', 'Tester_mndfufjy', NULL, 0, 1, '2026-03-30 17:04:41', '2026-03-30 17:04:41'),
+(14, 1, 'e2euser_mndfuth9', 'e2e_mndfuth9@test.com', '$argon2id$v=19$m=65536,t=4,p=1$aG1XNml6OElyNVB4d0xkMA$3cN0o7wQ7Xk+6EgN2ET0QgybrrTQL98pgirJqRBrWAg', NULL, 'E2E', 'Tester_mndfuth9', NULL, 0, 1, '2026-03-30 17:05:02', '2026-03-30 17:05:02'),
+(15, 1, 'e2euser_mndfv71p', 'e2e_mndfv71p@test.com', '$argon2id$v=19$m=65536,t=4,p=1$bWlXR1R4aVYvaTNwN1RWdQ$YpvPA5rEuytSmjgOJXETUlN9gr3K8uHvFPcOmpXoHZs', NULL, 'E2E', 'Tester_mndfv71p', NULL, 0, 1, '2026-03-30 17:05:16', '2026-03-30 17:05:16'),
+(16, 1, 'e2euser_mndfvgrz', 'e2e_mndfvgrz@test.com', '$argon2id$v=19$m=65536,t=4,p=1$VEFrLnFmd1RuYXVCb2RsSA$diZlwNeVvWltTLmxIOi9+VohvyOxcvWOW1elZv+QSZg', NULL, 'E2E', 'Tester_mndfvgrz', NULL, 0, 1, '2026-03-30 17:05:28', '2026-03-30 17:05:28'),
+(17, 1, 'e2euser_mndfvpvg', 'e2e_mndfvpvg@test.com', '$argon2id$v=19$m=65536,t=4,p=1$bVMySVFZUTRjaGxISVZPcQ$dKytnLkCC7o/3wPTIlbqBshOHmbLFqv9HTWnFwt9FF8', NULL, 'E2E', 'Tester_mndfvpvg', NULL, 0, 1, '2026-03-30 17:05:40', '2026-03-30 17:05:40'),
+(18, 1, 'e2euser_mndfvyyy', 'e2e_mndfvyyy@test.com', '$argon2id$v=19$m=65536,t=4,p=1$RFJvUkIxSW93dUI5MEhqYg$DR90gFFm+uI0XjXFsCvLdCqgNyz56U8KoQ1pH1et1S8', NULL, 'E2E', 'Tester_mndfvyyy', NULL, 0, 1, '2026-03-30 17:05:52', '2026-03-30 17:05:52'),
+(19, 1, 'e2euser_mndfw8oo', 'e2e_mndfw8oo@test.com', '$argon2id$v=19$m=65536,t=4,p=1$ZW56ZUg1dDQ4dGgwTUdGQw$BfBi2SeM2yLyn8bx1LXFgY+tTEdBkwiIRG3+/2sMu+4', NULL, 'E2E', 'Tester_mndfw8oo', NULL, 0, 1, '2026-03-30 17:06:05', '2026-03-30 17:06:05'),
+(20, 1, 'e2euser_mndfwivg', 'e2e_mndfwivg@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SGhNSzcvcTRTY3J6MXcvLg$tBlCqms/J2RGSSvvaf4Pv5J1CTYEkLmpEKHqpgzpFNE', NULL, 'E2E', 'Tester_mndfwivg', NULL, 0, 1, '2026-03-30 17:06:18', '2026-03-30 17:06:18'),
+(21, 1, 'e2euser_mndfwt0d', 'e2e_mndfwt0d@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Rjdnb3FSL0J5WlFGc1c0UA$sGYZe7illiOAK4iJymZ89hTuBNXeLQxL1H1kdcbxyIM', NULL, 'E2E', 'Tester_mndfwt0d', NULL, 0, 1, '2026-03-30 17:06:32', '2026-03-30 17:06:32'),
+(22, 1, 'e2euser_mndg6ml1', 'e2e_mndg6ml1@test.com', '$argon2id$v=19$m=65536,t=4,p=1$WUIwRzNwb3d4ZGJDVVd5cw$OJqs/0urEWEw7TYdjUPnr/Sd8CYa257ogRsuBCH9RqY', NULL, 'E2E', 'Tester_mndg6ml1', NULL, 0, 1, '2026-03-30 17:14:08', '2026-03-30 17:15:06'),
+(23, 3, 'admin_e2euser_mndg6r2p', 'admin_e2e_mndg6r2p@test.com', '$argon2id$v=19$m=65536,t=4,p=1$MVNtN1JZd0RySFVaUHBiZA$79ZbG6u8yxvaAJprKE/WzZgKl6sS1Bslc3OEq29YXss', NULL, 'Admin', 'Tester_mndg6r2p', NULL, 0, 1, '2026-03-30 17:14:15', '2026-03-30 17:15:10'),
+(24, 1, 'e2euser_mndg84zo', 'e2e_mndg84zo@test.com', '$argon2id$v=19$m=65536,t=4,p=1$UWdGa3ouNEpKampuQW94Yw$P0cNd7PM+QGrbnhFGDV6P/sy2jv73ABAxFn3SrPlfRk', NULL, 'E2E', 'Tester_mndg84zo', NULL, 0, 1, '2026-03-30 17:15:19', '2026-03-30 17:15:19'),
+(25, 1, 'e2euser_mndhk4a0', 'e2e_mndhk4a0@test.com', '$argon2id$v=19$m=65536,t=4,p=1$UXlpYTdRTjQ5bWNONi9DdQ$mqHT15wOL6RGvUz/2JUVeQTjjr5mz/v0Olwm+JwzsPs', NULL, 'E2E', 'Tester_mndhk4a0', NULL, 0, 1, '2026-03-30 17:52:50', '2026-03-30 17:52:50'),
+(26, 1, 'e2euser_mndhkiqr', 'e2e_mndhkiqr@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SzJaUENoVTFnRWcwMXUzSw$PwBIonxp2NzM81poe4aIUMwIRY0jmIpB/XgK5HpSjfg', NULL, 'E2E', 'Tester_mndhkiqr', NULL, 0, 1, '2026-03-30 17:52:57', '2026-03-30 17:52:57'),
+(27, 1, 'e2euser_mndhkta8', 'e2e_mndhkta8@test.com', '$argon2id$v=19$m=65536,t=4,p=1$L0FlbFRBcmQyRkpKZXhtQw$h5QMZe2+to084zmQ5QDB2xf4fsivJW+gRc1zSZuh9CA', NULL, 'E2E', 'Tester_mndhkta8', NULL, 0, 1, '2026-03-30 17:53:11', '2026-03-30 17:53:11'),
+(28, 1, 'e2euser_mndhkyfl', 'e2e_mndhkyfl@test.com', '$argon2id$v=19$m=65536,t=4,p=1$MzhvVDdIUWZ4bERDNW1nQQ$W5WDqWMNO6QWfFIp61HjYeZVbhak1A13o9G0caCWJzs', NULL, 'E2E', 'Tester_mndhkyfl', NULL, 0, 1, '2026-03-30 17:53:18', '2026-03-30 17:53:18'),
+(29, 1, 'e2euser_mndhl4xq', 'e2e_mndhl4xq@test.com', '$argon2id$v=19$m=65536,t=4,p=1$L2dCcmdSMVYyQjg5VHZWYQ$kF39ZlI0Am3LSI1LR6tIjSeLAbK4OVtgsmZPzf1lx8c', NULL, 'E2E', 'Tester_mndhl4xq', NULL, 0, 1, '2026-03-30 17:53:26', '2026-03-30 17:53:26'),
+(30, 1, 'e2euser_mndhlc30', 'e2e_mndhlc30@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SnZTeHJsMGxnM0xhb2lRRg$yxTzbFLEdf+8/82Y0QlCKnpgZ7IFqFDUyAB9LvLuzr4', NULL, 'E2E', 'Tester_mndhlc30', NULL, 0, 1, '2026-03-30 17:53:35', '2026-03-30 17:53:35'),
+(31, 1, 'e2euser_mndhljmy', 'e2e_mndhljmy@test.com', '$argon2id$v=19$m=65536,t=4,p=1$bDJ0YTAyVHM3dEkzakY4bg$0+GZFUT5jeYNtU06c+3+7X0oQ9tip76qdCh2ZO9odOw', NULL, 'E2E', 'Tester_mndhljmy', NULL, 0, 1, '2026-03-30 17:53:45', '2026-03-30 17:53:45'),
+(32, 1, 'e2euser_mndhlql4', 'e2e_mndhlql4@test.com', '$argon2id$v=19$m=65536,t=4,p=1$dm9POUFxZ0lhMlNaN25tQQ$6zcvzsoLiks5bsjZtKHTbDKmBeXHYGaetPMyGeLqQMc', NULL, 'E2E', 'Tester_mndhlql4', NULL, 0, 1, '2026-03-30 17:53:55', '2026-03-30 17:53:55'),
+(33, 1, 'e2euser_mndhm0et', 'e2e_mndhm0et@test.com', '$argon2id$v=19$m=65536,t=4,p=1$OXdmaUdldzFtRkN4N09hVw$h2lFnnDBnTbnsWX6gYlb2tGejNsIw0vYjc3ZUbr/XSU', NULL, 'E2E', 'Tester_mndhm0et', NULL, 0, 1, '2026-03-30 17:54:10', '2026-03-30 17:54:10'),
+(34, 1, 'e2euser_mndhmhxh', 'e2e_mndhmhxh@test.com', '$argon2id$v=19$m=65536,t=4,p=1$eHRSNXVCaEluaEdRdDZ0aQ$ynFdVO1mdCHu+TPChYdjTU/5jhFrn+eqJY5GZtJie20', NULL, 'E2E', 'Tester_mndhmhxh', NULL, 0, 1, '2026-03-30 17:54:30', '2026-03-30 17:54:30'),
+(35, 1, 'e2euser_mndhmqz4', 'e2e_mndhmqz4@test.com', '$argon2id$v=19$m=65536,t=4,p=1$YnZXYkxIR1d0Tm8xQTdnaQ$Y9RoWmuIub1Fx8dLExE6ikIIcAaoEdudzyJ97bg3f2w', NULL, 'E2E', 'Tester_mndhmqz4', NULL, 0, 1, '2026-03-30 17:54:41', '2026-03-30 17:54:41'),
+(36, 1, 'e2euser_mndhmyi0', 'e2e_mndhmyi0@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Si96UWFHRGI4MUpsdFUuYQ$LfFLf2jPZH3zGW3Y5Qi7KYp+26ZAnJt0/A2n9AD3lPk', NULL, 'E2E', 'Tester_mndhmyi0', NULL, 0, 1, '2026-03-30 17:54:51', '2026-03-30 17:54:51'),
+(37, 1, 'e2euser_mndhn5i7', 'e2e_mndhn5i7@test.com', '$argon2id$v=19$m=65536,t=4,p=1$MDRWWlk1Sms5YTlFQlI4eA$USrS9QPv++3jm1ej7cAs0j+IUkPNtO6p3n1QxhsdDhY', NULL, 'E2E', 'Tester_mndhn5i7', NULL, 0, 1, '2026-03-30 17:55:00', '2026-03-30 17:55:00'),
+(38, 1, 'e2euser_mndhnchh', 'e2e_mndhnchh@test.com', '$argon2id$v=19$m=65536,t=4,p=1$VmhKTnFXVGFITHJSd2Zpdw$IR8H8BH5LsHQ3MrbzjO3MGH8jeoTMIRa7vlD3han6/g', NULL, 'E2E', 'Tester_mndhnchh', NULL, 0, 1, '2026-03-30 17:55:09', '2026-03-30 17:55:09'),
+(39, 1, 'e2euser_mndhnl5a', 'e2e_mndhnl5a@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Vm5RYnBic2RjeU5BV0RKRA$L1Rp54qoaO7wrLfeVl/slujI5VsCVNBMxfSGZwSxGac', NULL, 'E2E', 'Tester_mndhnl5a', NULL, 0, 1, '2026-03-30 17:55:20', '2026-03-30 17:55:20'),
+(40, 1, 'e2euser_mndhxiqf', 'e2e_mndhxiqf@test.com', '$argon2id$v=19$m=65536,t=4,p=1$RlF2cUtjeGUxOTNEOEhKSA$GK3e6ZmkgRK5R/rbW51JGPrEx9oVq1lByAaOTKy4NAU', NULL, 'E2E', 'Tester_mndhxiqf', NULL, 0, 1, '2026-03-30 18:03:02', '2026-03-30 18:03:41'),
+(41, 3, 'admin_e2euser_mndhxnms', 'admin_e2e_mndhxnms@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Ny50N1B5RFNWNEs2eE9YZg$bKLEEYmkrR/urikTIhAsjOZCrfNgdjYgQprdnB4ckbg', NULL, 'Admin', 'Tester_mndhxnms', NULL, 0, 1, '2026-03-30 18:03:08', '2026-03-30 18:03:45'),
+(42, 1, 'e2euser_mndhyni2', 'e2e_mndhyni2@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SHE1RnByck9jQnJYR2d0Qw$m3pbynYm7AFTmA+Fe97+SB8crIQlSN8vhlMiu/5CZwU', NULL, 'E2E', 'Tester_mndhyni2', NULL, 0, 1, '2026-03-30 18:03:57', '2026-03-30 18:03:57'),
+(43, 1, 'e2euser_mndi5mfs', 'e2e_mndi5mfs@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Z2lrWWIuYUpQYmxvLlNsUQ$fe2g4KBhUd+DyghBabQx4/Cz+0WMgo4k6xFgrLPrq44', NULL, 'E2E', 'Tester_mndi5mfs', NULL, 0, 1, '2026-03-30 18:09:22', '2026-03-30 18:09:22'),
+(44, 1, 'e2euser_mndickuw', 'e2e_mndickuw@test.com', '$argon2id$v=19$m=65536,t=4,p=1$dW5vUi5wMTNqRW03WUFndQ$7t04TY/MKDMd6aP+LfK0BrlDfFVjKhUQT0xo/eJeFsA', NULL, 'E2E', 'Tester_mndickuw', NULL, 0, 1, '2026-03-30 18:14:47', '2026-03-30 18:14:47'),
+(45, 2, 'employee1', 'employee1@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$SEFnWHBGZTRISFI4eGJpMQ$YK2ZFjrjEwM9Pl+XpNfnkvBxVZH1QjaJtOqsu6Afb7Y', NULL, 'Employee 1', 'Employee 1', NULL, 0, 1, '2026-04-02 14:52:59', '2026-04-02 14:52:59');
 
 -- --------------------------------------------------------
 
@@ -3521,7 +3876,13 @@ INSERT INTO `Venue` (`VenueId`, `Name`, `AddressLine`, `City`, `CreatedAtUtc`, `
 (12, 'Kweekcafé', 'Kleverlaan 9, 2023 JC Haarlem', 'Haarlem', '2026-02-06 15:30:32', 1),
 (13, 'Corrie ten Boom Huis', 'Barteljorisstraat 19', 'Haarlem', '2026-02-06 15:30:32', 1),
 (14, 'Theater Elswout', 'Elswoutslaan 24-a, 2051 AE Overveen', 'Overveen', '2026-02-06 15:30:32', 1),
-(15, 'A giant flag near Church of St. Bavo at Grote Markt', '', 'Haarlem', '2026-03-18 11:24:34', 1);
+(15, 'A giant flag near Church of St. Bavo at Grote Markt', '', 'Haarlem', '2026-03-18 11:24:34', 1),
+(16, 'E2E Test Venue', '123 Test Street, Haarlem', 'Haarlem', '2026-03-30 16:44:05', 0),
+(17, 'E2E Test Venue', '123 Test Street, Haarlem', 'Haarlem', '2026-03-30 17:09:01', 0),
+(18, 'E2E Test Venue', '123 Test Street, Haarlem', 'Haarlem', '2026-03-30 17:58:10', 0),
+(19, 'Test Venue Delete', 'Test Street', 'Haarlem', '2026-04-05 21:38:49', 1),
+(20, 'Test Venue Delete', 'Test Street', 'Haarlem', '2026-04-05 21:38:54', 0),
+(21, 'Test Delete Me', 'Nowhere', 'Haarlem', '2026-04-05 21:39:38', 0);
 
 --
 -- Indexes for dumped tables
@@ -3532,42 +3893,43 @@ INSERT INTO `Venue` (`VenueId`, `Name`, `AddressLine`, `City`, `CreatedAtUtc`, `
 --
 ALTER TABLE `Artist`
   ADD PRIMARY KEY (`ArtistId`),
-  ADD KEY `FK_Artist_Image` (`ImageAssetId`);
+  ADD KEY `FK_Artist_Image` (`ImageAssetId`),
+  ADD KEY `IX_Artist_JazzOverview` (`ShowOnJazzOverview`,`CardSortOrder`,`Name`);
 
 --
 -- Indexes for table `ArtistAlbum`
 --
 ALTER TABLE `ArtistAlbum`
   ADD PRIMARY KEY (`ArtistAlbumId`),
-  ADD KEY `IX_ArtistAlbum_Event` (`EventId`,`SortOrder`);
+  ADD KEY `IX_ArtistAlbum_Artist` (`ArtistId`,`SortOrder`);
 
 --
 -- Indexes for table `ArtistGalleryImage`
 --
 ALTER TABLE `ArtistGalleryImage`
   ADD PRIMARY KEY (`ArtistGalleryImageId`),
-  ADD KEY `IX_ArtistGalleryImage_Event` (`EventId`,`SortOrder`);
+  ADD KEY `IX_ArtistGalleryImage_Artist` (`ArtistId`,`SortOrder`);
 
 --
 -- Indexes for table `ArtistHighlight`
 --
 ALTER TABLE `ArtistHighlight`
   ADD PRIMARY KEY (`ArtistHighlightId`),
-  ADD KEY `IX_ArtistHighlight_Event` (`EventId`,`SortOrder`);
+  ADD KEY `IX_ArtistHighlight_Artist` (`ArtistId`,`SortOrder`);
 
 --
 -- Indexes for table `ArtistLineupMember`
 --
 ALTER TABLE `ArtistLineupMember`
   ADD PRIMARY KEY (`ArtistLineupMemberId`),
-  ADD KEY `IX_ArtistLineupMember_Event` (`EventId`,`SortOrder`);
+  ADD KEY `IX_ArtistLineupMember_Artist` (`ArtistId`,`SortOrder`);
 
 --
 -- Indexes for table `ArtistTrack`
 --
 ALTER TABLE `ArtistTrack`
   ADD PRIMARY KEY (`ArtistTrackId`),
-  ADD KEY `IX_ArtistTrack_Event` (`EventId`,`SortOrder`);
+  ADD KEY `IX_ArtistTrack_Artist` (`ArtistId`,`SortOrder`);
 
 --
 -- Indexes for table `CmsItem`
@@ -3612,8 +3974,7 @@ ALTER TABLE `CmsSection`
 -- Indexes for table `CuisineType`
 --
 ALTER TABLE `CuisineType`
-  ADD PRIMARY KEY (`CuisineTypeId`),
-  ADD UNIQUE KEY `UQ_CuisineType_Name` (`Name`);
+  ADD PRIMARY KEY (`CuisineTypeId`);
 
 --
 -- Indexes for table `EmailConfirmationToken`
@@ -3632,7 +3993,6 @@ ALTER TABLE `Event`
   ADD KEY `FK_Event_Image` (`FeaturedImageAssetId`),
   ADD KEY `FK_Event_Venue` (`VenueId`),
   ADD KEY `FK_Event_Artist` (`ArtistId`),
-  ADD KEY `FK_Event_Restaurant` (`RestaurantId`),
   ADD KEY `IX_Event_Type` (`EventTypeId`,`IsActive`),
   ADD KEY `IX_Event_Active` (`IsActive`,`EventId`);
 
@@ -3660,7 +4020,8 @@ ALTER TABLE `EventSession`
   ADD KEY `IX_EventSession_Capacity` (`EventId`,`StartDateTime`,`CapacityTotal`,`SoldSingleTickets`,`SoldReservedSeats`),
   ADD KEY `IX_EventSession_DateTime` (`StartDateTime`,`IsCancelled`),
   ADD KEY `IX_EventSession_Active` (`IsActive`,`EventId`),
-  ADD KEY `FK_EventSession_SessionType` (`SessionType`);
+  ADD KEY `FK_EventSession_SessionType` (`SessionType`),
+  ADD KEY `IX_EventSession_Venue` (`VenueId`);
 
 --
 -- Indexes for table `EventSessionLabel`
@@ -3841,39 +4202,16 @@ ALTER TABLE `ProgramItem`
   ADD KEY `FK_ProgramItem_PassType` (`PassTypeId`),
   ADD KEY `IX_ProgramItem_Program` (`ProgramId`),
   ADD KEY `IX_ProgramItem_Session` (`EventSessionId`),
-  ADD KEY `IX_ProgramItem_HistoryTour` (`HistoryTourId`);
+  ADD KEY `IX_ProgramItem_HistoryTour` (`HistoryTourId`),
+  ADD KEY `FK_ProgramItem_Reservation` (`ReservationId`),
+  ADD KEY `FK_ProgramItem_PriceTier` (`PriceTierId`);
 
 --
--- Indexes for table `Restaurant`
+-- Indexes for table `Reservation`
 --
-ALTER TABLE `Restaurant`
-  ADD PRIMARY KEY (`RestaurantId`),
-  ADD KEY `FK_Restaurant_Image` (`ImageAssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage1` (`GalleryImage1AssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage2` (`GalleryImage2AssetId`),
-  ADD KEY `FK_Restaurant_GalleryImage3` (`GalleryImage3AssetId`),
-  ADD KEY `FK_Restaurant_AboutImage` (`AboutImageAssetId`),
-  ADD KEY `FK_Restaurant_ChefImage` (`ChefImageAssetId`),
-  ADD KEY `FK_Restaurant_MenuImage1` (`MenuImage1AssetId`),
-  ADD KEY `FK_Restaurant_MenuImage2` (`MenuImage2AssetId`),
-  ADD KEY `FK_Restaurant_ReservationImage` (`ReservationImageAssetId`),
-  ADD KEY `FK_Restaurant_StarRating` (`Stars`);
-
---
--- Indexes for table `RestaurantCuisine`
---
-ALTER TABLE `RestaurantCuisine`
-  ADD PRIMARY KEY (`RestaurantId`,`CuisineTypeId`),
-  ADD KEY `IX_RestaurantCuisine_Cuisine` (`CuisineTypeId`);
-
---
--- Indexes for table `RestaurantImage`
---
-ALTER TABLE `RestaurantImage`
-  ADD PRIMARY KEY (`RestaurantImageId`),
-  ADD UNIQUE KEY `UQ_RestaurantImage` (`RestaurantId`,`ImageType`,`SortOrder`),
-  ADD KEY `IX_RestaurantImage_Restaurant` (`RestaurantId`),
-  ADD KEY `FK_RestaurantImage_Asset` (`MediaAssetId`);
+ALTER TABLE `Reservation`
+  ADD PRIMARY KEY (`ReservationId`),
+  ADD KEY `FK_Reservation_Event` (`EventId`);
 
 --
 -- Indexes for table `ScheduleDay`
@@ -3959,7 +4297,7 @@ ALTER TABLE `Venue`
 -- AUTO_INCREMENT for table `Artist`
 --
 ALTER TABLE `Artist`
-  MODIFY `ArtistId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `ArtistId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `ArtistAlbum`
@@ -3995,19 +4333,19 @@ ALTER TABLE `ArtistTrack`
 -- AUTO_INCREMENT for table `CmsItem`
 --
 ALTER TABLE `CmsItem`
-  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1350;
+  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1494;
 
 --
 -- AUTO_INCREMENT for table `CmsPage`
 --
 ALTER TABLE `CmsPage`
-  MODIFY `CmsPageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `CmsPageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `CmsSection`
 --
 ALTER TABLE `CmsSection`
-  MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- AUTO_INCREMENT for table `CuisineType`
@@ -4025,7 +4363,7 @@ ALTER TABLE `EmailConfirmationToken`
 -- AUTO_INCREMENT for table `Event`
 --
 ALTER TABLE `Event`
-  MODIFY `EventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `EventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT for table `EventGalleryImage`
@@ -4043,19 +4381,19 @@ ALTER TABLE `EventHighlight`
 -- AUTO_INCREMENT for table `EventSession`
 --
 ALTER TABLE `EventSession`
-  MODIFY `EventSessionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
+  MODIFY `EventSessionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=217;
 
 --
 -- AUTO_INCREMENT for table `EventSessionLabel`
 --
 ALTER TABLE `EventSessionLabel`
-  MODIFY `EventSessionLabelId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `EventSessionLabelId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
 
 --
 -- AUTO_INCREMENT for table `EventSessionPrice`
 --
 ALTER TABLE `EventSessionPrice`
-  MODIFY `EventSessionPriceId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=211;
+  MODIFY `EventSessionPriceId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=466;
 
 --
 -- AUTO_INCREMENT for table `EventType`
@@ -4091,19 +4429,19 @@ ALTER TABLE `InvoiceLine`
 -- AUTO_INCREMENT for table `MediaAsset`
 --
 ALTER TABLE `MediaAsset`
-  MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
+  MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
 
 --
 -- AUTO_INCREMENT for table `Order`
 --
 ALTER TABLE `Order`
-  MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `OrderItem`
 --
 ALTER TABLE `OrderItem`
-  MODIFY `OrderItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `OrderItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `PageGalleryImage`
@@ -4133,37 +4471,31 @@ ALTER TABLE `PasswordResetToken`
 -- AUTO_INCREMENT for table `Payment`
 --
 ALTER TABLE `Payment`
-  MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `PriceTier`
 --
 ALTER TABLE `PriceTier`
-  MODIFY `PriceTierId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `PriceTierId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `Program`
 --
 ALTER TABLE `Program`
-  MODIFY `ProgramId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `ProgramId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `ProgramItem`
 --
 ALTER TABLE `ProgramItem`
-  MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
--- AUTO_INCREMENT for table `Restaurant`
+-- AUTO_INCREMENT for table `Reservation`
 --
-ALTER TABLE `Restaurant`
-  MODIFY `RestaurantId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `RestaurantImage`
---
-ALTER TABLE `RestaurantImage`
-  MODIFY `RestaurantImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+ALTER TABLE `Reservation`
+  MODIFY `ReservationId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `ScheduleDay`
@@ -4175,7 +4507,7 @@ ALTER TABLE `ScheduleDay`
 -- AUTO_INCREMENT for table `ScheduleDayConfig`
 --
 ALTER TABLE `ScheduleDayConfig`
-  MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT for table `SessionDiscountRule`
@@ -4193,13 +4525,13 @@ ALTER TABLE `StripeWebhookEvent`
 -- AUTO_INCREMENT for table `Ticket`
 --
 ALTER TABLE `Ticket`
-  MODIFY `TicketId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `TicketId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `UserAccount`
 --
 ALTER TABLE `UserAccount`
-  MODIFY `UserAccountId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `UserAccountId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `UserRole`
@@ -4211,7 +4543,7 @@ ALTER TABLE `UserRole`
 -- AUTO_INCREMENT for table `Venue`
 --
 ALTER TABLE `Venue`
-  MODIFY `VenueId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `VenueId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables
@@ -4227,31 +4559,31 @@ ALTER TABLE `Artist`
 -- Constraints for table `ArtistAlbum`
 --
 ALTER TABLE `ArtistAlbum`
-  ADD CONSTRAINT `FK_ArtistAlbum_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
+  ADD CONSTRAINT `FK_ArtistAlbum_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `ArtistGalleryImage`
 --
 ALTER TABLE `ArtistGalleryImage`
-  ADD CONSTRAINT `FK_ArtistGalleryImage_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
+  ADD CONSTRAINT `FK_ArtistGalleryImage_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `ArtistHighlight`
 --
 ALTER TABLE `ArtistHighlight`
-  ADD CONSTRAINT `FK_ArtistHighlight_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
+  ADD CONSTRAINT `FK_ArtistHighlight_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `ArtistLineupMember`
 --
 ALTER TABLE `ArtistLineupMember`
-  ADD CONSTRAINT `FK_ArtistLineupMember_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
+  ADD CONSTRAINT `FK_ArtistLineupMember_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `ArtistTrack`
 --
 ALTER TABLE `ArtistTrack`
-  ADD CONSTRAINT `FK_ArtistTrack_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
+  ADD CONSTRAINT `FK_ArtistTrack_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `CmsItem`
@@ -4286,7 +4618,6 @@ ALTER TABLE `EmailConfirmationToken`
 ALTER TABLE `Event`
   ADD CONSTRAINT `FK_Event_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`),
   ADD CONSTRAINT `FK_Event_Image` FOREIGN KEY (`FeaturedImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Event_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`),
   ADD CONSTRAINT `FK_Event_Type` FOREIGN KEY (`EventTypeId`) REFERENCES `EventType` (`EventTypeId`),
   ADD CONSTRAINT `FK_Event_Venue` FOREIGN KEY (`VenueId`) REFERENCES `Venue` (`VenueId`);
 
@@ -4307,7 +4638,8 @@ ALTER TABLE `EventHighlight`
 --
 ALTER TABLE `EventSession`
   ADD CONSTRAINT `FK_EventSession_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE,
-  ADD CONSTRAINT `FK_EventSession_SessionType` FOREIGN KEY (`SessionType`) REFERENCES `SessionType` (`SessionType`);
+  ADD CONSTRAINT `FK_EventSession_SessionType` FOREIGN KEY (`SessionType`) REFERENCES `SessionType` (`SessionType`),
+  ADD CONSTRAINT `FK_EventSession_Venue` FOREIGN KEY (`VenueId`) REFERENCES `Venue` (`VenueId`);
 
 --
 -- Constraints for table `EventSessionLabel`
@@ -4411,37 +4743,16 @@ ALTER TABLE `Program`
 ALTER TABLE `ProgramItem`
   ADD CONSTRAINT `FK_ProgramItem_HistoryTour` FOREIGN KEY (`HistoryTourId`) REFERENCES `HistoryTour` (`HistoryTourId`),
   ADD CONSTRAINT `FK_ProgramItem_PassType` FOREIGN KEY (`PassTypeId`) REFERENCES `PassType` (`PassTypeId`),
+  ADD CONSTRAINT `FK_ProgramItem_PriceTier` FOREIGN KEY (`PriceTierId`) REFERENCES `PriceTier` (`PriceTierId`),
   ADD CONSTRAINT `FK_ProgramItem_Program` FOREIGN KEY (`ProgramId`) REFERENCES `Program` (`ProgramId`),
+  ADD CONSTRAINT `FK_ProgramItem_Reservation` FOREIGN KEY (`ReservationId`) REFERENCES `Reservation` (`ReservationId`) ON DELETE SET NULL,
   ADD CONSTRAINT `FK_ProgramItem_Session` FOREIGN KEY (`EventSessionId`) REFERENCES `EventSession` (`EventSessionId`);
 
 --
--- Constraints for table `Restaurant`
+-- Constraints for table `Reservation`
 --
-ALTER TABLE `Restaurant`
-  ADD CONSTRAINT `FK_Restaurant_AboutImage` FOREIGN KEY (`AboutImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_ChefImage` FOREIGN KEY (`ChefImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage1` FOREIGN KEY (`GalleryImage1AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage2` FOREIGN KEY (`GalleryImage2AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_GalleryImage3` FOREIGN KEY (`GalleryImage3AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_Image` FOREIGN KEY (`ImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_MenuImage1` FOREIGN KEY (`MenuImage1AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_MenuImage2` FOREIGN KEY (`MenuImage2AssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_ReservationImage` FOREIGN KEY (`ReservationImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_Restaurant_StarRating` FOREIGN KEY (`Stars`) REFERENCES `StarRating` (`Stars`);
-
---
--- Constraints for table `RestaurantCuisine`
---
-ALTER TABLE `RestaurantCuisine`
-  ADD CONSTRAINT `FK_RestaurantCuisine_CuisineType` FOREIGN KEY (`CuisineTypeId`) REFERENCES `CuisineType` (`CuisineTypeId`),
-  ADD CONSTRAINT `FK_RestaurantCuisine_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`) ON DELETE CASCADE;
-
---
--- Constraints for table `RestaurantImage`
---
-ALTER TABLE `RestaurantImage`
-  ADD CONSTRAINT `FK_RestaurantImage_Asset` FOREIGN KEY (`MediaAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
-  ADD CONSTRAINT `FK_RestaurantImage_Restaurant` FOREIGN KEY (`RestaurantId`) REFERENCES `Restaurant` (`RestaurantId`) ON DELETE CASCADE;
+ALTER TABLE `Reservation`
+  ADD CONSTRAINT `FK_Reservation_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`);
 
 --
 -- Constraints for table `ScheduleDay`
