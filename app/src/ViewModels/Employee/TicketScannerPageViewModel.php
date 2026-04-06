@@ -12,6 +12,7 @@ final readonly class TicketScannerPageViewModel
     public function __construct(
         public string $scanEndpoint,
         public string $logoutUrl,
+        public string $logoutCsrfToken,
         public string $roleLabel,
         public string $scriptVersion,
         public string $pageTitle,
