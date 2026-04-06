@@ -282,42 +282,67 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
      * into an EventEditBundle for the CMS edit form. Returns null when the event does not exist.
      *
      * Sessions include cancelled ones so they can be re-activated from the edit view.
-     * Prices and labels are loaded in bulk (two queries total) using all session IDs at once,
-     * not one query per session.
+     * Prices and labels are loaded in bulk (two queries total) rather than per session.
+     *
+     * @param int $eventId The event to load.
+     * @return EventEditBundle|null Null when no event exists for the given ID.
      */
     public function getEventForEdit(int $eventId): ?EventEditBundle
     {
-        // Load the event with its session count
-        $event = $this->eventRepository->findEvents(new EventFilter(
-            eventId: $eventId,
-            includeSessionCount: true,
-        ))[0] ?? null;
-        if (!$event) {
+        $event = $this->loadEventWithSessionCount($eventId);
+        if ($event === null) {
             return null;
         }
 
-        // Load all sessions (including cancelled) for the edit view
-        $sessions = $this->sessionRepository->findSessions(new EventSessionFilter(
-            eventId: $eventId,
-            includeCancelled: true,
-            orderBy: 'es.StartDateTime ASC',
-        ))->sessions;
-
-        // Batch-load prices and labels for all sessions
+        $sessions      = $this->loadSessionsForEdit($eventId);
         [$pricesMap, $labelsMap] = $this->loadSessionPricesAndLabels($sessions);
-
         $restaurantCms = $this->loadRestaurantCmsItems($event->eventTypeId, $eventId);
 
         return new EventEditBundle(
-            event: $event,
-            sessions: $sessions,
-            pricesMap: $pricesMap,
-            labelsMap: $labelsMap,
-            cmsDetailEditUrl: $this->resolveCmsDetailEditUrl($event->eventTypeId),
-            restaurantStars: $restaurantCms['stars'],
-            restaurantCuisine: $restaurantCms['cuisine'],
-            restaurantShortDescription: $restaurantCms['shortDescription'],
+            event:                       $event,
+            sessions:                    $sessions,
+            pricesMap:                   $pricesMap,
+            labelsMap:                   $labelsMap,
+            cmsDetailEditUrl:            $this->resolveCmsDetailEditUrl($event->eventTypeId),
+            restaurantStars:             $restaurantCms['stars'],
+            restaurantCuisine:           $restaurantCms['cuisine'],
+            restaurantShortDescription:  $restaurantCms['shortDescription'],
         );
+    }
+
+    /**
+     * Loads a single event row enriched with its session count, or returns null when not found.
+     *
+     * The session count is included because the edit form shows how many sessions the event
+     * has — loading it here avoids a second query from the controller.
+     *
+     * @param int $eventId The event to load.
+     * @return \App\Models\Event|null Null when no matching event exists.
+     */
+    private function loadEventWithSessionCount(int $eventId): ?\App\Models\Event
+    {
+        return $this->eventRepository->findEvents(new EventFilter(
+            eventId:             $eventId,
+            includeSessionCount: true,
+        ))[0] ?? null;
+    }
+
+    /**
+     * Loads all sessions for the edit view, including cancelled ones.
+     *
+     * Cancelled sessions are included so editors can review or reactivate them.
+     * Results are ordered by start time so they appear in chronological order in the form.
+     *
+     * @param int $eventId The event whose sessions to load.
+     * @return \App\DTOs\Schedule\SessionWithEvent[]
+     */
+    private function loadSessionsForEdit(int $eventId): array
+    {
+        return $this->sessionRepository->findSessions(new EventSessionFilter(
+            eventId:          $eventId,
+            includeCancelled: true,
+            orderBy:          'es.StartDateTime ASC',
+        ))->sessions;
     }
 
     /**
@@ -566,33 +591,80 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
     /**
      * Validates that both date/time fields are present and that the end time is after the start.
      *
-     * Both fields are required. End must be strictly after start — equal times are rejected
-     * because a zero-duration session is almost certainly a data entry mistake.
+     * Delegates each concern to a focused helper so each rule can be read in isolation.
+     * All errors are collected before returning so the user sees every problem at once.
+     *
+     * @param EventSessionUpsertData $data The submitted session form data.
+     * @return string[] Validation error messages, empty on success.
      */
     private function validateSessionDates(EventSessionUpsertData $data): array
     {
-        $errors = [];
+        return array_merge(
+            $this->validateSessionStartTime($data),
+            $this->validateSessionEndTime($data),
+            $this->validateSessionDateRange($data),
+        );
+    }
 
+    /**
+     * Checks that the start date/time field is not empty.
+     *
+     * @param EventSessionUpsertData $data The submitted session form data.
+     * @return string[] One error message when the field is missing, empty array otherwise.
+     */
+    private function validateSessionStartTime(EventSessionUpsertData $data): array
+    {
         if ($data->startDateTime === '') {
-            $errors[] = 'Start date/time is required';
+            return ['Start date/time is required'];
         }
 
+        return [];
+    }
+
+    /**
+     * Checks that the end date/time field is not empty.
+     *
+     * @param EventSessionUpsertData $data The submitted session form data.
+     * @return string[] One error message when the field is missing, empty array otherwise.
+     */
+    private function validateSessionEndTime(EventSessionUpsertData $data): array
+    {
         if ($data->endDateTime === '') {
-            $errors[] = 'End date/time is required';
+            return ['End date/time is required'];
         }
 
-        if ($data->startDateTime !== '' && $data->endDateTime !== '') {
-            $start = $this->parseSessionDateTime($data->startDateTime);
-            $end = $this->parseSessionDateTime($data->endDateTime);
+        return [];
+    }
 
-            if ($start === null || $end === null) {
-                $errors[] = 'Invalid date/time format';
-            } elseif ($end <= $start) {
-                $errors[] = 'End time must be after start time';
-            }
+    /**
+     * Checks that end is strictly after start when both fields are provided.
+     *
+     * Skips the check when either field is blank — the individual presence checks
+     * (validateSessionStartTime / validateSessionEndTime) will already report those errors.
+     * Equal times are rejected because a zero-duration session is almost certainly a mistake.
+     *
+     * @param EventSessionUpsertData $data The submitted session form data.
+     * @return string[] Error messages: unparseable format or end ≤ start. Empty on success.
+     */
+    private function validateSessionDateRange(EventSessionUpsertData $data): array
+    {
+        // Both fields must be present before we can compare them.
+        if ($data->startDateTime === '' || $data->endDateTime === '') {
+            return [];
         }
 
-        return $errors;
+        $start = $this->parseSessionDateTime($data->startDateTime);
+        $end   = $this->parseSessionDateTime($data->endDateTime);
+
+        if ($start === null || $end === null) {
+            return ['Invalid date/time format'];
+        }
+
+        if ($end <= $start) {
+            return ['End time must be after start time'];
+        }
+
+        return [];
     }
 
     /**
