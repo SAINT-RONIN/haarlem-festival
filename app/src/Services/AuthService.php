@@ -6,9 +6,12 @@ namespace App\Services;
 
 use App\DTOs\Auth\RegistrationFormData;
 use App\Enums\UserRoleId;
+use App\Exceptions\AuthenticationException;
+use App\Exceptions\ValidationException;
 use App\Helpers\UserValidationHelper;
 use App\Infrastructure\Interfaces\IEmailService;
-use App\Exceptions\AuthenticationException;
+use App\Models\PasswordResetToken;
+use App\Models\UserAccount;
 use App\Repositories\Interfaces\IPasswordResetTokenRepository;
 use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\IAuthService;
@@ -39,56 +42,33 @@ class AuthService implements IAuthService
     /**
      * Attempts to authenticate a user with username/email and password.
      *
-     * @param string $login Username or email
-     * @param string $password Plain text password
-     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     * @throws AuthenticationException When credentials are invalid
      */
-    public function attemptLogin(string $login, string $password): array
+    public function attemptLogin(string $login, string $password): UserAccount
     {
         $user = $this->userRepository->findByUsernameOrEmail($login);
 
-        if ($user === null) {
-            return $this->loginFailure();
+        if ($user === null || !PasswordHasher::verify($password, $user->passwordHash)) {
+            throw new AuthenticationException('Invalid username/email or password.');
         }
 
-        if (!PasswordHasher::verify($password, $user->passwordHash)) {
-            return $this->loginFailure();
-        }
-
-        return ['success' => true, 'user' => $user];
+        return $user;
     }
 
     /**
      * Attempts login and additionally checks that the user has Administrator role.
      *
-     * @param string $login Username or email
-     * @param string $password Plain text password
-     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     * @throws AuthenticationException When credentials are invalid or user is not an administrator
      */
-    public function attemptAdminLogin(string $login, string $password): array
+    public function attemptAdminLogin(string $login, string $password): UserAccount
     {
-        $result = $this->attemptLogin($login, $password);
+        $user = $this->attemptLogin($login, $password);
 
-        if (!$result['success']) {
-            return $result;
+        if ($user->userRoleId !== UserRoleId::Administrator->value) {
+            throw new AuthenticationException('Invalid username/email or password.');
         }
 
-        if ($result['user']->userRoleId !== UserRoleId::Administrator->value) {
-            return $this->loginFailure();
-        }
-
-        return $result;
-    }
-
-    /**
-     * Returns a generic login failure response (prevents account enumeration).
-     */
-    private function loginFailure(): array
-    {
-        return [
-            'success' => false,
-            'error' => 'Invalid username/email or password.',
-        ];
+        return $user;
     }
 
     /**
@@ -222,67 +202,50 @@ class AuthService implements IAuthService
     /**
      * Validates a password reset token from the URL.
      *
-     * @param string $rawToken The raw token from the URL
-     * @return array{valid: bool, tokenId?: int, userId?: int, error?: string}
+     * @throws AuthenticationException When the token is invalid or has expired
      */
-    public function validateResetToken(string $rawToken): array
+    public function validateResetToken(string $rawToken): PasswordResetToken
     {
         $tokenHash = hash('sha256', $rawToken);
         $token = $this->resetTokenRepository->findValidByTokenHash($tokenHash);
 
         if ($token === null) {
-            return [
-                'valid' => false,
-                'error' => 'This password reset link is invalid or has expired.',
-            ];
+            throw new AuthenticationException('This password reset link is invalid or has expired.');
         }
 
-        return [
-            'valid' => true,
-            'tokenId' => $token->passwordResetTokenId,
-            'userId' => $token->userAccountId,
-        ];
+        return $token;
     }
 
     /**
      * Resets a user's password using a valid reset token.
      *
-     * @return array{success: bool, error?: string}
+     * @throws AuthenticationException When the token is invalid or the password update fails
+     * @throws ValidationException When the new password fails validation
      */
-    /**
-     * @throws AuthenticationException When the password update or token invalidation fails
-     */
-    public function resetPassword(string $rawToken, string $newPassword, string $confirmPassword): array
+    public function resetPassword(string $rawToken, string $newPassword, string $confirmPassword): void
     {
-        // Validate the token first (defensive: foreseeable failure)
-        $tokenResult = $this->validateResetToken($rawToken);
-        if (!$tokenResult['valid']) {
-            return ['success' => false, 'error' => $tokenResult['error']];
-        }
+        $token = $this->validateResetToken($rawToken);
 
-        // Validate new password (defensive: foreseeable failure)
         $passwordError = UserValidationHelper::checkPasswordLength($newPassword);
         if ($passwordError !== null) {
-            return ['success' => false, 'error' => $passwordError];
+            throw new ValidationException($passwordError);
         }
 
         if ($newPassword !== $confirmPassword) {
-            return ['success' => false, 'error' => 'Passwords do not match.'];
+            throw new ValidationException('Passwords do not match.');
         }
 
         // Wrap both writes in a transaction — password update + token invalidation must both succeed
         try {
             $this->pdo->beginTransaction();
             $passwordHash = PasswordHasher::hash($newPassword);
-            $this->userRepository->updatePasswordHash($tokenResult['userId'], $passwordHash);
-            $this->resetTokenRepository->markAsUsed($tokenResult['tokenId']);
+            $this->userRepository->updatePasswordHash($token->userAccountId, $passwordHash);
+            $this->resetTokenRepository->markAsUsed($token->passwordResetTokenId);
             $this->pdo->commit();
         } catch (\Throwable $error) {
             $this->pdo->rollBack();
             throw new AuthenticationException('Failed to reset password.', 0, $error);
         }
-
-        return ['success' => true];
     }
 
     /**

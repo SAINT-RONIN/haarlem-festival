@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\AuthenticationException;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ISessionService;
 
@@ -70,15 +71,14 @@ class CmsAuthController extends BaseController
     {
         $login = $this->readStringPostParam('login') ?? '';
         $password = $_POST['password'] ?? '';
-        // Delegate credential verification to the auth service
-        $result = $this->authService->attemptAdminLogin($login, $password);
 
-        if (!$result['success']) {
-            $this->redirectWithError($result['error']);
+        try {
+            $user = $this->authService->attemptAdminLogin($login, $password);
+        } catch (AuthenticationException $e) {
+            $this->redirectWithError($e->getMessage());
             return;
         }
 
-        $user = $result['user'];
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
         $this->redirectAndExit('/cms');
     }
