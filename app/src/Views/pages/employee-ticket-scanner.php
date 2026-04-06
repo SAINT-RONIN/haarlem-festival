@@ -27,10 +27,13 @@
                 Scan each visitor ticket once at the entrance. Already scanned or invalid tickets will be rejected immediately.
             </p>
         </div>
-        <a href="<?= htmlspecialchars($viewModel->logoutUrl) ?>"
-           class="inline-flex items-center justify-center rounded-2xl bg-sand px-5 py-3 text-sm font-semibold text-royal-blue transition hover:bg-white">
-            Logout
-        </a>
+        <form method="post" action="<?= htmlspecialchars($viewModel->logoutUrl) ?>">
+            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->logoutCsrfToken) ?>">
+            <button type="submit"
+                    class="inline-flex items-center justify-center rounded-2xl bg-sand px-5 py-3 text-sm font-semibold text-royal-blue transition hover:bg-white">
+                Logout
+            </button>
+        </form>
     </header>
 
     <section class="grid flex-1 gap-8 xl:grid-cols-[1.1fr_0.9fr]">

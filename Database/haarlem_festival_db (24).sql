@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Generation Time: Apr 06, 2026 at 08:42 AM
+-- Generation Time: Apr 06, 2026 at 12:13 PM
 -- Server version: 12.0.2-MariaDB-ubu2404
 -- PHP Version: 8.3.27
 
@@ -1048,7 +1048,12 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1476, 105, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-05 21:30:05'),
 (1477, 105, 'cuisine_type', 'TEXT', 'italian food', NULL, NULL, '2026-04-05 21:30:05'),
 (1478, 105, 'address_line', 'TEXT', 'Hoge Duin en Daalseweg 2', NULL, NULL, '2026-04-05 21:56:56'),
-(1479, 105, 'about_text', 'TEXT', 'heh', NULL, NULL, '2026-04-05 21:30:05');
+(1479, 105, 'about_text', 'TEXT', 'hehah', NULL, NULL, '2026-04-06 11:46:24'),
+(1502, 107, 'address_line', 'TEXT', 'Kleverlaan 9, 2023 JC Haarlem', NULL, NULL, '2026-04-06 12:02:50'),
+(1503, 108, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-06 12:04:56'),
+(1504, 108, 'cuisine_type', 'TEXT', 'Seafood', NULL, NULL, '2026-04-06 12:04:56'),
+(1505, 108, 'about_text', 'TEXT', 'This is the best restaurant', NULL, NULL, '2026-04-06 12:04:56'),
+(1506, 108, 'address_line', 'TEXT', 'Hoge Duin en Daalseweg 2', NULL, NULL, '2026-04-06 12:04:56');
 
 -- --------------------------------------------------------
 
@@ -1744,6 +1749,7 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (73, 7, 'event_46'),
 (102, 7, 'event_67'),
 (104, 7, 'event_69'),
+(107, 7, 'event_77'),
 (79, 9, 'main'),
 (80, 10, 'main'),
 (83, 11, 'facts_section'),
@@ -1767,7 +1773,8 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (99, 14, 'event_53'),
 (103, 14, 'event_68'),
 (105, 14, 'event_72'),
-(106, 14, 'event_73');
+(106, 14, 'event_73'),
+(108, 14, 'event_79');
 
 -- --------------------------------------------------------
 
@@ -1893,9 +1900,14 @@ INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `DisplayOrder`, 
 (69, 4, 'this is test 1', 'this-is-test-1', NULL, 'this is test 1', 'this is test 1', NULL, 12, NULL, 1, '2026-04-05 20:09:38'),
 (70, 1, 'this is test 2', 'this-is-test-2', NULL, 'this is test 2', '<p></p>', NULL, 6, 25, 0, '2026-04-05 20:11:55'),
 (71, 3, 'this is test 3', 'this-is-test-3', NULL, 'this is test 3', 'this is test 3', NULL, 15, NULL, 1, '2026-04-05 20:13:29'),
-(72, 5, 'test number 5', 'test-number-5', NULL, 'test number 5', '<p></p>', 119, 8, NULL, 1, '2026-04-05 20:16:11'),
+(72, 5, 'test number 5', 'test-number-5', NULL, 'test number 5', '<p></p>', 119, 8, NULL, 0, '2026-04-05 20:16:11'),
 (73, 5, 'Test CMS Create Restaurant', 'test-cms-create-restaurant', NULL, 'Test desc', '<p>Test</p>', NULL, NULL, NULL, 0, '2026-04-05 21:28:15'),
-(74, 1, 'TESTING with kian', 'testing-with-kian', NULL, 'kian', 'kian', NULL, 2, 15, 0, '2026-04-06 08:26:14');
+(74, 1, 'TESTING with kian', 'testing-with-kian', NULL, 'kian', 'kian', NULL, 2, 15, 0, '2026-04-06 08:26:14'),
+(75, 3, 'test', 'test', NULL, 'test', 'test', NULL, 15, NULL, 1, '2026-04-06 11:44:11'),
+(76, 1, 'Kian The Goat', 'kian-the-goat', NULL, 'Kian The Goat', 'Kian The Goat', NULL, 2, 15, 1, '2026-04-06 12:01:21'),
+(77, 4, 'Leandro The Goat', 'leandro-the-goat', NULL, 'Leandro The Goat', 'Leandro The Goat', NULL, 12, NULL, 1, '2026-04-06 12:02:50'),
+(78, 3, 'Daria The Goat', 'daria-the-goat', NULL, 'Daria The Goat', 'Daria The Goat', NULL, 15, NULL, 1, '2026-04-06 12:03:41'),
+(79, 5, 'Matheus The Goat', 'matheus-the-goat', NULL, 'Matheus The Goat', 'Matheus The Goat', 115, 8, NULL, 1, '2026-04-06 12:04:56');
 
 -- --------------------------------------------------------
 
@@ -2092,7 +2104,7 @@ CREATE TABLE `EventSession` (
 --
 
 INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTime`, `EndDateTime`, `CapacityTotal`, `CapacitySingleTicketLimit`, `SeatsAvailable`, `SoldSingleTickets`, `SoldReservedSeats`, `HallName`, `SessionType`, `DurationMinutes`, `LanguageCode`, `MinAge`, `MaxAge`, `ReservationRequired`, `IsFree`, `Notes`, `HistoryTicketLabel`, `CtaLabel`, `CtaUrl`, `IsCancelled`, `CreatedAtUtc`, `IsActive`) VALUES
-(1, 1, 1, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 300, 270, NULL, 5, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(1, 1, 1, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 300, 270, NULL, 7, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (2, 2, 1, '2026-07-23 19:30:00', '2026-07-23 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (3, 3, 1, '2026-07-23 21:00:00', '2026-07-23 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (4, 4, 1, '2026-07-23 18:00:00', '2026-07-23 19:00:00', 200, 180, NULL, 10, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
@@ -2148,7 +2160,7 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTi
 (54, 38, 10, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (55, 39, 12, '2026-07-24 19:00:00', '2026-07-24 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'NL', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (56, 40, 11, '2026-07-24 20:30:00', '2026-07-24 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'ENG', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(57, 42, 14, '2026-07-25 10:00:00', '2026-07-25 11:00:00', 100, 90, NULL, 6, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(57, 42, 14, '2026-07-25 10:00:00', '2026-07-25 11:00:00', 100, 90, NULL, 8, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (58, 42, 14, '2026-07-25 15:00:00', '2026-07-25 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (59, 43, 11, '2026-07-25 14:00:00', '2026-07-25 15:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 12, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (60, 44, 13, '2026-07-25 13:00:00', '2026-07-25 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
@@ -2192,7 +2204,7 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTi
 (103, 33, 15, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
 (104, 33, 15, '2026-07-25 16:00:00', '2026-07-25 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
 (105, 33, 15, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
-(106, 33, 15, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
+(106, 33, 15, '2026-07-26 10:00:00', '2026-07-26 12:30:00', 12, 12, 12, 3, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
 (107, 33, 15, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
 (108, 33, 15, '2026-07-26 13:00:00', '2026-07-26 15:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ZH', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
 (109, 33, 15, '2026-07-26 16:00:00', '2026-07-26 18:30:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'NL', 12, NULL, 0, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-03-09 19:19:22', 1),
@@ -2279,7 +2291,10 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTi
 (213, 69, NULL, '2026-07-23 22:09:00', '2026-07-23 23:09:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, 'NL', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-05 20:10:06', 1),
 (214, 70, NULL, '2026-07-23 17:12:00', '2026-07-23 22:12:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-05 20:12:44', 0),
 (215, 71, NULL, '2026-07-23 17:13:00', '2026-07-23 22:13:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-05 20:13:53', 1),
-(216, 74, NULL, '2026-04-08 10:26:00', '2026-04-10 10:26:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 08:28:06', 0);
+(216, 74, NULL, '2026-04-08 10:26:00', '2026-04-10 10:26:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 08:28:06', 0),
+(217, 76, NULL, '2026-04-06 14:01:00', '2026-04-11 14:01:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 12:01:32', 1),
+(218, 77, NULL, '2026-04-06 14:02:00', '2026-04-09 14:02:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, 'NL', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 12:03:00', 1),
+(219, 78, NULL, '2026-04-06 14:03:00', '2026-04-08 14:03:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, 'ZH', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 12:03:57', 1);
 
 -- --------------------------------------------------------
 
@@ -3053,7 +3068,14 @@ INSERT INTO `MediaAsset` (`MediaAssetId`, `FilePath`, `OriginalFileName`, `MimeT
 (128, '/assets/Image/cms/img_69cab9c7291477.91677702.png', 'test-image.png', 'image/png', 69, '', '2026-03-30 17:58:31'),
 (129, '/assets/tickets/Haarlem-Festival-Ticket-HF-9TCZWTJAZY3NPWMJ.pdf', 'Haarlem-Festival-Ticket-HF-9TCZWTJAZY3NPWMJ.pdf', 'application/pdf', 14688, 'Festival ticket PDF', '2026-04-01 18:39:40'),
 (130, '/assets/tickets/Haarlem-Festival-Ticket-HF-PZQWQDUKS49Q5HUT.pdf', 'Haarlem-Festival-Ticket-HF-PZQWQDUKS49Q5HUT.pdf', 'application/pdf', 14650, 'Festival ticket PDF', '2026-04-01 18:47:10'),
-(131, '/assets/tickets/Haarlem-Festival-Ticket-HF-DKB3GQQKTQWKBQKF.pdf', 'Haarlem-Festival-Ticket-HF-DKB3GQQKTQWKBQKF.pdf', 'application/pdf', 14384, 'Festival ticket PDF', '2026-04-01 18:49:15');
+(131, '/assets/tickets/Haarlem-Festival-Ticket-HF-DKB3GQQKTQWKBQKF.pdf', 'Haarlem-Festival-Ticket-HF-DKB3GQQKTQWKBQKF.pdf', 'application/pdf', 14384, 'Festival ticket PDF', '2026-04-01 18:49:15'),
+(132, '/assets/tickets/Haarlem-Festival-Ticket-HF-8WRJNFU4TH3MQCBS.pdf', 'Haarlem-Festival-Ticket-HF-8WRJNFU4TH3MQCBS.pdf', 'application/pdf', 24371, 'Festival ticket PDF', '2026-04-06 11:38:53'),
+(133, '/assets/tickets/Haarlem-Festival-Ticket-HF-CUUD2G55SNULTJDK.pdf', 'Haarlem-Festival-Ticket-HF-CUUD2G55SNULTJDK.pdf', 'application/pdf', 23415, 'Festival ticket PDF', '2026-04-06 11:38:53'),
+(134, '/assets/tickets/Haarlem-Festival-Ticket-HF-WHGCMN56H3FBYXUU.pdf', 'Haarlem-Festival-Ticket-HF-WHGCMN56H3FBYXUU.pdf', 'application/pdf', 23121, 'Festival ticket PDF', '2026-04-06 11:38:53'),
+(135, '/assets/tickets/Haarlem-Festival-Ticket-HF-6XDEF8GW2KN9FNX5.pdf', 'Haarlem-Festival-Ticket-HF-6XDEF8GW2KN9FNX5.pdf', 'application/pdf', 24336, 'Festival ticket PDF', '2026-04-06 11:38:53'),
+(136, '/assets/tickets/Haarlem-Festival-Ticket-HF-T29B7R664ZVGKHA3.pdf', 'Haarlem-Festival-Ticket-HF-T29B7R664ZVGKHA3.pdf', 'application/pdf', 23347, 'Festival ticket PDF', '2026-04-06 11:38:53'),
+(137, '/assets/tickets/Haarlem-Festival-Ticket-HF-BSFNUM9KRTKK68UQ.pdf', 'Haarlem-Festival-Ticket-HF-BSFNUM9KRTKK68UQ.pdf', 'application/pdf', 24237, 'Festival ticket PDF', '2026-04-06 11:38:53'),
+(138, '/assets/tickets/Haarlem-Festival-Ticket-HF-3CTFZ28HH92ZFR8R.pdf', 'Haarlem-Festival-Ticket-HF-3CTFZ28HH92ZFR8R.pdf', 'application/pdf', 23089, 'Festival ticket PDF', '2026-04-06 11:38:53');
 
 -- --------------------------------------------------------
 
@@ -3097,15 +3119,13 @@ INSERT INTO `Order` (`OrderId`, `OrderNumber`, `UserAccountId`, `ProgramId`, `St
 (20, 'HF-20260330-112938-A27321', 1, 1, 'Pending', '2026-03-30 11:29:38', '2026-03-31 11:29:38', 30.00, 6.30, 36.30, 'Leandro', 'Test', 'propipplayer@gmail.com', '2026-03-30 11:30:20', NULL),
 (21, 'HF-20260330-120216-44AC09', 2, 3, 'Pending', '2026-03-30 12:02:16', '2026-03-31 12:02:16', 10.00, 2.10, 12.10, 'Test', 'User', 'test@example.com', NULL, NULL),
 (22, 'HF-20260330-122634-B1484E', 2, 3, 'Pending', '2026-03-30 12:26:34', '2026-03-31 12:26:34', 75.50, 15.85, 91.36, 'Test', 'User', 'test@example.com', NULL, NULL),
-(23, 'HF-20260330-175449-7F8448', 35, 10, 'Pending', '2026-03-30 17:54:49', '2026-03-31 17:54:49', 15.00, 3.15, 18.15, 'E2E', 'Tester_mndhmqz4', 'e2e_mndhmqz4@test.com', NULL, NULL),
-(24, 'HF-20260330-180423-305204', 42, 14, 'Pending', '2026-03-30 18:04:23', '2026-03-31 18:04:23', 30.00, 6.30, 36.30, 'E2E', 'Tester_mndhyni2', 'e2e_mndhyni2@test.com', NULL, NULL),
-(25, 'HF-20260330-180945-C829F1', 43, 15, 'Pending', '2026-03-30 18:09:45', '2026-03-31 18:09:45', 30.00, 6.30, 36.30, 'E2E', 'Tester_mndi5mfs', 'e2e_mndi5mfs@test.com', NULL, NULL),
 (26, 'HF-20260401-183334-B37491', 2, 3, 'Pending', '2026-04-01 18:33:34', '2026-04-02 18:33:34', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', NULL, NULL),
 (27, 'HF-20260401-183412-C016F4', 2, 3, 'Pending', '2026-04-01 18:34:12', '2026-04-02 18:34:12', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', NULL, NULL),
 (28, 'HF-20260401-183844-805998', 2, 3, 'Pending', '2026-04-01 18:38:44', '2026-04-02 18:38:44', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', NULL, NULL),
 (29, 'HF-20260401-183929-3BF9D8', 2, 3, 'Paid', '2026-04-01 18:39:29', '2026-04-02 18:39:29', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', '2026-04-01 18:39:42', NULL),
 (30, 'HF-20260401-184657-E9650F', 2, 17, 'Paid', '2026-04-01 18:46:57', '2026-04-02 18:46:57', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', '2026-04-01 18:47:11', NULL),
-(31, 'HF-20260401-184900-080019', 2, 18, 'Paid', '2026-04-01 18:49:00', '2026-04-02 18:49:00', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', '2026-04-01 18:49:17', NULL);
+(31, 'HF-20260401-184900-080019', 2, 18, 'Paid', '2026-04-01 18:49:00', '2026-04-02 18:49:00', 10.00, 2.10, 12.10, 'Test', 'User', 'user@test.com', '2026-04-01 18:49:17', NULL),
+(32, 'HF-20260406-111005-C92C61', 1, 1, 'Paid', '2026-04-06 11:10:05', '2026-04-07 11:10:05', 187.50, 39.38, 226.88, 'Leandro', 'Test', 'propipplayer@gmail.com', '2026-04-06 11:38:57', NULL);
 
 -- --------------------------------------------------------
 
@@ -3150,15 +3170,16 @@ INSERT INTO `OrderItem` (`OrderItemId`, `OrderId`, `EventSessionId`, `HistoryTou
 (34, 21, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
 (35, 22, 4, NULL, NULL, 3, 10.00, 21.00, 10.50, ''),
 (36, 22, NULL, NULL, 1, 1, 35.00, 21.00, 0.00, ''),
-(37, 23, 1, NULL, NULL, 1, 15.00, 21.00, 0.00, ''),
-(38, 24, 1, NULL, NULL, 2, 15.00, 21.00, 0.00, ''),
-(39, 25, 1, NULL, NULL, 2, 15.00, 21.00, 0.00, ''),
 (40, 26, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
 (41, 27, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
 (42, 28, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
 (43, 29, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
 (44, 30, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
-(45, 31, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, '');
+(45, 31, 4, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
+(46, 32, 1, NULL, NULL, 2, 15.00, 21.00, 0.00, ''),
+(47, 32, 106, NULL, NULL, 1, 17.50, 21.00, 0.00, ''),
+(48, 32, 106, NULL, NULL, 2, 60.00, 21.00, 0.00, ''),
+(49, 32, 57, NULL, NULL, 2, 10.00, 21.00, 0.00, '');
 
 -- --------------------------------------------------------
 
@@ -3354,15 +3375,13 @@ INSERT INTO `Payment` (`PaymentId`, `OrderId`, `Method`, `Status`, `ProviderRef`
 (27, 21, 'CreditCard', 'Pending', 'cs_test_a15lCjd04iZxp9hidF5VoYg89lpbKppDRVafDGRcnMEk8HkquqPEcakXgK', 'cs_test_a15lCjd04iZxp9hidF5VoYg89lpbKppDRVafDGRcnMEk8HkquqPEcakXgK', NULL, '2026-03-30 12:04:55', NULL),
 (28, 22, 'CreditCard', 'Pending', 'cs_test_a1s0wV85ymDI0RgWZAc18PG1DUSwNSZFN0YfsJjG69dXRIn7HPlZW1HsGA', 'cs_test_a1s0wV85ymDI0RgWZAc18PG1DUSwNSZFN0YfsJjG69dXRIn7HPlZW1HsGA', NULL, '2026-03-30 12:26:34', NULL),
 (29, 22, 'Ideal', 'Pending', 'cs_test_a181w5oQzAZunkAHNk4VCuS0GuZYLriwPxUYFhQyEoIDjoUXg2KnkWm17m', 'cs_test_a181w5oQzAZunkAHNk4VCuS0GuZYLriwPxUYFhQyEoIDjoUXg2KnkWm17m', NULL, '2026-03-30 12:27:14', NULL),
-(30, 23, 'CreditCard', 'Pending', 'cs_test_a1RyeIwIMPXkxYmkldGnVp2hHPIeuKRkOuSU61iaTbv3cEDcnx38SGfg0y', 'cs_test_a1RyeIwIMPXkxYmkldGnVp2hHPIeuKRkOuSU61iaTbv3cEDcnx38SGfg0y', NULL, '2026-03-30 17:54:49', NULL),
-(31, 24, 'CreditCard', 'Pending', 'cs_test_a1OtN1luzDcCcCUMKdpoUhntpHXedm2ehba6eRUbBeezoqrGS6i5RXpGW8', 'cs_test_a1OtN1luzDcCcCUMKdpoUhntpHXedm2ehba6eRUbBeezoqrGS6i5RXpGW8', NULL, '2026-03-30 18:04:23', NULL),
-(32, 25, 'CreditCard', 'Pending', 'cs_test_a1SS2jTnYsTaLIqM8fU1YYqxKERgkFvVucLsRgEB2YHNYOH0sNs0V2zOXP', 'cs_test_a1SS2jTnYsTaLIqM8fU1YYqxKERgkFvVucLsRgEB2YHNYOH0sNs0V2zOXP', NULL, '2026-03-30 18:09:45', NULL),
 (33, 26, 'CreditCard', 'Pending', 'cs_test_a1lxL4sKpHhcbZ7242dWFOKf07FwDPzjIJs8pYwyYQkvDFK9jR5psshMSY', 'cs_test_a1lxL4sKpHhcbZ7242dWFOKf07FwDPzjIJs8pYwyYQkvDFK9jR5psshMSY', NULL, '2026-04-01 18:33:34', NULL),
 (34, 27, 'CreditCard', 'Pending', 'cs_test_a1zLVQ8ci6JIvnyVlLuVubr4EgDxwE3niUezYXw8Qo8VikYF7lCDDJ7SaV', 'cs_test_a1zLVQ8ci6JIvnyVlLuVubr4EgDxwE3niUezYXw8Qo8VikYF7lCDDJ7SaV', NULL, '2026-04-01 18:34:12', NULL),
 (35, 28, 'CreditCard', 'Pending', 'cs_test_a1vzdZD14hoYID6ja1CurazY27FG6odHqPPEQV48hVRYPWyVvsJRk91kiR', 'cs_test_a1vzdZD14hoYID6ja1CurazY27FG6odHqPPEQV48hVRYPWyVvsJRk91kiR', NULL, '2026-04-01 18:38:44', NULL),
 (36, 29, 'CreditCard', 'Paid', 'cs_test_a1lNiZbyxsCVxcNwMhsEDK7z0jx0JMi5o4ytyL5JP4qKhgUQDS697a2Ntv', 'cs_test_a1lNiZbyxsCVxcNwMhsEDK7z0jx0JMi5o4ytyL5JP4qKhgUQDS697a2Ntv', NULL, '2026-04-01 18:39:29', '2026-04-01 18:39:40'),
 (37, 30, 'CreditCard', 'Paid', 'cs_test_a1ZdFaCy2JzSjyNYDwHwSSTyaKfJtSEfpxqjluSKFT7hOteqAzU2puRUIh', 'cs_test_a1ZdFaCy2JzSjyNYDwHwSSTyaKfJtSEfpxqjluSKFT7hOteqAzU2puRUIh', NULL, '2026-04-01 18:46:57', '2026-04-01 18:47:10'),
-(38, 31, 'CreditCard', 'Paid', 'cs_test_a1WPzEXr6rYYmsx4CnePZ317Dj6H3i6XzUqWgFbqoXM45KaqeXpktAacgW', 'cs_test_a1WPzEXr6rYYmsx4CnePZ317Dj6H3i6XzUqWgFbqoXM45KaqeXpktAacgW', NULL, '2026-04-01 18:49:00', '2026-04-01 18:49:15');
+(38, 31, 'CreditCard', 'Paid', 'cs_test_a1WPzEXr6rYYmsx4CnePZ317Dj6H3i6XzUqWgFbqoXM45KaqeXpktAacgW', 'cs_test_a1WPzEXr6rYYmsx4CnePZ317Dj6H3i6XzUqWgFbqoXM45KaqeXpktAacgW', NULL, '2026-04-01 18:49:00', '2026-04-01 18:49:15'),
+(39, 32, 'CreditCard', 'Paid', 'cs_test_a1Yop1EVSbG6tqThgYEUhKZTiuW8XEFy4GCiL1fDOxt1kSeiOon1gLcQqN', 'cs_test_a1Yop1EVSbG6tqThgYEUhKZTiuW8XEFy4GCiL1fDOxt1kSeiOon1gLcQqN', NULL, '2026-04-06 11:10:05', '2026-04-06 11:10:34');
 
 --
 -- Triggers `Payment`
@@ -3472,22 +3491,9 @@ CREATE TABLE `Program` (
 --
 
 INSERT INTO `Program` (`ProgramId`, `UserAccountId`, `SessionKey`, `CreatedAtUtc`, `IsCheckedOut`) VALUES
-(1, 1, 'a166ed007a98ae89b75febd35432ef5f', '2026-03-16 15:04:58', 0),
+(1, 1, 'a166ed007a98ae89b75febd35432ef5f', '2026-03-16 15:04:58', 1),
 (2, 4, 'aaf6d15d725c84ed94159af85e4036f5', '2026-03-16 17:40:46', 0),
 (3, 2, '4a6c387b60526f45ee14d9c0f7dfdafe', '2026-03-28 22:04:42', 1),
-(4, 12, 'fec4419921fa42732201c957ceaf4c4d', '2026-03-30 17:04:36', 0),
-(5, 30, '463e5fcb1f7fdba341e1b9a7acec85a1', '2026-03-30 17:53:41', 0),
-(6, 31, '3fcefc01a93f0b22a7b4f5ee3685e96c', '2026-03-30 17:53:50', 0),
-(7, 32, '14018a1182379107ad0f7bd35ae24059', '2026-03-30 17:54:01', 0),
-(8, 33, 'f63fafd749677dea372afd1a08928e05', '2026-03-30 17:54:24', 0),
-(9, 34, 'a0fb5de74088bdcff8ca10c2743ee914', '2026-03-30 17:54:37', 0),
-(10, 35, 'd72e39510d05a871ebe11dab1ec3a099', '2026-03-30 17:54:47', 0),
-(11, 36, '7bf3aa1baeab418d2ebf820091219827', '2026-03-30 17:54:56', 0),
-(12, 37, 'd1188d3234381636b0fd3e119a16c9ea', '2026-03-30 17:55:05', 0),
-(13, 38, 'ab02bf3d430e4bf64a566a666d68f929', '2026-03-30 17:55:15', 0),
-(14, 42, 'b1dbb65017d9d373e5ab9f28e613daaa', '2026-03-30 18:04:16', 0),
-(15, 43, 'bda1a0c3a469314244e966ce3ffe1c22', '2026-03-30 18:09:36', 0),
-(16, 44, 'ecd6cb7265cc7747bd49f538fe58a646', '2026-03-30 18:15:07', 0),
 (17, 2, '7151f068ff6634a7345b24b370485f1a', '2026-04-01 18:46:52', 1),
 (18, 2, 'aae088b32af5d9dfc8a125e222e2a6e5', '2026-04-01 18:48:55', 1),
 (19, NULL, '19a9f23a5c68b6695853e909f50f7dd4', '2026-04-02 15:19:55', 0),
@@ -3522,27 +3528,15 @@ INSERT INTO `ProgramItem` (`ProgramItemId`, `ProgramId`, `EventSessionId`, `Hist
 (7, 2, 4, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
 (10, 2, 52, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
 (11, 2, 50, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
-(15, 1, 57, NULL, NULL, NULL, NULL, 3, NULL, 0.00),
-(34, 4, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
-(35, 5, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
-(36, 6, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
-(37, 7, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
-(39, 9, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
-(40, 10, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
-(41, 11, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
-(42, 12, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
-(43, 13, 1, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
-(44, 14, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
-(45, 15, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
-(46, 16, 1, NULL, NULL, NULL, NULL, 2, NULL, 0.00),
 (50, 3, 4, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
 (51, 17, 4, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
 (52, 18, 4, NULL, NULL, NULL, NULL, 1, NULL, 0.00),
 (54, 21, 38, NULL, NULL, NULL, NULL, 1, 1, 0.00),
 (57, 23, 90, NULL, NULL, NULL, NULL, 1, 3, 0.00),
-(59, 1, 106, NULL, NULL, NULL, NULL, 1, 6, 0.00),
-(60, 1, 106, NULL, NULL, NULL, NULL, 3, 3, 0.00),
-(61, 1, 4, NULL, NULL, NULL, NULL, 1, 1, 0.00);
+(62, 1, 1, NULL, NULL, NULL, NULL, 2, 1, 0.00),
+(63, 1, 106, NULL, NULL, NULL, NULL, 1, 6, 0.00),
+(64, 1, 106, NULL, NULL, NULL, NULL, 2, 3, 0.00),
+(65, 1, 57, NULL, NULL, NULL, NULL, 2, 1, 0.00);
 
 -- --------------------------------------------------------
 
@@ -3624,11 +3618,11 @@ INSERT INTO `ScheduleDayConfig` (`ScheduleDayConfigId`, `EventTypeId`, `DayOfWee
 (2, 0, 1, 1, '2026-03-19 13:44:24'),
 (3, 0, 2, 1, '2026-03-19 13:44:25'),
 (4, 0, 3, 1, '2026-03-19 13:44:30'),
-(5, 0, 4, 1, '2026-03-19 13:45:19'),
+(5, 0, 4, 1, '2026-04-06 12:00:49'),
 (6, 0, 5, 1, '2026-02-11 00:19:42'),
 (7, 0, 6, 1, '2026-03-30 10:19:59'),
 (33, 3, 0, 1, '2026-02-16 21:10:38'),
-(34, 3, 4, 1, '2026-03-19 13:41:32'),
+(34, 3, 4, 1, '2026-04-06 12:00:54'),
 (35, 3, 5, 1, '2026-02-16 21:10:40'),
 (38, 3, 3, 1, '2026-03-19 13:44:43'),
 (44, 1, 3, 1, '2026-03-19 13:41:37'),
@@ -3747,7 +3741,14 @@ INSERT INTO `Ticket` (`TicketId`, `OrderItemId`, `TicketCode`, `IsScanned`, `Sca
 (6, 33, 'HF-P6PCVLZPNT7L7BQ5', 1, '2026-03-30 12:01:40', 1, 125),
 (7, 43, 'HF-9TCZWTJAZY3NPWMJ', 0, NULL, NULL, 129),
 (8, 44, 'HF-PZQWQDUKS49Q5HUT', 0, NULL, NULL, 130),
-(9, 45, 'HF-DKB3GQQKTQWKBQKF', 0, NULL, NULL, 131);
+(9, 45, 'HF-DKB3GQQKTQWKBQKF', 0, NULL, NULL, 131),
+(10, 46, 'HF-8WRJNFU4TH3MQCBS', 1, '2026-04-06 11:48:46', 1, 132),
+(11, 46, 'HF-CUUD2G55SNULTJDK', 0, NULL, NULL, 133),
+(12, 47, 'HF-WHGCMN56H3FBYXUU', 0, NULL, NULL, 134),
+(13, 48, 'HF-6XDEF8GW2KN9FNX5', 0, NULL, NULL, 135),
+(14, 48, 'HF-T29B7R664ZVGKHA3', 0, NULL, NULL, 136),
+(15, 49, 'HF-BSFNUM9KRTKK68UQ', 0, NULL, NULL, 137),
+(16, 49, 'HF-3CTFZ28HH92ZFR8R', 0, NULL, NULL, 138);
 
 -- --------------------------------------------------------
 
@@ -3780,47 +3781,8 @@ INSERT INTO `UserAccount` (`UserAccountId`, `UserRoleId`, `Username`, `Email`, `
 (2, 1, 'testuser', 'user@test.com', '$argon2id$v=19$m=65536,t=4,p=1$amsvVU9QNU5QL1dKM3QzeQ$xmHiIhwxaWEOu5RXiOKUc5KPFex/JL0NV2cmtM0IKhc', NULL, 'Test', 'User', NULL, 1, 1, '2026-02-07 19:39:57', '2026-02-07 19:39:57'),
 (3, 2, 'leandro', 'propipplayer@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$YnBXZktSVEl6THJFUkQuLw$VDzijF0bET0wUsjprdH+3/kSW6Iit5wbErVX+ClELdE', NULL, 'Leandro', 'Nunez', NULL, 0, 1, '2026-02-07 20:19:38', '2026-03-30 10:25:37'),
 (4, 1, 'kianeutron', 'kianexample@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$bnkvRXZCYmlQdmgyUU9Jaw$7ewAMpBbmPhemB/2LRncDOALwuaSH1uCmHI+AdMIlKI', NULL, 'Kian', 'Khatibi', NULL, 0, 1, '2026-03-16 17:40:26', '2026-03-16 17:40:26'),
-(5, 1, 'e2euser_mndfak80', 'e2e_mndfak80@test.com', '$argon2id$v=19$m=65536,t=4,p=1$L3NFdk1DSU11WHBpZnJDaw$8H9m/n33fmclpzeVPk8FdkLv2UhkRa8pdSJSRevPixs', NULL, 'E2E', 'Tester_mndfak80', NULL, 0, 1, '2026-03-30 16:49:11', '2026-03-30 16:50:00'),
-(6, 3, 'admin_e2euser_mndfao8y', 'admin_e2e_mndfao8y@test.com', '$argon2id$v=19$m=65536,t=4,p=1$WnR0UERtREo3ZXRjT2ZIbw$3kBFtoFKGK3x1t18pj8cAukagkaWPyOJGB29FaECNos', NULL, 'Admin', 'Tester_mndfao8y', NULL, 0, 0, '2026-03-30 16:49:17', '2026-04-01 19:51:53'),
-(7, 1, 'e2euser_mndfstzz', 'e2e_mndfstzz@test.com', '$argon2id$v=19$m=65536,t=4,p=1$RklLUW9nZTIySTZmYy5Zcg$+VBYsfXjKmDI7zrKU+g6j1j0BE67SoyjGPy1T3/nRko', NULL, 'E2E', 'Tester_mndfstzz', NULL, 0, 1, '2026-03-30 17:03:37', '2026-03-30 17:03:37'),
-(8, 1, 'e2euser_mndft6pq', 'e2e_mndft6pq@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Ym10M2ZsZHRWUGsxcC80QQ$dKnF73rp7sawDAHxzE5dPR+f2jEbnYk8dBsMasyXBt8', NULL, 'E2E', 'Tester_mndft6pq', NULL, 0, 1, '2026-03-30 17:03:42', '2026-03-30 17:03:42'),
-(9, 1, 'e2euser_mndftj65', 'e2e_mndftj65@test.com', '$argon2id$v=19$m=65536,t=4,p=1$eGpWOWREeXk2Q1oxM0VFYg$WbeJbSEkKr45Q0s2oSloJyJ7T3PlQF1tK/4x0//e/j0', NULL, 'E2E', 'Tester_mndftj65', NULL, 0, 1, '2026-03-30 17:03:58', '2026-03-30 17:03:58'),
-(10, 1, 'e2euser_mndftn9p', 'e2e_mndftn9p@test.com', '$argon2id$v=19$m=65536,t=4,p=1$MlNxVngub3Fvc3hPUVd0QQ$YT3pDnROjf6e1BLvgNQX86yMyJSPyZAa5c4cX8hO1j4', NULL, 'E2E', 'Tester_mndftn9p', NULL, 0, 1, '2026-03-30 17:04:04', '2026-03-30 17:04:04'),
-(11, 1, 'e2euser_mndftu5e', 'e2e_mndftu5e@test.com', '$argon2id$v=19$m=65536,t=4,p=1$YXpBcGV0TjZicVdrZHNaTA$f+HZINHsuhIr4F75FbbXsCNb+9ZdswLhlV1Jot1pfs4', NULL, 'E2E', 'Tester_mndftu5e', NULL, 0, 1, '2026-03-30 17:04:13', '2026-03-30 17:04:13'),
-(12, 1, 'e2euser_mndfu23q', 'e2e_mndfu23q@test.com', '$argon2id$v=19$m=65536,t=4,p=1$N1JxaDgvSjdxdUEyMUdnQg$kQgh++65QljjOnD1CUMzmDC34217pQQ8fPyrIMRFhfM', NULL, 'E2E', 'Tester_mndfu23q', NULL, 0, 1, '2026-03-30 17:04:23', '2026-03-30 17:04:23'),
-(13, 1, 'e2euser_mndfufjy', 'e2e_mndfufjy@test.com', '$argon2id$v=19$m=65536,t=4,p=1$UGpoOVUwTGlLVVJBL3U2ZQ$pto1RsjWr6HoONWXOGk/Gf1yboHKrepVDJx0eZz1LmU', NULL, 'E2E', 'Tester_mndfufjy', NULL, 0, 1, '2026-03-30 17:04:41', '2026-03-30 17:04:41'),
-(14, 1, 'e2euser_mndfuth9', 'e2e_mndfuth9@test.com', '$argon2id$v=19$m=65536,t=4,p=1$aG1XNml6OElyNVB4d0xkMA$3cN0o7wQ7Xk+6EgN2ET0QgybrrTQL98pgirJqRBrWAg', NULL, 'E2E', 'Tester_mndfuth9', NULL, 0, 1, '2026-03-30 17:05:02', '2026-03-30 17:05:02'),
-(15, 1, 'e2euser_mndfv71p', 'e2e_mndfv71p@test.com', '$argon2id$v=19$m=65536,t=4,p=1$bWlXR1R4aVYvaTNwN1RWdQ$YpvPA5rEuytSmjgOJXETUlN9gr3K8uHvFPcOmpXoHZs', NULL, 'E2E', 'Tester_mndfv71p', NULL, 0, 1, '2026-03-30 17:05:16', '2026-03-30 17:05:16'),
-(16, 1, 'e2euser_mndfvgrz', 'e2e_mndfvgrz@test.com', '$argon2id$v=19$m=65536,t=4,p=1$VEFrLnFmd1RuYXVCb2RsSA$diZlwNeVvWltTLmxIOi9+VohvyOxcvWOW1elZv+QSZg', NULL, 'E2E', 'Tester_mndfvgrz', NULL, 0, 1, '2026-03-30 17:05:28', '2026-03-30 17:05:28'),
-(17, 1, 'e2euser_mndfvpvg', 'e2e_mndfvpvg@test.com', '$argon2id$v=19$m=65536,t=4,p=1$bVMySVFZUTRjaGxISVZPcQ$dKytnLkCC7o/3wPTIlbqBshOHmbLFqv9HTWnFwt9FF8', NULL, 'E2E', 'Tester_mndfvpvg', NULL, 0, 1, '2026-03-30 17:05:40', '2026-03-30 17:05:40'),
-(18, 1, 'e2euser_mndfvyyy', 'e2e_mndfvyyy@test.com', '$argon2id$v=19$m=65536,t=4,p=1$RFJvUkIxSW93dUI5MEhqYg$DR90gFFm+uI0XjXFsCvLdCqgNyz56U8KoQ1pH1et1S8', NULL, 'E2E', 'Tester_mndfvyyy', NULL, 0, 1, '2026-03-30 17:05:52', '2026-03-30 17:05:52'),
-(19, 1, 'e2euser_mndfw8oo', 'e2e_mndfw8oo@test.com', '$argon2id$v=19$m=65536,t=4,p=1$ZW56ZUg1dDQ4dGgwTUdGQw$BfBi2SeM2yLyn8bx1LXFgY+tTEdBkwiIRG3+/2sMu+4', NULL, 'E2E', 'Tester_mndfw8oo', NULL, 0, 1, '2026-03-30 17:06:05', '2026-03-30 17:06:05'),
-(20, 1, 'e2euser_mndfwivg', 'e2e_mndfwivg@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SGhNSzcvcTRTY3J6MXcvLg$tBlCqms/J2RGSSvvaf4Pv5J1CTYEkLmpEKHqpgzpFNE', NULL, 'E2E', 'Tester_mndfwivg', NULL, 0, 1, '2026-03-30 17:06:18', '2026-03-30 17:06:18'),
-(21, 1, 'e2euser_mndfwt0d', 'e2e_mndfwt0d@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Rjdnb3FSL0J5WlFGc1c0UA$sGYZe7illiOAK4iJymZ89hTuBNXeLQxL1H1kdcbxyIM', NULL, 'E2E', 'Tester_mndfwt0d', NULL, 0, 1, '2026-03-30 17:06:32', '2026-03-30 17:06:32'),
-(22, 1, 'e2euser_mndg6ml1', 'e2e_mndg6ml1@test.com', '$argon2id$v=19$m=65536,t=4,p=1$WUIwRzNwb3d4ZGJDVVd5cw$OJqs/0urEWEw7TYdjUPnr/Sd8CYa257ogRsuBCH9RqY', NULL, 'E2E', 'Tester_mndg6ml1', NULL, 0, 1, '2026-03-30 17:14:08', '2026-03-30 17:15:06'),
-(23, 3, 'admin_e2euser_mndg6r2p', 'admin_e2e_mndg6r2p@test.com', '$argon2id$v=19$m=65536,t=4,p=1$MVNtN1JZd0RySFVaUHBiZA$79ZbG6u8yxvaAJprKE/WzZgKl6sS1Bslc3OEq29YXss', NULL, 'Admin', 'Tester_mndg6r2p', NULL, 0, 1, '2026-03-30 17:14:15', '2026-03-30 17:15:10'),
-(24, 1, 'e2euser_mndg84zo', 'e2e_mndg84zo@test.com', '$argon2id$v=19$m=65536,t=4,p=1$UWdGa3ouNEpKampuQW94Yw$P0cNd7PM+QGrbnhFGDV6P/sy2jv73ABAxFn3SrPlfRk', NULL, 'E2E', 'Tester_mndg84zo', NULL, 0, 1, '2026-03-30 17:15:19', '2026-03-30 17:15:19'),
-(25, 1, 'e2euser_mndhk4a0', 'e2e_mndhk4a0@test.com', '$argon2id$v=19$m=65536,t=4,p=1$UXlpYTdRTjQ5bWNONi9DdQ$mqHT15wOL6RGvUz/2JUVeQTjjr5mz/v0Olwm+JwzsPs', NULL, 'E2E', 'Tester_mndhk4a0', NULL, 0, 1, '2026-03-30 17:52:50', '2026-03-30 17:52:50'),
-(26, 1, 'e2euser_mndhkiqr', 'e2e_mndhkiqr@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SzJaUENoVTFnRWcwMXUzSw$PwBIonxp2NzM81poe4aIUMwIRY0jmIpB/XgK5HpSjfg', NULL, 'E2E', 'Tester_mndhkiqr', NULL, 0, 1, '2026-03-30 17:52:57', '2026-03-30 17:52:57'),
-(27, 1, 'e2euser_mndhkta8', 'e2e_mndhkta8@test.com', '$argon2id$v=19$m=65536,t=4,p=1$L0FlbFRBcmQyRkpKZXhtQw$h5QMZe2+to084zmQ5QDB2xf4fsivJW+gRc1zSZuh9CA', NULL, 'E2E', 'Tester_mndhkta8', NULL, 0, 1, '2026-03-30 17:53:11', '2026-03-30 17:53:11'),
-(28, 1, 'e2euser_mndhkyfl', 'e2e_mndhkyfl@test.com', '$argon2id$v=19$m=65536,t=4,p=1$MzhvVDdIUWZ4bERDNW1nQQ$W5WDqWMNO6QWfFIp61HjYeZVbhak1A13o9G0caCWJzs', NULL, 'E2E', 'Tester_mndhkyfl', NULL, 0, 1, '2026-03-30 17:53:18', '2026-03-30 17:53:18'),
-(29, 1, 'e2euser_mndhl4xq', 'e2e_mndhl4xq@test.com', '$argon2id$v=19$m=65536,t=4,p=1$L2dCcmdSMVYyQjg5VHZWYQ$kF39ZlI0Am3LSI1LR6tIjSeLAbK4OVtgsmZPzf1lx8c', NULL, 'E2E', 'Tester_mndhl4xq', NULL, 0, 1, '2026-03-30 17:53:26', '2026-03-30 17:53:26'),
-(30, 1, 'e2euser_mndhlc30', 'e2e_mndhlc30@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SnZTeHJsMGxnM0xhb2lRRg$yxTzbFLEdf+8/82Y0QlCKnpgZ7IFqFDUyAB9LvLuzr4', NULL, 'E2E', 'Tester_mndhlc30', NULL, 0, 1, '2026-03-30 17:53:35', '2026-03-30 17:53:35'),
-(31, 1, 'e2euser_mndhljmy', 'e2e_mndhljmy@test.com', '$argon2id$v=19$m=65536,t=4,p=1$bDJ0YTAyVHM3dEkzakY4bg$0+GZFUT5jeYNtU06c+3+7X0oQ9tip76qdCh2ZO9odOw', NULL, 'E2E', 'Tester_mndhljmy', NULL, 0, 1, '2026-03-30 17:53:45', '2026-03-30 17:53:45'),
-(32, 1, 'e2euser_mndhlql4', 'e2e_mndhlql4@test.com', '$argon2id$v=19$m=65536,t=4,p=1$dm9POUFxZ0lhMlNaN25tQQ$6zcvzsoLiks5bsjZtKHTbDKmBeXHYGaetPMyGeLqQMc', NULL, 'E2E', 'Tester_mndhlql4', NULL, 0, 1, '2026-03-30 17:53:55', '2026-03-30 17:53:55'),
-(33, 1, 'e2euser_mndhm0et', 'e2e_mndhm0et@test.com', '$argon2id$v=19$m=65536,t=4,p=1$OXdmaUdldzFtRkN4N09hVw$h2lFnnDBnTbnsWX6gYlb2tGejNsIw0vYjc3ZUbr/XSU', NULL, 'E2E', 'Tester_mndhm0et', NULL, 0, 1, '2026-03-30 17:54:10', '2026-03-30 17:54:10'),
-(34, 1, 'e2euser_mndhmhxh', 'e2e_mndhmhxh@test.com', '$argon2id$v=19$m=65536,t=4,p=1$eHRSNXVCaEluaEdRdDZ0aQ$ynFdVO1mdCHu+TPChYdjTU/5jhFrn+eqJY5GZtJie20', NULL, 'E2E', 'Tester_mndhmhxh', NULL, 0, 1, '2026-03-30 17:54:30', '2026-03-30 17:54:30'),
-(35, 1, 'e2euser_mndhmqz4', 'e2e_mndhmqz4@test.com', '$argon2id$v=19$m=65536,t=4,p=1$YnZXYkxIR1d0Tm8xQTdnaQ$Y9RoWmuIub1Fx8dLExE6ikIIcAaoEdudzyJ97bg3f2w', NULL, 'E2E', 'Tester_mndhmqz4', NULL, 0, 1, '2026-03-30 17:54:41', '2026-03-30 17:54:41'),
-(36, 1, 'e2euser_mndhmyi0', 'e2e_mndhmyi0@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Si96UWFHRGI4MUpsdFUuYQ$LfFLf2jPZH3zGW3Y5Qi7KYp+26ZAnJt0/A2n9AD3lPk', NULL, 'E2E', 'Tester_mndhmyi0', NULL, 0, 1, '2026-03-30 17:54:51', '2026-03-30 17:54:51'),
-(37, 1, 'e2euser_mndhn5i7', 'e2e_mndhn5i7@test.com', '$argon2id$v=19$m=65536,t=4,p=1$MDRWWlk1Sms5YTlFQlI4eA$USrS9QPv++3jm1ej7cAs0j+IUkPNtO6p3n1QxhsdDhY', NULL, 'E2E', 'Tester_mndhn5i7', NULL, 0, 1, '2026-03-30 17:55:00', '2026-03-30 17:55:00'),
-(38, 1, 'e2euser_mndhnchh', 'e2e_mndhnchh@test.com', '$argon2id$v=19$m=65536,t=4,p=1$VmhKTnFXVGFITHJSd2Zpdw$IR8H8BH5LsHQ3MrbzjO3MGH8jeoTMIRa7vlD3han6/g', NULL, 'E2E', 'Tester_mndhnchh', NULL, 0, 1, '2026-03-30 17:55:09', '2026-03-30 17:55:09'),
-(39, 1, 'e2euser_mndhnl5a', 'e2e_mndhnl5a@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Vm5RYnBic2RjeU5BV0RKRA$L1Rp54qoaO7wrLfeVl/slujI5VsCVNBMxfSGZwSxGac', NULL, 'E2E', 'Tester_mndhnl5a', NULL, 0, 1, '2026-03-30 17:55:20', '2026-03-30 17:55:20'),
-(40, 1, 'e2euser_mndhxiqf', 'e2e_mndhxiqf@test.com', '$argon2id$v=19$m=65536,t=4,p=1$RlF2cUtjeGUxOTNEOEhKSA$GK3e6ZmkgRK5R/rbW51JGPrEx9oVq1lByAaOTKy4NAU', NULL, 'E2E', 'Tester_mndhxiqf', NULL, 0, 1, '2026-03-30 18:03:02', '2026-03-30 18:03:41'),
-(41, 3, 'admin_e2euser_mndhxnms', 'admin_e2e_mndhxnms@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Ny50N1B5RFNWNEs2eE9YZg$bKLEEYmkrR/urikTIhAsjOZCrfNgdjYgQprdnB4ckbg', NULL, 'Admin', 'Tester_mndhxnms', NULL, 0, 1, '2026-03-30 18:03:08', '2026-03-30 18:03:45'),
-(42, 1, 'e2euser_mndhyni2', 'e2e_mndhyni2@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SHE1RnByck9jQnJYR2d0Qw$m3pbynYm7AFTmA+Fe97+SB8crIQlSN8vhlMiu/5CZwU', NULL, 'E2E', 'Tester_mndhyni2', NULL, 0, 1, '2026-03-30 18:03:57', '2026-03-30 18:03:57'),
-(43, 1, 'e2euser_mndi5mfs', 'e2e_mndi5mfs@test.com', '$argon2id$v=19$m=65536,t=4,p=1$Z2lrWWIuYUpQYmxvLlNsUQ$fe2g4KBhUd+DyghBabQx4/Cz+0WMgo4k6xFgrLPrq44', NULL, 'E2E', 'Tester_mndi5mfs', NULL, 0, 1, '2026-03-30 18:09:22', '2026-03-30 18:09:22'),
-(44, 1, 'e2euser_mndickuw', 'e2e_mndickuw@test.com', '$argon2id$v=19$m=65536,t=4,p=1$dW5vUi5wMTNqRW03WUFndQ$7t04TY/MKDMd6aP+LfK0BrlDfFVjKhUQT0xo/eJeFsA', NULL, 'E2E', 'Tester_mndickuw', NULL, 0, 1, '2026-03-30 18:14:47', '2026-03-30 18:14:47'),
-(45, 2, 'employee1', 'employee1@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$SEFnWHBGZTRISFI4eGJpMQ$YK2ZFjrjEwM9Pl+XpNfnkvBxVZH1QjaJtOqsu6Afb7Y', NULL, 'Employee 1', 'Employee 1', NULL, 0, 1, '2026-04-02 14:52:59', '2026-04-02 14:52:59');
+(45, 2, 'employee1', 'employee1@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$SEFnWHBGZTRISFI4eGJpMQ$YK2ZFjrjEwM9Pl+XpNfnkvBxVZH1QjaJtOqsu6Afb7Y', NULL, 'Employee 1', 'Employee 1', NULL, 0, 0, '2026-04-02 14:52:59', '2026-04-06 12:05:42'),
+(46, 2, 'ThisTestUser', 'thistestuser@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$S1dNL2hOTTZJN1RKR1U2VA$SbGxT6SJchhlS90h+p9I+2Xa8jwm0ozJgESQI9NPXxs', NULL, 'TestUser', 'TestUser', NULL, 0, 1, '2026-04-06 12:06:45', '2026-04-06 12:06:45');
 
 -- --------------------------------------------------------
 
@@ -3882,7 +3844,8 @@ INSERT INTO `Venue` (`VenueId`, `Name`, `AddressLine`, `City`, `CreatedAtUtc`, `
 (18, 'E2E Test Venue', '123 Test Street, Haarlem', 'Haarlem', '2026-03-30 17:58:10', 0),
 (19, 'Test Venue Delete', 'Test Street', 'Haarlem', '2026-04-05 21:38:49', 1),
 (20, 'Test Venue Delete', 'Test Street', 'Haarlem', '2026-04-05 21:38:54', 0),
-(21, 'Test Delete Me', 'Nowhere', 'Haarlem', '2026-04-05 21:39:38', 0);
+(21, 'Test Delete Me', 'Nowhere', 'Haarlem', '2026-04-05 21:39:38', 0),
+(22, 'This Is Just A Test', 'Test 123', 'Haarlem', '2026-04-06 12:07:05', 1);
 
 --
 -- Indexes for dumped tables
@@ -4333,7 +4296,7 @@ ALTER TABLE `ArtistTrack`
 -- AUTO_INCREMENT for table `CmsItem`
 --
 ALTER TABLE `CmsItem`
-  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1494;
+  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1507;
 
 --
 -- AUTO_INCREMENT for table `CmsPage`
@@ -4345,7 +4308,7 @@ ALTER TABLE `CmsPage`
 -- AUTO_INCREMENT for table `CmsSection`
 --
 ALTER TABLE `CmsSection`
-  MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
+  MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
 -- AUTO_INCREMENT for table `CuisineType`
@@ -4363,7 +4326,7 @@ ALTER TABLE `EmailConfirmationToken`
 -- AUTO_INCREMENT for table `Event`
 --
 ALTER TABLE `Event`
-  MODIFY `EventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
+  MODIFY `EventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
 
 --
 -- AUTO_INCREMENT for table `EventGalleryImage`
@@ -4381,7 +4344,7 @@ ALTER TABLE `EventHighlight`
 -- AUTO_INCREMENT for table `EventSession`
 --
 ALTER TABLE `EventSession`
-  MODIFY `EventSessionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=217;
+  MODIFY `EventSessionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=220;
 
 --
 -- AUTO_INCREMENT for table `EventSessionLabel`
@@ -4429,19 +4392,19 @@ ALTER TABLE `InvoiceLine`
 -- AUTO_INCREMENT for table `MediaAsset`
 --
 ALTER TABLE `MediaAsset`
-  MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
+  MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=140;
 
 --
 -- AUTO_INCREMENT for table `Order`
 --
 ALTER TABLE `Order`
-  MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `OrderItem`
 --
 ALTER TABLE `OrderItem`
-  MODIFY `OrderItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `OrderItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `PageGalleryImage`
@@ -4471,7 +4434,7 @@ ALTER TABLE `PasswordResetToken`
 -- AUTO_INCREMENT for table `Payment`
 --
 ALTER TABLE `Payment`
-  MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `PriceTier`
@@ -4489,7 +4452,7 @@ ALTER TABLE `Program`
 -- AUTO_INCREMENT for table `ProgramItem`
 --
 ALTER TABLE `ProgramItem`
-  MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `Reservation`
@@ -4507,7 +4470,7 @@ ALTER TABLE `ScheduleDay`
 -- AUTO_INCREMENT for table `ScheduleDayConfig`
 --
 ALTER TABLE `ScheduleDayConfig`
-  MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
+  MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
 -- AUTO_INCREMENT for table `SessionDiscountRule`
@@ -4525,13 +4488,13 @@ ALTER TABLE `StripeWebhookEvent`
 -- AUTO_INCREMENT for table `Ticket`
 --
 ALTER TABLE `Ticket`
-  MODIFY `TicketId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `TicketId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `UserAccount`
 --
 ALTER TABLE `UserAccount`
-  MODIFY `UserAccountId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `UserAccountId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `UserRole`
@@ -4543,7 +4506,7 @@ ALTER TABLE `UserRole`
 -- AUTO_INCREMENT for table `Venue`
 --
 ALTER TABLE `Venue`
-  MODIFY `VenueId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `VenueId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- Constraints for dumped tables

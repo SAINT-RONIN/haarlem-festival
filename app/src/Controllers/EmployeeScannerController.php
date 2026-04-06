@@ -28,13 +28,14 @@ class EmployeeScannerController extends BaseController
             $this->requireEmployee();
 
             $viewModel = new TicketScannerPageViewModel(
-                scanEndpoint:  '/api/employee/scanner/scan',
-                logoutUrl:     '/logout',
-                roleLabel:     'Employee Scanner',
-                scriptVersion: AssetVersionHelper::resolveJsVersion(__DIR__ . '/../../public/assets/js/employee-ticket-scanner.js'),
-                pageTitle:     'Ticket Scanner',
-                layoutVariant: 'employee',
-                currentView:   'scanner',
+                scanEndpoint:    '/api/employee/scanner/scan',
+                logoutUrl:       '/logout',
+                logoutCsrfToken: $this->sessionService->getCsrfToken('logout'),
+                roleLabel:       'Employee Scanner',
+                scriptVersion:   AssetVersionHelper::resolveJsVersion(__DIR__ . '/../../public/assets/js/employee-ticket-scanner.js'),
+                pageTitle:       'Ticket Scanner',
+                layoutVariant:   'employee',
+                currentView:     'scanner',
             );
 
             $this->renderView(__DIR__ . '/../Views/pages/employee-ticket-scanner.php', $viewModel);
