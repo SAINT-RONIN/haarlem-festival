@@ -12,28 +12,31 @@ use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Events\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
-use App\Services\Interfaces\ICmsScheduleDayService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsEventCreateViewModel;
-use App\ViewModels\Cms\CmsScheduleDaysViewModel;
 
 /**
- * CMS controller for managing festival events.
+ * CMS controller for managing festival events and their sessions.
  *
  * Handles full event CRUD, session (time-slot) management, label assignment,
- * per-session pricing, venue creation, and schedule-day visibility toggles.
+ * and per-session pricing. Each event owns one or more Sessions (bookable
+ * time-slots); each session can carry Labels (e.g. "Sold Out") and per-tier
+ * Prices (Adult, Child, etc.).
  *
- * Events own Sessions (bookable time-slots), each session can carry Labels
- * (e.g. "Sold Out") and per-tier Prices (Adult, Child, etc.). The schedule-day
- * feature controls which days appear on the public schedule for each event type.
+ * Venue management is handled by CmsVenuesController.
+ * Schedule-day visibility is handled by CmsScheduleDaysController.
  */
 class CmsEventsController extends CmsBaseController
 {
+    /**
+     * @param ICmsEventsService  $eventsService  Provides event, session, label, and price operations.
+     * @param ISessionService    $sessionService Session, CSRF, and flash-message support.
+     * @param ICmsArtistsService $artistsService Used to populate the artist dropdown on event forms.
+     */
     public function __construct(
         private readonly ICmsEventsService $eventsService,
         ISessionService $sessionService,
         private readonly ICmsArtistsService $artistsService,
-        private readonly ICmsScheduleDayService $scheduleDayService,
     ) {
         parent::__construct($sessionService);
     }
@@ -190,48 +193,6 @@ class CmsEventsController extends CmsBaseController
     }
 
     /**
-     * Creates a new venue via AJAX and returns the new venue ID as JSON.
-     * Called from the event-create form's inline "add venue" modal so the admin
-     * doesn't have to leave the page.
-     * POST /cms/venues
-     *
-     * @throws ValidationException Returns 400 JSON on validation failure.
-     */
-    public function createVenue(): void
-    {
-        $this->handleCmsJsonRequest(function (): void {
-            $this->processCreateVenue();
-        });
-    }
-
-    /**
-     * Displays the venues management page.
-     * GET /cms/venues
-     */
-    public function venues(): void
-    {
-        $this->handleCmsPageRequest(function (): void {
-            $currentView = 'venues';
-            $venues = $this->eventsService->getVenues();
-            $successMessage = $this->sessionService->consumeFlash('success');
-            $errorMessage = $this->sessionService->consumeFlash('error');
-            require __DIR__ . '/../Views/pages/cms/venues.php';
-        });
-    }
-
-    /**
-     * Soft-deletes a venue.
-     * POST /cms/venues/{id}/delete
-     */
-    public function deleteVenue(int $id): void
-    {
-        $this->handleCmsValidationRequest(function () use ($id): void {
-            $this->eventsService->deleteVenue($id);
-            $this->redirectWithFlash('Venue deleted successfully.', 'success', '/cms/venues');
-        }, '/cms/venues');
-    }
-
-    /**
      * Deletes an event and all its associated sessions.
      * POST /cms/events/{id}/delete
      */
@@ -241,33 +202,6 @@ class CmsEventsController extends CmsBaseController
             $this->eventsService->deleteEvent($id);
             $this->redirectWithFlash('Event deleted successfully.', 'success', '/cms/events');
         }, '/cms/events');
-    }
-
-    /**
-     * Displays the schedule-day visibility configuration page.
-     * GET /cms/schedule-days
-     */
-    public function scheduleDays(): void
-    {
-        $this->handleCmsPageRequest(function (): void {
-            $currentView = 'schedule-days';
-            $this->renderScheduleDaysPage();
-        });
-    }
-
-    /**
-     * Toggles a specific day's visibility on the public schedule.
-     * Can be global (all event types) or scoped to a single event type,
-     * depending on whether EventTypeId is posted as 0/null or a real ID.
-     * POST /cms/schedule-days
-     *
-     * @throws ValidationException Redirects with error flash on validation failure.
-     */
-    public function toggleScheduleDay(): void
-    {
-        $this->handleCmsValidationRequest(function (): void {
-            $this->handleToggleScheduleDay();
-        }, '/cms/schedule-days');
     }
 
     /** Loads all dropdown data for the event creation form and maps it to a view model. */
@@ -281,28 +215,6 @@ class CmsEventsController extends CmsBaseController
             $this->sessionService->consumeFlash('success'),
             $this->readStringQueryParam('day') ?? '',
         );
-    }
-
-    /** Creates a new venue and returns a JSON success response with the new venue ID. */
-    private function processCreateVenue(): void
-    {
-        $name = $this->readStringPostParam('VenueName') ?? '';
-        $addressLine = $this->readStringPostParam('AddressLine') ?? '';
-        $venueId = $this->eventsService->createVenue($name, $addressLine);
-        $this->json(['success' => true, 'venueId' => $venueId, 'name' => $name]);
-    }
-
-    private function renderScheduleDaysPage(): void
-    {
-        $pageData  = $this->scheduleDayService->getScheduleDaysPageData();
-        $viewModel = new CmsScheduleDaysViewModel(
-            eventTypes: $pageData->eventTypes,
-            globalConfigs: $pageData->grouped->global,
-            typeConfigs: $pageData->grouped->byType,
-            successMessage: $this->sessionService->consumeFlash('success'),
-            errorMessage: $this->sessionService->consumeFlash('error'),
-        );
-        require __DIR__ . '/../Views/pages/cms/schedule-days.php';
     }
 
     private function buildEventsListViewModel(): \App\ViewModels\Cms\CmsEventsListViewModel
@@ -416,13 +328,4 @@ class CmsEventsController extends CmsBaseController
         ], $eventIdOverride);
     }
 
-    private function handleToggleScheduleDay(): void
-    {
-        // null event type ID means this is a global (all-types) visibility toggle
-        $eventTypeId = $this->readOptionalIntPostParam('EventTypeId');
-        $dayOfWeek = $this->readOptionalIntPostParam('DayOfWeek') ?? 0;
-        $isVisible = $this->readBoolPostParam('IsVisible');
-        $this->scheduleDayService->setScheduleDayVisibility($eventTypeId, $dayOfWeek, $isVisible);
-        $this->redirectWithFlash('Day visibility updated.', 'success', '/cms/schedule-days');
-    }
 }

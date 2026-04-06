@@ -5,20 +5,24 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\DTOs\Cms\ArtistUpsertData;
-use App\DTOs\Cms\JazzLineupCardUpsertData;
 use App\Mappers\CmsArtistsMapper;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ISessionService;
-use App\ViewModels\Cms\CmsJazzLineupCardFormViewModel;
 
 /**
  * CMS controller for managing festival artists.
  *
- * Handles listing, creating, editing, and soft-deleting artist records
- * through the admin panel. All mutations delegate to ICmsArtistsService
- * for validation and persistence; this controller owns only HTTP flow
- * (auth gating, CSRF checks, form re-rendering on validation failure,
- * and flash-message redirects via PRG pattern).
+ * Handles listing, creating, editing, and soft-deleting full artist records
+ * (biography, gallery, social links, etc.) through the admin panel.
+ *
+ * Lightweight Jazz lineup cards (name, style, image, sort order only) are
+ * managed by CmsJazzCardsController. Adding or removing an existing artist
+ * profile from the Jazz overview is done via addToJazzOverview /
+ * removeFromJazzOverview below.
+ *
+ * All mutations delegate to ICmsArtistsService for validation and persistence;
+ * this controller owns only HTTP flow (auth gating, CSRF checks, form
+ * re-rendering on validation failure, and flash-message redirects via PRG).
  */
 class CmsArtistsController extends CmsBaseController
 {
@@ -86,100 +90,6 @@ class CmsArtistsController extends CmsBaseController
     {
         $this->handleCmsPageRequest(function () use ($id): void {
             $this->processArtistUpdate($id);
-        });
-    }
-
-    /**
-     * Renders the lightweight Jazz lineup card creation form.
-     * GET /cms/jazz-lineup/cards/create
-     */
-    public function createJazzOverviewCard(): void
-    {
-        $this->handleCmsPageRequest(function (): void {
-            $currentView = 'pages';
-            $viewModel = $this->buildJazzLineupCardFormViewModel(
-                null,
-                new JazzLineupCardUpsertData(
-                    name: '',
-                    style: '',
-                    cardDescription: '',
-                    imageAssetId: null,
-                    cardSortOrder: $this->artistsService->getNextJazzOverviewSortOrder(),
-                    isActive: true,
-                ),
-                [],
-            );
-            require __DIR__ . '/../Views/pages/cms/jazz-lineup-card-form.php';
-        });
-    }
-
-    /**
-     * Persists a new lightweight Jazz lineup card.
-     * POST /cms/jazz-lineup/cards
-     */
-    public function storeJazzOverviewCard(): void
-    {
-        $this->handleCmsPageRequest(function (): void {
-            $this->validateCsrf('cms_jazz_lineup_card_create', $this->readSafeReturnTo('/cms/pages'));
-            $data = $this->extractJazzLineupCardFormData();
-            $errors = $this->artistsService->validateJazzOverviewCard($data);
-            if ($errors !== []) {
-                $this->renderJazzLineupCardCreateForm($data, $errors);
-                return;
-            }
-
-            $this->artistsService->createJazzOverviewCard($data);
-            $this->redirectWithFlash('Jazz lineup card created successfully.', 'success', $this->readSafeReturnTo('/cms/pages'));
-        });
-    }
-
-    /**
-     * Renders the lightweight Jazz lineup card edit form.
-     * GET /cms/jazz-lineup/cards/{id}/edit
-     */
-    public function editJazzOverviewCard(int $id): void
-    {
-        $this->handleCmsPageRequest(function () use ($id): void {
-            $artist = $this->artistsService->findById($id);
-            if ($artist === null) {
-                $this->renderNotFoundPage();
-                return;
-            }
-
-            $currentView = 'pages';
-            $viewModel = $this->buildJazzLineupCardFormViewModel(
-                $id,
-                new JazzLineupCardUpsertData(
-                    name: $artist->name,
-                    style: $artist->style,
-                    cardDescription: $artist->cardDescription,
-                    imageAssetId: $artist->imageAssetId,
-                    cardSortOrder: $artist->cardSortOrder,
-                    isActive: $artist->isActive,
-                ),
-                [],
-            );
-            require __DIR__ . '/../Views/pages/cms/jazz-lineup-card-form.php';
-        });
-    }
-
-    /**
-     * Updates a lightweight Jazz lineup card.
-     * POST /cms/jazz-lineup/cards/{id}/edit
-     */
-    public function updateJazzOverviewCard(int $id): void
-    {
-        $this->handleCmsPageRequest(function () use ($id): void {
-            $this->validateCsrf('cms_jazz_lineup_card_edit_' . $id, $this->readSafeReturnTo('/cms/pages'));
-            $data = $this->extractJazzLineupCardFormData();
-            $errors = $this->artistsService->validateJazzOverviewCard($data);
-            if ($errors !== []) {
-                $this->renderJazzLineupCardEditForm($id, $data, $errors);
-                return;
-            }
-
-            $this->artistsService->updateJazzOverviewCard($id, $data);
-            $this->redirectWithFlash('Jazz lineup card updated successfully.', 'success', $this->readSafeReturnTo('/cms/pages'));
         });
     }
 
@@ -428,68 +338,4 @@ class CmsArtistsController extends CmsBaseController
         return $candidate;
     }
 
-    private function extractJazzLineupCardFormData(): JazzLineupCardUpsertData
-    {
-        return new JazzLineupCardUpsertData(
-            name: $this->readStringPostParam('name') ?? '',
-            style: $this->readStringPostParam('style') ?? '',
-            cardDescription: trim((string)($_POST['cardDescription'] ?? '')),
-            imageAssetId: $this->readOptionalIntPostParam('imageAssetId'),
-            cardSortOrder: $this->readOptionalIntPostParam('cardSortOrder') ?? 0,
-            isActive: $this->readBoolPostParam('isActive'),
-        );
-    }
-
-    /**
-     * @param array<string, string> $errors
-     */
-    private function buildJazzLineupCardFormViewModel(
-        ?int $artistId,
-        JazzLineupCardUpsertData $data,
-        array $errors,
-    ): CmsJazzLineupCardFormViewModel {
-        $scope = $artistId === null ? 'cms_jazz_lineup_card_create' : 'cms_jazz_lineup_card_edit_' . $artistId;
-        $action = $artistId === null
-            ? '/cms/jazz-lineup/cards'
-            : '/cms/jazz-lineup/cards/' . $artistId . '/edit';
-        $title = $artistId === null ? 'Create Jazz Lineup Card' : 'Edit Jazz Lineup Card';
-        $returnTo = $this->readSafeReturnTo('/cms/pages');
-        $backUrl = $returnTo !== '' ? $returnTo : '/cms/pages';
-
-        return new CmsJazzLineupCardFormViewModel(
-            artistId: $artistId,
-            name: $data->name,
-            style: $data->style,
-            cardDescription: $data->cardDescription,
-            imageAssetId: $data->imageAssetId,
-            cardSortOrder: $data->cardSortOrder,
-            isActive: $data->isActive,
-            csrfToken: $this->sessionService->getCsrfToken($scope),
-            formAction: $action,
-            pageTitle: $title,
-            returnTo: $returnTo,
-            backUrl: $backUrl,
-            errors: $errors,
-        );
-    }
-
-    /**
-     * @param array<string, string> $errors
-     */
-    private function renderJazzLineupCardCreateForm(JazzLineupCardUpsertData $data, array $errors): void
-    {
-        $currentView = 'pages';
-        $viewModel = $this->buildJazzLineupCardFormViewModel(null, $data, $errors);
-        require __DIR__ . '/../Views/pages/cms/jazz-lineup-card-form.php';
-    }
-
-    /**
-     * @param array<string, string> $errors
-     */
-    private function renderJazzLineupCardEditForm(int $id, JazzLineupCardUpsertData $data, array $errors): void
-    {
-        $currentView = 'pages';
-        $viewModel = $this->buildJazzLineupCardFormViewModel($id, $data, $errors);
-        require __DIR__ . '/../Views/pages/cms/jazz-lineup-card-form.php';
-    }
 }

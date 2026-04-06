@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsArtistsController;
+use App\Controllers\CmsJazzCardsController;
+use App\Controllers\CmsScheduleDaysController;
+use App\Controllers\CmsVenuesController;
 use App\Controllers\EmployeeScannerController;
 use App\Controllers\OrderHistoryController;
 use App\Repositories\OrderHistoryRepository;
@@ -230,6 +233,18 @@ return static function (string $controllerClass): object {
     // ── Lazy service singletons shared across multiple controllers ──
 
     $cmsArtistsService = fn() => $make('cmsArtistsService', fn() => new CmsArtistsService(new ArtistRepository($pdo())));
+    $cmsEventsService  = fn() => $make('cmsEventsService', fn() => new CmsEventsService(
+        $pdo(),
+        $eventRepo(),
+        $eventSessionRepo(),
+        $eventSessionLabel(),
+        $eventSessionPrice(),
+        $eventTypeRepo(),
+        $venueRepo(),
+        $priceTierRepo(),
+        $orderItemRepo(),
+        $cmsRepo(),
+    ));
     $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService($mediaAssetRepo()));
     $restaurantService = fn() => $make('restaurantService', fn() => new RestaurantService(
         $globalContentRepo(),
@@ -304,25 +319,25 @@ return static function (string $controllerClass): object {
             $scheduleService(),
         ),
         CmsEventsController::class => new CmsEventsController(
-            new CmsEventsService(
-                $pdo(),
-                $eventRepo(),
-                $eventSessionRepo(),
-                $eventSessionLabel(),
-                $eventSessionPrice(),
-                $eventTypeRepo(),
-                $venueRepo(),
-                $priceTierRepo(),
-                $orderItemRepo(),
-                $cmsRepo(),
-            ),
+            $cmsEventsService(),
             $sessionService,
             $cmsArtistsService(),
+        ),
+        CmsVenuesController::class => new CmsVenuesController(
+            $cmsEventsService(),
+            $sessionService,
+        ),
+        CmsScheduleDaysController::class => new CmsScheduleDaysController(
             new CmsScheduleDayService(
                 $scheduleDayConfig(),
                 $eventTypeRepo(),
                 $visibilityResolver(),
             ),
+            $sessionService,
+        ),
+        CmsJazzCardsController::class => new CmsJazzCardsController(
+            $cmsArtistsService(),
+            $sessionService,
         ),
         AuthController::class => new AuthController(
             $authService(),

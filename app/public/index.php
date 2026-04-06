@@ -43,8 +43,11 @@ use App\Controllers\CmsDashboardController;
 use App\Controllers\CmsPageEditorController;
 use App\Controllers\CmsPageImageController;
 use App\Controllers\CmsEventsController;
+use App\Controllers\CmsJazzCardsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsArtistsController;
+use App\Controllers\CmsScheduleDaysController;
+use App\Controllers\CmsVenuesController;
 use App\Controllers\CmsOrdersController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\EmployeeScannerController;
@@ -164,11 +167,11 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/sessions/{id:\d+}/labels', [CmsEventsController::class, 'addLabel']);
     $r->addRoute('POST', '/cms/labels/{id:\d+}/delete', [CmsEventsController::class, 'deleteLabel']);
     $r->addRoute('POST', '/cms/sessions/{id:\d+}/price', [CmsEventsController::class, 'setPrice']);
-    $r->addRoute('GET',  '/cms/venues', [CmsEventsController::class, 'venues']);
-    $r->addRoute('POST', '/cms/venues', [CmsEventsController::class, 'createVenue']);
-    $r->addRoute('POST', '/cms/venues/{id:\d+}/delete', [CmsEventsController::class, 'deleteVenue']);
-    $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
-    $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
+    $r->addRoute('GET',  '/cms/venues',                  [CmsVenuesController::class, 'index']);
+    $r->addRoute('POST', '/cms/venues',                  [CmsVenuesController::class, 'create']);
+    $r->addRoute('POST', '/cms/venues/{id:\d+}/delete',  [CmsVenuesController::class, 'delete']);
+    $r->addRoute('GET',  '/cms/schedule-days',           [CmsScheduleDaysController::class, 'index']);
+    $r->addRoute('POST', '/cms/schedule-days/toggle',    [CmsScheduleDaysController::class, 'toggle']);
 
     // Schedule API
     $r->addRoute('GET', '/api/schedule/{pageSlug:[a-z]+}', [ScheduleApiController::class, 'getScheduleHtml']);
@@ -204,10 +207,10 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/artists',                           [CmsArtistsController::class, 'store']);
     $r->addRoute('GET',  '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'edit']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'update']);
-    $r->addRoute('GET',  '/cms/jazz-lineup/cards/create',          [CmsArtistsController::class, 'createJazzOverviewCard']);
-    $r->addRoute('POST', '/cms/jazz-lineup/cards',                 [CmsArtistsController::class, 'storeJazzOverviewCard']);
-    $r->addRoute('GET',  '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsArtistsController::class, 'editJazzOverviewCard']);
-    $r->addRoute('POST', '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsArtistsController::class, 'updateJazzOverviewCard']);
+    $r->addRoute('GET',  '/cms/jazz-lineup/cards/create',          [CmsJazzCardsController::class, 'create']);
+    $r->addRoute('POST', '/cms/jazz-lineup/cards',                 [CmsJazzCardsController::class, 'store']);
+    $r->addRoute('GET',  '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsJazzCardsController::class, 'edit']);
+    $r->addRoute('POST', '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsJazzCardsController::class, 'update']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/add',[CmsArtistsController::class, 'addToJazzOverview']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/remove', [CmsArtistsController::class, 'removeFromJazzOverview']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/delete',           [CmsArtistsController::class, 'delete']);
