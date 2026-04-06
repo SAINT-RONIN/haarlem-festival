@@ -28,7 +28,7 @@ use App\Controllers\ScannerController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
-use App\Checkout\OrderCapacityRestorer;
+use App\Services\OrderCapacityRestorer;
 use App\Http\Requests\StripeWebhookRequestFactory;
 use App\Infrastructure\CheckoutRuntimeConfig;
 use App\Infrastructure\Database;

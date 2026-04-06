@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Checkout\Interfaces;
+namespace App\Services\Interfaces;
 
 interface IOrderCapacityRestorer
 {

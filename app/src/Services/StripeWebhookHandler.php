@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Checkout\Interfaces\IOrderCapacityRestorer;
+use App\Services\Interfaces\IOrderCapacityRestorer;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Exceptions\CheckoutException;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Checkout;
+namespace App\Services;
 
-use App\Checkout\Interfaces\IOrderCapacityRestorer;
 use App\Models\OrderItem;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
+use App\Services\Interfaces\IOrderCapacityRestorer;
 
 /**
  * Restores reserved session capacity for all event-session items in an order.
