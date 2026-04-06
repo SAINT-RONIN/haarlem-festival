@@ -198,6 +198,20 @@ class CmsArtistsService implements ICmsArtistsService
     }
 
     /**
+     * Reactivates a previously deactivated artist.
+     *
+     * @throws CmsOperationException When the database write fails
+     */
+    public function reactivateArtist(int $id): void
+    {
+        try {
+            $this->artistRepository->reactivate($id);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to reactivate artist.', 0, $error);
+        }
+    }
+
+    /**
      * Shared validation for full artist records, used by both create and update.
      *
      * All four text fields are required via FieldValidator. The sort-order range check

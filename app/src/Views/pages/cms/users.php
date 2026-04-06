@@ -179,12 +179,20 @@
                                 <div class="flex items-center gap-2">
                                     <a href="/cms/users/<?= htmlspecialchars((string) $user->userAccountId) ?>/edit"
                                        class="text-blue-600 hover:text-blue-800">Edit</a>
-                                    <form method="POST"
-                                          action="/cms/users/<?= htmlspecialchars((string) $user->userAccountId) ?>/delete"
-                                          data-confirm="Deactivate this user?">
-                                        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->deleteCsrfToken) ?>">
-                                        <button type="submit" class="text-red-600 hover:text-red-800">Deactivate</button>
-                                    </form>
+                                    <?php if ($user->isActive): ?>
+                                        <form method="POST"
+                                              action="/cms/users/<?= htmlspecialchars((string) $user->userAccountId) ?>/delete"
+                                              data-confirm="Deactivate this user?">
+                                            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->deleteCsrfToken) ?>">
+                                            <button type="submit" class="text-red-600 hover:text-red-800">Deactivate</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="POST"
+                                              action="/cms/users/<?= htmlspecialchars((string) $user->userAccountId) ?>/activate">
+                                            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->deleteCsrfToken) ?>">
+                                            <button type="submit" class="text-green-600 hover:text-green-800">Activate</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>

@@ -267,4 +267,12 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
     {
         $this->execute('UPDATE Artist SET IsActive = 0 WHERE ArtistId = :id', [':id' => $id]);
     }
+
+    /**
+     * Reactivates a previously deleted artist by setting IsActive to 1.
+     */
+    public function reactivate(int $id): void
+    {
+        $this->execute('UPDATE Artist SET IsActive = 1 WHERE ArtistId = :id', [':id' => $id]);
+    }
 }

@@ -174,6 +174,20 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
+     * Reactivates a previously deactivated user account.
+     *
+     * @throws CmsOperationException When the database write fails
+     */
+    public function reactivateUser(int $id): void
+    {
+        try {
+            $this->userAccountRepository->reactivateUser($id);
+        } catch (\Throwable $error) {
+            throw new CmsOperationException('Failed to reactivate user.', 0, $error);
+        }
+    }
+
+    /**
      * Checks username format first, then uniqueness against existing accounts.
      *
      * Format is checked before uniqueness because there is no point querying the DB

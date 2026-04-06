@@ -59,4 +59,9 @@ interface IArtistRepository
      * Deletes an artist by its ID.
      */
     public function delete(int $id): void;
+
+    /**
+     * Reactivates a previously deleted artist by setting IsActive to 1.
+     */
+    public function reactivate(int $id): void;
 }

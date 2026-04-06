@@ -85,4 +85,9 @@ interface ICmsUsersService
      * Deletes a user account by its ID.
      */
     public function deleteUser(int $id): void;
+
+    /**
+     * Reactivates a previously deactivated user account.
+     */
+    public function reactivateUser(int $id): void;
 }

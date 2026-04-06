@@ -81,4 +81,9 @@ interface IUserAccountRepository
      * Soft-deletes a user by setting IsActive = 0.
      */
     public function deleteUser(int $id): void;
+
+    /**
+     * Reactivates a soft-deleted user by setting IsActive = 1.
+     */
+    public function reactivateUser(int $id): void;
 }

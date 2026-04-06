@@ -158,4 +158,15 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
             [':id' => $id],
         );
     }
+
+    /**
+     * Reactivates a soft-deleted user by setting IsActive = 1.
+     */
+    public function reactivateUser(int $id): void
+    {
+        $this->execute(
+            'UPDATE UserAccount SET IsActive = 1, UpdatedAtUtc = NOW() WHERE UserAccountId = :id',
+            [':id' => $id],
+        );
+    }
 }

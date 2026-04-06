@@ -80,4 +80,9 @@ interface ICmsArtistsService
      * Deletes an artist by its ID.
      */
     public function deleteArtist(int $id): void;
+
+    /**
+     * Reactivates a previously deactivated artist.
+     */
+    public function reactivateArtist(int $id): void;
 }

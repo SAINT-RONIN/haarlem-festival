@@ -129,12 +129,20 @@
                                 <div class="flex items-center gap-2">
                                     <a href="/cms/artists/<?= htmlspecialchars((string) $item->artistId) ?>/edit"
                                        class="text-blue-600 hover:text-blue-900">Edit</a>
-                                    <form method="POST"
-                                          action="/cms/artists/<?= htmlspecialchars((string) $item->artistId) ?>/delete"
-                                          data-confirm="Are you sure you want to deactivate this artist?">
-                                        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->deleteCsrfToken) ?>">
-                                        <button type="submit" class="text-red-600 hover:text-red-900">Deactivate</button>
-                                    </form>
+                                    <?php if ($item->isActive): ?>
+                                        <form method="POST"
+                                              action="/cms/artists/<?= htmlspecialchars((string) $item->artistId) ?>/delete"
+                                              data-confirm="Are you sure you want to deactivate this artist?">
+                                            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->deleteCsrfToken) ?>">
+                                            <button type="submit" class="text-red-600 hover:text-red-900">Deactivate</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="POST"
+                                              action="/cms/artists/<?= htmlspecialchars((string) $item->artistId) ?>/activate">
+                                            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->deleteCsrfToken) ?>">
+                                            <button type="submit" class="text-green-600 hover:text-green-900">Activate</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>

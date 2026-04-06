@@ -95,6 +95,19 @@ class CmsUsersController extends CmsBaseController
         });
     }
 
+    /**
+     * Reactivates a previously deactivated user account.
+     * POST /cms/users/{id}/activate
+     */
+    public function activate(int $id): void
+    {
+        $this->handleCmsPageRequest(function () use ($id): void {
+            $this->validateCsrf('cms_user_delete', '/cms/users');
+            $this->usersService->reactivateUser($id);
+            $this->redirectWithFlash('User activated successfully.', 'success', '/cms/users');
+        });
+    }
+
     /** Builds the empty create-user form ViewModel with default role and renders it. */
     private function renderCreateUserForm(): void
     {

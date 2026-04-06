@@ -137,6 +137,19 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
+    /**
+     * Reactivates a previously deactivated artist.
+     * POST /cms/artists/{id}/activate
+     */
+    public function activate(int $id): void
+    {
+        $this->handleCmsPageRequest(function () use ($id): void {
+            $this->validateCsrf('cms_artist_delete', '/cms/artists');
+            $this->artistsService->reactivateArtist($id);
+            $this->redirectWithFlash('Artist activated successfully.', 'success', '/cms/artists');
+        });
+    }
+
     /** Fetches artists from the service and maps them to the list ViewModel. */
     private function buildArtistsListViewModel(?string $search): \App\ViewModels\Cms\CmsArtistsListViewModel
     {
