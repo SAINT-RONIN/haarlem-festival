@@ -45,7 +45,7 @@ $inputClass = static function (array $errors, string $field): string {
             </div>
         </header>
 
-        <form method="POST" action="<?= htmlspecialchars($viewModel->formAction) ?>" class="space-y-6">
+        <form method="POST" action="<?= htmlspecialchars($viewModel->formAction) ?>" class="space-y-6" id="jazzLineupCardForm">
             <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->csrfToken) ?>">
             <input type="hidden" name="returnTo" value="<?= htmlspecialchars($viewModel->returnTo) ?>">
 
@@ -54,34 +54,87 @@ $inputClass = static function (array $errors, string $field): string {
                     <h2 class="text-lg font-semibold text-gray-900">Card Details</h2>
                 </div>
                 <div class="p-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                            Title <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="name" id="name" value="<?= htmlspecialchars($viewModel->name) ?>"
-                               class="<?= $inputClass($viewModel->errors, 'name') ?>">
-                        <?php if (isset($viewModel->errors['name'])): ?>
-                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['name']) ?></p>
-                        <?php endif; ?>
-                    </div>
+                    <?php if ($viewModel->artistId !== null): ?>
+                        <!-- Edit mode: show artist name as read-only -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Artist</label>
+                            <input type="text" value="<?= htmlspecialchars($viewModel->name) ?>" readonly
+                                   class="block w-full rounded-md border-gray-200 bg-gray-100 shadow-sm py-2 px-3 border text-gray-600 cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Style</label>
+                            <input type="text" value="<?= htmlspecialchars($viewModel->style) ?>" readonly
+                                   class="block w-full rounded-md border-gray-200 bg-gray-100 shadow-sm py-2 px-3 border text-gray-600 cursor-not-allowed">
+                        </div>
+                        <input type="hidden" name="name" value="<?= htmlspecialchars($viewModel->name) ?>">
+                        <input type="hidden" name="style" value="<?= htmlspecialchars($viewModel->style) ?>">
+                    <?php else: ?>
+                        <!-- Create mode: artist selector dropdown -->
+                        <div class="md:col-span-2">
+                            <label for="artistSelect" class="block text-sm font-medium text-gray-700 mb-1">
+                                Artist <span class="text-red-500">*</span>
+                            </label>
+                            <select id="artistSelect"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                                <option value="">-- Select an artist --</option>
+                                <?php foreach ($viewModel->artists as $artist): ?>
+                                    <option value="<?= $artist->artistId ?>"
+                                        data-name="<?= htmlspecialchars($artist->name) ?>"
+                                        data-style="<?= htmlspecialchars($artist->style) ?>"
+                                        data-description="<?= htmlspecialchars($artist->description) ?>"
+                                        data-image-asset-id="<?= $artist->imageAssetId !== null ? (int) $artist->imageAssetId : '' ?>"
+                                        data-image-url="<?= htmlspecialchars($artist->imageUrl) ?>">
+                                        <?= htmlspecialchars($artist->name) ?> — <?= htmlspecialchars($artist->style) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="mt-2">
+                                <a href="/cms/artists/create" target="_blank"
+                                   class="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    Create new artist
+                                </a>
+                            </div>
+                            <?php if (isset($viewModel->errors['name'])): ?>
+                                <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['name']) ?></p>
+                            <?php endif; ?>
+                        </div>
+                        <input type="hidden" name="name" id="name" value="">
+                        <input type="hidden" name="style" id="style" value="">
+                    <?php endif; ?>
 
                     <div>
-                        <label for="style" class="block text-sm font-medium text-gray-700 mb-1">
-                            Style <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="style" id="style" value="<?= htmlspecialchars($viewModel->style) ?>"
-                               class="<?= $inputClass($viewModel->errors, 'style') ?>">
-                        <?php if (isset($viewModel->errors['style'])): ?>
-                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['style']) ?></p>
-                        <?php endif; ?>
-                    </div>
-
-                    <div>
-                        <label for="imageAssetId" class="block text-sm font-medium text-gray-700 mb-1">Image Asset ID</label>
-                        <input type="number" name="imageAssetId" id="imageAssetId"
-                               value="<?= $viewModel->imageAssetId !== null ? htmlspecialchars((string)$viewModel->imageAssetId) : '' ?>"
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
-                        <p class="mt-1 text-xs text-gray-500">Optional MediaAsset ID for the lineup image.</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lineup Image</label>
+                        <input type="hidden" name="imageAssetId" id="imageAssetId"
+                               value="<?= $viewModel->imageAssetId !== null ? (int) $viewModel->imageAssetId : '' ?>">
+                        <div class="flex items-start gap-4">
+                            <div id="jazzCardImagePreview" class="flex-shrink-0">
+                                <?php if ($viewModel->imageUrl !== ''): ?>
+                                    <img src="<?= htmlspecialchars($viewModel->imageUrl) ?>"
+                                         alt="Lineup image"
+                                         class="w-32 h-24 rounded-lg border border-gray-200 object-cover">
+                                <?php else: ?>
+                                    <div class="w-32 h-24 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                                        <i data-lucide="image" class="w-6 h-6 text-gray-400"></i>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <button type="button" data-action="openJazzCardImagePicker"
+                                        class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm">
+                                    <i data-lucide="image" class="w-4 h-4"></i>
+                                    Choose from Library
+                                </button>
+                                <?php if ($viewModel->imageAssetId !== null): ?>
+                                    <button type="button" data-action="clearJazzCardImage"
+                                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                        Remove Image
+                                    </button>
+                                <?php endif; ?>
+                                <p class="text-xs text-gray-500">Select an image from the media library.</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
