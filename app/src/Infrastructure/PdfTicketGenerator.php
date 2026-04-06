@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tickets;
+namespace App\Infrastructure;
 
 use App\DTOs\Tickets\QrCodeMatrix;
 use App\DTOs\Tickets\TicketDocumentData;
-use App\Tickets\Interfaces\ITicketPdfGenerator;
+use App\Infrastructure\Interfaces\ITicketPdfGenerator;
 
 /**
  * Generates a lightweight one-page PDF ticket using raw PDF syntax.
@@ -100,8 +100,7 @@ final class PdfTicketGenerator extends BasePdfWriter implements ITicketPdfGenera
         float $originY,
         float $moduleSize,
         int $quietZoneModules,
-    ): string
-    {
+    ): string {
         $matrixSize = $qrCode->size * $moduleSize;
         $quietZoneSize = $quietZoneModules * $moduleSize;
         $totalSize = $matrixSize + ($quietZoneSize * 2);

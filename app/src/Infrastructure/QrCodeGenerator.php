@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tickets;
+namespace App\Infrastructure;
 
 use App\DTOs\Tickets\QrCodeMatrix;
 use App\Exceptions\TicketQrCodeException;
-use App\Tickets\Interfaces\IQrCodeGenerator;
+use App\Infrastructure\Interfaces\IQrCodeGenerator;
 use chillerlan\QRCode\Common\EccLevel;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;

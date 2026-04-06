@@ -109,10 +109,10 @@ use App\Services\InvoiceFulfillmentService;
 use App\Services\OrderHistoryService;
 use App\Services\TicketFulfillmentService;
 use App\Repositories\InvoiceRepository;
-use App\Tickets\InvoicePdfGenerator;
-use App\Tickets\PdfTicketGenerator;
-use App\Tickets\QrCodeGenerator;
-use App\Tickets\TicketCodeGenerator;
+use App\Infrastructure\InvoicePdfGenerator;
+use App\Infrastructure\PdfTicketGenerator;
+use App\Infrastructure\QrCodeGenerator;
+use App\Utils\TicketCodeGenerator;
 
 /**
  * Lazy dependency container — only creates the repositories and services

@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Tickets;
-
-use App\Tickets\Interfaces\ITicketCodeGenerator;
+namespace App\Utils;
 
 /**
  * Generates compact uppercase ticket codes that fit inside a fixed QR version.
  */
-final class TicketCodeGenerator implements ITicketCodeGenerator
+final class TicketCodeGenerator
 {
     private const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 

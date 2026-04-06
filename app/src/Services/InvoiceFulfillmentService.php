@@ -14,7 +14,7 @@ use App\Repositories\Interfaces\IInvoiceRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Services\Interfaces\IInvoiceFulfillmentService;
-use App\Tickets\Interfaces\IInvoicePdfGenerator;
+use App\Infrastructure\Interfaces\IInvoicePdfGenerator;
 
 /**
  * Turns a paid order into an invoice record, a stored PDF, and an outgoing invoice email.

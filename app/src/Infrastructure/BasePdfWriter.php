@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tickets;
+namespace App\Infrastructure;
 
 /**
  * Shared PDF 1.4 primitives for generating lightweight single-page PDF documents.

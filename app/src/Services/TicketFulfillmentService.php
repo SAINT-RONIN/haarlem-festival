@@ -26,9 +26,9 @@ use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\ITicketFulfillmentService;
-use App\Tickets\Interfaces\ITicketCodeGenerator;
-use App\Tickets\Interfaces\IQrCodeGenerator;
-use App\Tickets\Interfaces\ITicketPdfGenerator;
+use App\Infrastructure\Interfaces\IQrCodeGenerator;
+use App\Infrastructure\Interfaces\ITicketPdfGenerator;
+use App\Utils\TicketCodeGenerator;
 
 /**
  * Turns a paid order into real ticket records, PDF files, and one outgoing email.
@@ -63,7 +63,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         private readonly PdfAssetStorage $pdfAssetStorage,
         private readonly IQrCodeGenerator $qrCodeGenerator,
         private readonly ITicketPdfGenerator $ticketPdfGenerator,
-        private readonly ITicketCodeGenerator $ticketCodeGenerator,
+        private readonly TicketCodeGenerator $ticketCodeGenerator,
     ) {
     }
 

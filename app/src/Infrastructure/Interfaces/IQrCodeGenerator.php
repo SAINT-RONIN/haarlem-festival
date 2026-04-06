@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tickets\Interfaces;
+namespace App\Infrastructure\Interfaces;
 
 use App\DTOs\Tickets\QrCodeMatrix;
 

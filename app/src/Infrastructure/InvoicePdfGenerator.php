@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tickets;
+namespace App\Infrastructure;
 
 use App\DTOs\Invoice\InvoiceDocumentData;
 use App\DTOs\Invoice\InvoiceLineData;
-use App\Tickets\Interfaces\IInvoicePdfGenerator;
+use App\Infrastructure\Interfaces\IInvoicePdfGenerator;
 
 /**
  * Generates a professional A4 invoice PDF using raw PDF 1.4 syntax.
