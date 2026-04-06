@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Scanner\TicketScanDetail;
+use App\DTOs\Domain\Scanner\TicketScanDetail;
 use App\Exceptions\TicketAlreadyScannedException;
 use App\Exceptions\TicketNotFoundException;
 use App\Repositories\Interfaces\IScannerRepository;

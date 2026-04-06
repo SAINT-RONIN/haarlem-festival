@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\DTOs\Scanner\TicketScanDetail;
+use App\DTOs\Domain\Scanner\TicketScanDetail;
 use App\Repositories\Interfaces\IScannerRepository;
 
 /**

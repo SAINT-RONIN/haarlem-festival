@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\RestaurantPageConstants;
-use App\DTOs\Events\RestaurantDetailEvent;
-use App\DTOs\Restaurant\ReservationSubmissionResult;
+use App\DTOs\Domain\Events\RestaurantDetailEvent;
+use App\DTOs\Domain\Restaurant\ReservationSubmissionResult;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Models\Reservation;

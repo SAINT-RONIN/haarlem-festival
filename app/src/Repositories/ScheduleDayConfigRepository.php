@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\ScheduleDayConfig;
-use App\DTOs\Filters\ScheduleDayConfigFilter;
+use App\DTOs\Domain\Filters\ScheduleDayConfigFilter;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 
 /**

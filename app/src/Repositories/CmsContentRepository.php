@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\CmsItem;
-use App\DTOs\Filters\CmsItemFilter;
-use App\DTOs\Filters\CmsPageFilter;
+use App\DTOs\Domain\Filters\CmsItemFilter;
+use App\DTOs\Domain\Filters\CmsPageFilter;
 use App\Models\CmsSection;
-use App\DTOs\Filters\CmsSectionFilter;
+use App\DTOs\Domain\Filters\CmsSectionFilter;
 use App\Models\MediaAsset;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\Interfaces\ICmsRepository;

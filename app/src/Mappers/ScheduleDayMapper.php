@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Filters\ScheduleFilterParams;
-use App\DTOs\Schedule\ScheduleSectionData;
-use App\Content\ScheduleSectionContent;
+use App\DTOs\Domain\Filters\ScheduleFilterParams;
+use App\DTOs\Domain\Schedule\ScheduleSectionData;
+use App\DTOs\Cms\ScheduleSectionContent;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\DTOs\Auth\RegistrationFormData;
+use App\DTOs\Domain\Auth\RegistrationFormData;
 use App\Exceptions\AuthenticationException;
 use App\Exceptions\ValidationException;
 use App\Mappers\AuthMapper;

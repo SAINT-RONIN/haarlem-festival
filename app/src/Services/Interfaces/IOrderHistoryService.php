@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\DTOs\OrderHistory\OrderSummaryDto;
-use App\DTOs\OrderHistory\TicketPdfDto;
+use App\DTOs\Domain\OrderHistory\OrderSummaryDto;
+use App\DTOs\Domain\OrderHistory\TicketPdfDto;
 
 /**
  * Defines the contract for loading customer order history data.

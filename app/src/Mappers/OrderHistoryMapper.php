@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\OrderHistory\OrderSummaryDto;
-use App\DTOs\OrderHistory\TicketPdfDto;
+use App\DTOs\Domain\OrderHistory\OrderSummaryDto;
+use App\DTOs\Domain\OrderHistory\TicketPdfDto;
 use App\Helpers\FormatHelper;
 use App\ViewModels\Program\MyOrdersItemViewModel;
 use App\ViewModels\Program\MyOrdersViewModel;

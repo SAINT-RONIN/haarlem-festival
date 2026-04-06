@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\DTOs\Events\ArtistDetailBundle;
+use App\DTOs\Domain\Events\ArtistDetailBundle;
 use App\Repositories\Interfaces\IArtistAlbumRepository;
 use App\Repositories\Interfaces\IArtistDetailRepository;
 use App\Repositories\Interfaces\IArtistGalleryImageRepository;

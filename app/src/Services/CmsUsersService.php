@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Helpers\UserValidationHelper;
 use App\Models\UserAccount;
-use App\DTOs\User\UserWithRole;
+use App\DTOs\Domain\User\UserWithRole;
 use App\Exceptions\CmsOperationException;
 use App\Repositories\Interfaces\ICmsUsersRepository;
 use App\Repositories\Interfaces\IUserAccountRepository;

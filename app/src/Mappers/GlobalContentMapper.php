@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Content\GlobalUiContent;
-use App\Content\GradientSectionContent;
-use App\Content\HeroSectionContent;
-use App\Content\IntroSectionContent;
+use App\DTOs\Cms\GlobalUiContent;
+use App\DTOs\Cms\GradientSectionContent;
+use App\DTOs\Cms\HeroSectionContent;
+use App\DTOs\Cms\IntroSectionContent;
 
 /**
  * Maps raw CMS arrays into shared/global content models.

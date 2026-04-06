@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
-use App\DTOs\Files\StoredPdfFile;
+use App\DTOs\Domain\Files\StoredPdfFile;
 use App\Exceptions\InvoiceGenerationException;
 use App\Exceptions\TicketPdfGenerationException;
 use App\Repositories\Interfaces\IMediaAssetRepository;

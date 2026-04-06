@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Constants\HistoryPageConstants;
 use App\Constants\SharedSectionKeys;
-use App\DTOs\Pages\HistoryPageData;
+use App\DTOs\Domain\Pages\HistoryPageData;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IHistoryContentRepository;
 use App\Services\Interfaces\IHistoryService;

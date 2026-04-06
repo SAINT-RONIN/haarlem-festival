@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Checkout\CheckoutCancelResult;
-use App\DTOs\Checkout\CheckoutSessionSummary;
+use App\DTOs\Domain\Checkout\CheckoutCancelResult;
+use App\DTOs\Domain\Checkout\CheckoutSessionSummary;
 use App\Helpers\FormatHelper;
 use App\ViewModels\Program\CheckoutCancelPageViewModel;
 use App\ViewModels\Program\CheckoutSuccessPageViewModel;

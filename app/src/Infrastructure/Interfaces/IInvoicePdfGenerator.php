@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Interfaces;
 
-use App\DTOs\Invoice\InvoiceDocumentData;
+use App\DTOs\Domain\Invoice\InvoiceDocumentData;
 
 /**
  * Generates a PDF document for an invoice.

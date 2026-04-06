@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\Cms\CmsDashboardData;
-use App\DTOs\Filters\CmsPageFilter;
+use App\DTOs\Domain\Filters\CmsPageFilter;
 use App\Exceptions\CmsOperationException;
 use App\Repositories\Interfaces\ICmsRepository;
 use App\Services\Interfaces\ICmsDashboardService;

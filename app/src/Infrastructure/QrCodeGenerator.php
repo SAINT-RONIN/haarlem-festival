@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
-use App\DTOs\Tickets\QrCodeMatrix;
+use App\DTOs\Domain\Tickets\QrCodeMatrix;
 use App\Exceptions\TicketQrCodeException;
 use App\Infrastructure\Interfaces\IQrCodeGenerator;
 use chillerlan\QRCode\Common\EccLevel;

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Mappers\HistoricalLocationContentMapper;
-use App\Content\HistoricalLocationFactsContent;
-use App\Content\HistoricalLocationHeroContent;
-use App\Content\HistoricalLocationIntroContent;
-use App\Content\HistoricalLocationSignificanceContent;
+use App\DTOs\Cms\HistoricalLocationFactsContent;
+use App\DTOs\Cms\HistoricalLocationHeroContent;
+use App\DTOs\Cms\HistoricalLocationIntroContent;
+use App\DTOs\Cms\HistoricalLocationSignificanceContent;
 
 /**
  * Provides typed access to HistoricalLocation CMS content sections.

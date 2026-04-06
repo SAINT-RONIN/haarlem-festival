@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Constants\SharedSectionKeys;
 use App\Constants\StorytellingPageConstants;
-use App\DTOs\Pages\StorytellingPageData;
+use App\DTOs\Domain\Pages\StorytellingPageData;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IStorytellingContentRepository;
 use App\Services\Interfaces\IStorytellingService;

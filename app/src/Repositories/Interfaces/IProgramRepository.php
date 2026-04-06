@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Program;
-use App\DTOs\Filters\ProgramFilter;
+use App\DTOs\Domain\Filters\ProgramFilter;
 use App\Models\ProgramItem;
-use App\DTOs\Filters\ProgramItemFilter;
+use App\DTOs\Domain\Filters\ProgramItemFilter;
 
 /**
  * Defines persistence operations for programs (shopping carts) and their items.

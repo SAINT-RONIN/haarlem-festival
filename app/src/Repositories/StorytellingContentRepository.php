@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Mappers\StorytellingContentMapper;
-use App\Content\StorytellingEventCmsData;
-use App\Content\StorytellingMasonrySectionContent;
+use App\DTOs\Cms\StorytellingEventCmsData;
+use App\DTOs\Cms\StorytellingMasonrySectionContent;
 
 /**
  * Provides typed access to Storytelling page CMS content sections.

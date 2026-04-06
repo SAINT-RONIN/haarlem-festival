@@ -8,10 +8,10 @@ use App\Enums\DayOfWeek;
 use App\Exceptions\ValidationException;
 use App\Repositories\Interfaces\IEventTypeRepository;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
-use App\DTOs\Filters\EventTypeFilter;
-use App\DTOs\Filters\ScheduleDayConfigFilter;
-use App\DTOs\Pages\ScheduleDaysPageData;
-use App\DTOs\Schedule\GroupedScheduleDayConfigs;
+use App\DTOs\Domain\Filters\EventTypeFilter;
+use App\DTOs\Domain\Filters\ScheduleDayConfigFilter;
+use App\DTOs\Domain\Pages\ScheduleDaysPageData;
+use App\DTOs\Domain\Schedule\GroupedScheduleDayConfigs;
 use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 use App\Services\Interfaces\ICmsScheduleDayService;
 

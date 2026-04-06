@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\Venue;
-use App\DTOs\Filters\VenueFilter;
+use App\DTOs\Domain\Filters\VenueFilter;
 
 /**
  * Defines persistence operations for festival venues.

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Controllers\Support\ControllerErrorResponder;
-use App\DTOs\Filters\ScheduleFilterParams;
-use App\DTOs\Session\SessionContext;
+use App\DTOs\Domain\Filters\ScheduleFilterParams;
+use App\DTOs\Domain\Session\SessionContext;
 use App\Enums\PriceType;
 use App\Enums\TimeRange;
 use App\Exceptions\JsonBodyParseException;

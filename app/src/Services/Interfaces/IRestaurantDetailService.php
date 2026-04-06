@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\DTOs\Pages\RestaurantDetailPageData;
+use App\DTOs\Domain\Pages\RestaurantDetailPageData;
 
 interface IRestaurantDetailService
 {

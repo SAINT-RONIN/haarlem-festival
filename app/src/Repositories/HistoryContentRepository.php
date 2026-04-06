@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Mappers\HistoryContentMapper;
-use App\Content\HistoryRouteSectionContent;
-use App\Content\HistoryTicketOptionsSectionContent;
-use App\Content\HistoryTourInfoSectionContent;
-use App\Content\HistoryVenuesSectionContent;
+use App\DTOs\Cms\HistoryRouteSectionContent;
+use App\DTOs\Cms\HistoryTicketOptionsSectionContent;
+use App\DTOs\Cms\HistoryTourInfoSectionContent;
+use App\DTOs\Cms\HistoryVenuesSectionContent;
 
 /**
  * Provides typed access to History page CMS content sections.

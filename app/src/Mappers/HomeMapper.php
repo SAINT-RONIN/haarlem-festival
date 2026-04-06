@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Pages\HomeEventTypeData;
-use App\DTOs\Pages\HomeLocationData;
-use App\DTOs\Pages\HomePageData;
-use App\DTOs\Pages\HomeScheduleDayData;
-use App\DTOs\Pages\HomeScheduleSessionData;
+use App\DTOs\Domain\Pages\HomeEventTypeData;
+use App\DTOs\Domain\Pages\HomeLocationData;
+use App\DTOs\Domain\Pages\HomePageData;
+use App\DTOs\Domain\Pages\HomeScheduleDayData;
+use App\DTOs\Domain\Pages\HomeScheduleSessionData;
 use App\Constants\HomeUiConfig;
 use App\ViewModels\HomeEventTypeViewModel;
 use App\ViewModels\HomeEventsHeaderViewModel;

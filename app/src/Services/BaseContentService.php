@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\GlobalUiConstants;
-use App\Content\GlobalUiContent;
+use App\DTOs\Cms\GlobalUiContent;
 use App\Exceptions\PageLoadException;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 

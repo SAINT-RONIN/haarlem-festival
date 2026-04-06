@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\DTOs\Checkout\CheckoutCancelResult;
-use App\DTOs\Checkout\CheckoutSessionResult;
-use App\DTOs\Checkout\CheckoutSessionSummary;
-use App\DTOs\Program\ProgramData;
-use App\Content\CheckoutMainContent;
+use App\DTOs\Domain\Checkout\CheckoutCancelResult;
+use App\DTOs\Domain\Checkout\CheckoutSessionResult;
+use App\DTOs\Domain\Checkout\CheckoutSessionSummary;
+use App\DTOs\Domain\Program\ProgramData;
+use App\DTOs\Cms\CheckoutMainContent;
 
 /**
  * Contract for the checkout lifecycle: creating Stripe-backed checkout sessions,

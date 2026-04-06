@@ -11,7 +11,7 @@ use App\Constants\StorytellingPageConstants;
 use App\Enums\EventTypeId;
 use App\Exceptions\SchedulePageNotFoundException;
 use App\Mappers\ScheduleMapper;
-use App\DTOs\Schedule\ScheduleRouteConfig;
+use App\DTOs\Domain\Schedule\ScheduleRouteConfig;
 use App\Services\Interfaces\IScheduleService;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 

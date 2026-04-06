@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\DTOs\Pages\HomePageData;
+use App\DTOs\Domain\Pages\HomePageData;
 
 /**
  * Contract for assembling the homepage's composite data model.

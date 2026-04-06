@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Interfaces;
 
-use App\DTOs\Tickets\QrCodeMatrix;
+use App\DTOs\Domain\Tickets\QrCodeMatrix;
 
 /**
  * Generates QR matrices for ticket codes.

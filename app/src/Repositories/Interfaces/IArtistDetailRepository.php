@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\DTOs\Events\ArtistDetailBundle;
+use App\DTOs\Domain\Events\ArtistDetailBundle;
 
 /**
  * Aggregates all artist sub-entity lookups (albums, tracks, lineup, highlights, gallery)

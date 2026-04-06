@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\DTOs\Checkout\OrderWithDetails;
+use App\DTOs\Domain\Checkout\OrderWithDetails;
 use App\DTOs\Cms\CmsOrderDetailDto;
 use App\DTOs\Cms\CmsOrderItemDto;
 use App\DTOs\Cms\CmsOrderPaymentDto;

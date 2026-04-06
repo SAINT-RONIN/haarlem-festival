@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Filters\EventSessionFilter;
+use App\DTOs\Domain\Filters\EventSessionFilter;
 use App\Models\EventType;
-use App\DTOs\Pages\HomePageData;
-use App\DTOs\Pages\HomeScheduleDayData;
-use App\DTOs\Pages\HomeScheduleSessionData;
-use App\DTOs\Pages\HomeEventTypeData;
-use App\DTOs\Pages\HomeLocationData;
-use App\DTOs\Filters\VenueFilter;
+use App\DTOs\Domain\Pages\HomePageData;
+use App\DTOs\Domain\Pages\HomeScheduleDayData;
+use App\DTOs\Domain\Pages\HomeScheduleSessionData;
+use App\DTOs\Domain\Pages\HomeEventTypeData;
+use App\DTOs\Domain\Pages\HomeLocationData;
+use App\DTOs\Domain\Filters\VenueFilter;
 use App\Helpers\SessionGroupingHelper;
 use App\Models\Venue;
 use App\Repositories\Interfaces\ICmsContentRepository;

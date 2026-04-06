@@ -10,7 +10,7 @@ use App\DTOs\Cms\ActivityData;
 use App\DTOs\Cms\CmsItemEditData;
 use App\DTOs\Cms\CmsMediaAssetData;
 use App\DTOs\Cms\JazzLineupManagerData;
-use App\DTOs\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\JazzArtistCardRecord;
 use App\Models\CmsPage;
 use App\Models\Artist;
 use App\DTOs\Cms\CmsPageEditData;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Tickets\TicketScanResult;
+use App\DTOs\Domain\Tickets\TicketScanResult;
 use App\Exceptions\ValidationException;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Services\Interfaces\ITicketScannerService;

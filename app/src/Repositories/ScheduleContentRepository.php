@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Mappers\ScheduleContentMapper;
-use App\Content\ScheduleSectionContent;
+use App\DTOs\Cms\ScheduleSectionContent;
 
 /**
  * Provides typed access to Schedule page CMS content sections.

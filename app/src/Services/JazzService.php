@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Constants\JazzPageConstants;
 use App\Constants\SharedSectionKeys;
 use App\Enums\EventTypeId;
-use App\DTOs\Pages\JazzPageData;
+use App\DTOs\Domain\Pages\JazzPageData;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IJazzContentRepository;

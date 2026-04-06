@@ -14,7 +14,7 @@ use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
-use App\DTOs\Checkout\WebhookHandlerResult;
+use App\DTOs\Domain\Checkout\WebhookHandlerResult;
 use App\Services\Interfaces\IStripeWebhookHandler;
 use App\Services\Interfaces\IInvoiceFulfillmentService;
 use App\Services\Interfaces\ITicketFulfillmentService;

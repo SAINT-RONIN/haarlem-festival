@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
-use App\DTOs\Invoice\InvoiceDocumentData;
-use App\DTOs\Invoice\InvoiceLineData;
+use App\DTOs\Domain\Invoice\InvoiceDocumentData;
+use App\DTOs\Domain\Invoice\InvoiceLineData;
 use App\Infrastructure\Interfaces\IInvoicePdfGenerator;
 
 /**

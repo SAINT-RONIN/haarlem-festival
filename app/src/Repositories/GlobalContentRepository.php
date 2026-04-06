@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Mappers\GlobalContentMapper;
-use App\Content\GlobalUiContent;
-use App\Content\GradientSectionContent;
-use App\Content\HeroSectionContent;
-use App\Content\IntroSectionContent;
+use App\DTOs\Cms\GlobalUiContent;
+use App\DTOs\Cms\GradientSectionContent;
+use App\DTOs\Cms\HeroSectionContent;
+use App\DTOs\Cms\IntroSectionContent;
 
 /**
  * Provides typed access to shared/global CMS content sections.

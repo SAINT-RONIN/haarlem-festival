@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
-use App\DTOs\Invoice\InvoiceEmailMessage;
-use App\DTOs\Tickets\TicketEmailAttachment;
-use App\DTOs\Tickets\TicketEmailMessage;
+use App\DTOs\Domain\Invoice\InvoiceEmailMessage;
+use App\DTOs\Domain\Tickets\TicketEmailAttachment;
+use App\DTOs\Domain\Tickets\TicketEmailMessage;
 use App\Exceptions\EmailDeliveryException;
 use App\Exceptions\SmtpNotConfiguredException;
 use App\Infrastructure\Interfaces\IEmailService;

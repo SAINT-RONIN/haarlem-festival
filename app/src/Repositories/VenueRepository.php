@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Venue;
-use App\DTOs\Filters\VenueFilter;
+use App\DTOs\Domain\Filters\VenueFilter;
 use App\Repositories\Interfaces\IVenueRepository;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Auth\RegistrationFormData;
+use App\DTOs\Domain\Auth\RegistrationFormData;
 
 /**
  * Maps raw registration input into the typed registration DTO used by AuthService.

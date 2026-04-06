@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Auth\RegistrationFormData;
+use App\DTOs\Domain\Auth\RegistrationFormData;
 use App\Enums\UserRoleId;
 use App\Exceptions\AuthenticationException;
 use App\Exceptions\ValidationException;

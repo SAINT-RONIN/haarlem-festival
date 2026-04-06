@@ -6,9 +6,9 @@ namespace App\Repositories;
 
 use App\Exceptions\ProgramPersistenceException;
 use App\Models\Program;
-use App\DTOs\Filters\ProgramFilter;
+use App\DTOs\Domain\Filters\ProgramFilter;
 use App\Models\ProgramItem;
-use App\DTOs\Filters\ProgramItemFilter;
+use App\DTOs\Domain\Filters\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
 
 /**

@@ -21,12 +21,12 @@ use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\DTOs\Cms\EventUpsertData;
-use App\DTOs\Events\EventEditBundle;
-use App\DTOs\Filters\EventFilter;
-use App\DTOs\Filters\EventSessionFilter;
-use App\DTOs\Events\EventsListPageData;
-use App\DTOs\Filters\EventTypeFilter;
-use App\DTOs\Filters\VenueFilter;
+use App\DTOs\Domain\Events\EventEditBundle;
+use App\DTOs\Domain\Filters\EventFilter;
+use App\DTOs\Domain\Filters\EventSessionFilter;
+use App\DTOs\Domain\Events\EventsListPageData;
+use App\DTOs\Domain\Filters\EventTypeFilter;
+use App\DTOs\Domain\Filters\VenueFilter;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Constants\CmsEventConstraints;
 

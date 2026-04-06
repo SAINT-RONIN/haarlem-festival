@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Pages\HistoryPageData;
-use App\Content\HistoryRouteSectionContent;
-use App\Content\HistoryTicketOptionsSectionContent;
-use App\Content\HistoryTourInfoSectionContent;
-use App\Content\HistoryVenuesSectionContent;
+use App\DTOs\Domain\Pages\HistoryPageData;
+use App\DTOs\Cms\HistoryRouteSectionContent;
+use App\DTOs\Cms\HistoryTicketOptionsSectionContent;
+use App\DTOs\Cms\HistoryTourInfoSectionContent;
+use App\DTOs\Cms\HistoryVenuesSectionContent;
 use App\Constants\HistoryPageConstants;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;

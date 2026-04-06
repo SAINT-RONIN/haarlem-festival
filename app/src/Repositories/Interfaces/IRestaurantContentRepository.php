@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Content\RestaurantCardsSectionContent;
-use App\Content\RestaurantDetailSectionContent;
-use App\Content\RestaurantEventCmsData;
-use App\Content\RestaurantInstructionsSectionContent;
-use App\Content\RestaurantIntroSectionContent;
-use App\Content\RestaurantIntroSplit2SectionContent;
+use App\DTOs\Cms\RestaurantCardsSectionContent;
+use App\DTOs\Cms\RestaurantDetailSectionContent;
+use App\DTOs\Cms\RestaurantEventCmsData;
+use App\DTOs\Cms\RestaurantInstructionsSectionContent;
+use App\DTOs\Cms\RestaurantIntroSectionContent;
+use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
 
 /**
  * Typed access to Restaurant page CMS content sections.

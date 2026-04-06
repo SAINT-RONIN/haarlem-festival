@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\DTOs\OrderHistory\OrderSummaryDto;
-use App\DTOs\OrderHistory\TicketPdfDto;
+use App\DTOs\Domain\OrderHistory\OrderSummaryDto;
+use App\DTOs\Domain\OrderHistory\TicketPdfDto;
 
 /**
  * Contract for fetching order history data for the customer-facing "My Orders" page.

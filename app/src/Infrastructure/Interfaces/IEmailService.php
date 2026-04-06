@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Interfaces;
 
-use App\DTOs\Invoice\InvoiceEmailMessage;
-use App\DTOs\Tickets\TicketEmailMessage;
+use App\DTOs\Domain\Invoice\InvoiceEmailMessage;
+use App\DTOs\Domain\Tickets\TicketEmailMessage;
 
 /**
  * Contract for transactional email delivery (password resets, order confirmations, etc.).

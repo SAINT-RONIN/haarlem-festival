@@ -7,8 +7,8 @@ namespace App\Services\Interfaces;
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\DTOs\Cms\EventUpsertData;
 use App\Exceptions\ValidationException;
-use App\DTOs\Events\EventEditBundle;
-use App\DTOs\Events\EventsListPageData;
+use App\DTOs\Domain\Events\EventEditBundle;
+use App\DTOs\Domain\Events\EventsListPageData;
 
 /**
  * Contract for CMS event lifecycle: CRUD for events, sessions, labels, and prices,

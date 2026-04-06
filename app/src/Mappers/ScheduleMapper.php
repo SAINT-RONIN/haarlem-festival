@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Schedule\ScheduleSectionData;
+use App\DTOs\Domain\Schedule\ScheduleSectionData;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Filters\ScheduleDayConfigFilter;
+use App\DTOs\Domain\Filters\ScheduleDayConfigFilter;
 use App\Enums\DayOfWeek;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Services\Interfaces\IScheduleDayVisibilityResolver;

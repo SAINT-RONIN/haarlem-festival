@@ -7,7 +7,7 @@ namespace App\Mappers;
 use App\Enums\UserRoleId;
 use App\Helpers\FormatHelper;
 use App\Models\UserAccount;
-use App\DTOs\User\UserWithRole;
+use App\DTOs\Domain\User\UserWithRole;
 use App\ViewModels\Cms\CmsSortColumnViewModel;
 use App\ViewModels\Cms\CmsUserFormViewModel;
 use App\ViewModels\Cms\CmsUserListItemViewModel;

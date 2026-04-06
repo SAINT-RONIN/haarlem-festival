@@ -9,7 +9,7 @@ use App\Mappers\CmsEventsInputMapper;
 use App\Mappers\CmsEventsViewMapper;
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\DTOs\Cms\EventUpsertData;
-use App\DTOs\Events\EventEditBundle;
+use App\DTOs\Domain\Events\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Services\Interfaces\ISessionService;

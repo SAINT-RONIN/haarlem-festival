@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Content\ProgramMainContent;
-use App\DTOs\Filters\EventSessionFilter;
-use App\DTOs\Filters\ProgramFilter;
-use App\DTOs\Filters\ProgramItemFilter;
-use App\DTOs\Program\ProgramData;
-use App\DTOs\Program\ProgramItemData;
-use App\DTOs\Schedule\SessionWithEvent;
+use App\DTOs\Cms\ProgramMainContent;
+use App\DTOs\Domain\Filters\EventSessionFilter;
+use App\DTOs\Domain\Filters\ProgramFilter;
+use App\DTOs\Domain\Filters\ProgramItemFilter;
+use App\DTOs\Domain\Program\ProgramData;
+use App\DTOs\Domain\Program\ProgramItemData;
+use App\DTOs\Domain\Schedule\SessionWithEvent;
 use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
 use App\Exceptions\PassPurchaseException;

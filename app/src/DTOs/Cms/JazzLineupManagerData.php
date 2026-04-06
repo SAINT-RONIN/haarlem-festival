@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTOs\Cms;
 
-use App\DTOs\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\JazzArtistCardRecord;
 use App\Models\Artist;
 
 /**

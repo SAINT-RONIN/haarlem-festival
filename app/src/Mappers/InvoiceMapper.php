@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Invoice\InvoiceDocumentData;
-use App\DTOs\Invoice\InvoiceEmailMessage;
-use App\DTOs\Invoice\InvoiceLineData;
+use App\DTOs\Domain\Invoice\InvoiceDocumentData;
+use App\DTOs\Domain\Invoice\InvoiceEmailMessage;
+use App\DTOs\Domain\Invoice\InvoiceLineData;
 use App\Models\Invoice;
 use App\Models\InvoiceLine;
 

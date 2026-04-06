@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Files\StoredPdfFile;
-use App\DTOs\Filters\EventSessionFilter;
-use App\DTOs\Schedule\SessionWithEvent;
-use App\DTOs\Tickets\TicketDocumentData;
-use App\DTOs\Tickets\TicketEmailAttachment;
-use App\DTOs\Tickets\TicketEmailMessage;
-use App\DTOs\Tickets\TicketRecipient;
+use App\DTOs\Domain\Files\StoredPdfFile;
+use App\DTOs\Domain\Filters\EventSessionFilter;
+use App\DTOs\Domain\Schedule\SessionWithEvent;
+use App\DTOs\Domain\Tickets\TicketDocumentData;
+use App\DTOs\Domain\Tickets\TicketEmailAttachment;
+use App\DTOs\Domain\Tickets\TicketEmailMessage;
+use App\DTOs\Domain\Tickets\TicketRecipient;
 use App\Exceptions\TicketDeliveryException;
 use App\Exceptions\TicketEmailDeliveryException;
 use App\Exceptions\RepositoryException;

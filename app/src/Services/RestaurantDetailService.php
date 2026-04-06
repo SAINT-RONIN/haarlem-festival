@@ -6,8 +6,8 @@ namespace App\Services;
 
 use App\Constants\RestaurantDetailConstants;
 use App\Constants\RestaurantPageConstants;
-use App\DTOs\Events\RestaurantDetailEvent;
-use App\DTOs\Pages\RestaurantDetailPageData;
+use App\DTOs\Domain\Events\RestaurantDetailEvent;
+use App\DTOs\Domain\Pages\RestaurantDetailPageData;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;

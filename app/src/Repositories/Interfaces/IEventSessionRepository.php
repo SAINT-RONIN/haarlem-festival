@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\DTOs\Cms\EventSessionUpsertData;
-use App\DTOs\Filters\EventSessionFilter;
-use App\DTOs\Schedule\ScheduleDayData;
-use App\DTOs\Events\SessionCapacityInfo;
-use App\DTOs\Schedule\SessionQueryResult;
+use App\DTOs\Domain\Filters\EventSessionFilter;
+use App\DTOs\Domain\Schedule\ScheduleDayData;
+use App\DTOs\Domain\Events\SessionCapacityInfo;
+use App\DTOs\Domain\Schedule\SessionQueryResult;
 
 /**
  * Contract for managing event sessions (individual bookable time slots within an event).

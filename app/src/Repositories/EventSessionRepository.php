@@ -6,11 +6,11 @@ namespace App\Repositories;
 
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\Enums\PriceTierId;
-use App\DTOs\Filters\EventSessionFilter;
-use App\DTOs\Schedule\ScheduleDayData;
-use App\DTOs\Events\SessionCapacityInfo;
-use App\DTOs\Schedule\SessionQueryResult;
-use App\DTOs\Schedule\SessionWithEvent;
+use App\DTOs\Domain\Filters\EventSessionFilter;
+use App\DTOs\Domain\Schedule\ScheduleDayData;
+use App\DTOs\Domain\Events\SessionCapacityInfo;
+use App\DTOs\Domain\Schedule\SessionQueryResult;
+use App\DTOs\Domain\Schedule\SessionWithEvent;
 use App\Exceptions\RepositoryException;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;

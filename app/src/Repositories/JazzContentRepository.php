@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Mappers\JazzContentMapper;
-use App\Content\JazzArtistsSectionContent;
-use App\Content\JazzBookingCtaSectionContent;
-use App\Content\JazzPricingSectionContent;
-use App\Content\JazzScheduleCtaSectionContent;
-use App\Content\JazzVenuesSectionContent;
+use App\DTOs\Cms\JazzArtistsSectionContent;
+use App\DTOs\Cms\JazzBookingCtaSectionContent;
+use App\DTOs\Cms\JazzPricingSectionContent;
+use App\DTOs\Cms\JazzScheduleCtaSectionContent;
+use App\DTOs\Cms\JazzVenuesSectionContent;
 
 /**
  * Provides typed access to Jazz page CMS content sections.
