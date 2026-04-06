@@ -43,7 +43,7 @@ class CmsScheduleDaysController extends CmsBaseController
     {
         $this->handleCmsPageRequest(function (): void {
             $currentView = 'schedule-days';
-            $this->renderPage();
+            $this->renderScheduleDaysPage();
         });
     }
 
@@ -76,7 +76,7 @@ class CmsScheduleDaysController extends CmsBaseController
      * Separated from index() so the method body stays short and the rendering
      * logic can be read in isolation without scrolling through the page request wrapper.
      */
-    private function renderPage(): void
+    private function renderScheduleDaysPage(): void
     {
         $pageData  = $this->scheduleDayService->getScheduleDaysPageData();
         $viewModel = new CmsScheduleDaysViewModel(
