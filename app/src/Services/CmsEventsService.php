@@ -6,8 +6,6 @@ namespace App\Services;
 
 use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
-use App\Constants\SharedSectionKeys;
-use App\Helpers\EventDetailCmsHelper;
 use App\Helpers\FormatHelper;
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\Exceptions\CmsOperationException;
@@ -34,28 +32,45 @@ use App\Constants\CmsEventConstraints;
 /**
  * CMS-side event and session management: CRUD, pricing, and labels.
  *
+ * Extends BaseCmsEventsService which holds the restaurant CMS integration helpers
+ * (per-event CMS sections, restaurant metadata items, detail-page editor URLs, and
+ * slug uniqueness). This class owns all public interface methods and the session,
+ * label, price, and event validation logic.
+ *
  * Key design decisions:
  * - Events are soft-deleted (IsActive = 0) so historical order references remain valid.
  * - Sessions with sold tickets cannot be hard-deleted; they must be cancelled instead.
- * - Price input accepts European comma-decimal format (e.g. "12,50") and normalizes to float.
- *
- * Schedule day visibility is handled separately by CmsScheduleDayService.
+ * - Price input accepts European comma-decimal format (e.g. "12,50") and normalises to float.
+ * - Schedule day visibility is handled separately by CmsScheduleDayService.
  */
-class CmsEventsService implements ICmsEventsService
+class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
 {
-    /** Stores the repositories used by the CMS to manage events, sessions, labels, and prices. */
+    /**
+     * @param \PDO                          $pdo               Used only by deleteEvent's transaction.
+     * @param IEventRepository              $eventRepository   Passed to parent; also used locally.
+     * @param IEventSessionRepository       $sessionRepository Session CRUD and filtering.
+     * @param IEventSessionLabelRepository  $labelRepository   Label CRUD per session.
+     * @param IEventSessionPriceRepository  $priceRepository   Price upsert per session.
+     * @param IEventTypeRepository          $eventTypeRepository Event type lookups for dropdowns.
+     * @param IVenueRepository              $venueRepository   Passed to parent; also used locally.
+     * @param IPriceTierRepository          $priceTierRepository Price tier lookups for dropdowns.
+     * @param IOrderItemRepository          $orderItemRepository Used to guard session deletion.
+     * @param ICmsRepository                $cmsRepository     Passed to parent for CMS section helpers.
+     */
     public function __construct(
         private readonly \PDO $pdo,
-        private readonly IEventRepository $eventRepository,
+        IEventRepository $eventRepository,
         private readonly IEventSessionRepository $sessionRepository,
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly IEventTypeRepository $eventTypeRepository,
-        private readonly IVenueRepository $venueRepository,
+        IVenueRepository $venueRepository,
         private readonly IPriceTierRepository $priceTierRepository,
         private readonly IOrderItemRepository $orderItemRepository,
-        private readonly ICmsRepository $cmsRepository,
+        ICmsRepository $cmsRepository,
     ) {
+        // Pass the three repositories that the base class helpers use.
+        parent::__construct($eventRepository, $venueRepository, $cmsRepository);
     }
 
     /**
@@ -260,199 +275,6 @@ class CmsEventsService implements ICmsEventsService
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to create event.', 0, $error);
         }
-    }
-
-    /**
-     * Returns a new EventUpsertData DTO with the resolved unique slug applied.
-     *
-     * Rebuilds the DTO with the unique slug so it is stored correctly.
-     * All other fields are copied from the original input unchanged.
-     */
-    private function applyResolvedSlug(EventUpsertData $data, string $slug): EventUpsertData
-    {
-        return new EventUpsertData(
-            eventTypeId: $data->eventTypeId,
-            title: $data->title,
-            shortDescription: $data->shortDescription,
-            longDescriptionHtml: $data->longDescriptionHtml,
-            featuredImageAssetId: $data->featuredImageAssetId,
-            venueId: $data->venueId,
-            artistId: $data->artistId,
-            isActive: $data->isActive,
-            slug: $slug,
-            restaurantStars: $data->restaurantStars,
-            restaurantCuisine: $data->restaurantCuisine,
-            restaurantShortDescription: $data->restaurantShortDescription,
-        );
-    }
-
-    /**
-     * Creates a CMS section for the new event on its event type's detail page, if one exists.
-     *
-     * When a new event is created it automatically gets a CMS section on the relevant detail page
-     * (for example, storytelling-detail). If no CMS config exists for this event type, the method
-     * exits silently because not all event types have a detail page.
-     */
-    private function autoCreateCmsSection(int $eventTypeId, int $eventId): void
-    {
-        $config = EventDetailCmsHelper::forEventType($eventTypeId);
-        if ($config === null) {
-            return;
-        }
-
-        $page = $this->cmsRepository->findPageBySlug($config->detailPageSlug);
-        if ($page === null) {
-            return;
-        }
-
-        $this->cmsRepository->insertSection($page->cmsPageId, SharedSectionKeys::eventSectionKey($eventId));
-    }
-
-    /**
-     * Returns the CMS section ID for a per-event dynamic section, or null when it cannot be found.
-     *
-     * Three things can each independently cause a null return: no CMS config exists for this event
-     * type, the detail page doesn't exist in the DB, or no section for this specific event exists yet.
-     */
-    private function findEventCmsSectionId(int $eventTypeId, int $eventId): ?int
-    {
-        $config = EventDetailCmsHelper::forEventType($eventTypeId);
-        if ($config === null) {
-            return null;
-        }
-        $page = $this->cmsRepository->findPageBySlug($config->detailPageSlug);
-        if ($page === null) {
-            return null;
-        }
-        $sections = $this->cmsRepository->findSections(
-            new \App\DTOs\Filters\CmsSectionFilter(
-                cmsPageId: $page->cmsPageId,
-                sectionKey: SharedSectionKeys::eventSectionKey($eventId),
-            )
-        );
-
-        return !empty($sections) ? $sections[0]->cmsSectionId : null;
-    }
-
-    /**
-     * Writes or updates restaurant-specific CMS items (stars, cuisine, address, short description).
-     *
-     * Restaurant-specific data is stored in the CMS system rather than on the event row itself,
-     * so this method must run after the event is saved to ensure the CMS section exists.
-     * Null values are skipped so an unset field doesn't overwrite a previously saved value.
-     */
-    private function saveRestaurantCmsItems(int $eventTypeId, int $eventId, EventUpsertData $data): void
-    {
-        $sectionId = $this->findEventCmsSectionId($eventTypeId, $eventId);
-        if ($sectionId === null) {
-            return;
-        }
-
-        $venueAddress = null;
-        if ($data->venueId !== null) {
-            // The address is sourced from the linked venue, not typed in manually, so it's always consistent with the venue record.
-            $venue = $this->venueRepository->findById($data->venueId);
-            if ($venue !== null && $venue->addressLine !== '') {
-                $venueAddress = $venue->addressLine;
-            }
-        }
-
-        $items = [
-            'stars'        => $data->restaurantStars !== null ? (string)$data->restaurantStars : null,
-            'cuisine_type' => $data->restaurantCuisine,
-            'about_text'   => $data->restaurantShortDescription,
-            'address_line' => $venueAddress,
-        ];
-
-        foreach ($items as $key => $value) {
-            // Skip nulls so an unset field doesn't overwrite a previously saved value.
-            if ($value !== null) {
-                $this->cmsRepository->upsertCmsTextItem($sectionId, $key, $value);
-            }
-        }
-    }
-
-    /**
-     * Reads back the restaurant-specific CMS items that saveRestaurantCmsItems writes.
-     *
-     * Maps the stored CMS item keys back to the field names used in the returned array,
-     * so the caller does not need to know how keys are stored in the CMS system.
-     *
-     * @return array{stars: ?string, cuisine: ?string, address: ?string, shortDescription: ?string}
-     */
-    private function loadRestaurantCmsItems(int $eventTypeId, int $eventId): array
-    {
-        $result = ['stars' => null, 'cuisine' => null, 'shortDescription' => null];
-
-        $sectionId = $this->findEventCmsSectionId($eventTypeId, $eventId);
-        if ($sectionId === null) {
-            return $result;
-        }
-
-        $items = $this->cmsRepository->findItems(
-            new \App\DTOs\Filters\CmsItemFilter(cmsSectionId: $sectionId)
-        );
-
-        // Maps the CMS item key (as stored in the DB) to the field name used in the returned array.
-        $keyMap = [
-            'stars'        => 'stars',
-            'cuisine_type' => 'cuisine',
-            'about_text'   => 'shortDescription',
-        ];
-
-        foreach ($items as $item) {
-            if (isset($keyMap[$item->itemKey])) {
-                $result[$keyMap[$item->itemKey]] = $item->textValue;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Resolves the URL for the CMS detail page editor for this event type.
-     *
-     * This URL is shown in the event editor as a shortcut to the CMS detail page editor
-     * for that event type. Returns null when no CMS config or page exists for this type.
-     */
-    private function resolveCmsDetailEditUrl(int $eventTypeId): ?string
-    {
-        $config = EventDetailCmsHelper::forEventType($eventTypeId);
-        if ($config === null) {
-            return null;
-        }
-
-        $page = $this->cmsRepository->findPageBySlug($config->detailPageSlug);
-        if ($page === null) {
-            return null;
-        }
-
-        return "/cms/pages/{$page->cmsPageId}/{$page->slug}/edit";
-    }
-
-    /**
-     * Returns a URL-safe slug that is unique across all events.
-     *
-     * If the slug is empty, "event" is used as the base. If the chosen slug is already taken,
-     * a numeric counter suffix is added (-2, -3, etc.) until a free slug is found.
-     */
-    private function resolveUniqueSlug(string $base): string
-    {
-        // Empty slug means none was provided — "event" is the fallback base before uniqueness is checked.
-        if ($base === '') {
-            $base = 'event';
-        }
-
-        if (!$this->eventRepository->slugExists($base)) {
-            return $base;
-        }
-
-        $counter = 2;
-        while ($this->eventRepository->slugExists("{$base}-{$counter}")) {
-            $counter++;
-        }
-
-        return "{$base}-{$counter}";
     }
 
     /**
