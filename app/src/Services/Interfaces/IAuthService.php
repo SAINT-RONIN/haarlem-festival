@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\DTOs\Auth\RegistrationFormData;
+use App\Models\PasswordResetToken;
+use App\Models\UserAccount;
 
 /**
  * Contract for user authentication and credential management.
@@ -16,20 +18,16 @@ interface IAuthService
     /**
      * Attempts to authenticate a user with username/email and password.
      *
-     * @param string $login Username or email
-     * @param string $password Plain text password
-     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     * @throws \App\Exceptions\AuthenticationException When credentials are invalid
      */
-    public function attemptLogin(string $login, string $password): array;
+    public function attemptLogin(string $login, string $password): UserAccount;
 
     /**
      * Attempts to authenticate and verifies the user has Administrator role.
      *
-     * @param string $login Username or email
-     * @param string $password Plain text password
-     * @return array{success: bool, user?: \App\Models\UserAccount, error?: string}
+     * @throws \App\Exceptions\AuthenticationException When credentials are invalid or user is not an administrator
      */
-    public function attemptAdminLogin(string $login, string $password): array;
+    public function attemptAdminLogin(string $login, string $password): UserAccount;
 
     /**
      * Validates registration data and returns any errors.
@@ -56,20 +54,17 @@ interface IAuthService
     /**
      * Validates a password reset token from the URL.
      *
-     * @param string $rawToken The raw token from the URL
-     * @return array{valid: bool, tokenId?: int, userId?: int, error?: string}
+     * @throws \App\Exceptions\AuthenticationException When the token is invalid or has expired
      */
-    public function validateResetToken(string $rawToken): array;
+    public function validateResetToken(string $rawToken): PasswordResetToken;
 
     /**
      * Resets a user's password using a valid reset token.
      *
-     * @param string $rawToken Reset token
-     * @param string $newPassword New password
-     * @param string $confirmPassword Password confirmation
-     * @return array{success: bool, error?: string}
+     * @throws \App\Exceptions\AuthenticationException When the token is invalid or the password update fails
+     * @throws \App\Exceptions\ValidationException When the new password fails validation
      */
-    public function resetPassword(string $rawToken, string $newPassword, string $confirmPassword): array;
+    public function resetPassword(string $rawToken, string $newPassword, string $confirmPassword): void;
 
     /**
      * Resolves the correct post-login redirect path for the given role.

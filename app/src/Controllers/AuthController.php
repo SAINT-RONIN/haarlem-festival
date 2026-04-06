@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\DTOs\Auth\RegistrationFormData;
+use App\Exceptions\AuthenticationException;
+use App\Exceptions\ValidationException;
 use App\Mappers\AuthMapper;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\ICaptchaService;
@@ -139,9 +141,18 @@ class AuthController extends BaseController
     {
         $this->handlePageRequest(function (): void {
             $token = $this->readStringQueryParam('token') ?? '';
-            $result = $this->authService->validateResetToken($token);
+            $error = null;
+            $validToken = false;
+
+            try {
+                $this->authService->validateResetToken($token);
+                $validToken = true;
+                $error = $this->sessionService->consumeFlash('reset_error');
+            } catch (AuthenticationException $e) {
+                $error = $e->getMessage();
+            }
+
             $this->sessionService->start();
-            [$error, $validToken] = $this->resolveResetTokenState($result);
             require __DIR__ . '/../Views/pages/reset-password.php';
         });
     }
@@ -154,8 +165,17 @@ class AuthController extends BaseController
     {
         $this->handlePageRequest(function (): void {
             $token = $this->readStringPostParam('token') ?? '';
-            $result = $this->authService->resetPassword($token, $_POST['password'] ?? '', $_POST['confirm_password'] ?? '');
-            $this->handleResetPasswordResult($result, $token);
+
+            try {
+                $this->authService->resetPassword($token, $_POST['password'] ?? '', $_POST['confirm_password'] ?? '');
+            } catch (AuthenticationException | ValidationException $e) {
+                $this->sessionService->setFlash('reset_error', $e->getMessage());
+                $this->redirectAndExit('/reset-password?token=' . urlencode($token));
+                return;
+            }
+
+            $this->sessionService->setFlash('login_success', 'Your password has been reset. Please log in with your new password.');
+            $this->redirectAndExit('/login');
         });
     }
 
@@ -180,25 +200,6 @@ class AuthController extends BaseController
         }
         $this->authService->register($data);
         $this->sessionService->setFlash('login_success', 'Registration successful! Please log in.');
-        $this->redirectAndExit('/login');
-    }
-
-    private function resolveResetTokenState(array $result): array
-    {
-        if (!$result['valid']) {
-            return [$result['error'], false];
-        }
-        $error = $this->sessionService->consumeFlash('reset_error');
-        return [$error, true];
-    }
-
-    private function handleResetPasswordResult(array $result, string $token): void
-    {
-        if (!$result['success']) {
-            $this->sessionService->setFlash('reset_error', $result['error']);
-            $this->redirectAndExit('/reset-password?token=' . urlencode($token));
-        }
-        $this->sessionService->setFlash('login_success', 'Your password has been reset. Please log in with your new password.');
         $this->redirectAndExit('/login');
     }
 
@@ -230,14 +231,14 @@ class AuthController extends BaseController
     {
         $login = $this->readStringPostParam('login') ?? '';
         $password = $_POST['password'] ?? '';
-        $result = $this->authService->attemptLogin($login, $password);
 
-        if (!$result['success']) {
-            $this->redirectWithError('/login', $result['error']);
+        try {
+            $user = $this->authService->attemptLogin($login, $password);
+        } catch (AuthenticationException $e) {
+            $this->redirectWithError('/login', $e->getMessage());
             return;
         }
 
-        $user = $result['user'];
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
         $this->redirectAndExit($this->authService->resolvePostLoginRedirect($user->userRoleId));
     }
