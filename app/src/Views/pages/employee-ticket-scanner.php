@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($viewModel->employeeLabel) ?> | Haarlem Festival</title>
+    <title><?= htmlspecialchars($viewModel->roleLabel) ?> | Haarlem Festival</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
     <header class="mb-8 flex flex-col gap-4 rounded-3xl bg-royal-blue px-6 py-5 text-sand shadow-lg lg:flex-row lg:items-center lg:justify-between">
         <div>
             <p class="text-sm uppercase tracking-[0.24em] text-sand/70">Employee Access</p>
-            <h1 class="mt-2 text-3xl font-bold"><?= htmlspecialchars($viewModel->employeeLabel) ?></h1>
+            <h1 class="mt-2 text-3xl font-bold"><?= htmlspecialchars($viewModel->roleLabel) ?></h1>
             <p class="mt-2 max-w-2xl text-sm text-sand/80">
                 Scan each visitor ticket once at the entrance. Already scanned or invalid tickets will be rejected immediately.
             </p>
