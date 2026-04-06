@@ -47,8 +47,7 @@ $qrPattern = [
         <section class="mt-10 grid gap-10 xl:grid-cols-2 xl:gap-12">
             <div class="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-10">
                 <aside class="w-full max-w-[22rem] shrink-0 rounded-[2.5rem] bg-white p-8 shadow-[0_2px_10px_rgba(0,0,0,0.08)] lg:p-10">
-                    <div class="grid aspect-square gap-1 rounded-[2rem] bg-white p-3 shadow-inner ring-1 ring-slate-200"
-                         style="grid-template-columns: repeat(15, minmax(0, 1fr));">
+                    <div class="grid grid-cols-qr aspect-square gap-1 rounded-[2rem] bg-white p-3 shadow-inner ring-1 ring-slate-200">
                         <?php foreach ($qrPattern as $row): ?>
                             <?php foreach (str_split($row) as $cell): ?>
                                 <span class="aspect-square rounded-[3px] <?= $cell === '1' ? 'bg-slate-950' : 'bg-white' ?>"></span>

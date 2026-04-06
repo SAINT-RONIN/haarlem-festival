@@ -24,8 +24,8 @@ $logoutCsrfToken = $isLoggedIn ? (new SessionService())->getCsrfToken('logout') 
 <!-- Hero Section with Floating Navigation -->
 <section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5"
          aria-labelledby="hero-heading">
-    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative hero-background-base"
-         style="background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), url('<?= htmlspecialchars($heroBackgroundImage) ?>');"
+    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative bg-dynamic-fade"
+         style="--bg-url: url('<?= htmlspecialchars($heroBackgroundImage) ?>')"
          role="img" aria-label="Haarlem Festival hero background">
 
         <!-- Sticky Navigation - Floating on top of hero image -->

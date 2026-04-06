@@ -165,6 +165,5 @@ $subtitleText = $isEditMode
 </div>
 
 <script src="/assets/js/cms/cms-common.js"></script>
-<script>lucide.createIcons();</script>
 </body>
 </html>

@@ -224,9 +224,9 @@ $seatsLabel = (string)($viewModel->cms['seatsLabel'] ?? 'Seats');
             <?php if ($location->mapEmbedUrl !== ''): ?>
                 <div class="w-full h-80 sm:h-96 lg:h-[450px] bg-white rounded-lg border-4 border-slate-800 overflow-hidden">
                     <iframe
-                        class="w-full h-full"
+                        class="w-full h-full map-embed-borderless"
                         src="<?= $e($location->mapEmbedUrl) ?>"
-                        style="border:0;" allowfullscreen="" loading="lazy"
+                        allowfullscreen="" loading="lazy"
                         referrerpolicy="no-referrer-when-downgrade"
                         title="<?= $e($viewModel->name) ?> location on map">
                     </iframe>

@@ -16,8 +16,8 @@ $logoutCsrfToken = $isLoggedIn ? (new SessionService())->getCsrfToken('logout') 
          aria-labelledby="history-location-heading">
     <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)]
                 rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px]
-                flex flex-col justify-between items-end relative hero-background-base"
-         style="background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), url('<?= htmlspecialchars($hero->backgroundImageUrl) ?>');"
+                flex flex-col justify-between items-end relative bg-dynamic-fade"
+         style="--bg-url: url('<?= htmlspecialchars($hero->backgroundImageUrl) ?>')"
          role="img" aria-label="<?= htmlspecialchars($hero->mainTitle) ?> hero background">
 
         <!-- Sticky Navigation - Floating on top of hero image -->

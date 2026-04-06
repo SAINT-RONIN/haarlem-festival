@@ -14,6 +14,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     initToggleButtons();
     initCreateVenueButton();
+    initFeaturedImagePreview();
     initLucide();
 });
 
@@ -112,4 +113,24 @@ async function createVenue() {
         errorEl.textContent = 'An error occurred. Please try again.';
         errorEl.classList.remove('hidden');
     }
+}
+
+/**
+ * If a featured image is already selected, fetch its path from the media API
+ * and populate the preview element.
+ */
+function initFeaturedImagePreview() {
+    var input = document.getElementById('FeaturedImageAssetId');
+    if (!input || !input.value) return;
+
+    var assetId = parseInt(input.value, 10);
+    fetch('/api/cms/media')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (!data.success || !data.assets) return;
+            var asset = data.assets.find(function (a) { return a.mediaAssetId === assetId; });
+            if (!asset) return;
+            var img = document.getElementById('featuredImagePreviewImg');
+            if (img) img.src = asset.filePath;
+        });
 }

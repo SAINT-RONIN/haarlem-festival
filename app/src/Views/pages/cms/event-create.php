@@ -169,11 +169,11 @@
                             </div>
                             <div class="flex flex-col gap-2">
                                 <input type="hidden" name="FeaturedImageAssetId" id="FeaturedImageAssetId" value="">
-                                <button type="button" onclick="openEventImagePicker()"
+                                <button type="button" data-action="openEventImagePicker"
                                         class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm">
                                     Choose from Library
                                 </button>
-                                <button type="button" id="clearImageBtn" onclick="clearEventImage()" class="hidden px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm">
+                                <button type="button" id="clearImageBtn" data-action="clearEventImage" class="hidden px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm">
                                     Remove
                                 </button>
                             </div>
@@ -280,31 +280,5 @@
 
 <script src="/assets/js/cms/cms-common.js"></script>
 <script src="/assets/js/cms/event-create.js"></script>
-<script>
-(function () {
-    var form = document.querySelector('form[data-jazz-type-id]');
-    var typeSelect = document.getElementById('EventTypeId');
-    var artistField = document.getElementById('artistField');
-    var starsField = document.getElementById('starsField');
-    var cuisineField = document.getElementById('cuisineField');
-    var restaurantDescField = document.getElementById('restaurantDescField');
-    var featuredImageField = document.getElementById('featuredImageField');
-    var JAZZ_TYPE = parseInt(form.dataset.jazzTypeId, 10);
-    var RESTAURANT_TYPE = parseInt(form.dataset.restaurantTypeId, 10);
-
-    function updateVisibility() {
-        var val = parseInt(typeSelect.value, 10);
-        var isRestaurant = val === RESTAURANT_TYPE;
-        artistField.classList.toggle('hidden', val !== JAZZ_TYPE);
-        starsField.classList.toggle('hidden', !isRestaurant);
-        cuisineField.classList.toggle('hidden', !isRestaurant);
-        restaurantDescField.classList.toggle('hidden', !isRestaurant);
-        featuredImageField.classList.toggle('hidden', !isRestaurant);
-    }
-
-    typeSelect.addEventListener('change', updateVisibility);
-    updateVisibility();
-}());
-</script>
 </body>
 </html>

@@ -236,7 +236,7 @@ $typeColors = $viewModel->typeColorMap;
                                 </a>
                                 <form method="POST" action="/cms/events/<?= $event->eventId ?>/delete"
                                       class="inline"
-                                      onsubmit="return confirm('Are you sure you want to delete this event? This will also deactivate all its sessions.');">
+                                      data-confirm="Are you sure you want to delete this event? This will also deactivate all its sessions.">
                                     <button type="submit"
                                             class="text-red-600 hover:text-red-900 inline-flex items-center">
                                         <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>

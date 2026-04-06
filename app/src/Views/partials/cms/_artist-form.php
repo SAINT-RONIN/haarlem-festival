@@ -287,18 +287,6 @@ $inputClass = static function (array $errors, string $field): string {
 </div>
 
 <script src="/assets/js/cms/cms-common.js"></script>
-<script>
-    tinymce.init({
-        selector: 'textarea[data-tinymce]',
-        height: 220,
-        menubar: false,
-        plugins: 'lists link',
-        toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
-        setup: function(editor) {
-            editor.on('change', function() { editor.save(); });
-        }
-    });
-    lucide.createIcons();
-</script>
+<script src="/assets/js/cms/artist-form.js"></script>
 </body>
 </html>

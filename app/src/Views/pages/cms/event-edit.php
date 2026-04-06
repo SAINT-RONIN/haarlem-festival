@@ -186,12 +186,12 @@
                             <div class="flex flex-col gap-2">
                                 <input type="hidden" name="FeaturedImageAssetId" id="FeaturedImageAssetId"
                                        value="<?= $viewModel->featuredImageAssetId ?? '' ?>">
-                                <button type="button" onclick="openEventImagePicker()"
+                                <button type="button" data-action="openEventImagePicker"
                                         class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm">
                                     Choose from Library
                                 </button>
                                 <?php if ($viewModel->featuredImageAssetId !== null): ?>
-                                    <button type="button" onclick="clearEventImage()"
+                                    <button type="button" data-action="clearEventImage"
                                             class="px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm">
                                         Remove
                                     </button>
@@ -361,7 +361,7 @@
                                     </p>
                                 </div>
                                 <form action="/cms/sessions/<?= $session->eventSessionId ?>/delete" method="POST"
-                                      onsubmit="return confirm('Delete this session?')">
+                                      data-confirm="Delete this session?">
                                     <input type="hidden" name="EventId" value="<?= $viewModel->eventId ?>">
                                     <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
                                         Delete
@@ -627,21 +627,5 @@
 
 <script src="/assets/js/cms/cms-common.js"></script>
 <script src="/assets/js/cms/event-edit.js"></script>
-<?php if ($viewModel->featuredImageAssetId !== null): ?>
-<script>
-(function() {
-    var assetId = <?= (int)$viewModel->featuredImageAssetId ?>;
-    fetch('/api/cms/media')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (!data.success || !data.assets) return;
-            var asset = data.assets.find(function(a) { return a.mediaAssetId === assetId; });
-            if (!asset) return;
-            var img = document.getElementById('featuredImagePreviewImg');
-            if (img) img.src = asset.filePath;
-        });
-}());
-</script>
-<?php endif; ?>
 </body>
 </html>

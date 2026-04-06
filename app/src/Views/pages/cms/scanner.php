@@ -17,10 +17,8 @@ $currentView = $currentView ?? 'scanner';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/tokens.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <style>
-        body { font-family: 'Montserrat', sans-serif; }
-    </style>
 </head>
 <body class="bg-gray-50">
 <div class="flex min-h-screen">

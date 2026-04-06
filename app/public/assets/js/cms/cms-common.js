@@ -18,6 +18,44 @@ function initLucideIcons() {
 document.addEventListener('DOMContentLoaded', initLucideIcons);
 
 /**
+ * Delegated submit handler for forms with a data-confirm attribute.
+ * Shows a confirm dialog before the form submits; cancels if the user declines.
+ * Usage: <form data-confirm="Are you sure?">
+ */
+document.addEventListener('submit', function (e) {
+    var form = e.target;
+    var message = form.dataset.confirm;
+    if (message && !confirm(message)) {
+        e.preventDefault();
+    }
+}, true);
+
+/**
+ * Delegated click handler for CMS image-picker actions.
+ * Reads data-action on the clicked element and calls the matching function.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        var action = btn.dataset.action;
+        if (action === 'openEventImagePicker') openEventImagePicker();
+        if (action === 'clearEventImage')      clearEventImage();
+        if (action === 'openMediaLibrary') {
+            var itemId = parseInt(btn.dataset.itemId, 10);
+            if (typeof openMediaLibrary === 'function') openMediaLibrary(itemId);
+        }
+    });
+
+    document.addEventListener('change', function (e) {
+        var input = e.target;
+        if (input.dataset.action !== 'uploadImage') return;
+        var itemId = parseInt(input.dataset.itemId, 10);
+        if (typeof uploadImage === 'function') uploadImage(itemId, input);
+    });
+});
+
+/**
  * Opens a media library modal for selecting an event featured image.
  * Sets the hidden FeaturedImageAssetId input and updates the preview.
  */

@@ -95,3 +95,45 @@ body {
 .map-embed-borderless {
     border: 0;
 }
+
+/* QR code grid: 15-column layout used on checkout success page */
+.grid-cols-qr {
+    grid-template-columns: repeat(15, minmax(0, 1fr));
+}
+
+/* Dynamic background image via CSS custom property --bg-url.
+   Set style="--bg-url: url('...')" on the element; the class provides gradient + positioning. */
+.bg-dynamic {
+    background-image: var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.bg-dynamic-fade-light {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.65)), var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.bg-dynamic-fade-medium {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.bg-dynamic-fade {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.bg-dynamic-fade-strong {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8)), var(--bg-url);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}

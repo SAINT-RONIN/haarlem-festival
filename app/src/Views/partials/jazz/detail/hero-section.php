@@ -8,8 +8,8 @@
 
 <section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5"
          aria-labelledby="artist-detail-hero-heading">
-    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative overflow-hidden hero-background-base"
-         style="background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.65)), url('<?= htmlspecialchars($viewModel->hero->heroBackgroundImageUrl) ?>');">
+    <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative overflow-hidden bg-dynamic-fade-light"
+         style="--bg-url: url('<?= htmlspecialchars($viewModel->hero->heroBackgroundImageUrl) ?>')">
         <?php
         $isSticky = false;
         require __DIR__ . '/../../navbar.php';

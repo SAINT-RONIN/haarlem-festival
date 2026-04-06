@@ -131,7 +131,7 @@
                                        class="text-blue-600 hover:text-blue-900">Edit</a>
                                     <form method="POST"
                                           action="/cms/artists/<?= htmlspecialchars((string) $item->artistId) ?>/delete"
-                                          onsubmit="return confirm('Are you sure you want to deactivate this artist?')">
+                                          data-confirm="Are you sure you want to deactivate this artist?">
                                         <input type="hidden" name="_csrf" value="<?= htmlspecialchars($viewModel->deleteCsrfToken) ?>">
                                         <button type="submit" class="text-red-600 hover:text-red-900">Deactivate</button>
                                     </form>
@@ -147,6 +147,5 @@
 </div>
 
 <script src="/assets/js/cms/cms-common.js"></script>
-<script>lucide.createIcons();</script>
 </body>
 </html>
