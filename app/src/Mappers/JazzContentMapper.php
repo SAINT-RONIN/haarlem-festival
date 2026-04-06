@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Content\JazzArtistDetailCmsData;
 use App\Content\JazzArtistsSectionContent;
 use App\Content\JazzBookingCtaSectionContent;
 use App\Content\JazzPricingSectionContent;
@@ -96,30 +95,6 @@ final class JazzContentMapper
     {
         return new JazzArtistsSectionContent(
             artistsHeading: $raw['artists_heading'] ?? null,
-            artistsGumboKingsName: $raw['artists_gumbokings_name'] ?? null,
-            artistsGumboKingsGenre: $raw['artists_gumbokings_genre'] ?? null,
-            artistsGumboKingsDescription: $raw['artists_gumbokings_description'] ?? null,
-            artistsGumboKingsImage: $raw['artists_gumbokings_image'] ?? null,
-            artistsGumboKingsPerformanceCount: $raw['artists_gumbokings_performance_count'] ?? null,
-            artistsGumboKingsFirstPerformance: $raw['artists_gumbokings_first_performance'] ?? null,
-            artistsGumboKingsMorePerformancesText: $raw['artists_gumbokings_more_performances_text'] ?? null,
-            artistsGumboKingsProfileUrl: $raw['artists_gumbokings_profile_url'] ?? null,
-            artistsEvolveName: $raw['artists_evolve_name'] ?? null,
-            artistsEvolveGenre: $raw['artists_evolve_genre'] ?? null,
-            artistsEvolveDescription: $raw['artists_evolve_description'] ?? null,
-            artistsEvolveImage: $raw['artists_evolve_image'] ?? null,
-            artistsEvolvePerformanceCount: $raw['artists_evolve_performance_count'] ?? null,
-            artistsEvolveFirstPerformance: $raw['artists_evolve_first_performance'] ?? null,
-            artistsEvolveMorePerformancesText: $raw['artists_evolve_more_performances_text'] ?? null,
-            artistsEvolveProfileUrl: $raw['artists_evolve_profile_url'] ?? null,
-            artistsNtjamName: $raw['artists_ntjam_name'] ?? null,
-            artistsNtjamGenre: $raw['artists_ntjam_genre'] ?? null,
-            artistsNtjamDescription: $raw['artists_ntjam_description'] ?? null,
-            artistsNtjamImage: $raw['artists_ntjam_image'] ?? null,
-            artistsNtjamPerformanceCount: $raw['artists_ntjam_performance_count'] ?? null,
-            artistsNtjamFirstPerformance: $raw['artists_ntjam_first_performance'] ?? null,
-            artistsNtjamMorePerformancesText: $raw['artists_ntjam_more_performances_text'] ?? null,
-            artistsNtjamProfileUrl: $raw['artists_ntjam_profile_url'] ?? null,
         );
     }
 
@@ -129,45 +104,18 @@ final class JazzContentMapper
         return new JazzBookingCtaSectionContent(
             bookingCtaHeading: $raw['booking_cta_heading'] ?? null,
             bookingCtaDescription: $raw['booking_cta_description'] ?? null,
-        );
-    }
-
-    /** Maps raw CMS data to a JazzArtistDetailCmsData model. */
-    public static function mapArtistDetail(array $raw): JazzArtistDetailCmsData
-    {
-        return new JazzArtistDetailCmsData(
-            heroSubtitle: $raw['hero_subtitle'] ?? null,
-            heroBackgroundImage: $raw['hero_background_image'] ?? null,
-            originText: $raw['origin_text'] ?? null,
-            formedText: $raw['formed_text'] ?? null,
-            performancesText: $raw['performances_text'] ?? null,
-            heroBackButtonText: $raw['hero_back_button_text'] ?? null,
-            heroBackButtonUrl: $raw['hero_back_button_url'] ?? null,
-            heroReserveButtonText: $raw['hero_reserve_button_text'] ?? null,
-            overviewHeading: $raw['overview_heading'] ?? null,
-            overviewLead: $raw['overview_lead'] ?? null,
-            overviewBodyPrimary: $raw['overview_body_primary'] ?? null,
-            overviewBodySecondary: $raw['overview_body_secondary'] ?? null,
-            lineupHeading: $raw['lineup_heading'] ?? null,
-            highlightsHeading: $raw['highlights_heading'] ?? null,
-            photoGalleryHeading: $raw['photo_gallery_heading'] ?? null,
-            photoGalleryDescription: $raw['photo_gallery_description'] ?? null,
-            albumsHeading: $raw['albums_heading'] ?? null,
-            albumsDescription: $raw['albums_description'] ?? null,
-            listenHeading: $raw['listen_heading'] ?? null,
-            listenSubheading: $raw['listen_subheading'] ?? null,
-            listenDescription: $raw['listen_description'] ?? null,
-            listenPlayButtonLabel: $raw['listen_play_button_label'] ?? null,
-            listenPlayExcerptText: $raw['listen_play_excerpt_text'] ?? null,
-            listenTrackArtworkAltSuffix: $raw['listen_track_artwork_alt_suffix'] ?? null,
-            liveCtaHeading: $raw['live_cta_heading'] ?? null,
-            liveCtaDescription: $raw['live_cta_description'] ?? null,
-            liveCtaBookButtonText: $raw['live_cta_book_button_text'] ?? null,
-            liveCtaScheduleButtonText: $raw['live_cta_schedule_button_text'] ?? null,
-            liveCtaScheduleButtonUrl: $raw['live_cta_schedule_button_url'] ?? null,
-            performancesSectionId: $raw['performances_section_id'] ?? null,
-            performancesHeading: $raw['performances_heading'] ?? null,
-            performancesDescription: $raw['performances_description'] ?? null,
+            bookingContactEyebrow: $raw['booking_contact_eyebrow'] ?? null,
+            bookingContactTitle: $raw['booking_contact_title'] ?? null,
+            bookingContactDescription: $raw['booking_contact_description'] ?? null,
+            bookingContactPhoneOffice: $raw['booking_contact_phone_office'] ?? null,
+            bookingContactPhoneCashDesk: $raw['booking_contact_phone_cash_desk'] ?? null,
+            bookingContactHours: $raw['booking_contact_hours'] ?? null,
+            bookingVenueEyebrow: $raw['booking_venue_eyebrow'] ?? null,
+            bookingVenueTitle: $raw['booking_venue_title'] ?? null,
+            bookingVenueDescription: $raw['booking_venue_description'] ?? null,
+            bookingTicketsEyebrow: $raw['booking_tickets_eyebrow'] ?? null,
+            bookingTicketsTitle: $raw['booking_tickets_title'] ?? null,
+            bookingTicketsDescription: $raw['booking_tickets_description'] ?? null,
         );
     }
 }

@@ -7,14 +7,14 @@ namespace App\Repositories\Interfaces;
 use App\Models\ArtistTrack;
 
 /**
- * Defines persistence operations for artist tracks linked to events.
+ * Defines persistence operations for artist tracks linked to artists.
  */
 interface IArtistTrackRepository
 {
     /**
-     * Returns all tracks for an event, ordered by SortOrder.
+     * Returns all tracks for an artist, ordered by SortOrder.
      *
      * @return ArtistTrack[]
      */
-    public function findByEventId(int $eventId): array;
+    public function findByArtistId(int $artistId): array;
 }

@@ -13,7 +13,7 @@ final readonly class ArtistHighlight
 {
     public function __construct(
         public int    $artistHighlightId,
-        public int    $eventId,
+        public int    $artistId,
         public string $highlightText,
         public int    $sortOrder,
     ) {}
@@ -22,7 +22,7 @@ final readonly class ArtistHighlight
     {
         return new self(
             artistHighlightId: (int)$row['ArtistHighlightId'],
-            eventId:           (int)$row['EventId'],
+            artistId:          (int)$row['ArtistId'],
             highlightText:     (string)$row['HighlightText'],
             sortOrder:         (int)$row['SortOrder'],
         );

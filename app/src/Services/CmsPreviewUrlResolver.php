@@ -11,7 +11,7 @@ use App\Services\Interfaces\ICmsPreviewUrlResolver;
 /**
  * Builds route-aware preview URLs for CMS page edit screens.
  *
- * For detail pages (storytelling-detail, jazz-artist-detail, restaurant-detail)
+ * For detail pages (storytelling-detail, restaurant-detail)
  * it extracts the first event name/ID from the sections to build a slug-based URL.
  * For all other pages it returns /{pageSlug} (or "/" for "home").
  */
@@ -38,11 +38,6 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
         if ($slug === 'storytelling-detail') {
             $eventName = $this->extractFirstEventDisplayName($sections);
             return $eventName !== null ? '/storytelling/' . $this->toSlug($eventName) : '/storytelling';
-        }
-
-        if ($slug === 'jazz-artist-detail') {
-            $eventName = $this->extractFirstEventDisplayName($sections);
-            return $eventName !== null ? '/jazz/' . $this->toSlug($eventName) : '/jazz';
         }
 
         if ($slug === 'restaurant-detail') {

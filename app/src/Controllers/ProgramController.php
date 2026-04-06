@@ -108,7 +108,7 @@ class ProgramController extends BaseController
         });
     }
 
-    /** Reads JSON body, casts quantity fields, updates the item quantity, and responds with recalculated totals. */
+    /** Reads JSON body, updates one program item's quantity, and responds with recalculated totals. */
     private function processUpdateQuantity(): void
     {
         $body = $this->readJsonBody();
@@ -116,9 +116,8 @@ class ProgramController extends BaseController
 
         $programItemId = (int)($body['programItemId'] ?? 0);
         $quantity = (int)($body['quantity'] ?? 0);
-        $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 0);
 
-        $this->programService->updateQuantity($context->sessionKey, $context->userId, $programItemId, $quantity, $groupTicketQuantity);
+        $this->programService->updateQuantity($context->sessionKey, $context->userId, $programItemId, $quantity);
 
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }
@@ -198,7 +197,7 @@ class ProgramController extends BaseController
             'subtotal' => $totals['subtotal'],
             'taxAmount' => $totals['taxAmount'],
             'total' => $totals['total'],
-            'canCheckout' => $programData->items !== [],
+            'canCheckout' => $programData->canCheckout,
         ]);
     }
 
@@ -214,7 +213,7 @@ class ProgramController extends BaseController
             $this->json([
                 'success' => true,
                 'tours' => $tours,
-            ]);});
-
+            ]);
+        });
     }
 }

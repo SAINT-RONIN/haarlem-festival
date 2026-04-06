@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
+/**
+ * ViewModel for the event section heading shown on the home page.
+ */
 final readonly class HomeEventsHeaderViewModel
 {
     public function __construct(

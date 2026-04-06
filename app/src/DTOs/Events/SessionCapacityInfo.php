@@ -18,14 +18,6 @@ final readonly class SessionCapacityInfo
     ) {}
 
     /**
-     * Returns the total number of remaining seats (capacity minus all sold tickets).
-     */
-    public function getAvailableSeats(): int
-    {
-        return max(0, $this->capacityTotal - $this->soldSingleTickets - $this->soldReservedSeats);
-    }
-
-    /**
      * Creates an instance from a database row.
      */
     public static function fromRow(array $row): self

@@ -233,18 +233,77 @@ function showCounterWidget(originalBtn) {
             }
         }
 
-        // Hide group counter if seatsAvailable < 4
-        if (groupRow && infoForSession.seatsAvailable < 4) {
+        var hasGroupPricing = prices.length > 1;
+        var seatsAvailable = infoForSession.seatsAvailable;
+
+        // Hide group counter if there is no second price tier or there are fewer than 4 seats available.
+        if (groupRow && (!hasGroupPricing || (seatsAvailable !== null && seatsAvailable < 4))) {
             groupRow.style.display = 'none';
         } else if (groupRow) {
             groupRow.style.display = '';
         }
     }
 
+    function populateHistoryTourOptions(data) {
+        if (!data || !data.success || !data.tours) {
+            return false;
+        }
+
+        tourInfo = data.tours;
+        languageSelect.innerHTML = '';
+
+        var firstSessionId = null;
+        Object.keys(tourInfo).forEach(function (sessionKey) {
+            var info = tourInfo[sessionKey];
+            if (!info || !info.language) return;
+            var option = document.createElement('option');
+            option.value = sessionKey;
+            option.textContent = info.language;
+            languageSelect.appendChild(option);
+            if (firstSessionId === null) {
+                firstSessionId = sessionKey;
+            }
+        });
+
+        if (!languageSelect.hasAttribute('data-history-change-bound')) {
+            languageSelect.addEventListener('change', function () {
+                var selectedId = languageSelect.value;
+                selectedSessionId = parseInt(selectedId, 10) || sessionId;
+                applySessionPricing(tourInfo[selectedId]);
+            });
+            languageSelect.setAttribute('data-history-change-bound', '1');
+        }
+
+        if (firstSessionId !== null) {
+            languageSelect.value = firstSessionId;
+            selectedSessionId = parseInt(firstSessionId, 10) || sessionId;
+            applySessionPricing(tourInfo[firstSessionId]);
+            return true;
+        }
+
+        return false;
+    }
+
     // If this is a history event, fetch tour info to populate dropdown and prices
     if (isHistoryEvent && languageSelect) {
+        var preloadedTourInfoRaw = originalBtn.getAttribute('data-history-tour-info');
         var eventId = originalBtn.getAttribute('data-event-id');
         var dateTime = originalBtn.getAttribute('data-datetime');
+
+        if (preloadedTourInfoRaw) {
+            try {
+                if (populateHistoryTourOptions({
+                    success: true,
+                    tours: JSON.parse(preloadedTourInfoRaw)
+                })) {
+                    // History tour info was preloaded in the card HTML, so no extra request is needed.
+                    eventId = null;
+                    dateTime = null;
+                }
+            } catch (err) {
+                console.error('Failed to parse preloaded tour info:', err);
+            }
+        }
 
         if (eventId && dateTime) {
             fetch('/api/program/get-tour-info', {
@@ -257,38 +316,7 @@ function showCounterWidget(originalBtn) {
             })
                 .then(function (response) { return response.json(); })
                 .then(function (data) {
-                    if (!data || !data.success || !data.tours) {
-                        return;
-                    }
-
-                    tourInfo = data.tours;
-
-                    // Build options from tourInfo (map of sessionId -> info)
-                    var firstSessionId = null;
-                    Object.keys(tourInfo).forEach(function (sessionKey) {
-                        var info = tourInfo[sessionKey];
-                        if (!info) return;
-                        var option = document.createElement('option');
-                        option.value = sessionKey;
-                        option.textContent = info.language || sessionKey;
-                        languageSelect.appendChild(option);
-                        if (firstSessionId === null) {
-                            firstSessionId = sessionKey;
-                        }
-                    });
-
-                    // When language changes, update prices and group-row visibility
-                    languageSelect.addEventListener('change', function () {
-                        var selectedId = languageSelect.value;
-                        selectedSessionId = parseInt(selectedId, 10) || sessionId;
-                        applySessionPricing(tourInfo[selectedId]);
-                    });
-
-                    if (firstSessionId !== null) {
-                        languageSelect.value = firstSessionId;
-                        selectedSessionId = parseInt(firstSessionId, 10) || sessionId;
-                        applySessionPricing(tourInfo[firstSessionId]);
-                    }
+                    populateHistoryTourOptions(data);
                 })
                 .catch(function (err) {
                     console.error('Failed to load tour info:', err);
@@ -368,16 +396,23 @@ function showCounterWidget(originalBtn) {
                 donationAmount: 0
             })
         })
-            .then(function (response) { return response.json(); })
-            .then(function (data) {
-                if (data.success) {
-                    showToast(successText);
-                }
+            .then(function (response) {
+                return response.json().then(function (data) {
+                    if (!response.ok || !data.success) {
+                        throw new Error((data && data.error) || 'Failed to add to program.');
+                    }
+                    return data;
+                });
+            })
+            .then(function () {
+                showToast(successText);
                 cleanupWidget();
             })
             .catch(function (err) {
                 console.error('Failed to add to program:', err);
-                cleanupWidget();
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = confirmText;
+                showToast(err.message || 'Failed to add to program.', true);
             });
     });
 }
@@ -474,25 +509,31 @@ function showPassCounterWidget(originalBtn) {
                 quantity: quantity
             })
         })
-            .then(function (response) { return response.json(); })
-            .then(function (data) {
-                if (data.success) {
-                    showToast(successText);
-                }
+            .then(function (response) {
+                return response.json().then(function (data) {
+                    if (!response.ok || !data.success) {
+                        throw new Error((data && data.error) || 'Failed to add pass to program.');
+                    }
+                    return data;
+                });
+            })
+            .then(function () {
+                showToast(successText);
                 widget.remove();
                 originalBtn.style.display = '';
             })
             .catch(function (err) {
                 console.error('Failed to add pass to program:', err);
-                widget.remove();
-                originalBtn.style.display = '';
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = confirmText;
+                showToast(err.message || 'Failed to add pass to program.', true);
             });
     });
 }
 
-function showToast(message) {
+function showToast(message, isError) {
     var toast = document.createElement('div');
-    toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white rounded-xl px-6 py-3 text-sm font-semibold shadow-lg transition-all duration-300';
+    toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-50 text-white rounded-xl px-6 py-3 text-sm font-semibold shadow-lg transition-all duration-300 ' + (isError ? 'bg-red-600' : 'bg-green-600');
     toast.style.transform = 'translateX(-50%) translateY(-100%)';
     toast.style.opacity = '0';
     toast.textContent = message;

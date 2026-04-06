@@ -6,47 +6,8 @@
  * @var \App\ViewModels\Cms\CmsOrderDetailViewModel $viewModel
  */
 
+use App\Helpers\CmsOrderViewHelper;
 use App\Helpers\FormatHelper;
-
-/**
- * Formats a UTC date string for CMS display.
- */
-function formatDetailDate(string $dateString): string
-{
-    if ($dateString === '') {
-        return '';
-    }
-    return (new DateTimeImmutable($dateString))->format(FormatHelper::CMS_DATE_FORMAT);
-}
-
-/**
- * Resolves order status to Tailwind badge color classes.
- */
-function resolveOrderBadgeClass(string $status): string
-{
-    return match ($status) {
-        'Paid'      => 'bg-green-100 text-green-800',
-        'Pending'   => 'bg-yellow-100 text-yellow-800',
-        'Cancelled' => 'bg-red-100 text-red-800',
-        'Expired'   => 'bg-gray-100 text-gray-800',
-        'Refunded'  => 'bg-purple-100 text-purple-800',
-        default     => 'bg-gray-100 text-gray-800',
-    };
-}
-
-/**
- * Resolves payment status to Tailwind badge color classes.
- */
-function resolvePaymentBadgeClass(string $status): string
-{
-    return match ($status) {
-        'Paid'      => 'bg-green-100 text-green-800',
-        'Pending'   => 'bg-yellow-100 text-yellow-800',
-        'Failed'    => 'bg-red-100 text-red-800',
-        'Cancelled' => 'bg-red-100 text-red-800',
-        default     => 'bg-gray-100 text-gray-800',
-    };
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -55,7 +16,7 @@ function resolvePaymentBadgeClass(string $status): string
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order <?= htmlspecialchars($viewModel->order->orderNumber) ?> - Haarlem CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -85,13 +46,13 @@ function resolvePaymentBadgeClass(string $status): string
                     <p class="text-sm text-gray-900"><span class="font-medium">Number:</span> <?= htmlspecialchars($viewModel->order->orderNumber) ?></p>
                     <p class="text-sm text-gray-900 mt-1">
                         <span class="font-medium">Status:</span>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= htmlspecialchars(resolveOrderBadgeClass($viewModel->order->status)) ?>">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= htmlspecialchars(CmsOrderViewHelper::resolveOrderBadgeClass($viewModel->order->status)) ?>">
                             <?= htmlspecialchars($viewModel->order->status) ?>
                         </span>
                     </p>
-                    <p class="text-sm text-gray-900 mt-1"><span class="font-medium">Created:</span> <?= htmlspecialchars(formatDetailDate($viewModel->order->createdAtUtc)) ?></p>
+                    <p class="text-sm text-gray-900 mt-1"><span class="font-medium">Created:</span> <?= htmlspecialchars(CmsOrderViewHelper::formatUtcDate($viewModel->order->createdAtUtc)) ?></p>
                     <?php if ($viewModel->order->payBeforeUtc !== ''): ?>
-                        <p class="text-sm text-gray-900 mt-1"><span class="font-medium">Pay Before:</span> <?= htmlspecialchars(formatDetailDate($viewModel->order->payBeforeUtc)) ?></p>
+                        <p class="text-sm text-gray-900 mt-1"><span class="font-medium">Pay Before:</span> <?= htmlspecialchars(CmsOrderViewHelper::formatUtcDate($viewModel->order->payBeforeUtc)) ?></p>
                     <?php endif; ?>
                 </div>
                 <div>
@@ -101,7 +62,7 @@ function resolvePaymentBadgeClass(string $status): string
                     </p>
                     <p class="text-sm text-gray-500 mt-1"><?= htmlspecialchars($viewModel->order->ticketRecipientEmail ?: $viewModel->order->userEmail ?: 'N/A') ?></p>
                     <?php if ($viewModel->order->ticketEmailSentAtUtc !== null): ?>
-                        <p class="text-sm text-green-600 mt-1">Ticket email sent: <?= htmlspecialchars(formatDetailDate($viewModel->order->ticketEmailSentAtUtc)) ?></p>
+                        <p class="text-sm text-green-600 mt-1">Ticket email sent: <?= htmlspecialchars(CmsOrderViewHelper::formatUtcDate($viewModel->order->ticketEmailSentAtUtc)) ?></p>
                     <?php endif; ?>
                 </div>
                 <div>
@@ -146,7 +107,7 @@ function resolvePaymentBadgeClass(string $status): string
                                 <?= htmlspecialchars($item->venueName ?? 'N/A') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= $item->sessionDateTime !== null ? htmlspecialchars(formatDetailDate($item->sessionDateTime)) : 'N/A' ?>
+                                <?= $item->sessionDateTime !== null ? htmlspecialchars(CmsOrderViewHelper::formatUtcDate($item->sessionDateTime)) : 'N/A' ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <?= $item->quantity ?>
@@ -197,7 +158,7 @@ function resolvePaymentBadgeClass(string $status): string
                                 <?= htmlspecialchars($payment->method ?: 'N/A') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= htmlspecialchars(resolvePaymentBadgeClass($payment->status)) ?>">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= htmlspecialchars(CmsOrderViewHelper::resolvePaymentBadgeClass($payment->status)) ?>">
                                     <?= htmlspecialchars($payment->status) ?>
                                 </span>
                             </td>
@@ -205,10 +166,10 @@ function resolvePaymentBadgeClass(string $status): string
                                 <?= htmlspecialchars($payment->providerRef ?: 'N/A') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= htmlspecialchars(formatDetailDate($payment->createdAtUtc)) ?>
+                                <?= htmlspecialchars(CmsOrderViewHelper::formatUtcDate($payment->createdAtUtc)) ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= $payment->paidAtUtc !== null ? htmlspecialchars(formatDetailDate($payment->paidAtUtc)) : 'N/A' ?>
+                                <?= $payment->paidAtUtc !== null ? htmlspecialchars(CmsOrderViewHelper::formatUtcDate($payment->paidAtUtc)) : 'N/A' ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -298,7 +259,7 @@ function resolvePaymentBadgeClass(string $status): string
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= $ticket->scannedAtUtc !== null ? htmlspecialchars(formatDetailDate($ticket->scannedAtUtc)) : 'N/A' ?>
+                                <?= $ticket->scannedAtUtc !== null ? htmlspecialchars(CmsOrderViewHelper::formatUtcDate($ticket->scannedAtUtc)) : 'N/A' ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <?= $ticket->scannedByUserName !== null ? htmlspecialchars($ticket->scannedByUserName) : 'N/A' ?>

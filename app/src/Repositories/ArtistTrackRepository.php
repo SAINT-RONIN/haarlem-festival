@@ -16,15 +16,15 @@ use App\Repositories\Interfaces\IArtistTrackRepository;
 class ArtistTrackRepository extends BaseRepository implements IArtistTrackRepository
 {
     /**
-     * Returns all tracks for an event, ordered by SortOrder.
+     * Returns all tracks for an artist, ordered by SortOrder.
      *
      * @return ArtistTrack[]
      */
-    public function findByEventId(int $eventId): array
+    public function findByArtistId(int $artistId): array
     {
         return $this->fetchAll(
-            'SELECT * FROM ArtistTrack WHERE EventId = :eventId ORDER BY SortOrder ASC',
-            ['eventId' => $eventId],
+            'SELECT * FROM ArtistTrack WHERE ArtistId = :artistId ORDER BY SortOrder ASC',
+            ['artistId' => $artistId],
             fn(array $row) => ArtistTrack::fromRow($row),
         );
     }

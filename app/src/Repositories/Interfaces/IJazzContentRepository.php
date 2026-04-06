@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Content\JazzArtistDetailCmsData;
 use App\Content\JazzArtistsSectionContent;
 use App\Content\JazzBookingCtaSectionContent;
 use App\Content\JazzPricingSectionContent;
@@ -30,7 +29,4 @@ interface IJazzContentRepository
 
     /** Fetches the jazz booking CTA section content. */
     public function findBookingCtaContent(string $pageSlug, string $sectionKey): JazzBookingCtaSectionContent;
-
-    /** Fetches the artist detail CMS data for a specific event section. */
-    public function findArtistDetailCmsData(string $pageSlug, string $sectionKey): JazzArtistDetailCmsData;
 }

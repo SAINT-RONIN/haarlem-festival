@@ -13,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Event - Haarlem CMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
 <div class="flex min-h-screen">
@@ -37,6 +37,7 @@
         <form action="/cms/events" method="POST" class="max-w-2xl"
               data-jazz-type-id="<?= \App\Enums\EventTypeId::Jazz->value ?>"
               data-restaurant-type-id="<?= \App\Enums\EventTypeId::Restaurant->value ?>">
+            <input type="hidden" name="IsActive" value="1">
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900">Event Details</h2>
@@ -159,6 +160,26 @@
                         </div>
                     </div>
 
+                    <!-- Featured Image (shown for Restaurant events only) -->
+                    <div id="featuredImageField" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+                        <div class="flex items-start gap-4">
+                            <div id="featuredImagePreview" class="w-32 h-24 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                <span id="noImageText" class="text-gray-400 text-xs text-center px-2">No image</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <input type="hidden" name="FeaturedImageAssetId" id="FeaturedImageAssetId" value="">
+                                <button type="button" onclick="openEventImagePicker()"
+                                        class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm">
+                                    Choose from Library
+                                </button>
+                                <button type="button" id="clearImageBtn" onclick="clearEventImage()" class="hidden px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Artist (shown for Jazz events only) -->
                     <div id="artistField" class="hidden">
                         <label for="ArtistId" class="block text-sm font-medium text-gray-700 mb-1">
@@ -183,29 +204,40 @@
                         </p>
                     </div>
 
-                    <!-- Restaurant (shown for Restaurant events only) -->
-                    <div id="restaurantField" class="hidden">
-                        <label for="RestaurantId" class="block text-sm font-medium text-gray-700 mb-1">
-                            Restaurant
+                    <!-- Stars (shown for Restaurant events only) -->
+                    <div id="starsField" class="hidden">
+                        <label for="RestaurantStars" class="block text-sm font-medium text-gray-700 mb-1">
+                            <span class="text-amber-500">★</span> Restaurant Stars (1-5)
                         </label>
-                        <select name="RestaurantId" id="RestaurantId"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
-                            <option value="">No restaurant selected</option>
-                            <?php foreach ($viewModel->restaurants as $restaurant): ?>
-                                <?php /** @var \App\Models\Restaurant $restaurant */ ?>
-                                <option value="<?= $restaurant->restaurantId ?>">
-                                    <?= htmlspecialchars($restaurant->name) ?>
-                                    <?php if ($restaurant->city !== ''): ?>
-                                        — <?= htmlspecialchars($restaurant->city) ?>
-                                    <?php endif; ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <p class="mt-1 text-xs text-gray-500">
-                            Select the restaurant for this Restaurant event.
-                            <a href="/cms/restaurants/create" class="text-blue-600 hover:underline" target="_blank">Create a new restaurant</a>
-                        </p>
+                        <input type="number" name="RestaurantStars" id="RestaurantStars"
+                               min="1" max="5"
+                               class="block w-full rounded-md border-amber-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-amber-50"
+                               placeholder="1-5">
+                        <p class="mt-1 text-xs text-amber-600">Star rating shown on restaurant cards</p>
                     </div>
+
+                    <!-- Cuisine (shown for Restaurant events only) -->
+                    <div id="cuisineField" class="hidden">
+                        <label for="RestaurantCuisine" class="block text-sm font-medium text-gray-700 mb-1">
+                            Cuisine
+                        </label>
+                        <input type="text" name="RestaurantCuisine" id="RestaurantCuisine"
+                               class="block w-full rounded-md border-amber-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-amber-50"
+                               placeholder="e.g., Dutch, fish and seafood, European">
+                        <p class="mt-1 text-xs text-amber-600">Comma-separated cuisine types</p>
+                    </div>
+
+                    <!-- Short Description (shown for Restaurant events only) -->
+                    <div id="restaurantDescField" class="hidden">
+                        <label for="RestaurantShortDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                            Short Description
+                        </label>
+                        <input type="text" name="RestaurantShortDescription" id="RestaurantShortDescription"
+                               class="block w-full rounded-md border-amber-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-amber-50"
+                               placeholder="e.g., 3-star restaurant experience during Haarlem Festival">
+                        <p class="mt-1 text-xs text-amber-600">Brief description shown on restaurant cards</p>
+                    </div>
+
                 </div>
 
                 <!-- Form Actions -->
@@ -253,14 +285,21 @@
     var form = document.querySelector('form[data-jazz-type-id]');
     var typeSelect = document.getElementById('EventTypeId');
     var artistField = document.getElementById('artistField');
-    var restaurantField = document.getElementById('restaurantField');
+    var starsField = document.getElementById('starsField');
+    var cuisineField = document.getElementById('cuisineField');
+    var restaurantDescField = document.getElementById('restaurantDescField');
+    var featuredImageField = document.getElementById('featuredImageField');
     var JAZZ_TYPE = parseInt(form.dataset.jazzTypeId, 10);
     var RESTAURANT_TYPE = parseInt(form.dataset.restaurantTypeId, 10);
 
     function updateVisibility() {
         var val = parseInt(typeSelect.value, 10);
+        var isRestaurant = val === RESTAURANT_TYPE;
         artistField.classList.toggle('hidden', val !== JAZZ_TYPE);
-        restaurantField.classList.toggle('hidden', val !== RESTAURANT_TYPE);
+        starsField.classList.toggle('hidden', !isRestaurant);
+        cuisineField.classList.toggle('hidden', !isRestaurant);
+        restaurantDescField.classList.toggle('hidden', !isRestaurant);
+        featuredImageField.classList.toggle('hidden', !isRestaurant);
     }
 
     typeSelect.addEventListener('change', updateVisibility);
@@ -269,4 +308,3 @@
 </script>
 </body>
 </html>
-

@@ -9,7 +9,9 @@ use App\Models\Event;
 use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
+use App\DTOs\Events\JazzArtistCardRecord;
 use App\DTOs\Events\JazzArtistDetailEvent;
+use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Events\StorytellingDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
@@ -144,8 +146,9 @@ class EventRepository extends BaseRepository implements IEventRepository
     private function queryActiveEventBySlug(string $slug, EventTypeId $eventType): ?array
     {
         $stmt = $this->execute(
-            'SELECT *
+            'SELECT e.*, featured_image.FilePath AS FeaturedImageUrl
             FROM Event e
+            LEFT JOIN MediaAsset featured_image ON featured_image.MediaAssetId = e.FeaturedImageAssetId
             WHERE e.EventTypeId = :eventTypeId
               AND e.IsActive = 1
               AND e.Slug = :slug
@@ -169,6 +172,14 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
+     * @return JazzArtistCardRecord[]
+     */
+    public function findJazzOverviewArtists(): array
+    {
+        return $this->fetchJazzArtistCards(true);
+    }
+
+    /**
      * Finds an active Storytelling event by its URL slug for the detail page.
      *
      * @return StorytellingDetailEvent|null Null when no active Storytelling event matches the slug.
@@ -177,6 +188,84 @@ class EventRepository extends BaseRepository implements IEventRepository
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
         return $row !== null ? StorytellingDetailEvent::fromRow($row) : null;
+    }
+
+    /**
+     * @return JazzArtistCardRecord[]
+     */
+    private function fetchJazzArtistCards(bool $featuredOnly): array
+    {
+        $sql = '
+            SELECT
+                a.ArtistId,
+                COALESCE(MIN(e.EventId), 0) AS EventId,
+                COALESCE(
+                    SUBSTRING_INDEX(
+                        GROUP_CONCAT(
+                            DISTINCT NULLIF(e.Slug, \'\')
+                            ORDER BY e.EventId ASC
+                            SEPARATOR \'||\'
+                        ),
+                        \'||\',
+                        1
+                    ),
+                    \'\'
+                ) AS Slug,
+                COALESCE(NULLIF(a.Name, \'\'), \'\') AS ArtistName,
+                COALESCE(NULLIF(a.Style, \'\'), \'Jazz\') AS ArtistStyle,
+                COALESCE(NULLIF(a.CardDescription, \'\'), \'\') AS CardDescription,
+                COALESCE(card_image.FilePath, \'\') AS ImageUrl,
+                a.CardSortOrder,
+                COUNT(DISTINCT es.EventSessionId) AS PerformanceCount,
+                MIN(es.StartDateTime) AS FirstPerformanceAt,
+                COALESCE(TRIM(SUBSTRING_INDEX(
+                    GROUP_CONCAT(
+                        TRIM(CONCAT_WS(\' \', COALESCE(sv.Name, v.Name, \'\'), COALESCE(NULLIF(es.HallName, \'\'), \'\')))
+                        ORDER BY es.StartDateTime ASC
+                        SEPARATOR \'||\'
+                    ),
+                    \'||\',
+                    1
+                )), \'\') AS FirstPerformanceLocation
+            FROM Artist a
+            LEFT JOIN MediaAsset card_image ON card_image.MediaAssetId = a.ImageAssetId
+            LEFT JOIN Event e
+                ON e.ArtistId = a.ArtistId
+               AND e.EventTypeId = :eventTypeId
+               AND e.IsActive = 1
+            LEFT JOIN EventSession es
+                ON es.EventId = e.EventId
+               AND es.IsActive = 1
+               AND es.IsCancelled = 0
+            LEFT JOIN Venue sv ON sv.VenueId = es.VenueId
+            LEFT JOIN Venue v ON v.VenueId = e.VenueId
+            WHERE a.IsActive = 1
+        ';
+
+        $params = ['eventTypeId' => EventTypeId::Jazz->value];
+        if ($featuredOnly) {
+            $sql .= ' AND a.ShowOnJazzOverview = 1';
+        }
+
+        $sql .= '
+            GROUP BY
+                a.ArtistId,
+                a.Name,
+                a.Style,
+                a.CardDescription,
+                card_image.FilePath,
+                a.CardSortOrder
+            ORDER BY
+                CASE WHEN a.CardSortOrder = 0 THEN 1 ELSE 0 END,
+                a.CardSortOrder ASC,
+                ArtistName ASC
+        ';
+
+        return $this->fetchAll(
+            $sql,
+            $params,
+            fn(array $row) => JazzArtistCardRecord::fromRow($row),
+        );
     }
 
     /**
@@ -192,8 +281,8 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
-     * Inserts a new event. Nullable foreign keys (VenueId, ArtistId, RestaurantId)
-     * allow events that aren't tied to a specific venue, artist, or restaurant.
+     * Inserts a new event. Nullable foreign keys (VenueId, ArtistId) allow events
+     * that aren't tied to a specific venue or artist.
      *
      * @return int The auto-incremented EventId of the new row.
      */
@@ -201,21 +290,21 @@ class EventRepository extends BaseRepository implements IEventRepository
     {
         return $this->executeInsert(
             'INSERT INTO Event (
-                EventTypeId, Title, ShortDescription, LongDescriptionHtml,
-                FeaturedImageAssetId, VenueId, ArtistId, RestaurantId, IsActive
+                EventTypeId, Title, Slug, ShortDescription, LongDescriptionHtml,
+                FeaturedImageAssetId, VenueId, ArtistId, IsActive
             ) VALUES (
-                :eventTypeId, :title, :shortDescription, :longDescriptionHtml,
-                :featuredImageAssetId, :venueId, :artistId, :restaurantId, :isActive
+                :eventTypeId, :title, :slug, :shortDescription, :longDescriptionHtml,
+                :featuredImageAssetId, :venueId, :artistId, :isActive
             )',
             [
                 'eventTypeId' => $data->eventTypeId,
                 'title' => $data->title,
+                'slug' => $data->slug,
                 'shortDescription' => $data->shortDescription,
                 'longDescriptionHtml' => $data->longDescriptionHtml,
                 'featuredImageAssetId' => $data->featuredImageAssetId,
                 'venueId' => $data->venueId,
                 'artistId' => $data->artistId,
-                'restaurantId' => $data->restaurantId,
                 'isActive' => $data->isActive ? 1 : 0,
             ],
         );
@@ -232,7 +321,7 @@ class EventRepository extends BaseRepository implements IEventRepository
                 LongDescriptionHtml = :longDescriptionHtml,
                 FeaturedImageAssetId = :featuredImageAssetId,
                 VenueId = :venueId, ArtistId = :artistId,
-                RestaurantId = :restaurantId, IsActive = :isActive
+                IsActive = :isActive
             WHERE EventId = :eventId',
             [
                 'eventId' => $eventId,
@@ -242,12 +331,32 @@ class EventRepository extends BaseRepository implements IEventRepository
                 'featuredImageAssetId' => $data->featuredImageAssetId,
                 'venueId' => $data->venueId,
                 'artistId' => $data->artistId,
-                'restaurantId' => $data->restaurantId,
                 'isActive' => $data->isActive ? 1 : 0,
             ],
         );
 
         return true;
+    }
+
+    /**
+     * Checks whether any event row uses the given slug (case-sensitive).
+     * Pass $excludeEventId to skip one row — used when updating an event's own slug.
+     */
+    public function slugExists(string $slug, ?int $excludeEventId = null): bool
+    {
+        if ($excludeEventId !== null) {
+            $stmt = $this->execute(
+                'SELECT EventId FROM Event WHERE Slug = :slug AND EventId != :excludeId LIMIT 1',
+                ['slug' => $slug, 'excludeId' => $excludeEventId],
+            );
+        } else {
+            $stmt = $this->execute(
+                'SELECT EventId FROM Event WHERE Slug = :slug LIMIT 1',
+                ['slug' => $slug],
+            );
+        }
+
+        return $stmt->fetch() !== false;
     }
 
     /**
@@ -283,5 +392,35 @@ class EventRepository extends BaseRepository implements IEventRepository
         $this->execute('UPDATE Event SET IsActive = 0 WHERE EventId = :eventId', ['eventId' => $eventId]);
 
         return true;
+    }
+
+    /**
+     * Finds a single active restaurant event by its URL slug.
+     *
+     * @return RestaurantDetailEvent|null Null if no matching active restaurant event exists.
+     */
+    public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent
+    {
+        $row = $this->queryActiveEventBySlug($slug, EventTypeId::Restaurant);
+
+        return $row !== null ? RestaurantDetailEvent::fromRow($row) : null;
+    }
+
+    /**
+     * Returns all active restaurant-type events, ordered by EventId.
+     *
+     * @return RestaurantDetailEvent[]
+     */
+    public function findActiveRestaurantEvents(): array
+    {
+        return $this->fetchAll(
+            'SELECT *
+            FROM Event
+            WHERE EventTypeId = :eventTypeId
+              AND IsActive = 1
+            ORDER BY EventId ASC',
+            ['eventTypeId' => EventTypeId::Restaurant->value],
+            fn(array $row) => RestaurantDetailEvent::fromRow($row),
+        );
     }
 }

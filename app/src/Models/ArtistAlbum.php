@@ -13,7 +13,7 @@ final readonly class ArtistAlbum
 {
     public function __construct(
         public int    $artistAlbumId,
-        public int    $eventId,
+        public int    $artistId,
         public string $title,
         public string $description,
         public string $year,
@@ -26,7 +26,7 @@ final readonly class ArtistAlbum
     {
         return new self(
             artistAlbumId: (int)$row['ArtistAlbumId'],
-            eventId:       (int)$row['EventId'],
+            artistId:      (int)$row['ArtistId'],
             title:         (string)$row['Title'],
             description:   (string)$row['Description'],
             year:          (string)$row['Year'],

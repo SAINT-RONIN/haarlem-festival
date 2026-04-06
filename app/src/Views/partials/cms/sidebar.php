@@ -4,7 +4,10 @@
  *
  * @var string $currentView Current navigation state ('dashboard' or 'pages')
  */
+use App\Services\SessionService;
+
 $currentView = $currentView ?? 'dashboard';
+$logoutCsrfToken = (new SessionService())->getCsrfToken('cms_logout');
 ?>
 <!-- Sidebar -->
 <aside class="w-64 bg-white border-r border-gray-200 flex flex-col" aria-label="CMS sidebar">
@@ -82,14 +85,6 @@ $currentView = $currentView ?? 'dashboard';
                 </a>
             </li>
             <li>
-                <a href="/cms/restaurants"
-                   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'restaurants' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
-                        <?= $currentView === 'restaurants' ? 'aria-current="page"' : '' ?>>
-                    <i data-lucide="utensils" class="w-5 h-5" aria-hidden="true"></i>
-                    <span class="font-medium">Restaurants</span>
-                </a>
-            </li>
-            <li>
                 <a href="/cms/artists"
                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'artists' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
                         <?= $currentView === 'artists' ? 'aria-current="page"' : '' ?>>
@@ -97,15 +92,25 @@ $currentView = $currentView ?? 'dashboard';
                     <span class="font-medium">Artists</span>
                 </a>
             </li>
+            <li>
+                <a href="/cms/venues"
+                   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 <?= $currentView === 'venues' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' ?>"
+                        <?= $currentView === 'venues' ? 'aria-current="page"' : '' ?>>
+                    <i data-lucide="map-pin" class="w-5 h-5" aria-hidden="true"></i>
+                    <span class="font-medium">Venues</span>
+                </a>
+            </li>
         </ul>
     </nav>
 
     <footer class="p-4 border-t border-gray-200">
-        <a href="/cms/logout"
-           class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200">
-            <i data-lucide="log-out" class="w-5 h-5" aria-hidden="true"></i>
-            <span class="font-medium">Logout</span>
-        </a>
+        <form action="/cms/logout" method="post">
+            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($logoutCsrfToken) ?>">
+            <button type="submit"
+                    class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                <i data-lucide="log-out" class="w-5 h-5" aria-hidden="true"></i>
+                <span class="font-medium">Logout</span>
+            </button>
+        </form>
     </footer>
 </aside>
-

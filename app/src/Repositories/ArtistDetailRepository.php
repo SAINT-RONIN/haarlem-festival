@@ -30,18 +30,18 @@ class ArtistDetailRepository implements IArtistDetailRepository
     }
 
     /**
-     * Fetches all artist detail data for a given event.
+     * Fetches all artist detail data for a given artist.
      *
-     * @param int $eventId The event whose artist details should be loaded
+     * @param int $artistId The artist whose detail collections should be loaded
      */
-    public function findByEventId(int $eventId): ArtistDetailBundle
+    public function findByArtistId(int $artistId): ArtistDetailBundle
     {
         return new ArtistDetailBundle(
-            albums: $this->albumRepository->findByEventId($eventId),
-            tracks: $this->trackRepository->findByEventId($eventId),
-            lineupMembers: $this->lineupMemberRepository->findByEventId($eventId),
-            highlights: $this->highlightRepository->findByEventId($eventId),
-            galleryImages: $this->galleryImageRepository->findByEventId($eventId),
+            albums: $this->albumRepository->findByArtistId($artistId),
+            tracks: $this->trackRepository->findByArtistId($artistId),
+            lineupMembers: $this->lineupMemberRepository->findByArtistId($artistId),
+            highlights: $this->highlightRepository->findByArtistId($artistId),
+            galleryImages: $this->galleryImageRepository->findByArtistId($artistId),
         );
     }
 }

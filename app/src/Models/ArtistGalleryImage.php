@@ -13,7 +13,7 @@ final readonly class ArtistGalleryImage
 {
     public function __construct(
         public int    $artistGalleryImageId,
-        public int    $eventId,
+        public int    $artistId,
         public string $imagePath,
         public int    $sortOrder,
     ) {}
@@ -22,7 +22,7 @@ final readonly class ArtistGalleryImage
     {
         return new self(
             artistGalleryImageId: (int)$row['ArtistGalleryImageId'],
-            eventId:              (int)$row['EventId'],
+            artistId:             (int)$row['ArtistId'],
             imagePath:            (string)$row['ImagePath'],
             sortOrder:            (int)$row['SortOrder'],
         );

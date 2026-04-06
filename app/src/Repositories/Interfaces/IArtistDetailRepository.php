@@ -13,9 +13,9 @@ use App\DTOs\Events\ArtistDetailBundle;
 interface IArtistDetailRepository
 {
     /**
-     * Fetches all artist detail data for a given event.
+     * Fetches all artist detail data for a given artist.
      *
-     * @param int $eventId The event whose artist details should be loaded
+     * @param int $artistId The artist whose detail collections should be loaded
      */
-    public function findByEventId(int $eventId): ArtistDetailBundle;
+    public function findByArtistId(int $artistId): ArtistDetailBundle;
 }

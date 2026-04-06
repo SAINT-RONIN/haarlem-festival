@@ -6,6 +6,7 @@ namespace App\Mappers;
 
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\DTOs\Cms\EventUpsertData;
+use App\Helpers\SlugHelper;
 
 /**
  * Maps sanitized CMS event form input into typed upsert DTOs.
@@ -17,16 +18,21 @@ final class CmsEventsInputMapper
      */
     public static function fromEventFormInput(array $input): EventUpsertData
     {
+        $title = (string)($input['Title'] ?? '');
+
         return new EventUpsertData(
             eventTypeId: self::intOrDefault($input['EventTypeId'] ?? null),
-            title: (string)($input['Title'] ?? ''),
+            title: $title,
             shortDescription: (string)($input['ShortDescription'] ?? ''),
             longDescriptionHtml: (string)($input['LongDescriptionHtml'] ?? '<p></p>'),
             featuredImageAssetId: self::intOrNull($input['FeaturedImageAssetId'] ?? null),
             venueId: self::intOrNull($input['VenueId'] ?? null),
             artistId: self::intOrNull($input['ArtistId'] ?? null),
-            restaurantId: self::intOrNull($input['RestaurantId'] ?? null),
-            isActive: (bool)($input['IsActive'] ?? true),
+            isActive: (bool)($input['IsActive'] ?? false),
+            slug: SlugHelper::generate($title),
+            restaurantStars: isset($input['RestaurantStars']) && $input['RestaurantStars'] !== '' ? (int)$input['RestaurantStars'] : null,
+            restaurantCuisine: self::stringOrNull($input['RestaurantCuisine'] ?? null),
+            restaurantShortDescription: self::stringOrNull($input['RestaurantShortDescription'] ?? null),
         );
     }
 

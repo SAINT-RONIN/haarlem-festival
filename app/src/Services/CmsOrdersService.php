@@ -26,8 +26,11 @@ class CmsOrdersService implements ICmsOrdersService
     }
 
     /**
-     * Returns all orders with user email, item summary, and latest payment status.
-     * Optionally filtered by order status.
+     * Returns all orders joined with their user, item, and payment data.
+     *
+     * When $statusFilter is null every order is returned regardless of status.
+     * When a status string is provided (e.g. "paid", "pending") only orders with
+     * that status are included. This is used to populate the orders list in the CMS.
      *
      * @return OrderWithDetails[]
      */
@@ -36,6 +39,15 @@ class CmsOrdersService implements ICmsOrdersService
         return $this->ordersRepository->findOrdersWithDetails($statusFilter);
     }
 
+    /**
+     * Looks up the file path of the PDF attached to an invoice.
+     *
+     * Returns null in two different situations — both are valid:
+     * 1. The order has no invoice record yet (fulfillment hasn't run).
+     * 2. The invoice exists but its PDF hasn't been generated yet.
+     * The null-safe ?-> on the last line also handles the case where the media
+     * asset row was deleted without the invoice record being cleaned up.
+     */
     private function resolveInvoicePdfPath(?\App\Models\Invoice $invoice): ?string
     {
         if ($invoice === null || $invoice->pdfAssetId === null) {
@@ -44,13 +56,18 @@ class CmsOrdersService implements ICmsOrdersService
 
         $asset = $this->mediaAssetRepository->findById($invoice->pdfAssetId);
 
+        // Returns null when the asset row is missing (deleted externally without cleaning invoice FK).
         return $asset?->filePath;
     }
 
     /**
-     * Returns structured detail data for a single order, or null if the order does not exist.
+     * Returns all the data needed to render the order detail page, bundled into one array.
      *
-     * @return array{order: array, items: array, payments: array, tickets: array}|null
+     * It returns null instead of throwing when the order doesn't exist because the
+     * controller uses the null to send a 404 response — not every missing order is an error.
+     * The returned array contains: order, items, payments, tickets, invoice, invoicePdfPath.
+     *
+     * @return array{order: mixed, items: array, payments: array, tickets: array, invoice: mixed, invoicePdfPath: ?string}|null
      */
     public function getOrderDetail(int $orderId): ?array
     {

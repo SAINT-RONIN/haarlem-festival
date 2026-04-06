@@ -10,13 +10,15 @@ namespace App\ViewModels\Restaurant;
 final readonly class RestaurantCardData
 {
     public function __construct(
-        public int    $id,
+        public int $id,
         public string $name,
         public string $cuisine,
         public string $address,
         public string $description,
-        public int    $rating,
+        public int $rating,
         public string $image,
+        public ?string $slug = null,
+        public bool $isVegan = false,
     ) {
     }
 }

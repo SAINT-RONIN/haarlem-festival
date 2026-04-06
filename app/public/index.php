@@ -40,11 +40,12 @@ use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
+use App\Controllers\CmsPageEditorController;
+use App\Controllers\CmsPageImageController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsArtistsController;
 use App\Controllers\CmsOrdersController;
-use App\Controllers\CmsRestaurantsController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\EmployeeScannerController;
 use App\Controllers\HistoryController;
@@ -52,6 +53,7 @@ use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\OrderHistoryController;
 use App\Controllers\ProgramController;
+use App\Controllers\RestaurantApiController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScannerController;
 use App\Controllers\ScheduleApiController;
@@ -95,7 +97,9 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
 
     // Restaurant page
     $r->addRoute('GET', '/restaurant', [RestaurantController::class, 'index']);
-    $r->addRoute('GET', '/restaurant/{id:\d+}', [RestaurantController::class, 'detail']);
+    $r->addRoute('GET', '/restaurant/{slug:[a-z0-9-]+}', [RestaurantController::class, 'detail']);
+    $r->addRoute('GET', '/restaurant/{slug:[a-z0-9-]+}/reservation', [RestaurantController::class, 'reservationPage']);
+    $r->addRoute('POST', '/restaurant/{slug:[a-z0-9-]+}/reservation', [RestaurantController::class, 'submitReservation']);
 
     // Order History
     $r->addRoute('GET', '/my-orders', [OrderHistoryController::class, 'index']);
@@ -129,7 +133,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     // Website Authentication Routes
     $r->addRoute('GET', '/login', [AuthController::class, 'showLogin']);
     $r->addRoute('POST', '/login', [AuthController::class, 'login']);
-    $r->addRoute('GET', '/logout', [AuthController::class, 'logout']);
+    $r->addRoute('POST', '/logout', [AuthController::class, 'logout']);
     $r->addRoute('GET', '/register', [AuthController::class, 'showRegister']);
     $r->addRoute('POST', '/register', [AuthController::class, 'register']);
     $r->addRoute('GET', '/forgot-password', [AuthController::class, 'showForgotPassword']);
@@ -140,7 +144,7 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     // CMS Authentication Routes
     $r->addRoute('GET', '/cms/login', [CmsAuthController::class, 'showLogin']);
     $r->addRoute('POST', '/cms/login', [CmsAuthController::class, 'login']);
-    $r->addRoute('GET', '/cms/logout', [CmsAuthController::class, 'logout']);
+    $r->addRoute('POST', '/cms/logout', [CmsAuthController::class, 'logout']);
 
     // CMS Dashboard Routes
     $r->addRoute('GET', '/cms', [CmsDashboardController::class, 'index']);
@@ -160,12 +164,17 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/sessions/{id:\d+}/labels', [CmsEventsController::class, 'addLabel']);
     $r->addRoute('POST', '/cms/labels/{id:\d+}/delete', [CmsEventsController::class, 'deleteLabel']);
     $r->addRoute('POST', '/cms/sessions/{id:\d+}/price', [CmsEventsController::class, 'setPrice']);
+    $r->addRoute('GET',  '/cms/venues', [CmsEventsController::class, 'venues']);
     $r->addRoute('POST', '/cms/venues', [CmsEventsController::class, 'createVenue']);
+    $r->addRoute('POST', '/cms/venues/{id:\d+}/delete', [CmsEventsController::class, 'deleteVenue']);
     $r->addRoute('GET', '/cms/schedule-days', [CmsEventsController::class, 'scheduleDays']);
     $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsEventsController::class, 'toggleScheduleDay']);
 
     // Schedule API
     $r->addRoute('GET', '/api/schedule/{pageSlug:[a-z]+}', [ScheduleApiController::class, 'getScheduleHtml']);
+
+    // Restaurant API
+    $r->addRoute('GET', '/api/restaurants', [RestaurantApiController::class, 'getCardsHtml']);
 
     // CMS Media Routes
     $r->addRoute('GET', '/cms/media', [CmsMediaController::class, 'index']);
@@ -189,31 +198,29 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'update']);
     $r->addRoute('POST', '/cms/users/{id:\d+}/delete',    [CmsUsersController::class, 'delete']);
 
-    // CMS Restaurants Routes
-    $r->addRoute('GET',  '/cms/restaurants',                       [CmsRestaurantsController::class, 'index']);
-    $r->addRoute('GET',  '/cms/restaurants/create',                [CmsRestaurantsController::class, 'create']);
-    $r->addRoute('POST', '/cms/restaurants',                       [CmsRestaurantsController::class, 'store']);
-    $r->addRoute('GET',  '/cms/restaurants/{id:\d+}/edit',         [CmsRestaurantsController::class, 'edit']);
-    $r->addRoute('POST', '/cms/restaurants/{id:\d+}/edit',         [CmsRestaurantsController::class, 'update']);
-    $r->addRoute('POST', '/cms/restaurants/{id:\d+}/delete',       [CmsRestaurantsController::class, 'delete']);
-
     // CMS Artists Routes
     $r->addRoute('GET',  '/cms/artists',                           [CmsArtistsController::class, 'index']);
     $r->addRoute('GET',  '/cms/artists/create',                    [CmsArtistsController::class, 'create']);
     $r->addRoute('POST', '/cms/artists',                           [CmsArtistsController::class, 'store']);
     $r->addRoute('GET',  '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'edit']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'update']);
+    $r->addRoute('GET',  '/cms/jazz-lineup/cards/create',          [CmsArtistsController::class, 'createJazzOverviewCard']);
+    $r->addRoute('POST', '/cms/jazz-lineup/cards',                 [CmsArtistsController::class, 'storeJazzOverviewCard']);
+    $r->addRoute('GET',  '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsArtistsController::class, 'editJazzOverviewCard']);
+    $r->addRoute('POST', '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsArtistsController::class, 'updateJazzOverviewCard']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/add',[CmsArtistsController::class, 'addToJazzOverview']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/remove', [CmsArtistsController::class, 'removeFromJazzOverview']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/delete',           [CmsArtistsController::class, 'delete']);
 
     // Slug-aware routes (preferred)
-    $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'edit']);
-    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsDashboardController::class, 'update']);
-    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
+    $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsPageEditorController::class, 'edit']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsPageEditorController::class, 'update']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/upload-image', [CmsPageImageController::class, 'uploadImage']);
 
     // Legacy routes (id-only)
-    $r->addRoute('GET', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'edit']);
-    $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsDashboardController::class, 'update']);
-    $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsDashboardController::class, 'uploadImage']);
+    $r->addRoute('GET', '/cms/pages/{id:\d+}/edit', [CmsPageEditorController::class, 'edit']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/edit', [CmsPageEditorController::class, 'update']);
+    $r->addRoute('POST', '/cms/pages/{id:\d+}/upload-image', [CmsPageImageController::class, 'uploadImage']);
 
 }, [
     'cacheFile' => $routeCacheFile,

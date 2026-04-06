@@ -6,7 +6,6 @@ namespace App\Constants;
 
 final class JazzArtistDetailConstants
 {
-    public const DETAIL_PAGE_SLUG = 'jazz-artist-detail';
     public const SCHEDULE_PAGE_SLUG = 'jazz';
 
     public const PAGE_CACHE_TTL_SECONDS = 300;

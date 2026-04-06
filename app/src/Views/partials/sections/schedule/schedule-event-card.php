@@ -10,6 +10,12 @@
 $eventId = 'event-' . $dayIndex . '-' . $eventIndex;
 $isHistoryEvent = $event->eventTypeSlug === 'history';
 $isJazzEvent = $event->eventTypeSlug === 'jazz';
+$historyTourInfoJson = '';
+
+if ($isHistoryEvent && $event->historyTourOptions !== []) {
+    $encodedHistoryTourInfo = json_encode($event->historyTourOptions, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    $historyTourInfoJson = $encodedHistoryTourInfo !== false ? $encodedHistoryTourInfo : '';
+}
 ?>
 
 <li class="w-full">
@@ -174,6 +180,7 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
                                     data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
                                     data-event-id="<?= htmlspecialchars((string)$event->eventId) ?>"
                                     data-datetime="<?= htmlspecialchars($event->datetime->format('U')) ?>"
+                                    data-history-tour-info="<?= htmlspecialchars($historyTourInfoJson, ENT_QUOTES) ?>"
                                     data-price="<?= htmlspecialchars($event->priceDisplay) ?>"
                                     data-is-pay-what-you-like="<?= $event->isPayWhatYouLike ? '1' : '0' ?>"
                                     data-is-history-event="1"
@@ -200,4 +207,3 @@ $isJazzEvent = $event->eventTypeSlug === 'jazz';
         </dl>
     </article>
 </li>
-

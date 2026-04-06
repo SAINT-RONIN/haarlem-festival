@@ -18,5 +18,6 @@ final readonly class CmsPageEditData
     public function __construct(
         public CmsPage $page,
         public array $sections,
+        public ?JazzLineupManagerData $jazzLineupManager = null,
     ) {}
 }

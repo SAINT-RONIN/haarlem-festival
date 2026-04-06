@@ -7,10 +7,12 @@
  *
  * @var \App\ViewModels\Storytelling\StorytellingDetailPageViewModel $viewModel
  */
+use App\Services\SessionService;
 
 $globalUi = $viewModel->globalUi;
 $hero = $viewModel->detailHero;
 $isLoggedIn = $globalUi->isLoggedIn;
+$logoutCsrfToken = $isLoggedIn ? (new SessionService())->getCsrfToken('logout') : null;
 ?>
 
 <section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center"
@@ -63,11 +65,14 @@ $isLoggedIn = $globalUi->isLoggedIn;
                     </a>
 
                     <?php if ($isLoggedIn): ?>
-                        <a href="/logout"
-                           class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
-                            <i data-lucide="log-out" class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200" aria-hidden="true"></i>
-                            <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200"><?= htmlspecialchars($globalUi->logoutLabel) ?></span>
-                        </a>
+                        <form action="/logout" method="post" class="w-full xl:w-auto ml-1 2xl:ml-2">
+                            <input type="hidden" name="_csrf" value="<?= htmlspecialchars((string)$logoutCsrfToken) ?>">
+                            <button type="submit"
+                                    class="w-full px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
+                                <i data-lucide="log-out" class="w-4 h-4 2xl:w-5 2xl:h-5 text-royal-blue group-hover:text-sand transition-colors duration-200" aria-hidden="true"></i>
+                                <span class="text-center text-royal-blue group-hover:text-sand text-sm 2xl:text-base font-normal transition-colors duration-200"><?= htmlspecialchars($globalUi->logoutLabel) ?></span>
+                            </button>
+                        </form>
                     <?php else: ?>
                         <a href="/login"
                            class="w-full xl:w-auto ml-1 2xl:ml-2 px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">

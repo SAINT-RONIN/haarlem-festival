@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\DTOs\OrderHistory\OrderSummaryDto;
-use App\DTOs\OrderHistory\TicketPdfDto;
 use App\Mappers\OrderHistoryMapper;
-use App\Repositories\Interfaces\IOrderHistoryRepository;
+use App\Services\Interfaces\IOrderHistoryService;
 use App\Services\Interfaces\ISessionService;
 
 /**
@@ -17,7 +15,7 @@ use App\Services\Interfaces\ISessionService;
 class OrderHistoryController extends BaseController
 {
     public function __construct(
-        private readonly IOrderHistoryRepository $orderHistoryRepository,
+        private readonly IOrderHistoryService $orderHistoryService,
         ISessionService $sessionService,
     ) {
         parent::__construct($sessionService);
@@ -42,35 +40,14 @@ class OrderHistoryController extends BaseController
         }
 
         $userId = $this->resolveSessionContext()->userId;
-        $orderRows = $this->orderHistoryRepository->findOrdersForUser($userId);
-        $orderDtos = array_map([OrderSummaryDto::class, 'fromRow'], $orderRows);
+        $orderHistoryData = $this->orderHistoryService->getOrderHistoryData($userId);
 
-        $ticketsByOrder = $this->fetchTicketsForPaidOrders($orderDtos);
-
-        $viewModel = OrderHistoryMapper::toMyOrdersViewModel($orderDtos, $ticketsByOrder, true);
+        $viewModel = OrderHistoryMapper::toMyOrdersViewModel(
+            $orderHistoryData['orders'],
+            $orderHistoryData['ticketsByOrder'],
+            true,
+        );
 
         $this->renderView(__DIR__ . '/../Views/pages/my-orders.php', $viewModel);
-    }
-
-    /**
-     * Fetches ticket PDF paths for all paid orders, grouped by order ID.
-     *
-     * @param OrderSummaryDto[] $orderDtos
-     * @return array<int, TicketPdfDto[]>
-     */
-    private function fetchTicketsForPaidOrders(array $orderDtos): array
-    {
-        $ticketsByOrder = [];
-
-        foreach ($orderDtos as $dto) {
-            if ($dto->status !== 'Paid') {
-                continue;
-            }
-
-            $rows = $this->orderHistoryRepository->findTicketPdfPathsForOrder($dto->orderId);
-            $ticketsByOrder[$dto->orderId] = array_map([TicketPdfDto::class, 'fromRow'], $rows);
-        }
-
-        return $ticketsByOrder;
     }
 }

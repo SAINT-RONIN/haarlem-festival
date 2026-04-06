@@ -151,4 +151,5 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
             fn(array $row) => MediaAsset::fromRow($row),
         );
     }
+
 }

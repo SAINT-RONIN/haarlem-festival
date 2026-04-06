@@ -18,8 +18,7 @@ use App\Content\RestaurantIntroSplit2SectionContent;
 final readonly class RestaurantPageData
 {
     /**
-     * @param Restaurant[] $restaurants
-     * @param array<int, CuisineType[]> $cuisinesByRestaurant
+     * @param RestaurantListingData[] $listings Event-based restaurant listing cards
      */
     public function __construct(
         public HeroSectionContent $heroContent,
@@ -29,7 +28,6 @@ final readonly class RestaurantPageData
         public RestaurantIntroSplit2SectionContent $introSplit2Section,
         public RestaurantInstructionsSectionContent $instructionsSection,
         public RestaurantCardsSectionContent $cardsSection,
-        public array $restaurants,
-        public array $cuisinesByRestaurant,
+        public array $listings,
     ) {}
 }

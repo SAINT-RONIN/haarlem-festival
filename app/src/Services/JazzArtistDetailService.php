@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\JazzArtistDetailConstants;
-use App\Constants\SharedSectionKeys;
 use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Helpers\SlugHelper;
-use App\Content\JazzArtistDetailCmsData;
+use App\Models\Artist;
 use App\DTOs\Events\JazzArtistDetailEvent;
 use App\DTOs\Pages\JazzArtistDetailPageData;
 use App\Repositories\Interfaces\IArtistDetailRepository;
-use App\Repositories\Interfaces\IJazzContentRepository;
+use App\Repositories\Interfaces\IArtistRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Services\Interfaces\IJazzArtistDetailService;
 
 /**
  * Assembles the full detail-page payload for a single Jazz artist.
  *
- * Combines event data, CMS overrides, and aggregated artist detail data
+ * Combines event data, artist profile content, and aggregated artist detail data
  * (albums, tracks, lineup members, highlights, gallery images).
  * Results are cached in-memory with a configurable TTL to avoid
  * redundant queries within the same request cycle.
@@ -30,8 +29,8 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     private static array $pageCache = [];
 
     public function __construct(
-        private readonly IJazzContentRepository $jazzContentRepo,
         private readonly IEventRepository $eventRepository,
+        private readonly IArtistRepository $artistRepository,
         private readonly IArtistDetailRepository $artistDetailRepository,
     ) {
     }
@@ -40,7 +39,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
      * Returns the complete artist detail page payload for a given URL slug.
      *
      * Normalises the slug, checks the in-memory cache, and if missing
-     * resolves the event then aggregates CMS + repository data into a
+     * resolves the event then aggregates artist + repository data into a
      * single JazzArtistDetailPageData object.
      *
      * @throws JazzArtistDetailNotFoundException if the slug is invalid or no matching active Jazz event exists
@@ -61,24 +60,17 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         return $pageData;
     }
 
-    private function fetchCmsContent(int $eventId): JazzArtistDetailCmsData
-    {
-        return $this->jazzContentRepo->findArtistDetailCmsData(
-            JazzArtistDetailConstants::DETAIL_PAGE_SLUG,
-            SharedSectionKeys::eventSectionKey($eventId),
-        );
-    }
-
     /**
-     * Aggregates CMS content and all artist-related collections into a single page-data object.
+     * Aggregates artist content and all artist-related collections into a single page-data object.
      */
     private function buildPageData(JazzArtistDetailEvent $event): JazzArtistDetailPageData
     {
-        $artistDetail = $this->artistDetailRepository->findByEventId($event->eventId);
+        $artist = $this->findArtistForEvent($event);
+        $artistDetail = $this->artistDetailRepository->findByArtistId($artist->artistId);
 
         return new JazzArtistDetailPageData(
             event: $event,
-            cms: $this->fetchCmsContent($event->eventId),
+            artist: $artist,
             eventId: $event->eventId,
             albums: $artistDetail->albums,
             tracks: $artistDetail->tracks,
@@ -127,5 +119,20 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         }
 
         return $event;
+    }
+
+    /** @throws JazzArtistDetailNotFoundException */
+    private function findArtistForEvent(JazzArtistDetailEvent $event): Artist
+    {
+        if ($event->artistId === null) {
+            throw new JazzArtistDetailNotFoundException($event->slug);
+        }
+
+        $artist = $this->artistRepository->findById($event->artistId);
+        if ($artist === null || !$artist->isActive) {
+            throw new JazzArtistDetailNotFoundException($event->slug);
+        }
+
+        return $artist;
     }
 }

@@ -31,6 +31,10 @@ class CmsUsersService implements ICmsUsersService
     /**
      * Returns all user accounts joined with their role names, with optional filtering and sorting.
      *
+     * $roleFilter narrows the list to one role when set; null returns all roles.
+     * $search filters by name or email (partial match). $sortBy and $sortDir control ordering.
+     * The defaults (sorted by registered date, newest first) match the expected CMS list order.
+     *
      * @return UserWithRole[]
      */
     public function getUsersWithRoles(
@@ -42,15 +46,24 @@ class CmsUsersService implements ICmsUsersService
         return $this->usersRepository->findUsersWithRoles($roleFilter, $search, $sortBy, $sortDir);
     }
 
+    /**
+     * Loads a single user account by its id, used by the CMS edit page before rendering the form.
+     *
+     * Returns null when no user exists with that id — the caller must null-check before using the result.
+     */
     public function findById(int $id): ?UserAccount
     {
         return $this->usersRepository->findById($id);
     }
 
     /**
-     * Validates all fields required when creating a new user (password is mandatory).
+     * Validates all fields required when creating a new user.
      *
-     * @return array<string, string> Field name => error message (empty if valid)
+     * Errors are collected into a single array (field name => message) rather than stopping
+     * at the first problem, so the form can show all issues at once. A password is required
+     * here because an account cannot exist without one (unlike update, where it is optional).
+     *
+     * @return array<string, string> Field name => error message, empty if everything is valid
      */
     public function validateForCreate(
         string $username,
@@ -66,10 +79,14 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
-     * Validates fields for an existing user update. Password is optional (only validated if provided).
-     * Uniqueness checks exclude the user being edited.
+     * Validates all fields when editing an existing user account.
      *
-     * @return array<string, string> Field name => error message (empty if valid)
+     * $id is passed to the username and email checks so the user can keep their own
+     * username or email without triggering a "already taken" error — uniqueness is
+     * checked against everyone except the user being edited.
+     * Password is optional: leaving it blank keeps the existing password unchanged.
+     *
+     * @return array<string, string> Field name => error message, empty if everything is valid
      */
     public function validateForUpdate(
         int $id,
@@ -86,11 +103,14 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
-     * Creates a new user account with a hashed password and the specified role.
+     * Creates a new user account and returns the new user's id.
      *
-     * @return int The newly created user's ID
+     * The password is hashed before it reaches the repository because the repository
+     * only ever stores hashes — it never receives a plaintext password.
+     *
+     * @return int The newly created user's id
+     * @throws CmsOperationException When the database write fails
      */
-    /** @throws CmsOperationException When the database write fails */
     public function createUser(
         string $username,
         string $email,
@@ -108,7 +128,10 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
-     * Updates a user's profile fields and role. Password is only re-hashed if a new one is provided.
+     * Updates a user's profile fields and role assignment.
+     *
+     * The password is only updated when a non-empty value is provided. Submitting the
+     * edit form without touching the password field leaves the existing password untouched.
      *
      * @throws CmsOperationException When the database write fails
      */
@@ -124,6 +147,7 @@ class CmsUsersService implements ICmsUsersService
         try {
             $this->userAccountRepository->updateUser($id, $username, $email, $firstName, $lastName, $roleId);
 
+            // null means the field was not submitted; '' means it was submitted empty. Both mean "leave it alone".
             if ($password !== null && $password !== '') {
                 $this->userAccountRepository->updatePasswordHash($id, PasswordHasher::hash($password));
             }
@@ -132,7 +156,14 @@ class CmsUsersService implements ICmsUsersService
         }
     }
 
-    /** @throws CmsOperationException When the database write fails */
+    /**
+     * Permanently deletes a user account.
+     *
+     * This is a hard delete with no soft-delete safety net. The repository is responsible
+     * for cleaning up any related rows (sessions, role links, etc.).
+     *
+     * @throws CmsOperationException When the database write fails
+     */
     public function deleteUser(int $id): void
     {
         try {
@@ -143,6 +174,12 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
+     * Checks username format first, then uniqueness against existing accounts.
+     *
+     * Format is checked before uniqueness because there is no point querying the DB
+     * for a username that is already invalid. When $excludeId is set the uniqueness
+     * check skips that user, so they can keep their own username on update.
+     *
      * @param array<string, string> $errors
      * @return array<string, string>
      */
@@ -164,6 +201,11 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
+     * Checks email format first, then uniqueness against existing accounts.
+     *
+     * Same pattern as checkUsername: format check before DB query, and $excludeId
+     * allows the current user to keep their own email on update.
+     *
      * @param array<string, string> $errors
      * @return array<string, string>
      */
@@ -185,6 +227,11 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
+     * Validates that a password meets the minimum length rule.
+     *
+     * Used on create where an empty password is a failure — an account cannot be
+     * created without one.
+     *
      * @param array<string, string> $errors
      * @return array<string, string>
      */
@@ -199,6 +246,12 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
+     * Validates a password only when one is actually provided.
+     *
+     * Unlike validatePasswordRequired, a null or empty value is silently accepted here
+     * because on update the user may leave the field blank to keep their existing password.
+     * If a new password is provided it must still meet the minimum length rule.
+     *
      * @param array<string, string> $errors
      * @return array<string, string>
      */
@@ -215,6 +268,9 @@ class CmsUsersService implements ICmsUsersService
     }
 
     /**
+     * Validates first and last name via the shared UserValidationHelper and merges
+     * any errors into the existing error array rather than replacing it.
+     *
      * @param array<string, string> $errors
      * @return array<string, string>
      */

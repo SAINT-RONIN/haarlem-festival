@@ -16,15 +16,15 @@ use App\Repositories\Interfaces\IArtistHighlightRepository;
 class ArtistHighlightRepository extends BaseRepository implements IArtistHighlightRepository
 {
     /**
-     * Returns all highlights for an event, ordered by SortOrder.
+     * Returns all highlights for an artist, ordered by SortOrder.
      *
      * @return ArtistHighlight[]
      */
-    public function findByEventId(int $eventId): array
+    public function findByArtistId(int $artistId): array
     {
         return $this->fetchAll(
-            'SELECT * FROM ArtistHighlight WHERE EventId = :eventId ORDER BY SortOrder ASC',
-            ['eventId' => $eventId],
+            'SELECT * FROM ArtistHighlight WHERE ArtistId = :artistId ORDER BY SortOrder ASC',
+            ['artistId' => $artistId],
             fn(array $row) => ArtistHighlight::fromRow($row),
         );
     }

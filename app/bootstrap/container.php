@@ -10,15 +10,17 @@ use App\Controllers\OrderHistoryController;
 use App\Repositories\OrderHistoryRepository;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
+use App\Controllers\CmsPageEditorController;
+use App\Controllers\CmsPageImageController;
 use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsOrdersController;
-use App\Controllers\CmsRestaurantsController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
+use App\Controllers\RestaurantApiController;
 use App\Controllers\ScannerController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
@@ -28,6 +30,7 @@ use App\Http\Requests\StripeWebhookRequestFactory;
 use App\Infrastructure\CheckoutRuntimeConfig;
 use App\Infrastructure\Database;
 use App\Infrastructure\EmailService;
+use App\Infrastructure\PdfAssetStorage;
 use App\Infrastructure\StripeService;
 use App\Repositories\CmsContentRepository;
 use App\Repositories\CmsOrdersRepository;
@@ -52,10 +55,8 @@ use App\Repositories\ArtistGalleryImageRepository;
 use App\Repositories\ArtistHighlightRepository;
 use App\Repositories\ArtistLineupMemberRepository;
 use App\Repositories\ArtistTrackRepository;
-use App\Repositories\CuisineTypeRepository;
-use App\Repositories\RestaurantImageRepository;
-use App\Repositories\RestaurantRepository;
 use App\Repositories\ScannerRepository;
+use App\Repositories\ReservationRepository;
 use App\Repositories\StripeWebhookEventRepository;
 use App\Repositories\EventSessionPriceRepository;
 use App\Repositories\PassPurchaseRepository;
@@ -73,7 +74,6 @@ use App\Repositories\ScheduleContentRepository;
 use App\Repositories\StorytellingContentRepository;
 use App\Services\CmsArtistsService;
 use App\Services\CmsDashboardService;
-use App\Services\CmsRestaurantsService;
 use App\Services\CmsEventsService;
 use App\Services\CmsScheduleDayService;
 use App\Services\CmsEditService;
@@ -91,6 +91,8 @@ use App\Services\JazzArtistDetailService;
 use App\Services\JazzService;
 use App\Services\MediaAssetService;
 use App\Services\ProgramService;
+use App\Services\RestaurantDetailService;
+use App\Services\RestaurantReservationService;
 use App\Services\RestaurantService;
 use App\Schedule\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
@@ -101,6 +103,7 @@ use App\Services\SessionService;
 use App\Services\StorytellingDetailService;
 use App\Services\StorytellingService;
 use App\Services\InvoiceFulfillmentService;
+use App\Services\OrderHistoryService;
 use App\Services\TicketFulfillmentService;
 use App\Repositories\InvoiceRepository;
 use App\Tickets\InvoicePdfGenerator;
@@ -139,11 +142,12 @@ return static function (string $controllerClass): object {
     $eventTypeRepo      = fn() => $make('eventTypeRepo', fn() => new EventTypeRepository($pdo()));
     $venueRepo          = fn() => $make('venueRepo', fn() => new VenueRepository($pdo()));
     $scheduleDayConfig  = fn() => $make('scheduleDayConfig', fn() => new ScheduleDayConfigRepository($pdo()));
-    $restaurantRepo     = fn() => $make('restaurantRepo', fn() => new RestaurantRepository($pdo()));
     $userAccountRepo    = fn() => $make('userAccountRepo', fn() => new UserAccountRepository($pdo()));
     $resetTokenRepo     = fn() => $make('resetTokenRepo', fn() => new PasswordResetTokenRepository($pdo()));
     $programRepo        = fn() => $make('programRepo', fn() => new ProgramRepository($pdo()));
     $passTypeRepo       = fn() => $make('passTypeRepo', fn() => new PassTypeRepository($pdo()));
+    $priceTierRepo      = fn() => $make('priceTierRepo', fn() => new PriceTierRepository($pdo()));
+    $reservationRepo    = fn() => $make('reservationRepo', fn() => new ReservationRepository($pdo()));
     $passPurchaseRepo   = fn() => $make('passPurchaseRepo', fn() => new PassPurchaseRepository($pdo()));
     $orderRepo          = fn() => $make('orderRepo', fn() => new OrderRepository($pdo()));
     $orderItemRepo      = fn() => $make('orderItemRepo', fn() => new OrderItemRepository($pdo()));
@@ -171,6 +175,7 @@ return static function (string $controllerClass): object {
     $cmsItemEnricher = fn() => $make('cmsItemEnricher', fn() => new CmsItemEnricher($mediaAssetRepo()));
     $cmsPreviewUrlResolver = fn() => $make('cmsPreviewUrlResolver', fn() => new CmsPreviewUrlResolver());
     $emailService = fn() => $make('emailService', fn() => new EmailService());
+    $pdfAssetStorage = fn() => $make('pdfAssetStorage', fn() => new PdfAssetStorage($mediaAssetRepo()));
     $ticketFulfillmentService = fn() => $make('ticketFulfillmentService', fn() => new TicketFulfillmentService(
         $orderRepo(),
         $orderItemRepo(),
@@ -179,6 +184,7 @@ return static function (string $controllerClass): object {
         $mediaAssetRepo(),
         $userAccountRepo(),
         $emailService(),
+        $pdfAssetStorage(),
         new QrCodeGenerator(),
         new PdfTicketGenerator(),
         new TicketCodeGenerator(),
@@ -189,10 +195,9 @@ return static function (string $controllerClass): object {
         $orderItemRepo(),
         $eventSessionRepo(),
         $invoiceRepo(),
-        $mediaAssetRepo(),
         new InvoicePdfGenerator(),
         $emailService(),
-        $passTypeRepo(),
+        $pdfAssetStorage(),
     ));
 
     $scheduleService = fn() => $make('scheduleService', fn() => new ScheduleService(
@@ -207,10 +212,12 @@ return static function (string $controllerClass): object {
     $programService = fn() => $make('programService', fn() => new ProgramService(
         $programRepo(),
         $eventSessionRepo(),
+        $eventSessionLabel(),
         $eventSessionPrice(),
         $checkoutContentRepo(),
         $passTypeRepo(),
-        new PriceTierRepository($pdo()),
+        $priceTierRepo(),
+        $reservationRepo(),
     ));
 
     $authService = fn() => $make('authService', fn() => new AuthService(
@@ -223,8 +230,13 @@ return static function (string $controllerClass): object {
     // ── Lazy service singletons shared across multiple controllers ──
 
     $cmsArtistsService = fn() => $make('cmsArtistsService', fn() => new CmsArtistsService(new ArtistRepository($pdo())));
-    $cmsRestaurantsService = fn() => $make('cmsRestaurantsService', fn() => new CmsRestaurantsService($restaurantRepo()));
     $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService($mediaAssetRepo()));
+    $restaurantService = fn() => $make('restaurantService', fn() => new RestaurantService(
+        $globalContentRepo(),
+        $restaurantContentRepo(),
+        $eventRepo(),
+        $mediaAssetRepo(),
+    ));
 
     // ── Controller wiring — each arm only creates what it needs ──
 
@@ -233,7 +245,6 @@ return static function (string $controllerClass): object {
             new HomeService(
                 $eventTypeRepo(),
                 $venueRepo(),
-                $restaurantRepo(),
                 $eventSessionRepo(),
                 $cmsContent(),
                 $globalContentRepo(),
@@ -241,13 +252,18 @@ return static function (string $controllerClass): object {
             $sessionService,
         ),
         RestaurantController::class => new RestaurantController(
-            new RestaurantService(
-                $globalContentRepo(),
+            $restaurantService(),
+            new RestaurantDetailService(
                 $restaurantContentRepo(),
-                $restaurantRepo(),
-                new RestaurantImageRepository($pdo()),
-                new CuisineTypeRepository($pdo()),
+                $eventRepo(),
+                $mediaAssetRepo(),
+                $globalContentRepo(),
             ),
+            new RestaurantReservationService(
+                $eventRepo(),
+                $reservationRepo(),
+            ),
+            $programService(),
             $sessionService,
         ),
         StorytellingController::class => new StorytellingController(
@@ -270,11 +286,12 @@ return static function (string $controllerClass): object {
             new JazzService(
                 $globalContentRepo(),
                 $jazzContentRepo(),
+                $eventRepo(),
                 new PassTypeRepository($pdo()),
             ),
             new JazzArtistDetailService(
-                $jazzContentRepo(),
                 $eventRepo(),
+                new ArtistRepository($pdo()),
                 new ArtistDetailRepository(
                     new ArtistAlbumRepository($pdo()),
                     new ArtistTrackRepository($pdo()),
@@ -295,12 +312,12 @@ return static function (string $controllerClass): object {
                 $eventSessionPrice(),
                 $eventTypeRepo(),
                 $venueRepo(),
-                new PriceTierRepository($pdo()),
+                $priceTierRepo(),
                 $orderItemRepo(),
+                $cmsRepo(),
             ),
             $sessionService,
             $cmsArtistsService(),
-            $cmsRestaurantsService(),
             new CmsScheduleDayService(
                 $scheduleDayConfig(),
                 $eventTypeRepo(),
@@ -315,15 +332,30 @@ return static function (string $controllerClass): object {
         CmsDashboardController::class => new CmsDashboardController(
             $sessionService,
             new CmsDashboardService($cmsRepo()),
+        ),
+        CmsPageEditorController::class => new CmsPageEditorController(
+            $sessionService,
             new CmsEditService(
                 $cmsRepo(),
                 $eventRepo(),
+                new ArtistRepository($pdo()),
+                $cmsItemEnricher(),
+                $cmsPreviewUrlResolver(),
+            ),
+        ),
+        CmsPageImageController::class => new CmsPageImageController(
+            $sessionService,
+            new CmsEditService(
+                $cmsRepo(),
+                $eventRepo(),
+                new ArtistRepository($pdo()),
                 $cmsItemEnricher(),
                 $cmsPreviewUrlResolver(),
             ),
             $mediaAssetService(),
         ),
         CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer, $ticketFulfillmentService, $invoiceFulfillmentService, $passPurchaseRepo) {
+            // Stripe setup is only needed for checkout routes, so other pages do not create it.
             $stripeService = new StripeService(
                 (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
                 (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
@@ -397,10 +429,6 @@ return static function (string $controllerClass): object {
             new CmsUsersService(new CmsUsersRepository($pdo()), $userAccountRepo()),
             $sessionService,
         ),
-        CmsRestaurantsController::class => new CmsRestaurantsController(
-            $cmsRestaurantsService(),
-            $sessionService,
-        ),
         CmsArtistsController::class => new CmsArtistsController(
             $cmsArtistsService(),
             $sessionService,
@@ -421,8 +449,12 @@ return static function (string $controllerClass): object {
         ScheduleApiController::class => new ScheduleApiController(
             $scheduleService(),
         ),
+        RestaurantApiController::class => new RestaurantApiController(
+            $restaurantService(),
+            $sessionService,
+        ),
         OrderHistoryController::class => new OrderHistoryController(
-            new OrderHistoryRepository($pdo()),
+            new OrderHistoryService(new OrderHistoryRepository($pdo())),
             $sessionService,
         ),
         default => new $controllerClass(),

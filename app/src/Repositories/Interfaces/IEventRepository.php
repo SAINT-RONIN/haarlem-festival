@@ -8,7 +8,9 @@ use App\Models\Event;
 use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Filters\EventFilter;
 use App\DTOs\Events\EventWithDetails;
+use App\DTOs\Events\JazzArtistCardRecord;
 use App\DTOs\Events\JazzArtistDetailEvent;
+use App\DTOs\Events\RestaurantDetailEvent;
 use App\DTOs\Events\StorytellingDetailEvent;
 
 /**
@@ -24,6 +26,13 @@ interface IEventRepository
      * @return EventWithDetails[]
      */
     public function findEvents(EventFilter $filters = new EventFilter()): array;
+
+    /**
+     * Returns the artists currently visible in the Jazz overview lineup section.
+     *
+     * @return JazzArtistCardRecord[]
+     */
+    public function findJazzOverviewArtists(): array;
 
     /**
      * Finds an active jazz event by its URL slug, including artist-specific detail fields.
@@ -64,4 +73,21 @@ interface IEventRepository
      * Marks an event as deleted without removing the row (sets IsActive to false).
      */
     public function softDelete(int $eventId): bool;
+
+    /**
+     * Finds an active restaurant event by its URL slug.
+     */
+    public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent;
+
+    /**
+     * Returns all active restaurant-type events.
+     *
+     * @return RestaurantDetailEvent[]
+     */
+    public function findActiveRestaurantEvents(): array;
+
+    /**
+     * Returns true if any event row has the given slug (optionally excluding one event ID).
+     */
+    public function slugExists(string $slug, ?int $excludeEventId = null): bool;
 }

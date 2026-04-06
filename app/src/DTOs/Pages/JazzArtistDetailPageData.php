@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\DTOs\Pages;
 
 use App\DTOs\Events\JazzArtistDetailEvent;
-use App\Content\JazzArtistDetailCmsData;
+use App\Models\Artist;
 
 /**
- * All data for a single jazz artist detail page — CMS content, albums, tracks,
- * lineup, gallery. Assembled by JazzArtistDetailService.
+ * All data for a single jazz artist detail page — event data, artist profile,
+ * and artist-owned collections. Assembled by JazzArtistDetailService.
  */
 final readonly class JazzArtistDetailPageData
 {
@@ -22,7 +22,7 @@ final readonly class JazzArtistDetailPageData
      */
     public function __construct(
         public JazzArtistDetailEvent $event,
-        public JazzArtistDetailCmsData $cms,
+        public Artist $artist,
         public int $eventId,
         public array $albums = [],
         public array $tracks = [],

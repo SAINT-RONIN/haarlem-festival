@@ -6,6 +6,7 @@ namespace App\Services\Interfaces;
 
 use App\Models\Artist;
 use App\DTOs\Cms\ArtistUpsertData;
+use App\DTOs\Cms\JazzLineupCardUpsertData;
 
 /**
  * Defines the contract for CMS artist management (CRUD and validation).
@@ -44,9 +45,36 @@ interface ICmsArtistsService
     public function createArtist(ArtistUpsertData $data): int;
 
     /**
+     * Validates a Jazz lineup card create/update payload.
+     *
+     * @return array<string, string>
+     */
+    public function validateJazzOverviewCard(JazzLineupCardUpsertData $data): array;
+
+    /**
+     * Creates a Jazz lineup card backed by an Artist row.
+     */
+    public function createJazzOverviewCard(JazzLineupCardUpsertData $data): int;
+
+    /**
      * Updates an existing artist record with the given data.
      */
     public function updateArtist(int $id, ArtistUpsertData $data): void;
+
+    /**
+     * Updates only Jazz lineup card fields for an Artist row.
+     */
+    public function updateJazzOverviewCard(int $id, JazzLineupCardUpsertData $data): void;
+
+    /**
+     * Returns the next suggested Jazz overview card sort order.
+     */
+    public function getNextJazzOverviewSortOrder(): int;
+
+    /**
+     * Adds or removes an artist from the Jazz overview section.
+     */
+    public function setJazzOverviewVisibility(int $id, bool $visible): void;
 
     /**
      * Deletes an artist by its ID.

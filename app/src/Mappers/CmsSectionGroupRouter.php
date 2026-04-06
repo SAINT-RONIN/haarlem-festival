@@ -272,18 +272,12 @@ final class CmsSectionGroupRouter
     private static function artistsGroups(): array
     {
         return [
-            'header'  => ['label' => 'Section Header', 'icon' => 'type',  'color' => 'blue',    'columns' => 1, 'items' => []],
-            'artist1' => ['label' => 'Artist 1',        'icon' => 'music', 'color' => 'rose',    'columns' => 2, 'items' => []],
-            'artist2' => ['label' => 'Artist 2',        'icon' => 'music', 'color' => 'amber',   'columns' => 2, 'items' => []],
-            'artist3' => ['label' => 'Artist 3',        'icon' => 'music', 'color' => 'emerald', 'columns' => 2, 'items' => []],
+            'header' => ['label' => 'Section Header', 'icon' => 'type', 'color' => 'blue', 'columns' => 1, 'items' => []],
         ];
     }
 
     private static function resolveArtistsGroup(string $itemKey): string
     {
-        if (str_starts_with($itemKey, 'artists_gumbokings')) return 'artist1';
-        if (str_starts_with($itemKey, 'artists_evolve')) return 'artist2';
-        if (str_starts_with($itemKey, 'artists_ntjam')) return 'artist3';
         return 'header';
     }
 

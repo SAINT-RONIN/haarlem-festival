@@ -52,4 +52,30 @@ class VenueRepository extends BaseRepository implements IVenueRepository
             ['name' => $name, 'addressLine' => $addressLine, 'city' => $city],
         );
     }
+
+    /**
+     * Finds a single venue by its primary key, or null if not found.
+     */
+    public function findById(int $venueId): ?Venue
+    {
+        $rows = $this->fetchAll(
+            'SELECT VenueId, Name, AddressLine, City, CreatedAtUtc, IsActive FROM Venue WHERE VenueId = :venueId',
+            ['venueId' => $venueId],
+            fn(array $row) => Venue::fromRow($row),
+        );
+        return $rows[0] ?? null;
+    }
+
+    /**
+     * Soft-deletes a venue by setting IsActive = 0.
+     */
+    public function softDelete(int $venueId): bool
+    {
+        $statement = $this->execute(
+            'UPDATE Venue SET IsActive = 0 WHERE VenueId = :venueId',
+            ['venueId' => $venueId],
+        );
+
+        return $statement->rowCount() > 0;
+    }
 }

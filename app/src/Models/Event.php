@@ -27,7 +27,6 @@ final readonly class Event
         public ?int               $featuredImageAssetId,
         public ?int               $venueId,
         public ?int               $artistId,
-        public ?int               $restaurantId,
         public bool               $isActive,
         public \DateTimeImmutable $createdAtUtc,
     ) {
@@ -49,7 +48,6 @@ final readonly class Event
             featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int)$row['FeaturedImageAssetId'] : null,
             venueId: isset($row['VenueId']) ? (int)$row['VenueId'] : null,
             artistId: isset($row['ArtistId']) ? (int)$row['ArtistId'] : null,
-            restaurantId: isset($row['RestaurantId']) ? (int)$row['RestaurantId'] : null,
             isActive: (bool)$row['IsActive'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
         );
@@ -71,7 +69,6 @@ final readonly class Event
             'FeaturedImageAssetId' => $this->featuredImageAssetId,
             'VenueId' => $this->venueId,
             'ArtistId' => $this->artistId,
-            'RestaurantId' => $this->restaurantId,
             'IsActive' => $this->isActive,
             'CreatedAtUtc' => $this->createdAtUtc->format('Y-m-d H:i:s'),
         ];

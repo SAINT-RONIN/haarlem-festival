@@ -31,7 +31,6 @@ final class CmsEventsViewMapper
         array $eventTypes,
         array $venues,
         array $artists,
-        array $restaurants,
         ?string $errorMessage,
         ?string $successMessage,
         string $preselectedDay,
@@ -40,7 +39,6 @@ final class CmsEventsViewMapper
             eventTypes: $eventTypes,
             venues: $venues,
             artists: $artists,
-            restaurants: $restaurants,
             errorMessage: $errorMessage,
             successMessage: $successMessage,
             preselectedDay: $preselectedDay,
@@ -83,11 +81,16 @@ final class CmsEventsViewMapper
         ?string $successMessage = null,
         ?string $errorMessage = null,
         array $priceTiers = [],
+        ?string $cmsDetailEditUrl = null,
+        ?string $restaurantStars = null,
+        ?string $restaurantCuisine = null,
+        ?string $restaurantShortDescription = null,
+        array $venues = [],
     ): CmsEventEditViewModel {
         $sessionViewModels = self::buildSessionViewModels($sessions, $event->title, $event->eventTypeSlug);
         $enrichedPrices = self::enrichPricesWithTierNames($pricesData, $priceTiers);
 
-        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $successMessage, $errorMessage);
+        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $cmsDetailEditUrl, $successMessage, $errorMessage, $restaurantStars, $restaurantCuisine, $restaurantShortDescription, $venues);
     }
 
     /**
@@ -109,8 +112,13 @@ final class CmsEventsViewMapper
         array $sessionViewModels,
         array $enrichedPrices,
         array $labelsData,
+        ?string $cmsDetailEditUrl,
         ?string $successMessage,
         ?string $errorMessage,
+        ?string $restaurantStars = null,
+        ?string $restaurantCuisine = null,
+        ?string $restaurantShortDescription = null,
+        array $venues = [],
     ): CmsEventEditViewModel {
         return new CmsEventEditViewModel(
             eventId: $event->eventId,
@@ -123,13 +131,18 @@ final class CmsEventsViewMapper
             venueId: $event->venueId,
             venueName: $event->venueName,
             artistId: $event->artistId,
-            restaurantId: $event->restaurantId,
+            featuredImageAssetId: $event->featuredImageAssetId,
             isActive: $event->isActive,
             sessions: $sessionViewModels,
             sessionPrices: $enrichedPrices,
             sessionLabels: $labelsData,
+            venues: $venues,
+            cmsDetailEditUrl: $cmsDetailEditUrl,
             successMessage: $successMessage,
             errorMessage: $errorMessage,
+            restaurantStars: $restaurantStars,
+            restaurantCuisine: $restaurantCuisine,
+            restaurantShortDescription: $restaurantShortDescription,
         );
     }
 

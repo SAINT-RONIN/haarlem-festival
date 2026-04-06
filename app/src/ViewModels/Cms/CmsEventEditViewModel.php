@@ -23,7 +23,7 @@ final readonly class CmsEventEditViewModel
      * @param int|null $venueId
      * @param string|null $venueName
      * @param int|null $artistId
-     * @param int|null $restaurantId
+     * @param int|null $featuredImageAssetId
      * @param bool $isActive
      * @param CmsEventSessionViewModel[] $sessions
      * @param array<int, array{PriceTierId: int, TierName: string, Price: string, CurrencyCode: string}> $sessionPrices
@@ -40,13 +40,18 @@ final readonly class CmsEventEditViewModel
         public readonly ?int    $venueId,
         public readonly ?string $venueName,
         public readonly ?int    $artistId,
-        public readonly ?int    $restaurantId,
+        public readonly ?int    $featuredImageAssetId,
         public readonly bool    $isActive,
         public readonly array   $sessions,
         public readonly array   $sessionPrices,
         public readonly array   $sessionLabels,
+        public readonly array   $venues = [],
+        public readonly ?string $cmsDetailEditUrl = null,
         public readonly ?string $successMessage = null,
         public readonly ?string $errorMessage = null,
+        public readonly ?string $restaurantStars = null,
+        public readonly ?string $restaurantCuisine = null,
+        public readonly ?string $restaurantShortDescription = null,
     ) {
     }
 

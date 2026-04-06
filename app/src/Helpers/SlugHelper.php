@@ -21,4 +21,15 @@ final class SlugHelper
         }
         return trim($normalized, '-');
     }
+
+    /**
+     * Generates a URL slug from a human-readable title.
+     * Lowercases, replaces non-alphanumeric characters with dashes, collapses doubles.
+     */
+    public static function generate(string $title): string
+    {
+        $slug = strtolower(trim($title));
+        $slug = (string) preg_replace('/[^a-z0-9]+/', '-', $slug);
+        return trim($slug, '-');
+    }
 }

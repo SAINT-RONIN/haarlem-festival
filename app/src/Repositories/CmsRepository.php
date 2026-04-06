@@ -182,4 +182,45 @@ class CmsRepository extends BaseRepository implements ICmsRepository
 
         return true;
     }
+
+    /**
+     * Returns the CmsPage with the given slug, or null if not found.
+     */
+    public function findPageBySlug(string $slug): ?CmsPage
+    {
+        return $this->fetchOne(
+            'SELECT * FROM CmsPage WHERE Slug = :slug LIMIT 1',
+            ['slug' => $slug],
+            fn(array $row) => CmsPage::fromRow($row),
+        );
+    }
+
+    /**
+     * Inserts a new CmsSection row and returns the auto-incremented ID.
+     */
+    public function insertSection(int $cmsPageId, string $sectionKey): int
+    {
+        return $this->executeInsert(
+            'INSERT INTO CmsSection (CmsPageId, SectionKey) VALUES (:cmsPageId, :sectionKey)',
+            ['cmsPageId' => $cmsPageId, 'sectionKey' => $sectionKey],
+        );
+    }
+
+    /**
+     * Inserts or updates a TEXT CmsItem by section + key. Creates if not exists, updates if it does.
+     */
+    public function upsertCmsTextItem(int $cmsSectionId, string $itemKey, string $textValue): void
+    {
+        $this->execute(
+            'INSERT INTO CmsItem (CmsSectionId, ItemKey, ItemType, TextValue)
+             VALUES (:sectionId, :key, :type, :value)
+             ON DUPLICATE KEY UPDATE TextValue = VALUES(TextValue)',
+            [
+                'sectionId' => $cmsSectionId,
+                'key' => $itemKey,
+                'type' => 'TEXT',
+                'value' => $textValue,
+            ],
+        );
+    }
 }

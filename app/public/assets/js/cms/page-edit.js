@@ -121,6 +121,42 @@ function initAccordionToggles() {
     });
 }
 
+function initInlinePostActions() {
+    document.querySelectorAll('[data-post-action]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const action = this.dataset.postAction;
+            const csrf = this.dataset.postCsrf || '';
+            const returnTo = this.dataset.postReturnTo || '';
+
+            if (!action) {
+                return;
+            }
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = action;
+            form.style.display = 'none';
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_csrf';
+            csrfInput.value = csrf;
+            form.appendChild(csrfInput);
+
+            if (returnTo !== '') {
+                const returnToInput = document.createElement('input');
+                returnToInput.type = 'hidden';
+                returnToInput.name = 'returnTo';
+                returnToInput.value = returnTo;
+                form.appendChild(returnToInput);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        });
+    });
+}
+
 /**
  * Upload an image for a CMS item.
  * @param {number} itemId - The CMS item ID
@@ -340,6 +376,7 @@ function initPageEdit() {
     initTinyMCE();
     document.querySelectorAll('[data-char-limit]').forEach(initCharCounter);
     initAccordionToggles();
+    initInlinePostActions();
 
     // Re-initialize Lucide icons if available
     if (typeof initLucideIcons === 'function') {
@@ -351,4 +388,3 @@ function initPageEdit() {
 
 // Auto-initialize on DOM ready
 document.addEventListener('DOMContentLoaded', initPageEdit);
-

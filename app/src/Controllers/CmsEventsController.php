@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Enums\PriceTierId;
 use App\Exceptions\ValidationException;
 use App\Mappers\CmsEventsInputMapper;
 use App\Mappers\CmsEventsViewMapper;
@@ -13,7 +12,6 @@ use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Events\EventEditBundle;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
-use App\Services\Interfaces\ICmsRestaurantsService;
 use App\Services\Interfaces\ICmsScheduleDayService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsEventCreateViewModel;
@@ -28,9 +26,6 @@ use App\ViewModels\Cms\CmsScheduleDaysViewModel;
  * Events own Sessions (bookable time-slots), each session can carry Labels
  * (e.g. "Sold Out") and per-tier Prices (Adult, Child, etc.). The schedule-day
  * feature controls which days appear on the public schedule for each event type.
- *
- * Collaborates with ICmsArtistsService and ICmsRestaurantsService because the
- * event edit form needs artist/restaurant dropdowns for Jazz and Dining events.
  */
 class CmsEventsController extends CmsBaseController
 {
@@ -38,7 +33,6 @@ class CmsEventsController extends CmsBaseController
         private readonly ICmsEventsService $eventsService,
         ISessionService $sessionService,
         private readonly ICmsArtistsService $artistsService,
-        private readonly ICmsRestaurantsService $restaurantsService,
         private readonly ICmsScheduleDayService $scheduleDayService,
     ) {
         parent::__construct($sessionService);
@@ -211,6 +205,33 @@ class CmsEventsController extends CmsBaseController
     }
 
     /**
+     * Displays the venues management page.
+     * GET /cms/venues
+     */
+    public function venues(): void
+    {
+        $this->handleCmsPageRequest(function (): void {
+            $currentView = 'venues';
+            $venues = $this->eventsService->getVenues();
+            $successMessage = $this->sessionService->consumeFlash('success');
+            $errorMessage = $this->sessionService->consumeFlash('error');
+            require __DIR__ . '/../Views/pages/cms/venues.php';
+        });
+    }
+
+    /**
+     * Soft-deletes a venue.
+     * POST /cms/venues/{id}/delete
+     */
+    public function deleteVenue(int $id): void
+    {
+        $this->handleCmsValidationRequest(function () use ($id): void {
+            $this->eventsService->deleteVenue($id);
+            $this->redirectWithFlash('Venue deleted successfully.', 'success', '/cms/venues');
+        }, '/cms/venues');
+    }
+
+    /**
      * Deletes an event and all its associated sessions.
      * POST /cms/events/{id}/delete
      */
@@ -256,7 +277,6 @@ class CmsEventsController extends CmsBaseController
             $this->eventsService->getEventTypes(),
             $this->eventsService->getVenues(),
             $this->artistsService->getArtists(null),
-            $this->restaurantsService->getRestaurants(null),
             $this->sessionService->consumeFlash('error'),
             $this->sessionService->consumeFlash('success'),
             $this->readStringQueryParam('day') ?? '',
@@ -311,10 +331,9 @@ class CmsEventsController extends CmsBaseController
 
     private function renderEventEditPage(EventEditBundle $editData): void
     {
-        $priceTiers  = $this->eventsService->getPriceTiers();
-        $viewModel   = $this->buildEventEditViewModel($editData, $priceTiers);
-        $artists     = $this->artistsService->getArtists(null);
-        $restaurants = $this->restaurantsService->getRestaurants(null);
+        $priceTiers = $this->eventsService->getPriceTiers();
+        $viewModel  = $this->buildEventEditViewModel($editData, $priceTiers);
+        $artists    = $this->artistsService->getArtists(null);
         require __DIR__ . '/../Views/pages/cms/event-edit.php';
     }
 
@@ -328,13 +347,18 @@ class CmsEventsController extends CmsBaseController
             $this->sessionService->consumeFlash('success'),
             $this->sessionService->consumeFlash('error'),
             $priceTiers,
+            $editData->cmsDetailEditUrl,
+            $editData->restaurantStars,
+            $editData->restaurantCuisine,
+            $editData->restaurantShortDescription,
+            $this->eventsService->getVenues(),
         );
     }
 
-    /** Defaults to the Adult price tier if none is specified in the form. */
+    /** Forwards the posted session price to the service layer. */
     private function handleSetPrice(int $sessionId, int $eventId): void
     {
-        $priceTierId = $this->readOptionalIntPostParam('PriceTierId') ?? PriceTierId::Adult->value;
+        $priceTierId = $this->readOptionalIntPostParam('PriceTierId');
         $this->eventsService->setSessionPrice($sessionId, $priceTierId, $this->readStringPostParam('Price') ?? '0');
         $this->redirectWithFlash('Price updated successfully.', 'success', "/cms/events/{$eventId}/edit");
     }
@@ -352,15 +376,17 @@ class CmsEventsController extends CmsBaseController
     private function extractEventFormData(): EventUpsertData
     {
         return CmsEventsInputMapper::fromEventFormInput([
-            'EventTypeId'          => $this->readOptionalIntPostParam('EventTypeId'),
-            'Title'                => $this->readStringPostParam('Title'),
-            'ShortDescription'     => $this->readStringPostParam('ShortDescription', 1000),
-            'LongDescriptionHtml'  => $this->readStringPostParam('LongDescriptionHtml', 65535),
-            'FeaturedImageAssetId' => $this->readOptionalIntPostParam('FeaturedImageAssetId'),
-            'VenueId'              => $this->readOptionalIntPostParam('VenueId'),
-            'ArtistId'             => $this->readOptionalIntPostParam('ArtistId'),
-            'RestaurantId'         => $this->readOptionalIntPostParam('RestaurantId'),
-            'IsActive'             => $this->readBoolPostParam('IsActive'),
+            'EventTypeId'                => $this->readOptionalIntPostParam('EventTypeId'),
+            'Title'                      => $this->readStringPostParam('Title'),
+            'ShortDescription'           => $this->readStringPostParam('ShortDescription', 1000),
+            'LongDescriptionHtml'        => $this->readStringPostParam('LongDescriptionHtml', 65535),
+            'FeaturedImageAssetId'       => $this->readOptionalIntPostParam('FeaturedImageAssetId'),
+            'VenueId'                    => $this->readOptionalIntPostParam('VenueId'),
+            'ArtistId'                   => $this->readOptionalIntPostParam('ArtistId'),
+            'IsActive'                   => $this->readBoolPostParam('IsActive'),
+            'RestaurantStars'            => $this->readOptionalIntPostParam('RestaurantStars'),
+            'RestaurantCuisine'          => $this->readStringPostParam('RestaurantCuisine'),
+            'RestaurantShortDescription' => $this->readStringPostParam('RestaurantShortDescription'),
         ]);
     }
 

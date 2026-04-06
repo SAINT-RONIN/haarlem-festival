@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Infrastructure\Database;
 use App\Infrastructure\EmailService;
+use App\Infrastructure\PdfAssetStorage;
 use App\Repositories\EventSessionRepository;
 use App\Repositories\MediaAssetRepository;
 use App\Repositories\OrderItemRepository;
@@ -39,6 +40,7 @@ try {
         new MediaAssetRepository($pdo),
         new UserAccountRepository($pdo),
         new EmailService(),
+        new PdfAssetStorage(new MediaAssetRepository($pdo)),
         new QrCodeGenerator(),
         new PdfTicketGenerator(),
         new TicketCodeGenerator(),

@@ -26,6 +26,7 @@ final readonly class ProgramItem
         public int                 $quantity,
         public ?int                $priceTierId,
         public ?string             $donationAmount,
+        public ?int                $reservationId = null,
     ) {
     }
 
@@ -45,6 +46,7 @@ final readonly class ProgramItem
             quantity: (int)$row['Quantity'],
             priceTierId: isset($row['PriceTierId']) ? (int)$row['PriceTierId'] : null,
             donationAmount: $row['DonationAmount'] ?? null,
+            reservationId: isset($row['ReservationId']) ? (int)$row['ReservationId'] : null,
         );
     }
 
@@ -63,6 +65,7 @@ final readonly class ProgramItem
             'PassValidDate' => $this->passValidDate?->format('Y-m-d'),
             'Quantity' => $this->quantity,
             'DonationAmount' => $this->donationAmount,
+            'ReservationId' => $this->reservationId,
         ];
     }
 }

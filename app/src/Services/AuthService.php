@@ -284,4 +284,16 @@ class AuthService implements IAuthService
 
         return ['success' => true];
     }
+
+    /**
+     * Returns the landing page that matches the authenticated user's role.
+     */
+    public function resolvePostLoginRedirect(?int $roleId): string
+    {
+        return match ($roleId) {
+            UserRoleId::Employee->value => '/employee/scanner',
+            UserRoleId::Administrator->value => '/cms',
+            default => '/',
+        };
+    }
 }

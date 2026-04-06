@@ -14,7 +14,6 @@ $contentTemplates = [
     new ViewTemplate(__DIR__ . '/../partials/jazz/pricing-section.php', ['pricingData' => $viewModel->pricingData]),
     new ViewTemplate(__DIR__ . '/../partials/jazz/schedule-cta-section.php', ['scheduleCtaData' => $viewModel->scheduleCtaData]),
     new ViewTemplate(__DIR__ . '/../partials/jazz/artists-section.php', ['artistsData' => $viewModel->artistsData]),
-    new ViewTemplate(__DIR__ . '/../partials/jazz/booking-cta-section.php', ['bookingCtaData' => $viewModel->bookingCtaData]),
 ];
 if ($viewModel->scheduleSection !== null) {
     $contentTemplates[] = new ViewTemplate(
@@ -22,6 +21,7 @@ if ($viewModel->scheduleSection !== null) {
         ['scheduleSection' => $viewModel->scheduleSection],
     );
 }
+$contentTemplates[] = new ViewTemplate(__DIR__ . '/../partials/jazz/booking-cta-section.php', ['bookingCtaData' => $viewModel->bookingCtaData]);
 
 $layout = new PublicPageLayout(
     contentTemplates: $contentTemplates,

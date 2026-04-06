@@ -12,6 +12,7 @@ use App\Repositories\Interfaces\IScannerRepository;
  */
 class ScannerRepository extends BaseRepository implements IScannerRepository
 {
+    /** Loads one ticket together with the extra event and venue fields shown in the scanner UI. */
     public function findTicketWithDetails(string $ticketCode): ?TicketScanDetail
     {
         return $this->fetchOne(
@@ -38,6 +39,7 @@ class ScannerRepository extends BaseRepository implements IScannerRepository
         );
     }
 
+    /** Maps the joined ticket row into the DTO returned to the scanner service. */
     private function mapToDetail(array $row): TicketScanDetail
     {
         return new TicketScanDetail(

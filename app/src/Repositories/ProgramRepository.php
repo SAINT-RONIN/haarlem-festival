@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Exceptions\ProgramPersistenceException;
 use App\Models\Program;
 use App\DTOs\Filters\ProgramFilter;
 use App\Models\ProgramItem;
@@ -80,7 +81,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
             $params['eventSessionId'] = $filter->eventSessionId;
         }
 
-        if ($filter->eventSessionId !== null) {
+        if ($filter->priceTierId !== null) {
             $conditions[] = 'pi.PriceTierId = :priceTierId';
             $params['priceTierId'] = $filter->priceTierId;
         }
@@ -97,7 +98,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      *
      * @param string $sessionKey Browser session identifier for anonymous users.
      * @param int|null $userAccountId Null for guest users, set for authenticated users.
-     * @throws \RuntimeException If the inserted row cannot be read back.
+     * @throws ProgramPersistenceException If the inserted row cannot be read back.
      */
     public function createProgram(string $sessionKey, ?int $userAccountId): Program
     {
@@ -110,7 +111,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         $programs = $this->findPrograms(new ProgramFilter(programId: $programId));
 
         if ($programs === []) {
-            throw new \RuntimeException("Failed to retrieve program after creation (ID: {$programId})");
+            throw new ProgramPersistenceException("Failed to retrieve program after creation (ID: {$programId})");
         }
 
         return $programs[0];
@@ -120,7 +121,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      * Adds an event session to the program cart and returns the newly created item
      * with server-generated fields populated.
      *
-     * @throws \RuntimeException If the inserted row cannot be read back.
+     * @throws ProgramPersistenceException If the inserted row cannot be read back.
      */
     public function addItem(int $programId, int $eventSessionId, int $quantity, int $priceTierId, float $donationAmount): ProgramItem
     {
@@ -139,7 +140,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
 
         if ($items === []) {
-            throw new \RuntimeException("Failed to retrieve program item after creation (ID: {$itemId})");
+            throw new ProgramPersistenceException("Failed to retrieve program item after creation (ID: {$itemId})");
         }
 
         return $items[0];
@@ -149,7 +150,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
      * Adds a pass to the program cart and returns the newly created item
      * with server-generated fields populated.
      *
-     * @throws \RuntimeException If the inserted row cannot be read back.
+     * @throws ProgramPersistenceException If the inserted row cannot be read back.
      */
     public function addPassItem(int $programId, int $passTypeId, ?string $passValidDate, int $quantity, float $donationAmount): ProgramItem
     {
@@ -168,7 +169,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
 
         if ($items === []) {
-            throw new \RuntimeException("Failed to retrieve program item after creation (ID: {$itemId})");
+            throw new ProgramPersistenceException("Failed to retrieve program item after creation (ID: {$itemId})");
         }
 
         return $items[0];
@@ -177,7 +178,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
     /**
      * Updates the ticket quantity for a cart item (e.g. user changes "2 tickets" to "3").
      */
-    public function updateItemQuantity(int $programItemId, int $quantity, int $groupTicketQuantity): void
+    public function updateItemQuantity(int $programItemId, int $quantity): void
     {
         $this->execute(
             'UPDATE ProgramItem SET Quantity = :quantity WHERE ProgramItemId = :programItemId',
@@ -228,5 +229,32 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
             'UPDATE Program SET IsCheckedOut = 1 WHERE ProgramId = :programId',
             ['programId' => $programId],
         );
+    }
+
+    /**
+     * Adds a reservation to the program cart and returns the newly created item
+     * with server-generated fields populated.
+     *
+     * @throws ProgramPersistenceException If the inserted row cannot be read back.
+     */
+    public function addReservationItem(int $programId, int $reservationId, int $quantity): ProgramItem
+    {
+        $itemId = $this->executeInsert(
+            'INSERT INTO ProgramItem (ProgramId, ReservationId, Quantity)
+            VALUES (:programId, :reservationId, :quantity)',
+            [
+                'programId' => $programId,
+                'reservationId' => $reservationId,
+                'quantity' => $quantity,
+            ],
+        );
+
+        $items = $this->findProgramItems(new ProgramItemFilter(programItemId: $itemId));
+
+        if ($items === []) {
+            throw new ProgramPersistenceException("Failed to retrieve program item after creation (ID: {$itemId})");
+        }
+
+        return $items[0];
     }
 }

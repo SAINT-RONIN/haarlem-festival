@@ -52,7 +52,7 @@ interface IProgramRepository
     /**
      * Updates the ticket quantity on an existing program item.
      */
-    public function updateItemQuantity(int $programItemId, int $quantity, int $groupTicketQuantity): void;
+    public function updateItemQuantity(int $programItemId, int $quantity): void;
 
     /**
      * Updates the donation amount on an existing program item.
@@ -73,4 +73,11 @@ interface IProgramRepository
      * Marks a program as checked out so it can no longer be modified.
      */
     public function markCheckedOut(int $programId): void;
+
+    /**
+     * Adds a reservation item to a program and returns the created ProgramItem.
+     *
+     * @throws \RuntimeException If the inserted row cannot be read back.
+     */
+    public function addReservationItem(int $programId, int $reservationId, int $quantity): ProgramItem;
 }

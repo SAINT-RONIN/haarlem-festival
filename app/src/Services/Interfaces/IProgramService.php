@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\Program;
 use App\Content\ProgramMainContent;
 use App\DTOs\Program\ProgramData;
+use App\Models\Program;
 use App\Models\ProgramItem;
 
 /**
@@ -32,7 +32,7 @@ interface IProgramService
     /**
      * Updates the ticket quantity for an existing program item.
      */
-    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity, int $groupTicketQuantity): void;
+    public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void;
 
     /**
      * Updates the donation amount for an existing program item.
@@ -58,6 +58,11 @@ interface IProgramService
      * Returns the CMS content for the "My Program" page.
      */
     public function getProgramMainContent(): ProgramMainContent;
+
+    /**
+     * Adds a restaurant reservation to the program.
+     */
+    public function addReservationToProgram(string $sessionKey, ?int $userAccountId, int $reservationId): ProgramItem;
 
     /**
      * Returns the info about event sessions, their languages, and prices for historical tours.

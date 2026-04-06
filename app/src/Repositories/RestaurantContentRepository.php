@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Mappers\RestaurantContentMapper;
 use App\Content\RestaurantCardsSectionContent;
 use App\Content\RestaurantDetailSectionContent;
+use App\Content\RestaurantEventCmsData;
 use App\Content\RestaurantInstructionsSectionContent;
 use App\Content\RestaurantIntroSectionContent;
 use App\Content\RestaurantIntroSplit2SectionContent;
@@ -52,5 +53,12 @@ class RestaurantContentRepository extends BaseContentRepository implements Inter
     {
         $raw = $this->fetchSectionContent($pageSlug, $sectionKey);
         return RestaurantContentMapper::mapInstructions($raw);
+    }
+
+    /** Fetches per-event CMS content for a specific restaurant event. */
+    public function findEventCmsData(string $pageSlug, string $sectionKey): RestaurantEventCmsData
+    {
+        $raw = $this->fetchSectionContent($pageSlug, $sectionKey);
+        return RestaurantContentMapper::mapEventCmsData($raw);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTOs\Files\StoredPdfFile;
 use App\DTOs\Filters\EventSessionFilter;
 use App\DTOs\Schedule\SessionWithEvent;
 use App\DTOs\Tickets\TicketDocumentData;
@@ -12,10 +13,9 @@ use App\DTOs\Tickets\TicketEmailMessage;
 use App\DTOs\Tickets\TicketRecipient;
 use App\Exceptions\TicketDeliveryException;
 use App\Exceptions\TicketEmailDeliveryException;
-use App\Exceptions\TicketPdfGenerationException;
 use App\Exceptions\RepositoryException;
 use App\Infrastructure\Interfaces\IEmailService;
-use App\Infrastructure\PathResolver;
+use App\Infrastructure\PdfAssetStorage;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Ticket;
@@ -26,15 +26,32 @@ use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\ITicketFulfillmentService;
+use App\Tickets\Interfaces\ITicketCodeGenerator;
 use App\Tickets\Interfaces\IQrCodeGenerator;
 use App\Tickets\Interfaces\ITicketPdfGenerator;
-use App\Tickets\TicketCodeGenerator;
 
 /**
- * Creates durable ticket records and delivers them after successful payment.
+ * Turns a paid order into real ticket records, PDF files, and one outgoing email.
+ *
+ * This service exists because ticket fulfillment is more than one database write:
+ * it has to resolve the recipient, reuse existing tickets when possible, generate
+ * missing PDFs, and record delivery failures in a way support staff can inspect later.
  */
 class TicketFulfillmentService implements ITicketFulfillmentService
 {
+    private const MAX_TICKET_CODE_ATTEMPTS = 5;
+    private const DEFAULT_VENUE_NAME = 'Venue to be announced';
+    private const TICKET_PDF_FILE_PREFIX = 'Haarlem-Festival-Ticket-';
+    private const TICKET_PDF_ALT_TEXT = 'Festival ticket PDF';
+    private const DUPLICATE_ERROR_KEYWORD = 'duplicate';
+    private const MAX_STORED_ERROR_MESSAGE_LENGTH = 500;
+
+    /**
+     * Stores the repositories and generators used during ticket fulfillment.
+     *
+     * The constructor returns nothing because its only job is to receive dependencies
+     * up front, which keeps the actual fulfillment methods easier to test and explain.
+     */
     public function __construct(
         private readonly IOrderRepository $orderRepository,
         private readonly IOrderItemRepository $orderItemRepository,
@@ -43,12 +60,21 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         private readonly IMediaAssetRepository $mediaAssetRepository,
         private readonly IUserAccountRepository $userAccountRepository,
         private readonly IEmailService $emailService,
+        private readonly PdfAssetStorage $pdfAssetStorage,
         private readonly IQrCodeGenerator $qrCodeGenerator,
         private readonly ITicketPdfGenerator $ticketPdfGenerator,
-        private readonly TicketCodeGenerator $ticketCodeGenerator,
+        private readonly ITicketCodeGenerator $ticketCodeGenerator,
     ) {
     }
 
+    /**
+     * Completes the full ticket-delivery flow for one paid order.
+     *
+     * It returns nothing because the value of this method is the side effect:
+     * after it finishes, the order should have durable ticket rows, stored PDF files,
+     * and either a sent email or a recorded failure reason.
+     * It exits early when the email was already sent so the operation stays idempotent.
+     */
     public function fulfillPaidOrder(
         int $orderId,
         ?string $fallbackEmail = null,
@@ -87,6 +113,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         }
     }
 
+    /**
+     * Regenerates all stored PDFs for the order that owns the given ticket code.
+     *
+     * Looking the order up from a ticket code lets support refresh documents even when they
+     * only have one ticket from the customer, while still rebuilding the full order set.
+     */
     public function regenerateTicketDocumentsByTicketCode(string $ticketCode): void
     {
         $normalizedTicketCode = strtoupper(trim($ticketCode));
@@ -107,6 +139,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         $this->regenerateTicketDocumentsForOrder($orderItem->orderId);
     }
 
+    /**
+     * Returns the Order model for the paid order we are fulfilling.
+     *
+     * It throws instead of returning null because every later step depends on a real order,
+     * so failing fast here keeps the rest of the flow simple and safe.
+     */
     private function requireOrder(int $orderId): Order
     {
         $order = $this->orderRepository->findById($orderId);
@@ -117,6 +155,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         return $order;
     }
 
+    /**
+     * Returns the best ticket recipient details we can build for this order.
+     *
+     * The method checks the order first, then fallback values, then the user account
+     * because the order is the most specific source of truth for who should receive the tickets.
+     */
     private function resolveRecipient(
         Order $order,
         ?string $fallbackEmail,
@@ -142,6 +186,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         );
     }
 
+    /**
+     * Synchronizes the resolved recipient details back onto the order when needed.
+     *
+     * It returns nothing because the goal is to keep the stored order data complete,
+     * which helps later retries and support tooling use the same recipient information.
+     */
     private function persistRecipientIfNeeded(Order $order, TicketRecipient $recipient): void
     {
         if (
@@ -161,12 +211,18 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     }
 
     /**
+     * Returns only the order items that should create ticket PDFs.
+     *
+     * Passes and non-session items are filtered out here because this service is only
+     * responsible for session tickets, not every kind of product in an order.
+     *
      * @return OrderItem[]
      */
     private function loadTicketableOrderItems(int $orderId): array
     {
         $items = array_values(array_filter(
             $this->orderItemRepository->findByOrderId($orderId),
+            // Passes and zero-quantity items do not create ticket PDFs in this service.
             static fn(OrderItem $item) => $item->eventSessionId !== null && $item->eventSessionId > 0 && $item->quantity > 0,
         ));
 
@@ -188,6 +244,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     }
 
     /**
+     * Returns every required session indexed by EventSessionId.
+     *
+     * The indexed result matters because later steps repeatedly look up session details
+     * while building tickets and email summaries, so one lookup map is clearer than
+     * repeatedly searching a flat array.
+     *
      * @param OrderItem[] $orderItems
      * @return array<int, SessionWithEvent>
      */
@@ -209,6 +271,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
             $sessionsById[$session->eventSessionId] = $session;
         }
 
+        // We fail fast here so later document-building code can assume every session exists.
         foreach ($sessionIds as $sessionId) {
             if (!isset($sessionsById[$sessionId])) {
                 throw new TicketDeliveryException("Ticket session {$sessionId} could not be loaded.");
@@ -219,6 +282,11 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     }
 
     /**
+     * Returns a complete ticket list for each order item.
+     *
+     * Existing tickets are reused because a paid order may be fulfilled more than once
+     * after retries or partial failures, and we do not want duplicate ticket rows.
+     *
      * @param OrderItem[] $orderItems
      * @return array<int, Ticket[]>
      */
@@ -234,6 +302,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         foreach ($orderItems as $orderItem) {
             $currentTickets = $ticketsByItemId[$orderItem->orderItemId] ?? [];
 
+            // Keep creating tickets until the stored count matches the purchased quantity.
             while (count($currentTickets) < $orderItem->quantity) {
                 $currentTickets[] = $this->createTicket($orderItem->orderItemId);
             }
@@ -245,6 +314,11 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     }
 
     /**
+     * Returns the given tickets grouped by OrderItemId.
+     *
+     * This grouping exists because the next steps work per order item, not per raw ticket row,
+     * especially when one order item produced multiple tickets.
+     *
      * @param Ticket[] $tickets
      * @return array<int, Ticket[]>
      */
@@ -259,9 +333,15 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         return $grouped;
     }
 
+    /**
+     * Returns one newly created Ticket model for the given order item.
+     *
+     * It retries a few times because ticket codes are randomly generated, so collisions are rare
+     * but still possible, and handling them here keeps the rest of the flow straightforward.
+     */
     private function createTicket(int $orderItemId): Ticket
     {
-        for ($attempt = 0; $attempt < 5; $attempt++) {
+        for ($attempt = 0; $attempt < self::MAX_TICKET_CODE_ATTEMPTS; $attempt++) {
             $ticketCode = $this->ticketCodeGenerator->generate();
 
             try {
@@ -286,12 +366,23 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         throw new TicketDeliveryException('A unique ticket code could not be generated.');
     }
 
+    /**
+     * Returns true when a repository error looks like a ticket-code collision.
+     *
+     * This helper exists so createTicket() can retry only the expected duplicate-code case
+     * and immediately rethrow unexpected repository problems.
+     */
     private function isDuplicateTicketCodeError(RepositoryException $error): bool
     {
-        return str_contains(strtolower($error->getMessage()), 'duplicate');
+        return str_contains(strtolower($error->getMessage()), self::DUPLICATE_ERROR_KEYWORD);
     }
 
     /**
+     * Returns the full list of PDF attachments that should be sent for this order.
+     *
+     * The method builds one flat attachment list because the email layer only needs ready-to-send
+     * files, not the original order-item structure.
+     *
      * @param OrderItem[] $orderItems
      * @param array<int, SessionWithEvent> $sessionsById
      * @param array<int, Ticket[]> $ticketsByItemId
@@ -312,6 +403,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
             $tickets = $ticketsByItemId[$orderItem->orderItemId] ?? [];
             $ticketCount = count($tickets);
 
+            // The position is used to label multiple tickets for the same order item.
             foreach (array_values($tickets) as $index => $ticket) {
                 $attachments[] = $this->ensureTicketPdfAttachment(
                     $order,
@@ -328,6 +420,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         return $attachments;
     }
 
+    /**
+     * Returns one email attachment for the given ticket.
+     *
+     * It reuses an existing PDF first because fulfilled tickets should stay stable across retries;
+     * only when no usable PDF exists do we generate a new file and link it back to the ticket.
+     */
     private function ensureTicketPdfAttachment(
         Order $order,
         TicketRecipient $recipient,
@@ -345,15 +443,20 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         $document = $this->buildTicketDocument($order, $recipient, $session, $ticket, $position, $totalForItem);
         $qrCode = $this->qrCodeGenerator->generate($ticket->ticketCode);
         $pdfBinary = $this->ticketPdfGenerator->generatePdf($document, $qrCode);
-        $fileName = 'Haarlem-Festival-Ticket-' . $ticket->ticketCode . '.pdf';
-        $absolutePath = $this->writePdfFile($fileName, $pdfBinary);
-        $relativePath = PathResolver::getTicketAssetRelativePath($fileName);
-        $assetId = $this->storePdfAsset($ticket, $relativePath, $fileName, $absolutePath);
+        $fileName = self::TICKET_PDF_FILE_PREFIX . $ticket->ticketCode . '.pdf';
+        $storedPdfFile = $this->pdfAssetStorage->storeTicketPdfFile($fileName, $pdfBinary);
+        $assetId = $this->storeTicketPdfAsset($ticket, $storedPdfFile);
         $this->ticketRepository->updatePdfAssetId($ticket->ticketId, $assetId);
 
-        return new TicketEmailAttachment($absolutePath, $fileName);
+        return new TicketEmailAttachment($storedPdfFile->absolutePath, $fileName);
     }
 
+    /**
+     * Returns the previously stored PDF attachment for a ticket, or null when it is missing.
+     *
+     * Null is used here on purpose because a missing PDF is not always an error:
+     * it simply means the caller should generate a fresh one.
+     */
     private function loadExistingPdfAttachment(Ticket $ticket): ?TicketEmailAttachment
     {
         if ($ticket->pdfAssetId === null) {
@@ -365,7 +468,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
             return null;
         }
 
-        $absolutePath = $this->resolveAbsolutePublicPath($asset->filePath);
+        $absolutePath = $this->pdfAssetStorage->resolveAbsolutePublicPath($asset->filePath);
         if (!is_file($absolutePath)) {
             return null;
         }
@@ -375,6 +478,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         return new TicketEmailAttachment($absolutePath, $displayName);
     }
 
+    /**
+     * Returns the TicketDocumentData used by the PDF generator.
+     *
+     * This method exists to separate presentation-ready ticket text from the lower-level
+     * database models, which makes the PDF step easier to reason about and test.
+     */
     private function buildTicketDocument(
         Order $order,
         TicketRecipient $recipient,
@@ -392,12 +501,18 @@ class TicketFulfillmentService implements ITicketFulfillmentService
             recipientName: $recipient->displayName,
             eventTitle: $session->eventTitle,
             eventTypeName: $session->eventTypeName,
-            venueName: $session->venueName ?? 'Venue to be announced',
+            venueName: $session->venueName ?? self::DEFAULT_VENUE_NAME,
             sessionDateLabel: $session->startDateTime->format('l j F Y'),
             sessionTimeLabel: $this->formatSessionTime($session),
         );
     }
 
+    /**
+     * Returns a human-readable time label for the ticket PDF and email summary.
+     *
+     * A single start time is returned when no end time exists because that is the most honest
+     * representation of the schedule data we currently have.
+     */
     private function formatSessionTime(SessionWithEvent $session): string
     {
         $start = $session->startDateTime->format('H:i');
@@ -409,49 +524,27 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         return $start . ' - ' . $session->endDateTime->format('H:i');
     }
 
-    private function writePdfFile(string $fileName, string $pdfBinary): string
+    /**
+     * Returns the MediaAsset id linked to the stored ticket PDF.
+     *
+     * Reusing the existing asset id when possible keeps the database relationship stable
+     * even if the file has to be regenerated later.
+     */
+    private function storeTicketPdfAsset(Ticket $ticket, StoredPdfFile $storedPdfFile): int
     {
-        $directory = PathResolver::getTicketAssetPath();
-        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
-            throw new TicketPdfGenerationException('Ticket PDF directory could not be created.');
-        }
-
-        $absolutePath = $directory . '/' . $fileName;
-        if (file_put_contents($absolutePath, $pdfBinary) === false) {
-            throw new TicketPdfGenerationException('Ticket PDF could not be written to disk.');
-        }
-
-        return $absolutePath;
-    }
-
-    private function storePdfAsset(Ticket $ticket, string $relativePath, string $fileName, string $absolutePath): int
-    {
-        $data = [
-            'FilePath' => $relativePath,
-            'OriginalFileName' => $fileName,
-            'MimeType' => 'application/pdf',
-            'FileSizeBytes' => (int)filesize($absolutePath),
-            'AltText' => 'Festival ticket PDF',
-        ];
-
-        if ($ticket->pdfAssetId !== null) {
-            $this->mediaAssetRepository->update($ticket->pdfAssetId, $data);
-            return $ticket->pdfAssetId;
-        }
-
-        return $this->mediaAssetRepository->create($data);
-    }
-
-    private function resolveAbsolutePublicPath(string $filePath): string
-    {
-        if (str_starts_with($filePath, '/assets/')) {
-            return PathResolver::getPublicPath() . $filePath;
-        }
-
-        return $filePath;
+        return $this->pdfAssetStorage->upsertPdfAsset(
+            $ticket->pdfAssetId,
+            $storedPdfFile,
+            self::TICKET_PDF_ALT_TEXT,
+        );
     }
 
     /**
+     * Sends one email containing all ticket PDFs and records whether delivery succeeded.
+     *
+     * It returns nothing because the outcome is written back to the order record:
+     * either a sent timestamp or a trimmed error message for later troubleshooting.
+     *
      * @param OrderItem[] $orderItems
      * @param array<int, SessionWithEvent> $sessionsById
      * @param TicketEmailAttachment[] $attachments
@@ -482,6 +575,11 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     }
 
     /**
+     * Returns the short event summary lines shown inside the ticket email.
+     *
+     * The result is an array of strings because the email template renders a list of events,
+     * and each line should already be presentation-ready when it reaches that template.
+     *
      * @param OrderItem[] $orderItems
      * @param array<int, SessionWithEvent> $sessionsById
      * @return string[]
@@ -505,11 +603,23 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         return $lines;
     }
 
+    /**
+     * Returns a shortened version of an exception message for database storage.
+     *
+     * The message is trimmed because database error fields should stay readable and bounded
+     * instead of storing extremely long stack-related text.
+     */
     private function truncateErrorMessage(string $message): string
     {
-        return mb_substr($message, 0, 500);
+        return mb_substr($message, 0, self::MAX_STORED_ERROR_MESSAGE_LENGTH);
     }
 
+    /**
+     * Returns the first non-empty string from the given fallback values, or null if none exist.
+     *
+     * This helper keeps the recipient-resolution code readable by centralizing the
+     * "prefer the first meaningful value" rule in one place.
+     */
     private function firstNonEmpty(?string ...$values): ?string
     {
         foreach ($values as $value) {

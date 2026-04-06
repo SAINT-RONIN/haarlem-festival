@@ -18,7 +18,10 @@ final readonly class EventUpsertData
         public ?int    $featuredImageAssetId,
         public ?int    $venueId,
         public ?int    $artistId,
-        public ?int    $restaurantId,
         public bool    $isActive,
+        public ?string $slug = null,
+        public ?int    $restaurantStars = null,
+        public ?string $restaurantCuisine = null,
+        public ?string $restaurantShortDescription = null,
     ) {}
 }

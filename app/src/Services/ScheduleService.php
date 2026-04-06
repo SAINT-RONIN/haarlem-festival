@@ -7,9 +7,11 @@ namespace App\Services;
 use App\Enums\EventTypeId;
 use App\Enums\PriceTierId;
 use App\Helpers\FormatHelper;
+use App\Helpers\HistorySessionHelper;
 use App\Helpers\SessionGroupingHelper;
 use App\DTOs\Filters\EventSessionFilter;
 use App\DTOs\Schedule\ScheduleSectionData;
+use App\DTOs\Schedule\SessionWithEvent;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
 use App\DTOs\Filters\EventTypeFilter;
@@ -267,14 +269,23 @@ class ScheduleService implements IScheduleService
     ): array {
         $date = $day->date;
         $daySessions = $sessionsByDate[$date] ?? [];
+        $historyTourOptionsMap = [];
 
         if ($eventTypeId === EventTypeId::History->value) {
-            [$daySessions, $labelsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap);
+            [$daySessions, $labelsMap, $historyTourOptionsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap, $pricesMap);
         }
 
         $events = [];
         foreach ($daySessions as $session) {
-            $events[] = $this->buildEventCard($session, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings);
+            $events[] = $this->buildEventCard(
+                $session,
+                $eventTypeSlug,
+                $eventTypeId,
+                $labelsMap,
+                $pricesMap,
+                $displayStrings,
+                $historyTourOptionsMap[$session->eventSessionId] ?? [],
+            );
         }
 
         return [
@@ -291,22 +302,36 @@ class ScheduleService implements IScheduleService
      * Multiple sessions at the same time slot (one per language) are merged
      * into a single session with combined labels for the schedule card.
      *
-     * @param array $sessions Sessions for a single day
+     * @param SessionWithEvent[] $sessions Sessions for a single day
      * @param array $labelsMap Pre-loaded labels indexed by session ID
-     * @return array{0: array, 1: array} [groupedSessions, updatedLabelsMap]
+     * @param array<int, EventSessionPrice[]> $pricesMap
+     * @return array{0: SessionWithEvent[], 1: array, 2: array<int, array<int, array<string, mixed>>>}
      */
-    private function groupSessionsByTimeSlot(array $sessions, array $labelsMap): array
+    private function groupSessionsByTimeSlot(array $sessions, array $labelsMap, array $pricesMap): array
     {
         $grouped = [];
+        $groupedSessionsByTime = [];
         foreach ($sessions as $session) {
             $timeKey = $session->startDateTime->format('Y-m-d H:i:s');
             if (!isset($grouped[$timeKey])) {
                 $grouped[$timeKey] = $session;
+                $groupedSessionsByTime[$timeKey] = [$session];
             } else {
+                $groupedSessionsByTime[$timeKey][] = $session;
                 $labelsMap = $this->mergeSessionLabels($labelsMap, $grouped[$timeKey]->eventSessionId, $session->eventSessionId);
             }
         }
-        return [array_values($grouped), $labelsMap];
+
+        $historyTourOptionsMap = [];
+        foreach ($grouped as $timeKey => $primarySession) {
+            $historyTourOptionsMap[$primarySession->eventSessionId] = $this->buildHistoryTourOptions(
+                $groupedSessionsByTime[$timeKey] ?? [$primarySession],
+                $labelsMap,
+                $pricesMap,
+            );
+        }
+
+        return [array_values($grouped), $labelsMap, $historyTourOptionsMap];
     }
 
     /** Merges unique labels from a secondary session into the primary session's label list. */
@@ -342,6 +367,7 @@ class ScheduleService implements IScheduleService
         array $labelsMap,
         array $pricesMap,
         array $displayStrings,
+        array $historyTourOptions = [],
     ): array {
         $sessionId = $session->eventSessionId;
 
@@ -350,7 +376,7 @@ class ScheduleService implements IScheduleService
         $priceData = $this->resolvePrice($pricesMap[$sessionId] ?? []);
         $cta = $this->resolveCta($session, $eventTypeSlug, $displayStrings['ctaButtonText']);
 
-        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $displayStrings);
+        return $this->buildCardArray($session, $eventTypeSlug, $eventTypeId, $labels, $minAge, $maxAge, $priceData, $cta, $displayStrings, $historyTourOptions);
     }
 
     /**
@@ -416,13 +442,14 @@ class ScheduleService implements IScheduleService
         array $priceData,
         array $cta,
         array $displayStrings,
+        array $historyTourOptions = [],
     ): array {
         return array_merge(
             $this->buildCardIdentityFields($session, $eventTypeSlug, $eventTypeId),
             $this->buildCardPriceFields($priceData, $cta, $displayStrings),
             $this->buildCardLocationFields($session, $displayStrings['startPoint']),
             $this->buildCardTimeFields($session),
-            $this->buildCardDetailFields($session, $labels, $minAge, $maxAge, $priceData, $displayStrings['groupTicketFallback']),
+            $this->buildCardDetailFields($session, $labels, $minAge, $maxAge, $priceData, $displayStrings['groupTicketFallback'], $historyTourOptions),
         );
     }
 
@@ -484,6 +511,7 @@ class ScheduleService implements IScheduleService
         ?int $maxAge,
         array $priceData,
         string $groupTicketFallback,
+        array $historyTourOptions = [],
     ): array {
         return [
             'labels' => $labels,
@@ -495,7 +523,72 @@ class ScheduleService implements IScheduleService
             'artistName' => $session->artistName,
             'artistImageUrl' => $session->artistImageUrl,
             'historyTicketLabel' => $session->historyTicketLabel ?? $groupTicketFallback ?: null,
+            'historyTourOptions' => $historyTourOptions,
         ];
+    }
+
+    /**
+     * @param SessionWithEvent[] $sessions
+     * @param array<int, EventSessionLabel[]> $labelsMap
+     * @param array<int, EventSessionPrice[]> $pricesMap
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildHistoryTourOptions(array $sessions, array $labelsMap, array $pricesMap): array
+    {
+        $options = [];
+        $seenLanguageKeys = [];
+        $sharedPrices = $this->buildSharedHistoryPrices($sessions, $pricesMap);
+
+        foreach ($sessions as $session) {
+            $labels = $labelsMap[$session->eventSessionId] ?? [];
+            $languageLabel = HistorySessionHelper::resolveLanguageLabel($session->languageCode, $labels);
+            $languageKey = HistorySessionHelper::resolveLanguageKey($session->languageCode, $labels);
+
+            if ($languageLabel === null || $languageLabel === '') {
+                continue;
+            }
+
+            if ($languageKey !== null && isset($seenLanguageKeys[$languageKey])) {
+                continue;
+            }
+
+            if ($languageKey !== null) {
+                $seenLanguageKeys[$languageKey] = true;
+            }
+
+            $options[$session->eventSessionId] = [
+                'language' => $languageLabel,
+                'seatsAvailable' => HistorySessionHelper::resolveSeatsAvailable($session),
+                'prices' => $sharedPrices,
+            ];
+        }
+
+        return $options;
+    }
+
+    /**
+     * @param SessionWithEvent[] $sessions
+     * @param array<int, EventSessionPrice[]> $pricesMap
+     * @return array<int, array{priceTierId: int, price: string}>
+     */
+    private function buildSharedHistoryPrices(array $sessions, array $pricesMap): array
+    {
+        $sharedPrices = [];
+
+        foreach ($sessions as $session) {
+            $sharedPrices = HistorySessionHelper::mergeHighestPricesByKey(
+                $sharedPrices,
+                $pricesMap[$session->eventSessionId] ?? [],
+            );
+        }
+
+        return array_values(array_map(
+            static fn(EventSessionPrice $price): array => [
+                'priceTierId' => $price->priceTierId,
+                'price' => $price->price,
+            ],
+            $sharedPrices,
+        ));
     }
 
     /** Maps price data to a human-readable price type string. */

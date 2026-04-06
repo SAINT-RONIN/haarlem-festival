@@ -20,26 +20,33 @@ use App\Services\Interfaces\ISessionService;
  */
 class ScannerController extends BaseController
 {
+    /** Injects the scanner service and the shared session service used for access control. */
     public function __construct(
         private readonly IScannerService $scannerService,
         ISessionService $sessionService,
     ) {
         parent::__construct($sessionService);
-        $this->requireEmployeeOrAdmin();
     }
 
+    /** Renders the scanner page for logged-in employees and administrators. */
     public function index(): void
     {
+        $this->requireEmployeeOrAdmin();
+
         $this->handlePageRequest(function (): void {
             $currentView = 'scanner';
             require __DIR__ . '/../Views/pages/cms/scanner.php';
         });
     }
 
+    /** Accepts a ticket code, attempts a scan, and returns a JSON result for the scanner UI. */
     public function scan(): void
     {
+        $this->requireEmployeeOrAdmin();
+
         $this->handleJsonRequest(function (): void {
             $body = $this->readJsonBody();
+            // The scanner should ignore whitespace and casing differences in the submitted code.
             $ticketCode = strtoupper(trim((string) ($body['ticketCode'] ?? '')));
             $userId = $this->requireSessionService()->getUserId();
 
@@ -61,13 +68,14 @@ class ScannerController extends BaseController
         });
     }
 
+    /** Blocks access unless the current session belongs to an employee or administrator. */
     private function requireEmployeeOrAdmin(): void
     {
         try {
-            $this->requireSessionService()->start();
+            $sessionService = $this->requireSessionService();
+            $sessionService->start();
 
-            if (!$this->requireSessionService()->isLoggedIn()
-                || !$this->requireSessionService()->isEmployeeOrAdmin()) {
+            if (!$sessionService->isLoggedIn() || !$sessionService->isEmployeeOrAdmin()) {
                 $this->redirectAndExit('/cms/login');
             }
         } catch (\Throwable $error) {
