@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Constants\SharedSectionKeys;
 use App\DTOs\Cms\EventUpsertData;
+use App\DTOs\Filters\CmsItemFilter;
+use App\DTOs\Filters\CmsSectionFilter;
 use App\Helpers\EventDetailCmsHelper;
 use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IEventRepository;
@@ -67,35 +69,6 @@ abstract class BaseCmsEventsService
     }
 
     /**
-     * Returns a new EventUpsertData DTO with the resolved unique slug applied.
-     *
-     * All other fields are copied from $data unchanged — only $slug is replaced.
-     * A new DTO is returned instead of mutating the existing one because EventUpsertData
-     * is a readonly value object.
-     *
-     * @param EventUpsertData $data The original form data from the controller.
-     * @param string          $slug The unique slug resolved by resolveUniqueSlug().
-     * @return EventUpsertData A new instance with the final slug applied.
-     */
-    protected function applyResolvedSlug(EventUpsertData $data, string $slug): EventUpsertData
-    {
-        return new EventUpsertData(
-            eventTypeId:                $data->eventTypeId,
-            title:                      $data->title,
-            shortDescription:           $data->shortDescription,
-            longDescriptionHtml:        $data->longDescriptionHtml,
-            featuredImageAssetId:       $data->featuredImageAssetId,
-            venueId:                    $data->venueId,
-            artistId:                   $data->artistId,
-            isActive:                   $data->isActive,
-            slug:                       $slug,
-            restaurantStars:            $data->restaurantStars,
-            restaurantCuisine:          $data->restaurantCuisine,
-            restaurantShortDescription: $data->restaurantShortDescription,
-        );
-    }
-
-    /**
      * Creates a CMS section for a new event on its event type's detail page, if one exists.
      *
      * When a new event is created it automatically gets a CMS section on the relevant detail
@@ -146,13 +119,13 @@ abstract class BaseCmsEventsService
         }
 
         $sections = $this->cmsRepository->findSections(
-            new \App\DTOs\Filters\CmsSectionFilter(
+            new CmsSectionFilter(
                 cmsPageId:  $page->cmsPageId,
                 sectionKey: SharedSectionKeys::eventSectionKey($eventId),
             )
         );
 
-        return !empty($sections) ? $sections[0]->cmsSectionId : null;
+        return $sections !== [] ? $sections[0]->cmsSectionId : null;
     }
 
     /**
@@ -220,7 +193,7 @@ abstract class BaseCmsEventsService
         }
 
         $items = $this->cmsRepository->findItems(
-            new \App\DTOs\Filters\CmsItemFilter(cmsSectionId: $sectionId)
+            new CmsItemFilter(cmsSectionId: $sectionId)
         );
 
         // Maps CMS item keys (as stored in DB) to the field names returned by this method.

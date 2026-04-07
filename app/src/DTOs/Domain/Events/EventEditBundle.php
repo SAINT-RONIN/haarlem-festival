@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\DTOs\Domain\Events;
 
+use App\DTOs\Domain\Schedule\SessionWithEvent;
+use App\Models\EventSessionLabel;
+use App\Models\EventSessionPrice;
+
 /**
  * Typed bundle of data for the event edit page.
  *
@@ -13,9 +17,9 @@ namespace App\DTOs\Domain\Events;
 final readonly class EventEditBundle
 {
     /**
-     * @param SessionWithEvent[] $sessions
-     * @param array<int, \App\Models\EventSessionPrice[]> $pricesMap
-     * @param array<int, \App\Models\EventSessionLabel[]> $labelsMap
+     * @param SessionWithEvent[]              $sessions
+     * @param array<int, EventSessionPrice[]> $pricesMap
+     * @param array<int, EventSessionLabel[]> $labelsMap
      */
     public function __construct(
         public EventWithDetails $event,

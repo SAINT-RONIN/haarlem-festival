@@ -31,4 +31,35 @@ final readonly class EventSessionUpsertData
         public bool $isActive = true,
     ) {
     }
+
+    /**
+     * Returns a copy of this DTO with the event ID set to the given value.
+     *
+     * Used on the create path where the event ID comes from the route parameter,
+     * not from the form — the form may not post an EventId field at all.
+     */
+    public function forEvent(int $eventId): self
+    {
+        return new self(
+            eventId:                   $eventId,
+            startDateTime:             $this->startDateTime,
+            endDateTime:               $this->endDateTime,
+            capacityTotal:             $this->capacityTotal,
+            capacitySingleTicketLimit: $this->capacitySingleTicketLimit,
+            hallName:                  $this->hallName,
+            sessionType:               $this->sessionType,
+            durationMinutes:           $this->durationMinutes,
+            languageCode:              $this->languageCode,
+            minAge:                    $this->minAge,
+            maxAge:                    $this->maxAge,
+            reservationRequired:       $this->reservationRequired,
+            isFree:                    $this->isFree,
+            notes:                     $this->notes,
+            historyTicketLabel:        $this->historyTicketLabel,
+            ctaLabel:                  $this->ctaLabel,
+            ctaUrl:                    $this->ctaUrl,
+            isCancelled:               $this->isCancelled,
+            isActive:                  $this->isActive,
+        );
+    }
 }

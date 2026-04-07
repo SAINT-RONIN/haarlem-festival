@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\DTOs\Domain\Events;
 
+use App\DTOs\Domain\Schedule\SessionWithEvent;
+use App\Models\EventType;
+use App\Models\Venue;
+
 /**
  * All data needed to render the CMS events list page.
  *

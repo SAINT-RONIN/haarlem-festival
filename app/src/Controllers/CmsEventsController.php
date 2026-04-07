@@ -252,19 +252,11 @@ class CmsEventsController extends CmsBaseController
     private function buildEventEditViewModel(EventEditBundle $editData, array $priceTiers = []): \App\ViewModels\Cms\CmsEventEditViewModel
     {
         return CmsEventsViewMapper::toEventEditViewModel(
-            $editData->event,
-            $editData->sessions,
-            $editData->pricesMap,
-            $editData->labelsMap,
+            $editData,
             $this->sessionService->consumeFlash('success'),
             $this->sessionService->consumeFlash('error'),
             $priceTiers,
-            $editData->cmsDetailEditUrl,
-            $editData->restaurantStars,
-            $editData->restaurantCuisine,
-            $editData->restaurantShortDescription,
             $this->eventsService->getVenues(),
-            $editData->featuredImagePath,
         );
     }
 
