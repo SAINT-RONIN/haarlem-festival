@@ -47,7 +47,14 @@ class EmployeeScannerController extends BaseController
         $this->handleJsonRequest(function (): void {
             $employeeUserId = $this->requireEmployee();
             $payload = $this->readJsonBody();
-            $result = $this->ticketScannerService->scanTicket((string)($payload['ticketCode'] ?? ''), $employeeUserId);
+            $ticketCode = strtoupper(trim((string)($payload['ticketCode'] ?? '')));
+
+            if ($ticketCode === '') {
+                $this->json(['success' => false, 'error' => 'Ticket code is required.'], 400);
+                return;
+            }
+
+            $result = $this->ticketScannerService->scanTicket($ticketCode, $employeeUserId);
 
             $this->json([
                 'success' => true,

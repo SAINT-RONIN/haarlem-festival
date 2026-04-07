@@ -120,7 +120,7 @@ class CmsUsersController extends CmsBaseController
         $this->validateCsrf('cms_user_create', '/cms/users/create');
         $data   = $this->extractUserFormData();
         // Re-render the form with errors if validation fails
-        $errors = $this->usersService->validateForCreate($data['username'], $data['email'], $data['password'], $data['firstName'], $data['lastName']);
+        $errors = $this->usersService->validateForCreate($data['username'], $data['email'], $data['password'], $data['firstName'], $data['lastName'], $data['roleId']);
         if (!empty($errors)) {
             $this->renderCreateForm($data, $errors);
             return;
@@ -147,7 +147,7 @@ class CmsUsersController extends CmsBaseController
         $this->validateCsrf('cms_user_edit_' . $id, '/cms/users/' . $id . '/edit');
         $data   = $this->extractUserFormData();
         // Empty password string is coerced to null so the service preserves the existing hash
-        $errors = $this->usersService->validateForUpdate($id, $data['username'], $data['email'], $data['password'] ?: null, $data['firstName'], $data['lastName']);
+        $errors = $this->usersService->validateForUpdate($id, $data['username'], $data['email'], $data['password'] ?: null, $data['firstName'], $data['lastName'], $data['roleId']);
         if (!empty($errors)) {
             $this->renderEditForm($id, $data, $errors);
             return;

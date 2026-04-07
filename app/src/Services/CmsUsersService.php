@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\UserRoleId;
 use App\Helpers\UserValidationHelper;
 use App\Models\UserAccount;
 use App\DTOs\Domain\User\UserWithRole;
@@ -71,11 +72,13 @@ class CmsUsersService implements ICmsUsersService
         string $password,
         string $firstName,
         string $lastName,
+        int $roleId,
     ): array {
         $errors = $this->checkUsername($username, []);
         $errors = $this->checkEmail($email, $errors);
         $errors = $this->validatePasswordRequired($password, $errors);
-        return $this->validateNames($firstName, $lastName, $errors);
+        $errors = $this->validateNames($firstName, $lastName, $errors);
+        return $this->validateRoleId($roleId, $errors);
     }
 
     /**
@@ -95,11 +98,13 @@ class CmsUsersService implements ICmsUsersService
         ?string $password,
         string $firstName,
         string $lastName,
+        int $roleId,
     ): array {
         $errors = $this->checkUsername($username, [], $id);
         $errors = $this->checkEmail($email, $errors, $id);
         $errors = $this->validatePasswordOptional($password, $errors);
-        return $this->validateNames($firstName, $lastName, $errors);
+        $errors = $this->validateNames($firstName, $lastName, $errors);
+        return $this->validateRoleId($roleId, $errors);
     }
 
     /**
@@ -291,5 +296,22 @@ class CmsUsersService implements ICmsUsersService
     private function validateNames(string $firstName, string $lastName, array $errors): array
     {
         return array_merge($errors, UserValidationHelper::checkNames($firstName, $lastName));
+    }
+
+    /**
+     * Validates that the role ID corresponds to a known UserRoleId enum case.
+     *
+     * Prevents arbitrary integer values from reaching the DB column, which could
+     * assign a non-existent role or escalate privileges to an unlisted role value.
+     *
+     * @param array<string, string> $errors
+     * @return array<string, string>
+     */
+    private function validateRoleId(int $roleId, array $errors): array
+    {
+        if (UserRoleId::tryFrom($roleId) === null) {
+            $errors['roleId'] = 'Please select a valid role.';
+        }
+        return $errors;
     }
 }

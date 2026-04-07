@@ -56,6 +56,11 @@ class ScannerController extends BaseController
             $ticketCode = $this->resolveTicketCode($this->readJsonBody());
             $userId     = $this->requireAuthenticatedUserId();
 
+            if ($ticketCode === '') {
+                $this->json(['success' => false, 'error' => 'Ticket code is required.'], 400);
+                return;
+            }
+
             try {
                 $detail = $this->scannerService->scanTicket($ticketCode, $userId);
                 $this->json(ScannerMapper::toScanSuccessResponse($detail));

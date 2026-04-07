@@ -40,6 +40,7 @@ interface ICmsUsersService
         string $password,
         string $firstName,
         string $lastName,
+        int $roleId,
     ): array;
 
     /**
@@ -54,6 +55,7 @@ interface ICmsUsersService
         ?string $password,
         string $firstName,
         string $lastName,
+        int $roleId,
     ): array;
 
     /**

@@ -126,6 +126,9 @@ class RestaurantReservationService implements IRestaurantReservationService
         if (($reservationData['adultsCount'] + $reservationData['childrenCount']) < 1) {
             $errors[] = 'Please add at least one guest.';
         }
+        if (strlen($reservationData['specialRequests']) > RestaurantPageConstants::MAX_SPECIAL_REQUESTS_LENGTH) {
+            $errors[] = 'Special requests may not exceed ' . RestaurantPageConstants::MAX_SPECIAL_REQUESTS_LENGTH . ' characters.';
+        }
 
         if ($errors !== []) {
             throw new ValidationException($errors);
