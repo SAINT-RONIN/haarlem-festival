@@ -19,6 +19,7 @@ use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsOrdersController;
 use App\Controllers\CmsUsersController;
+use App\Controllers\DanceController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
@@ -75,6 +76,7 @@ use App\Repositories\JazzContentRepository;
 use App\Repositories\RestaurantContentRepository;
 use App\Repositories\ScheduleContentRepository;
 use App\Repositories\StorytellingContentRepository;
+use App\Services\DanceService;
 use App\Services\CmsArtistsService;
 use App\Services\CmsDashboardService;
 use App\Services\CmsEventsService;
@@ -473,6 +475,13 @@ return static function (string $controllerClass): object {
         ),
         OrderHistoryController::class => new OrderHistoryController(
             new OrderHistoryService(new OrderHistoryRepository($pdo())),
+            $sessionService,
+        ),
+        DanceController::class => new DanceController(
+            new DanceService(
+                $globalContentRepo(),
+                $cmsContent(),
+            ),
             $sessionService,
         ),
         default => new $controllerClass(),

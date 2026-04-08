@@ -3,32 +3,33 @@
 declare(strict_types=1);
 
 namespace App\Services;
+
+use App\Mappers\CmsMapper;
+use App\Repositories\Interfaces\ICmsContentRepository;
+use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\ViewModels\GlobalUiData;
+use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\Dance\DancePageViewModel;
 use App\ViewModels\Dance\ExperienceData;
-use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
 
 /**
  * Service for preparing Dance page data.
- *
- * Mirrors the structure of Jazz/Storytelling for the first two sections,
- * and adds a Festival Experience section.
  */
-class DanceService
+class DanceService extends BaseContentService
 {
-    private CmsService $cmsService;
-
     private const DEFAULT_IMAGE = '/assets/Image/Image (Dance).png';
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'heic'];
 
-    public function __construct()
-    {
-        $this->cmsService = new CmsService();
+    public function __construct(
+        IGlobalContentRepository $globalContentRepo,
+        private readonly ICmsContentRepository $cmsContentRepo,
+    ) {
+        parent::__construct($globalContentRepo);
     }
 
-    public function getDancePageData(): DancePageViewModel
+    public function getDancePageData(bool $isLoggedIn): DancePageViewModel
     {
         $heroData = new HeroData(
             mainTitle: 'DANCE! FESTIVAL 2025',
@@ -41,7 +42,7 @@ class DanceService
             currentPage: 'dance',
         );
 
-        $globalUi = $this->cmsService->buildGlobalUiData();
+        $globalUi = CmsMapper::toGlobalUiData($this->loadGlobalUi(), $isLoggedIn);
 
         return new DancePageViewModel(
             heroData: $heroData,
@@ -63,7 +64,7 @@ class DanceService
 
     private function buildIntroSplitSection(): IntroSplitSectionData
     {
-        $content = $this->cmsService->getSectionContent('dance', 'intro_split_section');
+        $content = $this->cmsContentRepo->getSectionContent('dance', 'intro_split_section');
 
         return new IntroSplitSectionData(
             headingText: $this->getStringValue($content, 'intro_heading', 'ENJOY THE HOTTEST TIME THIS SUMMER'),
@@ -72,7 +73,7 @@ class DanceService
                 'intro_body',
                 'This summer, Haarlem becomes the heart of music, dance, and unforgettable energy. Our festival brings people together to celebrate movement, culture, and sound in one powerful experience. Whether you come for the beats, the atmosphere, or the memories, this is where your summer truly begins.
 
-Expect high-energy performances, vibrant crowds, and an atmosphere filled with freedom, rhythm, and connection. Haarlem Festival Dance is not just an event; it’s a feeling you’ll carry with you long after the music stops.'
+Expect high-energy performances, vibrant crowds, and an atmosphere filled with freedom, rhythm, and connection. Haarlem Festival Dance is not just an event; it\'s a feeling you\'ll carry with you long after the music stops.'
             ),
             imageUrl: $this->validateImagePath($content['intro_image'] ?? '/assets/Image/dance-crowd-stage.jpg'),
             imageAltText: $this->getStringValue($content, 'intro_image_alt', 'Dance festival crowd in front of the stage'),
@@ -81,9 +82,8 @@ Expect high-energy performances, vibrant crowds, and an atmosphere filled with f
 
     private function buildExperienceSection(): ExperienceData
     {
-        $content = $this->cmsService->getSectionContent('dance', 'experience_section');
+        $content = $this->cmsContentRepo->getSectionContent('dance', 'experience_section');
 
-        // If CMS doesn't have images yet, repeat the default image (so the section still renders).
         $images = $this->getArrayValue($content, 'experience_images', []);
         if (count($images) === 0) {
             $images = [self::DEFAULT_IMAGE, self::DEFAULT_IMAGE, self::DEFAULT_IMAGE];
@@ -122,7 +122,6 @@ Expect high-energy performances, vibrant crowds, and an atmosphere filled with f
             return self::DEFAULT_IMAGE;
         }
 
-        // Allow URLs or local asset paths
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '/')) {
             $ext = strtolower(pathinfo(parse_url($path, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
             if ($ext === '' || in_array($ext, self::VALID_IMAGE_EXTENSIONS, true)) {
@@ -133,4 +132,3 @@ Expect high-energy performances, vibrant crowds, and an atmosphere filled with f
         return self::DEFAULT_IMAGE;
     }
 }
-
