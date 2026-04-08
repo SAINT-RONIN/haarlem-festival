@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTOs\Domain\Schedule;
 
+use App\Constants\ScheduleConstants;
 use App\DTOs\Domain\Filters\ScheduleFilterParams;
 use App\DTOs\Cms\ScheduleSectionContent;
 
@@ -29,8 +30,8 @@ final readonly class ScheduleSectionData
         public array $days,
         public ?ScheduleFilterParams $activeFilters = null,
         public array $availableDays = [],
-        public array $filterGroupTypes = ['day'],
-        public array $priceTypeOptions = ['pay-what-you-like', 'fixed'],
+        public array $filterGroupTypes = [ScheduleConstants::FILTER_DAY],
+        public array $priceTypeOptions = [ScheduleConstants::PRICE_TYPE_PAY_WHAT_YOU_LIKE, ScheduleConstants::PRICE_TYPE_FIXED],
     ) {
     }
 }

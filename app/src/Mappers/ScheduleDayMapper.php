@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Domain\Filters\ScheduleFilterParams;
-use App\DTOs\Domain\Schedule\ScheduleSectionData;
+use App\Constants\HistoryPageConstants;
+use App\Constants\ScheduleConstants;
 use App\DTOs\Cms\ScheduleSectionContent;
+use App\DTOs\Domain\Schedule\ScheduleButtonTexts;
+use App\DTOs\Domain\Schedule\ScheduleCmsSettings;
+use App\DTOs\Domain\Schedule\ScheduleFilterContext;
+use App\DTOs\Domain\Schedule\ScheduleHeaderTexts;
+use App\DTOs\Domain\Schedule\ScheduleSectionData;
 use App\ViewModels\Schedule\ScheduleDayViewModel;
 use App\ViewModels\Schedule\ScheduleEventCardViewModel;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
@@ -17,21 +22,13 @@ use App\ViewModels\Schedule\ScheduleSectionViewModel;
  */
 final class ScheduleDayMapper
 {
-    private const HISTORY_PAGE_SLUG = 'history';
-
-    /**
-     * Assembles the full ScheduleSectionViewModel from resolved sub-components.
-     */
     public static function buildSection(ScheduleSectionData $scheduleData): ScheduleSectionViewModel
     {
         $cmsContent    = $scheduleData->cmsContent;
-        $pageSlug      = $scheduleData->pageSlug;
-        $activeFilters = $scheduleData->activeFilters;
-        $availableDays = $scheduleData->availableDays;
         $buttonTexts   = self::extractButtonTexts($cmsContent);
-        $days          = self::mapDays($scheduleData->days, $buttonTexts['confirm'], $buttonTexts['adding'], $buttonTexts['success']);
+        $days          = self::mapDays($scheduleData->days, $buttonTexts);
 
-        return self::buildSectionViewModel($scheduleData, $cmsContent, $pageSlug, $days, $buttonTexts, $activeFilters, $availableDays);
+        return self::buildSectionViewModel($scheduleData, $cmsContent, $days, $buttonTexts);
     }
 
     /**
@@ -66,186 +63,156 @@ final class ScheduleDayMapper
         return $viewModels;
     }
 
-    /**
-     * Extracts CMS button labels for the add-to-program interaction.
-     *
-     * @return array{confirm: string, adding: string, success: string}
-     */
-    private static function extractButtonTexts(ScheduleSectionContent $cmsContent): array
+    private static function extractButtonTexts(ScheduleSectionContent $cmsContent): ScheduleButtonTexts
     {
-        return [
-            'confirm' => self::str($cmsContent->scheduleConfirmText, 'Confirm selection'),
-            'adding'  => self::str($cmsContent->scheduleAddingText, 'Adding...'),
-            'success' => self::str($cmsContent->scheduleSuccessText, 'Added to program'),
-        ];
+        return new ScheduleButtonTexts(
+            confirm: self::str($cmsContent->scheduleConfirmText, ScheduleConstants::DEFAULT_CONFIRM_TEXT),
+            adding:  self::str($cmsContent->scheduleAddingText, ScheduleConstants::DEFAULT_ADDING_TEXT),
+            success: self::str($cmsContent->scheduleSuccessText, ScheduleConstants::DEFAULT_SUCCESS_TEXT),
+        );
     }
 
     /**
      * Resolves the schedule section header (title, year, event count label).
      * The history page suppresses the year and event count by design.
-     *
-     * @return array{title: string, year: ?string, eventCountLabel: ?string, showEventCount: bool}
      */
-    private static function resolveHeaderTexts(ScheduleSectionContent $cmsContent, string $pageSlug): array
+    private static function resolveHeaderTexts(ScheduleSectionContent $cmsContent, string $pageSlug): ScheduleHeaderTexts
     {
         $title = self::str($cmsContent->scheduleTitle, ucfirst($pageSlug) . ' schedule');
-        $year  = self::str($cmsContent->scheduleYear, '2026');
+        $year  = self::str($cmsContent->scheduleYear, ScheduleConstants::DEFAULT_SCHEDULE_YEAR);
         $eventCountLabel = self::str(
             $cmsContent->scheduleEventCountLabel,
-            self::str($cmsContent->scheduleStoryCountLabel, 'Events')
+            self::str($cmsContent->scheduleStoryCountLabel, ScheduleConstants::DEFAULT_EVENT_COUNT_LABEL)
         );
         $showEventCount = ($cmsContent->scheduleShowEventCount ??
             $cmsContent->scheduleShowStoryCount ?? '1') === '1';
 
-        if ($pageSlug === self::HISTORY_PAGE_SLUG) {
-            $year            = null;
-            $eventCountLabel = null;
-            $showEventCount  = false;
+        if ($pageSlug === HistoryPageConstants::PAGE_SLUG) {
+            return new ScheduleHeaderTexts(title: $title, year: null, eventCountLabel: null, showEventCount: false);
         }
 
-        return compact('title', 'year', 'eventCountLabel', 'showEventCount');
-    }
-
-    /**
-     * Assembles the full ScheduleSectionViewModel from resolved sub-components.
-     *
-     * @param ScheduleDayViewModel[] $days
-     * @param array{confirm: string, adding: string, success: string} $buttonTexts
-     * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
-     */
-    private static function buildSectionViewModel(
-        ScheduleSectionData $scheduleData,
-        ScheduleSectionContent $cmsContent,
-        string $pageSlug,
-        array $days,
-        array $buttonTexts,
-        ?ScheduleFilterParams $activeFilters = null,
-        array $availableDays = [],
-    ): ScheduleSectionViewModel {
-        $headerTexts  = self::resolveHeaderTexts($cmsContent, $pageSlug);
-        $cmsSettings  = self::extractCmsSettings($cmsContent);
-        $filterContext = self::resolveFilterContext($scheduleData, $cmsContent, $days, $activeFilters, $availableDays);
-
-        return new ScheduleSectionViewModel(
-            sectionId: $pageSlug . '-schedule',
-            title: $headerTexts['title'],
-            year: $headerTexts['year'],
-            eventTypeSlug: $scheduleData->eventTypeSlug,
-            eventTypeId: $scheduleData->eventTypeId,
-            filtersButtonText: $cmsSettings['filtersButtonText'],
-            showFilters: $cmsSettings['showFilters'],
-            additionalInfoTitle: $cmsSettings['additionalInfoTitle'],
-            additionalInfoBody: $cmsSettings['additionalInfoBody'],
-            showAdditionalInfo: $cmsSettings['showAdditionalInfo'],
-            eventCountLabel: $headerTexts['eventCountLabel'],
-            eventCount: $filterContext['eventCount'],
-            showEventCount: $headerTexts['showEventCount'],
-            ctaButtonText: $cmsSettings['ctaButtonText'],
-            payWhatYouLikeText: $cmsSettings['payWhatYouLikeText'],
-            currencySymbol: $cmsSettings['currencySymbol'],
-            noEventsText: $cmsSettings['noEventsText'],
-            days: $days,
-            confirmText: $buttonTexts['confirm'],
-            addingText: $buttonTexts['adding'],
-            successText: $buttonTexts['success'],
-            filterGroups: $filterContext['filterGroups'],
-            resetButtonText: $filterContext['resetButtonText'],
-            hasActiveFilters: $activeFilters !== null && $activeFilters->hasAnyFilter(),
-            gridClasses: self::resolveGridClasses(count($days)),
-            itemClasses: self::resolveItemClasses(count($days)),
+        return new ScheduleHeaderTexts(
+            title:           $title,
+            year:            $year,
+            eventCountLabel: $eventCountLabel,
+            showEventCount:  $showEventCount,
         );
     }
 
-    /**
-     * Builds filter groups, counts total events, and resolves the reset button text.
-     *
-     * @param ScheduleDayViewModel[] $days
-     * @param \App\DTOs\Schedule\ScheduleDayData[] $availableDays
-     * @return array{eventCount: int, filterGroups: array, resetButtonText: string}
-     */
-    // Returns associative array — internal mapper output consumed only by toScheduleSection()
+    private static function buildSectionViewModel(
+        ScheduleSectionData $scheduleData,
+        ScheduleSectionContent $cmsContent,
+        array $days,
+        ScheduleButtonTexts $buttonTexts,
+    ): ScheduleSectionViewModel {
+        $pageSlug      = $scheduleData->pageSlug;
+        $headerTexts   = self::resolveHeaderTexts($cmsContent, $pageSlug);
+        $cmsSettings   = self::extractCmsSettings($cmsContent);
+        $filterContext = self::resolveFilterContext($scheduleData, $cmsContent, $days);
+
+        return new ScheduleSectionViewModel(
+            sectionId:           $pageSlug . '-schedule',
+            title:               $headerTexts->title,
+            year:                $headerTexts->year,
+            eventTypeSlug:       $scheduleData->eventTypeSlug,
+            eventTypeId:         $scheduleData->eventTypeId,
+            filtersButtonText:   $cmsSettings->filtersButtonText,
+            showFilters:         $cmsSettings->showFilters,
+            additionalInfoTitle: $cmsSettings->additionalInfoTitle,
+            additionalInfoBody:  $cmsSettings->additionalInfoBody,
+            showAdditionalInfo:  $cmsSettings->showAdditionalInfo,
+            eventCountLabel:     $headerTexts->eventCountLabel,
+            eventCount:          $filterContext->eventCount,
+            showEventCount:      $headerTexts->showEventCount,
+            ctaButtonText:       $cmsSettings->ctaButtonText,
+            payWhatYouLikeText:  $cmsSettings->payWhatYouLikeText,
+            currencySymbol:      $cmsSettings->currencySymbol,
+            noEventsText:        $cmsSettings->noEventsText,
+            days:                $days,
+            confirmText:         $buttonTexts->confirm,
+            addingText:          $buttonTexts->adding,
+            successText:         $buttonTexts->success,
+            filterGroups:        $filterContext->filterGroups,
+            resetButtonText:     $filterContext->resetButtonText,
+            hasActiveFilters:    $scheduleData->activeFilters !== null && $scheduleData->activeFilters->hasAnyFilter(),
+            gridClasses:         self::resolveGridClasses(count($days)),
+            itemClasses:         self::resolveItemClasses(count($days)),
+        );
+    }
+
     private static function resolveFilterContext(
         ScheduleSectionData $scheduleData,
         ScheduleSectionContent $cmsContent,
         array $days,
-        ?ScheduleFilterParams $activeFilters,
-        array $availableDays,
-    ): array {
-        $eventCount = array_sum(array_map(fn ($day) => count($day->events), $days));
-        $filterGroupTypes = $scheduleData->filterGroupTypes;
-        $priceTypeOptions = $scheduleData->priceTypeOptions;
+    ): ScheduleFilterContext {
+        $eventCount  = array_sum(array_map(fn ($day) => count($day->events), $days));
         $filterGroups = ScheduleFilterMapper::buildFilterGroups(
-            $cmsContent, $filterGroupTypes, $priceTypeOptions, $days, $activeFilters, $availableDays,
+            $cmsContent,
+            $scheduleData->filterGroupTypes,
+            $scheduleData->priceTypeOptions,
+            $days,
+            $scheduleData->activeFilters,
+            $scheduleData->availableDays,
         );
-        $resetButtonText = self::str($cmsContent->scheduleFilterResetText, 'Reset all filters');
 
-        return [
-            'eventCount'      => $eventCount,
-            'filterGroups'    => $filterGroups,
-            'resetButtonText' => $resetButtonText,
-        ];
+        return new ScheduleFilterContext(
+            eventCount:      $eventCount,
+            filterGroups:    $filterGroups,
+            resetButtonText: self::str($cmsContent->scheduleFilterResetText, ScheduleConstants::DEFAULT_RESET_FILTERS_TEXT),
+        );
     }
 
-    /**
-     * Extracts CMS settings for schedule section display toggles and labels.
-     *
-     * @return array{filtersButtonText: string, showFilters: bool, additionalInfoTitle: string, additionalInfoBody: string, showAdditionalInfo: bool, ctaButtonText: string, payWhatYouLikeText: string, currencySymbol: string, noEventsText: string}
-     */
-    private static function extractCmsSettings(ScheduleSectionContent $cmsContent): array
+    private static function extractCmsSettings(ScheduleSectionContent $cmsContent): ScheduleCmsSettings
     {
-        return [
-            'filtersButtonText'  => self::str($cmsContent->scheduleFiltersButtonText, 'Filters'),
-            'showFilters'        => ($cmsContent->scheduleShowFilters ?? '1') === '1',
-            'additionalInfoTitle' => self::str($cmsContent->scheduleAdditionalInfoTitle, 'Additional Information:'),
-            'additionalInfoBody' => $cmsContent->scheduleAdditionalInfoBody ?? '',
-            'showAdditionalInfo' => ($cmsContent->scheduleShowAdditionalInfo ?? '0') === '1',
-            'ctaButtonText'      => self::str($cmsContent->scheduleCtaButtonText, 'Discover'),
-            'payWhatYouLikeText' => self::str($cmsContent->schedulePayWhatYouLikeText, 'Pay as you like'),
-            'currencySymbol'     => self::str($cmsContent->scheduleCurrencySymbol, '€'),
-            'noEventsText'       => self::str($cmsContent->scheduleNoEventsText, 'No events scheduled'),
-        ];
+        return new ScheduleCmsSettings(
+            filtersButtonText:  self::str($cmsContent->scheduleFiltersButtonText, ScheduleConstants::DEFAULT_FILTERS_BUTTON_TEXT),
+            showFilters:        ($cmsContent->scheduleShowFilters ?? '1') === '1',
+            additionalInfoTitle: self::str($cmsContent->scheduleAdditionalInfoTitle, ScheduleConstants::DEFAULT_ADDITIONAL_INFO_TITLE),
+            additionalInfoBody: $cmsContent->scheduleAdditionalInfoBody ?? '',
+            showAdditionalInfo: ($cmsContent->scheduleShowAdditionalInfo ?? '0') === '1',
+            ctaButtonText:      self::str($cmsContent->scheduleCtaButtonText, ScheduleConstants::DEFAULT_CTA_BUTTON_TEXT),
+            payWhatYouLikeText: self::str($cmsContent->schedulePayWhatYouLikeText, ScheduleConstants::DEFAULT_PAY_WHAT_YOU_LIKE_TEXT),
+            currencySymbol:     self::str($cmsContent->scheduleCurrencySymbol, ScheduleConstants::DEFAULT_CURRENCY_SYMBOL),
+            noEventsText:       self::str($cmsContent->scheduleNoEventsText, ScheduleConstants::DEFAULT_NO_EVENTS_TEXT),
+        );
     }
 
     /**
-     * Maps raw day arrays into ScheduleDayViewModel objects.
-     *
      * @param array<array<string, mixed>> $rawDays
      * @return ScheduleDayViewModel[]
      */
-    private static function mapDays(array $rawDays, string $confirmText, string $addingText, string $successText): array
+    private static function mapDays(array $rawDays, ScheduleButtonTexts $buttonTexts): array
     {
         $days = [];
         foreach ($rawDays as $day) {
-            $days[] = self::mapSingleDay($day, $confirmText, $addingText, $successText);
+            $days[] = self::mapSingleDay($day, $buttonTexts);
         }
         return $days;
     }
 
     /**
-     * Maps a single raw day array into a ScheduleDayViewModel.
-     *
      * @param array<string, mixed> $day
      */
-    private static function mapSingleDay(array $day, string $confirmText, string $addingText, string $successText): ScheduleDayViewModel
+    private static function mapSingleDay(array $day, ScheduleButtonTexts $buttonTexts): ScheduleDayViewModel
     {
         $isoDate = $day['isoDate'];
         $dateObj = new \DateTimeImmutable($isoDate);
         $events  = [];
 
         foreach ($day['events'] as $event) {
-            $events[] = ScheduleCardMapper::toEventCardViewModel($event, $confirmText, $addingText, $successText);
+            $events[] = ScheduleCardMapper::toEventCardViewModel($event, $buttonTexts->confirm, $buttonTexts->adding, $buttonTexts->success);
         }
 
         $dayNumber = $dateObj->format('j');
         $htmlId = 'schedule-day-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $day['dayName'])) . '-' . $dayNumber;
 
         return new ScheduleDayViewModel(
-            dayName: $day['dayName'],
+            dayName:       $day['dayName'],
             dateFormatted: $dateObj->format('l, F j'),
-            isoDate: $isoDate,
-            events: $events,
-            isEmpty: $day['isEmpty'],
-            htmlId: $htmlId,
+            isoDate:       $isoDate,
+            events:        $events,
+            isEmpty:       $day['isEmpty'],
+            htmlId:        $htmlId,
         );
     }
 
