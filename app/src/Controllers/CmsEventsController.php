@@ -9,7 +9,7 @@ use App\Mappers\CmsEventsInputMapper;
 use App\Mappers\CmsEventsViewMapper;
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\DTOs\Cms\EventUpsertData;
-use App\DTOs\Domain\Events\EventEditBundle;
+use App\DTOs\Domain\Events\EventEditPageData;
 use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ICmsEventsService;
 use App\Services\Interfaces\ISessionService;
@@ -231,7 +231,7 @@ class CmsEventsController extends CmsBaseController
         );
     }
 
-    private function loadEventEditData(int $eventId): ?EventEditBundle
+    private function loadEventEditData(int $eventId): ?EventEditPageData
     {
         $editData = $this->eventsService->getEventForEdit($eventId);
         if ($editData === null) {
@@ -241,7 +241,7 @@ class CmsEventsController extends CmsBaseController
         return $editData;
     }
 
-    private function renderEventEditPage(EventEditBundle $editData): void
+    private function renderEventEditPage(EventEditPageData $editData): void
     {
         $priceTiers = $this->eventsService->getPriceTiers();
         $viewModel  = $this->buildEventEditViewModel($editData, $priceTiers);
@@ -249,7 +249,7 @@ class CmsEventsController extends CmsBaseController
         require __DIR__ . '/../Views/pages/cms/event-edit.php';
     }
 
-    private function buildEventEditViewModel(EventEditBundle $editData, array $priceTiers = []): \App\ViewModels\Cms\CmsEventEditViewModel
+    private function buildEventEditViewModel(EventEditPageData $editData, array $priceTiers = []): \App\ViewModels\Cms\CmsEventEditViewModel
     {
         return CmsEventsViewMapper::toEventEditViewModel(
             $editData,

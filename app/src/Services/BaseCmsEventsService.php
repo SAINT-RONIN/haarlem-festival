@@ -6,8 +6,9 @@ namespace App\Services;
 
 use App\Constants\SharedSectionKeys;
 use App\DTOs\Cms\EventUpsertData;
-use App\DTOs\Filters\CmsItemFilter;
-use App\DTOs\Filters\CmsSectionFilter;
+use App\DTOs\Domain\Filters\CmsItemFilter;
+use App\DTOs\Domain\Filters\CmsSectionFilter;
+use App\DTOs\Domain\Restaurant\RestaurantCmsData;
 use App\Helpers\EventDetailCmsHelper;
 use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IEventRepository;
@@ -140,38 +141,32 @@ abstract class BaseCmsEventsService
         }
     }
 
-    /**
-     * Reads back the restaurant CMS items saved by saveRestaurantCmsItems().
-     * Maps DB item keys (e.g. "cuisine_type") to the field names used in the returned array.
-     *
-     * @return array{stars: ?string, cuisine: ?string, shortDescription: ?string}
-     */
-    protected function loadRestaurantCmsItems(int $eventTypeId, int $eventId): array
+    /** Reads back the restaurant CMS items saved by saveRestaurantCmsItems(). */
+    protected function loadRestaurantCmsItems(int $eventTypeId, int $eventId): RestaurantCmsData
     {
-        $result = ['stars' => null, 'cuisine' => null, 'shortDescription' => null];
-
         $sectionId = $this->findEventCmsSectionId($eventTypeId, $eventId);
         if ($sectionId === null) {
-            return $result;
+            return new RestaurantCmsData();
         }
 
         $items = $this->cmsRepository->findItems(
             new CmsItemFilter(cmsSectionId: $sectionId)
         );
 
-        $keyMap = [
-            'stars'        => 'stars',
-            'cuisine_type' => 'cuisine',
-            'about_text'   => 'shortDescription',
-        ];
+        $stars             = null;
+        $cuisine           = null;
+        $shortDescription  = null;
 
         foreach ($items as $item) {
-            if (isset($keyMap[$item->itemKey])) {
-                $result[$keyMap[$item->itemKey]] = $item->textValue;
-            }
+            match ($item->itemKey) {
+                'stars'        => $stars            = $item->textValue,
+                'cuisine_type' => $cuisine           = $item->textValue,
+                'about_text'   => $shortDescription  = $item->textValue,
+                default        => null,
+            };
         }
 
-        return $result;
+        return new RestaurantCmsData($stars, $cuisine, $shortDescription);
     }
 
     /** @return string|null The editor URL (e.g. "/cms/pages/12/jazz-detail/edit"), or null. */

@@ -7,7 +7,7 @@ namespace App\Mappers;
 use App\Helpers\AgeLabelFormatter;
 use App\Helpers\FormatHelper;
 use App\Models\EventSession;
-use App\DTOs\Domain\Events\EventEditBundle;
+use App\DTOs\Domain\Events\EventEditPageData;
 use App\DTOs\Domain\Events\EventsListPageData;
 use App\Models\EventType;
 use App\DTOs\Domain\Events\EventWithDetails;
@@ -78,7 +78,7 @@ final class CmsEventsViewMapper
      * does not own: flash messages, price tier display names, and the venue dropdown list.
      */
     public static function toEventEditViewModel(
-        EventEditBundle $bundle,
+        EventEditPageData $bundle,
         ?string $successMessage,
         ?string $errorMessage,
         array $priceTiers = [],

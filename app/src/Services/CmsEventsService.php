@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Constants\CmsEventConstraints;
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\DTOs\Cms\EventUpsertData;
-use App\DTOs\Domain\Events\EventEditBundle;
+use App\DTOs\Domain\Events\EventEditPageData;
 use App\DTOs\Domain\Events\EventsListPageData;
 use App\DTOs\Domain\Events\EventWithDetails;
 use App\DTOs\Domain\Filters\EventFilter;
@@ -65,7 +65,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
      */
     public function getAllEventsWithDetails(?int $eventTypeId = null, ?string $dayOfWeek = null): array
     {
-        // Apprently mySQL day numbering differs from PHP: MySQL uses 1=Sunday, PHP uses 1=Monday, I think it's like an ISO. Like 1 stands for Monday.
+        // MySQL DAYOFWEEK() starts at 1=Sunday; PHP date('N') follows ISO 8601 where 1=Monday.
         $dayNumber = ($dayOfWeek !== null && $dayOfWeek !== '')
             ? FormatHelper::dayNameToMysqlDayOfWeek($dayOfWeek)
             : null;
@@ -207,12 +207,8 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         }
     }
 
-    /**
-     * Prices and labels are bulk-loaded (one query each) to avoid N+1 per session.
-     *
-     * @return EventEditBundle|null
-     */
-    public function getEventForEdit(int $eventId): ?EventEditBundle
+    /** Prices and labels are bulk-loaded to avoid N+1 per session. */
+    public function getEventForEdit(int $eventId): ?EventEditPageData
     {
         $event = $this->loadEventWithSessionCount($eventId);
         if ($event === null) {
@@ -227,20 +223,19 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
             ? $this->mediaAssetRepository->findById($event->featuredImageAssetId)?->filePath
             : null;
 
-        return new EventEditBundle(
+        return new EventEditPageData(
             event:                      $event,
             sessions:                   $sessions,
             pricesMap:                  $pricesMap,
             labelsMap:                  $labelsMap,
             cmsDetailEditUrl:           $this->resolveCmsDetailEditUrl($event->eventTypeId),
-            restaurantStars:            $restaurantCms['stars'],
-            restaurantCuisine:          $restaurantCms['cuisine'],
-            restaurantShortDescription: $restaurantCms['shortDescription'],
+            restaurantStars:            $restaurantCms->stars,
+            restaurantCuisine:          $restaurantCms->cuisine,
+            restaurantShortDescription: $restaurantCms->shortDescription,
             featuredImagePath:          $featuredImagePath,
         );
     }
 
-    /** @return EventWithDetails|null */
     private function loadEventWithSessionCount(int $eventId): ?EventWithDetails
     {
         return $this->eventRepository->findEvents(new EventFilter(
@@ -350,7 +345,14 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
             throw new ValidationException(['This session has sold tickets and cannot be deleted.']);
         }
 
-        return $this->sessionRepository->delete($sessionId);
+        try {
+            return $this->sessionRepository->delete($sessionId);
+        } catch (\PDOException $e) {
+            if (str_starts_with($e->getCode(), '23')) {
+                throw new ValidationException(['This session cannot be deleted because it is still linked to one or more program items. Remove those first.']);
+            }
+            throw $e;
+        }
     }
 
     /** @throws ValidationException */
@@ -436,6 +438,12 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
 
         if (trim($data->title) === '') {
             $errors[] = 'Event title is required';
+        }
+
+        if ($data->restaurantStars !== null
+            && ($data->restaurantStars < CmsEventConstraints::MIN_STARS || $data->restaurantStars > CmsEventConstraints::MAX_STARS)
+        ) {
+            $errors[] = 'Star rating must be between ' . CmsEventConstraints::MIN_STARS . ' and ' . CmsEventConstraints::MAX_STARS;
         }
 
         return $errors;
@@ -585,11 +593,15 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
     /** @return string[] */
     private function validateCapacitySingleTicketLimit(EventSessionUpsertData $data): array
     {
-        if ($data->capacityTotal === null || $data->capacitySingleTicketLimit === null) {
+        if ($data->capacitySingleTicketLimit === null) {
             return [];
         }
 
-        if ($data->capacitySingleTicketLimit > $data->capacityTotal) {
+        if ($data->capacitySingleTicketLimit <= 0) {
+            return ['Single ticket limit must be a positive integer'];
+        }
+
+        if ($data->capacityTotal !== null && $data->capacitySingleTicketLimit > $data->capacityTotal) {
             return ['Single ticket limit cannot exceed total capacity'];
         }
 
@@ -613,15 +625,21 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
     /** @return string[] */
     private function validateAgeRange(EventSessionUpsertData $data): array
     {
-        if ($data->minAge === null || $data->maxAge === null) {
-            return [];
+        $errors = [];
+
+        if ($data->minAge !== null && $data->minAge < 0) {
+            $errors[] = 'Minimum age cannot be negative';
         }
 
-        if ($data->maxAge < $data->minAge) {
-            return ['Maximum age cannot be less than minimum age'];
+        if ($data->maxAge !== null && $data->maxAge < 0) {
+            $errors[] = 'Maximum age cannot be negative';
         }
 
-        return [];
+        if ($data->minAge !== null && $data->maxAge !== null && $data->maxAge < $data->minAge) {
+            $errors[] = 'Maximum age cannot be less than minimum age';
+        }
+
+        return $errors;
     }
 
     /** @return string[] */

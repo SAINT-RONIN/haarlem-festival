@@ -6,7 +6,7 @@ namespace App\Services\Interfaces;
 
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\DTOs\Cms\EventUpsertData;
-use App\DTOs\Domain\Events\EventEditBundle;
+use App\DTOs\Domain\Events\EventEditPageData;
 use App\DTOs\Domain\Events\EventsListPageData;
 use App\DTOs\Domain\Events\EventWithDetails;
 use App\DTOs\Domain\Schedule\SessionWithEvent;
@@ -81,7 +81,7 @@ interface ICmsEventsService
      * Returns a single event with all related data for the CMS edit form.
      * Returns null when the event does not exist.
      */
-    public function getEventForEdit(int $eventId): ?EventEditBundle;
+    public function getEventForEdit(int $eventId): ?EventEditPageData;
 
     /**
      * Updates an event's basic information.
