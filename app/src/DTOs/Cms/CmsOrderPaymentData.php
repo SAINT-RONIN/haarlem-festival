@@ -7,7 +7,7 @@ namespace App\DTOs\Cms;
 /**
  * Read-only projection of a single payment record for the CMS order detail page.
  */
-final readonly class CmsOrderPaymentDto
+final readonly class CmsOrderPaymentData
 {
     public function __construct(
         public int     $paymentId,

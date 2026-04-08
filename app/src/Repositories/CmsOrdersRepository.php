@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\DTOs\Domain\Checkout\OrderWithDetails;
-use App\DTOs\Cms\CmsOrderDetailDto;
-use App\DTOs\Cms\CmsOrderItemDto;
-use App\DTOs\Cms\CmsOrderPaymentDto;
-use App\DTOs\Cms\CmsOrderTicketDto;
+use App\DTOs\Cms\CmsOrderDetailData;
+use App\DTOs\Cms\CmsOrderItemData;
+use App\DTOs\Cms\CmsOrderPaymentData;
+use App\DTOs\Cms\CmsOrderTicketData;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
 
 /**
@@ -95,7 +95,7 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
      * Returns a single order with user/recipient details for the CMS detail page,
      * or null if the order does not exist.
      */
-    public function findOrderById(int $orderId): ?CmsOrderDetailDto
+    public function findOrderById(int $orderId): ?CmsOrderDetailData
     {
         $sql = "
             SELECT o.*, ua.Email AS UserEmail
@@ -107,14 +107,14 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchOne(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => CmsOrderDetailDto::fromRow($row),
+            fn(array $row) => CmsOrderDetailData::fromRow($row),
         );
     }
 
     /**
      * Returns all line items for a given order.
      *
-     * @return CmsOrderItemDto[]
+     * @return CmsOrderItemData[]
      */
     public function findOrderItems(int $orderId): array
     {
@@ -133,14 +133,14 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchAll(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => CmsOrderItemDto::fromRow($row),
+            fn(array $row) => CmsOrderItemData::fromRow($row),
         );
     }
 
     /**
      * Returns all payment records for a given order in reverse-chronological order.
      *
-     * @return CmsOrderPaymentDto[]
+     * @return CmsOrderPaymentData[]
      */
     public function findOrderPayments(int $orderId): array
     {
@@ -153,14 +153,14 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchAll(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => CmsOrderPaymentDto::fromRow($row),
+            fn(array $row) => CmsOrderPaymentData::fromRow($row),
         );
     }
 
     /**
      * Returns all tickets for a given order with joined scanner/pdf metadata.
      *
-     * @return CmsOrderTicketDto[]
+     * @return CmsOrderTicketData[]
      */
     public function findOrderTickets(int $orderId): array
     {
@@ -177,7 +177,7 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchAll(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => CmsOrderTicketDto::fromRow($row),
+            fn(array $row) => CmsOrderTicketData::fromRow($row),
         );
     }
 }

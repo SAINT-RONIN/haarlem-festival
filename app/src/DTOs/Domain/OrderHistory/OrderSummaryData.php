@@ -9,7 +9,7 @@ namespace App\DTOs\Domain\OrderHistory;
  * Includes the latest payment status and item count from subqueries
  * so the controller doesn't need additional repository calls.
  */
-final readonly class OrderSummaryDto
+final readonly class OrderSummaryData
 {
     public function __construct(
         public int $orderId,

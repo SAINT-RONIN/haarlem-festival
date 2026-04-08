@@ -7,7 +7,7 @@ namespace App\DTOs\Cms;
 /**
  * Read-only projection of a single order line item for the CMS order detail page.
  */
-final readonly class CmsOrderItemDto
+final readonly class CmsOrderItemData
 {
     public float $lineTotal;
 

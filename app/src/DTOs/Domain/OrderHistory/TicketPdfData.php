@@ -8,7 +8,7 @@ namespace App\DTOs\Domain\OrderHistory;
  * Associates a ticket code with its generated PDF file path.
  * Used to build download links on the "My Orders" page for paid orders.
  */
-final readonly class TicketPdfDto
+final readonly class TicketPdfData
 {
     public function __construct(
         public string $ticketCode,

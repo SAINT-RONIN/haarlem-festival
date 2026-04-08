@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Domain\OrderHistory\OrderSummaryDto;
-use App\DTOs\Domain\OrderHistory\TicketPdfDto;
+use App\DTOs\Domain\OrderHistory\OrderSummaryData;
+use App\DTOs\Domain\OrderHistory\TicketPdfData;
 use App\Repositories\Interfaces\IOrderHistoryRepository;
 use App\Services\Interfaces\IOrderHistoryService;
 
@@ -20,7 +20,7 @@ class OrderHistoryService implements IOrderHistoryService
     }
 
     /**
-     * @return array{orders: OrderSummaryDto[], ticketsByOrder: array<int, TicketPdfDto[]>}
+     * @return array{orders: OrderSummaryData[], ticketsByOrder: array<int, TicketPdfData[]>}
      */
     public function getOrderHistoryData(int $userId): array
     {
@@ -33,8 +33,8 @@ class OrderHistoryService implements IOrderHistoryService
     }
 
     /**
-     * @param OrderSummaryDto[] $orderDtos
-     * @return array<int, TicketPdfDto[]>
+     * @param OrderSummaryData[] $orderDtos
+     * @return array<int, TicketPdfData[]>
      */
     private function fetchTicketsForPaidOrders(array $orderDtos): array
     {

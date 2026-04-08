@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\DTOs\Domain\Events\ArtistDetailBundle;
+use App\DTOs\Domain\Events\ArtistDetailData;
 use App\Repositories\Interfaces\IArtistAlbumRepository;
 use App\Repositories\Interfaces\IArtistDetailRepository;
 use App\Repositories\Interfaces\IArtistGalleryImageRepository;
@@ -34,9 +34,9 @@ class ArtistDetailRepository implements IArtistDetailRepository
      *
      * @param int $artistId The artist whose detail collections should be loaded
      */
-    public function findByArtistId(int $artistId): ArtistDetailBundle
+    public function findByArtistId(int $artistId): ArtistDetailData
     {
-        return new ArtistDetailBundle(
+        return new ArtistDetailData(
             albums: $this->albumRepository->findByArtistId($artistId),
             tracks: $this->trackRepository->findByArtistId($artistId),
             lineupMembers: $this->lineupMemberRepository->findByArtistId($artistId),

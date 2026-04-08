@@ -13,7 +13,7 @@ use App\Models\ArtistTrack;
 /**
  * Aggregated artist detail data: albums, tracks, lineup members, highlights, and gallery images.
  */
-final readonly class ArtistDetailBundle
+final readonly class ArtistDetailData
 {
     /**
      * @param ArtistAlbum[] $albums

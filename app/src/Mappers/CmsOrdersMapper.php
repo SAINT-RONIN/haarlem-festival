@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Cms\CmsOrderDetailBundle;
+use App\DTOs\Cms\CmsOrderDetailPageData;
 use App\DTOs\Domain\Checkout\OrderWithDetails;
 use App\Enums\OrderStatus;
 use App\Helpers\CmsOrderViewHelper;
@@ -63,7 +63,7 @@ final class CmsOrdersMapper
     }
 
     public static function toDetailViewModel(
-        CmsOrderDetailBundle $data,
+        CmsOrderDetailPageData $data,
         ?string $successMessage,
         ?string $errorMessage,
     ): CmsOrderDetailViewModel {

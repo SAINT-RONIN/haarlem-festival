@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\ViewModels\Cms;
 
-use App\DTOs\Cms\CmsOrderDetailDto;
-use App\DTOs\Cms\CmsOrderItemDto;
-use App\DTOs\Cms\CmsOrderPaymentDto;
-use App\DTOs\Cms\CmsOrderTicketDto;
+use App\DTOs\Cms\CmsOrderDetailData;
+use App\DTOs\Cms\CmsOrderItemData;
+use App\DTOs\Cms\CmsOrderPaymentData;
+use App\DTOs\Cms\CmsOrderTicketData;
 use App\Models\Invoice;
 
 /**
@@ -16,13 +16,13 @@ use App\Models\Invoice;
 final readonly class CmsOrderDetailViewModel
 {
     /**
-     * @param CmsOrderDetailDto    $order
-     * @param CmsOrderItemDto[]    $items
-     * @param CmsOrderPaymentDto[] $payments
-     * @param CmsOrderTicketDto[]  $tickets
+     * @param CmsOrderDetailData    $order
+     * @param CmsOrderItemData[]    $items
+     * @param CmsOrderPaymentData[] $payments
+     * @param CmsOrderTicketData[]  $tickets
      */
     public function __construct(
-        public CmsOrderDetailDto $order,
+        public CmsOrderDetailData $order,
         public array             $items,
         public array             $payments,
         public array             $tickets,

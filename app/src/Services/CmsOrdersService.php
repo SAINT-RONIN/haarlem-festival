@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Cms\CmsOrderDetailBundle;
+use App\DTOs\Cms\CmsOrderDetailPageData;
 use App\DTOs\Domain\Checkout\OrderWithDetails;
 use App\Models\Invoice;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
@@ -62,7 +62,7 @@ class CmsOrdersService implements ICmsOrdersService
         return $asset?->filePath;
     }
 
-    public function getOrderDetail(int $orderId): ?CmsOrderDetailBundle
+    public function getOrderDetail(int $orderId): ?CmsOrderDetailPageData
     {
         $order = $this->ordersRepository->findOrderById($orderId);
         if ($order === null) {
@@ -71,7 +71,7 @@ class CmsOrdersService implements ICmsOrdersService
 
         $invoice = $this->invoiceRepository->findByOrderId($orderId);
 
-        return new CmsOrderDetailBundle(
+        return new CmsOrderDetailPageData(
             order:          $order,
             items:          $this->ordersRepository->findOrderItems($orderId),
             payments:       $this->ordersRepository->findOrderPayments($orderId),

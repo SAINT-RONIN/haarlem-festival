@@ -7,7 +7,7 @@ namespace App\DTOs\Cms;
 /**
  * Read-only projection of a single ticket for the CMS order detail page.
  */
-final readonly class CmsOrderTicketDto
+final readonly class CmsOrderTicketData
 {
     public function __construct(
         public int     $ticketId,

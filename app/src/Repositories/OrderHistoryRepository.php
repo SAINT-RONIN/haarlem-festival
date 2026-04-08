@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\DTOs\Domain\OrderHistory\OrderSummaryDto;
-use App\DTOs\Domain\OrderHistory\TicketPdfDto;
+use App\DTOs\Domain\OrderHistory\OrderSummaryData;
+use App\DTOs\Domain\OrderHistory\TicketPdfData;
 use App\Repositories\Interfaces\IOrderHistoryRepository;
 
 /**
@@ -19,7 +19,7 @@ final class OrderHistoryRepository extends BaseRepository implements IOrderHisto
      * Returns all orders placed by the given user, newest first, with payment status
      * and item count resolved via correlated subqueries.
      *
-     * @return OrderSummaryDto[]
+     * @return OrderSummaryData[]
      */
     public function findOrdersForUser(int $userId): array
     {
@@ -41,14 +41,14 @@ final class OrderHistoryRepository extends BaseRepository implements IOrderHisto
         return $this->fetchAll(
             $sql,
             [':userId' => $userId],
-            fn(array $row) => OrderSummaryDto::fromRow($row),
+            fn(array $row) => OrderSummaryData::fromRow($row),
         );
     }
 
     /**
      * Returns ticket-code → PDF path rows for every ticket in the order that has a generated PDF.
      *
-     * @return TicketPdfDto[]
+     * @return TicketPdfData[]
      */
     public function findTicketPdfPathsForOrder(int $orderId): array
     {
@@ -64,7 +64,7 @@ final class OrderHistoryRepository extends BaseRepository implements IOrderHisto
         return $this->fetchAll(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => TicketPdfDto::fromRow($row),
+            fn(array $row) => TicketPdfData::fromRow($row),
         );
     }
 }

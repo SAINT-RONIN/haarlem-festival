@@ -7,7 +7,7 @@ namespace App\DTOs\Cms;
 /**
  * Read-only projection of a single order with user/recipient details for the CMS detail page.
  */
-final readonly class CmsOrderDetailDto
+final readonly class CmsOrderDetailData
 {
     public function __construct(
         public int     $orderId,

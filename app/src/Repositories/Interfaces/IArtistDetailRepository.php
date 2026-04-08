@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\DTOs\Domain\Events\ArtistDetailBundle;
+use App\DTOs\Domain\Events\ArtistDetailData;
 
 /**
  * Aggregates all artist sub-entity lookups (albums, tracks, lineup, highlights, gallery)
@@ -17,5 +17,5 @@ interface IArtistDetailRepository
      *
      * @param int $artistId The artist whose detail collections should be loaded
      */
-    public function findByArtistId(int $artistId): ArtistDetailBundle;
+    public function findByArtistId(int $artistId): ArtistDetailData;
 }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\DTOs\Domain\Checkout\OrderWithDetails;
-use App\DTOs\Cms\CmsOrderDetailDto;
-use App\DTOs\Cms\CmsOrderItemDto;
-use App\DTOs\Cms\CmsOrderPaymentDto;
-use App\DTOs\Cms\CmsOrderTicketDto;
+use App\DTOs\Cms\CmsOrderDetailData;
+use App\DTOs\Cms\CmsOrderItemData;
+use App\DTOs\Cms\CmsOrderPaymentData;
+use App\DTOs\Cms\CmsOrderTicketData;
 
 /**
  * Defines read-only queries for retrieving orders with joined details for CMS display.
@@ -25,26 +25,26 @@ interface ICmsOrdersRepository
     /**
      * Returns a single order with user/recipient details, or null if not found.
      */
-    public function findOrderById(int $orderId): ?CmsOrderDetailDto;
+    public function findOrderById(int $orderId): ?CmsOrderDetailData;
 
     /**
      * Returns all line items for a given order.
      *
-     * @return CmsOrderItemDto[]
+     * @return CmsOrderItemData[]
      */
     public function findOrderItems(int $orderId): array;
 
     /**
      * Returns all payment records for a given order.
      *
-     * @return CmsOrderPaymentDto[]
+     * @return CmsOrderPaymentData[]
      */
     public function findOrderPayments(int $orderId): array;
 
     /**
      * Returns all tickets for a given order.
      *
-     * @return CmsOrderTicketDto[]
+     * @return CmsOrderTicketData[]
      */
     public function findOrderTickets(int $orderId): array;
 }
