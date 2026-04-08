@@ -61,6 +61,7 @@ use App\Controllers\RestaurantController;
 use App\Controllers\ScannerController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
+use App\Controllers\DanceController;
 use App\Services\SessionService;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -131,6 +132,10 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/checkout/webhook', [CheckoutController::class, 'webhook']);
     $r->addRoute('GET', '/employee/scanner', [EmployeeScannerController::class, 'index']);
     $r->addRoute('POST', '/api/employee/scanner/scan', [EmployeeScannerController::class, 'scan']);
+
+
+    // Dance page
+    $r->addRoute('GET', '/dance', [DanceController::class, 'index']);
 
 
     // Website Authentication Routes
