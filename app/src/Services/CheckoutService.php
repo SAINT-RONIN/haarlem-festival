@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Services\Interfaces\IOrderCapacityRestorer;
 use App\Constants\CheckoutConstraints;
+use App\Enums\PriceTierId;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -21,6 +22,7 @@ use App\Repositories\Interfaces\IPassPurchaseRepository;
 use App\Repositories\Interfaces\IPaymentRepository;
 use App\Repositories\Interfaces\IProgramRepository;
 use App\DTOs\Domain\Checkout\CheckoutCancelResult;
+use App\DTOs\Domain\Checkout\CheckoutPayloadData;
 use App\DTOs\Domain\Checkout\CheckoutSessionResult;
 use App\DTOs\Domain\Checkout\CheckoutSessionSummary;
 use App\Exceptions\CheckoutException;
@@ -74,18 +76,17 @@ class CheckoutService implements ICheckoutService
      * It returns CheckoutSessionResult because the caller needs more than the redirect URL:
      * it also needs the created order and payment ids for later cancel, retry, and success flows.
      *
-     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
      * @throws CheckoutException When the program is empty or Stripe session creation fails
      * @throws \InvalidArgumentException When required payload fields are missing or invalid
      */
-    public function createCheckoutSession(ProgramData $programData, int $userId, array $payload): CheckoutSessionResult
+    public function createCheckoutSession(ProgramData $programData, int $userId, CheckoutPayloadData $payload): CheckoutSessionResult
     {
         $this->validatePayload($payload);
         $this->validateProgramNotEmpty($programData);
         $this->validatePositiveTotal($programData->total);
         $this->validateItemAvailability($programData->items);
 
-        $method = $this->mapPaymentMethod((string)$payload['paymentMethod']);
+        $method = $this->mapPaymentMethod($payload->paymentMethod);
 
         return $this->executeCheckoutTransaction($programData, $userId, $payload, $method);
     }
@@ -93,11 +94,23 @@ class CheckoutService implements ICheckoutService
     /**
      * Rejects totals that cannot produce a valid payment.
      *
+     * Guards against zero, negative, NaN, and Infinity values. NaN comparisons always
+     * return false in PHP, so is_nan() is checked explicitly. Infinity would pass a
+     * simple <= 0 check but is not a valid payment amount.
+     *
      * It returns nothing because this is a guard method: invalid totals should stop checkout
      * immediately instead of being passed through the rest of the flow.
      */
     private function validatePositiveTotal(float $total): void
     {
+        if (is_nan($total)) {
+            throw new CheckoutInputException('Total amount is invalid.');
+        }
+
+        if (is_infinite($total)) {
+            throw new CheckoutInputException('Total amount is invalid.');
+        }
+
         if ($total <= 0) {
             throw new CheckoutInputException('Total amount must be greater than zero.');
         }
@@ -110,7 +123,7 @@ class CheckoutService implements ICheckoutService
      * and payment creation belong to one unit of work. If one step fails, none of them
      * should remain half-finished in the database.
      */
-    private function executeCheckoutTransaction(ProgramData $programData, int $userId, array $payload, PaymentMethod $method): CheckoutSessionResult
+    private function executeCheckoutTransaction(ProgramData $programData, int $userId, CheckoutPayloadData $payload, PaymentMethod $method): CheckoutSessionResult
     {
         $this->pdo->beginTransaction();
 
@@ -153,7 +166,7 @@ class CheckoutService implements ICheckoutService
      * Only the header is stored here because line items, seat reservations, and payments
      * all depend on the generated order id and happen in later steps.
      */
-    private function persistOrder(ProgramData $programData, int $userId, string $orderNumber, array $payload): int
+    private function persistOrder(ProgramData $programData, int $userId, string $orderNumber, CheckoutPayloadData $payload): int
     {
         return $this->orderRepository->create(
             userAccountId: $userId,
@@ -162,9 +175,9 @@ class CheckoutService implements ICheckoutService
             subtotal: $this->toMoneyString($programData->subtotal),
             vatTotal: $this->toMoneyString($programData->taxAmount),
             totalAmount: $this->toMoneyString($programData->total),
-            ticketRecipientFirstName: trim((string)$payload['firstName']),
-            ticketRecipientLastName: trim((string)$payload['lastName']),
-            ticketRecipientEmail: trim((string)$payload['email']),
+            ticketRecipientFirstName: $payload->firstName,
+            ticketRecipientLastName: $payload->lastName,
+            ticketRecipientEmail: $payload->email,
             payBeforeUtc: new \DateTimeImmutable('+24 hours'),
         );
     }
@@ -226,6 +239,8 @@ class CheckoutService implements ICheckoutService
     /**
      * Atomically reserves seats for all items — prevents overselling under concurrent checkouts.
      *
+     * Group tickets (Family, Group) count as 4 seats each.
+     *
      * @param ProgramItemData[] $items
      */
     private function reserveSessionSeats(array $items): void
@@ -235,7 +250,8 @@ class CheckoutService implements ICheckoutService
                 continue;
             }
 
-            $reserved = $this->eventSessionRepository->decrementCapacity($item->eventSessionId, $item->quantity);
+            $seatCount = $this->calculateSeatCount($item->quantity, $item->priceTierId);
+            $reserved = $this->eventSessionRepository->decrementCapacity($item->eventSessionId, $seatCount);
 
             if (!$reserved) {
                 throw new CheckoutInputException(
@@ -246,18 +262,29 @@ class CheckoutService implements ICheckoutService
     }
 
     /**
+     * Converts a ticket quantity to a seat count.
+     * Group tickets (Family, Group) represent GROUP_TICKET_SEAT_COUNT people each.
+     */
+    private function calculateSeatCount(int $quantity, ?int $priceTierId): int
+    {
+        if ($priceTierId !== null && in_array($priceTierId, [PriceTierId::Family->value, PriceTierId::Group->value], true)) {
+            return $quantity * CheckoutConstraints::GROUP_TICKET_SEAT_COUNT;
+        }
+
+        return $quantity;
+    }
+
+    /**
      * Creates a Stripe checkout session, links its identifiers to the payment record,
      * and returns the redirect URL.
      *
      * The returned string is the exact URL the browser should redirect to because Stripe
      * owns the next stage of payment once local checkout setup is complete.
-     *
-     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
      */
     private function createAndLinkStripeSession(
         ProgramData $programData,
         int $userId,
-        array $payload,
+        CheckoutPayloadData $payload,
         int $orderId,
         int $paymentId,
         string $orderNumber,
@@ -278,13 +305,12 @@ class CheckoutService implements ICheckoutService
     }
 
     /**
-     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
      * @return array<string,mixed>
      */
     private function createStripeSession(
         ProgramData $programData,
         int $userId,
-        array $payload,
+        CheckoutPayloadData $payload,
         int $orderId,
         int $paymentId,
         string $orderNumber,
@@ -300,13 +326,12 @@ class CheckoutService implements ICheckoutService
     }
 
     /**
-     * @param array{firstName:string,lastName:string,email:string,paymentMethod:string,saveDetails?:bool} $payload
      * @return array<string,mixed>
      */
     private function buildStripeSessionParams(
         ProgramData $programData,
         int $userId,
-        array $payload,
+        CheckoutPayloadData $payload,
         int $orderId,
         int $paymentId,
         string $orderNumber,
@@ -318,14 +343,14 @@ class CheckoutService implements ICheckoutService
             method: $method,
             total: $programData->total,
             orderNumber: $orderNumber,
-            customerEmail: (string)$payload['email'],
+            customerEmail: $payload->email,
             metadata: $this->buildStripeMetadata(
                 orderId: $orderId,
                 paymentId: $paymentId,
                 programId: $programData->program->programId,
                 userId: $userId,
-                firstName: (string)$payload['firstName'],
-                lastName: (string)$payload['lastName'],
+                firstName: $payload->firstName,
+                lastName: $payload->lastName,
             ),
         );
     }
@@ -803,27 +828,20 @@ class CheckoutService implements ICheckoutService
     }
 
     /**
-     * Validates the posted checkout payload before any database work starts.
+     * Validates the checkout payload before the transaction starts.
      *
-     * It returns nothing because invalid form data should stop checkout immediately
-     * instead of being turned into a partial result object.
+     * Now that the DTO handles presence checks, this method validates format rules
+     * that require runtime inspection (email format, payment method validity).
      *
-     * @param array<string,mixed> $payload
+     * It returns nothing because invalid form data should stop checkout immediately.
      */
-    private function validatePayload(array $payload): void
+    private function validatePayload(CheckoutPayloadData $payload): void
     {
-        foreach (['firstName', 'lastName', 'email', 'paymentMethod'] as $requiredKey) {
-            $value = trim((string)($payload[$requiredKey] ?? ''));
-            if ($value === '') {
-                throw new \InvalidArgumentException($requiredKey . ' is required.');
-            }
-        }
-
-        if (!filter_var((string)$payload['email'], FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($payload->email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Please provide a valid email address.');
         }
 
-        $this->mapPaymentMethod((string)$payload['paymentMethod']);
+        $this->mapPaymentMethod($payload->paymentMethod);
     }
 
     /**
@@ -858,7 +876,7 @@ class CheckoutService implements ICheckoutService
 
     /**
      * Validates that every session in the cart has enough capacity.
-     * Enforces sold-out prevention, quantity limits, and the 90% single-ticket cap.
+     * Enforces sold-out prevention, quantity limits, and the single-ticket cap.
      *
      * It returns nothing because the useful outcome is permission to continue checkout:
      * when any item fails validation, the method throws and the flow stops.
@@ -890,19 +908,13 @@ class CheckoutService implements ICheckoutService
             throw new CheckoutInputException("Session for '{$item->eventTitle}' no longer exists.");
         }
 
-        $available = $this->calculateAvailableSeats($capacity);
+        $available = $capacity->availableSeats();
         $this->validateSeatAvailability($item, $available);
         $this->validateSingleTicketCap($item, $capacity);
     }
 
-    /** Returns remaining seats for one session from the repository capacity snapshot. */
-    private function calculateAvailableSeats(SessionCapacityInfo $capacity): int
-    {
-        return max(0, $capacity->capacityTotal - $capacity->soldSingleTickets - $capacity->soldReservedSeats);
-    }
-
     /**
-     * Checks whether the requested quantity still fits within remaining seats.
+     * Checks whether the requested seats still fit within remaining capacity.
      *
      * It throws user-facing input errors because this is a recoverable checkout problem:
      * the visitor can usually fix it by reducing quantity or removing the item.
@@ -913,9 +925,11 @@ class CheckoutService implements ICheckoutService
             throw new CheckoutInputException("'{$item->eventTitle}' is sold out.");
         }
 
-        if ($item->quantity > $available) {
+        $seatCount = $this->calculateSeatCount($item->quantity, $item->priceTierId);
+
+        if ($seatCount > $available) {
             throw new CheckoutInputException(
-                "Only {$available} seats remaining for '{$item->eventTitle}'. You requested {$item->quantity}."
+                "Only {$available} seat(s) remaining for '{$item->eventTitle}'. You requested {$seatCount}."
             );
         }
     }
@@ -923,12 +937,18 @@ class CheckoutService implements ICheckoutService
     /**
      * Enforces the single-ticket cap that keeps some capacity available for pass holders.
      *
+     * Uses the session's configured CapacitySingleTicketLimit if set, otherwise
+     * falls back to 90% of total capacity.
+     *
      * It returns nothing because this is another guard rule:
      * either the item respects the cap or checkout stops with a clear explanation.
      */
-    private function validateSingleTicketCap(ProgramItemData $item, object $capacity): void
+    private function validateSingleTicketCap(ProgramItemData $item, SessionCapacityInfo $capacity): void
     {
-        $singleTicketCap = (int)floor($capacity->capacityTotal * CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO);
+        // Use configured limit if available, otherwise calculate from ratio
+        $singleTicketCap = $capacity->capacitySingleTicketLimit > 0
+            ? $capacity->capacitySingleTicketLimit
+            : (int)floor($capacity->capacityTotal * CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO);
 
         if (($capacity->soldSingleTickets + $item->quantity) <= $singleTicketCap) {
             return;

@@ -78,4 +78,19 @@ class VenueRepository extends BaseRepository implements IVenueRepository
 
         return $statement->rowCount() > 0;
     }
+
+    /**
+     * Checks whether an active venue with the given name already exists.
+     * Comparison is case-insensitive to prevent near-duplicate entries.
+     */
+    public function existsByName(string $name): bool
+    {
+        $rows = $this->fetchAll(
+            'SELECT 1 FROM Venue WHERE LOWER(Name) = LOWER(:name) AND IsActive = 1 LIMIT 1',
+            ['name' => $name],
+            fn(array $row) => $row,
+        );
+
+        return $rows !== [];
+    }
 }

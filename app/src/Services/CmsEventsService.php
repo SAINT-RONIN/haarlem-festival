@@ -128,6 +128,10 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
             $errors[] = 'Venue name must be 120 characters or less';
         }
 
+        if (trim($name) !== '' && $this->venueRepository->existsByName(trim($name))) {
+            $errors[] = 'A venue with this name already exists';
+        }
+
         return $errors;
     }
 

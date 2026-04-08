@@ -110,6 +110,8 @@ class RestaurantDetailService extends BaseContentService implements IRestaurantD
     /**
      * Builds price cards from the adult price. Under-12 price is always half the adult price.
      *
+     * Negative or non-numeric prices are clamped to zero so users never see negative EUR amounts.
+     *
      * @return array{label: string, price: string}[]
      */
     private function buildPriceCards(?string $priceAdultStr): array
@@ -118,7 +120,7 @@ class RestaurantDetailService extends BaseContentService implements IRestaurantD
             return [];
         }
 
-        $adult = (float)$priceAdultStr;
+        $adult = max(0.0, (float)$priceAdultStr);
 
         return [
             ['label' => 'Per adult', 'price' => 'EUR ' . number_format($adult, 2)],

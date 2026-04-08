@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\DTOs\Domain\Checkout\CheckoutPayloadData;
 use App\Exceptions\CheckoutException;
 use App\Exceptions\CheckoutInputException;
 use App\Exceptions\RetryPaymentException;
@@ -82,7 +83,13 @@ class CheckoutController extends BaseController
         $context = $this->resolveSessionContext();
         $userId = $this->requireAuthenticatedUserId();
 
-        $payload = $this->readJsonBody();
+        $rawPayload = $this->readJsonBody();
+        $payload = CheckoutPayloadData::fromArray($rawPayload);
+        if ($payload === null) {
+            $this->json(['error' => 'All fields are required: firstName, lastName, email, paymentMethod.'], 422);
+            return;
+        }
+
         $programData = $this->programService->getProgramData($context->sessionKey, $userId);
         $result = $this->checkoutService->createCheckoutSession($programData, $userId, $payload);
 

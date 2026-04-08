@@ -33,4 +33,9 @@ interface IVenueRepository
      * Soft-deletes a venue by setting IsActive = 0.
      */
     public function softDelete(int $venueId): bool;
+
+    /**
+     * Checks whether an active venue with the given name already exists.
+     */
+    public function existsByName(string $name): bool;
 }

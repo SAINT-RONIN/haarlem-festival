@@ -107,9 +107,16 @@ class MediaAssetService implements IMediaAssetService
     /**
      * Deletes a media asset record and removes the physical file from disk.
      * Returns false if the asset does not exist.
+     *
+     * Authorization (role check) must be enforced at the controller level before
+     * calling this method — the service only validates the asset exists and the ID is valid.
      */
     public function deleteAsset(int $mediaAssetId): bool
     {
+        if ($mediaAssetId <= 0) {
+            return false;
+        }
+
         $asset = $this->mediaAssetRepository->findById($mediaAssetId);
         if (!$asset) {
             return false;

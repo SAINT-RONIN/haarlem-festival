@@ -13,6 +13,7 @@ final readonly class ProgramItemData
         public int $programItemId,
         public ?int $eventSessionId = null,
         public int $quantity = 1,
+        public ?int $priceTierId = null,
         public float $donationAmount = 0.0,
         public string $eventTitle = '',
         public ?string $venueName = null,

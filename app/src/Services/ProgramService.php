@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\CheckoutConstraints;
 use App\DTOs\Cms\ProgramMainContent;
+use App\DTOs\Domain\Events\SessionCapacityInfo;
 use App\DTOs\Domain\Filters\EventSessionFilter;
 use App\DTOs\Domain\Filters\ProgramFilter;
 use App\DTOs\Domain\Filters\ProgramItemFilter;
@@ -82,17 +84,27 @@ class ProgramService implements IProgramService
      * @param int      $groupTicketQuantity Number of group tickets to add. 0 to skip.
      * @param float    $donationAmount     Optional donation amount attached to the item.
      * @throws \InvalidArgumentException When $eventSessionId is invalid or both quantities are zero.
-     * @throws ProgramException          When the database write fails.
+     * @throws ProgramException          When the database write fails or validation fails.
      */
     public function addToProgram(string $sessionKey, ?int $userAccountId, int $eventSessionId, int $quantity, int $groupTicketQuantity, float $donationAmount): void
     {
         $this->validateAddInput($eventSessionId, $quantity, $groupTicketQuantity);
+        $this->validateDonationAmount($donationAmount);
 
         try {
-            $program          = $this->getOrCreateProgram($sessionKey, $userAccountId);
-            $prices           = $this->priceRepository->findPricesBySessionIds([$eventSessionId])[$eventSessionId] ?? [];
-            $priceTierId      = $this->resolveSinglePriceTierId($prices);
-            $groupPriceTierId = $this->resolveGroupPriceTierId($prices, $priceTierId);
+            $program            = $this->getOrCreateProgram($sessionKey, $userAccountId);
+            $capacity           = $this->sessionRepository->getCapacityInfo($eventSessionId);
+            $this->validateSessionExists($eventSessionId, $capacity);
+
+            $cartTotals         = $this->countTicketsInCartForSession($program->programId, $eventSessionId);
+            $requestedSeats     = $quantity + ($groupTicketQuantity * CheckoutConstraints::GROUP_TICKET_SEAT_COUNT);
+            $this->validateCapacityForBooking($capacity, $cartTotals['seats'], $requestedSeats);
+            $this->validateSingleTicketLimit($capacity, $cartTotals['singles'], $quantity);
+
+            $prices             = $this->priceRepository->findPricesBySessionIds([$eventSessionId])[$eventSessionId] ?? [];
+            $this->validatePricesNonNegative($prices);
+            $priceTierId        = $this->resolveSinglePriceTierId($prices);
+            $groupPriceTierId   = $this->resolveGroupPriceTierId($prices, $priceTierId);
 
             if ($quantity > 0) {
                 $this->upsertProgramTicket($program->programId, $eventSessionId, $quantity, $priceTierId, $donationAmount, 'single');
@@ -102,6 +114,8 @@ class ProgramService implements IProgramService
                 $this->upsertProgramTicket($program->programId, $eventSessionId, $groupTicketQuantity, $groupPriceTierId, $donationAmount, 'group');
             }
         } catch (\InvalidArgumentException $error) {
+            throw $error;
+        } catch (ProgramException $error) {
             throw $error;
         } catch (\Throwable $error) {
             throw new ProgramException('Failed to add item to program.', 0, $error);
@@ -209,6 +223,129 @@ class ProgramService implements IProgramService
     }
 
     /**
+     * Validates that the donation amount is non-negative.
+     */
+    private function validateDonationAmount(float $donationAmount): void
+    {
+        if ($donationAmount < 0) {
+            throw new \InvalidArgumentException('Donation amount cannot be negative');
+        }
+    }
+
+    /**
+     * Validates that a session exists before attempting to add it to the program.
+     *
+     * @throws ProgramException When the session does not exist.
+     */
+    private function validateSessionExists(int $eventSessionId, ?SessionCapacityInfo $capacity): void
+    {
+        if ($capacity === null) {
+            throw new ProgramException("Session with ID {$eventSessionId} does not exist.");
+        }
+    }
+
+    /**
+     * Counts the seats the user already has in their cart for a given session.
+     *
+     * Group tickets (Family, Group) count as 4 seats each because a group ticket
+     * represents 4 people. Single tickets count as 1 seat each.
+     *
+     * @return array{seats: int, singles: int}
+     */
+    private function countTicketsInCartForSession(int $programId, int $eventSessionId): array
+    {
+        $existingItems = $this->programRepository->findProgramItems(new ProgramItemFilter(
+            programId: $programId,
+            eventSessionId: $eventSessionId,
+        ));
+
+        $seats = 0;
+        $singles = 0;
+        $groupTierIds = [PriceTierId::Family->value, PriceTierId::Group->value];
+
+        foreach ($existingItems as $item) {
+            $isGroup = $item->priceTierId !== null && in_array($item->priceTierId, $groupTierIds, true);
+            $itemSeats = $isGroup ? $item->quantity * CheckoutConstraints::GROUP_TICKET_SEAT_COUNT : $item->quantity;
+            $seats += $itemSeats;
+
+            if (!$isGroup) {
+                $singles += $item->quantity;
+            }
+        }
+
+        return ['seats' => $seats, 'singles' => $singles];
+    }
+
+    /**
+     * Validates that the requested seats fit within the session's available capacity,
+     * accounting for seats already reserved in the user's cart.
+     *
+     * @throws ProgramException When there is insufficient capacity.
+     */
+    private function validateCapacityForBooking(SessionCapacityInfo $capacity, int $seatsInCart, int $requestedSeats): void
+    {
+        $available = $capacity->availableSeats();
+        $combined  = $seatsInCart + $requestedSeats;
+
+        if ($available <= 0) {
+            throw new ProgramException('This session is sold out.');
+        }
+
+        if ($combined > $available) {
+            $canStillAdd = max(0, $available - $seatsInCart);
+            throw new ProgramException(
+                $canStillAdd > 0
+                    ? "You already have {$seatsInCart} seat(s) in your program. You can add {$canStillAdd} more."
+                    : "You already have {$seatsInCart} seat(s) in your program. No more seats available."
+            );
+        }
+    }
+
+    /**
+     * Enforces the single-ticket cap when the CMS has configured one on the session.
+     *
+     * The check accounts for:
+     * - soldSingleTickets: tickets already purchased by all users (persisted in DB)
+     * - singlesAlreadyInCart: tickets this user has in their cart but not yet purchased
+     * - requestedSingles: tickets the user is trying to add right now
+     *
+     * All three together must not exceed CapacitySingleTicketLimit.
+     *
+     * @throws ProgramException When the single-ticket cap has been reached.
+     */
+    private function validateSingleTicketLimit(SessionCapacityInfo $capacity, int $singlesAlreadyInCart, int $requestedSingles): void
+    {
+        if ($capacity->capacitySingleTicketLimit <= 0) {
+            return;
+        }
+
+        $totalAfterAdd = $capacity->soldSingleTickets + $singlesAlreadyInCart + $requestedSingles;
+
+        if ($totalAfterAdd > $capacity->capacitySingleTicketLimit) {
+            $remaining = max(0, $capacity->capacitySingleTicketLimit - $capacity->soldSingleTickets - $singlesAlreadyInCart);
+            throw new ProgramException(
+                'Single-ticket limit reached for this session.'
+                . ($remaining > 0 ? " You can add {$remaining} more single ticket(s)." : ' No single tickets remaining.')
+            );
+        }
+    }
+
+    /**
+     * Validates that all prices for a session are non-negative.
+     *
+     * @param EventSessionPrice[] $prices
+     * @throws ProgramException When any price is negative.
+     */
+    private function validatePricesNonNegative(array $prices): void
+    {
+        foreach ($prices as $price) {
+            if ((float)$price->price < 0) {
+                throw new ProgramException('Invalid ticket price detected. Please contact support.');
+            }
+        }
+    }
+
+    /**
      * Adds to the quantity of an existing program item and returns the refreshed row.
      *
      * The item is re-fetched from the database after the update so the returned object
@@ -234,9 +371,11 @@ class ProgramService implements IProgramService
         if ($programItemId <= 0) {
             throw new \InvalidArgumentException('programItemId is required');
         }
+        if ($quantity < 0) {
+            throw new \InvalidArgumentException('quantity cannot be negative');
+        }
         $this->verifyItemOwnership($sessionKey, $userAccountId, $programItemId);
 
-        // Setting quantity to zero or below means "remove this item from the program".
         if ($quantity <= 0) {
             $this->programRepository->removeItem($programItemId);
             return;
@@ -570,6 +709,7 @@ class ProgramService implements IProgramService
             programItemId: $item->programItemId,
             eventSessionId: $item->eventSessionId,
             quantity: $item->quantity,
+            priceTierId: $item->priceTierId,
             donationAmount: (float)($item->donationAmount ?? '0.00'),
             eventTitle: $session->eventTitle,
             venueName: $session->venueName,

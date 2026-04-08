@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\DTOs\Domain\Restaurant\ReservationFormData;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Mappers\RestaurantViewMapper;
@@ -81,7 +82,8 @@ class RestaurantController extends BaseController
         $this->handleJsonRequest(function () use ($slug): void {
             // We need the current session or user so the reservation can be added to the right program.
             $sessionContext = $this->resolveSessionContext();
-            $result = $this->restaurantReservationService->submitReservation($slug, $_POST);
+            $formData = ReservationFormData::fromArray($_POST);
+            $result = $this->restaurantReservationService->submitReservation($slug, $formData);
 
             // The reservation is saved first, then linked to the visitor's program as a separate step.
             $this->programService->addReservationToProgram(

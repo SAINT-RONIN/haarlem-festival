@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Constants\RestaurantPageConstants;
 use App\DTOs\Domain\Events\RestaurantDetailEvent;
+use App\DTOs\Domain\Restaurant\ReservationFormData;
 use App\DTOs\Domain\Restaurant\ReservationSubmissionResult;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\Exceptions\ValidationException;
@@ -40,16 +41,14 @@ class RestaurantReservationService implements IRestaurantReservationService
      * It returns ReservationSubmissionResult because the caller still needs the new reservation id
      * for the next step of the flow, which is adding the reservation to the visitor's program.
      *
-     * @param array<string, mixed> $postData
      * @throws RestaurantEventNotFoundException if the event is not found
      * @throws ValidationException if the submitted data fails validation
      */
-    public function submitReservation(string $slug, array $postData): ReservationSubmissionResult
+    public function submitReservation(string $slug, ReservationFormData $formData): ReservationSubmissionResult
     {
         $event = $this->loadRestaurantEvent($slug);
-        $reservationData = $this->normalizeReservationInput($postData);
-        $this->validateReservationData($reservationData);
-        $reservation = $this->buildReservation($event, $reservationData);
+        $this->validateReservationData($formData);
+        $reservation = $this->buildReservation($event, $formData);
         $reservationId = $this->reservationRepository->insert($reservation);
 
         return new ReservationSubmissionResult($reservationId);
@@ -75,58 +74,28 @@ class RestaurantReservationService implements IRestaurantReservationService
     }
 
     /**
-     * Converts raw form input into one clean and predictable reservation data array.
-     * The returned array is normalized so later validation and model construction
-     * do not have to deal with loose POST values or missing keys.
-     *
-     * @param array<string, mixed> $postData
-     * @return array{
-     *     date: string,
-     *     timeSlot: string,
-     *     adultsCount: int,
-     *     childrenCount: int,
-     *     specialRequests: string
-     * }
-     */
-    private function normalizeReservationInput(array $postData): array
-    {
-        return [
-            'date' => trim((string)($postData['dining_date'] ?? '')),
-            'timeSlot' => trim((string)($postData['time_slot'] ?? '')),
-            'adultsCount' => max(0, (int)($postData['adults_count'] ?? 0)),
-            'childrenCount' => max(0, (int)($postData['children_count'] ?? 0)),
-            'specialRequests' => trim((string)($postData['special_requests'] ?? '')),
-        ];
-    }
-
-    /**
-     * Checks the normalized reservation data against the business rules used by the form.
+     * Checks the reservation form data against the business rules used by the form.
      *
      * It returns nothing because validation failures should stop the flow immediately
      * by throwing one ValidationException that contains every collected error.
-     *
-     * @param array{
-     *     date: string,
-     *     timeSlot: string,
-     *     adultsCount: int,
-     *     childrenCount: int,
-     *     specialRequests: string
-     * } $reservationData
      */
-    private function validateReservationData(array $reservationData): void
+    private function validateReservationData(ReservationFormData $data): void
     {
         $errors = [];
 
-        if (!in_array($reservationData['date'], RestaurantPageConstants::VALID_DATES, true)) {
+        if (!in_array($data->diningDate, RestaurantPageConstants::VALID_DATES, true)) {
             $errors[] = 'Please select a valid dining date.';
         }
-        if ($reservationData['timeSlot'] === '') {
+        if ($data->timeSlot === '') {
             $errors[] = 'Please select a time slot.';
         }
-        if (($reservationData['adultsCount'] + $reservationData['childrenCount']) < 1) {
+        if ($data->totalGuests() < 1) {
             $errors[] = 'Please add at least one guest.';
         }
-        if (strlen($reservationData['specialRequests']) > RestaurantPageConstants::MAX_SPECIAL_REQUESTS_LENGTH) {
+        if ($data->totalGuests() > RestaurantPageConstants::MAX_GUEST_COUNT) {
+            $errors[] = 'Maximum ' . RestaurantPageConstants::MAX_GUEST_COUNT . ' guests per reservation.';
+        }
+        if (strlen($data->specialRequests) > RestaurantPageConstants::MAX_SPECIAL_REQUESTS_LENGTH) {
             $errors[] = 'Special requests may not exceed ' . RestaurantPageConstants::MAX_SPECIAL_REQUESTS_LENGTH . ' characters.';
         }
 
@@ -140,25 +109,17 @@ class RestaurantReservationService implements IRestaurantReservationService
      *
      * Returning a Reservation object here keeps the repository layer simple:
      * it receives one well-formed model instead of having to rebuild form data itself.
-     *
-     * @param array{
-     *     date: string,
-     *     timeSlot: string,
-     *     adultsCount: int,
-     *     childrenCount: int,
-     *     specialRequests: string
-     * } $reservationData
      */
-    private function buildReservation(RestaurantDetailEvent $event, array $reservationData): Reservation
+    private function buildReservation(RestaurantDetailEvent $event, ReservationFormData $data): Reservation
     {
         return new Reservation(
             eventId: $event->eventId,
-            diningDate: $reservationData['date'],
-            timeSlot: $reservationData['timeSlot'],
-            adultsCount: $reservationData['adultsCount'],
-            childrenCount: $reservationData['childrenCount'],
-            specialRequests: $reservationData['specialRequests'],
-            totalFee: $this->calculateReservationFee($reservationData),
+            diningDate: $data->diningDate,
+            timeSlot: $data->timeSlot,
+            adultsCount: $data->adultsCount,
+            childrenCount: $data->childrenCount,
+            specialRequests: $data->specialRequests,
+            totalFee: $this->calculateReservationFee($data),
         );
     }
 
@@ -167,12 +128,9 @@ class RestaurantReservationService implements IRestaurantReservationService
      *
      * It returns an integer because the reservation fee is stored as a whole-number amount
      * in the current domain model, not as a floating-point currency value.
-     *
-     * @param array{adultsCount: int, childrenCount: int} $reservationData
      */
-    private function calculateReservationFee(array $reservationData): int
+    private function calculateReservationFee(ReservationFormData $data): int
     {
-        return ($reservationData['adultsCount'] + $reservationData['childrenCount'])
-            * RestaurantPageConstants::RESERVATION_FEE;
+        return $data->totalGuests() * RestaurantPageConstants::RESERVATION_FEE;
     }
 }

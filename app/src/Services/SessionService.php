@@ -28,6 +28,14 @@ class SessionService implements ISessionService
 
     public function login(int $userId, int $roleId): void
     {
+        if ($userId <= 0) {
+            throw new \InvalidArgumentException('User ID must be a positive integer.');
+        }
+
+        if (UserRoleId::tryFrom($roleId) === null) {
+            throw new \InvalidArgumentException('Invalid role ID.');
+        }
+
         $this->start();
 
         // Regenerate session ID to prevent session fixation

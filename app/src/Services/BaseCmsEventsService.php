@@ -36,6 +36,8 @@ abstract class BaseCmsEventsService
     /**
      * Returns a URL-safe slug that is unique across all events.
      * If the base is taken, appends -2, -3, … until a free slug is found.
+     *
+     * A hard cap prevents runaway loops from pathological input or database errors.
      */
     protected function resolveUniqueSlug(string $base): string
     {
@@ -48,8 +50,12 @@ abstract class BaseCmsEventsService
         }
 
         $counter = 2;
+        $maxAttempts = 1000;
         while ($this->eventRepository->slugExists("{$base}-{$counter}")) {
             $counter++;
+            if ($counter > $maxAttempts) {
+                throw new \RuntimeException("Could not generate a unique slug after {$maxAttempts} attempts.");
+            }
         }
 
         return "{$base}-{$counter}";

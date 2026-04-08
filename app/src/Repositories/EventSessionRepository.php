@@ -610,13 +610,13 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
 
     /**
      * Returns capacity and ticket-sale counts for a session.
-     * Used for pre-checkout validation including the single-ticket cap.
+     * Used for pre-checkout validation including the single-ticket cap and per-booking limits.
      */
     public function getCapacityInfo(int $sessionId): ?SessionCapacityInfo
     {
-        // Fetch the capacity snapshot for a single session
         return $this->fetchOne(
-            'SELECT EventSessionId, CapacityTotal, SoldSingleTickets, SoldReservedSeats
+            'SELECT EventSessionId, CapacityTotal, SoldSingleTickets, SoldReservedSeats,
+                    CapacitySingleTicketLimit
             FROM EventSession
             WHERE EventSessionId = :sessionId',
             [':sessionId' => $sessionId],

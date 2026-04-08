@@ -33,6 +33,12 @@ final class OrderCapacityRestorer implements IOrderCapacityRestorer
             return;
         }
 
+        // Guard against corrupted quantity values — a negative quantity would reduce capacity
+        // instead of restoring it, which is the opposite of what we want here.
+        if ($item->quantity <= 0) {
+            return;
+        }
+
         $this->eventSessionRepository->restoreCapacity($item->eventSessionId, $item->quantity);
     }
 }

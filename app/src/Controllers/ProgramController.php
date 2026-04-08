@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\ProgramException;
 use App\Mappers\ProgramMapper;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
