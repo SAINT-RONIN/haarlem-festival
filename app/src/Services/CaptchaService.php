@@ -32,8 +32,8 @@ class CaptchaService implements ICaptchaService
         $this->siteKey = getenv('RECAPTCHA_SITE_KEY') ?: '';
         $this->secretKey = getenv('RECAPTCHA_SECRET_KEY') ?: '';
         $this->verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
-        $this->appEnv = strtolower((string)(getenv('APP_ENV') ?: 'local'));
-        $this->appUrl = (string)(getenv('APP_URL') ?: '');
+        $this->appEnv = strtolower((string) (getenv('APP_ENV') ?: 'local'));
+        $this->appUrl = (string) (getenv('APP_URL') ?: '');
         $this->explicitEnabled = $this->readExplicitEnabledFlag();
     }
 

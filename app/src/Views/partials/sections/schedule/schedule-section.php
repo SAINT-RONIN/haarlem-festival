@@ -70,18 +70,18 @@ $sectionId = $schedule->sectionId ?? 'schedule';
     <!-- Schedule Days Grid -->
     <?php
     $gridClasses = $schedule->gridClasses;
-    $itemClasses = $schedule->itemClasses;
-    ?>
+$itemClasses = $schedule->itemClasses;
+?>
     <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 pt-2.5 pb-8 sm:pb-12">
         <ul class="w-full flex flex-col <?= $gridClasses ?> justify-center items-start gap-4 sm:gap-6 lg:gap-12"
             role="list" aria-label="Schedule days">
             <?php foreach ($schedule->days as $dayIndex => $day): ?>
                 <?php ViewRenderer::render(__DIR__ . '/schedule-day-column.php', [
-                    'schedule' => $schedule,
-                    'day' => $day,
-                    'dayIndex' => $dayIndex,
-                    'dayItemClasses' => $itemClasses,
-                ]); ?>
+                'schedule' => $schedule,
+                'day' => $day,
+                'dayIndex' => $dayIndex,
+                'dayItemClasses' => $itemClasses,
+            ]); ?>
             <?php endforeach; ?>
         </ul>
     </div>

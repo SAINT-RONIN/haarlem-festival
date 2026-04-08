@@ -14,7 +14,5 @@ final class CmsEventConstraints
     public const MIN_STARS              = 1;
     public const MAX_STARS              = 5;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

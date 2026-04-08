@@ -24,7 +24,5 @@ final class SharedSectionKeys
         return self::EVENT_SECTION_PREFIX . $eventId;
     }
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

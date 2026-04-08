@@ -99,8 +99,8 @@ $isLoggedIn = $viewModel->isLoggedIn;
                 <?php foreach ($viewModel->items as $item): ?>
                     <!-- Desktop card (xl+): 7-column grid -->
                     <div class="hidden xl:grid mx-2 px-6 py-6 bg-white rounded-2xl grid-cols-[6rem_1fr_5rem_6rem_6rem_5rem_2.25rem] gap-4 items-center"
-                         data-program-item-id="<?= htmlspecialchars((string)$item->programItemId) ?>"
-                         data-unit-price="<?= htmlspecialchars((string)$item->rawPrice) ?>"
+                         data-program-item-id="<?= htmlspecialchars((string) $item->programItemId) ?>"
+                         data-unit-price="<?= htmlspecialchars((string) $item->rawPrice) ?>"
                          data-is-pay-what-you-like="<?= $item->isPayWhatYouLike ? '1' : '0' ?>">
 
                         <!-- Col 1: Event Type Badge -->
@@ -192,7 +192,7 @@ $isLoggedIn = $viewModel->isLoggedIn;
                                 </button>
                                 <?php endif; ?>
                                 <span class="js-qty-value flex-1 text-center text-neutral-600 text-sm font-normal font-['Inter']">
-                                    <?= htmlspecialchars((string)$item->quantity) ?>
+                                    <?= htmlspecialchars((string) $item->quantity) ?>
                                 </span>
                                 <?php if (!$item->isReservation): ?>
                                 <button type="button"
@@ -249,8 +249,8 @@ $isLoggedIn = $viewModel->isLoggedIn;
 
                     <!-- Mobile/Tablet card (<xl): stacked layout -->
                     <div class="xl:hidden mx-1 sm:mx-2 p-4 sm:p-5 bg-white rounded-2xl flex flex-col gap-4"
-                         data-program-item-id="<?= htmlspecialchars((string)$item->programItemId) ?>"
-                         data-unit-price="<?= htmlspecialchars((string)$item->rawPrice) ?>"
+                         data-program-item-id="<?= htmlspecialchars((string) $item->programItemId) ?>"
+                         data-unit-price="<?= htmlspecialchars((string) $item->rawPrice) ?>"
                          data-is-pay-what-you-like="<?= $item->isPayWhatYouLike ? '1' : '0' ?>">
 
                         <!-- Top: Badge + Event Info + Delete -->
@@ -354,7 +354,7 @@ $isLoggedIn = $viewModel->isLoggedIn;
                                     </button>
                                     <?php endif; ?>
                                     <span class="js-qty-value text-neutral-600 text-sm font-normal font-['Inter']">
-                                        <?= htmlspecialchars((string)$item->quantity) ?>
+                                        <?= htmlspecialchars((string) $item->quantity) ?>
                                     </span>
                                     <?php if (!$item->isReservation): ?>
                                     <button type="button"

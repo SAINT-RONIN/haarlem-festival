@@ -36,7 +36,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     public function getRestaurantPageData(): RestaurantPageData
     {
         return $this->guardPageLoad(
-            fn (): RestaurantPageData => $this->assembleRestaurantPageData(),
+            fn(): RestaurantPageData => $this->assembleRestaurantPageData(),
             'Failed to load the Restaurant page.',
         );
     }

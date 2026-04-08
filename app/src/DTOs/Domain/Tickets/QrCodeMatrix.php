@@ -17,6 +17,5 @@ final readonly class QrCodeMatrix
     public function __construct(
         public int $size,
         public array $modules,
-    ) {
-    }
+    ) {}
 }

@@ -117,4 +117,3 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
         );
     }
 }
-

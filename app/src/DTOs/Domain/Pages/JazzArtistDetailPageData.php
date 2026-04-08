@@ -29,6 +29,5 @@ final readonly class JazzArtistDetailPageData
         public array $lineupMembers = [],
         public array $highlights = [],
         public array $galleryImages = [],
-    ) {
-    }
+    ) {}
 }

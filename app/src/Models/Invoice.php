@@ -26,8 +26,7 @@ final readonly class Invoice
         public string              $totalAmount,
         public ?\DateTimeImmutable $paymentDateUtc,
         public ?int                $pdfAssetId,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates an Invoice instance from a database row array.
@@ -35,21 +34,21 @@ final readonly class Invoice
     public static function fromRow(array $row): self
     {
         return new self(
-            invoiceId: (int)$row['InvoiceId'],
-            orderId: (int)$row['OrderId'],
-            invoiceNumber: (string)$row['InvoiceNumber'],
+            invoiceId: (int) $row['InvoiceId'],
+            orderId: (int) $row['OrderId'],
+            invoiceNumber: (string) $row['InvoiceNumber'],
             invoiceDateUtc: new \DateTimeImmutable($row['InvoiceDateUtc']),
-            clientName: (string)$row['ClientName'],
-            phoneNumber: (string)($row['PhoneNumber'] ?? ''),
-            addressLine: (string)($row['AddressLine'] ?? ''),
-            emailAddress: (string)$row['EmailAddress'],
-            subtotalAmount: (string)$row['SubtotalAmount'],
-            totalVatAmount: (string)$row['TotalVatAmount'],
-            totalAmount: (string)$row['TotalAmount'],
+            clientName: (string) $row['ClientName'],
+            phoneNumber: (string) ($row['PhoneNumber'] ?? ''),
+            addressLine: (string) ($row['AddressLine'] ?? ''),
+            emailAddress: (string) $row['EmailAddress'],
+            subtotalAmount: (string) $row['SubtotalAmount'],
+            totalVatAmount: (string) $row['TotalVatAmount'],
+            totalAmount: (string) $row['TotalAmount'],
             paymentDateUtc: isset($row['PaymentDateUtc']) && $row['PaymentDateUtc'] !== null
                 ? new \DateTimeImmutable($row['PaymentDateUtc'])
                 : null,
-            pdfAssetId: isset($row['PdfAssetId']) ? (int)$row['PdfAssetId'] : null,
+            pdfAssetId: isset($row['PdfAssetId']) ? (int) $row['PdfAssetId'] : null,
         );
     }
 

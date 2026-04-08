@@ -52,7 +52,7 @@ class HomeService extends BaseContentService implements IHomeService
     public function getHomePageData(): HomePageData
     {
         return $this->guardPageLoad(
-            fn (): HomePageData => $this->assembleHomePageData(),
+            fn(): HomePageData => $this->assembleHomePageData(),
             'Failed to load the home page.',
         );
     }
@@ -129,9 +129,9 @@ class HomeService extends BaseContentService implements IHomeService
 
         return new HomeEventTypeData(
             slug: $slug,
-            title: (string)($section[$slug . '_title'] ?? ucfirst($slug)),
-            description: (string)($section[$slug . '_description'] ?? ''),
-            button: (string)($section[$slug . '_button'] ?? 'Explore Events'),
+            title: (string) ($section[$slug . '_title'] ?? ucfirst($slug)),
+            description: (string) ($section[$slug . '_description'] ?? ''),
+            button: (string) ($section[$slug . '_button'] ?? 'Explore Events'),
             image: $section[$slug . '_image'] ?? null,
             darkBg: HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['darkBg'] ?? false,
         );
@@ -260,15 +260,15 @@ class HomeService extends BaseContentService implements IHomeService
 
         foreach ($byType as $slug => $typeData) {
             $sessions = $typeData['sessions'];
-            $starts   = array_map(fn ($s) => $s->startDateTime->getTimestamp(), $sessions);
-            $ends     = array_map(fn ($s) => $s->endDateTime ? $s->endDateTime->getTimestamp() : $s->startDateTime->getTimestamp(), $sessions);
+            $starts   = array_map(fn($s) => $s->startDateTime->getTimestamp(), $sessions);
+            $ends     = array_map(fn($s) => $s->endDateTime ? $s->endDateTime->getTimestamp() : $s->startDateTime->getTimestamp(), $sessions);
 
             $result[] = new HomeScheduleSessionData(
                 earliestStart: min($starts),
                 latestEnd: max($ends),
                 eventTypeSlug: $slug,
-                firstEventTitle: (string)($sessions[0]->eventTitle ?? ''),
-                typeName: (string)($typeData['typeName']),
+                firstEventTitle: (string) ($sessions[0]->eventTitle ?? ''),
+                typeName: (string) ($typeData['typeName']),
             );
         }
 

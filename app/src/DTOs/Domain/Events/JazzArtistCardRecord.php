@@ -18,8 +18,7 @@ final readonly class JazzArtistCardRecord
         public int $performanceCount,
         public ?\DateTimeImmutable $firstPerformanceAt,
         public string $firstPerformanceLocation,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $row
@@ -27,19 +26,19 @@ final readonly class JazzArtistCardRecord
     public static function fromRow(array $row): self
     {
         return new self(
-            artistId: (int)($row['ArtistId'] ?? 0),
-            eventId: (int)($row['EventId'] ?? 0),
-            eventSlug: (string)($row['Slug'] ?? ''),
-            artistName: (string)($row['ArtistName'] ?? ''),
-            artistStyle: (string)($row['ArtistStyle'] ?? ''),
-            cardDescription: (string)($row['CardDescription'] ?? ''),
-            imageUrl: (string)($row['ImageUrl'] ?? ''),
-            cardSortOrder: (int)($row['CardSortOrder'] ?? 0),
-            performanceCount: (int)($row['PerformanceCount'] ?? 0),
+            artistId: (int) ($row['ArtistId'] ?? 0),
+            eventId: (int) ($row['EventId'] ?? 0),
+            eventSlug: (string) ($row['Slug'] ?? ''),
+            artistName: (string) ($row['ArtistName'] ?? ''),
+            artistStyle: (string) ($row['ArtistStyle'] ?? ''),
+            cardDescription: (string) ($row['CardDescription'] ?? ''),
+            imageUrl: (string) ($row['ImageUrl'] ?? ''),
+            cardSortOrder: (int) ($row['CardSortOrder'] ?? 0),
+            performanceCount: (int) ($row['PerformanceCount'] ?? 0),
             firstPerformanceAt: isset($row['FirstPerformanceAt']) && $row['FirstPerformanceAt'] !== null
-                ? new \DateTimeImmutable((string)$row['FirstPerformanceAt'])
+                ? new \DateTimeImmutable((string) $row['FirstPerformanceAt'])
                 : null,
-            firstPerformanceLocation: (string)($row['FirstPerformanceLocation'] ?? ''),
+            firstPerformanceLocation: (string) ($row['FirstPerformanceLocation'] ?? ''),
         );
     }
 }

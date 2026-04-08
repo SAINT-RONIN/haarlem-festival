@@ -30,7 +30,7 @@ final class CmsOrdersMapper
     ): CmsOrdersListViewModel {
         return new CmsOrdersListViewModel(
             orders: array_map([self::class, 'toListItem'], $orders),
-            statusOptions: array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
+            statusOptions: array_map(fn(OrderStatus $s) => $s->value, OrderStatus::cases()),
             selectedStatus: $selectedStatus,
             successMessage: $successMessage,
             errorMessage: $errorMessage,
@@ -48,16 +48,16 @@ final class CmsOrdersMapper
         $paymentStatus = $order->paymentStatus ?? 'No payment';
 
         return new CmsOrderListItemViewModel(
-            orderId:           $order->orderId,
-            orderNumber:       $order->orderNumber,
-            userAccountId:     $order->userAccountId,
-            userEmail:         $order->email !== '' ? $order->email : 'Unknown',
-            itemsSummary:      $order->itemsSummary ?? 'No items',
-            orderStatus:       $orderStatus,
-            paymentStatus:     $paymentStatus,
-            totalAmount:       FormatHelper::price((float)$order->totalAmount),
-            createdAt:         CmsOrderViewHelper::formatUtcDate($order->createdAtUtc),
-            statusBadgeClass:  CmsOrderViewHelper::resolveOrderBadgeClass($orderStatus),
+            orderId: $order->orderId,
+            orderNumber: $order->orderNumber,
+            userAccountId: $order->userAccountId,
+            userEmail: $order->email !== '' ? $order->email : 'Unknown',
+            itemsSummary: $order->itemsSummary ?? 'No items',
+            orderStatus: $orderStatus,
+            paymentStatus: $paymentStatus,
+            totalAmount: FormatHelper::price((float) $order->totalAmount),
+            createdAt: CmsOrderViewHelper::formatUtcDate($order->createdAtUtc),
+            statusBadgeClass: CmsOrderViewHelper::resolveOrderBadgeClass($orderStatus),
             paymentBadgeClass: CmsOrderViewHelper::resolvePaymentBadgeClass($paymentStatus),
         );
     }
@@ -68,14 +68,14 @@ final class CmsOrdersMapper
         ?string $errorMessage,
     ): CmsOrderDetailViewModel {
         return new CmsOrderDetailViewModel(
-            order:          $data->order,
-            items:          $data->items,
-            payments:       $data->payments,
-            tickets:        $data->tickets,
-            invoice:        $data->invoice,
+            order: $data->order,
+            items: $data->items,
+            payments: $data->payments,
+            tickets: $data->tickets,
+            invoice: $data->invoice,
             invoicePdfPath: $data->invoicePdfPath,
             successMessage: $successMessage,
-            errorMessage:   $errorMessage,
+            errorMessage: $errorMessage,
         );
     }
 

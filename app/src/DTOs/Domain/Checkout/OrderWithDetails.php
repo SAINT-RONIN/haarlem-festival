@@ -22,21 +22,20 @@ final readonly class OrderWithDetails
         public readonly string  $email,
         public readonly ?string $itemsSummary,
         public readonly ?string $paymentStatus,
-    ) {
-    }
+    ) {}
 
     public static function fromRow(array $row): self
     {
         return new self(
-            orderId:       (int)$row['OrderId'],
-            orderNumber:   (string)$row['OrderNumber'],
-            userAccountId: (int)$row['UserAccountId'],
-            status:        (string)$row['Status'],
-            totalAmount:   (string)$row['TotalAmount'],
-            createdAtUtc:  (string)$row['CreatedAtUtc'],
-            email:         (string)($row['Email'] ?? ''),
-            itemsSummary:  isset($row['ItemsSummary']) ? (string)$row['ItemsSummary'] : null,
-            paymentStatus: isset($row['PaymentStatus']) ? (string)$row['PaymentStatus'] : null,
+            orderId: (int) $row['OrderId'],
+            orderNumber: (string) $row['OrderNumber'],
+            userAccountId: (int) $row['UserAccountId'],
+            status: (string) $row['Status'],
+            totalAmount: (string) $row['TotalAmount'],
+            createdAtUtc: (string) $row['CreatedAtUtc'],
+            email: (string) ($row['Email'] ?? ''),
+            itemsSummary: isset($row['ItemsSummary']) ? (string) $row['ItemsSummary'] : null,
+            paymentStatus: isset($row['PaymentStatus']) ? (string) $row['PaymentStatus'] : null,
         );
     }
 

@@ -131,7 +131,7 @@ class StorytellingDetailService extends BaseContentService implements IStorytell
     {
         $labelsMap = $this->labelRepository->findLabelsBySessionIds([$sessionId]);
         return array_map(
-            fn (EventSessionLabel $label) => $label->labelText,
+            fn(EventSessionLabel $label) => $label->labelText,
             $labelsMap[$sessionId] ?? [],
         );
     }

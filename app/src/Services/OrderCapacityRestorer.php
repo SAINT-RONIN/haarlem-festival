@@ -17,8 +17,7 @@ final class OrderCapacityRestorer implements IOrderCapacityRestorer
     public function __construct(
         private readonly IOrderItemRepository $orderItemRepository,
         private readonly IEventSessionRepository $eventSessionRepository,
-    ) {
-    }
+    ) {}
 
     public function restore(int $orderId): void
     {

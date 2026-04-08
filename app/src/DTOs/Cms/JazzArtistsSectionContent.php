@@ -11,6 +11,5 @@ final readonly class JazzArtistsSectionContent
 {
     public function __construct(
         public ?string $artistsHeading,
-    ) {
-    }
+    ) {}
 }

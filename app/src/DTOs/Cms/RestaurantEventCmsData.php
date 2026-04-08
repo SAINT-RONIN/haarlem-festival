@@ -60,8 +60,7 @@ final readonly class RestaurantEventCmsData
         public ?string $galleryImage1,
         public ?string $galleryImage2,
         public ?string $galleryImage3,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, ?string> $raw CMS item values keyed by item key

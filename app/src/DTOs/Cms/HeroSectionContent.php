@@ -18,6 +18,5 @@ final readonly class HeroSectionContent
         public ?string $heroButtonSecondary,
         public ?string $heroButtonSecondaryLink,
         public ?string $heroBackgroundImage,
-    ) {
-    }
+    ) {}
 }

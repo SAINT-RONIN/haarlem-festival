@@ -27,6 +27,5 @@ final readonly class CmsEventCreateViewModel
         public ?string $errorMessage,
         public ?string $successMessage,
         public string  $preselectedDay,
-    ) {
-    }
+    ) {}
 }

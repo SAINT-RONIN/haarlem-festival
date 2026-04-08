@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Restaurant page-specific content sections rendered inside the shared shell.
  *

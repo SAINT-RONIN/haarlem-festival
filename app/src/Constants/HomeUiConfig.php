@@ -61,7 +61,5 @@ final class HomeUiConfig
     /** Fallback dates when no live sessions exist yet. */
     public const PLACEHOLDER_DATES = ['2026-07-25', '2026-07-26', '2026-07-27', '2026-07-28'];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

@@ -28,7 +28,5 @@ final class CheckoutConstraints
      */
     public const GROUP_TICKET_SEAT_COUNT = 4;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

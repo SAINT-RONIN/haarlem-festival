@@ -116,8 +116,7 @@ final class CmsDashboardViewMapper
         CmsPageEditData $pageData,
         string $jazzOverviewAddCsrfToken = '',
         string $jazzOverviewRemoveCsrfToken = '',
-    ): CmsPageEditViewModel
-    {
+    ): CmsPageEditViewModel {
         return new CmsPageEditViewModel(
             page: self::formatPage($pageData->page),
             sections: array_map([self::class, 'formatSingleSection'], $pageData->sections),
@@ -135,9 +134,9 @@ final class CmsDashboardViewMapper
     private static function formatPage(CmsPage $page): CmsPageInfoViewModel
     {
         return new CmsPageInfoViewModel(
-            id:    $page->cmsPageId,
+            id: $page->cmsPageId,
             title: $page->title,
-            slug:  $page->slug,
+            slug: $page->slug,
         );
     }
 
@@ -145,12 +144,12 @@ final class CmsDashboardViewMapper
     private static function formatSingleSection(CmsSectionEditData $section): CmsSectionDisplayViewModel
     {
         return new CmsSectionDisplayViewModel(
-            id:          $section->sectionId,
-            key:         $section->sectionKey,
+            id: $section->sectionId,
+            key: $section->sectionKey,
             displayName: self::resolveSectionDisplayName($section->displayName),
-            isEditable:  self::isSectionEditable($section->sectionKey),
-            items:       self::groupItemsByType($section->items),
-            subGroups:   CmsSectionGroupRouter::buildSubGroups($section->sectionKey, $section->items),
+            isEditable: self::isSectionEditable($section->sectionKey),
+            items: self::groupItemsByType($section->items),
+            subGroups: CmsSectionGroupRouter::buildSubGroups($section->sectionKey, $section->items),
         );
     }
 
@@ -209,17 +208,17 @@ final class CmsDashboardViewMapper
         $isTextarea = strlen($item->value) > 100 || $item->type === 'TEXT';
 
         return new CmsItemDisplayViewModel(
-            itemId:       $item->itemId,
-            itemKey:      $item->itemKey,
-            displayName:  self::formatItemKeyName($item->displayName),
-            type:         $item->type,
-            typeLabel:    $item->typeLabel,
-            inputType:    $item->inputType,
-            maxChars:     $item->maxChars,
-            value:        $item->value,
+            itemId: $item->itemId,
+            itemKey: $item->itemKey,
+            displayName: self::formatItemKeyName($item->displayName),
+            type: $item->type,
+            typeLabel: $item->typeLabel,
+            inputType: $item->inputType,
+            maxChars: $item->maxChars,
+            value: $item->value,
             mediaAssetId: $item->mediaAssetId,
-            mediaAsset:   self::toMediaAssetViewModel($item->mediaAsset),
-            isTextarea:   $isTextarea,
+            mediaAsset: self::toMediaAssetViewModel($item->mediaAsset),
+            isTextarea: $isTextarea,
         );
     }
 
@@ -231,9 +230,9 @@ final class CmsDashboardViewMapper
         }
 
         return new CmsMediaAssetDisplayViewModel(
-            filePath:         $asset->filePath,
+            filePath: $asset->filePath,
             originalFileName: $asset->originalFileName,
-            altText:          self::formatItemKeyName($asset->altText),
+            altText: self::formatItemKeyName($asset->altText),
         );
     }
 
@@ -254,8 +253,7 @@ final class CmsDashboardViewMapper
         CmsPageEditData $pageData,
         string $jazzOverviewAddCsrfToken,
         string $jazzOverviewRemoveCsrfToken,
-    ): ?CmsJazzLineupManagerViewModel
-    {
+    ): ?CmsJazzLineupManagerViewModel {
         $managerData = $pageData->jazzLineupManager;
         if (!$managerData instanceof JazzLineupManagerData) {
             return null;
@@ -357,12 +355,12 @@ final class CmsDashboardViewMapper
     private static function getImageLimits(): CmsImageLimitsViewModel
     {
         return new CmsImageLimitsViewModel(
-            maxWidth:             CmsContentLimits::IMAGE_MAX_WIDTH,
-            maxHeight:            CmsContentLimits::IMAGE_MAX_HEIGHT,
-            maxFileSize:          CmsContentLimits::IMAGE_MAX_FILE_SIZE,
+            maxWidth: CmsContentLimits::IMAGE_MAX_WIDTH,
+            maxHeight: CmsContentLimits::IMAGE_MAX_HEIGHT,
+            maxFileSize: CmsContentLimits::IMAGE_MAX_FILE_SIZE,
             maxFileSizeFormatted: FormatHelper::fileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
-            allowedMimes:         CmsContentLimits::IMAGE_ALLOWED_MIMES,
-            allowedExtensions:    ['jpg', 'jpeg', 'png', 'webp'],
+            allowedMimes: CmsContentLimits::IMAGE_ALLOWED_MIMES,
+            allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
         );
     }
 }

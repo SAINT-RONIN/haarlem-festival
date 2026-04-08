@@ -19,6 +19,5 @@ final readonly class ProgramMainContent
         public ?string $paymentOverviewHeading,
         public ?string $taxLabel,
         public ?string $checkoutButtonText,
-    ) {
-    }
+    ) {}
 }

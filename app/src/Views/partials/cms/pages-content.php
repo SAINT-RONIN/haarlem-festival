@@ -6,7 +6,7 @@
  * @var string $searchQuery Current search query
  */
 
-$pages = $pages ?? [];
+$pages ??= [];
 ?>
 
 <section aria-labelledby="pages-table-heading" class="bg-white border border-gray-200 rounded-xl overflow-hidden">

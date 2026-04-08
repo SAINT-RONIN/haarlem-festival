@@ -54,12 +54,12 @@ class CmsJazzCardsController extends CmsBaseController
             $viewModel   = $this->buildFormViewModel(
                 null,
                 new JazzLineupCardUpsertData(
-                    name:          '',
-                    style:         '',
+                    name: '',
+                    style: '',
                     cardDescription: '',
-                    imageAssetId:  null,
+                    imageAssetId: null,
                     cardSortOrder: $this->artistsService->getNextJazzOverviewSortOrder(),
-                    isActive:      true,
+                    isActive: true,
                 ),
                 [],
             );
@@ -113,12 +113,12 @@ class CmsJazzCardsController extends CmsBaseController
             $viewModel   = $this->buildFormViewModel(
                 $id,
                 new JazzLineupCardUpsertData(
-                    name:            $artist->name,
-                    style:           $artist->style,
+                    name: $artist->name,
+                    style: $artist->style,
                     cardDescription: $artist->cardDescription,
-                    imageAssetId:    $artist->imageAssetId,
-                    cardSortOrder:   $artist->cardSortOrder,
-                    isActive:        $artist->isActive,
+                    imageAssetId: $artist->imageAssetId,
+                    cardSortOrder: $artist->cardSortOrder,
+                    isActive: $artist->isActive,
                 ),
                 [],
             );
@@ -164,12 +164,12 @@ class CmsJazzCardsController extends CmsBaseController
     private function extractFormData(): JazzLineupCardUpsertData
     {
         return new JazzLineupCardUpsertData(
-            name:            $this->readStringPostParam('name') ?? '',
-            style:           $this->readStringPostParam('style') ?? '',
+            name: $this->readStringPostParam('name') ?? '',
+            style: $this->readStringPostParam('style') ?? '',
             cardDescription: trim((string) ($_POST['cardDescription'] ?? '')),
-            imageAssetId:    $this->readOptionalIntPostParam('imageAssetId'),
-            cardSortOrder:   $this->readOptionalIntPostParam('cardSortOrder') ?? 0,
-            isActive:        $this->readBoolPostParam('isActive'),
+            imageAssetId: $this->readOptionalIntPostParam('imageAssetId'),
+            cardSortOrder: $this->readOptionalIntPostParam('cardSortOrder') ?? 0,
+            isActive: $this->readBoolPostParam('isActive'),
         );
     }
 
@@ -195,21 +195,21 @@ class CmsJazzCardsController extends CmsBaseController
         $backUrl  = $returnTo !== '' ? $returnTo : '/cms/pages';
 
         return new CmsJazzLineupCardFormViewModel(
-            artistId:        $cardId,
-            name:            $data->name,
-            style:           $data->style,
+            artistId: $cardId,
+            name: $data->name,
+            style: $data->style,
             cardDescription: $data->cardDescription,
-            imageAssetId:    $data->imageAssetId,
-            imageUrl:        $this->resolveImageUrl($data->imageAssetId),
-            cardSortOrder:   $data->cardSortOrder,
-            isActive:        $data->isActive,
-            artists:         $this->buildArtistOptions(),
-            csrfToken:       $this->sessionService->getCsrfToken($scope),
-            formAction:      $action,
-            pageTitle:       $title,
-            returnTo:        $returnTo,
-            backUrl:         $backUrl,
-            errors:          $errors,
+            imageAssetId: $data->imageAssetId,
+            imageUrl: $this->resolveImageUrl($data->imageAssetId),
+            cardSortOrder: $data->cardSortOrder,
+            isActive: $data->isActive,
+            artists: $this->buildArtistOptions(),
+            csrfToken: $this->sessionService->getCsrfToken($scope),
+            formAction: $action,
+            pageTitle: $title,
+            returnTo: $returnTo,
+            backUrl: $backUrl,
+            errors: $errors,
         );
     }
 
@@ -251,12 +251,12 @@ class CmsJazzCardsController extends CmsBaseController
         return array_values(array_map(
             function (\App\Models\Artist $artist): CmsArtistOptionViewModel {
                 return new CmsArtistOptionViewModel(
-                    artistId:    $artist->artistId,
-                    name:        $artist->name,
-                    style:       $artist->style,
+                    artistId: $artist->artistId,
+                    name: $artist->name,
+                    style: $artist->style,
                     description: $artist->cardDescription,
                     imageAssetId: $artist->imageAssetId,
-                    imageUrl:     $artist->imagePath ?? '',
+                    imageUrl: $artist->imagePath ?? '',
                 );
             },
             $artists,

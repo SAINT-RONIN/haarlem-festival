@@ -39,8 +39,8 @@ final class CheckoutMapper
         return new CheckoutCancelPageViewModel(
             isLoggedIn: $isLoggedIn,
             hasCancelData: true,
-            orderId: (string)($cancelResult->orderId ?? 'n/a'),
-            paymentId: (string)($cancelResult->paymentId ?? 'n/a'),
+            orderId: (string) ($cancelResult->orderId ?? 'n/a'),
+            paymentId: (string) ($cancelResult->paymentId ?? 'n/a'),
         );
     }
 

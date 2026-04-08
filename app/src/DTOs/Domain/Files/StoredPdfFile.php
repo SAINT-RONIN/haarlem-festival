@@ -11,6 +11,5 @@ final readonly class StoredPdfFile
         public string $absolutePath,
         public string $relativePath,
         public int $fileSizeBytes,
-    ) {
-    }
+    ) {}
 }

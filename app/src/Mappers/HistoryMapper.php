@@ -42,22 +42,23 @@ final class HistoryMapper
         ?ScheduleSectionViewModel $scheduleSection,
     ): HistoryPageViewModel {
         return new HistoryPageViewModel(
-            heroData: $heroData, globalUi: $globalUi,
-            gradientSection:    CmsMapper::toGradientSection($data->gradientSection),
-            introSplitSection:  CmsMapper::toIntroSplitSection($data->introSection),
-            routeData:          self::toRouteData($data->routeSection),
-            venuesData:         self::toVenuesData($data->venuesSection),
-            ticketOptionsData:  self::toTicketOptions($data->ticketOptionsSection),
-            infoAboutTourData:  self::toInfoAboutTour($data->tourInfoSection),
-            scheduleSection:    $scheduleSection,
+            heroData: $heroData,
+            globalUi: $globalUi,
+            gradientSection: CmsMapper::toGradientSection($data->gradientSection),
+            introSplitSection: CmsMapper::toIntroSplitSection($data->introSection),
+            routeData: self::toRouteData($data->routeSection),
+            venuesData: self::toVenuesData($data->venuesSection),
+            ticketOptionsData: self::toTicketOptions($data->ticketOptionsSection),
+            infoAboutTourData: self::toInfoAboutTour($data->tourInfoSection),
+            scheduleSection: $scheduleSection,
         );
     }
 
     private static function toRouteData(HistoryRouteSectionContent $content): RouteData
     {
         return new RouteData(
-            headingText:  $content->routeHeading ?? '',
-            venues:       self::buildRouteVenues($content),
+            headingText: $content->routeHeading ?? '',
+            venues: self::buildRouteVenues($content),
             mapImagePath: $content->routeMapImage ?? '',
         );
     }
@@ -82,9 +83,9 @@ final class HistoryMapper
     private static function toVenuesData(HistoryVenuesSectionContent $content): VenuesData
     {
         return new VenuesData(
-            headingText:    $content->historicalLocationsHeading ?? '',
-            viewMoreLabel:  $content->historicalLocationsViewMoreLabel ?? '',
-            venues:         self::buildVenueCards($content),
+            headingText: $content->historicalLocationsHeading ?? '',
+            viewMoreLabel: $content->historicalLocationsViewMoreLabel ?? '',
+            venues: self::buildVenueCards($content),
         );
     }
 
@@ -111,7 +112,7 @@ final class HistoryMapper
     private static function toTicketOptions(HistoryTicketOptionsSectionContent $content): TicketOptions
     {
         return new TicketOptions(
-            headingText:  $content->ticketOptionsHeading ?? '',
+            headingText: $content->ticketOptionsHeading ?? '',
             pricingCards: self::buildPricingCards($content),
         );
     }
@@ -140,7 +141,7 @@ final class HistoryMapper
     {
         return new ImportantInfoAboutTour(
             headingText: $content->historyImportantTourInfoHeading ?? '',
-            infoItems:   self::buildInfoItems($content),
+            infoItems: self::buildInfoItems($content),
         );
     }
 

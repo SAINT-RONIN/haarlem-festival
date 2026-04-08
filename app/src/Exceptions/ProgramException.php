@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Exception thrown when a program (shopping cart) operation fails unexpectedly.
  */
-class ProgramException extends AppException
-{
-}
+class ProgramException extends AppException {}

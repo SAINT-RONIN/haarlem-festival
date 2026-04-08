@@ -15,10 +15,10 @@ $success = isset($_GET['success']);
 $reservation = $viewModel->reservationSection;
 $festivalDates = $reservation?->validDates ?? [];
 $reservationFee = $reservation?->reservationFee ?? 0.0;
-$durationMinutes = max(0, (int)($viewModel->cms['durationMinutes'] ?? 0));
-$seatsPerSession = max(0, (int)($viewModel->cms['seatsPerSession'] ?? 0));
-$durationLabel = (string)($viewModel->cms['durationLabel'] ?? 'Duration');
-$seatsLabel = (string)($viewModel->cms['seatsLabel'] ?? 'Seats');
+$durationMinutes = max(0, (int) ($viewModel->cms['durationMinutes'] ?? 0));
+$seatsPerSession = max(0, (int) ($viewModel->cms['seatsPerSession'] ?? 0));
+$durationLabel = (string) ($viewModel->cms['durationLabel'] ?? 'Duration');
+$seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
 $priceCards = $reservation?->priceCards ?? [];
 $timeSlots = $reservation?->timeSlots ?? [];
 $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
@@ -73,7 +73,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span class="text-slate-800 text-sm font-light font-['Montserrat']"><?= $e($durationLabel) ?></span>
-                    <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= (int)($durationMinutes / 60) ?> hours</span>
+                    <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= (int) ($durationMinutes / 60) ?> hours</span>
                 </div>
             <?php endif; ?>
 
@@ -144,7 +144,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                                 <span class="w-4 h-0.5 bg-stone-100 block"></span>
                             </button>
                             <span id="adults-display" class="text-slate-800 text-lg font-['Montserrat'] w-5 text-center">0</span>
-                            <input type="hidden" name="adults_count" id="adults_count" value="<?= (int)($oldInput['adults_count'] ?? 0) ?>">
+                            <input type="hidden" name="adults_count" id="adults_count" value="<?= (int) ($oldInput['adults_count'] ?? 0) ?>">
                             <button type="button" data-counter-target="adults_count" data-counter-action="increase"
                                     class="w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center hover:bg-red transition-colors"
                                     aria-label="Increase adults">
@@ -164,7 +164,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                                 <span class="w-4 h-0.5 bg-stone-100 block"></span>
                             </button>
                             <span id="children-display" class="text-slate-800 text-lg font-['Montserrat'] w-5 text-center">0</span>
-                            <input type="hidden" name="children_count" id="children_count" value="<?= (int)($oldInput['children_count'] ?? 0) ?>">
+                            <input type="hidden" name="children_count" id="children_count" value="<?= (int) ($oldInput['children_count'] ?? 0) ?>">
                             <button type="button" data-counter-target="children_count" data-counter-action="increase"
                                     class="w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center hover:bg-red transition-colors"
                                     aria-label="Increase children">

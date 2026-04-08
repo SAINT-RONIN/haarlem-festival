@@ -16,8 +16,7 @@ class OrderHistoryService implements IOrderHistoryService
 {
     public function __construct(
         private readonly IOrderHistoryRepository $orderHistoryRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{orders: OrderSummaryData[], ticketsByOrder: array<int, TicketPdfData[]>}

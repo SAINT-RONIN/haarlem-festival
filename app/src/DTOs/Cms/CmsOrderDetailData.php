@@ -23,8 +23,7 @@ final readonly class CmsOrderDetailData
         public string  $ticketRecipientLastName,
         public string  $ticketRecipientEmail,
         public ?string $ticketEmailSentAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $row
@@ -32,19 +31,19 @@ final readonly class CmsOrderDetailData
     public static function fromRow(array $row): self
     {
         return new self(
-            orderId:                 (int) $row['OrderId'],
-            orderNumber:             (string) $row['OrderNumber'],
-            status:                  (string) $row['Status'],
-            totalAmount:             (string) $row['TotalAmount'],
-            subtotal:                (string) ($row['Subtotal'] ?? '0.00'),
-            vatTotal:                (string) ($row['VatTotal'] ?? '0.00'),
-            createdAtUtc:            (string) $row['CreatedAtUtc'],
-            payBeforeUtc:            (string) ($row['PayBeforeUtc'] ?? ''),
-            userEmail:               (string) ($row['UserEmail'] ?? ''),
-            ticketRecipientFirstName:(string) ($row['TicketRecipientFirstName'] ?? ''),
+            orderId: (int) $row['OrderId'],
+            orderNumber: (string) $row['OrderNumber'],
+            status: (string) $row['Status'],
+            totalAmount: (string) $row['TotalAmount'],
+            subtotal: (string) ($row['Subtotal'] ?? '0.00'),
+            vatTotal: (string) ($row['VatTotal'] ?? '0.00'),
+            createdAtUtc: (string) $row['CreatedAtUtc'],
+            payBeforeUtc: (string) ($row['PayBeforeUtc'] ?? ''),
+            userEmail: (string) ($row['UserEmail'] ?? ''),
+            ticketRecipientFirstName: (string) ($row['TicketRecipientFirstName'] ?? ''),
             ticketRecipientLastName: (string) ($row['TicketRecipientLastName'] ?? ''),
-            ticketRecipientEmail:    (string) ($row['TicketRecipientEmail'] ?? ''),
-            ticketEmailSentAtUtc:    isset($row['TicketEmailSentAtUtc']) ? (string) $row['TicketEmailSentAtUtc'] : null,
+            ticketRecipientEmail: (string) ($row['TicketRecipientEmail'] ?? ''),
+            ticketEmailSentAtUtc: isset($row['TicketEmailSentAtUtc']) ? (string) $row['TicketEmailSentAtUtc'] : null,
         );
     }
 }

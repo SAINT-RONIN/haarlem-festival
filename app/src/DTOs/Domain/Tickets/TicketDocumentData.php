@@ -19,6 +19,5 @@ final readonly class TicketDocumentData
         public string $venueName,
         public string $sessionDateLabel,
         public string $sessionTimeLabel,
-    ) {
-    }
+    ) {}
 }

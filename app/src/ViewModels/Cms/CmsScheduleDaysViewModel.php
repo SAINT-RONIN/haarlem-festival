@@ -25,6 +25,5 @@ final readonly class CmsScheduleDaysViewModel
         public array   $typeConfigs,
         public ?string $successMessage,
         public ?string $errorMessage,
-    ) {
-    }
+    ) {}
 }

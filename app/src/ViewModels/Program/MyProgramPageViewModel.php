@@ -27,6 +27,5 @@ final readonly class MyProgramPageViewModel
         public string $checkoutButtonText,
         public bool $canCheckout,
         public bool $isLoggedIn,
-    ) {
-    }
+    ) {}
 }

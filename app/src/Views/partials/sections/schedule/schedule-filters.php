@@ -69,7 +69,7 @@ $filterPanelId = $sectionId . '-filters';
                 <span class="text-right text-slate-800 text-lg sm:text-xl font-medium leading-7"
                       data-filter-event-count="<?= htmlspecialchars($sectionId) ?>"
                       aria-live="polite">
-                    <?= (int)$schedule->eventCount ?> <?= htmlspecialchars($schedule->eventCountLabel ?? '') ?>
+                    <?= (int) $schedule->eventCount ?> <?= htmlspecialchars($schedule->eventCountLabel ?? '') ?>
                 </span>
             </div>
         <?php endif; ?>

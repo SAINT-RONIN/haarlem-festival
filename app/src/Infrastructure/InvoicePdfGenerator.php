@@ -139,7 +139,7 @@ final class InvoicePdfGenerator extends BasePdfWriter implements IInvoicePdfGene
             : $line->description;
 
         $commands[] = $this->writeText($description, 50, $y, 9, false, self::DARK_TEXT);
-        $commands[] = $this->writeText((string)$line->quantity, 318, $y, 9, false, self::DARK_TEXT);
+        $commands[] = $this->writeText((string) $line->quantity, 318, $y, 9, false, self::DARK_TEXT);
         $commands[] = $this->writeText($this->formatCurrency($line->unitPrice), 360, $y, 9, false, self::DARK_TEXT);
         $commands[] = $this->writeText($this->formatPercentage($line->vatRate), 440, $y, 9, false, self::DARK_TEXT);
         $commands[] = $this->writeText($this->formatCurrency($line->lineSubtotal), 500, $y, 9, false, self::DARK_TEXT);
@@ -177,12 +177,12 @@ final class InvoicePdfGenerator extends BasePdfWriter implements IInvoicePdfGene
 
     private function formatCurrency(string $amount): string
     {
-        return chr(0xA4) . ' ' . number_format((float)$amount, 2, '.', ',');
+        return chr(0xA4) . ' ' . number_format((float) $amount, 2, '.', ',');
     }
 
     private function formatPercentage(string $rate): string
     {
-        $percent = (float)$rate * 100;
+        $percent = (float) $rate * 100;
         return number_format($percent, 0) . '%';
     }
 }

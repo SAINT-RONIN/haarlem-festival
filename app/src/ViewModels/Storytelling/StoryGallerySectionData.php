@@ -18,6 +18,5 @@ final readonly class StoryGallerySectionData
         public string $heading,
         public array $topRowImages,
         public array $bottomRowImages,
-    ) {
-    }
+    ) {}
 }

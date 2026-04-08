@@ -21,8 +21,7 @@ class CmsDashboardService implements ICmsDashboardService
 {
     public function __construct(
         private readonly ICmsRepository $cmsRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Loads all CMS pages and returns a dashboard bundle with the four most recently updated ones.

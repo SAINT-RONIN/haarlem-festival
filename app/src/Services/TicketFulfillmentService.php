@@ -64,8 +64,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         private readonly IQrCodeGenerator $qrCodeGenerator,
         private readonly ITicketPdfGenerator $ticketPdfGenerator,
         private readonly TicketCodeGenerator $ticketCodeGenerator,
-    ) {
-    }
+    ) {}
 
     /**
      * Completes the full ticket-delivery flow for one paid order.
@@ -256,7 +255,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     private function loadSessionsById(array $orderItems): array
     {
         $sessionIds = array_values(array_unique(array_map(
-            static fn(OrderItem $item) => (int)$item->eventSessionId,
+            static fn(OrderItem $item) => (int) $item->eventSessionId,
             $orderItems,
         )));
 
@@ -399,7 +398,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         $attachments = [];
 
         foreach ($orderItems as $orderItem) {
-            $session = $sessionsById[(int)$orderItem->eventSessionId];
+            $session = $sessionsById[(int) $orderItem->eventSessionId];
             $tickets = $ticketsByItemId[$orderItem->orderItemId] ?? [];
             $ticketCount = count($tickets);
 
@@ -589,7 +588,7 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         $lines = [];
 
         foreach ($orderItems as $orderItem) {
-            $session = $sessionsById[(int)$orderItem->eventSessionId];
+            $session = $sessionsById[(int) $orderItem->eventSessionId];
             $lines[] = sprintf(
                 '%s on %s at %s (%d ticket%s)',
                 $session->eventTitle,

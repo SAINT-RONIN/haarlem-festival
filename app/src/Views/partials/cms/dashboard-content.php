@@ -7,61 +7,61 @@
  */
 
 // Defaults for graceful degradation
-$recentPages = $recentPages ?? [];
-$activities = $activities ?? [];
+$recentPages ??= [];
+$activities ??= [];
 
 $shortcuts = [
-        [
-                'icon' => 'file-edit',
-                'title' => 'Edit pages',
-                'description' => 'Open the pages list and update content.',
-                'color' => 'blue',
-                'href' => '/cms/pages',
-        ],
-        [
-                'icon' => 'file-check',
-                'title' => 'Review drafts',
-                'description' => 'See pages not published yet.',
-                'color' => 'amber',
-                'href' => '/cms/pages?filter=draft',
-        ],
-        [
-                'icon' => 'image',
-                'title' => 'Manage media',
-                'description' => 'View and organize uploaded images/files.',
-                'color' => 'purple',
-                'href' => '/cms/media',
-        ],
-        [
-                'icon' => 'users',
-                'title' => 'User management',
-                'description' => 'Edit roles and access.',
-                'color' => 'green',
-                'href' => '/cms/users',
-        ],
+    [
+        'icon' => 'file-edit',
+        'title' => 'Edit pages',
+        'description' => 'Open the pages list and update content.',
+        'color' => 'blue',
+        'href' => '/cms/pages',
+    ],
+    [
+        'icon' => 'file-check',
+        'title' => 'Review drafts',
+        'description' => 'See pages not published yet.',
+        'color' => 'amber',
+        'href' => '/cms/pages?filter=draft',
+    ],
+    [
+        'icon' => 'image',
+        'title' => 'Manage media',
+        'description' => 'View and organize uploaded images/files.',
+        'color' => 'purple',
+        'href' => '/cms/media',
+    ],
+    [
+        'icon' => 'users',
+        'title' => 'User management',
+        'description' => 'Edit roles and access.',
+        'color' => 'green',
+        'href' => '/cms/users',
+    ],
 ];
 
 $colorClasses = [
-        'blue' => [
-                'gradient' => 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
-                'bg' => 'bg-blue-50',
-                'text' => 'text-blue-600',
-        ],
-        'amber' => [
-                'gradient' => 'from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
-                'bg' => 'bg-amber-50',
-                'text' => 'text-amber-600',
-        ],
-        'purple' => [
-                'gradient' => 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
-                'bg' => 'bg-purple-50',
-                'text' => 'text-purple-600',
-        ],
-        'green' => [
-                'gradient' => 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
-                'bg' => 'bg-green-50',
-                'text' => 'text-green-600',
-        ],
+    'blue' => [
+        'gradient' => 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+        'bg' => 'bg-blue-50',
+        'text' => 'text-blue-600',
+    ],
+    'amber' => [
+        'gradient' => 'from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
+        'bg' => 'bg-amber-50',
+        'text' => 'text-amber-600',
+    ],
+    'purple' => [
+        'gradient' => 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
+        'bg' => 'bg-purple-50',
+        'text' => 'text-purple-600',
+    ],
+    'green' => [
+        'gradient' => 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+        'bg' => 'bg-green-50',
+        'text' => 'text-green-600',
+    ],
 ];
 ?>
 

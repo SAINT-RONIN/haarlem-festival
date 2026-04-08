@@ -24,6 +24,5 @@ final readonly class MyOrdersItemViewModel
         public array $ticketPdfUrls,
         public bool $canRetryPayment,
         public string $retryUrl,
-    ) {
-    }
+    ) {}
 }

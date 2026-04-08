@@ -16,8 +16,7 @@ final class ScheduleDayVisibilityResolver implements IScheduleDayVisibilityResol
 {
     public function __construct(
         private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @return int[] Day numbers (0=Sunday through 6=Saturday) that are visible

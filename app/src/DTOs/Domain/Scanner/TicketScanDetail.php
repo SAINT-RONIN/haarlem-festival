@@ -19,6 +19,5 @@ final readonly class TicketScanDetail
         public int $durationMinutes,
         public string $venueName,
         public string $orderNumber,
-    ) {
-    }
+    ) {}
 }

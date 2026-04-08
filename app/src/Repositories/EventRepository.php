@@ -45,8 +45,8 @@ class EventRepository extends BaseRepository implements IEventRepository
      */
     private function buildFindEventsQuery(EventFilter $filters, array &$conditions, array &$params): string
     {
-        $sql = $this->buildEventSelectClause((bool)($filters->includeSessionCount ?? false));
-        $sql .= $this->buildEventJoinClause((bool)($filters->includeSessionCount ?? false));
+        $sql = $this->buildEventSelectClause((bool) ($filters->includeSessionCount ?? false));
+        $sql .= $this->buildEventJoinClause((bool) ($filters->includeSessionCount ?? false));
         $sql .= $this->buildDayOfWeekJoinClause($filters->dayOfWeekNumber, $params);
         $this->appendEventConditions($filters, $conditions, $params);
 
@@ -129,12 +129,12 @@ class EventRepository extends BaseRepository implements IEventRepository
 
         if ($filters->eventTypeId !== null) {
             $conditions[] = 'e.EventTypeId = :eventTypeId';
-            $params['eventTypeId'] = (int)$filters->eventTypeId;
+            $params['eventTypeId'] = (int) $filters->eventTypeId;
         }
 
         if ($filters->eventId !== null) {
             $conditions[] = 'e.EventId = :eventId';
-            $params['eventId'] = (int)$filters->eventId;
+            $params['eventId'] = (int) $filters->eventId;
         }
     }
 

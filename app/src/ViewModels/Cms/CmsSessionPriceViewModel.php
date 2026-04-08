@@ -16,6 +16,5 @@ final readonly class CmsSessionPriceViewModel
         public string $tierName,
         public string $price,
         public string $currencyCode,
-    ) {
-    }
+    ) {}
 }

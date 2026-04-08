@@ -4,7 +4,7 @@
  *
  * @var string $currentView Current navigation state for sidebar highlighting.
  */
-$currentView = $currentView ?? 'scanner';
+$currentView ??= 'scanner';
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -13,6 +13,5 @@ final readonly class WebhookHandlerResult
         public bool $processed,
         public string $eventId,
         public string $eventType,
-    ) {
-    }
+    ) {}
 }

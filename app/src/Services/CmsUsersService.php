@@ -22,12 +22,10 @@ use App\Utils\PasswordHasher;
  */
 class CmsUsersService implements ICmsUsersService
 {
-
     public function __construct(
         private readonly ICmsUsersRepository $usersRepository,
         private readonly IUserAccountRepository $userAccountRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns all user accounts joined with their role names, with optional filtering and sorting.

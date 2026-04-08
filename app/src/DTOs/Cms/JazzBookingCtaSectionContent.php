@@ -24,6 +24,5 @@ final readonly class JazzBookingCtaSectionContent
         public ?string $bookingTicketsEyebrow,
         public ?string $bookingTicketsTitle,
         public ?string $bookingTicketsDescription,
-    ) {
-    }
+    ) {}
 }

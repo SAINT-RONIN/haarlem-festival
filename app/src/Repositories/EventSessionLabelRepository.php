@@ -122,6 +122,6 @@ class EventSessionLabelRepository extends BaseRepository implements IEventSessio
             ['sessionId' => $sessionId],
         );
 
-        return (int)$stmt->fetchColumn();
+        return (int) $stmt->fetchColumn();
     }
 }

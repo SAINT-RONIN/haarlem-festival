@@ -16,6 +16,5 @@ final readonly class ScheduleData
         public string $headingText,
         public string $filterLabel,
         public array $days,
-    ) {
-    }
+    ) {}
 }

@@ -37,8 +37,7 @@ final readonly class EventSessionFilter
         public ?int $filterMinAge = null,
         public ?string $startTime = null,
         public ?int $limit = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a filter from a legacy array for backward compatibility.

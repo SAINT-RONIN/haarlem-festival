@@ -14,6 +14,5 @@ final readonly class StorytellingDetailNavLinkData
         public string $href,
         public string $label,
         public bool $isActive,
-    ) {
-    }
+    ) {}
 }

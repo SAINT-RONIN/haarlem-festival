@@ -16,8 +16,7 @@ abstract class BaseContentRepository
 {
     public function __construct(
         protected readonly ICmsContentRepository $cmsContent,
-    ) {
-    }
+    ) {}
 
     /**
      * Fetches raw CMS section content for a given page and section key.

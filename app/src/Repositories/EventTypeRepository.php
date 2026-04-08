@@ -28,7 +28,7 @@ class EventTypeRepository extends BaseRepository implements IEventTypeRepository
 
         if ($filter->eventTypeId !== null) {
             $sql .= ' AND EventTypeId = :eventTypeId';
-            $params['eventTypeId'] = (int)$filter->eventTypeId;
+            $params['eventTypeId'] = (int) $filter->eventTypeId;
         }
 
         $orderBy = is_string($filter->orderBy) ? strtolower($filter->orderBy) : 'id';

@@ -21,6 +21,5 @@ final readonly class CmsItemEditData
         public string $value,
         public ?int $mediaAssetId,
         public ?CmsMediaAssetData $mediaAsset,
-    ) {
-    }
+    ) {}
 }

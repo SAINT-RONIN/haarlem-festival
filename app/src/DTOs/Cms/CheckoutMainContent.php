@@ -27,6 +27,5 @@ final readonly class CheckoutMainContent
         public ?string $saveDetailsSubtext,
         public ?string $payButtonText,
         public ?string $taxLabel,
-    ) {
-    }
+    ) {}
 }

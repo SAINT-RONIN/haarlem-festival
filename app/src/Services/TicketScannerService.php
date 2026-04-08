@@ -19,8 +19,7 @@ class TicketScannerService implements ITicketScannerService
 
     public function __construct(
         private readonly ITicketRepository $ticketRepository,
-    ) {
-    }
+    ) {}
 
     public function scanTicket(string $rawCode, int $employeeUserId): TicketScanResult
     {

@@ -10,9 +10,9 @@
  * @var string $secondaryHref
  * @var string $secondaryLabel
  */
-$title = (string)($title ?? 'Checkout status');
-$message = (string)($message ?? '');
-$details = $details ?? [];
+$title = (string) ($title ?? 'Checkout status');
+$message = (string) ($message ?? '');
+$details ??= [];
 ?>
 <main class="w-full bg-[#F5F1EB] min-h-screen px-4 sm:px-8 lg:px-24 py-12">
     <section class="max-w-3xl mx-auto p-6 sm:p-8 bg-white rounded-3xl outline outline-2 outline-offset-[-2px] outline-gray-200">

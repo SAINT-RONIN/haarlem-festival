@@ -14,6 +14,5 @@ abstract readonly class BaseViewModel
         public GlobalUiData $globalUi,
         public string $currentPage,
         public bool $includeNav = false
-    ) {
-    }
+    ) {}
 }

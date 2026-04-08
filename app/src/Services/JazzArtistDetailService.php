@@ -30,8 +30,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         private readonly IEventRepository $eventRepository,
         private readonly IArtistRepository $artistRepository,
         private readonly IArtistDetailRepository $artistDetailRepository,
-    ) {
-    }
+    ) {}
 
     /** @throws JazzArtistDetailNotFoundException */
     public function getArtistPageDataBySlug(string $slug): JazzArtistDetailPageData
@@ -81,7 +80,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
             return null;
         }
 
-        if ((int)($entry['expiresAt'] ?? 0) < time()) {
+        if ((int) ($entry['expiresAt'] ?? 0) < time()) {
             unset(self::$pageCache[$slug]);
             return null;
         }

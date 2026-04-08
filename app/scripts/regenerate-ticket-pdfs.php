@@ -30,7 +30,7 @@ if (file_exists($envPath)) {
     }
 }
 
-$ticketCode = strtoupper(trim((string)($argv[1] ?? '')));
+$ticketCode = strtoupper(trim((string) ($argv[1] ?? '')));
 if ($ticketCode === '') {
     fwrite(STDERR, "Usage: php scripts/regenerate-ticket-pdfs.php HF-XXXXXXXXXXXX\n");
     exit(1);

@@ -31,15 +31,15 @@ final readonly class CmsOrderItemData
     public static function fromRow(array $row): self
     {
         return new self(
-            orderItemId:    (int) $row['OrderItemId'],
-            eventTitle:     isset($row['EventTitle']) ? (string) $row['EventTitle'] : null,
-            venueName:      isset($row['VenueName']) ? (string) $row['VenueName'] : null,
-            sessionDateTime:isset($row['SessionDateTime']) ? (string) $row['SessionDateTime'] : null,
-            quantity:        (int) $row['Quantity'],
-            unitPrice:       (float) $row['UnitPrice'],
-            vatRate:         (float) ($row['VatRate'] ?? 0),
-            donationAmount:  (float) ($row['DonationAmount'] ?? 0),
-            passName:       isset($row['PassName']) ? (string) $row['PassName'] : null,
+            orderItemId: (int) $row['OrderItemId'],
+            eventTitle: isset($row['EventTitle']) ? (string) $row['EventTitle'] : null,
+            venueName: isset($row['VenueName']) ? (string) $row['VenueName'] : null,
+            sessionDateTime: isset($row['SessionDateTime']) ? (string) $row['SessionDateTime'] : null,
+            quantity: (int) $row['Quantity'],
+            unitPrice: (float) $row['UnitPrice'],
+            vatRate: (float) ($row['VatRate'] ?? 0),
+            donationAmount: (float) ($row['DonationAmount'] ?? 0),
+            passName: isset($row['PassName']) ? (string) $row['PassName'] : null,
         );
     }
 }

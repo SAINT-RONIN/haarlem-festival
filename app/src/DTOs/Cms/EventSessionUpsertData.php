@@ -29,8 +29,7 @@ final readonly class EventSessionUpsertData
         public ?string $ctaUrl = null,
         public bool $isCancelled = false,
         public bool $isActive = true,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns a copy of this DTO with the event ID set to the given value.
@@ -41,25 +40,25 @@ final readonly class EventSessionUpsertData
     public function forEvent(int $eventId): self
     {
         return new self(
-            eventId:                   $eventId,
-            startDateTime:             $this->startDateTime,
-            endDateTime:               $this->endDateTime,
-            capacityTotal:             $this->capacityTotal,
+            eventId: $eventId,
+            startDateTime: $this->startDateTime,
+            endDateTime: $this->endDateTime,
+            capacityTotal: $this->capacityTotal,
             capacitySingleTicketLimit: $this->capacitySingleTicketLimit,
-            hallName:                  $this->hallName,
-            sessionType:               $this->sessionType,
-            durationMinutes:           $this->durationMinutes,
-            languageCode:              $this->languageCode,
-            minAge:                    $this->minAge,
-            maxAge:                    $this->maxAge,
-            reservationRequired:       $this->reservationRequired,
-            isFree:                    $this->isFree,
-            notes:                     $this->notes,
-            historyTicketLabel:        $this->historyTicketLabel,
-            ctaLabel:                  $this->ctaLabel,
-            ctaUrl:                    $this->ctaUrl,
-            isCancelled:               $this->isCancelled,
-            isActive:                  $this->isActive,
+            hallName: $this->hallName,
+            sessionType: $this->sessionType,
+            durationMinutes: $this->durationMinutes,
+            languageCode: $this->languageCode,
+            minAge: $this->minAge,
+            maxAge: $this->maxAge,
+            reservationRequired: $this->reservationRequired,
+            isFree: $this->isFree,
+            notes: $this->notes,
+            historyTicketLabel: $this->historyTicketLabel,
+            ctaLabel: $this->ctaLabel,
+            ctaUrl: $this->ctaUrl,
+            isCancelled: $this->isCancelled,
+            isActive: $this->isActive,
         );
     }
 }

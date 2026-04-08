@@ -24,7 +24,5 @@ final class RestaurantPageConstants
     public const MAX_SPECIAL_REQUESTS_LENGTH = 1000;
     public const MAX_GUEST_COUNT = 20;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

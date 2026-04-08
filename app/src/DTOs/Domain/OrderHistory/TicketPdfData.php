@@ -13,8 +13,7 @@ final readonly class TicketPdfData
     public function __construct(
         public string $ticketCode,
         public string $filePath,
-    ) {
-    }
+    ) {}
 
     /** Creates an instance from a raw database row. */
     public static function fromRow(array $row): self

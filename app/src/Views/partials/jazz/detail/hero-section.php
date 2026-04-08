@@ -12,8 +12,8 @@
          style="--bg-url: url('<?= htmlspecialchars($viewModel->hero->heroBackgroundImageUrl) ?>')">
         <?php
         $isSticky = false;
-        require __DIR__ . '/../../navbar.php';
-        ?>
+require __DIR__ . '/../../navbar.php';
+?>
 
         <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 pt-2 sm:pt-4 pb-6 sm:pb-8 md:pb-10 flex flex-col gap-6 sm:gap-8">
             <div class="flex flex-col gap-2 sm:gap-3">

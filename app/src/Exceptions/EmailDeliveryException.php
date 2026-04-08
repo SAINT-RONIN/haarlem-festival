@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Unexpected failure while dispatching a transactional email.
  */
-final class EmailDeliveryException extends AppException
-{
-}
+final class EmailDeliveryException extends AppException {}

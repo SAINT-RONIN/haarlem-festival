@@ -33,6 +33,5 @@ final readonly class RestaurantDetailPageData
         public ?string $featuredImagePath,
         public array $timeSlots,
         public array $priceCards,
-    ) {
-    }
+    ) {}
 }

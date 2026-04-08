@@ -19,8 +19,8 @@ final readonly class CuisineType
     public static function fromRow(array $row): self
     {
         return new self(
-            cuisineTypeId: (int)$row['CuisineTypeId'],
-            name:          (string)$row['Name'],
+            cuisineTypeId: (int) $row['CuisineTypeId'],
+            name: (string) $row['Name'],
         );
     }
 }

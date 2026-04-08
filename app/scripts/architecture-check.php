@@ -29,7 +29,7 @@ function buildUnixCommand(string $scriptDir): string
     $tempScriptPath = $workspaceRoot . DIRECTORY_SEPARATOR . 'architecture-check.sh';
     $scriptPath = $scriptDir . DIRECTORY_SEPARATOR . 'architecture-check.sh';
 
-    if (!mkdir($workspaceRoot, 0777, true) && !is_dir($workspaceRoot)) {
+    if (!mkdir($workspaceRoot, 0o777, true) && !is_dir($workspaceRoot)) {
         fwrite(STDERR, "Failed to prepare temporary architecture-check workspace\n");
         exit(1);
     }

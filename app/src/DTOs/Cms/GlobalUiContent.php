@@ -24,6 +24,5 @@ final readonly class GlobalUiContent
         public ?string $labelEventsCount,
         public ?string $labelNoEvents,
         public ?string $btnExploreTemplate,
-    ) {
-    }
+    ) {}
 }

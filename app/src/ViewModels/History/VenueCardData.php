@@ -14,6 +14,5 @@ final readonly class VenueCardData
         public string $description,
         public string $imageUrl,
         public string $venueUrl,
-    ) {
-    }
+    ) {}
 }

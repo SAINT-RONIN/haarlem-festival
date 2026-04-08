@@ -43,7 +43,7 @@ class EmailService implements IEmailService
     public function __construct()
     {
         $this->host = getenv('MAIL_HOST') ?: '';
-        $this->port = (int)(getenv('MAIL_PORT') ?: 587);
+        $this->port = (int) (getenv('MAIL_PORT') ?: 587);
         $this->username = getenv('MAIL_USERNAME') ?: '';
         $this->password = getenv('MAIL_PASSWORD') ?: '';
         $this->fromAddress = getenv('MAIL_FROM_ADDRESS') ?: 'noreply@haarlemfestival.nl';
@@ -93,20 +93,20 @@ class EmailService implements IEmailService
     private function buildResetEmailBody(string $resetUrl): string
     {
         return <<<EMAIL
-Hello,
+            Hello,
 
-You requested a password reset for your Haarlem Festival account.
+            You requested a password reset for your Haarlem Festival account.
 
-Click the link below to reset your password:
-{$resetUrl}
+            Click the link below to reset your password:
+            {$resetUrl}
 
-This link will expire in 1 hour.
+            This link will expire in 1 hour.
 
-If you did not request this reset, you can safely ignore this email.
+            If you did not request this reset, you can safely ignore this email.
 
-Best regards,
-Haarlem Festival Team
-EMAIL;
+            Best regards,
+            Haarlem Festival Team
+            EMAIL;
     }
 
     private function buildInvoiceEmailBody(InvoiceEmailMessage $message): string
@@ -114,18 +114,18 @@ EMAIL;
         $recipientName = $message->recipientName !== '' ? $message->recipientName : 'valued customer';
 
         return <<<EMAIL
-Hello {$recipientName},
+            Hello {$recipientName},
 
-Please find attached the invoice for your Haarlem Festival order.
+            Please find attached the invoice for your Haarlem Festival order.
 
-Invoice number: {$message->invoiceNumber}
-Order reference: {$message->orderNumber}
+            Invoice number: {$message->invoiceNumber}
+            Order reference: {$message->orderNumber}
 
-If you have any questions about this invoice, please visit {$this->appUrl}/my-program.
+            If you have any questions about this invoice, please visit {$this->appUrl}/my-program.
 
-Best regards,
-Haarlem Festival Team
-EMAIL;
+            Best regards,
+            Haarlem Festival Team
+            EMAIL;
     }
 
     private function buildOrderTicketsEmailBody(TicketEmailMessage $message): string
@@ -136,26 +136,26 @@ EMAIL;
             : implode("\n", array_map(static fn(string $line) => '- ' . $line, $message->eventSummaryLines));
 
         return <<<EMAIL
-Hello {$recipientName},
+            Hello {$recipientName},
 
-Your Haarlem Festival payment was successful.
+            Your Haarlem Festival payment was successful.
 
-Order reference: {$message->orderReference}
-Tickets attached: {$message->ticketCount}
+            Order reference: {$message->orderReference}
+            Tickets attached: {$message->ticketCount}
 
-Order summary:
-{$summaryLines}
+            Order summary:
+            {$summaryLines}
 
-How to use your tickets:
-- Open the attached PDF tickets before arriving at the venue.
-- Present each QR code at the entrance for scanning.
-- Each QR code can be scanned only once.
+            How to use your tickets:
+            - Open the attached PDF tickets before arriving at the venue.
+            - Present each QR code at the entrance for scanning.
+            - Each QR code can be scanned only once.
 
-Keep this email for your records. If you need help, visit {$this->appUrl}/my-program.
+            Keep this email for your records. If you need help, visit {$this->appUrl}/my-program.
 
-Best regards,
-Haarlem Festival Team
-EMAIL;
+            Best regards,
+            Haarlem Festival Team
+            EMAIL;
     }
 
     /**

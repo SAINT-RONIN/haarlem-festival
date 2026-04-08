@@ -15,6 +15,5 @@ final readonly class InvoiceLineData
         public string $unitPrice,
         public string $vatRate,
         public string $lineSubtotal,
-    ) {
-    }
+    ) {}
 }

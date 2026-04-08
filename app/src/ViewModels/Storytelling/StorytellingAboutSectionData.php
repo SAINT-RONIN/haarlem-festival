@@ -15,6 +15,5 @@ final readonly class StorytellingAboutSectionData
         public string $bodyHtml,
         public string $image1Url,
         public string $image2Url,
-    ) {
-    }
+    ) {}
 }

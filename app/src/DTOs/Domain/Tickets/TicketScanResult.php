@@ -14,6 +14,5 @@ final readonly class TicketScanResult
         public bool $isScanned,
         public string $message,
         public string $scannedAtLabel,
-    ) {
-    }
+    ) {}
 }

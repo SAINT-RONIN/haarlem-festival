@@ -42,17 +42,17 @@ final readonly class EventUpsertData
     public function withSlug(string $slug): self
     {
         return new self(
-            eventTypeId:                $this->eventTypeId,
-            title:                      $this->title,
-            shortDescription:           $this->shortDescription,
-            longDescriptionHtml:        $this->longDescriptionHtml,
-            featuredImageAssetId:       $this->featuredImageAssetId,
-            venueId:                    $this->venueId,
-            artistId:                   $this->artistId,
-            isActive:                   $this->isActive,
-            slug:                       $slug,
-            restaurantStars:            $this->restaurantStars,
-            restaurantCuisine:          $this->restaurantCuisine,
+            eventTypeId: $this->eventTypeId,
+            title: $this->title,
+            shortDescription: $this->shortDescription,
+            longDescriptionHtml: $this->longDescriptionHtml,
+            featuredImageAssetId: $this->featuredImageAssetId,
+            venueId: $this->venueId,
+            artistId: $this->artistId,
+            isActive: $this->isActive,
+            slug: $slug,
+            restaurantStars: $this->restaurantStars,
+            restaurantCuisine: $this->restaurantCuisine,
             restaurantShortDescription: $this->restaurantShortDescription,
         );
     }
@@ -66,15 +66,15 @@ final readonly class EventUpsertData
     public function forUpdate(Event $existing): self
     {
         return new self(
-            eventTypeId:         $existing->eventTypeId,
-            title:               $this->title,
-            shortDescription:    $this->shortDescription,
+            eventTypeId: $existing->eventTypeId,
+            title: $this->title,
+            shortDescription: $this->shortDescription,
             longDescriptionHtml: $this->longDescriptionHtml,
             featuredImageAssetId: $this->featuredImageAssetId,
-            venueId:             $this->venueId,
-            artistId:            $this->artistId ?? $existing->artistId,
-            isActive:            $this->isActive,
-            slug:                $existing->slug,
+            venueId: $this->venueId,
+            artistId: $this->artistId ?? $existing->artistId,
+            isActive: $this->isActive,
+            slug: $existing->slug,
         );
     }
 }

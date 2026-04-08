@@ -19,6 +19,5 @@ final readonly class SessionQueryResult
     public function __construct(
         public array $sessions,
         public array $days = [],
-    ) {
-    }
+    ) {}
 }

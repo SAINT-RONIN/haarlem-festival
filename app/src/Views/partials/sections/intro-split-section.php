@@ -19,13 +19,13 @@ if (!isset($introSplitSection)) {
     return;
 }
 
-$sectionId = $sectionId ?? 'intro';
-$introSplitImageClass = $introSplitImageClass ?? 'w-full h-auto rounded-2xl object-cover';
-$introSplitReversed = $introSplitReversed ?? false;
+$sectionId ??= 'intro';
+$introSplitImageClass ??= 'w-full h-auto rounded-2xl object-cover';
+$introSplitReversed ??= false;
 $flexDirection = $introSplitReversed ? 'lg:flex-row-reverse' : 'lg:flex-row';
 
 // Allow basic formatting from CMS while stripping unsupported tags.
-$introBodyHtml = trim(strip_tags((string)$introSplitSection->bodyText, '<p><br><strong><em><ul><ol><li>'));
+$introBodyHtml = trim(strip_tags((string) $introSplitSection->bodyText, '<p><br><strong><em><ul><ol><li>'));
 if ($introBodyHtml === '') {
     $introBodyHtml = nl2br(htmlspecialchars($introSplitSection->bodyText));
 }
@@ -46,10 +46,10 @@ if ($introBodyHtml === '') {
                 <?php foreach ($introSplitSection->subsections as $subsection) : ?>
                     <div class="flex flex-col gap-1">
                         <p class="text-gray-700 text-base sm:text-lg leading-relaxed font-bold">
-                            <?= htmlspecialchars((string)($subsection['heading'] ?? '')) ?>
+                            <?= htmlspecialchars((string) ($subsection['heading'] ?? '')) ?>
                         </p>
                         <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
-                            <?= htmlspecialchars((string)($subsection['text'] ?? '')) ?>
+                            <?= htmlspecialchars((string) ($subsection['text'] ?? '')) ?>
                         </p>
                     </div>
                 <?php endforeach; ?>

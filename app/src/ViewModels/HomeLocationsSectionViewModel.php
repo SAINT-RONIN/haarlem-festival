@@ -19,6 +19,5 @@ final readonly class HomeLocationsSectionViewModel
         public string $historyLabel,
         public string $restaurantsLabel,
         public string $storiesLabel,
-    ) {
-    }
+    ) {}
 }

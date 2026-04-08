@@ -20,6 +20,5 @@ final readonly class RestaurantListingData
         public RestaurantDetailEvent $event,
         public RestaurantEventCmsData $cms,
         public ?string $imagePath,
-    ) {
-    }
+    ) {}
 }

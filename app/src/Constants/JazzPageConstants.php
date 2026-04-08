@@ -20,7 +20,5 @@ final class JazzPageConstants
     public const DEFAULT_INTRO_IMAGE = '/assets/Image/Jazz/Jazz-third-section.png';
     public const DEFAULT_INTRO_IMAGE_ALT = 'Jazz musicians performing at Haarlem Festival';
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

@@ -13,6 +13,5 @@ final readonly class ScheduleFilterOptionData
         public string $label,
         public string $value,
         public bool $isActive = false,
-    ) {
-    }
+    ) {}
 }

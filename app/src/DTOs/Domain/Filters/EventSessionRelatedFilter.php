@@ -18,8 +18,7 @@ final readonly class EventSessionRelatedFilter
         public ?int $sessionId = null,
         public ?array $sessionIds = null,
         public ?bool $groupBySession = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $filters

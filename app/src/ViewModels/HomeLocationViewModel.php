@@ -14,6 +14,5 @@ final readonly class HomeLocationViewModel
         public string $address,
         public string $category,
         public string $badgeClass,
-    ) {
-    }
+    ) {}
 }

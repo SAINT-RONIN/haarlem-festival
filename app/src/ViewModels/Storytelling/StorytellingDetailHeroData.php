@@ -24,6 +24,5 @@ final readonly class StorytellingDetailHeroData
         public string $backButtonUrl,
         public string $reserveButtonLabel,
         public string $reserveButtonUrl,
-    ) {
-    }
+    ) {}
 }

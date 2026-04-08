@@ -28,7 +28,7 @@ class ScheduleDayConfigRepository extends BaseRepository implements IScheduleDay
     public function findConfigs(ScheduleDayConfigFilter $filter = new ScheduleDayConfigFilter()): array
     {
         $params = [];
-        $sql = $this->buildConfigQuery((bool)($filter->includeEventTypeName ?? false));
+        $sql = $this->buildConfigQuery((bool) ($filter->includeEventTypeName ?? false));
         $sql .= $this->buildEventTypeFilterClause($filter->eventTypeId, $params);
         $sql .= $this->resolveOrderClause($filter->orderBy);
 

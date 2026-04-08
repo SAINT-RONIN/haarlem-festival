@@ -42,8 +42,7 @@ class ScheduleService implements IScheduleService
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly IEventTypeRepository $eventTypeRepository,
         private readonly IScheduleDayVisibilityResolver $visibilityResolver,
-    ) {
-    }
+    ) {}
 
     /** @throws PageLoadException When an unexpected error occurs while building schedule data */
     public function getScheduleData(
@@ -88,13 +87,13 @@ class ScheduleService implements IScheduleService
         $days           = $this->buildScheduleDays($scheduleData, $eventTypeSlug, $eventTypeId, $displayStrings);
 
         return new ScheduleSectionData(
-            cmsContent:       $cmsSection,
-            pageSlug:         $pageSlug,
-            eventTypeSlug:    $eventTypeSlug,
-            eventTypeId:      $eventTypeId,
-            days:             $days,
-            activeFilters:    $filterParams,
-            availableDays:    $availableDays,
+            cmsContent: $cmsSection,
+            pageSlug: $pageSlug,
+            eventTypeSlug: $eventTypeSlug,
+            eventTypeId: $eventTypeId,
+            days: $days,
+            activeFilters: $filterParams,
+            availableDays: $availableDays,
             filterGroupTypes: $this->resolveFilterGroupTypes($eventTypeSlug),
             priceTypeOptions: $this->resolvePriceTypeOptions($eventTypeSlug),
         );
@@ -111,13 +110,13 @@ class ScheduleService implements IScheduleService
     {
         return $this->sessionRepository->findDistinctDays(
             new EventSessionFilter(
-                eventTypeId:      $eventTypeId,
-                isActive:         true,
-                eventIsActive:    true,
+                eventTypeId: $eventTypeId,
+                isActive: true,
+                eventIsActive: true,
                 includeCancelled: false,
-                visibleDays:      $visibleDays,
-                eventId:          $eventId,
-                maxDays:          $maxDays,
+                visibleDays: $visibleDays,
+                eventId: $eventId,
+                maxDays: $maxDays,
             ),
         );
     }
@@ -131,23 +130,23 @@ class ScheduleService implements IScheduleService
     ): SessionQueryResult {
         return $this->sessionRepository->findSessions(
             new EventSessionFilter(
-                eventTypeId:      $eventTypeId,
-                isActive:         true,
-                eventIsActive:    true,
+                eventTypeId: $eventTypeId,
+                isActive: true,
+                eventIsActive: true,
                 includeCancelled: false,
-                groupByDay:       true,
-                maxDays:          $maxDays,
-                visibleDays:      $visibleDays,
-                orderBy:          ScheduleConstants::ORDER_BY_START_DATETIME,
-                eventId:          $eventId,
-                dayOfWeekNumber:  $this->convertDayNameToNumber($filterParams?->day),
-                timeRange:        $filterParams?->timeRange,
-                priceType:        $filterParams?->priceType,
-                venueName:        $filterParams?->venue,
-                languageCode:     $filterParams?->language,
-                filterMinAge:     $filterParams?->age,
-                startTime:        $filterParams?->startTime,
-                limit:            50,
+                groupByDay: true,
+                maxDays: $maxDays,
+                visibleDays: $visibleDays,
+                orderBy: ScheduleConstants::ORDER_BY_START_DATETIME,
+                eventId: $eventId,
+                dayOfWeekNumber: $this->convertDayNameToNumber($filterParams?->day),
+                timeRange: $filterParams?->timeRange,
+                priceType: $filterParams?->priceType,
+                venueName: $filterParams?->venue,
+                languageCode: $filterParams?->language,
+                filterMinAge: $filterParams?->age,
+                startTime: $filterParams?->startTime,
+                limit: 50,
             ),
         );
     }
@@ -155,10 +154,10 @@ class ScheduleService implements IScheduleService
     private function resolveCmsDisplayStrings(ScheduleSectionContent $cmsSection, ?string $ctaTextOverride): ScheduleDisplayStrings
     {
         return new ScheduleDisplayStrings(
-            ctaButtonText:       $ctaTextOverride ?? ($cmsSection->scheduleCtaButtonText ?? ScheduleConstants::DEFAULT_CTA_BUTTON_TEXT),
-            payWhatYouLikeText:  $cmsSection->schedulePayWhatYouLikeText ?? ScheduleConstants::DEFAULT_PAY_WHAT_YOU_LIKE_TEXT,
-            currencySymbol:      $cmsSection->scheduleCurrencySymbol ?? ScheduleConstants::DEFAULT_CURRENCY_SYMBOL,
-            startPoint:          $cmsSection->scheduleStartPoint ?? ScheduleConstants::DEFAULT_HISTORY_START_POINT,
+            ctaButtonText: $ctaTextOverride ?? ($cmsSection->scheduleCtaButtonText ?? ScheduleConstants::DEFAULT_CTA_BUTTON_TEXT),
+            payWhatYouLikeText: $cmsSection->schedulePayWhatYouLikeText ?? ScheduleConstants::DEFAULT_PAY_WHAT_YOU_LIKE_TEXT,
+            currencySymbol: $cmsSection->scheduleCurrencySymbol ?? ScheduleConstants::DEFAULT_CURRENCY_SYMBOL,
+            startPoint: $cmsSection->scheduleStartPoint ?? ScheduleConstants::DEFAULT_HISTORY_START_POINT,
             groupTicketFallback: $cmsSection->scheduleHistoryGroupTicket ?? ScheduleConstants::DEFAULT_HISTORY_GROUP_TICKET,
         );
     }
@@ -255,7 +254,7 @@ class ScheduleService implements IScheduleService
         $events = $this->buildEventCardsForDay($daySessions, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings, $historyTourOptionsMap);
 
         return [
-            'dayName' => (new \DateTimeImmutable($date))->format('l'),
+            'dayName' => new \DateTimeImmutable($date)->format('l'),
             'isoDate' => $date,
             'events'  => $events,
             'isEmpty' => empty($events),

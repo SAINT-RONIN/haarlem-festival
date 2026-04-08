@@ -18,6 +18,5 @@ final readonly class InvoiceEmailMessage
         public string $orderNumber,
         public string $invoiceNumber,
         public array  $attachments,
-    ) {
-    }
+    ) {}
 }

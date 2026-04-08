@@ -19,6 +19,5 @@ final readonly class HomeEventTypeViewModel
         public string $badgeClass,
         public string $imageSrc = '',
         public string $imageAlt = '',
-    ) {
-    }
+    ) {}
 }

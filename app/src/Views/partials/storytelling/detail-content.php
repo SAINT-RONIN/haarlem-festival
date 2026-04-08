@@ -133,5 +133,5 @@ $video = $viewModel->videoSection;
         'shareUrl' => $viewModel->shareUrl,
         'shareTitle' => $viewModel->detailHero->title,
     ]);
-    ?>
+?>
 </section>

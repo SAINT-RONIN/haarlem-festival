@@ -35,8 +35,7 @@ final readonly class Order
         public ?string             $ticketRecipientEmail,
         public ?\DateTimeImmutable $ticketEmailSentAtUtc,
         public ?string             $ticketEmailLastError,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates an Order instance from a database row array.
@@ -45,23 +44,23 @@ final readonly class Order
     public static function fromRow(array $row): self
     {
         return new self(
-            orderId: (int)$row['OrderId'],
-            orderNumber: (string)$row['OrderNumber'],
-            userAccountId: (int)$row['UserAccountId'],
-            programId: (int)$row['ProgramId'],
+            orderId: (int) $row['OrderId'],
+            orderNumber: (string) $row['OrderNumber'],
+            userAccountId: (int) $row['UserAccountId'],
+            programId: (int) $row['ProgramId'],
             status: OrderStatus::from($row['Status']),
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
             payBeforeUtc: isset($row['PayBeforeUtc']) ? new \DateTimeImmutable($row['PayBeforeUtc']) : null,
-            subtotal: (string)$row['Subtotal'],
-            vatTotal: (string)$row['VatTotal'],
-            totalAmount: (string)$row['TotalAmount'],
-            ticketRecipientFirstName: isset($row['TicketRecipientFirstName']) ? (string)$row['TicketRecipientFirstName'] : null,
-            ticketRecipientLastName: isset($row['TicketRecipientLastName']) ? (string)$row['TicketRecipientLastName'] : null,
-            ticketRecipientEmail: isset($row['TicketRecipientEmail']) ? (string)$row['TicketRecipientEmail'] : null,
+            subtotal: (string) $row['Subtotal'],
+            vatTotal: (string) $row['VatTotal'],
+            totalAmount: (string) $row['TotalAmount'],
+            ticketRecipientFirstName: isset($row['TicketRecipientFirstName']) ? (string) $row['TicketRecipientFirstName'] : null,
+            ticketRecipientLastName: isset($row['TicketRecipientLastName']) ? (string) $row['TicketRecipientLastName'] : null,
+            ticketRecipientEmail: isset($row['TicketRecipientEmail']) ? (string) $row['TicketRecipientEmail'] : null,
             ticketEmailSentAtUtc: isset($row['TicketEmailSentAtUtc']) && $row['TicketEmailSentAtUtc'] !== null
                 ? new \DateTimeImmutable($row['TicketEmailSentAtUtc'])
                 : null,
-            ticketEmailLastError: isset($row['TicketEmailLastError']) ? (string)$row['TicketEmailLastError'] : null,
+            ticketEmailLastError: isset($row['TicketEmailLastError']) ? (string) $row['TicketEmailLastError'] : null,
         );
     }
 

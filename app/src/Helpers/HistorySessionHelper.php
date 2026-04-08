@@ -29,7 +29,7 @@ final class HistorySessionHelper
                 continue;
             }
 
-            if ((float)$price->price > (float)$sharedPricesByKey[$priceKey]->price) {
+            if ((float) $price->price > (float) $sharedPricesByKey[$priceKey]->price) {
                 $sharedPricesByKey[$priceKey] = $price;
             }
         }

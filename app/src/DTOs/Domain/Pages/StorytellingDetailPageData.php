@@ -39,6 +39,5 @@ final readonly class StorytellingDetailPageData
         public array $highlights = [],
         public array $galleryImages = [],
         public array $aboutImages = [],
-    ) {
-    }
+    ) {}
 }

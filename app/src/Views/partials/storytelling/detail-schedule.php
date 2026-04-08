@@ -123,7 +123,7 @@ if ($schedule === null || empty($schedule->days)) {
                                         <?= htmlspecialchars($event->priceDisplay) ?>
                                     </span>
                                     <button type="button"
-                                            data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
+                                            data-event-session-id="<?= htmlspecialchars((string) $event->eventSessionId) ?>"
                                             data-price="<?= htmlspecialchars($event->priceDisplay) ?>"
                                             class="px-3.5 py-2.5 rounded-[10px] outline outline-2 outline-offset-[-2px] outline-royal-blue
                                                    inline-flex justify-center items-center gap-2.5

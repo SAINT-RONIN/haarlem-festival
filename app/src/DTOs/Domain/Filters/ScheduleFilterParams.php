@@ -18,8 +18,7 @@ final readonly class ScheduleFilterParams
         public ?string $language = null,
         public ?int $age = null,
         public ?string $startTime = null,
-    ) {
-    }
+    ) {}
 
     public function hasAnyFilter(): bool
     {

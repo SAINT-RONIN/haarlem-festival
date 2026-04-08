@@ -27,6 +27,5 @@ final readonly class InvoiceDocumentData
         public string $totalAmount,
         public string $paymentDateFormatted,
         public string $orderNumber,
-    ) {
-    }
+    ) {}
 }

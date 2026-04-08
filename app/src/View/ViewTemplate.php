@@ -15,6 +15,5 @@ final readonly class ViewTemplate
     public function __construct(
         public string $path,
         public array $locals = [],
-    ) {
-    }
+    ) {}
 }

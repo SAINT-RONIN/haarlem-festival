@@ -15,6 +15,5 @@ final readonly class SessionContext
         public string $sessionKey,
         public ?int $userId,
         public bool $isLoggedIn,
-    ) {
-    }
+    ) {}
 }

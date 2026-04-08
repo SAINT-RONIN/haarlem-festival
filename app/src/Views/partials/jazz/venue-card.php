@@ -6,6 +6,7 @@
  */
 
 use App\View\ViewRenderer;
+
 ?>
 
 <div class="flex-1 self-stretch pb-6 bg-white rounded-2xl flex flex-col justify-start items-start gap-6 overflow-hidden shadow-md">

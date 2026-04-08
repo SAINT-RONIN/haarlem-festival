@@ -23,6 +23,5 @@ final readonly class CmsOrderDetailPageData
         public array $tickets,
         public ?Invoice $invoice,
         public ?string $invoicePdfPath,
-    ) {
-    }
+    ) {}
 }

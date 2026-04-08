@@ -16,8 +16,7 @@ final readonly class CmsOrderPaymentData
         public string  $providerRef,
         public string  $createdAtUtc,
         public ?string $paidAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $row
@@ -25,12 +24,12 @@ final readonly class CmsOrderPaymentData
     public static function fromRow(array $row): self
     {
         return new self(
-            paymentId:   (int) $row['PaymentId'],
-            method:      (string) ($row['Method'] ?? ''),
-            status:      (string) ($row['Status'] ?? ''),
+            paymentId: (int) $row['PaymentId'],
+            method: (string) ($row['Method'] ?? ''),
+            status: (string) ($row['Status'] ?? ''),
             providerRef: (string) ($row['ProviderRef'] ?? ''),
-            createdAtUtc:(string) ($row['CreatedAtUtc'] ?? ''),
-            paidAtUtc:   isset($row['PaidAtUtc']) ? (string) $row['PaidAtUtc'] : null,
+            createdAtUtc: (string) ($row['CreatedAtUtc'] ?? ''),
+            paidAtUtc: isset($row['PaidAtUtc']) ? (string) $row['PaidAtUtc'] : null,
         );
     }
 }

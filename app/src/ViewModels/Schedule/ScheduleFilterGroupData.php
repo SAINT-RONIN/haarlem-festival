@@ -16,6 +16,5 @@ final readonly class ScheduleFilterGroupData
         public string $label,
         public string $key,
         public array $options,
-    ) {
-    }
+    ) {}
 }

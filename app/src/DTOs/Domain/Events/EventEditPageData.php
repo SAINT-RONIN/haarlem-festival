@@ -30,6 +30,5 @@ final readonly class EventEditPageData
         public ?string $restaurantCuisine = null,
         public ?string $restaurantShortDescription = null,
         public ?string $featuredImagePath = null,
-    ) {
-    }
+    ) {}
 }

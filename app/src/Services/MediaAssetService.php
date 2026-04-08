@@ -23,8 +23,7 @@ class MediaAssetService implements IMediaAssetService
 {
     public function __construct(
         private readonly IMediaAssetRepository $mediaAssetRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Uploads an image file and creates a database record.
@@ -55,7 +54,7 @@ class MediaAssetService implements IMediaAssetService
     {
         $targetDir = PathResolver::getUploadPath($folder);
 
-        if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true)) {
+        if (!is_dir($targetDir) && !mkdir($targetDir, 0o755, true)) {
             throw new ValidationException('Failed to create upload directory');
         }
 
@@ -144,7 +143,7 @@ class MediaAssetService implements IMediaAssetService
     public function updateAltText(int $mediaAssetId, string $altText): bool
     {
         return $this->mediaAssetRepository->update($mediaAssetId, [
-            'AltText' => $altText
+            'AltText' => $altText,
         ]);
     }
 

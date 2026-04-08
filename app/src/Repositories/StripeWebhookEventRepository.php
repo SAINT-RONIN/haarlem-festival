@@ -24,7 +24,7 @@ class StripeWebhookEventRepository extends BaseRepository implements IStripeWebh
             ['eventId' => $eventId],
         );
 
-        return (bool)$stmt->fetchColumn();
+        return (bool) $stmt->fetchColumn();
     }
 
     /**

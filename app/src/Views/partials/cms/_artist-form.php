@@ -83,7 +83,7 @@ $inputClass = static function (array $errors, string $field): string {
                     <div>
                         <label for="imageAssetId" class="block text-sm font-medium text-gray-700 mb-1">Card Image Asset ID</label>
                         <input type="number" name="imageAssetId" id="imageAssetId"
-                               value="<?= $viewModel->imageAssetId !== null ? htmlspecialchars((string)$viewModel->imageAssetId) : '' ?>"
+                               value="<?= $viewModel->imageAssetId !== null ? htmlspecialchars((string) $viewModel->imageAssetId) : '' ?>"
                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                         <p class="mt-1 text-xs text-gray-500">Media Asset ID from the media library</p>
                     </div>
@@ -91,7 +91,7 @@ $inputClass = static function (array $errors, string $field): string {
                     <div>
                         <label for="cardSortOrder" class="block text-sm font-medium text-gray-700 mb-1">Jazz Card Sort Order</label>
                         <input type="number" name="cardSortOrder" id="cardSortOrder"
-                               value="<?= htmlspecialchars((string)$viewModel->cardSortOrder) ?>"
+                               value="<?= htmlspecialchars((string) $viewModel->cardSortOrder) ?>"
                                class="<?= $inputClass($viewModel->errors, 'cardSortOrder') ?>">
                         <?php if (isset($viewModel->errors['cardSortOrder'])): ?>
                             <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['cardSortOrder']) ?></p>

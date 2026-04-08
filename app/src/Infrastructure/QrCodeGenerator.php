@@ -29,7 +29,7 @@ final class QrCodeGenerator implements IQrCodeGenerator
                 'addQuietzone' => false,
             ]);
 
-            $matrix = (new QRCode($options))
+            $matrix = new QRCode($options)
                 ->addByteSegment($normalizedPayload)
                 ->getQRMatrix()
                 ->getMatrix(true);

@@ -28,9 +28,9 @@ if (!getenv('DB_HOST') && file_exists($envPath)) {
     }
 }
 
-$appEnv = strtolower((string)(getenv('APP_ENV') ?: 'local'));
-$appUrlHost = strtolower((string)(parse_url((string)(getenv('APP_URL') ?: ''), PHP_URL_HOST) ?: ''));
-$requestHost = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+$appEnv = strtolower((string) (getenv('APP_ENV') ?: 'local'));
+$appUrlHost = strtolower((string) (parse_url((string) (getenv('APP_URL') ?: ''), PHP_URL_HOST) ?: ''));
+$requestHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
 $isLocalHost = in_array($appUrlHost, ['localhost', '127.0.0.1'], true)
     || str_starts_with($requestHost, 'localhost')
     || str_starts_with($requestHost, '127.0.0.1');
@@ -66,7 +66,7 @@ use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
 // Start session once per request during bootstrap.
-(new SessionService())->start();
+new SessionService()->start();
 
 // Load controller factory — returns a closure keyed by controller class name.
 $container = require __DIR__ . '/../bootstrap/container.php';
@@ -76,7 +76,7 @@ $routeCacheVersion = md5_file(__FILE__) ?: 'default';
 $routeCacheFile = __DIR__ . '/../storage/cache/route.' . $routeCacheVersion . '.cache';
 $routeCacheDir = dirname($routeCacheFile);
 if (!is_dir($routeCacheDir)) {
-    mkdir($routeCacheDir, 0775, true);
+    mkdir($routeCacheDir, 0o775, true);
 }
 
 // Define routes — cachedDispatcher writes the compiled route table to a file
@@ -167,11 +167,11 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/sessions/{id:\d+}/labels', [CmsEventsController::class, 'addLabel']);
     $r->addRoute('POST', '/cms/labels/{id:\d+}/delete', [CmsEventsController::class, 'deleteLabel']);
     $r->addRoute('POST', '/cms/sessions/{id:\d+}/price', [CmsEventsController::class, 'setPrice']);
-    $r->addRoute('GET',  '/cms/venues',                  [CmsVenuesController::class, 'index']);
-    $r->addRoute('POST', '/cms/venues',                  [CmsVenuesController::class, 'create']);
-    $r->addRoute('POST', '/cms/venues/{id:\d+}/delete',  [CmsVenuesController::class, 'delete']);
-    $r->addRoute('GET',  '/cms/schedule-days',           [CmsScheduleDaysController::class, 'index']);
-    $r->addRoute('POST', '/cms/schedule-days/toggle',    [CmsScheduleDaysController::class, 'toggle']);
+    $r->addRoute('GET', '/cms/venues', [CmsVenuesController::class, 'index']);
+    $r->addRoute('POST', '/cms/venues', [CmsVenuesController::class, 'create']);
+    $r->addRoute('POST', '/cms/venues/{id:\d+}/delete', [CmsVenuesController::class, 'delete']);
+    $r->addRoute('GET', '/cms/schedule-days', [CmsScheduleDaysController::class, 'index']);
+    $r->addRoute('POST', '/cms/schedule-days/toggle', [CmsScheduleDaysController::class, 'toggle']);
 
     // Schedule API
     $r->addRoute('GET', '/api/schedule/{pageSlug:[a-z]+}', [ScheduleApiController::class, 'getScheduleHtml']);
@@ -191,32 +191,32 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/orders/{id:\d+}/resend-tickets', [CmsOrdersController::class, 'resendTickets']);
 
     // CMS Scanner Routes
-    $r->addRoute('GET',  '/cms/scanner',      [ScannerController::class, 'index']);
+    $r->addRoute('GET', '/cms/scanner', [ScannerController::class, 'index']);
     $r->addRoute('POST', '/api/scanner/scan', [ScannerController::class, 'scan']);
 
     // CMS Users Routes
-    $r->addRoute('GET',  '/cms/users',                    [CmsUsersController::class, 'index']);
-    $r->addRoute('GET',  '/cms/users/create',             [CmsUsersController::class, 'create']);
-    $r->addRoute('POST', '/cms/users',                    [CmsUsersController::class, 'store']);
-    $r->addRoute('GET',  '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'edit']);
-    $r->addRoute('POST', '/cms/users/{id:\d+}/edit',      [CmsUsersController::class, 'update']);
-    $r->addRoute('POST', '/cms/users/{id:\d+}/delete',    [CmsUsersController::class, 'delete']);
-    $r->addRoute('POST', '/cms/users/{id:\d+}/activate',  [CmsUsersController::class, 'activate']);
+    $r->addRoute('GET', '/cms/users', [CmsUsersController::class, 'index']);
+    $r->addRoute('GET', '/cms/users/create', [CmsUsersController::class, 'create']);
+    $r->addRoute('POST', '/cms/users', [CmsUsersController::class, 'store']);
+    $r->addRoute('GET', '/cms/users/{id:\d+}/edit', [CmsUsersController::class, 'edit']);
+    $r->addRoute('POST', '/cms/users/{id:\d+}/edit', [CmsUsersController::class, 'update']);
+    $r->addRoute('POST', '/cms/users/{id:\d+}/delete', [CmsUsersController::class, 'delete']);
+    $r->addRoute('POST', '/cms/users/{id:\d+}/activate', [CmsUsersController::class, 'activate']);
 
     // CMS Artists Routes
-    $r->addRoute('GET',  '/cms/artists',                           [CmsArtistsController::class, 'index']);
-    $r->addRoute('GET',  '/cms/artists/create',                    [CmsArtistsController::class, 'create']);
-    $r->addRoute('POST', '/cms/artists',                           [CmsArtistsController::class, 'store']);
-    $r->addRoute('GET',  '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'edit']);
-    $r->addRoute('POST', '/cms/artists/{id:\d+}/edit',             [CmsArtistsController::class, 'update']);
-    $r->addRoute('GET',  '/cms/jazz-lineup/cards/create',          [CmsJazzCardsController::class, 'create']);
-    $r->addRoute('POST', '/cms/jazz-lineup/cards',                 [CmsJazzCardsController::class, 'store']);
-    $r->addRoute('GET',  '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsJazzCardsController::class, 'edit']);
-    $r->addRoute('POST', '/cms/jazz-lineup/cards/{id:\d+}/edit',   [CmsJazzCardsController::class, 'update']);
-    $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/add',[CmsArtistsController::class, 'addToJazzOverview']);
+    $r->addRoute('GET', '/cms/artists', [CmsArtistsController::class, 'index']);
+    $r->addRoute('GET', '/cms/artists/create', [CmsArtistsController::class, 'create']);
+    $r->addRoute('POST', '/cms/artists', [CmsArtistsController::class, 'store']);
+    $r->addRoute('GET', '/cms/artists/{id:\d+}/edit', [CmsArtistsController::class, 'edit']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/edit', [CmsArtistsController::class, 'update']);
+    $r->addRoute('GET', '/cms/jazz-lineup/cards/create', [CmsJazzCardsController::class, 'create']);
+    $r->addRoute('POST', '/cms/jazz-lineup/cards', [CmsJazzCardsController::class, 'store']);
+    $r->addRoute('GET', '/cms/jazz-lineup/cards/{id:\d+}/edit', [CmsJazzCardsController::class, 'edit']);
+    $r->addRoute('POST', '/cms/jazz-lineup/cards/{id:\d+}/edit', [CmsJazzCardsController::class, 'update']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/add', [CmsArtistsController::class, 'addToJazzOverview']);
     $r->addRoute('POST', '/cms/artists/{id:\d+}/jazz-overview/remove', [CmsArtistsController::class, 'removeFromJazzOverview']);
-    $r->addRoute('POST', '/cms/artists/{id:\d+}/delete',           [CmsArtistsController::class, 'delete']);
-    $r->addRoute('POST', '/cms/artists/{id:\d+}/activate',         [CmsArtistsController::class, 'activate']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/delete', [CmsArtistsController::class, 'delete']);
+    $r->addRoute('POST', '/cms/artists/{id:\d+}/activate', [CmsArtistsController::class, 'activate']);
 
     // Slug-aware routes (preferred)
     $r->addRoute('GET', '/cms/pages/{id:\d+}/{slug:[a-z0-9-]+}/edit', [CmsPageEditorController::class, 'edit']);

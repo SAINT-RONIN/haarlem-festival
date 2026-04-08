@@ -16,6 +16,5 @@ final readonly class IntroSplitSectionData
         public string $imageAltText,
         public ?array $subsections = null,
         public ?string $closingLine = null,
-    ) {
-    }
+    ) {}
 }

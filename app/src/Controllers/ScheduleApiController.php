@@ -23,8 +23,7 @@ class ScheduleApiController extends BaseController
 {
     public function __construct(
         private readonly IScheduleService $scheduleService,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns the rendered schedule section HTML for AJAX filter requests.

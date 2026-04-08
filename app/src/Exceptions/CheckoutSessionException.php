@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Unexpected failure while creating or loading a checkout session.
  */
-final class CheckoutSessionException extends CheckoutException
-{
-}
+final class CheckoutSessionException extends CheckoutException {}

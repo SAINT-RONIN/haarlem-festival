@@ -17,8 +17,8 @@ use App\Repositories\Interfaces\IMediaAssetRepository;
  */
 final class PdfAssetStorage
 {
-    private const TICKET_DIRECTORY_PERMISSIONS = 0775;
-    private const INVOICE_DIRECTORY_PERMISSIONS = 0755;
+    private const TICKET_DIRECTORY_PERMISSIONS = 0o775;
+    private const INVOICE_DIRECTORY_PERMISSIONS = 0o755;
     private const PDF_MIME_TYPE = 'application/pdf';
     private const PUBLIC_ASSET_PREFIX = '/assets/';
 
@@ -30,8 +30,7 @@ final class PdfAssetStorage
      */
     public function __construct(
         private readonly IMediaAssetRepository $mediaAssetRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Writes a generated ticket PDF to disk and returns its stored file details.

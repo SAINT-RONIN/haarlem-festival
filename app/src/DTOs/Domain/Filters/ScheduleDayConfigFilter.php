@@ -14,6 +14,5 @@ final readonly class ScheduleDayConfigFilter
         public ?int    $eventTypeId = null,
         public ?bool   $includeEventTypeName = null,
         public ?string $orderBy = null,
-    ) {
-    }
+    ) {}
 }

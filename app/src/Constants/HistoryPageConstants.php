@@ -14,7 +14,5 @@ final class HistoryPageConstants
     public const SECTION_TOUR_INFO = 'history_important_tour_info_section';
 
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

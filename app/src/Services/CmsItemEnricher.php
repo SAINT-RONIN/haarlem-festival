@@ -21,8 +21,7 @@ final class CmsItemEnricher implements ICmsItemEnricher
 {
     public function __construct(
         private readonly IMediaAssetRepository $mediaAssetRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @param CmsItem[] $items
@@ -79,7 +78,7 @@ final class CmsItemEnricher implements ICmsItemEnricher
         }
 
         if (!empty($item->textValue)) {
-            return (string)$item->textValue;
+            return (string) $item->textValue;
         }
 
         return null;
@@ -154,10 +153,10 @@ final class CmsItemEnricher implements ICmsItemEnricher
         $type = $item->itemType;
 
         if ($type === CmsItemType::Html) {
-            return (string)($item->htmlValue ?? '');
+            return (string) ($item->htmlValue ?? '');
         }
 
-        $value = (string)($item->textValue ?? '');
+        $value = (string) ($item->textValue ?? '');
         if ($type === CmsItemType::Text && $value !== '' && preg_match('/<[^>]+>/', $value) === 1) {
             return trim(strip_tags(html_entity_decode($value)));
         }

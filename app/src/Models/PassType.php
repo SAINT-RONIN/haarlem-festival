@@ -27,8 +27,7 @@ final readonly class PassType
         public string    $vatRate,
         public string    $currencyCode,
         public bool      $isActive,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a PassType instance from a database row array.
@@ -37,14 +36,14 @@ final readonly class PassType
     public static function fromRow(array $row): self
     {
         return new self(
-            passTypeId: (int)$row['PassTypeId'],
-            eventTypeId: (int)$row['EventTypeId'],
-            passName: (string)$row['PassName'],
+            passTypeId: (int) $row['PassTypeId'],
+            eventTypeId: (int) $row['EventTypeId'],
+            passName: (string) $row['PassName'],
             passScope: PassScope::from($row['PassScope']),
-            price: (string)$row['Price'],
-            vatRate: (string)$row['VatRate'],
-            currencyCode: (string)$row['CurrencyCode'],
-            isActive: (bool)$row['IsActive'],
+            price: (string) $row['Price'],
+            vatRate: (string) $row['VatRate'],
+            currencyCode: (string) $row['CurrencyCode'],
+            isActive: (bool) $row['IsActive'],
         );
     }
 

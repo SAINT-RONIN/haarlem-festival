@@ -8,6 +8,7 @@
 
 use App\Helpers\CmsOutputHelper;
 use App\View\ViewRenderer;
+
 ?>
 
 <!-- Events Showcase Section -->

@@ -52,8 +52,7 @@ class ProgramService implements IProgramService
         private readonly IPassTypeRepository $passTypeRepository,
         private readonly IPriceTierRepository $priceTierRepository,
         private readonly IReservationRepository $reservationRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns the user's active (non-checked-out) program, creating one if none exists.
@@ -339,7 +338,7 @@ class ProgramService implements IProgramService
     private function validatePricesNonNegative(array $prices): void
     {
         foreach ($prices as $price) {
-            if ((float)$price->price < 0) {
+            if ((float) $price->price < 0) {
                 throw new ProgramException('Invalid ticket price detected. Please contact support.');
             }
         }
@@ -710,7 +709,7 @@ class ProgramService implements IProgramService
             eventSessionId: $item->eventSessionId,
             quantity: $item->quantity,
             priceTierId: $item->priceTierId,
-            donationAmount: (float)($item->donationAmount ?? '0.00'),
+            donationAmount: (float) ($item->donationAmount ?? '0.00'),
             eventTitle: $session->eventTitle,
             venueName: $session->venueName,
             hallName: $session->hallName,
@@ -749,12 +748,12 @@ class ProgramService implements IProgramService
             programItemId: $item->programItemId,
             eventSessionId: null,
             quantity: $item->quantity,
-            donationAmount: (float)($item->donationAmount ?? '0.00'),
+            donationAmount: (float) ($item->donationAmount ?? '0.00'),
             eventTitle: $displayName,
             eventTypeId: $passType->eventTypeId,
             eventTypeName: 'Jazz',
             eventTypeSlug: 'jazz',
-            basePrice: (float)$passType->price,
+            basePrice: (float) $passType->price,
             passTypeId: $passType->passTypeId,
             passName: $displayName,
             passScope: $passType->passScope->value,
@@ -810,7 +809,7 @@ class ProgramService implements IProgramService
         if ($priceTierId !== null) {
             foreach ($prices as $price) {
                 if ($price->priceTierId === $priceTierId) {
-                    return (float)$price->price;
+                    return (float) $price->price;
                 }
             }
         }
@@ -818,14 +817,14 @@ class ProgramService implements IProgramService
         // Pass 2: fall back to Adult or Single, which are the most common single-ticket tiers.
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::Adult->value || $price->priceTierId === PriceTierId::Single->value) {
-                return (float)$price->price;
+                return (float) $price->price;
             }
         }
 
         // Pass 3: last resort — any price that isn't pay-what-you-like, so at least we show something.
         foreach ($prices as $price) {
             if ($price->priceTierId !== PriceTierId::PayWhatYouLike->value) {
-                return (float)$price->price;
+                return (float) $price->price;
             }
         }
 
@@ -891,7 +890,7 @@ class ProgramService implements IProgramService
         }
 
         // Fallback: no Single or Adult tier found — sort by price and pick the cheapest one.
-        usort($prices, fn(EventSessionPrice $a, EventSessionPrice $b) => (float)$a->price <=> (float)$b->price);
+        usort($prices, fn(EventSessionPrice $a, EventSessionPrice $b) => (float) $a->price <=> (float) $b->price);
 
         return $prices[0]->priceTierId ?? null;
     }
@@ -918,7 +917,7 @@ class ProgramService implements IProgramService
             return null;
         }
 
-        usort($prices, fn(EventSessionPrice $a, EventSessionPrice $b) => (float)$a->price <=> (float)$b->price);
+        usort($prices, fn(EventSessionPrice $a, EventSessionPrice $b) => (float) $a->price <=> (float) $b->price);
 
         // Fallback: no Group tier found — walk from the most expensive price down to find
         // any tier that isn't the single-ticket tier.
@@ -1108,7 +1107,7 @@ class ProgramService implements IProgramService
         }
 
         // @ prefix tells PHP the value is a Unix timestamp. We then convert to UTC to match session storage.
-        return (new \DateTimeImmutable('@' . $timestamp))
+        return new \DateTimeImmutable('@' . $timestamp)
             ->setTimezone(new \DateTimeZone(self::HISTORY_QUERY_TIMEZONE));
     }
 

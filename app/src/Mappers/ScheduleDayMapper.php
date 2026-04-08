@@ -67,7 +67,7 @@ final class ScheduleDayMapper
     {
         return new ScheduleButtonTexts(
             confirm: self::str($cmsContent->scheduleConfirmText, ScheduleConstants::DEFAULT_CONFIRM_TEXT),
-            adding:  self::str($cmsContent->scheduleAddingText, ScheduleConstants::DEFAULT_ADDING_TEXT),
+            adding: self::str($cmsContent->scheduleAddingText, ScheduleConstants::DEFAULT_ADDING_TEXT),
             success: self::str($cmsContent->scheduleSuccessText, ScheduleConstants::DEFAULT_SUCCESS_TEXT),
         );
     }
@@ -84,18 +84,18 @@ final class ScheduleDayMapper
             $cmsContent->scheduleEventCountLabel,
             self::str($cmsContent->scheduleStoryCountLabel, ScheduleConstants::DEFAULT_EVENT_COUNT_LABEL)
         );
-        $showEventCount = ($cmsContent->scheduleShowEventCount ??
-            $cmsContent->scheduleShowStoryCount ?? '1') === '1';
+        $showEventCount = ($cmsContent->scheduleShowEventCount
+            ?? $cmsContent->scheduleShowStoryCount ?? '1') === '1';
 
         if ($pageSlug === HistoryPageConstants::PAGE_SLUG) {
             return new ScheduleHeaderTexts(title: $title, year: null, eventCountLabel: null, showEventCount: false);
         }
 
         return new ScheduleHeaderTexts(
-            title:           $title,
-            year:            $year,
+            title: $title,
+            year: $year,
             eventCountLabel: $eventCountLabel,
-            showEventCount:  $showEventCount,
+            showEventCount: $showEventCount,
         );
     }
 
@@ -111,32 +111,32 @@ final class ScheduleDayMapper
         $filterContext = self::resolveFilterContext($scheduleData, $cmsContent, $days);
 
         return new ScheduleSectionViewModel(
-            sectionId:           $pageSlug . '-schedule',
-            title:               $headerTexts->title,
-            year:                $headerTexts->year,
-            eventTypeSlug:       $scheduleData->eventTypeSlug,
-            eventTypeId:         $scheduleData->eventTypeId,
-            filtersButtonText:   $cmsSettings->filtersButtonText,
-            showFilters:         $cmsSettings->showFilters,
+            sectionId: $pageSlug . '-schedule',
+            title: $headerTexts->title,
+            year: $headerTexts->year,
+            eventTypeSlug: $scheduleData->eventTypeSlug,
+            eventTypeId: $scheduleData->eventTypeId,
+            filtersButtonText: $cmsSettings->filtersButtonText,
+            showFilters: $cmsSettings->showFilters,
             additionalInfoTitle: $cmsSettings->additionalInfoTitle,
-            additionalInfoBody:  $cmsSettings->additionalInfoBody,
-            showAdditionalInfo:  $cmsSettings->showAdditionalInfo,
-            eventCountLabel:     $headerTexts->eventCountLabel,
-            eventCount:          $filterContext->eventCount,
-            showEventCount:      $headerTexts->showEventCount,
-            ctaButtonText:       $cmsSettings->ctaButtonText,
-            payWhatYouLikeText:  $cmsSettings->payWhatYouLikeText,
-            currencySymbol:      $cmsSettings->currencySymbol,
-            noEventsText:        $cmsSettings->noEventsText,
-            days:                $days,
-            confirmText:         $buttonTexts->confirm,
-            addingText:          $buttonTexts->adding,
-            successText:         $buttonTexts->success,
-            filterGroups:        $filterContext->filterGroups,
-            resetButtonText:     $filterContext->resetButtonText,
-            hasActiveFilters:    $scheduleData->activeFilters !== null && $scheduleData->activeFilters->hasAnyFilter(),
-            gridClasses:         self::resolveGridClasses(count($days)),
-            itemClasses:         self::resolveItemClasses(count($days)),
+            additionalInfoBody: $cmsSettings->additionalInfoBody,
+            showAdditionalInfo: $cmsSettings->showAdditionalInfo,
+            eventCountLabel: $headerTexts->eventCountLabel,
+            eventCount: $filterContext->eventCount,
+            showEventCount: $headerTexts->showEventCount,
+            ctaButtonText: $cmsSettings->ctaButtonText,
+            payWhatYouLikeText: $cmsSettings->payWhatYouLikeText,
+            currencySymbol: $cmsSettings->currencySymbol,
+            noEventsText: $cmsSettings->noEventsText,
+            days: $days,
+            confirmText: $buttonTexts->confirm,
+            addingText: $buttonTexts->adding,
+            successText: $buttonTexts->success,
+            filterGroups: $filterContext->filterGroups,
+            resetButtonText: $filterContext->resetButtonText,
+            hasActiveFilters: $scheduleData->activeFilters !== null && $scheduleData->activeFilters->hasAnyFilter(),
+            gridClasses: self::resolveGridClasses(count($days)),
+            itemClasses: self::resolveItemClasses(count($days)),
         );
     }
 
@@ -145,7 +145,7 @@ final class ScheduleDayMapper
         ScheduleSectionContent $cmsContent,
         array $days,
     ): ScheduleFilterContext {
-        $eventCount  = array_sum(array_map(fn ($day) => count($day->events), $days));
+        $eventCount  = array_sum(array_map(fn($day) => count($day->events), $days));
         $filterGroups = ScheduleFilterMapper::buildFilterGroups(
             $cmsContent,
             $scheduleData->filterGroupTypes,
@@ -156,8 +156,8 @@ final class ScheduleDayMapper
         );
 
         return new ScheduleFilterContext(
-            eventCount:      $eventCount,
-            filterGroups:    $filterGroups,
+            eventCount: $eventCount,
+            filterGroups: $filterGroups,
             resetButtonText: self::str($cmsContent->scheduleFilterResetText, ScheduleConstants::DEFAULT_RESET_FILTERS_TEXT),
         );
     }
@@ -165,15 +165,15 @@ final class ScheduleDayMapper
     private static function extractCmsSettings(ScheduleSectionContent $cmsContent): ScheduleCmsSettings
     {
         return new ScheduleCmsSettings(
-            filtersButtonText:  self::str($cmsContent->scheduleFiltersButtonText, ScheduleConstants::DEFAULT_FILTERS_BUTTON_TEXT),
-            showFilters:        ($cmsContent->scheduleShowFilters ?? '1') === '1',
+            filtersButtonText: self::str($cmsContent->scheduleFiltersButtonText, ScheduleConstants::DEFAULT_FILTERS_BUTTON_TEXT),
+            showFilters: ($cmsContent->scheduleShowFilters ?? '1') === '1',
             additionalInfoTitle: self::str($cmsContent->scheduleAdditionalInfoTitle, ScheduleConstants::DEFAULT_ADDITIONAL_INFO_TITLE),
             additionalInfoBody: $cmsContent->scheduleAdditionalInfoBody ?? '',
             showAdditionalInfo: ($cmsContent->scheduleShowAdditionalInfo ?? '0') === '1',
-            ctaButtonText:      self::str($cmsContent->scheduleCtaButtonText, ScheduleConstants::DEFAULT_CTA_BUTTON_TEXT),
+            ctaButtonText: self::str($cmsContent->scheduleCtaButtonText, ScheduleConstants::DEFAULT_CTA_BUTTON_TEXT),
             payWhatYouLikeText: self::str($cmsContent->schedulePayWhatYouLikeText, ScheduleConstants::DEFAULT_PAY_WHAT_YOU_LIKE_TEXT),
-            currencySymbol:     self::str($cmsContent->scheduleCurrencySymbol, ScheduleConstants::DEFAULT_CURRENCY_SYMBOL),
-            noEventsText:       self::str($cmsContent->scheduleNoEventsText, ScheduleConstants::DEFAULT_NO_EVENTS_TEXT),
+            currencySymbol: self::str($cmsContent->scheduleCurrencySymbol, ScheduleConstants::DEFAULT_CURRENCY_SYMBOL),
+            noEventsText: self::str($cmsContent->scheduleNoEventsText, ScheduleConstants::DEFAULT_NO_EVENTS_TEXT),
         );
     }
 
@@ -207,12 +207,12 @@ final class ScheduleDayMapper
         $htmlId = 'schedule-day-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $day['dayName'])) . '-' . $dayNumber;
 
         return new ScheduleDayViewModel(
-            dayName:       $day['dayName'],
+            dayName: $day['dayName'],
             dateFormatted: $dateObj->format('l, F j'),
-            isoDate:       $isoDate,
-            events:        $events,
-            isEmpty:       $day['isEmpty'],
-            htmlId:        $htmlId,
+            isoDate: $isoDate,
+            events: $events,
+            isEmpty: $day['isEmpty'],
+            htmlId: $htmlId,
         );
     }
 

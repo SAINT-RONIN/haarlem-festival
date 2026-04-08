@@ -28,6 +28,5 @@ final readonly class ArtistDetailData
         public array $lineupMembers,
         public array $highlights,
         public array $galleryImages,
-    ) {
-    }
+    ) {}
 }

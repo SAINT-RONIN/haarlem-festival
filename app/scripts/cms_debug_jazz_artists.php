@@ -15,7 +15,7 @@ if ($page === null) {
 
 echo "Jazz page: CmsPageId=" . $page['CmsPageId'] . " Title=" . ($page['Title'] ?? '') . PHP_EOL;
 
-$sections = $repo->getSectionsByPageId((int)$page['CmsPageId']);
+$sections = $repo->getSectionsByPageId((int) $page['CmsPageId']);
 
 echo "Sections for jazz:" . PHP_EOL;
 foreach ($sections as $section) {
@@ -25,12 +25,12 @@ foreach ($sections as $section) {
 echo PHP_EOL;
 
 foreach ($sections as $section) {
-    if (stripos((string)$section['SectionKey'], 'artist') === false) {
+    if (stripos((string) $section['SectionKey'], 'artist') === false) {
         continue;
     }
 
     echo "Section: CmsSectionId=" . $section['CmsSectionId'] . " Key=" . $section['SectionKey'] . PHP_EOL;
-    $items = $repo->getItemsBySectionId((int)$section['CmsSectionId']);
+    $items = $repo->getItemsBySectionId((int) $section['CmsSectionId']);
     if (count($items) === 0) {
         echo "  (no items)" . PHP_EOL;
         continue;

@@ -53,7 +53,7 @@ try {
 
     foreach ($ticketCodes as $ticketCode) {
         try {
-            $service->regenerateTicketDocumentsByTicketCode((string)$ticketCode);
+            $service->regenerateTicketDocumentsByTicketCode((string) $ticketCode);
             fwrite(STDOUT, "Regenerated {$ticketCode}\n");
             $successCount++;
         } catch (Throwable $error) {

@@ -582,7 +582,7 @@
                                     <?php foreach ($sessionPrices as $price): ?>
                                         <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
                                             <?= htmlspecialchars($price->tierName) ?>:
-                                            <?= htmlspecialchars($price->currencyCode) ?> <?= number_format((float)$price->price, 2) ?>
+                                            <?= htmlspecialchars($price->currencyCode) ?> <?= number_format((float) $price->price, 2) ?>
                                         </span>
                                     <?php endforeach; ?>
                                     <?php if (empty($sessionPrices)): ?>

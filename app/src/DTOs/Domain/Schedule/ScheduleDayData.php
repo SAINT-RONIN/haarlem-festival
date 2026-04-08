@@ -19,8 +19,8 @@ final readonly class ScheduleDayData
     public static function fromRow(array $row): self
     {
         return new self(
-            date: (string)($row['Date'] ?? $row['date'] ?? throw new \InvalidArgumentException('Missing required field: date')),
-            dayOfWeek: (string)($row['dayName'] ?? ''),
+            date: (string) ($row['Date'] ?? $row['date'] ?? throw new \InvalidArgumentException('Missing required field: date')),
+            dayOfWeek: (string) ($row['dayName'] ?? ''),
         );
     }
 }

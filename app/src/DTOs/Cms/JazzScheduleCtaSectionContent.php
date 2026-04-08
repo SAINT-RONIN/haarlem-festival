@@ -14,6 +14,5 @@ final readonly class JazzScheduleCtaSectionContent
         public ?string $scheduleCtaDescription,
         public ?string $scheduleCtaButton,
         public ?string $scheduleCtaButtonLink,
-    ) {
-    }
+    ) {}
 }

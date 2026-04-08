@@ -8,6 +8,5 @@ final readonly class ReservationSubmissionResult
 {
     public function __construct(
         public int $reservationId,
-    ) {
-    }
+    ) {}
 }

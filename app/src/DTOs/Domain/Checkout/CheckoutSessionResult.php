@@ -13,6 +13,5 @@ final readonly class CheckoutSessionResult
         public string $redirectUrl,
         public int $orderId,
         public int $paymentId,
-    ) {
-    }
+    ) {}
 }

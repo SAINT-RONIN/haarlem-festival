@@ -26,6 +26,5 @@ final readonly class ReservationSectionData
         public string $reservationImage,
         public float $reservationFee,
         public array $validDates,
-    ) {
-    }
+    ) {}
 }

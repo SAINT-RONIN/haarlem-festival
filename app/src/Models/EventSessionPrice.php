@@ -23,8 +23,7 @@ final readonly class EventSessionPrice
         public string $price,
         public string $currencyCode,
         public string $vatRate,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates an EventSessionPrice instance from a database row array.
@@ -33,12 +32,12 @@ final readonly class EventSessionPrice
     public static function fromRow(array $row): self
     {
         return new self(
-            eventSessionPriceId: (int)$row['EventSessionPriceId'],
-            eventSessionId: (int)$row['EventSessionId'],
-            priceTierId: (int)$row['PriceTierId'],
-            price: (string)$row['Price'],
-            currencyCode: (string)$row['CurrencyCode'],
-            vatRate: (string)$row['VatRate'],
+            eventSessionPriceId: (int) $row['EventSessionPriceId'],
+            eventSessionId: (int) $row['EventSessionId'],
+            priceTierId: (int) $row['PriceTierId'],
+            price: (string) $row['Price'],
+            currencyCode: (string) $row['CurrencyCode'],
+            vatRate: (string) $row['VatRate'],
         );
     }
 

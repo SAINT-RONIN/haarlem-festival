@@ -43,12 +43,12 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
     private function buildPageData(string $slug, array $heroRaw): HistoricalLocationPageData
     {
         return new HistoricalLocationPageData(
-            heroSection:         $this->globalContentRepo->mapHeroFromRaw($heroRaw),
+            heroSection: $this->globalContentRepo->mapHeroFromRaw($heroRaw),
             locationHeroSection: $this->histLocContentRepo->mapHeroFromRaw($heroRaw),
-            introSection:        $this->histLocContentRepo->findIntroContent($slug, SharedSectionKeys::SECTION_INTRO),
-            factsSection:        $this->histLocContentRepo->findFactsContent($slug, HistoricalLocationPageConstants::SECTION_FACTS),
+            introSection: $this->histLocContentRepo->findIntroContent($slug, SharedSectionKeys::SECTION_INTRO),
+            factsSection: $this->histLocContentRepo->findFactsContent($slug, HistoricalLocationPageConstants::SECTION_FACTS),
             significanceSection: $this->histLocContentRepo->findSignificanceContent($slug, HistoricalLocationPageConstants::SECTION_SIGNIFICANCE),
-            globalUiContent:     $this->loadGlobalUi(),
+            globalUiContent: $this->loadGlobalUi(),
         );
     }
 }

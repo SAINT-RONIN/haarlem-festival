@@ -12,6 +12,5 @@ final readonly class VenueFilter
 {
     public function __construct(
         public ?bool $isActive = null,
-    ) {
-    }
+    ) {}
 }

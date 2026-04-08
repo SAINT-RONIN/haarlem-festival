@@ -45,6 +45,5 @@ final readonly class CmsEventSessionViewModel
         public bool    $isFree,
         public bool    $isCancelled,
         public string  $sessionDate,
-    ) {
-    }
+    ) {}
 }

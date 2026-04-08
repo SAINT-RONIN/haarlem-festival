@@ -17,8 +17,7 @@ final readonly class RegistrationFormData
         public string $confirmPassword,
         public string $firstName,
         public string $lastName,
-    ) {
-    }
+    ) {}
 
     /**
      * Converts to an array for flash-based form repopulation after validation errors.

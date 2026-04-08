@@ -71,10 +71,10 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
             : null;
 
         return $this->eventRepository->findEvents(new EventFilter(
-            isActive:            true,
+            isActive: true,
             includeSessionCount: true,
-            eventTypeId:         $eventTypeId,
-            dayOfWeekNumber:     $dayNumber,
+            eventTypeId: $eventTypeId,
+            dayOfWeekNumber: $dayNumber,
         ));
     }
 
@@ -93,9 +93,9 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
     public function getEventsListPageData(?int $eventTypeId = null, ?string $dayOfWeek = null): EventsListPageData
     {
         return new EventsListPageData(
-            events:         $this->getAllEventsWithDetails($eventTypeId, $dayOfWeek),
-            eventTypes:     $this->getEventTypes(),
-            venues:         $this->getVenues(),
+            events: $this->getAllEventsWithDetails($eventTypeId, $dayOfWeek),
+            eventTypes: $this->getEventTypes(),
+            venues: $this->getVenues(),
             weeklySchedule: $this->getWeeklyScheduleOverview($eventTypeId),
         );
     }
@@ -151,11 +151,11 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
     {
         $schedule = $this->initializeWeekSchedule();
         $sessions = $this->sessionRepository->findSessions(new EventSessionFilter(
-            eventTypeId:      $eventTypeId,
-            isActive:         true,
+            eventTypeId: $eventTypeId,
+            isActive: true,
             includeCancelled: false,
-            eventIsActive:    true,
-            orderBy:          'es.StartDateTime ASC',
+            eventIsActive: true,
+            orderBy: 'es.StartDateTime ASC',
         ))->sessions;
 
         return $this->groupSessionsByDay($sessions, $schedule);
@@ -228,22 +228,22 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
             : null;
 
         return new EventEditPageData(
-            event:                      $event,
-            sessions:                   $sessions,
-            pricesMap:                  $pricesMap,
-            labelsMap:                  $labelsMap,
-            cmsDetailEditUrl:           $this->resolveCmsDetailEditUrl($event->eventTypeId),
-            restaurantStars:            $restaurantCms->stars,
-            restaurantCuisine:          $restaurantCms->cuisine,
+            event: $event,
+            sessions: $sessions,
+            pricesMap: $pricesMap,
+            labelsMap: $labelsMap,
+            cmsDetailEditUrl: $this->resolveCmsDetailEditUrl($event->eventTypeId),
+            restaurantStars: $restaurantCms->stars,
+            restaurantCuisine: $restaurantCms->cuisine,
             restaurantShortDescription: $restaurantCms->shortDescription,
-            featuredImagePath:          $featuredImagePath,
+            featuredImagePath: $featuredImagePath,
         );
     }
 
     private function loadEventWithSessionCount(int $eventId): ?EventWithDetails
     {
         return $this->eventRepository->findEvents(new EventFilter(
-            eventId:             $eventId,
+            eventId: $eventId,
             includeSessionCount: true,
         ))[0] ?? null;
     }
@@ -256,9 +256,9 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
     private function loadSessionsForEdit(int $eventId): array
     {
         return $this->sessionRepository->findSessions(new EventSessionFilter(
-            eventId:          $eventId,
+            eventId: $eventId,
             includeCancelled: true,
-            orderBy:          'es.StartDateTime ASC',
+            orderBy: 'es.StartDateTime ASC',
         ))->sessions;
     }
 

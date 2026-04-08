@@ -112,13 +112,15 @@ final class StorytellingMapper
         string $shareUrl,
     ): StorytellingDetailPageViewModel {
         return new StorytellingDetailPageViewModel(
-            heroData: $heroData, globalUi: $globalUi,
+            heroData: $heroData,
+            globalUi: $globalUi,
             currentPage: StorytellingPageConstants::CURRENT_PAGE,
             detailHero: $detailHero,
             aboutSection: self::buildAboutSection($pageData),
             highlightsSection: self::buildHighlightsSection($pageData->cms, $pageData->highlights),
             gallerySection: self::buildGallerySection($pageData->cms, $pageData->galleryImages),
-            videoSection: self::buildVideoSection($pageData->cms), scheduleSection: $scheduleSection,
+            videoSection: self::buildVideoSection($pageData->cms),
+            scheduleSection: $scheduleSection,
             shareUrl: $shareUrl,
         );
     }
@@ -213,7 +215,8 @@ final class StorytellingMapper
             heroImageUrl: self::resolveDetailHeroImage($pageData),
             labels: $pageData->labels,
             navLinks: self::buildDetailNavLinks($globalUi),
-            backButtonLabel: $pageData->cms->backButtonLabel ?? '', backButtonUrl: RouteConstants::STORYTELLING,
+            backButtonLabel: $pageData->cms->backButtonLabel ?? '',
+            backButtonUrl: RouteConstants::STORYTELLING,
             reserveButtonLabel: $pageData->cms->reserveButtonLabel ?? '',
             reserveButtonUrl: '#' . $scheduleSection->sectionId,
         );
@@ -309,7 +312,9 @@ final class StorytellingMapper
         ];
         $items = [];
         foreach ($tuples as [$title, $image, $description]) {
-            if ($title !== null && $title !== '') { $items[] = self::buildHighlightFromCmsFields($title, $image, $description); }
+            if ($title !== null && $title !== '') {
+                $items[] = self::buildHighlightFromCmsFields($title, $image, $description);
+            }
         }
         return $items;
     }

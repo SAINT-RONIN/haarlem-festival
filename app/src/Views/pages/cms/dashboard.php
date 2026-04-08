@@ -9,8 +9,8 @@
 use App\ViewModels\Cms\DashboardViewModel;
 use App\ViewModels\Cms\PagesListViewModel;
 
-$currentView = $currentView ?? 'dashboard';
-$viewModel = $viewModel ?? null;
+$currentView ??= 'dashboard';
+$viewModel ??= null;
 
 // Extract data from ViewModel for use in partials
 if ($viewModel instanceof DashboardViewModel) {

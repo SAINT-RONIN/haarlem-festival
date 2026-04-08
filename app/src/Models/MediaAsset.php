@@ -25,8 +25,7 @@ final readonly class MediaAsset
         public int                $fileSizeBytes,
         public string             $altText,
         public \DateTimeImmutable $createdAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a MediaAsset instance from a database row array.
@@ -35,12 +34,12 @@ final readonly class MediaAsset
     public static function fromRow(array $row): self
     {
         return new self(
-            mediaAssetId: (int)($row['MediaAssetId'] ?? throw new \InvalidArgumentException('Missing required field: MediaAssetId')),
-            filePath: (string)($row['FilePath'] ?? throw new \InvalidArgumentException('Missing required field: FilePath')),
-            originalFileName: (string)($row['OriginalFileName'] ?? throw new \InvalidArgumentException('Missing required field: OriginalFileName')),
-            mimeType: (string)($row['MimeType'] ?? throw new \InvalidArgumentException('Missing required field: MimeType')),
-            fileSizeBytes: (int)($row['FileSizeBytes'] ?? throw new \InvalidArgumentException('Missing required field: FileSizeBytes')),
-            altText: (string)($row['AltText'] ?? throw new \InvalidArgumentException('Missing required field: AltText')),
+            mediaAssetId: (int) ($row['MediaAssetId'] ?? throw new \InvalidArgumentException('Missing required field: MediaAssetId')),
+            filePath: (string) ($row['FilePath'] ?? throw new \InvalidArgumentException('Missing required field: FilePath')),
+            originalFileName: (string) ($row['OriginalFileName'] ?? throw new \InvalidArgumentException('Missing required field: OriginalFileName')),
+            mimeType: (string) ($row['MimeType'] ?? throw new \InvalidArgumentException('Missing required field: MimeType')),
+            fileSizeBytes: (int) ($row['FileSizeBytes'] ?? throw new \InvalidArgumentException('Missing required field: FileSizeBytes')),
+            altText: (string) ($row['AltText'] ?? throw new \InvalidArgumentException('Missing required field: AltText')),
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: CreatedAtUtc')),
         );
     }

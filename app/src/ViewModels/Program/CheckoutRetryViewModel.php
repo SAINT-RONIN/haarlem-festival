@@ -17,6 +17,5 @@ final readonly class CheckoutRetryViewModel
         public bool $isExpired,
         public bool $isLoggedIn,
         public string $currentPage = 'checkout',
-    ) {
-    }
+    ) {}
 }

@@ -55,8 +55,8 @@
                             class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
                         <option value="">All Roles</option>
                         <?php foreach ($viewModel->roleFilterOptions as $roleId => $roleName): ?>
-                            <option value="<?= htmlspecialchars((string)$roleId) ?>"
-                                <?= $viewModel->selectedRole === (string)$roleId ? 'selected' : '' ?>>
+                            <option value="<?= htmlspecialchars((string) $roleId) ?>"
+                                <?= $viewModel->selectedRole === (string) $roleId ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($roleName) ?>
                             </option>
                         <?php endforeach; ?>

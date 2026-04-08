@@ -14,6 +14,5 @@ final readonly class ScheduleRouteConfig
         public string $pageSlug,
         public int $eventTypeId,
         public int $maxDays,
-    ) {
-    }
+    ) {}
 }

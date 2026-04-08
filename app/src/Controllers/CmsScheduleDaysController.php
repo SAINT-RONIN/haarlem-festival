@@ -80,11 +80,11 @@ class CmsScheduleDaysController extends CmsBaseController
     {
         $pageData  = $this->scheduleDayService->getScheduleDaysPageData();
         $viewModel = new CmsScheduleDaysViewModel(
-            eventTypes:     $pageData->eventTypes,
-            globalConfigs:  $pageData->grouped->global,
-            typeConfigs:    $pageData->grouped->byType,
+            eventTypes: $pageData->eventTypes,
+            globalConfigs: $pageData->grouped->global,
+            typeConfigs: $pageData->grouped->byType,
             successMessage: $this->sessionService->consumeFlash('success'),
-            errorMessage:   $this->sessionService->consumeFlash('error'),
+            errorMessage: $this->sessionService->consumeFlash('error'),
         );
         require __DIR__ . '/../Views/pages/cms/schedule-days.php';
     }

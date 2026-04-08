@@ -15,6 +15,5 @@ final readonly class HallData
         public string $price,
         public string $capacity,
         public bool $isFree = false,
-    ) {
-    }
+    ) {}
 }

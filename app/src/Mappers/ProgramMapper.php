@@ -210,7 +210,7 @@ final class ProgramMapper
 
     private static function getEventTypeLabel(int $eventTypeId, string $fallback): string
     {
-        return $fallback !== '' ? $fallback : (string)$eventTypeId;
+        return $fallback !== '' ? $fallback : (string) $eventTypeId;
     }
 
     private static function buildLocationDisplay(string $venueName, ?string $hallName): string

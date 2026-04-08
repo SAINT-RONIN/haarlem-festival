@@ -65,11 +65,11 @@ final class CmsSectionGroupRouter
         $filledGroups = array_filter($groupDefs, fn(array $g) => $g['items'] !== []);
         return array_values(array_map(
             fn(array $g) => new CmsSubGroupViewModel(
-                label:   $g['label'],
-                icon:    $g['icon'],
-                color:   $g['color'],
+                label: $g['label'],
+                icon: $g['icon'],
+                color: $g['color'],
                 columns: $g['columns'],
-                items:   $g['items'],
+                items: $g['items'],
             ),
             $filledGroups,
         ));
@@ -194,10 +194,18 @@ final class CmsSectionGroupRouter
 
     private static function resolveScheduleGroup(string $itemKey): string
     {
-        if (str_starts_with($itemKey, 'schedule_filter_')) return 'filters';
-        if (str_starts_with($itemKey, 'schedule_additional_info_')) return 'info';
-        if (str_starts_with($itemKey, 'schedule_show_')) return 'display';
-        if (in_array($itemKey, ['schedule_title', 'schedule_year'], true)) return 'general';
+        if (str_starts_with($itemKey, 'schedule_filter_')) {
+            return 'filters';
+        }
+        if (str_starts_with($itemKey, 'schedule_additional_info_')) {
+            return 'info';
+        }
+        if (str_starts_with($itemKey, 'schedule_show_')) {
+            return 'display';
+        }
+        if (in_array($itemKey, ['schedule_title', 'schedule_year'], true)) {
+            return 'general';
+        }
         return 'buttons';
     }
 
@@ -214,8 +222,12 @@ final class CmsSectionGroupRouter
 
     private static function resolveHeroGroup(string $itemKey): string
     {
-        if (str_contains($itemKey, 'button') || str_contains($itemKey, 'link')) return 'buttons';
-        if (str_contains($itemKey, 'image') || str_contains($itemKey, 'background')) return 'media';
+        if (str_contains($itemKey, 'button') || str_contains($itemKey, 'link')) {
+            return 'buttons';
+        }
+        if (str_contains($itemKey, 'image') || str_contains($itemKey, 'background')) {
+            return 'media';
+        }
         return 'content';
     }
 
@@ -242,8 +254,12 @@ final class CmsSectionGroupRouter
 
     private static function resolveVenuesGroup(string $itemKey): string
     {
-        if (str_contains($itemKey, 'patronaat')) return 'patronaat';
-        if (str_contains($itemKey, 'grotemarkt')) return 'grotemarkt';
+        if (str_contains($itemKey, 'patronaat')) {
+            return 'patronaat';
+        }
+        if (str_contains($itemKey, 'grotemarkt')) {
+            return 'grotemarkt';
+        }
         return 'header';
     }
 
@@ -261,9 +277,15 @@ final class CmsSectionGroupRouter
 
     private static function resolvePricingGroup(string $itemKey): string
     {
-        if (str_contains($itemKey, '_individual')) return 'individual';
-        if (str_contains($itemKey, '_daypass')) return 'daypass';
-        if (str_contains($itemKey, '_3day')) return 'threeday';
+        if (str_contains($itemKey, '_individual')) {
+            return 'individual';
+        }
+        if (str_contains($itemKey, '_daypass')) {
+            return 'daypass';
+        }
+        if (str_contains($itemKey, '_3day')) {
+            return 'threeday';
+        }
         return 'header';
     }
 
@@ -295,9 +317,15 @@ final class CmsSectionGroupRouter
 
     private static function resolveHistoricalLocationsGroup(string $itemKey): string
     {
-        if (str_contains($itemKey, 'grotemarkt')) return 'grotemarkt';
-        if (str_contains($itemKey, 'amsterdamsepoort')) return 'amsterdamsepoort';
-        if (str_contains($itemKey, 'molendeadriaan')) return 'molendeadriaan';
+        if (str_contains($itemKey, 'grotemarkt')) {
+            return 'grotemarkt';
+        }
+        if (str_contains($itemKey, 'amsterdamsepoort')) {
+            return 'amsterdamsepoort';
+        }
+        if (str_contains($itemKey, 'molendeadriaan')) {
+            return 'molendeadriaan';
+        }
         return 'header';
     }
 
@@ -346,10 +374,18 @@ final class CmsSectionGroupRouter
 
     private static function resolveRestaurantDetailGroup(string $itemKey): string
     {
-        if (str_starts_with($itemKey, 'detail_hero_')) return 'hero';
-        if (str_starts_with($itemKey, 'detail_contact_') || str_contains($itemKey, '_label_address') || str_contains($itemKey, '_label_contact') || str_contains($itemKey, '_label_open_hours')) return 'contact';
-        if (str_starts_with($itemKey, 'detail_reservation_')) return 'reservation';
-        if (str_contains($itemKey, '_label_')) return 'practical';
+        if (str_starts_with($itemKey, 'detail_hero_')) {
+            return 'hero';
+        }
+        if (str_starts_with($itemKey, 'detail_contact_') || str_contains($itemKey, '_label_address') || str_contains($itemKey, '_label_contact') || str_contains($itemKey, '_label_open_hours')) {
+            return 'contact';
+        }
+        if (str_starts_with($itemKey, 'detail_reservation_')) {
+            return 'reservation';
+        }
+        if (str_contains($itemKey, '_label_')) {
+            return 'practical';
+        }
         return 'sections';
     }
 
@@ -376,8 +412,12 @@ final class CmsSectionGroupRouter
 
     private static function resolveGlobalUiGroup(string $itemKey): string
     {
-        if (str_starts_with($itemKey, 'nav_')) return 'navigation';
-        if ($itemKey === 'site_name') return 'site';
+        if (str_starts_with($itemKey, 'nav_')) {
+            return 'navigation';
+        }
+        if ($itemKey === 'site_name') {
+            return 'site';
+        }
         return 'buttons';
     }
 
@@ -393,7 +433,9 @@ final class CmsSectionGroupRouter
 
     private static function resolveMainGroup(string $itemKey): string
     {
-        if (str_contains($itemKey, 'btn') || str_contains($itemKey, 'button') || str_contains($itemKey, 'label')) return 'buttons';
+        if (str_contains($itemKey, 'btn') || str_contains($itemKey, 'button') || str_contains($itemKey, 'label')) {
+            return 'buttons';
+        }
         return 'content';
     }
 
@@ -414,12 +456,24 @@ final class CmsSectionGroupRouter
 
     private static function resolveEventDetailGroup(string $itemKey): string
     {
-        if (str_contains($itemKey, 'hero') || str_contains($itemKey, 'back_button') || str_contains($itemKey, 'reserve_button')) return 'hero';
-        if (str_starts_with($itemKey, 'about_')) return 'about';
-        if (str_starts_with($itemKey, 'highlight_')) return 'highlights';
-        if (str_starts_with($itemKey, 'gallery_')) return 'gallery';
-        if (str_starts_with($itemKey, 'video_')) return 'media';
-        if (str_contains($itemKey, 'schedule') || str_contains($itemKey, 'cta')) return 'schedule';
+        if (str_contains($itemKey, 'hero') || str_contains($itemKey, 'back_button') || str_contains($itemKey, 'reserve_button')) {
+            return 'hero';
+        }
+        if (str_starts_with($itemKey, 'about_')) {
+            return 'about';
+        }
+        if (str_starts_with($itemKey, 'highlight_')) {
+            return 'highlights';
+        }
+        if (str_starts_with($itemKey, 'gallery_')) {
+            return 'gallery';
+        }
+        if (str_starts_with($itemKey, 'video_')) {
+            return 'media';
+        }
+        if (str_contains($itemKey, 'schedule') || str_contains($itemKey, 'cta')) {
+            return 'schedule';
+        }
         return 'extra';
     }
 }

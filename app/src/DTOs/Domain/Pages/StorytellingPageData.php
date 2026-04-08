@@ -26,6 +26,5 @@ final readonly class StorytellingPageData
         public StorytellingMasonrySectionContent $masonrySection,
         public GlobalUiContent $globalUiContent,
         public array $masonryImages = [],
-    ) {
-    }
+    ) {}
 }

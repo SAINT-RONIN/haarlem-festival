@@ -325,7 +325,7 @@ class CmsArtistsController extends CmsBaseController
         }
 
         if ($sortOrderParam !== null && ctype_digit($sortOrderParam)) {
-            return (int)$sortOrderParam;
+            return (int) $sortOrderParam;
         }
 
         return 0;

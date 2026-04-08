@@ -62,6 +62,5 @@ final readonly class ScheduleSectionContent
         public ?string $scheduleFilterAge12Label,
         public ?string $scheduleFilterAge16Label,
         public ?string $scheduleFilterVenueLabel,
-    ) {
-    }
+    ) {}
 }

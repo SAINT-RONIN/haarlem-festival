@@ -32,8 +32,7 @@ class RestaurantReservationService implements IRestaurantReservationService
     public function __construct(
         private readonly IEventRepository $eventRepository,
         private readonly IReservationRepository $reservationRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Validates the submitted reservation form, creates the Reservation model, and saves it.

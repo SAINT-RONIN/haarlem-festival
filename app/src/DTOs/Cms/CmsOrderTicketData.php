@@ -16,8 +16,7 @@ final readonly class CmsOrderTicketData
         public ?string $scannedAtUtc,
         public ?string $scannedByUserName,
         public ?string $pdfAssetPath,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $row
@@ -25,12 +24,12 @@ final readonly class CmsOrderTicketData
     public static function fromRow(array $row): self
     {
         return new self(
-            ticketId:         (int) $row['TicketId'],
-            ticketCode:       (string) $row['TicketCode'],
-            isScanned:        (bool) ($row['IsScanned'] ?? false),
-            scannedAtUtc:     isset($row['ScannedAtUtc']) ? (string) $row['ScannedAtUtc'] : null,
-            scannedByUserName:isset($row['ScannedByUserName']) ? (string) $row['ScannedByUserName'] : null,
-            pdfAssetPath:     isset($row['PdfAssetPath']) ? (string) $row['PdfAssetPath'] : null,
+            ticketId: (int) $row['TicketId'],
+            ticketCode: (string) $row['TicketCode'],
+            isScanned: (bool) ($row['IsScanned'] ?? false),
+            scannedAtUtc: isset($row['ScannedAtUtc']) ? (string) $row['ScannedAtUtc'] : null,
+            scannedByUserName: isset($row['ScannedByUserName']) ? (string) $row['ScannedByUserName'] : null,
+            pdfAssetPath: isset($row['PdfAssetPath']) ? (string) $row['PdfAssetPath'] : null,
         );
     }
 }

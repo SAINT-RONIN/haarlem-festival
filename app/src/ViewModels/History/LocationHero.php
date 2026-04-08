@@ -19,6 +19,5 @@ final readonly class LocationHero
         public string $backgroundImageUrl,
         public string $currentPage,
         public string $mapImageUrl,
-    ) {
-    }
+    ) {}
 }

@@ -16,7 +16,7 @@ use App\ViewModels\IntroSplitSectionData;
 /** @var BaseViewModel $viewModel — guaranteed by the controller's renderPage() method */
 /** @var PublicPageLayout $layout */
 
-$layout = $layout ?? new PublicPageLayout();
+$layout ??= new PublicPageLayout();
 
 $heroData = $viewModel->heroData;
 $globalUi = $viewModel->globalUi;

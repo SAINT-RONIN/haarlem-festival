@@ -16,6 +16,5 @@ final readonly class LocationSignificance
         public string $historicalSignificanceHeadingText,
         public string $historicalSignificanceText,
         public string $locationImagePath = '',
-    ) {
-    }
+    ) {}
 }

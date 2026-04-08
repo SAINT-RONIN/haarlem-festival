@@ -28,11 +28,11 @@ final readonly class ReservationFormData
     public static function fromArray(array $postData): self
     {
         return new self(
-            diningDate: trim((string)($postData['dining_date'] ?? '')),
-            timeSlot: trim((string)($postData['time_slot'] ?? '')),
-            adultsCount: max(0, (int)($postData['adults_count'] ?? 0)),
-            childrenCount: max(0, (int)($postData['children_count'] ?? 0)),
-            specialRequests: trim((string)($postData['special_requests'] ?? '')),
+            diningDate: trim((string) ($postData['dining_date'] ?? '')),
+            timeSlot: trim((string) ($postData['time_slot'] ?? '')),
+            adultsCount: max(0, (int) ($postData['adults_count'] ?? 0)),
+            childrenCount: max(0, (int) ($postData['children_count'] ?? 0)),
+            specialRequests: trim((string) ($postData['special_requests'] ?? '')),
         );
     }
 

@@ -35,8 +35,7 @@ class CmsContentRepository implements ICmsContentRepository
     public function __construct(
         private ICmsRepository $cmsRepository,
         private IMediaAssetRepository $mediaAssetRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns all CMS content for the home page, keyed by sectionKey then itemKey.

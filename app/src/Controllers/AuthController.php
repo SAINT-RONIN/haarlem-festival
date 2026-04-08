@@ -168,7 +168,7 @@ class AuthController extends BaseController
 
             try {
                 $this->authService->resetPassword($token, $_POST['password'] ?? '', $_POST['confirm_password'] ?? '');
-            } catch (AuthenticationException | ValidationException $e) {
+            } catch (AuthenticationException|ValidationException $e) {
                 $this->sessionService->setFlash('reset_error', $e->getMessage());
                 $this->redirectAndExit('/reset-password?token=' . urlencode($token));
                 return;

@@ -19,6 +19,5 @@ final readonly class ScheduleDaysPageData
     public function __construct(
         public array $eventTypes,
         public GroupedScheduleDayConfigs $grouped,
-    ) {
-    }
+    ) {}
 }

@@ -37,6 +37,5 @@ final readonly class JazzVenuesSectionContent
         public ?string $venueGrotemarktHallDesc,
         public ?string $venueGrotemarktHallPrice,
         public ?string $venueGrotemarktHallCapacity,
-    ) {
-    }
+    ) {}
 }

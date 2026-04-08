@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CMS Create Artist form page.
  *

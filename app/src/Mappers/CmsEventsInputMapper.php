@@ -18,19 +18,19 @@ final class CmsEventsInputMapper
      */
     public static function fromEventFormInput(array $input): EventUpsertData
     {
-        $title = (string)($input['Title'] ?? '');
+        $title = (string) ($input['Title'] ?? '');
 
         return new EventUpsertData(
             eventTypeId: self::intOrDefault($input['EventTypeId'] ?? null),
             title: $title,
-            shortDescription: (string)($input['ShortDescription'] ?? ''),
-            longDescriptionHtml: (string)($input['LongDescriptionHtml'] ?? '<p></p>'),
+            shortDescription: (string) ($input['ShortDescription'] ?? ''),
+            longDescriptionHtml: (string) ($input['LongDescriptionHtml'] ?? '<p></p>'),
             featuredImageAssetId: self::intOrNull($input['FeaturedImageAssetId'] ?? null),
             venueId: self::intOrNull($input['VenueId'] ?? null),
             artistId: self::intOrNull($input['ArtistId'] ?? null),
-            isActive: (bool)($input['IsActive'] ?? false),
+            isActive: (bool) ($input['IsActive'] ?? false),
             slug: SlugHelper::generate($title),
-            restaurantStars: isset($input['RestaurantStars']) && $input['RestaurantStars'] !== '' ? (int)$input['RestaurantStars'] : null,
+            restaurantStars: isset($input['RestaurantStars']) && $input['RestaurantStars'] !== '' ? (int) $input['RestaurantStars'] : null,
             restaurantCuisine: self::stringOrNull($input['RestaurantCuisine'] ?? null),
             restaurantShortDescription: self::stringOrNull($input['RestaurantShortDescription'] ?? null),
         );
@@ -43,8 +43,8 @@ final class CmsEventsInputMapper
     {
         return new EventSessionUpsertData(
             eventId: $eventIdOverride ?? self::intOrDefault($input['EventId'] ?? null),
-            startDateTime: (string)($input['StartDateTime'] ?? ''),
-            endDateTime: (string)($input['EndDateTime'] ?? ''),
+            startDateTime: (string) ($input['StartDateTime'] ?? ''),
+            endDateTime: (string) ($input['EndDateTime'] ?? ''),
             capacityTotal: self::intOrNull($input['CapacityTotal'] ?? null) ?? 100,
             capacitySingleTicketLimit: self::intOrNull($input['CapacitySingleTicketLimit'] ?? null) ?? 100,
             hallName: self::stringOrNull($input['HallName'] ?? null),
@@ -53,14 +53,14 @@ final class CmsEventsInputMapper
             languageCode: self::stringOrNull($input['LanguageCode'] ?? null),
             minAge: self::intOrNull($input['MinAge'] ?? null),
             maxAge: self::intOrNull($input['MaxAge'] ?? null),
-            reservationRequired: (bool)($input['ReservationRequired'] ?? false),
-            isFree: (bool)($input['IsFree'] ?? false),
-            notes: (string)($input['Notes'] ?? ''),
+            reservationRequired: (bool) ($input['ReservationRequired'] ?? false),
+            isFree: (bool) ($input['IsFree'] ?? false),
+            notes: (string) ($input['Notes'] ?? ''),
             historyTicketLabel: self::stringOrNull($input['HistoryTicketLabel'] ?? null),
             ctaLabel: self::stringOrNull($input['CtaLabel'] ?? null),
             ctaUrl: self::stringOrNull($input['CtaUrl'] ?? null),
-            isCancelled: (bool)($input['IsCancelled'] ?? false),
-            isActive: (bool)($input['IsActive'] ?? true),
+            isCancelled: (bool) ($input['IsCancelled'] ?? false),
+            isActive: (bool) ($input['IsActive'] ?? true),
         );
     }
 
@@ -70,7 +70,7 @@ final class CmsEventsInputMapper
             return null;
         }
 
-        return (int)$value;
+        return (int) $value;
     }
 
     private static function intOrDefault(mixed $value): int

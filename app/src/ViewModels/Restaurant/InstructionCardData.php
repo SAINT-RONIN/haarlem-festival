@@ -14,6 +14,5 @@ final readonly class InstructionCardData
         public string $title,
         public string $text,
         public string $icon,
-    ) {
-    }
+    ) {}
 }

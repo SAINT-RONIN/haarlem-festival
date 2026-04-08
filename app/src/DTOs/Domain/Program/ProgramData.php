@@ -22,6 +22,5 @@ final readonly class ProgramData
         public float $taxAmount,
         public float $total,
         public bool $canCheckout,
-    ) {
-    }
+    ) {}
 }

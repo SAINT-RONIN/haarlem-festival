@@ -18,8 +18,7 @@ final readonly class RestaurantDetailEvent
         public string $shortDescription,
         public string $longDescriptionHtml,
         public ?int $featuredImageAssetId,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $row
@@ -27,12 +26,12 @@ final readonly class RestaurantDetailEvent
     public static function fromRow(array $row): self
     {
         return new self(
-            eventId: (int)($row['EventId'] ?? throw new \InvalidArgumentException('Missing required field: EventId')),
-            slug: (string)($row['Slug'] ?? throw new \InvalidArgumentException('Missing required field: Slug')),
-            title: (string)($row['Title'] ?? throw new \InvalidArgumentException('Missing required field: Title')),
-            shortDescription: (string)($row['ShortDescription'] ?? ''),
-            longDescriptionHtml: (string)($row['LongDescriptionHtml'] ?? ''),
-            featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int)$row['FeaturedImageAssetId'] : null,
+            eventId: (int) ($row['EventId'] ?? throw new \InvalidArgumentException('Missing required field: EventId')),
+            slug: (string) ($row['Slug'] ?? throw new \InvalidArgumentException('Missing required field: Slug')),
+            title: (string) ($row['Title'] ?? throw new \InvalidArgumentException('Missing required field: Title')),
+            shortDescription: (string) ($row['ShortDescription'] ?? ''),
+            longDescriptionHtml: (string) ($row['LongDescriptionHtml'] ?? ''),
+            featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null,
         );
     }
 }

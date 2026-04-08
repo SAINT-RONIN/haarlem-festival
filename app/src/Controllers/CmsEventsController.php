@@ -138,7 +138,7 @@ class CmsEventsController extends CmsBaseController
             $formData = $this->extractSessionFormData(); // Session fields extracted via BaseController helpers; service validates internally
             $this->eventsService->updateSession($id, $formData);
             $this->redirectWithFlash('Session updated successfully.', 'success', "/cms/events/{$eventId}/edit");
-        }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
+        }, fn(): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
     /**
@@ -164,7 +164,7 @@ class CmsEventsController extends CmsBaseController
             $eventId = $this->getEventIdFromPost();
             $this->eventsService->addLabel($id, $this->readStringPostParam('LabelText') ?? '');
             $this->redirectWithFlash('Label added successfully.', 'success', "/cms/events/{$eventId}/edit");
-        }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
+        }, fn(): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
     /**
@@ -189,7 +189,7 @@ class CmsEventsController extends CmsBaseController
         $this->handleCmsValidationRequest(function () use ($id): void {
             $eventId = $this->getEventIdFromPost();
             $this->handleSetPrice($id, $eventId);
-        }, fn (): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
+        }, fn(): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
     /**

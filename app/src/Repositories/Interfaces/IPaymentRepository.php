@@ -53,4 +53,3 @@ interface IPaymentRepository
         ?\DateTimeImmutable $paidAtUtc = null,
     ): void;
 }
-

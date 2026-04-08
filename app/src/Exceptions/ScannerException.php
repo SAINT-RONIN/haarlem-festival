@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Base exception for ticket scanner operations.
  */
-class ScannerException extends AppException
-{
-}
+class ScannerException extends AppException {}

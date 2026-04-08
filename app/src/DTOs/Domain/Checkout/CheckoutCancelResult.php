@@ -13,6 +13,5 @@ final readonly class CheckoutCancelResult
         public string $status,
         public ?int $orderId,
         public ?int $paymentId,
-    ) {
-    }
+    ) {}
 }

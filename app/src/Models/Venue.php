@@ -23,8 +23,7 @@ final readonly class Venue
         public string             $city,
         public \DateTimeImmutable $createdAtUtc,
         public bool               $isActive,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a Venue instance from a database row array.
@@ -33,12 +32,12 @@ final readonly class Venue
     public static function fromRow(array $row): self
     {
         return new self(
-            venueId: (int)$row['VenueId'],
-            name: (string)$row['Name'],
-            addressLine: (string)$row['AddressLine'],
-            city: (string)$row['City'],
+            venueId: (int) $row['VenueId'],
+            name: (string) $row['Name'],
+            addressLine: (string) $row['AddressLine'],
+            city: (string) $row['City'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
-            isActive: (bool)$row['IsActive'],
+            isActive: (bool) $row['IsActive'],
         );
     }
 

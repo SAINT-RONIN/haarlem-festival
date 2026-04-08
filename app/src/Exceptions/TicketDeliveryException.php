@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Base exception for paid-order ticket fulfillment failures.
  */
-class TicketDeliveryException extends CheckoutException
-{
-}
+class TicketDeliveryException extends CheckoutException {}

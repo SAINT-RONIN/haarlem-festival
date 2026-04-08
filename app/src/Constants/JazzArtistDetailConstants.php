@@ -10,7 +10,5 @@ final class JazzArtistDetailConstants
 
     public const PAGE_CACHE_TTL_SECONDS = 300;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

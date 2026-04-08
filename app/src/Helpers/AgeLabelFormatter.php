@@ -95,7 +95,7 @@ final class AgeLabelFormatter
                 return true;
             }
 
-            if ((bool)preg_match('/\b\d{1,2}\+/', $normalized)) {
+            if ((bool) preg_match('/\b\d{1,2}\+/', $normalized)) {
                 return true;
             }
         }

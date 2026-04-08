@@ -17,8 +17,7 @@ final readonly class EventFilter
         public ?bool $isActive = null,
         public ?bool $includeSessionCount = null,
         public ?int $eventId = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $filters

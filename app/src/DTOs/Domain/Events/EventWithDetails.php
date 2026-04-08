@@ -30,29 +30,28 @@ final readonly class EventWithDetails
         public int                $sessionCount,
         public int                $totalSoldTickets,
         public int                $totalCapacity,
-    ) {
-    }
+    ) {}
 
     public static function fromRow(array $row): self
     {
         return new self(
-            eventId: (int)$row['EventId'],
-            eventTypeId: (int)$row['EventTypeId'],
-            title: (string)$row['Title'],
-            shortDescription: (string)$row['ShortDescription'],
-            longDescriptionHtml: (string)$row['LongDescriptionHtml'],
-            featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int)$row['FeaturedImageAssetId'] : null,
-            venueId: isset($row['VenueId']) ? (int)$row['VenueId'] : null,
-            artistId: isset($row['ArtistId']) ? (int)$row['ArtistId'] : null,
-            restaurantId: isset($row['RestaurantId']) ? (int)$row['RestaurantId'] : null,
-            isActive: (bool)$row['IsActive'],
+            eventId: (int) $row['EventId'],
+            eventTypeId: (int) $row['EventTypeId'],
+            title: (string) $row['Title'],
+            shortDescription: (string) $row['ShortDescription'],
+            longDescriptionHtml: (string) $row['LongDescriptionHtml'],
+            featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null,
+            venueId: isset($row['VenueId']) ? (int) $row['VenueId'] : null,
+            artistId: isset($row['ArtistId']) ? (int) $row['ArtistId'] : null,
+            restaurantId: isset($row['RestaurantId']) ? (int) $row['RestaurantId'] : null,
+            isActive: (bool) $row['IsActive'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
-            eventTypeName: (string)$row['EventTypeName'],
-            eventTypeSlug: (string)$row['EventTypeSlug'],
-            venueName: isset($row['VenueName']) ? (string)$row['VenueName'] : null,
-            sessionCount: (int)($row['SessionCount'] ?? 0),
-            totalSoldTickets: (int)($row['TotalSoldTickets'] ?? 0),
-            totalCapacity: (int)($row['TotalCapacity'] ?? 0),
+            eventTypeName: (string) $row['EventTypeName'],
+            eventTypeSlug: (string) $row['EventTypeSlug'],
+            venueName: isset($row['VenueName']) ? (string) $row['VenueName'] : null,
+            sessionCount: (int) ($row['SessionCount'] ?? 0),
+            totalSoldTickets: (int) ($row['TotalSoldTickets'] ?? 0),
+            totalCapacity: (int) ($row['TotalCapacity'] ?? 0),
         );
     }
 }

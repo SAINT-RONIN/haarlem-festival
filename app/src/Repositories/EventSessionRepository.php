@@ -22,7 +22,6 @@ use PDO;
  */
 class EventSessionRepository extends BaseRepository implements IEventSessionRepository
 {
-
     /**
      * Builds and executes a dynamic query for event sessions with extensive filter support.
      * When groupByDay is enabled, runs a two-pass query: first fetches distinct dates,
@@ -37,7 +36,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         $whereClause = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
         $orderBy = $this->resolveOrderBy($filters->orderBy);
 
-        $groupByDay = (bool)($filters->groupByDay ?? false);
+        $groupByDay = (bool) ($filters->groupByDay ?? false);
 
         if ($groupByDay) {
             return $this->executeGroupedDayQuery($filters, $whereClause, $params, $orderBy);
@@ -91,7 +90,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             foreach ($filters->sessionIds as $index => $sid) {
                 $key = 'sessionId_' . $index;
                 $sessionIdPlaceholders[] = ':' . $key;
-                $params[$key] = (int)$sid;
+                $params[$key] = (int) $sid;
             }
             $conditions[] = 'es.EventSessionId IN (' . implode(',', $sessionIdPlaceholders) . ')';
         }
@@ -105,7 +104,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             $params['isActive'] = $filters->isActive ? 1 : 0;
         }
 
-        $includeCancelled = (bool)($filters->includeCancelled ?? false);
+        $includeCancelled = (bool) ($filters->includeCancelled ?? false);
         if (!$includeCancelled) {
             $conditions[] = 'es.IsCancelled = 0';
         }
@@ -154,7 +153,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             foreach (array_values($visibleDays) as $index => $day) {
                 $key = 'visibleDay' . $index;
                 $dayParams[] = ':' . $key;
-                $params[$key] = (int)$day;
+                $params[$key] = (int) $day;
             }
             $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
         }
@@ -286,7 +285,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
      */
     private function executeGroupedDayQuery(EventSessionFilter $filters, string $whereClause, array $params, string $orderBy): SessionQueryResult
     {
-        $maxDays = max(1, (int)$filters->maxDays);
+        $maxDays = max(1, (int) $filters->maxDays);
         $baseFrom = $this->getBaseFromClause();
 
         $days = $this->fetchDistinctDates($baseFrom, $whereClause, $params, $maxDays);
@@ -341,7 +340,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         $sql = $this->getSessionSelectColumns() . ' ' . $baseFrom . ' ' . $fullWhere . ' ORDER BY ' . $orderBy;
 
         if ($limit !== null && $limit > 0) {
-            $sql .= ' LIMIT ' . (int)$limit;
+            $sql .= ' LIMIT ' . (int) $limit;
         }
 
         $stmt = $this->execute($sql, array_merge($params, $dateBindings));
@@ -355,7 +354,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         $sql = $this->getSessionSelectColumns() . ' ' . $this->getBaseFromClause() . ' ' . $whereClause . ' ORDER BY ' . $orderBy;
 
         if ($filters->limit !== null && $filters->limit > 0) {
-            $sql .= ' LIMIT ' . (int)$filters->limit;
+            $sql .= ' LIMIT ' . (int) $filters->limit;
         }
 
         $stmt = $this->execute($sql, $params);
@@ -476,7 +475,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
     {
         $params = [];
         $conditions = $this->buildDistinctDayConditions($filter, $params);
-        $sql = $this->buildDistinctDayQuery($conditions, (int)$filter->maxDays);
+        $sql = $this->buildDistinctDayQuery($conditions, (int) $filter->maxDays);
 
         $stmt = $this->execute($sql, $params);
 
@@ -532,7 +531,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         foreach (array_values($visibleDays) as $index => $day) {
             $key = 'visDay' . $index;
             $dayParams[] = ':' . $key;
-            $params[$key] = (int)$day;
+            $params[$key] = (int) $day;
         }
 
         $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
@@ -584,7 +583,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         );
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? max(0, (int)$row['available']) : 0;
+        return $row ? max(0, (int) $row['available']) : 0;
     }
 
     /**

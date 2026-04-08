@@ -18,8 +18,7 @@ class ScannerService implements IScannerService
     public function __construct(
         private readonly IScannerRepository $scannerRepository,
         private readonly ITicketRepository $ticketRepository,
-    ) {
-    }
+    ) {}
 
     /** Validates a ticket code, loads its details, rejects duplicates, and marks it as scanned. */
     public function scanTicket(string $ticketCode, int $scannedByUserId): TicketScanDetail

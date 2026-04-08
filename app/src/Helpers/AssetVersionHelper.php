@@ -17,6 +17,6 @@ final class AssetVersionHelper
             return '';
         }
 
-        return (string)filemtime($filePath);
+        return (string) filemtime($filePath);
     }
 }

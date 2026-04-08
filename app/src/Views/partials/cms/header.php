@@ -5,8 +5,8 @@
  * @var string $currentView Current navigation state
  * @var string $searchQuery Current search query (optional)
  */
-$currentView = $currentView ?? 'dashboard';
-$searchQuery = $searchQuery ?? '';
+$currentView ??= 'dashboard';
+$searchQuery ??= '';
 $pageTitle = match ($currentView) {
     'dashboard' => 'Dashboard',
     'pages' => 'Pages',

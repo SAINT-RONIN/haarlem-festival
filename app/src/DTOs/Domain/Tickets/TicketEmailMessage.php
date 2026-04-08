@@ -23,6 +23,5 @@ final readonly class TicketEmailMessage
         public int $ticketCount,
         public array $eventSummaryLines,
         public array $attachments,
-    ) {
-    }
+    ) {}
 }

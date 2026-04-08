@@ -12,6 +12,5 @@ final readonly class CmsSectionFilter
     public function __construct(
         public ?int $cmsPageId = null,
         public ?string $sectionKey = null,
-    ) {
-    }
+    ) {}
 }

@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Thrown when a ticket QR code cannot be generated.
  */
-final class TicketQrCodeException extends TicketDeliveryException
-{
-}
+final class TicketQrCodeException extends TicketDeliveryException {}

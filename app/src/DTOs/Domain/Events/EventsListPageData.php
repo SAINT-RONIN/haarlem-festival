@@ -26,6 +26,5 @@ final readonly class EventsListPageData
         public array $eventTypes,
         public array $venues,
         public array $weeklySchedule,
-    ) {
-    }
+    ) {}
 }

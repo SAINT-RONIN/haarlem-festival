@@ -13,6 +13,5 @@ final readonly class HomeExploreBannerViewModel
         public string $title,
         public string $subtitle,
         public string $backgroundImageUrl,
-    ) {
-    }
+    ) {}
 }

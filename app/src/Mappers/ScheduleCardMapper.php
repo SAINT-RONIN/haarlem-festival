@@ -178,7 +178,7 @@ final class ScheduleCardMapper
      */
     private static function extractLabels(array $sessionLabels, ?int $minAge, ?int $maxAge, int $eventTypeId): array
     {
-        $labels = array_map(fn (EventSessionLabel $l) => $l->labelText, $sessionLabels);
+        $labels = array_map(fn(EventSessionLabel $l) => $l->labelText, $sessionLabels);
 
         if ($eventTypeId === EventTypeId::History->value) {
             return $labels;
@@ -194,7 +194,7 @@ final class ScheduleCardMapper
     {
         return new SessionCtaResult(
             label: !empty($session->ctaLabel) ? $session->ctaLabel : $defaultCtaText,
-            url:   !empty($session->ctaUrl) ? $session->ctaUrl : '/' . $eventTypeSlug . '/' . $session->eventSlug,
+            url: !empty($session->ctaUrl) ? $session->ctaUrl : '/' . $eventTypeSlug . '/' . $session->eventSlug,
         );
     }
 
@@ -214,12 +214,12 @@ final class ScheduleCardMapper
 
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::Adult->value) {
-                return new SessionPriceResult(amount: (float)$price->price, isPayWhatYouLike: false);
+                return new SessionPriceResult(amount: (float) $price->price, isPayWhatYouLike: false);
             }
         }
 
         if (!empty($prices)) {
-            return new SessionPriceResult(amount: (float)$prices[0]->price, isPayWhatYouLike: false);
+            return new SessionPriceResult(amount: (float) $prices[0]->price, isPayWhatYouLike: false);
         }
 
         return new SessionPriceResult(amount: null, isPayWhatYouLike: false);
@@ -322,7 +322,7 @@ final class ScheduleCardMapper
     private static function buildPriceDisplay(array $event): string
     {
         if ($event['isPayWhatYouLike']) {
-            return (string)($event['payWhatYouLikeText'] ?? '');
+            return (string) ($event['payWhatYouLikeText'] ?? '');
         }
 
         $amount = $event['priceAmount'] ?? null;
@@ -330,8 +330,8 @@ final class ScheduleCardMapper
             return '';
         }
 
-        $symbol = (string)($event['currencySymbol'] ?? '€');
-        return FormatHelper::price((float)$amount, $symbol . ' ');
+        $symbol = (string) ($event['currencySymbol'] ?? '€');
+        return FormatHelper::price((float) $amount, $symbol . ' ');
     }
 
     /**
@@ -342,10 +342,10 @@ final class ScheduleCardMapper
      */
     private static function buildLocationDisplay(array $event): string
     {
-        $eventTypeSlug = (string)($event['eventTypeSlug'] ?? '');
-        $locationName  = (string)($event['locationName'] ?? '');
-        $hallName      = (string)($event['hallName'] ?? '');
-        $capacityTotal = (int)($event['capacityTotal'] ?? 0);
+        $eventTypeSlug = (string) ($event['eventTypeSlug'] ?? '');
+        $locationName  = (string) ($event['locationName'] ?? '');
+        $hallName      = (string) ($event['hallName'] ?? '');
+        $capacityTotal = (int) ($event['capacityTotal'] ?? 0);
 
         if ($eventTypeSlug === JazzPageConstants::PAGE_SLUG && $hallName !== '') {
             return implode(' • ', array_filter([

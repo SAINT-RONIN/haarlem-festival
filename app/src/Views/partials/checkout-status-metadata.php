@@ -4,7 +4,7 @@
  *
  * @var array<string, string> $details
  */
-$details = $details ?? [];
+$details ??= [];
 
 if ($details === []) {
     return;

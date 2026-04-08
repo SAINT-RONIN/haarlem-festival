@@ -141,7 +141,7 @@ $inputClass = static function (array $errors, string $field): string {
                         <label for="cardSortOrder" class="block text-sm font-medium text-gray-700 mb-1">
                             Sort Order
                         </label>
-                        <input type="number" name="cardSortOrder" id="cardSortOrder" value="<?= htmlspecialchars((string)$viewModel->cardSortOrder) ?>"
+                        <input type="number" name="cardSortOrder" id="cardSortOrder" value="<?= htmlspecialchars((string) $viewModel->cardSortOrder) ?>"
                                class="<?= $inputClass($viewModel->errors, 'cardSortOrder') ?>">
                         <?php if (isset($viewModel->errors['cardSortOrder'])): ?>
                             <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($viewModel->errors['cardSortOrder']) ?></p>

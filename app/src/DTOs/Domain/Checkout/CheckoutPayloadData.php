@@ -28,11 +28,11 @@ final readonly class CheckoutPayloadData
      */
     public static function fromArray(array $body): ?self
     {
-        $firstName = trim((string)($body['firstName'] ?? ''));
-        $lastName  = trim((string)($body['lastName'] ?? ''));
-        $email     = trim((string)($body['email'] ?? ''));
-        $method    = trim((string)($body['paymentMethod'] ?? ''));
-        $save      = (bool)($body['saveDetails'] ?? false);
+        $firstName = trim((string) ($body['firstName'] ?? ''));
+        $lastName  = trim((string) ($body['lastName'] ?? ''));
+        $email     = trim((string) ($body['email'] ?? ''));
+        $method    = trim((string) ($body['paymentMethod'] ?? ''));
+        $save      = (bool) ($body['saveDetails'] ?? false);
 
         if ($firstName === '' || $lastName === '' || $email === '' || $method === '') {
             return null;

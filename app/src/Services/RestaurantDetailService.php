@@ -120,7 +120,7 @@ class RestaurantDetailService extends BaseContentService implements IRestaurantD
             return [];
         }
 
-        $adult = max(0.0, (float)$priceAdultStr);
+        $adult = max(0.0, (float) $priceAdultStr);
 
         return [
             ['label' => 'Per adult', 'price' => 'EUR ' . number_format($adult, 2)],

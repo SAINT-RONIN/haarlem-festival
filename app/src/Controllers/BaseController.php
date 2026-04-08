@@ -24,8 +24,7 @@ abstract class BaseController
 {
     public function __construct(
         protected readonly ?ISessionService $sessionService = null,
-    ) {
-    }
+    ) {}
 
     /** Renders a full page view through the shared isolated PHP renderer. */
     protected function renderPage(string $viewPath, BaseViewModel $viewModel): void
@@ -119,7 +118,7 @@ abstract class BaseController
     /** Reads the raw HTTP request body (e.g. for webhook signature verification). */
     protected function readRawBody(): string
     {
-        return (string)file_get_contents('php://input');
+        return (string) file_get_contents('php://input');
     }
 
     /** Reads and trims a query-string parameter, truncating to $maxLength. Returns null if absent or empty. */
@@ -129,7 +128,7 @@ abstract class BaseController
             return null;
         }
 
-        $value = trim((string)$_GET[$key]);
+        $value = trim((string) $_GET[$key]);
         if ($value === '') {
             return null;
         }
@@ -145,7 +144,7 @@ abstract class BaseController
             return null;
         }
 
-        $intValue = (int)$value;
+        $intValue = (int) $value;
         return $intValue > 0 ? $intValue : null;
     }
 
@@ -199,7 +198,7 @@ abstract class BaseController
             return null;
         }
 
-        $value = trim((string)$_POST[$key]);
+        $value = trim((string) $_POST[$key]);
         if ($value === '') {
             return null;
         }
@@ -215,7 +214,7 @@ abstract class BaseController
             return null;
         }
 
-        return (int)$value;
+        return (int) $value;
     }
 
     /** Reads a POST parameter as a boolean. Returns true if the value is '1' or 'on'. */

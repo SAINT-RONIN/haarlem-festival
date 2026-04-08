@@ -19,6 +19,5 @@ final readonly class VenueData
         public string $contactInfo,
         public array $halls,
         public bool $isDark = false,
-    ) {
-    }
+    ) {}
 }

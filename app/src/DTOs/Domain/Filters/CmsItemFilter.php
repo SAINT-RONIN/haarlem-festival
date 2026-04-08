@@ -14,6 +14,5 @@ final readonly class CmsItemFilter
         public ?int $cmsSectionId = null,
         public ?int $cmsPageId = null,
         public ?string $sectionKey = null,
-    ) {
-    }
+    ) {}
 }

@@ -22,8 +22,7 @@ final readonly class CmsPage
         public string                $slug,
         public string                $title,
         public ?\DateTimeImmutable   $updatedAtUtc = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a CmsPage instance from a database row array.
@@ -37,9 +36,9 @@ final readonly class CmsPage
             : null;
 
         return new self(
-            cmsPageId: (int)$row['CmsPageId'],
-            slug: (string)$row['Slug'],
-            title: (string)$row['Title'],
+            cmsPageId: (int) $row['CmsPageId'],
+            slug: (string) $row['Slug'],
+            title: (string) $row['Title'],
             updatedAtUtc: $updatedAtUtc,
         );
     }

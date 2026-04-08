@@ -20,8 +20,7 @@ final readonly class InvoiceLine
         public string $unitPrice,
         public string $vatRate,
         public string $lineSubtotal,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates an InvoiceLine instance from a database row array.
@@ -29,13 +28,13 @@ final readonly class InvoiceLine
     public static function fromRow(array $row): self
     {
         return new self(
-            invoiceLineId: (int)$row['InvoiceLineId'],
-            invoiceId: (int)$row['InvoiceId'],
-            lineDescription: (string)$row['LineDescription'],
-            quantity: (int)$row['Quantity'],
-            unitPrice: (string)$row['UnitPrice'],
-            vatRate: (string)$row['VatRate'],
-            lineSubtotal: (string)$row['LineSubtotal'],
+            invoiceLineId: (int) $row['InvoiceLineId'],
+            invoiceId: (int) $row['InvoiceId'],
+            lineDescription: (string) $row['LineDescription'],
+            quantity: (int) $row['Quantity'],
+            unitPrice: (string) $row['UnitPrice'],
+            vatRate: (string) $row['VatRate'],
+            lineSubtotal: (string) $row['LineSubtotal'],
         );
     }
 

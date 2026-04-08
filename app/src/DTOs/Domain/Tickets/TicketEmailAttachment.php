@@ -12,6 +12,5 @@ final readonly class TicketEmailAttachment
     public function __construct(
         public string $absolutePath,
         public string $displayName,
-    ) {
-    }
+    ) {}
 }

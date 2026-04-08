@@ -7,10 +7,10 @@
  * @var string $secondaryHref
  * @var string $secondaryLabel
  */
-$primaryHref = $primaryHref ?? '/';
-$primaryLabel = $primaryLabel ?? 'Continue';
-$secondaryHref = $secondaryHref ?? '/my-program';
-$secondaryLabel = $secondaryLabel ?? 'Back';
+$primaryHref ??= '/';
+$primaryLabel ??= 'Continue';
+$secondaryHref ??= '/my-program';
+$secondaryLabel ??= 'Back';
 ?>
 <div class="mt-8 flex flex-wrap gap-3">
     <a href="<?= htmlspecialchars($primaryHref) ?>"

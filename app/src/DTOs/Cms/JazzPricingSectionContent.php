@@ -33,6 +33,5 @@ final readonly class JazzPricingSectionContent
         public ?string $pricing3dayInclude3,
         public ?string $pricing3dayInclude4,
         public ?string $pricing3dayInfo,
-    ) {
-    }
+    ) {}
 }

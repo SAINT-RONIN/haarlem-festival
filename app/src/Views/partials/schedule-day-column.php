@@ -14,10 +14,10 @@ if (!$globalUi instanceof GlobalUiData) {
 }
 
 $dayName = htmlspecialchars($day->dayName);
-$dayNumber = htmlspecialchars((string)$day->dayNumber);
+$dayNumber = htmlspecialchars((string) $day->dayNumber);
 $monthShort = htmlspecialchars($day->monthShort);
 $isoDate = htmlspecialchars($day->isoDate);
-$eventCount = (int)$day->eventCount;
+$eventCount = (int) $day->eventCount;
 $sessions = $day->sessions;
 
 // Unique ID for accessibility — pre-computed in HomeMapper

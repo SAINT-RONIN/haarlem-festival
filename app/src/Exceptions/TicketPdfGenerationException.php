@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Thrown when a ticket PDF cannot be generated or written.
  */
-final class TicketPdfGenerationException extends TicketDeliveryException
-{
-}
+final class TicketPdfGenerationException extends TicketDeliveryException {}

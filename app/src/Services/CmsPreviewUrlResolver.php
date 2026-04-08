@@ -63,7 +63,7 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
     {
         foreach ($sections as $section) {
             if (preg_match('/^event_(\d+)$/', $section->sectionKey, $matches) === 1) {
-                return (int)$matches[1];
+                return (int) $matches[1];
             }
         }
 
@@ -93,6 +93,6 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
     {
         $lower = strtolower(trim($value));
         $slug = preg_replace('/[^a-z0-9]+/', '-', $lower);
-        return trim((string)$slug, '-');
+        return trim((string) $slug, '-');
     }
 }

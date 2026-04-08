@@ -24,8 +24,7 @@ class CmsOrdersService implements ICmsOrdersService
         private readonly ICmsOrdersRepository $ordersRepository,
         private readonly IInvoiceRepository $invoiceRepository,
         private readonly IMediaAssetRepository $mediaAssetRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns all orders joined with their user, item, and payment data.
@@ -72,11 +71,11 @@ class CmsOrdersService implements ICmsOrdersService
         $invoice = $this->invoiceRepository->findByOrderId($orderId);
 
         return new CmsOrderDetailPageData(
-            order:          $order,
-            items:          $this->ordersRepository->findOrderItems($orderId),
-            payments:       $this->ordersRepository->findOrderPayments($orderId),
-            tickets:        $this->ordersRepository->findOrderTickets($orderId),
-            invoice:        $invoice,
+            order: $order,
+            items: $this->ordersRepository->findOrderItems($orderId),
+            payments: $this->ordersRepository->findOrderPayments($orderId),
+            tickets: $this->ordersRepository->findOrderTickets($orderId),
+            invoice: $invoice,
             invoicePdfPath: $this->resolveInvoicePdfPath($invoice),
         );
     }

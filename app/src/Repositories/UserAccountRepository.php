@@ -64,7 +64,7 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
             ['username' => $username],
         );
 
-        return (int)$stmt->fetchColumn() > 0;
+        return (int) $stmt->fetchColumn() > 0;
     }
 
     /**
@@ -77,7 +77,7 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
             ['email' => $email],
         );
 
-        return (int)$stmt->fetchColumn() > 0;
+        return (int) $stmt->fetchColumn() > 0;
     }
 
     /**

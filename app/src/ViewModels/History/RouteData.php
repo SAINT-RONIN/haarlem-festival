@@ -17,6 +17,5 @@ final readonly class RouteData
         public string $headingText,
         public array $venues = [],
         public string $mapImagePath = '',
-    ) {
-    }
+    ) {}
 }

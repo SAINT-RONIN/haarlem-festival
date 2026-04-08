@@ -27,11 +27,11 @@ final readonly class SessionCapacityInfo
     public static function fromRow(array $row): self
     {
         return new self(
-            eventSessionId: (int)$row['EventSessionId'],
-            capacityTotal: (int)$row['CapacityTotal'],
-            soldSingleTickets: (int)$row['SoldSingleTickets'],
-            soldReservedSeats: (int)$row['SoldReservedSeats'],
-            capacitySingleTicketLimit: (int)($row['CapacitySingleTicketLimit'] ?? 0),
+            eventSessionId: (int) $row['EventSessionId'],
+            capacityTotal: (int) $row['CapacityTotal'],
+            soldSingleTickets: (int) $row['SoldSingleTickets'],
+            soldReservedSeats: (int) $row['SoldReservedSeats'],
+            capacitySingleTicketLimit: (int) ($row['CapacitySingleTicketLimit'] ?? 0),
         );
     }
 

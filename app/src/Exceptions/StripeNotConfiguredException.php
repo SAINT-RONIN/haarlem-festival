@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Exception thrown when Stripe API keys or webhook secrets are not configured.
  */
-class StripeNotConfiguredException extends AppException
-{
-}
+class StripeNotConfiguredException extends AppException {}

@@ -37,15 +37,14 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         private readonly ITicketFulfillmentService $ticketFulfillmentService,
         private readonly IInvoiceFulfillmentService $invoiceFulfillmentService,
         private readonly PDO $pdo,
-    ) {
-    }
+    ) {}
 
     /** @throws CheckoutException When the event payload is invalid or malformed */
     public function handleWebhook(string $payload, ?string $signatureHeader): WebhookHandlerResult
     {
         $event = $this->loadWebhookEvent($payload, $signatureHeader);
-        $eventId = (string)($event['id'] ?? '');
-        $eventType = (string)($event['type'] ?? '');
+        $eventId = (string) ($event['id'] ?? '');
+        $eventType = (string) ($event['type'] ?? '');
 
         $this->validateWebhookEvent($eventId, $eventType);
 
@@ -101,8 +100,8 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     private function extractWebhookMetadata(array $object): array
     {
         $metadata = isset($object['metadata']) && is_array($object['metadata']) ? $object['metadata'] : [];
-        $orderId = isset($metadata['order_id']) ? (int)$metadata['order_id'] : null;
-        $paymentId = isset($metadata['payment_id']) ? (int)$metadata['payment_id'] : null;
+        $orderId = isset($metadata['order_id']) ? (int) $metadata['order_id'] : null;
+        $paymentId = isset($metadata['payment_id']) ? (int) $metadata['payment_id'] : null;
 
         return [$metadata, $orderId, $paymentId];
     }
@@ -163,7 +162,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
                 new \DateTimeImmutable(),
             );
         }
-        $programId = isset($metadata['program_id']) ? (int)$metadata['program_id'] : 0;
+        $programId = isset($metadata['program_id']) ? (int) $metadata['program_id'] : 0;
         if ($programId > 0) {
             $this->programRepository->markCheckedOut($programId);
         }
@@ -211,8 +210,8 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         $this->ticketFulfillmentService->fulfillPaidOrder(
             $orderId,
             $this->extractCustomerEmail($object),
-            isset($metadata['first_name']) ? (string)$metadata['first_name'] : null,
-            isset($metadata['last_name']) ? (string)$metadata['last_name'] : null,
+            isset($metadata['first_name']) ? (string) $metadata['first_name'] : null,
+            isset($metadata['last_name']) ? (string) $metadata['last_name'] : null,
         );
     }
 

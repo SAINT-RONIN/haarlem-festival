@@ -66,8 +66,7 @@ class CheckoutService implements ICheckoutService
         private readonly ITicketFulfillmentService $ticketFulfillmentService,
         private readonly IPassPurchaseRepository $passPurchaseRepository,
         private readonly IProgramRepository $programRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Validates the payload, persists an order with line items, creates a Stripe
@@ -292,8 +291,8 @@ class CheckoutService implements ICheckoutService
     ): string {
         $session = $this->createStripeSession($programData, $userId, $payload, $orderId, $paymentId, $orderNumber, $method);
 
-        $sessionId = (string)($session['id'] ?? '');
-        $checkoutUrl = (string)($session['url'] ?? '');
+        $sessionId = (string) ($session['id'] ?? '');
+        $checkoutUrl = (string) ($session['url'] ?? '');
 
         if ($sessionId === '' || $checkoutUrl === '') {
             throw new CheckoutSessionException('Stripe checkout session could not be created.');
@@ -488,7 +487,7 @@ class CheckoutService implements ICheckoutService
             orderId: $order->orderId,
             paymentId: $paymentId,
             method: $method,
-            total: (float)$order->totalAmount,
+            total: (float) $order->totalAmount,
             orderNumber: $order->orderNumber,
             customerEmail: $order->ticketRecipientEmail ?? '',
             metadata: $this->buildStripeMetadata(
@@ -496,8 +495,8 @@ class CheckoutService implements ICheckoutService
                 paymentId: $paymentId,
                 programId: $order->programId,
                 userId: $order->userAccountId,
-                firstName: (string)($order->ticketRecipientFirstName ?? ''),
-                lastName: (string)($order->ticketRecipientLastName ?? ''),
+                firstName: (string) ($order->ticketRecipientFirstName ?? ''),
+                lastName: (string) ($order->ticketRecipientLastName ?? ''),
             ),
         );
     }
@@ -573,10 +572,10 @@ class CheckoutService implements ICheckoutService
         string $lastName,
     ): array {
         return [
-            'order_id' => (string)$orderId,
-            'payment_id' => (string)$paymentId,
-            'program_id' => (string)$programId,
-            'user_id' => (string)$userId,
+            'order_id' => (string) $orderId,
+            'payment_id' => (string) $paymentId,
+            'program_id' => (string) $programId,
+            'user_id' => (string) $userId,
             'first_name' => $firstName,
             'last_name' => $lastName,
         ];
@@ -620,9 +619,9 @@ class CheckoutService implements ICheckoutService
         $this->fulfillPaidOrderFromSession($session);
 
         return new CheckoutSessionSummary(
-            orderReference: (string)($session['client_reference_id'] ?? ''),
-            amountTotal: isset($session['amount_total']) ? ((int)$session['amount_total'] / 100) : 0,
-            currency: strtoupper((string)($session['currency'] ?? 'eur')),
+            orderReference: (string) ($session['client_reference_id'] ?? ''),
+            amountTotal: isset($session['amount_total']) ? ((int) $session['amount_total'] / 100) : 0,
+            currency: strtoupper((string) ($session['currency'] ?? 'eur')),
         );
     }
 
@@ -757,7 +756,7 @@ class CheckoutService implements ICheckoutService
             return null;
         }
 
-        $orderId = (int)$metadata['order_id'];
+        $orderId = (int) $metadata['order_id'];
         return $orderId > 0 ? $orderId : null;
     }
 
@@ -820,7 +819,7 @@ class CheckoutService implements ICheckoutService
         return [[
             'price_data' => [
                 'currency' => 'eur',
-                'unit_amount' => (int)round($total * 100),
+                'unit_amount' => (int) round($total * 100),
                 'product_data' => ['name' => 'Haarlem Festival order ' . $orderNumber],
             ],
             'quantity' => 1,
@@ -948,7 +947,7 @@ class CheckoutService implements ICheckoutService
         // Use configured limit if available, otherwise calculate from ratio
         $singleTicketCap = $capacity->capacitySingleTicketLimit > 0
             ? $capacity->capacitySingleTicketLimit
-            : (int)floor($capacity->capacityTotal * CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO);
+            : (int) floor($capacity->capacityTotal * CheckoutConstraints::SINGLE_TICKET_CAPACITY_RATIO);
 
         if (($capacity->soldSingleTickets + $item->quantity) <= $singleTicketCap) {
             return;

@@ -9,7 +9,5 @@ final readonly class StripeWebhookRequest
     public function __construct(
         public string $payload,
         public ?string $signatureHeader,
-    ) {
-    }
+    ) {}
 }
-

@@ -12,6 +12,5 @@ final readonly class HomeEventsHeaderViewModel
     public function __construct(
         public string $title,
         public string $subtitle,
-    ) {
-    }
+    ) {}
 }

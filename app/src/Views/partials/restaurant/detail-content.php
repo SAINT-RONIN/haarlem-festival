@@ -21,10 +21,10 @@ $location = $viewModel->locationSection;
 $practicalInfo = $viewModel->practicalInfoSection;
 $gallery = $viewModel->gallerySection;
 $reservation = $viewModel->reservationSection;
-$durationMinutes = max(0, (int)($viewModel->cms['durationMinutes'] ?? 0));
-$seatsPerSession = max(0, (int)($viewModel->cms['seatsPerSession'] ?? 0));
-$durationLabel = (string)($viewModel->cms['durationLabel'] ?? 'Duration');
-$seatsLabel = (string)($viewModel->cms['seatsLabel'] ?? 'Seats');
+$durationMinutes = max(0, (int) ($viewModel->cms['durationMinutes'] ?? 0));
+$seatsPerSession = max(0, (int) ($viewModel->cms['seatsPerSession'] ?? 0));
+$durationLabel = (string) ($viewModel->cms['durationLabel'] ?? 'Duration');
+$seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
 ?>
 
 <?php if ($contact !== null || $practicalInfo !== null): ?>
@@ -265,7 +265,7 @@ $seatsLabel = (string)($viewModel->cms['seatsLabel'] ?? 'Seats');
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span class="text-slate-800 text-lg font-medium font-['Montserrat']"><?= $e($durationLabel) ?></span>
-                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= (int)($durationMinutes / 60) ?> hours</span>
+                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= (int) ($durationMinutes / 60) ?> hours</span>
                 </div>
                 <?php endif; ?>
 

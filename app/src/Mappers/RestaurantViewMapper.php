@@ -47,12 +47,12 @@ final class RestaurantViewMapper
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return new RestaurantPageViewModel(
-            heroData:               $heroData,
-            globalUi:               $globalUi,
-            gradientSection:        self::toGradientSection($data->gradientSection),
-            introSplitSection:      self::toIntroSplitSection($data->introSplitSection),
-            introSplit2Section:     self::toIntroSplit2Section($data->introSplit2Section),
-            instructionsSection:    self::toInstructionsSection($data->instructionsSection),
+            heroData: $heroData,
+            globalUi: $globalUi,
+            gradientSection: self::toGradientSection($data->gradientSection),
+            introSplitSection: self::toIntroSplitSection($data->introSplitSection),
+            introSplit2Section: self::toIntroSplit2Section($data->introSplit2Section),
+            instructionsSection: self::toInstructionsSection($data->instructionsSection),
             restaurantCardsSection: self::toRestaurantCardsSection($data->cardsSection, $data->listings),
         );
     }
@@ -139,8 +139,7 @@ final class RestaurantViewMapper
         RestaurantEventCmsData $cms,
         RestaurantDetailSectionContent $sharedCms,
         array $timeSlots,
-    ): ContactSectionData
-    {
+    ): ContactSectionData {
         return new ContactSectionData(
             address: self::formatAddress($cms->addressLine, $cms->city),
             phone: $cms->phone ?? '',
@@ -211,12 +210,11 @@ final class RestaurantViewMapper
         RestaurantEventCmsData $cms,
         RestaurantDetailSectionContent $sharedCms,
         array $priceCards,
-    ): PracticalInfoSectionData
-    {
+    ): PracticalInfoSectionData {
         return new PracticalInfoSectionData(
             cuisine: $cms->cuisineType ?? '',
-            rating: (int)($cms->stars ?? 0),
-            michelinStars: (int)($cms->michelinStars ?? 0),
+            rating: (int) ($cms->stars ?? 0),
+            michelinStars: (int) ($cms->michelinStars ?? 0),
             specialRequestsNote: $cms->specialRequestsNote ?? '',
             priceCards: $priceCards,
             labelTitle: $sharedCms->detailPracticalTitle ?? 'Practical Information',
@@ -273,7 +271,7 @@ final class RestaurantViewMapper
     private static function formatAddress(?string $addressLine, ?string $city): string
     {
         $parts = array_filter(
-            [trim((string)$addressLine), trim((string)$city)],
+            [trim((string) $addressLine), trim((string) $city)],
             static fn(string $part): bool => $part !== '',
         );
 
@@ -441,7 +439,7 @@ final class RestaurantViewMapper
         ];
 
         foreach ($candidates as $candidate) {
-            $description = RestaurantContentParser::cleanDescription((string)($candidate ?? ''));
+            $description = RestaurantContentParser::cleanDescription((string) ($candidate ?? ''));
             if ($description !== '') {
                 return $description;
             }
@@ -452,9 +450,9 @@ final class RestaurantViewMapper
 
     private static function buildCardRating(RestaurantListingData $listing): int
     {
-        $cmsStars = trim((string)($listing->cms->stars ?? ''));
+        $cmsStars = trim((string) ($listing->cms->stars ?? ''));
         if ($cmsStars !== '' && is_numeric($cmsStars)) {
-            return (int)$cmsStars;
+            return (int) $cmsStars;
         }
 
         return 0;
@@ -463,7 +461,7 @@ final class RestaurantViewMapper
     private static function firstNonEmpty(?string ...$values): string
     {
         foreach ($values as $value) {
-            $trimmed = trim((string)($value ?? ''));
+            $trimmed = trim((string) ($value ?? ''));
             if ($trimmed !== '') {
                 return $trimmed;
             }

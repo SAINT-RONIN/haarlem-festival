@@ -30,8 +30,7 @@ abstract class BaseCmsEventsService
         protected readonly IEventRepository $eventRepository,
         protected readonly IVenueRepository $venueRepository,
         protected readonly ICmsRepository $cmsRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns a URL-safe slug that is unique across all events.
@@ -102,7 +101,7 @@ abstract class BaseCmsEventsService
 
         $sections = $this->cmsRepository->findSections(
             new CmsSectionFilter(
-                cmsPageId:  $page->cmsPageId,
+                cmsPageId: $page->cmsPageId,
                 sectionKey: SharedSectionKeys::eventSectionKey($eventId),
             )
         );

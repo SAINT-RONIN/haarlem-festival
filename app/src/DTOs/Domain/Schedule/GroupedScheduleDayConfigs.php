@@ -18,6 +18,5 @@ final readonly class GroupedScheduleDayConfigs
     public function __construct(
         public array $global,
         public array $byType,
-    ) {
-    }
+    ) {}
 }

@@ -27,8 +27,7 @@ final readonly class ProgramItem
         public ?int                $priceTierId,
         public ?string             $donationAmount,
         public ?int                $reservationId = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a ProgramItem instance from a database row array.
@@ -37,16 +36,16 @@ final readonly class ProgramItem
     public static function fromRow(array $row): self
     {
         return new self(
-            programItemId: (int)$row['ProgramItemId'],
-            programId: (int)$row['ProgramId'],
-            eventSessionId: isset($row['EventSessionId']) ? (int)$row['EventSessionId'] : null,
-            historyTourId: isset($row['HistoryTourId']) ? (int)$row['HistoryTourId'] : null,
-            passTypeId: isset($row['PassTypeId']) ? (int)$row['PassTypeId'] : null,
+            programItemId: (int) $row['ProgramItemId'],
+            programId: (int) $row['ProgramId'],
+            eventSessionId: isset($row['EventSessionId']) ? (int) $row['EventSessionId'] : null,
+            historyTourId: isset($row['HistoryTourId']) ? (int) $row['HistoryTourId'] : null,
+            passTypeId: isset($row['PassTypeId']) ? (int) $row['PassTypeId'] : null,
             passValidDate: isset($row['PassValidDate']) ? new \DateTimeImmutable($row['PassValidDate']) : null,
-            quantity: (int)$row['Quantity'],
-            priceTierId: isset($row['PriceTierId']) ? (int)$row['PriceTierId'] : null,
+            quantity: (int) $row['Quantity'],
+            priceTierId: isset($row['PriceTierId']) ? (int) $row['PriceTierId'] : null,
             donationAmount: $row['DonationAmount'] ?? null,
-            reservationId: isset($row['ReservationId']) ? (int)$row['ReservationId'] : null,
+            reservationId: isset($row['ReservationId']) ? (int) $row['ReservationId'] : null,
         );
     }
 

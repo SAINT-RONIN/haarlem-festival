@@ -9,7 +9,7 @@ use App\Services\SessionService;
 $globalUi = $viewModel->globalUi;
 $hero = $viewModel->locationHero;
 $isLoggedIn = $globalUi->isLoggedIn;
-$logoutCsrfToken = $isLoggedIn ? (new SessionService())->getCsrfToken('logout') : null;
+$logoutCsrfToken = $isLoggedIn ? new SessionService()->getCsrfToken('logout') : null;
 ?>
 
 <section class="self-stretch px-1 sm:px-2 pb-1 sm:pb-2 flex flex-col justify-center items-center gap-3 sm:gap-5"
@@ -123,7 +123,7 @@ $logoutCsrfToken = $isLoggedIn ? (new SessionService())->getCsrfToken('logout') 
                     <!-- Login/Logout Button -->
                     <?php if ($isLoggedIn): ?>
                         <form action="/logout" method="post" class="w-full xl:w-auto ml-1 2xl:ml-2">
-                            <input type="hidden" name="_csrf" value="<?= htmlspecialchars((string)$logoutCsrfToken) ?>">
+                            <input type="hidden" name="_csrf" value="<?= htmlspecialchars((string) $logoutCsrfToken) ?>">
                             <button type="submit"
                                     class="w-full px-4 xl:px-5 2xl:px-6 py-2 bg-sand hover:bg-red rounded-lg flex justify-center items-center gap-2 transition-colors duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                                 <i data-lucide="log-out"

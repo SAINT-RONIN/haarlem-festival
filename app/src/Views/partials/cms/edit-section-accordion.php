@@ -35,7 +35,7 @@ $columnClassMap = CmsEditorStyles::COLUMN_CLASS_MAP;
                 <?php foreach ($section->subGroups as $group):
                     $colors = $colorMap[$group->color] ?? $defaultColor;
                     $gridClass = $columnClassMap[$group->columns] ?? $columnClassMap[1];
-                ?>
+                    ?>
                     <div class="rounded-lg border border-gray-200 <?= $colors['border'] ?> border-l-4 overflow-hidden">
                         <!-- Group header -->
                         <div class="px-4 py-3 <?= $colors['bg'] ?> flex items-center justify-between">
@@ -53,7 +53,7 @@ $columnClassMap = CmsEditorStyles::COLUMN_CLASS_MAP;
                         <div class="p-4 grid <?= $gridClass ?> gap-4">
                             <?php foreach ($group->items as $item): ?>
                                 <?php
-                                $inputType = $item->inputType;
+                                    $inputType = $item->inputType;
                                 $isFullWidth = $inputType === 'tinymce' || $inputType === 'file';
                                 ?>
                                 <div class="<?= $isFullWidth ? 'col-span-full' : '' ?>">
@@ -65,7 +65,7 @@ $columnClassMap = CmsEditorStyles::COLUMN_CLASS_MAP;
                                     } else {
                                         require __DIR__ . '/edit-item-text.php';
                                     }
-                                    ?>
+                                ?>
                                 </div>
                             <?php endforeach; ?>
                         </div>

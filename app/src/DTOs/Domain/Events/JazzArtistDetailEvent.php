@@ -20,8 +20,7 @@ final readonly class JazzArtistDetailEvent
         public string $longDescriptionHtml,
         public string $slug,
         public string $featuredImageUrl,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $row
@@ -29,13 +28,13 @@ final readonly class JazzArtistDetailEvent
     public static function fromRow(array $row): self
     {
         return new self(
-            eventId: (int)($row['EventId'] ?? 0),
-            artistId: isset($row['ArtistId']) ? (int)$row['ArtistId'] : null,
-            title: (string)($row['Title'] ?? ''),
-            shortDescription: (string)($row['ShortDescription'] ?? ''),
-            longDescriptionHtml: (string)($row['LongDescriptionHtml'] ?? ''),
-            slug: (string)($row['Slug'] ?? ''),
-            featuredImageUrl: (string)($row['FeaturedImageUrl'] ?? ''),
+            eventId: (int) ($row['EventId'] ?? 0),
+            artistId: isset($row['ArtistId']) ? (int) $row['ArtistId'] : null,
+            title: (string) ($row['Title'] ?? ''),
+            shortDescription: (string) ($row['ShortDescription'] ?? ''),
+            longDescriptionHtml: (string) ($row['LongDescriptionHtml'] ?? ''),
+            slug: (string) ($row['Slug'] ?? ''),
+            featuredImageUrl: (string) ($row['FeaturedImageUrl'] ?? ''),
         );
     }
 }

@@ -17,12 +17,12 @@ final class AuthMapper
     public static function fromRegistrationInput(array $input): RegistrationFormData
     {
         return new RegistrationFormData(
-            username: (string)($input['username'] ?? ''),
-            email: (string)($input['email'] ?? ''),
-            password: (string)($input['password'] ?? ''),
-            confirmPassword: (string)($input['confirm_password'] ?? ''),
-            firstName: (string)($input['first_name'] ?? ''),
-            lastName: (string)($input['last_name'] ?? ''),
+            username: (string) ($input['username'] ?? ''),
+            email: (string) ($input['email'] ?? ''),
+            password: (string) ($input['password'] ?? ''),
+            confirmPassword: (string) ($input['confirm_password'] ?? ''),
+            firstName: (string) ($input['first_name'] ?? ''),
+            lastName: (string) ($input['last_name'] ?? ''),
         );
     }
 }

@@ -19,6 +19,5 @@ final readonly class PublicPageLayout
         public ?string $eventIntroSectionId = null,
         public ?string $eventIntroImageClass = null,
         public string $mainClass = 'w-full bg-sand inline-flex flex-col justify-start items-center',
-    ) {
-    }
+    ) {}
 }

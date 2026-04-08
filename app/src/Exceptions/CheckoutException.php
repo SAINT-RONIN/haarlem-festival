@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Exception thrown during checkout processing (empty cart, overselling, Stripe failures).
  */
-class CheckoutException extends AppException
-{
-}
+class CheckoutException extends AppException {}

@@ -16,6 +16,5 @@ final readonly class InstructionsSectionData
     public function __construct(
         public string $title,
         public array $cards,
-    ) {
-    }
+    ) {}
 }

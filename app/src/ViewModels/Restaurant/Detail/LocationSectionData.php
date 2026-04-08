@@ -18,6 +18,5 @@ final readonly class LocationSectionData
         public string $labelTitle        = 'Location',
         public string $labelAddress      = 'Address',
         public string $labelMapFallback  = 'Map not available',
-    ) {
-    }
+    ) {}
 }

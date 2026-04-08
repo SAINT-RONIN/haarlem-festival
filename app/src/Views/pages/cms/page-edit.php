@@ -13,7 +13,7 @@
  */
 
 $currentView = 'pages'; // For sidebar highlighting
-$userName = $userName ?? 'Administrator';
+$userName ??= 'Administrator';
 ?>
 <!DOCTYPE html>
 <html lang="en">

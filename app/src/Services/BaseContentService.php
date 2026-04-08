@@ -20,8 +20,7 @@ abstract class BaseContentService
 {
     public function __construct(
         protected readonly IGlobalContentRepository $globalContentRepo,
-    ) {
-    }
+    ) {}
 
     /**
      * Loads the shared global-UI content block used by every page's header and footer.

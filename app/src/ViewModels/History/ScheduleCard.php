@@ -16,6 +16,5 @@ final readonly class ScheduleCard
         public string $date,
         public string $groupTicketInfo,
         public string $fromPrice,
-    ) {
-    }
+    ) {}
 }

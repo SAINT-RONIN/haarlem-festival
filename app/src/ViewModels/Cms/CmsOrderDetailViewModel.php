@@ -30,6 +30,5 @@ final readonly class CmsOrderDetailViewModel
         public ?string           $invoicePdfPath,
         public ?string           $successMessage,
         public ?string           $errorMessage,
-    ) {
-    }
+    ) {}
 }

@@ -20,8 +20,7 @@ final readonly class OrderSummaryData
         public ?string $paymentStatus,
         public int $itemCount,
         public ?string $payBeforeUtc,
-    ) {
-    }
+    ) {}
 
     /** Creates an instance from a raw database row. */
     public static function fromRow(array $row): self

@@ -32,6 +32,5 @@ final readonly class ScheduleSectionData
         public array $availableDays = [],
         public array $filterGroupTypes = [ScheduleConstants::FILTER_DAY],
         public array $priceTypeOptions = [ScheduleConstants::PRICE_TYPE_PAY_WHAT_YOU_LIKE, ScheduleConstants::PRICE_TYPE_FIXED],
-    ) {
-    }
+    ) {}
 }

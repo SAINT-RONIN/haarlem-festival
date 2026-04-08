@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CMS Edit Artist form page.
  *

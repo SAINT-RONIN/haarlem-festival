@@ -10,7 +10,7 @@ final class StripeWebhookRequestFactory implements IStripeWebhookRequestFactory
 {
     public function createFromGlobals(): StripeWebhookRequest
     {
-        $payload = (string)file_get_contents('php://input');
+        $payload = (string) file_get_contents('php://input');
         $payload = trim($payload);
 
         if ($payload === '') {
@@ -30,4 +30,3 @@ final class StripeWebhookRequestFactory implements IStripeWebhookRequestFactory
         return new StripeWebhookRequest($payload, $signatureHeader);
     }
 }
-

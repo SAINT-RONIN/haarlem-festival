@@ -227,7 +227,7 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
         );
 
         $value = $statement->fetchColumn();
-        return max(1, (int)$value);
+        return max(1, (int) $value);
     }
 
     public function setJazzOverviewVisibility(int $id, bool $visible): void
@@ -245,7 +245,7 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
             'SELECT CardSortOrder FROM Artist WHERE ArtistId = :id LIMIT 1',
             [':id' => $id],
         );
-        $currentSortOrder = (int)($sortOrderStatement->fetchColumn() ?: 0);
+        $currentSortOrder = (int) ($sortOrderStatement->fetchColumn() ?: 0);
         $sortOrder = $currentSortOrder > 0 ? $currentSortOrder : $this->getNextJazzOverviewSortOrder();
 
         $this->execute(

@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Thrown when a program write succeeds but the new record cannot be read back.
  */
-final class ProgramPersistenceException extends ProgramException
-{
-}
+final class ProgramPersistenceException extends ProgramException {}

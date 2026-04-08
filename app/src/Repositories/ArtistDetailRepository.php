@@ -26,8 +26,7 @@ class ArtistDetailRepository implements IArtistDetailRepository
         private readonly IArtistLineupMemberRepository $lineupMemberRepository,
         private readonly IArtistHighlightRepository $highlightRepository,
         private readonly IArtistGalleryImageRepository $galleryImageRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Fetches all artist detail data for a given artist.

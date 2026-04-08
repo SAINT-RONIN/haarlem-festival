@@ -13,6 +13,5 @@ final readonly class CmsPageFilter
         public ?int $cmsPageId = null,
         public ?string $slug = null,
         public bool $includeLastUpdated = false,
-    ) {
-    }
+    ) {}
 }

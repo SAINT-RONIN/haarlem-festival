@@ -27,7 +27,7 @@ class HistoryService extends BaseContentService implements IHistoryService
     public function getHistoryPageData(): HistoryPageData
     {
         return $this->guardPageLoad(
-            fn (): HistoryPageData => $this->buildPageData(HistoryPageConstants::PAGE_SLUG),
+            fn(): HistoryPageData => $this->buildPageData(HistoryPageConstants::PAGE_SLUG),
             'Failed to load the History page.',
         );
     }
@@ -36,14 +36,14 @@ class HistoryService extends BaseContentService implements IHistoryService
     private function buildPageData(string $pageSlug): HistoryPageData
     {
         return new HistoryPageData(
-            heroSection:          $this->globalContentRepo->findHeroContentBySection($pageSlug, SharedSectionKeys::SECTION_HERO),
-            gradientSection:      $this->globalContentRepo->findGradientContent($pageSlug, SharedSectionKeys::SECTION_GRADIENT),
-            introSection:         $this->globalContentRepo->findIntroContent($pageSlug, SharedSectionKeys::SECTION_INTRO),
-            routeSection:         $this->historyContentRepo->findRouteContent($pageSlug, HistoryPageConstants::SECTION_ROUTE),
-            venuesSection:        $this->historyContentRepo->findVenuesContent($pageSlug, HistoryPageConstants::SECTION_VENUES),
+            heroSection: $this->globalContentRepo->findHeroContentBySection($pageSlug, SharedSectionKeys::SECTION_HERO),
+            gradientSection: $this->globalContentRepo->findGradientContent($pageSlug, SharedSectionKeys::SECTION_GRADIENT),
+            introSection: $this->globalContentRepo->findIntroContent($pageSlug, SharedSectionKeys::SECTION_INTRO),
+            routeSection: $this->historyContentRepo->findRouteContent($pageSlug, HistoryPageConstants::SECTION_ROUTE),
+            venuesSection: $this->historyContentRepo->findVenuesContent($pageSlug, HistoryPageConstants::SECTION_VENUES),
             ticketOptionsSection: $this->historyContentRepo->findTicketOptionsContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS),
-            tourInfoSection:      $this->historyContentRepo->findTourInfoContent($pageSlug, HistoryPageConstants::SECTION_TOUR_INFO),
-            globalUiContent:      $this->loadGlobalUi(),
+            tourInfoSection: $this->historyContentRepo->findTourInfoContent($pageSlug, HistoryPageConstants::SECTION_TOUR_INFO),
+            globalUiContent: $this->loadGlobalUi(),
         );
     }
 }

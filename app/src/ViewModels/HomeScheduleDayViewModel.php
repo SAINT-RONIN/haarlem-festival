@@ -21,6 +21,5 @@ final readonly class HomeScheduleDayViewModel
         public int $eventCount,
         public array $sessions,
         public string $htmlId = '',
-    ) {
-    }
+    ) {}
 }

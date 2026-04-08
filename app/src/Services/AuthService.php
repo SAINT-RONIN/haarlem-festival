@@ -36,8 +36,7 @@ class AuthService implements IAuthService
         private readonly IUserAccountRepository $userRepository,
         private readonly IPasswordResetTokenRepository $resetTokenRepository,
         private readonly IEmailService $emailService,
-    ) {
-    }
+    ) {}
 
     /**
      * Attempts to authenticate a user with username/email and password.

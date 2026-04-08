@@ -44,8 +44,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
         private readonly IInvoicePdfGenerator $invoicePdfGenerator,
         private readonly IEmailService $emailService,
         private readonly PdfAssetStorage $pdfAssetStorage,
-    ) {
-    }
+    ) {}
 
     /**
      * Completes invoice fulfillment for one paid order.
@@ -106,7 +105,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
      */
     private function generateInvoiceNumber(): string
     {
-        $date = (new \DateTimeImmutable())->format('Ymd');
+        $date = new \DateTimeImmutable()->format('Ymd');
         // random_bytes gives us cryptographically random bytes; bin2hex turns them into a
         // readable uppercase hex string for the invoice number suffix (e.g. "A3F2B1").
         $hex = strtoupper(bin2hex(random_bytes(self::INVOICE_NUMBER_RANDOM_BYTE_COUNT)));
@@ -237,11 +236,11 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     {
         foreach ($orderItemRows as $row) {
             $description = InvoiceMapper::buildLineDescription($row);
-            $quantity = (int)$row['Quantity'];
-            $unitPrice = (string)$row['UnitPrice'];
-            $vatRate = (string)$row['VatRate'];
+            $quantity = (int) $row['Quantity'];
+            $unitPrice = (string) $row['UnitPrice'];
+            $vatRate = (string) $row['VatRate'];
             // Calculate the line subtotal as a fixed-precision decimal string — invoices must show exact amounts.
-            $lineSubtotal = number_format($quantity * (float)$unitPrice, 2, '.', '');
+            $lineSubtotal = number_format($quantity * (float) $unitPrice, 2, '.', '');
 
             $this->invoiceRepository->createInvoiceLine(
                 invoiceId: $invoiceId,

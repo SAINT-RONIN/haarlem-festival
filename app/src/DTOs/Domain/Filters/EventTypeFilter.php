@@ -13,6 +13,5 @@ final readonly class EventTypeFilter
     public function __construct(
         public ?int    $eventTypeId = null,
         public ?string $orderBy = null,
-    ) {
-    }
+    ) {}
 }

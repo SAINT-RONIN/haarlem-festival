@@ -15,6 +15,5 @@ final readonly class ImportantInfoAboutTour
     public function __construct(
         public string $headingText,
         public array $infoItems,
-    ) {
-    }
+    ) {}
 }

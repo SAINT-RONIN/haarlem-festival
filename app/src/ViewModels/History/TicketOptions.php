@@ -15,6 +15,5 @@ final readonly class TicketOptions
     public function __construct(
         public string $headingText,
         public array $pricingCards,
-    ) {
-    }
+    ) {}
 }

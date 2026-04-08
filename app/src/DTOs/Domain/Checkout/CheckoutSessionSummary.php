@@ -13,6 +13,5 @@ final readonly class CheckoutSessionSummary
         public string $orderReference,
         public float $amountTotal,
         public string $currency,
-    ) {
-    }
+    ) {}
 }

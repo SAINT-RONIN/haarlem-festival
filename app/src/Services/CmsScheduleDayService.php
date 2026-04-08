@@ -27,8 +27,7 @@ class CmsScheduleDayService implements ICmsScheduleDayService
         private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
         private readonly IEventTypeRepository $eventTypeRepository,
         private readonly IScheduleDayVisibilityResolver $visibilityResolver,
-    ) {
-    }
+    ) {}
 
     public function getScheduleDaysPageData(): ScheduleDaysPageData
     {
@@ -59,9 +58,9 @@ class CmsScheduleDayService implements ICmsScheduleDayService
         foreach ($dayConfigs as $config) {
             // DB returns dayOfWeek as a string; cast to int for consistent numeric array keys.
             if (!$config->eventTypeId) {
-                $globalConfigs[(int)$config->dayOfWeek] = $config;
+                $globalConfigs[(int) $config->dayOfWeek] = $config;
             } else {
-                $typeConfigs[(int)$config->eventTypeId][(int)$config->dayOfWeek] = $config;
+                $typeConfigs[(int) $config->eventTypeId][(int) $config->dayOfWeek] = $config;
             }
         }
 
@@ -74,7 +73,7 @@ class CmsScheduleDayService implements ICmsScheduleDayService
      */
     public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {
-        $dayValues = array_map(static fn (DayOfWeek $day): int => $day->value, DayOfWeek::cases());
+        $dayValues = array_map(static fn(DayOfWeek $day): int => $day->value, DayOfWeek::cases());
         if (!in_array($dayOfWeek, $dayValues, true)) {
             throw new ValidationException(['Invalid day of week']);
         }

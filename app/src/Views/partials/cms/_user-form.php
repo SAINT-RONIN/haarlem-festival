@@ -140,7 +140,7 @@ $subtitleText = $isEditMode
                                 id="roleId"
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border <?= isset($viewModel->errors['roleId']) ? 'border-red-500' : '' ?>">
                             <?php foreach ($viewModel->roleOptions as $roleId => $roleName): ?>
-                                <option value="<?= htmlspecialchars((string)$roleId) ?>"
+                                <option value="<?= htmlspecialchars((string) $roleId) ?>"
                                     <?= $viewModel->selectedRoleId === $roleId ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($roleName) ?>
                                 </option>

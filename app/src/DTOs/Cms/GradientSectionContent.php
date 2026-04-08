@@ -15,6 +15,5 @@ final readonly class GradientSectionContent
         public ?string $gradientHeading,
         public ?string $gradientSubheading,
         public ?string $gradientBackgroundImage,
-    ) {
-    }
+    ) {}
 }
