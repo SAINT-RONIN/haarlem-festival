@@ -22,20 +22,11 @@ use PDO;
 
 /**
  * Processes Stripe webhook callbacks and converts them into local order/payment changes.
- *
- * This service exists because webhook handling has its own responsibilities:
- * signature validation, idempotency protection, transaction-safe status transitions,
- * and post-payment fulfillment. Keeping that work here stops CheckoutService
- * from mixing browser-driven flow with Stripe-driven background flow.
+ * Kept separate from CheckoutService so browser-driven flow and Stripe-driven background flow
+ * don't mix in the same class.
  */
 class StripeWebhookHandler implements IStripeWebhookHandler
 {
-    /**
-     * Stores the collaborators needed to validate, deduplicate, and apply webhook events.
-     *
-     * The constructor returns nothing because its job is dependency wiring only;
-     * the real behavior lives in handleWebhook() and the private helper methods below.
-     */
     public function __construct(
         private readonly IStripeService $stripeService,
         private readonly IStripeWebhookEventRepository $webhookEventRepository,
@@ -49,14 +40,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     ) {
     }
 
-    /**
-     * Processes an incoming Stripe webhook event.
-     *
-     * It returns WebhookHandlerResult so callers can tell the difference between
-     * a newly processed event and a duplicate event that was safely ignored.
-     *
-     * @throws CheckoutException When the event payload is invalid or malformed
-     */
+    /** @throws CheckoutException When the event payload is invalid or malformed */
     public function handleWebhook(string $payload, ?string $signatureHeader): WebhookHandlerResult
     {
         $event = $this->loadWebhookEvent($payload, $signatureHeader);
@@ -84,11 +68,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         return new WebhookHandlerResult(processed: true, eventId: $eventId, eventType: $eventType);
     }
 
-    /**
-     * Asks Stripe to validate and deserialize the webhook payload into an event array.
-     *
-     * @return array<string,mixed>
-     */
+    /** @return array<string,mixed> */
     private function loadWebhookEvent(string $payload, ?string $signatureHeader): array
     {
         try {
@@ -100,12 +80,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         }
     }
 
-    /**
-     * Ensures the webhook event includes the minimum fields we need to process it.
-     *
-     * It returns nothing because missing core fields make the whole event unusable,
-     * so throwing is clearer than returning a false flag.
-     */
     private function validateWebhookEvent(string $eventId, string $eventType): void
     {
         if ($eventId === '' || $eventType === '') {
@@ -113,12 +87,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         }
     }
 
-    /**
-     * Returns the Stripe object embedded inside the event payload.
-     *
-     * Stripe wraps the real business object inside the event envelope,
-     * so this helper keeps the rest of the service focused on that inner object.
-     */
     private function extractWebhookObject(array $event): array
     {
         $object = $event['data']['object'] ?? null;
@@ -129,13 +97,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         return $object;
     }
 
-    /**
-     * Reads the internal order and payment ids we stored as Stripe metadata during checkout.
-     *
-     * Extracts order/payment metadata from the Stripe webhook object.
-     *
-     * @return array{0: array, 1: ?int, 2: ?int}
-     */
+    /** @return array{0: array, 1: ?int, 2: ?int} */
     private function extractWebhookMetadata(array $object): array
     {
         $metadata = isset($object['metadata']) && is_array($object['metadata']) ? $object['metadata'] : [];
@@ -145,12 +107,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         return [$metadata, $orderId, $paymentId];
     }
 
-    /**
-     * Applies the webhook-driven state changes inside one database transaction.
-     *
-     * It returns nothing because the important result is the committed database state.
-     * Grouping these mutations together prevents partial webhook processing.
-     */
     private function processWebhookTransaction(string $eventType, array $object, array $metadata, ?int $orderId, ?int $paymentId): void
     {
         $this->pdo->beginTransaction();
@@ -168,12 +124,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         }
     }
 
-    /**
-     * Stores the Stripe payment-intent id on the local payment row when Stripe sent one.
-     *
-     * This returns nothing because the value is the persisted link itself,
-     * which later support or reconciliation flows may need.
-     */
     private function updatePaymentIntentIfPresent(?int $paymentId, array $object): void
     {
         if ($paymentId === null) {
@@ -185,12 +135,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         }
     }
 
-    /**
-     * Routes the webhook event type to the correct local state-transition path.
-     *
-     * It returns nothing because this method is a dispatcher:
-     * its purpose is to choose which business rule should run next.
-     */
     private function applyWebhookStatusTransition(string $eventType, array $metadata, ?int $orderId, ?int $paymentId): void
     {
         switch ($eventType) {
@@ -206,12 +150,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         }
     }
 
-    /**
-     * Applies the local "payment completed" state changes for a successful Stripe event.
-     *
-     * It returns nothing because the meaningful result is the updated state of the order,
-     * payment, and program rows.
-     */
     private function processPaymentCompleted(array $metadata, ?int $orderId, ?int $paymentId): void
     {
         if ($orderId !== null) {
@@ -231,12 +169,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         }
     }
 
-    /**
-     * Applies the local "payment failed or expired" state changes for an unsuccessful Stripe event.
-     *
-     * It returns nothing because the result is a corrected database state,
-     * not a value consumed by the caller.
-     */
     private function processPaymentFailed(?int $orderId, ?int $paymentId): void
     {
         $this->expireOrderIfPresent($orderId);
@@ -244,10 +176,8 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     }
 
     /**
-     * Restores reserved capacity and expires the order when Stripe reports failure or timeout.
-     *
-     * This method exists because failed payments should give their reserved seats back
-     * instead of leaving capacity artificially blocked.
+     * Restores reserved capacity and expires the order.
+     * Failed payments must release their reserved seats so capacity isn't blocked indefinitely.
      */
     private function expireOrderIfPresent(?int $orderId): void
     {
@@ -259,11 +189,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
     }
 
-    /**
-     * Marks the payment row as failed when Stripe says the payment did not complete.
-     *
-     * It returns nothing because the useful result is the persisted payment status.
-     */
     private function failPaymentIfPresent(?int $paymentId): void
     {
         if ($paymentId === null) {
@@ -273,12 +198,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
     }
 
-    /**
-     * Starts ticket fulfillment only when the webhook event truly represents a paid checkout.
-     *
-     * It returns nothing because fulfillment is a side effect, and skipped fulfillment
-     * is represented simply by returning early when the event is not a paid event.
-     */
     private function fulfillTicketsIfPaymentCompleted(
         string $eventType,
         array $object,
@@ -297,11 +216,6 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         );
     }
 
-    /**
-     * Starts invoice fulfillment only for successful payment-completed webhook events.
-     *
-     * It returns nothing because, just like ticket fulfillment, the value is the side effect.
-     */
     private function fulfillInvoiceIfPaymentCompleted(string $eventType, ?int $orderId): void
     {
         if ($orderId === null || !$this->isPaymentCompletedEvent($eventType)) {
@@ -311,22 +225,14 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         $this->invoiceFulfillmentService->fulfillPaidOrder($orderId);
     }
 
-    /**
-     * Returns true only for the webhook event types that mean the customer successfully paid.
-     *
-     * This helper keeps the rest of the class readable by turning raw event strings
-     * into one named business rule.
-     */
     private function isPaymentCompletedEvent(string $eventType): bool
     {
         return in_array($eventType, ['checkout.session.completed', 'checkout.session.async_payment_succeeded'], true);
     }
 
     /**
-     * Returns the best available customer email from the webhook payload.
-     *
-     * The method prefers structured customer_details data but falls back to customer_email
-     * because Stripe can provide the email in more than one place.
+     * Prefers structured customer_details data but falls back to customer_email
+     * because Stripe can provide the email in more than one place depending on the checkout flow.
      */
     private function extractCustomerEmail(array $object): ?string
     {
@@ -350,10 +256,8 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     }
 
     /**
-     * Releases the stored webhook reservation when processing fails and a retry should be allowed.
-     *
-     * Logging the cleanup failure matters because a stuck reservation can silently block
-     * future retries of the same webhook event.
+     * Releases the stored webhook reservation so a retry is allowed.
+     * Logging the cleanup failure matters because a stuck reservation can silently block future retries.
      */
     private function safeReleaseWebhookReservation(string $eventId): void
     {

@@ -30,12 +30,6 @@ class CmsScheduleDayService implements ICmsScheduleDayService
     ) {
     }
 
-    /**
-     * Loads everything the schedule-day configuration screen needs and returns it as one bundle.
-     *
-     * The event types list is used for the filter dropdown at the top of the page.
-     * The grouped configs object drives the visibility grid that shows which days are on or off.
-     */
     public function getScheduleDaysPageData(): ScheduleDaysPageData
     {
         return new ScheduleDaysPageData(
@@ -44,14 +38,7 @@ class CmsScheduleDayService implements ICmsScheduleDayService
         );
     }
 
-    /**
-     * Returns all schedule day configs, ordered by scope so global entries come first.
-     *
-     * Both global configs (no event type) and per-type configs are included.
-     * The event type name is eagerly loaded so callers don't need a second query.
-     *
-     * @return \App\Models\ScheduleDayConfig[]
-     */
+    /** @return \App\Models\ScheduleDayConfig[] */
     public function getScheduleDayConfigs(): array
     {
         return $this->scheduleDayConfigRepository->findConfigs(
@@ -60,11 +47,8 @@ class CmsScheduleDayService implements ICmsScheduleDayService
     }
 
     /**
-     * Splits all schedule day configs into two buckets: global defaults and per-event-type overrides.
-     *
-     * A global config has no event type ID and applies to all event types that don't have their own
-     * override. A type-specific config overrides the global setting for one event type only.
-     * Both buckets are keyed by day-of-week number so the grid can look up each cell in O(1).
+     * Splits configs into global defaults (no event type) and per-type overrides.
+     * Both buckets are keyed by day-of-week number for O(1) grid lookups.
      */
     public function getGroupedScheduleDayConfigs(): GroupedScheduleDayConfigs
     {
@@ -73,12 +57,10 @@ class CmsScheduleDayService implements ICmsScheduleDayService
         $typeConfigs = [];
 
         foreach ($dayConfigs as $config) {
-            // A missing eventTypeId means this config applies to every event type (global rule).
+            // DB returns dayOfWeek as a string; cast to int for consistent numeric array keys.
             if (!$config->eventTypeId) {
-                // Cast to int: the DB returns dayOfWeek as a string, but array keys should be numbers.
                 $globalConfigs[(int)$config->dayOfWeek] = $config;
             } else {
-                // Cast to int for the same reason — consistent numeric keys for both dimensions.
                 $typeConfigs[(int)$config->eventTypeId][(int)$config->dayOfWeek] = $config;
             }
         }
@@ -87,17 +69,11 @@ class CmsScheduleDayService implements ICmsScheduleDayService
     }
 
     /**
-     * Saves the visibility flag for one day on a schedule, either globally or for a specific event type.
-     *
-     * The day number is validated before the write because a bad value from the client
-     * would create a DB row with an invalid key that is invisible to the rest of the system.
-     *
      * @param ?int $eventTypeId null for global setting, >0 for a specific event type
      * @throws ValidationException When the day number is not in the DayOfWeek enum
      */
     public function setScheduleDayVisibility(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {
-        // Build the list of valid day numbers from the enum so we never hardcode 1-7 here.
         $dayValues = array_map(static fn (DayOfWeek $day): int => $day->value, DayOfWeek::cases());
         if (!in_array($dayOfWeek, $dayValues, true)) {
             throw new ValidationException(['Invalid day of week']);
@@ -106,15 +82,7 @@ class CmsScheduleDayService implements ICmsScheduleDayService
         $this->scheduleDayConfigRepository->upsert($eventTypeId, $dayOfWeek, $isVisible);
     }
 
-    /**
-     * Returns the day numbers that are visible for a given event type.
-     *
-     * Passing null returns the days visible under the global schedule.
-     * Passing a specific event type ID returns the days for that type, falling back
-     * to the global config for any day that has no type-specific override.
-     *
-     * @return int[]
-     */
+    /** @return int[] */
     public function getVisibleDays(?int $eventTypeId = null): array
     {
         return $this->visibilityResolver->getVisibleDays($eventTypeId);

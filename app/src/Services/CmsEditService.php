@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\JazzPageConstants;
+use App\Constants\StorytellingDetailConstants;
 use App\Enums\CmsItemType;
 use App\Enums\EventTypeId;
 use App\DTOs\Cms\JazzLineupManagerData;
@@ -153,7 +155,7 @@ class CmsEditService implements ICmsEditService
      */
     private function buildEventNameMapForPage(string $pageSlug): array
     {
-        if ($pageSlug === 'storytelling-detail') {
+        if ($pageSlug === StorytellingDetailConstants::DETAIL_PAGE_SLUG) {
             return $this->buildEventNameMap(EventTypeId::Storytelling->value);
         }
         // More detail-page slugs can be added here when their pages support per-event sections.
@@ -169,7 +171,7 @@ class CmsEditService implements ICmsEditService
      */
     private function buildJazzLineupManagerData(CmsPage $page): ?JazzLineupManagerData
     {
-        if ($page->slug !== 'jazz') {
+        if ($page->slug !== JazzPageConstants::PAGE_SLUG) {
             return null;
         }
 

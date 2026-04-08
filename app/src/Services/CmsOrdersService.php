@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTOs\Cms\CmsOrderDetailBundle;
 use App\DTOs\Domain\Checkout\OrderWithDetails;
-use App\DTOs\Cms\CmsOrderDetailDto;
-use App\DTOs\Cms\CmsOrderItemDto;
-use App\DTOs\Cms\CmsOrderPaymentDto;
-use App\DTOs\Cms\CmsOrderTicketDto;
 use App\Models\Invoice;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
 use App\Repositories\Interfaces\IInvoiceRepository;
@@ -65,22 +62,7 @@ class CmsOrdersService implements ICmsOrdersService
         return $asset?->filePath;
     }
 
-    /**
-     * Returns all the data needed to render the order detail page, bundled into one array.
-     *
-     * It returns null instead of throwing when the order doesn't exist because the
-     * controller uses the null to send a 404 response — not every missing order is an error.
-     *
-     * @return array{
-     *     order: CmsOrderDetailDto,
-     *     items: CmsOrderItemDto[],
-     *     payments: CmsOrderPaymentDto[],
-     *     tickets: CmsOrderTicketDto[],
-     *     invoice: ?Invoice,
-     *     invoicePdfPath: ?string
-     * }|null
-     */
-    public function getOrderDetail(int $orderId): ?array
+    public function getOrderDetail(int $orderId): ?CmsOrderDetailBundle
     {
         $order = $this->ordersRepository->findOrderById($orderId);
         if ($order === null) {
@@ -88,15 +70,14 @@ class CmsOrdersService implements ICmsOrdersService
         }
 
         $invoice = $this->invoiceRepository->findByOrderId($orderId);
-        $invoicePdfPath = $this->resolveInvoicePdfPath($invoice);
 
-        return [
-            'order'          => $order,
-            'items'          => $this->ordersRepository->findOrderItems($orderId),
-            'payments'       => $this->ordersRepository->findOrderPayments($orderId),
-            'tickets'        => $this->ordersRepository->findOrderTickets($orderId),
-            'invoice'        => $invoice,
-            'invoicePdfPath' => $invoicePdfPath,
-        ];
+        return new CmsOrderDetailBundle(
+            order:          $order,
+            items:          $this->ordersRepository->findOrderItems($orderId),
+            payments:       $this->ordersRepository->findOrderPayments($orderId),
+            tickets:        $this->ordersRepository->findOrderTickets($orderId),
+            invoice:        $invoice,
+            invoicePdfPath: $this->resolveInvoicePdfPath($invoice),
+        );
     }
 }

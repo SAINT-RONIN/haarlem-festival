@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\GlobalUiConstants;
+use App\Constants\RestaurantDetailConstants;
+use App\Constants\RouteConstants;
+use App\Constants\StorytellingDetailConstants;
 use App\DTOs\Cms\CmsSectionEditData;
 use App\Models\CmsPage;
 use App\Services\Interfaces\ICmsPreviewUrlResolver;
@@ -22,7 +26,7 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
      */
     public function resolve(CmsPage $page, array $sections): string
     {
-        if ($page->slug === 'home') {
+        if ($page->slug === GlobalUiConstants::PAGE_SLUG) {
             return '/';
         }
 
@@ -35,14 +39,18 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
      */
     private function resolveDetailPageUrl(string $slug, array $sections): ?string
     {
-        if ($slug === 'storytelling-detail') {
+        if ($slug === StorytellingDetailConstants::DETAIL_PAGE_SLUG) {
             $eventName = $this->extractFirstEventDisplayName($sections);
-            return $eventName !== null ? '/storytelling/' . $this->toSlug($eventName) : '/storytelling';
+            return $eventName !== null
+                ? RouteConstants::STORYTELLING . '/' . $this->toSlug($eventName)
+                : RouteConstants::STORYTELLING;
         }
 
-        if ($slug === 'restaurant-detail') {
+        if ($slug === RestaurantDetailConstants::PAGE_SLUG) {
             $eventId = $this->extractFirstEventId($sections);
-            return $eventId !== null ? '/restaurant/' . $eventId : '/restaurant';
+            return $eventId !== null
+                ? RouteConstants::RESTAURANT . '/' . $eventId
+                : RouteConstants::RESTAURANT;
         }
 
         return null;

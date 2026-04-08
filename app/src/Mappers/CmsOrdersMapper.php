@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Helpers\CmsOrderViewHelper;
-use App\Helpers\FormatHelper;
+use App\DTOs\Cms\CmsOrderDetailBundle;
 use App\DTOs\Domain\Checkout\OrderWithDetails;
 use App\Enums\OrderStatus;
+use App\Helpers\CmsOrderViewHelper;
+use App\Helpers\FormatHelper;
 use App\ViewModels\Cms\CmsOrderDetailViewModel;
 use App\ViewModels\Cms\CmsOrderListItemViewModel;
 use App\ViewModels\Cms\CmsOrdersListViewModel;
@@ -61,30 +62,18 @@ final class CmsOrdersMapper
         );
     }
 
-    /**
-     * Builds the CMS order detail page ViewModel from pre-typed service data.
-     *
-     * @param array{
-     *     order: \App\DTOs\Cms\CmsOrderDetailDto,
-     *     items: \App\DTOs\Cms\CmsOrderItemDto[],
-     *     payments: \App\DTOs\Cms\CmsOrderPaymentDto[],
-     *     tickets: \App\DTOs\Cms\CmsOrderTicketDto[],
-     *     invoice: ?\App\Models\Invoice,
-     *     invoicePdfPath: ?string
-     * } $data
-     */
     public static function toDetailViewModel(
-        array $data,
+        CmsOrderDetailBundle $data,
         ?string $successMessage,
         ?string $errorMessage,
     ): CmsOrderDetailViewModel {
         return new CmsOrderDetailViewModel(
-            order:          $data['order'],
-            items:          $data['items'],
-            payments:       $data['payments'],
-            tickets:        $data['tickets'],
-            invoice:        $data['invoice'],
-            invoicePdfPath: $data['invoicePdfPath'],
+            order:          $data->order,
+            items:          $data->items,
+            payments:       $data->payments,
+            tickets:        $data->tickets,
+            invoice:        $data->invoice,
+            invoicePdfPath: $data->invoicePdfPath,
             successMessage: $successMessage,
             errorMessage:   $errorMessage,
         );

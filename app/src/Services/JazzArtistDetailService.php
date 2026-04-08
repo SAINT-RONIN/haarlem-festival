@@ -18,8 +18,6 @@ use App\Services\Interfaces\IJazzArtistDetailService;
 /**
  * Assembles the full detail-page payload for a single Jazz artist.
  *
- * Combines event data, artist profile content, and aggregated artist detail data
- * (albums, tracks, lineup members, highlights, gallery images).
  * Results are cached in-memory with a configurable TTL to avoid
  * redundant queries within the same request cycle.
  */
@@ -35,15 +33,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
     ) {
     }
 
-    /**
-     * Returns the complete artist detail page payload for a given URL slug.
-     *
-     * Normalises the slug, checks the in-memory cache, and if missing
-     * resolves the event then aggregates artist + repository data into a
-     * single JazzArtistDetailPageData object.
-     *
-     * @throws JazzArtistDetailNotFoundException if the slug is invalid or no matching active Jazz event exists
-     */
+    /** @throws JazzArtistDetailNotFoundException */
     public function getArtistPageDataBySlug(string $slug): JazzArtistDetailPageData
     {
         $normalizedSlug = $this->normalizeSlug($slug);
@@ -52,7 +42,6 @@ class JazzArtistDetailService implements IJazzArtistDetailService
             return $cached;
         }
 
-        // Resolve the event from the database and build the full page payload
         $event = $this->findJazzEventBySlug($normalizedSlug);
         $pageData = $this->buildPageData($event);
         $this->setCachedPageData($normalizedSlug, $pageData);
@@ -60,9 +49,6 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         return $pageData;
     }
 
-    /**
-     * Aggregates artist content and all artist-related collections into a single page-data object.
-     */
     private function buildPageData(JazzArtistDetailEvent $event): JazzArtistDetailPageData
     {
         $artist = $this->findArtistForEvent($event);

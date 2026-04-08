@@ -268,7 +268,7 @@ class ScheduleService implements IScheduleService
      * @param array<string, SessionWithEvent[]> $sessionsByDate Sessions indexed by ISO date string.
      * @param string                          $eventTypeSlug  URL slug for the event type (e.g. "history").
      * @param int                             $eventTypeId    Numeric event type ID from EventTypeId enum.
-     * @param array                           $labelsMap      Labels indexed by session ID (passed by reference — History grouping may add merged labels).
+     * @param array                           $labelsMap      Labels indexed by session ID (passed by reference; History grouping may add merged labels).
      * @param array<int, EventSessionPrice[]> $pricesMap      Prices indexed by session ID.
      * @param array                           $displayStrings Translated UI strings for card rendering.
      * @return array{dayName: string, isoDate: string, events: array, isEmpty: bool}

@@ -9,12 +9,8 @@ use App\Services\Interfaces\ISessionService;
 
 /**
  * Centralised wrapper around PHP's native session handling.
- *
- * Owns session lifecycle (start/destroy), authenticated-user state (userId + roleId),
- * flash messages (single-read values for post-redirect-get), and per-scope CSRF
- * tokens (timing-safe comparison). Controllers and middleware use this instead of
- * touching $_SESSION directly, which keeps session key names consistent and
- * security measures (session fixation prevention, cookie cleanup) in one place.
+ * Controllers and middleware use this instead of touching $_SESSION directly,
+ * so session key names stay consistent and security logic stays in one place.
  */
 class SessionService implements ISessionService
 {
@@ -23,9 +19,6 @@ class SessionService implements ISessionService
     private const FLASH_KEY = '_flash';
     private const CSRF_KEY = '_csrf_tokens';
 
-    /**
-     * Starts the session if not already started.
-     */
     public function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -33,10 +26,6 @@ class SessionService implements ISessionService
         }
     }
 
-    /**
-     * Logs in a user by storing their ID and role in session.
-     * Regenerates session ID to prevent session fixation attacks.
-     */
     public function login(int $userId, int $roleId): void
     {
         $this->start();
@@ -48,17 +37,12 @@ class SessionService implements ISessionService
         $_SESSION[self::ROLE_ID_KEY] = $roleId;
     }
 
-    /**
-     * Logs out the current user by destroying the session.
-     */
     public function logout(): void
     {
         $this->start();
 
-        // Clear all session data
         $_SESSION = [];
 
-        // Delete session cookie
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(
@@ -72,22 +56,15 @@ class SessionService implements ISessionService
             );
         }
 
-        // Destroy the session
         session_destroy();
     }
 
-    /**
-     * Checks if a user is currently logged in.
-     */
     public function isLoggedIn(): bool
     {
         $this->start();
         return isset($_SESSION[self::USER_ID_KEY]);
     }
 
-    /**
-     * Checks if the current user is an administrator.
-     */
     public function isAdmin(): bool
     {
         $this->start();
@@ -95,9 +72,6 @@ class SessionService implements ISessionService
             && $_SESSION[self::ROLE_ID_KEY] === UserRoleId::Administrator->value;
     }
 
-    /**
-     * Checks if the current user is an employee or administrator.
-     */
     public function isEmployeeOrAdmin(): bool
     {
         $this->start();
@@ -108,9 +82,6 @@ class SessionService implements ISessionService
             || $roleId === UserRoleId::Administrator->value;
     }
 
-    /**
-     * Checks if the current user is an employee.
-     */
     public function isEmployee(): bool
     {
         $this->start();
@@ -118,18 +89,12 @@ class SessionService implements ISessionService
             && $_SESSION[self::ROLE_ID_KEY] === UserRoleId::Employee->value;
     }
 
-    /**
-     * Gets the current user's ID, or null if not logged in.
-     */
     public function getUserId(): ?int
     {
         $this->start();
         return $_SESSION[self::USER_ID_KEY] ?? null;
     }
 
-    /**
-     * Gets the current user's role ID, or null if not logged in.
-     */
     public function getRoleId(): ?int
     {
         $this->start();
@@ -150,18 +115,12 @@ class SessionService implements ISessionService
         return $_SESSION[$key] ?? $default;
     }
 
-    /**
-     * Stores a flash message that survives exactly one subsequent read via consumeFlash().
-     */
     public function setFlash(string $key, mixed $value): void
     {
         $this->start();
         $_SESSION[self::FLASH_KEY][$key] = $value;
     }
 
-    /**
-     * Reads and removes a flash message in one step. Returns null if the key does not exist.
-     */
     public function consumeFlash(string $key): mixed
     {
         $this->start();
@@ -195,10 +154,7 @@ class SessionService implements ISessionService
         return $token;
     }
 
-    /**
-     * Validates a submitted CSRF token against the stored token for the given scope.
-     * Uses timing-safe comparison to prevent timing attacks.
-     */
+    /** Uses timing-safe comparison to prevent timing attacks. */
     public function isValidCsrfToken(string $scope, ?string $token): bool
     {
         $this->start();

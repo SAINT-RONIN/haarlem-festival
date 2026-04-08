@@ -41,14 +41,7 @@ class StorytellingDetailService extends BaseContentService implements IStorytell
         parent::__construct($globalContentRepo);
     }
 
-    /**
-     * Assembles the full domain payload for a storytelling event detail page.
-     *
-     * Centralises all repository calls and resolution logic so the controller
-     * stays thin and the mapper receives a ready-to-use model.
-     *
-     * @throws StorytellingEventNotFoundException if the event is not found or slug is invalid
-     */
+    /** @throws StorytellingEventNotFoundException */
     public function getDetailPageData(string $slug): StorytellingDetailPageData
     {
         $normalizedSlug = $this->normalizeSlug($slug);
@@ -79,21 +72,13 @@ class StorytellingDetailService extends BaseContentService implements IStorytell
         );
     }
 
-    /**
-     * Normalizes the slug to lowercase with no leading/trailing dashes.
-     *
-     * @throws StorytellingEventNotFoundException if the slug is empty or contains a path separator
-     */
+    /** @throws StorytellingEventNotFoundException */
     private function normalizeSlug(string $slug): string
     {
         return SlugHelper::normalize($slug) ?? throw new StorytellingEventNotFoundException($slug);
     }
 
-    /**
-     * Fetches the storytelling event by slug, throwing if not found.
-     *
-     * @throws StorytellingEventNotFoundException if no active storytelling event matches the slug
-     */
+    /** @throws StorytellingEventNotFoundException */
     private function findStorytellingEventBySlug(string $slug): StorytellingDetailEvent
     {
         $event = $this->eventRepository->findActiveStorytellingBySlug($slug);
@@ -103,27 +88,18 @@ class StorytellingDetailService extends BaseContentService implements IStorytell
         return $event;
     }
 
-    /**
-     * Converts the event's featured image asset ID into a file path
-     * that the mapper can use for rendering.
-     */
     private function fetchFeaturedImagePath(StorytellingDetailEvent $event): ?string
     {
         if ($event->featuredImageAssetId === null) {
             return null;
         }
 
-        $asset = $this->mediaAssetRepository->findById($event->featuredImageAssetId);
-
-        return $asset?->filePath;
+        return $this->mediaAssetRepository->findById($event->featuredImageAssetId)?->filePath;
     }
 
     /**
-     * Returns the best available about-section body text.
-     *
-     * Fallback chain: CMS aboutBody -> longDescriptionHtml -> shortDescription.
-     * Content editors don't always fill the CMS field, so the service provides
-     * a sensible default before the mapper receives the data.
+     * Fallback chain: CMS aboutBody → longDescriptionHtml → shortDescription.
+     * Content editors don't always fill the CMS field, so a sensible default is needed.
      */
     private function resolveAboutBody(StorytellingEventCmsData $cms, StorytellingDetailEvent $event): string
     {
@@ -134,10 +110,7 @@ class StorytellingDetailService extends BaseContentService implements IStorytell
     }
 
     /**
-     * Fetches label texts for the first active session of an event.
-     *
-     * Labels (e.g. "English", "Beginner") live on sessions, not on the event
-     * itself, so they must be fetched separately and attached to the page payload.
+     * Labels (e.g. "English", "Beginner") live on sessions, not on the event itself.
      *
      * @return string[]
      */
@@ -153,9 +126,7 @@ class StorytellingDetailService extends BaseContentService implements IStorytell
         return $this->fetchLabelTextsForSession($sessionList[0]->eventSessionId);
     }
 
-    /**
-     * @return string[]
-     */
+    /** @return string[] */
     private function fetchLabelTextsForSession(int $sessionId): array
     {
         $labelsMap = $this->labelRepository->findLabelsBySessionIds([$sessionId]);
