@@ -16,10 +16,10 @@ function initTinyMCE() {
         plugins: 'lists link image',
         toolbar: 'undo redo | bold italic underline | bullist numlist | link image | removeformat',
         content_style: 'body { font-family: Montserrat, sans-serif; font-size: 14px; line-height: 1.6; }',
-        forced_root_block: '',
-        force_br_newlines: true,
-        convert_newlines_to_brs: true,
-        remove_linebreaks: false,
+        // Enter inserts <br> within the current block (TinyMCE 6 native API).
+        // Replaces the removed TinyMCE 4/5 options: forced_root_block:'', force_br_newlines,
+        // convert_newlines_to_brs, remove_linebreaks — all silently ignored in TinyMCE 6.
+        newline_behavior: 'linebreak',
         // Enable image insertion via the TinyMCE toolbar with drag-and-drop upload
         images_upload_handler: function (blobInfo) {
             return new Promise(function (resolve, reject) {
@@ -54,12 +54,6 @@ function initTinyMCE() {
         automatic_uploads: true,
         file_picker_types: 'image',
         setup: function (editor) {
-            editor.on('keydown', function (e) {
-                if (e.keyCode === 13 && !e.shiftKey) {
-                    e.preventDefault();
-                    editor.execCommand('InsertLineBreak');
-                }
-            });
             editor.on('change keyup', function () {
                 editor.save();
                 updateCharCounter(editor.getElement());

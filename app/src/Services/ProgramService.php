@@ -402,7 +402,11 @@ class ProgramService implements IProgramService
     /**
      * Updates the ticket quantity for a program item. Removes the item if quantity drops to zero.
      *
+     * Capacity is re-validated against the new quantity so users cannot bypass the limits
+     * enforced in addToProgram by incrementing an existing item on the My Program page.
+     *
      * @throws \InvalidArgumentException When the item does not belong to the user's program
+     * @throws ProgramException          When the new quantity exceeds the session's capacity
      */
     public function updateQuantity(string $sessionKey, ?int $userAccountId, int $programItemId, int $quantity): void
     {
@@ -419,7 +423,58 @@ class ProgramService implements IProgramService
             return;
         }
 
+        $this->validateUpdateCapacity($sessionKey, $userAccountId, $programItemId, $quantity);
+
         $this->programRepository->updateItemQuantity($programItemId, $quantity);
+    }
+
+    /**
+     * Validates that a new quantity for an existing program item does not exceed the session's
+     * remaining capacity or group/single-ticket limits.
+     *
+     * The item's current contribution is excluded from the cart totals so the check treats the
+     * operation as "remove old quantity, add new quantity" — identical semantics to addToProgram.
+     * All enforcement is delegated to the three canonical validation methods to avoid duplication.
+     *
+     * @throws ProgramException When the new quantity would exceed capacity or ticket limits.
+     */
+    private function validateUpdateCapacity(string $sessionKey, ?int $userAccountId, int $programItemId, int $newQuantity): void
+    {
+        $program = $this->findActiveProgram($sessionKey, $userAccountId);
+        if ($program === null) {
+            return;
+        }
+
+        $items = $this->programRepository->findProgramItems(new ProgramItemFilter(programItemId: $programItemId));
+        if ($items === [] || $items[0]->eventSessionId === null) {
+            return; // Pass or reservation item — no session capacity to enforce.
+        }
+
+        $item     = $items[0];
+        $capacity = $this->sessionRepository->getCapacityInfo($item->eventSessionId);
+        if ($capacity === null) {
+            return;
+        }
+
+        $groupTierIds    = [PriceTierId::Family->value, PriceTierId::Group->value];
+        $isGroup         = $item->priceTierId !== null && in_array($item->priceTierId, $groupTierIds, true);
+        $cartTotals      = $this->countTicketsInCartForSession($program->programId, $item->eventSessionId);
+
+        // Subtract this item's current contribution so we can validate the new quantity in isolation.
+        $currentItemSeats    = $isGroup ? $item->quantity * CheckoutConstraints::GROUP_TICKET_SEAT_COUNT : $item->quantity;
+        $seatsExcludingItem  = $cartTotals['seats']   - $currentItemSeats;
+        $groupsExcludingItem = $isGroup ? $cartTotals['groups']  - $item->quantity : $cartTotals['groups'];
+        $singlesExcludingItem = $isGroup ? $cartTotals['singles'] : $cartTotals['singles'] - $item->quantity;
+
+        $newItemSeats = $isGroup ? $newQuantity * CheckoutConstraints::GROUP_TICKET_SEAT_COUNT : $newQuantity;
+
+        if ($isGroup) {
+            $this->validateGroupTicketLimit($capacity, $seatsExcludingItem, $groupsExcludingItem, $newQuantity);
+        } else {
+            $this->validateSingleTicketLimit($capacity, $singlesExcludingItem, $newQuantity);
+        }
+
+        $this->validateCapacityForBooking($capacity, $seatsExcludingItem, $newItemSeats);
     }
 
     /**

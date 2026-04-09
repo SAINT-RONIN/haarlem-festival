@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\JsonBodyParseException;
 use App\Exceptions\ProgramException;
+use App\Exceptions\ValidationException;
 use App\Mappers\ProgramMapper;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
@@ -53,7 +55,7 @@ class ProgramController extends BaseController
     {
         $this->handleJsonRequest(function (): void {
             $this->processAdd();
-        });
+        }, [\InvalidArgumentException::class, JsonBodyParseException::class, ValidationException::class, ProgramException::class]);
     }
 
     /** Reads JSON body, resolves session context, casts input fields, and adds a session to the program. */
@@ -106,7 +108,7 @@ class ProgramController extends BaseController
     {
         $this->handleJsonRequest(function (): void {
             $this->processUpdateQuantity();
-        });
+        }, [\InvalidArgumentException::class, JsonBodyParseException::class, ValidationException::class, ProgramException::class]);
     }
 
     /** Reads JSON body, updates one program item's quantity, and responds with recalculated totals. */
