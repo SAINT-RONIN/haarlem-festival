@@ -39,9 +39,7 @@ $isLoggedIn = $viewModel->globalUi->isLoggedIn;
 
                 <?php if ($hero->mapImageUrl !== ''): ?>
                     <div class="w-3/4 max-w-md md:max-w-lg lg:max-w-xl flex justify-center items-center">
-                        <img src="<?= htmlspecialchars($hero->mapImageUrl) ?>"
-                             alt="Map showing the location of <?= htmlspecialchars($hero->mainTitle) ?>"
-                             class="w-3/4 h-auto  shadow-lg object-cover">
+                        <iframe src="<?= htmlspecialchars($hero->mapImageUrl) ?>" width="400" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
                 <?php endif; ?>
             </div>
