@@ -76,7 +76,7 @@ $pages ??= [];
                                aria-label="Edit <?= htmlspecialchars($page->title) ?>">
                                 <i data-lucide="edit" class="w-4 h-4" aria-hidden="true"></i>
                             </a>
-                            <a href="/<?= htmlspecialchars($page->slug) ?>"
+                            <a href="<?= htmlspecialchars($page->previewUrl) ?>"
                                target="_blank"
                                class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                                aria-label="View <?= htmlspecialchars($page->title) ?>">

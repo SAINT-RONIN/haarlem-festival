@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Constants\GlobalUiConstants;
+use App\Constants\RestaurantDetailConstants;
+use App\Constants\RouteConstants;
+use App\Constants\StorytellingDetailConstants;
 use App\Enums\PageStatus;
 use App\Helpers\FormatHelper;
 use App\DTOs\Cms\ActivityData;
@@ -97,7 +101,20 @@ final class CmsDashboardViewMapper
             slug: $page->slug,
             status: self::resolvePageStatus($page)->value,
             updatedAt: TimeFormatter::formatTimeAgo($page->updatedAtUtc?->format('Y-m-d H:i:s')),
+            previewUrl: self::resolvePageListPreviewUrl($page->slug),
         );
+    }
+
+    /** Maps a page slug to a public-facing preview URL for the pages list. */
+    private static function resolvePageListPreviewUrl(string $slug): string
+    {
+        return match ($slug) {
+            GlobalUiConstants::PAGE_SLUG                  => RouteConstants::HOME,
+            StorytellingDetailConstants::DETAIL_PAGE_SLUG => RouteConstants::STORYTELLING,
+            RestaurantDetailConstants::PAGE_SLUG           => RouteConstants::RESTAURANT,
+            'grote-markt', 'amsterdamse-poort', 'molen-de-adriaan' => RouteConstants::HISTORY . '/' . $slug,
+            default                                        => '/' . $slug,
+        };
     }
 
     /** Derives Published/Draft status: a page with an updatedAt timestamp is considered published. */
