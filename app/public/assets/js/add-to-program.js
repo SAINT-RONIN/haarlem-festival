@@ -120,11 +120,6 @@ function showCounterWidget(originalBtn) {
     var groupLabelPriceEl = null;
     var tourInfo = null; // full response from getTourInfo
 
-    // Maximum group tickets based on seatsAvailable for the currently selected session.
-    // null means no cap is known yet (non-history events or before tour info loads).
-    // Updated by applySessionPricing whenever the language/session selection changes.
-    var maxGroupTickets = null;
-
     if (isHistoryEvent) {
         languageSelectorWrapper = document.createElement('div');
         languageSelectorWrapper.className = 'flex items-center gap-2 self-end mb-1';
@@ -240,12 +235,6 @@ function showCounterWidget(originalBtn) {
 
         var hasGroupPricing = prices.length > 1;
         var seatsAvailable = infoForSession.seatsAvailable;
-
-        // Derive the maximum group tickets from the available seats and store it in the
-        // outer scope so the + button handler always reads the current value.
-        maxGroupTickets = (seatsAvailable !== null && seatsAvailable >= 0)
-            ? Math.floor(seatsAvailable / 4)
-            : null;
 
         // Hide group counter if there is no second price tier or there are fewer than 4 seats available.
         if (groupRow && (!hasGroupPricing || (seatsAvailable !== null && seatsAvailable < 4))) {
@@ -367,10 +356,7 @@ function showCounterWidget(originalBtn) {
         });
 
         groupCounter.increaseBtn.addEventListener('click', function () {
-            var current = groupCounter.getQuantity();
-            if (maxGroupTickets === null || current < maxGroupTickets) {
-                groupCounter.setQuantity(current + 1);
-            }
+            groupCounter.setQuantity(groupCounter.getQuantity() + 1);
         });
 
         groupCounter.cancelBtn.addEventListener('click', function () {
