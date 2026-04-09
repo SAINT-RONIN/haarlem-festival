@@ -23,7 +23,6 @@ use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
-use App\Controllers\RestaurantApiController;
 use App\Controllers\ScannerController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
@@ -466,10 +465,6 @@ return static function (string $controllerClass): object {
         ),
         ScheduleApiController::class => new ScheduleApiController(
             $scheduleService(),
-        ),
-        RestaurantApiController::class => new RestaurantApiController(
-            $restaurantService(),
-            $sessionService,
         ),
         OrderHistoryController::class => new OrderHistoryController(
             new OrderHistoryService(new OrderHistoryRepository($pdo())),
