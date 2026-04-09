@@ -180,7 +180,7 @@
                     <div class="p-2.5 flex flex-col gap-6">
                         <!-- Payment Options -->
                         <div class="px-3 sm:px-3.5 py-3.5 rounded-2xl outline outline-2 outline-offset-[-2px] outline-gray-300 flex flex-col gap-3.5">
-                            <!-- Stripe -->
+                            <!-- Stripe (Credit Card) -->
                             <label class="px-3 py-2.5 bg-white rounded-2xl outline outline-2 outline-offset-[-2px] outline-gray-200
                                           flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors">
                                 <svg class="w-7 h-7 text-gray-600 flex-shrink-0" viewBox="0 0 24 24" fill="none"
@@ -190,10 +190,28 @@
                                     <line x1="1" y1="10" x2="23" y2="10"></line>
                                 </svg>
                                 <div class="flex-1 flex flex-col gap-0.5">
-                                    <span class="text-gray-900 text-base sm:text-lg font-normal font-['Montserrat'] leading-5">Stripe</span>
-                                    <span class="text-gray-500 text-xs sm:text-sm font-normal font-['Montserrat'] leading-4">Visa, Mastercard, American Express(Amex)</span>
+                                    <span class="text-gray-900 text-base sm:text-lg font-normal font-['Montserrat'] leading-5">Credit Card</span>
+                                    <span class="text-gray-500 text-xs sm:text-sm font-normal font-['Montserrat'] leading-4">Visa, Mastercard, American Express</span>
                                 </div>
                                 <input type="radio" name="paymentMethod" value="credit_card" checked
+                                       class="w-5 h-5 accent-slate-800">
+                            </label>
+
+                            <!-- iDEAL -->
+                            <label class="px-3 py-2.5 bg-white rounded-2xl outline outline-2 outline-offset-[-2px] outline-gray-200
+                                          flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors">
+                                <svg class="w-7 h-7 text-gray-600 flex-shrink-0" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                     aria-hidden="true">
+                                    <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"></path>
+                                    <line x1="12" y1="11" x2="12" y2="17"></line>
+                                    <line x1="9" y1="14" x2="15" y2="14"></line>
+                                </svg>
+                                <div class="flex-1 flex flex-col gap-0.5">
+                                    <span class="text-gray-900 text-base sm:text-lg font-normal font-['Montserrat'] leading-5">iDEAL</span>
+                                    <span class="text-gray-500 text-xs sm:text-sm font-normal font-['Montserrat'] leading-4">Dutch bank transfer</span>
+                                </div>
+                                <input type="radio" name="paymentMethod" value="ideal"
                                        class="w-5 h-5 accent-slate-800">
                             </label>
 
