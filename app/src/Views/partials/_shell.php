@@ -1,10 +1,18 @@
 <?php
 /**
- * Shared page shell for public pages that use BaseViewModel.
+ * Shared page shell for public pages.
  *
- * Required:
- * @var \App\ViewModels\BaseViewModel $viewModel
+ * Two ways to supply shell data:
+ *   1. Pass a $viewModel extending BaseViewModel (heroData/globalUi/currentPage/includeNav
+ *      are read off it). This is the backward-compatible path used by home, history,
+ *      jazz, storytelling, restaurant etc.
+ *   2. Pass the fields explicitly on $layout (currentPage, globalUi, heroData, etc.)
+ *      for pages that don't have a BaseViewModel viewmodel (auth, checkout, account).
+ *
+ * Values on $layout take precedence over values on $viewModel.
+ *
  * @var \App\View\PublicPageLayout $layout
+ * @var \App\ViewModels\BaseViewModel|null $viewModel
  */
 
 use App\View\PublicPageLayout;
@@ -13,21 +21,26 @@ use App\ViewModels\BaseViewModel;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\IntroSplitSectionData;
 
-/** @var BaseViewModel $viewModel — guaranteed by the controller's renderPage() method */
-/** @var PublicPageLayout $layout */
-
 $layout ??= new PublicPageLayout();
+$viewModel ??= null;
+$shellViewModel = $viewModel instanceof BaseViewModel ? $viewModel : null;
 
-$heroData = $viewModel->heroData;
-$globalUi = $viewModel->globalUi;
-$currentPage = $viewModel->currentPage;
-$includeNav = $viewModel->includeNav;
-$isLoggedIn = $globalUi->isLoggedIn;
-$gradientSection = property_exists($viewModel, 'gradientSection') && $viewModel->gradientSection instanceof GradientSectionData
-    ? $viewModel->gradientSection
+$heroData = $layout->heroData ?? $shellViewModel?->heroData;
+$globalUi = $layout->globalUi ?? $shellViewModel?->globalUi;
+$currentPage = $layout->currentPage ?? $shellViewModel?->currentPage ?? '';
+$includeNav = $layout->includeNav ?? $shellViewModel?->includeNav ?? false;
+$isLoggedIn = $layout->isLoggedIn ?? $globalUi?->isLoggedIn ?? false;
+
+$viewModelVars = $shellViewModel !== null ? get_object_vars($shellViewModel) : [];
+
+$gradientSectionCandidate = $layout->gradientSection ?? ($viewModelVars['gradientSection'] ?? null);
+$gradientSection = $gradientSectionCandidate instanceof GradientSectionData
+    ? $gradientSectionCandidate
     : null;
-$introSplitSection = property_exists($viewModel, 'introSplitSection') && $viewModel->introSplitSection instanceof IntroSplitSectionData
-    ? $viewModel->introSplitSection
+
+$introSplitSectionCandidate = $layout->introSplitSection ?? ($viewModelVars['introSplitSection'] ?? null);
+$introSplitSection = $introSplitSectionCandidate instanceof IntroSplitSectionData
+    ? $introSplitSectionCandidate
     : null;
 ?>
 
@@ -37,8 +50,8 @@ $introSplitSection = property_exists($viewModel, 'introSplitSection') && $viewMo
     'isLoggedIn' => $isLoggedIn,
 ]); ?>
 
-<main class="<?= htmlspecialchars($layout->mainClass) ?>">
-    <?php if ($layout->includeHero): ?>
+<main class="<?= htmlspecialchars($layout->mainClass) ?>"<?php if ($layout->mainId !== null): ?> id="<?= htmlspecialchars($layout->mainId) ?>"<?php endif; ?><?php if ($layout->mainFocusable): ?> tabindex="-1"<?php endif; ?>>
+    <?php if ($layout->includeHero && $heroData !== null && $globalUi !== null): ?>
         <?php ViewRenderer::render(__DIR__ . '/hero.php', [
             'heroData' => $heroData,
             'globalUi' => $globalUi,
@@ -64,8 +77,15 @@ $introSplitSection = property_exists($viewModel, 'introSplitSection') && $viewMo
     <?php endif; ?>
 
     <?php foreach ($layout->contentTemplates as $contentTemplate): ?>
-        <?php ViewRenderer::render($contentTemplate->path, $contentTemplate->locals + ['viewModel' => $viewModel]); ?>
+        <?php ViewRenderer::render(
+            $contentTemplate->path,
+            $contentTemplate->locals + ($viewModel !== null ? ['viewModel' => $viewModel] : []),
+        ); ?>
     <?php endforeach; ?>
 </main>
 
-<?php ViewRenderer::render(__DIR__ . '/footer.php', ['globalUi' => $globalUi, 'currentPage' => $currentPage]); ?>
+<?php ViewRenderer::render(__DIR__ . '/footer.php', [
+    'globalUi' => $globalUi,
+    'currentPage' => $currentPage,
+    'extraScripts' => $layout->extraScripts,
+]); ?>

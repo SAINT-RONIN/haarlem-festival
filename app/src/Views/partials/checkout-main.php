@@ -1,11 +1,12 @@
 <?php
 /**
- * Shared main content for checkout page.
+ * Shared main content for checkout page. Rendered inside the shell's <main>,
+ * so this partial only emits the inner content (the shell owns the <main> tag
+ * and its class via PublicPageLayout::$mainClass).
  *
  * @var \App\ViewModels\Program\CheckoutPageViewModel $viewModel
  */
 ?>
-<main class="w-full bg-[#F5F1EB] min-h-screen">
     <!-- Page Title -->
     <div class="px-4 sm:px-8 lg:px-24 pt-8 pb-2">
         <h1 class="text-black text-3xl sm:text-4xl lg:text-6xl font-bold font-['Montserrat'] leading-tight">
@@ -256,5 +257,4 @@
             </div>
         </div>
     </div>
-</main>
 
