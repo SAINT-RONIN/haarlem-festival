@@ -9,6 +9,7 @@ use App\Constants\ScheduleConstants;
 use App\DTOs\Cms\ScheduleSectionContent;
 use App\DTOs\Domain\Schedule\ScheduleButtonTexts;
 use App\DTOs\Domain\Schedule\ScheduleCmsSettings;
+use App\DTOs\Domain\Schedule\ScheduleDayPayload;
 use App\DTOs\Domain\Schedule\ScheduleFilterContext;
 use App\DTOs\Domain\Schedule\ScheduleHeaderTexts;
 use App\DTOs\Domain\Schedule\ScheduleSectionData;
@@ -24,24 +25,32 @@ final class ScheduleDayMapper
 {
     public static function buildSection(ScheduleSectionData $scheduleData): ScheduleSectionViewModel
     {
-        $cmsContent    = $scheduleData->cmsContent;
-        $buttonTexts   = self::extractButtonTexts($cmsContent);
-        $days          = self::mapDays($scheduleData->days, $buttonTexts);
+        $cmsContent  = $scheduleData->cmsContent;
+        $buttonTexts = self::extractButtonTexts($cmsContent);
+        $days        = self::mapDays($scheduleData->days, $buttonTexts, $scheduleData);
 
         return self::buildSectionViewModel($scheduleData, $cmsContent, $days, $buttonTexts);
     }
 
     /**
-     * Flattens all events from all schedule days into a single array.
+     * Flattens all events from all schedule days into raw event card arrays.
      *
      * @return array<array<string, mixed>>
      */
     public static function flattenEvents(ScheduleSectionData $scheduleData): array
     {
         $events = [];
-        foreach ($scheduleData->days as $day) {
-            foreach ($day['events'] ?? [] as $event) {
-                $events[] = $event;
+        foreach ($scheduleData->days as $payload) {
+            foreach ($payload->sessions as $session) {
+                $events[] = ScheduleCardMapper::buildEventCardArray(
+                    $session,
+                    $scheduleData->eventTypeSlug,
+                    $scheduleData->eventTypeId,
+                    $payload->labelsMap,
+                    $scheduleData->pricesMap,
+                    $scheduleData->displayStrings,
+                    $payload->historyTourOptions[$session->eventSessionId] ?? [],
+                );
             }
         }
         return $events;
@@ -55,9 +64,18 @@ final class ScheduleDayMapper
     public static function flattenEventsAsViewModels(ScheduleSectionData $scheduleData): array
     {
         $viewModels = [];
-        foreach ($scheduleData->days as $day) {
-            foreach ($day['events'] ?? [] as $event) {
-                $viewModels[] = ScheduleCardMapper::toEventCardViewModel($event, '', '', '');
+        foreach ($scheduleData->days as $payload) {
+            foreach ($payload->sessions as $session) {
+                $cardArray = ScheduleCardMapper::buildEventCardArray(
+                    $session,
+                    $scheduleData->eventTypeSlug,
+                    $scheduleData->eventTypeId,
+                    $payload->labelsMap,
+                    $scheduleData->pricesMap,
+                    $scheduleData->displayStrings,
+                    $payload->historyTourOptions[$session->eventSessionId] ?? [],
+                );
+                $viewModels[] = ScheduleCardMapper::toEventCardViewModel($cardArray, '', '', '');
             }
         }
         return $viewModels;
@@ -178,40 +196,44 @@ final class ScheduleDayMapper
     }
 
     /**
-     * @param array<array<string, mixed>> $rawDays
+     * @param ScheduleDayPayload[] $payloads
      * @return ScheduleDayViewModel[]
      */
-    private static function mapDays(array $rawDays, ScheduleButtonTexts $buttonTexts): array
+    private static function mapDays(array $payloads, ScheduleButtonTexts $buttonTexts, ScheduleSectionData $scheduleData): array
     {
         $days = [];
-        foreach ($rawDays as $day) {
-            $days[] = self::mapSingleDay($day, $buttonTexts);
+        foreach ($payloads as $payload) {
+            $days[] = self::mapSingleDay($payload, $buttonTexts, $scheduleData);
         }
         return $days;
     }
 
-    /**
-     * @param array<string, mixed> $day
-     */
-    private static function mapSingleDay(array $day, ScheduleButtonTexts $buttonTexts): ScheduleDayViewModel
+    private static function mapSingleDay(ScheduleDayPayload $payload, ScheduleButtonTexts $buttonTexts, ScheduleSectionData $scheduleData): ScheduleDayViewModel
     {
-        $isoDate = $day['isoDate'];
-        $dateObj = new \DateTimeImmutable($isoDate);
-        $events  = [];
-
-        foreach ($day['events'] as $event) {
-            $events[] = ScheduleCardMapper::toEventCardViewModel($event, $buttonTexts->confirm, $buttonTexts->adding, $buttonTexts->success);
+        $events = [];
+        foreach ($payload->sessions as $session) {
+            $cardArray = ScheduleCardMapper::buildEventCardArray(
+                $session,
+                $scheduleData->eventTypeSlug,
+                $scheduleData->eventTypeId,
+                $payload->labelsMap,
+                $scheduleData->pricesMap,
+                $scheduleData->displayStrings,
+                $payload->historyTourOptions[$session->eventSessionId] ?? [],
+            );
+            $events[] = ScheduleCardMapper::toEventCardViewModel($cardArray, $buttonTexts->confirm, $buttonTexts->adding, $buttonTexts->success);
         }
 
+        $dateObj   = new \DateTimeImmutable($payload->isoDate);
         $dayNumber = $dateObj->format('j');
-        $htmlId = 'schedule-day-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $day['dayName'])) . '-' . $dayNumber;
+        $htmlId    = 'schedule-day-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $payload->dayName)) . '-' . $dayNumber;
 
         return new ScheduleDayViewModel(
-            dayName: $day['dayName'],
+            dayName: $payload->dayName,
             dateFormatted: $dateObj->format('l, F j'),
-            isoDate: $isoDate,
+            isoDate: $payload->isoDate,
             events: $events,
-            isEmpty: $day['isEmpty'],
+            isEmpty: $payload->isEmpty,
             htmlId: $htmlId,
         );
     }

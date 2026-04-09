@@ -20,8 +20,8 @@ use App\DTOs\Domain\Schedule\ScheduleDisplayStrings;
 use App\DTOs\Domain\Schedule\ScheduleSectionData;
 use App\DTOs\Domain\Schedule\SessionQueryResult;
 use App\DTOs\Domain\Schedule\SessionWithEvent;
+use App\DTOs\Domain\Schedule\ScheduleDayPayload;
 use App\Exceptions\PageLoadException;
-use App\Mappers\ScheduleCardMapper;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
 use App\Repositories\Interfaces\IEventSessionLabelRepository;
@@ -84,7 +84,14 @@ class ScheduleService implements IScheduleService
         $availableDays  = $this->fetchAvailableDays($eventTypeId, $visibleDays, $eventId, $maxDays);
         $scheduleData   = $this->fetchFilteredSessions($eventTypeId, $visibleDays, $eventId, $maxDays, $filterParams);
         $displayStrings = $this->resolveCmsDisplayStrings($cmsSection, $ctaTextOverride);
-        $days           = $this->buildScheduleDays($scheduleData, $eventTypeSlug, $eventTypeId, $displayStrings);
+
+        $sessionIds     = $this->collectSessionIds($scheduleData->sessions);
+        $labelsMap      = $this->batchLoadLabels($sessionIds);
+        $pricesMap      = $this->batchLoadPrices($sessionIds);
+        $sessionsByDate = SessionGroupingHelper::groupByDate($scheduleData->sessions);
+        $days           = empty($scheduleData->days)
+            ? []
+            : $this->buildDayPayloads($scheduleData->days, $sessionsByDate, $eventTypeId, $labelsMap, $pricesMap);
 
         return new ScheduleSectionData(
             cmsContent: $cmsSection,
@@ -92,6 +99,8 @@ class ScheduleService implements IScheduleService
             eventTypeSlug: $eventTypeSlug,
             eventTypeId: $eventTypeId,
             days: $days,
+            displayStrings: $displayStrings,
+            pricesMap: $pricesMap,
             activeFilters: $filterParams,
             availableDays: $availableDays,
             filterGroupTypes: $this->resolveFilterGroupTypes($eventTypeSlug),
@@ -162,24 +171,6 @@ class ScheduleService implements IScheduleService
         );
     }
 
-    private function buildScheduleDays(
-        SessionQueryResult $scheduleData,
-        string $eventTypeSlug,
-        int $eventTypeId,
-        ScheduleDisplayStrings $displayStrings,
-    ): array {
-        if (empty($scheduleData->days)) {
-            return [];
-        }
-
-        $sessionIds     = $this->collectSessionIds($scheduleData->sessions);
-        $labelsMap      = $this->batchLoadLabels($sessionIds);
-        $pricesMap      = $this->batchLoadPrices($sessionIds);
-        $sessionsByDate = SessionGroupingHelper::groupByDate($scheduleData->sessions);
-
-        return $this->buildDayArrays($scheduleData->days, $sessionsByDate, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings);
-    }
-
     /**
      * @param SessionWithEvent[] $sessions
      * @return int[]
@@ -189,20 +180,19 @@ class ScheduleService implements IScheduleService
         return array_map(static fn($s) => $s->eventSessionId, $sessions);
     }
 
-    private function buildDayArrays(
+    /** @return ScheduleDayPayload[] */
+    private function buildDayPayloads(
         array $days,
         array $sessionsByDate,
-        string $eventTypeSlug,
         int $eventTypeId,
         array &$labelsMap,
         array $pricesMap,
-        ScheduleDisplayStrings $displayStrings,
     ): array {
-        $dayArrays = [];
+        $payloads = [];
         foreach ($days as $day) {
-            $dayArrays[] = $this->buildSingleDay($day, $sessionsByDate, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings);
+            $payloads[] = $this->buildSingleDay($day, $sessionsByDate, $eventTypeId, $labelsMap, $pricesMap);
         }
-        return $dayArrays;
+        return $payloads;
     }
 
     /**
@@ -231,61 +221,30 @@ class ScheduleService implements IScheduleService
      * For History tours, sessions at the same time slot (one per language) are first merged
      * into a single session via groupSessionsByTimeSlot. $labelsMap is passed by reference
      * because History grouping may append merged language labels to it.
-     *
-     * @return array{dayName: string, isoDate: string, events: array, isEmpty: bool}
      */
     private function buildSingleDay(
         object $day,
         array $sessionsByDate,
-        string $eventTypeSlug,
         int $eventTypeId,
         array &$labelsMap,
         array $pricesMap,
-        ScheduleDisplayStrings $displayStrings,
-    ): array {
+    ): ScheduleDayPayload {
         $date        = $day->date;
         $daySessions = $sessionsByDate[$date] ?? [];
-        $historyTourOptionsMap = [];
+        $historyTourOptions = [];
 
         if ($eventTypeId === EventTypeId::History->value) {
-            [$daySessions, $labelsMap, $historyTourOptionsMap] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap, $pricesMap);
+            [$daySessions, $labelsMap, $historyTourOptions] = $this->groupSessionsByTimeSlot($daySessions, $labelsMap, $pricesMap);
         }
 
-        $events = $this->buildEventCardsForDay($daySessions, $eventTypeSlug, $eventTypeId, $labelsMap, $pricesMap, $displayStrings, $historyTourOptionsMap);
-
-        return [
-            'dayName' => new \DateTimeImmutable($date)->format('l'),
-            'isoDate' => $date,
-            'events'  => $events,
-            'isEmpty' => empty($events),
-        ];
-    }
-
-    /** @return array[] */
-    private function buildEventCardsForDay(
-        array $daySessions,
-        string $eventTypeSlug,
-        int $eventTypeId,
-        array $labelsMap,
-        array $pricesMap,
-        ScheduleDisplayStrings $displayStrings,
-        array $historyTourOptionsMap,
-    ): array {
-        $events = [];
-
-        foreach ($daySessions as $session) {
-            $events[] = ScheduleCardMapper::buildEventCardArray(
-                $session,
-                $eventTypeSlug,
-                $eventTypeId,
-                $labelsMap,
-                $pricesMap,
-                $displayStrings,
-                $historyTourOptionsMap[$session->eventSessionId] ?? [],
-            );
-        }
-
-        return $events;
+        return new ScheduleDayPayload(
+            dayName: new \DateTimeImmutable($date)->format('l'),
+            isoDate: $date,
+            isEmpty: empty($daySessions),
+            sessions: $daySessions,
+            labelsMap: $labelsMap,
+            historyTourOptions: $historyTourOptions,
+        );
     }
 
     /**

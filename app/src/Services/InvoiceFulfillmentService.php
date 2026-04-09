@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTOs\Domain\Invoice\InvoiceDocumentData;
+use App\DTOs\Domain\Invoice\InvoiceEmailMessage;
+use App\DTOs\Domain\Invoice\InvoiceLineData;
 use App\Exceptions\InvoiceGenerationException;
 use App\Infrastructure\Interfaces\IEmailService;
 use App\Infrastructure\PdfAssetStorage;
-use App\Mappers\InvoiceMapper;
+use App\Models\Invoice;
+use App\Models\InvoiceLine;
 use App\Models\Order;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IInvoiceRepository;
@@ -59,13 +63,23 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
             return;
         }
 
-        $order = $this->requireOrder($orderId);
-        $orderItemRows = $this->loadOrderItemsWithDetails($orderId);
-        $invoiceId = $this->createInvoiceRecord($order, $orderItemRows);
-        $pdfPath = $this->generateAndStorePdf($orderId, $invoiceId, $order->orderNumber);
+        try {
+            $order = $this->requireOrder($orderId);
+            $orderItemRows = $this->loadOrderItemsWithDetails($orderId);
+            $invoiceId = $this->createInvoiceRecord($order, $orderItemRows);
+            $pdfPath = $this->generateAndStorePdf($orderId, $invoiceId, $order->orderNumber);
 
-        $invoice = $this->invoiceRepository->findByOrderId($orderId);
-        $this->sendEmail($order, $invoice->invoiceNumber, $pdfPath);
+            $invoice = $this->invoiceRepository->findByOrderId($orderId);
+            $this->sendEmail($order, $invoice->invoiceNumber, $pdfPath);
+        } catch (InvoiceGenerationException $error) {
+            throw $error;
+        } catch (\Throwable $error) {
+            throw new InvoiceGenerationException(
+                'Invoice fulfillment failed for order ' . $orderId . '.',
+                0,
+                $error,
+            );
+        }
     }
 
     /**
@@ -235,7 +249,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
     private function createInvoiceLines(int $invoiceId, array $orderItemRows): void
     {
         foreach ($orderItemRows as $row) {
-            $description = InvoiceMapper::buildLineDescription($row);
+            $description = $this->buildLineDescription($row);
             $quantity = (int) $row['Quantity'];
             $unitPrice = (string) $row['UnitPrice'];
             $vatRate = (string) $row['VatRate'];
@@ -266,7 +280,7 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
         }
 
         $lines = $this->invoiceRepository->findLinesByInvoiceId($invoiceId);
-        $documentData = InvoiceMapper::toDocumentData($invoice, $lines, $orderNumber);
+        $documentData = $this->buildDocumentData($invoice, $lines, $orderNumber);
 
         $pdfBinary = $this->invoicePdfGenerator->generatePdf($documentData);
         $fileName = self::INVOICE_PDF_FILE_PREFIX . $invoice->invoiceNumber . '.pdf';
@@ -293,16 +307,58 @@ class InvoiceFulfillmentService implements IInvoiceFulfillmentService
         $recipientName = trim(($order->ticketRecipientFirstName ?? '') . ' ' . ($order->ticketRecipientLastName ?? ''));
         $fileName = basename($pdfPath);
 
-        $message = InvoiceMapper::toEmailMessage(
-            $recipientEmail,
-            // When the customer has no name on record, show their email as the display name in the email.
-            $recipientName !== '' ? $recipientName : $recipientEmail,
-            $order->orderNumber,
-            $invoiceNumber,
-            $pdfPath,
-            $fileName,
+        $message = new InvoiceEmailMessage(
+            recipientEmail: $recipientEmail,
+            recipientName: $recipientName !== '' ? $recipientName : $recipientEmail,
+            orderNumber: $order->orderNumber,
+            invoiceNumber: $invoiceNumber,
+            attachments: [(object) ['absolutePath' => $pdfPath, 'displayName' => $fileName]],
         );
 
         $this->emailService->sendInvoiceEmail($message);
+    }
+
+    private function buildLineDescription(array $orderItemRow): string
+    {
+        if (!empty($orderItemRow['PassTypeName'])) {
+            return (string) $orderItemRow['PassTypeName'];
+        }
+
+        $title = (string) ($orderItemRow['EventTitle'] ?? 'Event');
+        $date  = isset($orderItemRow['StartDateTime'])
+            ? new \DateTimeImmutable($orderItemRow['StartDateTime'])->format('d M Y')
+            : '';
+
+        return $date !== '' ? $title . ' - ' . $date : $title;
+    }
+
+    /** @param InvoiceLine[] $lines */
+    private function buildDocumentData(Invoice $invoice, array $lines, string $orderNumber): InvoiceDocumentData
+    {
+        return new InvoiceDocumentData(
+            invoiceNumber: $invoice->invoiceNumber,
+            invoiceDateFormatted: $invoice->invoiceDateUtc->format('d M Y'),
+            clientName: $invoice->clientName,
+            clientEmail: $invoice->emailAddress,
+            clientAddress: $invoice->addressLine,
+            clientPhone: $invoice->phoneNumber,
+            lines: array_map(
+                fn(InvoiceLine $line) => new InvoiceLineData(
+                    description: $line->lineDescription,
+                    quantity: $line->quantity,
+                    unitPrice: $line->unitPrice,
+                    vatRate: $line->vatRate,
+                    lineSubtotal: $line->lineSubtotal,
+                ),
+                $lines,
+            ),
+            subtotal: $invoice->subtotalAmount,
+            totalVat: $invoice->totalVatAmount,
+            totalAmount: $invoice->totalAmount,
+            paymentDateFormatted: $invoice->paymentDateUtc !== null
+                ? $invoice->paymentDateUtc->format('d M Y')
+                : $invoice->invoiceDateUtc->format('d M Y'),
+            orderNumber: $orderNumber,
+        );
     }
 }
