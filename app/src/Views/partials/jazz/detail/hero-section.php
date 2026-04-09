@@ -13,7 +13,7 @@
         <?php \App\View\ViewRenderer::render(__DIR__ . '/../../navbar.php', [
             'isSticky'    => false,
             'currentPage' => 'jazz',
-            'isLoggedIn'  => $isLoggedIn,
+            'isLoggedIn'  => $viewModel->globalUi->isLoggedIn ?? false,
         ]); ?>
 
         <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 pt-2 sm:pt-4 pb-6 sm:pb-8 md:pb-10 flex flex-col gap-6 sm:gap-8">

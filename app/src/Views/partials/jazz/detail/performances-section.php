@@ -19,8 +19,11 @@
 
         <ul class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6" role="list" aria-label="<?= htmlspecialchars($viewModel->hero->heroTitle) ?> performances">
             <?php foreach ($viewModel->performances as $eventIndex => $event): ?>
-                <?php $dayIndex = 0; ?>
-                <?php require __DIR__ . '/../../sections/schedule/schedule-event-card.php'; ?>
+                <?php \App\View\ViewRenderer::render(__DIR__ . '/../../sections/schedule/schedule-event-card.php', [
+                    'event'      => $event,
+                    'eventIndex' => $eventIndex,
+                    'dayIndex'   => 0,
+                ]); ?>
             <?php endforeach; ?>
         </ul>
     </div>

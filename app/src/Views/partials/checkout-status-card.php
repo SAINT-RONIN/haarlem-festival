@@ -29,7 +29,14 @@ $details ??= [];
             </p>
         <?php endif; ?>
 
-        <?php require __DIR__ . '/checkout-status-metadata.php'; ?>
-        <?php require __DIR__ . '/checkout-status-actions.php'; ?>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/checkout-status-metadata.php', [
+            'details' => $details,
+        ]); ?>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/checkout-status-actions.php', [
+            'primaryHref'   => $primaryHref ?? '/',
+            'primaryLabel'  => $primaryLabel ?? 'Continue',
+            'secondaryHref' => $secondaryHref ?? '/my-program',
+            'secondaryLabel'=> $secondaryLabel ?? 'Back',
+        ]); ?>
     </section>
 
