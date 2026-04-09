@@ -59,11 +59,11 @@ $columnClassMap = CmsEditorStyles::COLUMN_CLASS_MAP;
                                 <div class="<?= $isFullWidth ? 'col-span-full' : '' ?>">
                                     <?php
                                     if ($inputType === 'tinymce') {
-                                        \App\View\ViewRenderer::render(__DIR__ . '/edit-item-html.php', ['item' => $item]);
+                                        \App\View\ViewRenderer::render(__DIR__ . '/_edit-item-html.php', ['item' => $item]);
                                     } elseif ($inputType === 'file') {
-                                        \App\View\ViewRenderer::render(__DIR__ . '/edit-item-image.php', ['item' => $item, 'imageLimits' => $imageLimits]);
+                                        \App\View\ViewRenderer::render(__DIR__ . '/_edit-item-image.php', ['item' => $item, 'imageLimits' => $imageLimits]);
                                     } else {
-                                        \App\View\ViewRenderer::render(__DIR__ . '/edit-item-text.php', ['item' => $item]);
+                                        \App\View\ViewRenderer::render(__DIR__ . '/_edit-item-text.php', ['item' => $item]);
                                     }
                                 ?>
                                 </div>
@@ -79,11 +79,11 @@ $columnClassMap = CmsEditorStyles::COLUMN_CLASS_MAP;
                     <?php
                     $inputType = $item->inputType;
                     if ($inputType === 'tinymce') {
-                        \App\View\ViewRenderer::render(__DIR__ . '/edit-item-html.php', ['item' => $item]);
+                        \App\View\ViewRenderer::render(__DIR__ . '/_edit-item-html.php', ['item' => $item]);
                     } elseif ($inputType === 'file') {
-                        \App\View\ViewRenderer::render(__DIR__ . '/edit-item-image.php', ['item' => $item, 'imageLimits' => $imageLimits]);
+                        \App\View\ViewRenderer::render(__DIR__ . '/_edit-item-image.php', ['item' => $item, 'imageLimits' => $imageLimits]);
                     } else {
-                        \App\View\ViewRenderer::render(__DIR__ . '/edit-item-text.php', ['item' => $item]);
+                        \App\View\ViewRenderer::render(__DIR__ . '/_edit-item-text.php', ['item' => $item]);
                     }
                     ?>
                 <?php endforeach; ?>
@@ -91,7 +91,7 @@ $columnClassMap = CmsEditorStyles::COLUMN_CLASS_MAP;
         <?php endif; ?>
 
         <?php if (isset($jazzLineupManager) && $jazzLineupManager instanceof \App\ViewModels\Cms\CmsJazzLineupManagerViewModel && $section->key === $jazzLineupManager->sectionKey): ?>
-            <?php \App\View\ViewRenderer::render(__DIR__ . '/jazz-lineup-manager.php', ['jazzLineupManager' => $jazzLineupManager]); ?>
+            <?php \App\View\ViewRenderer::render(__DIR__ . '/_jazz-lineup-manager.php', ['jazzLineupManager' => $jazzLineupManager]); ?>
         <?php endif; ?>
     </div>
 </div>

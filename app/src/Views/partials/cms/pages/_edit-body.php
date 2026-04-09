@@ -67,7 +67,7 @@ $userName ??= 'Administrator';
                 <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                 <?php foreach ($sections as $section): ?>
                     <?php if ($section->isEditable): ?>
-                        <?php \App\View\ViewRenderer::render(__DIR__ . '/../edit-section-accordion.php', [
+                        <?php \App\View\ViewRenderer::render(__DIR__ . '/../_edit-section-accordion.php', [
                             'section'           => $section,
                             'imageLimits'       => $imageLimits,
                             'jazzLineupManager' => $jazzLineupManager ?? null,

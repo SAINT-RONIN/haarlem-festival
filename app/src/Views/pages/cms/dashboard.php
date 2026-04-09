@@ -15,10 +15,10 @@ $viewModel ??= null;
 
 if ($currentView === 'pages') {
     $title = 'Pages - Haarlem CMS';
-    $contentPath = __DIR__ . '/../../partials/cms/pages-content.php';
+    $contentPath = __DIR__ . '/../../partials/cms/_pages-content.php';
 } else {
     $title = 'Dashboard - Haarlem CMS';
-    $contentPath = __DIR__ . '/../../partials/cms/dashboard-content.php';
+    $contentPath = __DIR__ . '/../../partials/cms/_dashboard-content.php';
 }
 
 $layout = new CmsPageLayout(
