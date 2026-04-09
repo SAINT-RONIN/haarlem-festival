@@ -80,6 +80,7 @@ class CmsAuthController extends BaseController
         }
 
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
+        $this->sessionService->set('first_name', $user->firstName);
         $this->redirectAndExit('/cms');
     }
 
