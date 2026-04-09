@@ -79,7 +79,7 @@ final class RestaurantViewMapper
             locationSection: self::buildLocationSection($cms, $sharedCms),
             practicalInfoSection: self::buildPracticalInfoSection($cms, $sharedCms, $data->priceCards),
             gallerySection: self::buildGallerySection($cms, $sharedCms),
-            reservationSection: self::buildReservationSection($cms, $sharedCms, $data->timeSlots, $data->priceCards),
+            reservationSection: self::buildReservationSection($cms, $sharedCms, $data->timeSlots, $data->priceCards, $data->featuredImagePath),
         );
     }
 
@@ -253,7 +253,13 @@ final class RestaurantViewMapper
         RestaurantDetailSectionContent $sharedCms,
         array $timeSlots,
         array $priceCards,
+        ?string $featuredImagePath = null,
     ): ReservationSectionData {
+        $reservationImage = RestaurantContentParser::validateImagePath($cms->reservationImage ?? '');
+        if ($reservationImage === RestaurantContentParser::DEFAULT_IMAGE && $featuredImagePath !== null) {
+            $reservationImage = RestaurantContentParser::validateImagePath($featuredImagePath);
+        }
+
         return new ReservationSectionData(
             title: $sharedCms->detailReservationTitle ?? 'Make a Reservation',
             description: $sharedCms->detailReservationDescription ?? '',
@@ -262,7 +268,7 @@ final class RestaurantViewMapper
             buttonText: $sharedCms->detailReservationBtn ?? 'Book Now',
             timeSlots: $timeSlots,
             priceCards: $priceCards,
-            reservationImage: RestaurantContentParser::validateImagePath($cms->reservationImage ?? ''),
+            reservationImage: $reservationImage,
             reservationFee: RestaurantPageConstants::RESERVATION_FEE,
             validDates: RestaurantPageConstants::VALID_DATES,
         );
