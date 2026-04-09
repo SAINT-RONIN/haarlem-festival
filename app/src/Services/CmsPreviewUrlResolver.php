@@ -47,24 +47,10 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
         }
 
         if ($slug === RestaurantDetailConstants::PAGE_SLUG) {
-            $eventId = $this->extractFirstEventId($sections);
-            return $eventId !== null
-                ? RouteConstants::RESTAURANT . '/' . $eventId
+            $eventName = $this->extractFirstEventDisplayName($sections);
+            return $eventName !== null
+                ? RouteConstants::RESTAURANT . '/' . $this->toSlug($eventName)
                 : RouteConstants::RESTAURANT;
-        }
-
-        return null;
-    }
-
-    /**
-     * @param CmsSectionEditData[] $sections
-     */
-    private function extractFirstEventId(array $sections): ?int
-    {
-        foreach ($sections as $section) {
-            if (preg_match('/^event_(\d+)$/', $section->sectionKey, $matches) === 1) {
-                return (int) $matches[1];
-            }
         }
 
         return null;
