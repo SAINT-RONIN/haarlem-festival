@@ -43,6 +43,16 @@
                     <h2 class="text-lg font-semibold text-gray-900">All Orders</h2>
                     <p class="text-sm text-gray-500"><?= count($viewModel->orders) ?> order(s) found</p>
                 </div>
+                <a href="/cms/orders/export/csv<?= $viewModel->selectedStatus ? '?status=' . urlencode($viewModel->selectedStatus) : '' ?>"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors">
+                    <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
+                    Export CSV
+                </a>
+                <a href="/cms/orders/export/excel<?= $viewModel->selectedStatus ? '?status=' . urlencode($viewModel->selectedStatus) : '' ?>"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                    <i data-lucide="table" class="w-4 h-4" aria-hidden="true"></i>
+                    Export Excel
+                </a>
             </div>
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">

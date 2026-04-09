@@ -13,10 +13,22 @@ use App\View\ViewRenderer;
         </a>
 
         <!-- Header -->
-        <header class="mb-6">
+        <header class="mb-6 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-900">
                 Order <?= htmlspecialchars($viewModel->order->orderNumber) ?>
             </h1>
+            <div class="flex gap-2">
+                <a href="/cms/orders/<?= $viewModel->order->orderId ?>/export/csv"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors">
+                    <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
+                    Export CSV
+                </a>
+                <a href="/cms/orders/<?= $viewModel->order->orderId ?>/export/excel"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                    <i data-lucide="table" class="w-4 h-4" aria-hidden="true"></i>
+                    Export Excel
+                </a>
+            </div>
         </header>
 
         <?php ViewRenderer::render(__DIR__ . '/_order-summary-card.php',    ['viewModel' => $viewModel]); ?>
