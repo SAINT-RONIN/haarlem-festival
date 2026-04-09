@@ -3,15 +3,10 @@
  * @var \App\ViewModels\Cms\CmsOrdersListViewModel $viewModel
  */
 ?>
-        <!-- Header -->
-        <header class="mb-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Orders Management</h1>
-                    <p class="text-gray-600 mt-1">View all customer orders and payment statuses</p>
-                </div>
-            </div>
-        </header>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/../_list-page-header.php', [
+            'title'    => 'Orders Management',
+            'subtitle' => 'View all customer orders and payment statuses',
+        ]); ?>
 
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">

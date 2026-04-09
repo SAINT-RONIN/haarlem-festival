@@ -3,20 +3,12 @@
  * @var \App\ViewModels\Cms\CmsArtistsListViewModel $viewModel
  */
 ?>
-        <!-- Header -->
-        <header class="mb-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Artists Management</h1>
-                    <p class="text-gray-600 mt-1">View and manage artist listings</p>
-                </div>
-                <a href="/cms/artists/create"
-                   class="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors">
-                    <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i>
-                    Create Artist
-                </a>
-            </div>
-        </header>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/../_list-page-header.php', [
+            'title'       => 'Artists Management',
+            'subtitle'    => 'View and manage artist listings',
+            'createUrl'   => '/cms/artists/create',
+            'createLabel' => 'Create Artist',
+        ]); ?>
 
         <!-- Search -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">

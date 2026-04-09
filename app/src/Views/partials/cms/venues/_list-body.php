@@ -5,12 +5,10 @@
  * @var ?string $errorMessage
  */
 ?>
-        <header class="mb-8 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Venues</h1>
-                <p class="text-sm text-gray-500 mt-1">Manage festival event locations</p>
-            </div>
-        </header>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/../_list-page-header.php', [
+            'title'    => 'Venues',
+            'subtitle' => 'Manage festival event locations',
+        ]); ?>
 
         <!-- Add Venue Form -->
         <div class="bg-white rounded-lg shadow mb-8">

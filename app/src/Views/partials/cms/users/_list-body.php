@@ -3,20 +3,12 @@
  * @var \App\ViewModels\Cms\CmsUsersListViewModel $viewModel
  */
 ?>
-        <!-- Header -->
-        <header class="mb-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Users Management</h1>
-                    <p class="text-gray-600 mt-1">View and manage user accounts</p>
-                </div>
-                <a href="/cms/users/create"
-                   class="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors">
-                    <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i>
-                    Create User
-                </a>
-            </div>
-        </header>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/../_list-page-header.php', [
+            'title'       => 'Users Management',
+            'subtitle'    => 'View and manage user accounts',
+            'createUrl'   => '/cms/users/create',
+            'createLabel' => 'Create User',
+        ]); ?>
 
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">
