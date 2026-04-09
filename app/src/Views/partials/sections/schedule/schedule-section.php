@@ -19,9 +19,13 @@ if (!isset($scheduleSection) || $scheduleSection === null) {
 
 $schedule = $scheduleSection;
 $sectionId = $schedule->sectionId ?? 'schedule';
+$renderLegacyScheduleAnchor = $sectionId !== 'schedule';
 ?>
 
 <!-- Schedule Section -->
+<?php if ($renderLegacyScheduleAnchor): ?>
+    <span id="schedule" class="block h-0" aria-hidden="true"></span>
+<?php endif; ?>
 <section id="<?= htmlspecialchars($sectionId) ?>"
          class="w-full flex flex-col justify-start items-center pt-12"
          aria-labelledby="<?= htmlspecialchars($sectionId) ?>-heading">

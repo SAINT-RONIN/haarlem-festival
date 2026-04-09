@@ -17,7 +17,7 @@ $ticketOptions = $viewModel->ticketOptionsData;
 $heading = $ticketOptions->headingText;
 $cards   = $ticketOptions->pricingCards;
 ?>
-<section class="self-stretch px-6 lg:px-24 py-12 inline-flex flex-col justify-center items-center gap-12 overflow-hidden">
+<section id="tickets" class="self-stretch px-6 lg:px-24 py-12 inline-flex flex-col justify-center items-center gap-12 overflow-hidden">
     <div class="self-stretch justify-start text-slate-800 text-5xl font-bold font-['Montserrat'] leading-[62px]">
         <?= htmlspecialchars($heading) ?>
     </div>

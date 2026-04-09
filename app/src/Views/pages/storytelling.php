@@ -11,6 +11,17 @@ use App\View\PublicPageLayout;
 use App\View\ViewRenderer;
 use App\View\ViewTemplate;
 
+$primaryLink = $viewModel->heroData->primaryButtonLink;
+$derivedIntroSectionId = 'intro';
+$primaryLinkFragment = parse_url($primaryLink, PHP_URL_FRAGMENT);
+if (is_string($primaryLinkFragment) && $primaryLinkFragment !== '') {
+    // Keep IDs safe for HTML by allowing only common id characters.
+    $normalizedId = preg_replace('/[^A-Za-z0-9\-_:.]/', '', $primaryLinkFragment);
+    if (is_string($normalizedId) && $normalizedId !== '') {
+        $derivedIntroSectionId = $normalizedId;
+    }
+}
+
 $layout = new PublicPageLayout(
     contentTemplates: [
         // Displays the masonry image grid that introduces the storytelling event visually.
@@ -21,6 +32,7 @@ $layout = new PublicPageLayout(
         ]),
     ],
     includeEventSections: true,
+    eventIntroSectionId: $derivedIntroSectionId,
 );
 ?>
 <?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', ['viewModel' => $viewModel, 'layout' => $layout]); ?>
