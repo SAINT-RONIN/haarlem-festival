@@ -200,7 +200,8 @@ final class ScheduleCardMapper
 
     /**
      * Picks the best display price from the session price list.
-     * Priority: pay-what-you-like > Adult tier > first available tier.
+     * Priority: pay-what-you-like > Adult tier > Single tier > first available tier.
+     * Single is preferred over Group so History "from" price shows the cheaper entry price.
      *
      * @param EventSessionPrice[] $prices
      */
@@ -214,6 +215,12 @@ final class ScheduleCardMapper
 
         foreach ($prices as $price) {
             if ($price->priceTierId === PriceTierId::Adult->value) {
+                return new SessionPriceResult(amount: (float) $price->price, isPayWhatYouLike: false);
+            }
+        }
+
+        foreach ($prices as $price) {
+            if ($price->priceTierId === PriceTierId::Single->value) {
                 return new SessionPriceResult(amount: (float) $price->price, isPayWhatYouLike: false);
             }
         }

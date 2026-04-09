@@ -97,6 +97,7 @@ class ProgramService implements IProgramService
 
             $cartTotals         = $this->countTicketsInCartForSession($program->programId, $eventSessionId);
             $requestedSeats     = $quantity + ($groupTicketQuantity * CheckoutConstraints::GROUP_TICKET_SEAT_COUNT);
+            $this->validateGroupTicketLimit($capacity, $cartTotals['seats'], $cartTotals['groups'], $groupTicketQuantity);
             $this->validateCapacityForBooking($capacity, $cartTotals['seats'], $requestedSeats);
             $this->validateSingleTicketLimit($capacity, $cartTotals['singles'], $quantity);
 
@@ -260,6 +261,7 @@ class ProgramService implements IProgramService
 
         $seats = 0;
         $singles = 0;
+        $groups = 0;
         $groupTierIds = [PriceTierId::Family->value, PriceTierId::Group->value];
 
         foreach ($existingItems as $item) {
@@ -267,12 +269,14 @@ class ProgramService implements IProgramService
             $itemSeats = $isGroup ? $item->quantity * CheckoutConstraints::GROUP_TICKET_SEAT_COUNT : $item->quantity;
             $seats += $itemSeats;
 
-            if (!$isGroup) {
+            if ($isGroup) {
+                $groups += $item->quantity;
+            } else {
                 $singles += $item->quantity;
             }
         }
 
-        return ['seats' => $seats, 'singles' => $singles];
+        return ['seats' => $seats, 'singles' => $singles, 'groups' => $groups];
     }
 
     /**
@@ -325,6 +329,41 @@ class ProgramService implements IProgramService
             throw new ProgramException(
                 'Single-ticket limit reached for this session.'
                 . ($remaining > 0 ? " You can add {$remaining} more single ticket(s)." : ' No single tickets remaining.')
+            );
+        }
+    }
+
+    /**
+     * Enforces the group ticket cap for a session.
+     *
+     * A group ticket represents GROUP_TICKET_SEAT_COUNT participants, so the maximum
+     * number of group tickets is floor(remainingSeats / GROUP_TICKET_SEAT_COUNT).
+     * This accounts for single tickets already in the cart because those seats are
+     * no longer available to be filled by a group.
+     *
+     * Example with capacity 12:
+     *   - 0 in cart → max 3 group tickets (3 × 4 = 12)
+     *   - 2 singles in cart → remaining = 10, max 2 group tickets (2 × 4 = 8, +2 singles = 10)
+     *   - 2 groups in cart (8 seats) → remaining = 4, max 1 more group ticket
+     *
+     * @throws ProgramException When the requested group quantity exceeds capacity.
+     */
+    private function validateGroupTicketLimit(SessionCapacityInfo $capacity, int $seatsInCart, int $groupsInCart, int $requestedGroups): void
+    {
+        if ($requestedGroups <= 0) {
+            return;
+        }
+
+        $available       = $capacity->availableSeats();
+        $remainingSeats  = max(0, $available - $seatsInCart);
+        $maxMoreGroups   = (int) floor($remainingSeats / CheckoutConstraints::GROUP_TICKET_SEAT_COUNT);
+        $maxTotalGroups  = $groupsInCart + $maxMoreGroups;
+
+        if ($requestedGroups > $maxMoreGroups) {
+            throw new ProgramException(
+                $maxMoreGroups > 0
+                    ? "You can add at most {$maxMoreGroups} more group ticket(s) to this session (max {$maxTotalGroups} total). Each group ticket covers " . CheckoutConstraints::GROUP_TICKET_SEAT_COUNT . ' participants.'
+                    : 'No more group tickets can be added. The remaining capacity does not fit a group of ' . CheckoutConstraints::GROUP_TICKET_SEAT_COUNT . '.'
             );
         }
     }

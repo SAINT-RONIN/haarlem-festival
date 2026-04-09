@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\JazzPageConstants;
+use App\Constants\RestaurantDetailConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Enums\CmsItemType;
 use App\Enums\EventTypeId;
@@ -157,6 +158,9 @@ class CmsEditService implements ICmsEditService
     {
         if ($pageSlug === StorytellingDetailConstants::DETAIL_PAGE_SLUG) {
             return $this->buildEventNameMap(EventTypeId::Storytelling->value);
+        }
+        if ($pageSlug === RestaurantDetailConstants::PAGE_SLUG) {
+            return $this->buildEventNameMap(EventTypeId::Restaurant->value);
         }
         // More detail-page slugs can be added here when their pages support per-event sections.
         return [];

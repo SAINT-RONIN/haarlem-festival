@@ -258,7 +258,14 @@
                                         <label class="block text-xs text-gray-500 mb-1">Price Tier</label>
                                         <select name="PriceTierId"
                                                 class="px-2 py-1 text-sm border border-gray-300 rounded">
-                                            <?php foreach ($priceTiers as $tier): ?>
+                                            <?php
+                                            // History events only support Single (6) and Group (7) tickets
+                                            $historyOnlyTierIds = [6, 7];
+                                            foreach ($priceTiers as $tier):
+                                                if ($viewModel->eventTypeSlug === 'history' && !in_array($tier->priceTierId, $historyOnlyTierIds, true)):
+                                                    continue;
+                                                endif;
+                                            ?>
                                                 <option value="<?= $tier->priceTierId ?>">
                                                     <?= htmlspecialchars($tier->name) ?>
                                                 </option>
