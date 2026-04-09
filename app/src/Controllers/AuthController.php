@@ -240,6 +240,7 @@ class AuthController extends BaseController
         }
 
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
+        $this->sessionService->set('first_name', $user->firstName);
         $this->redirectAndExit($this->authService->resolvePostLoginRedirect($user->userRoleId));
     }
 }
