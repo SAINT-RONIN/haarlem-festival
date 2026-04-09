@@ -91,7 +91,9 @@ $seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
 
             <div class="px-5 py-4 flex items-start gap-4">
                 <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
-                    <span class="text-slate-800 text-4xl font-normal font-['Montserrat']">EUR</span>
+                    <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+                    </svg>
                 </div>
                 <div class="flex flex-col gap-1">
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $e($practicalInfo->labelPriceFood) ?></span>
@@ -110,9 +112,16 @@ $seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
                 </div>
                 <div class="flex flex-col gap-1">
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $e($practicalInfo->labelRating) ?></span>
-                    <span class="text-slate-800 text-lg font-normal font-['Montserrat']">
-                        <?= $e($practicalInfo->labelFestivalRated) ?> <?= $e(str_repeat('*', $practicalInfo->rating)) ?>
-                    </span>
+                    <span class="text-slate-800 text-lg font-normal font-['Montserrat']"><?= $e($practicalInfo->labelFestivalRated) ?></span>
+                    <?php if ($practicalInfo->rating > 0): ?>
+                    <div class="flex items-center gap-1">
+                        <?php for ($s = 0; $s < max(0, min(5, $practicalInfo->rating)); $s++): ?>
+                            <svg class="h-5 w-5 fill-amber-400 text-amber-400" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        <?php endfor; ?>
+                    </div>
+                    <?php endif; ?>
                     <?php if ($practicalInfo->michelinStars > 0): ?>
                         <span class="text-slate-800 text-lg font-normal font-['Montserrat']">
                             <?= $practicalInfo->michelinStars ?> <?= $e($practicalInfo->labelMichelin) ?><?= $practicalInfo->michelinStars > 1 ? 's' : '' ?>
