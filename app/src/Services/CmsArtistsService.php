@@ -9,6 +9,7 @@ use App\DTOs\Cms\ArtistUpsertData;
 use App\DTOs\Cms\JazzLineupCardUpsertData;
 use App\Exceptions\CmsOperationException;
 use App\Helpers\FieldValidator;
+use App\Helpers\TextHelper;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Services\Interfaces\ICmsArtistsService;
 
@@ -151,7 +152,7 @@ class CmsArtistsService implements ICmsArtistsService
         FieldValidator::requireNonEmpty('name', $data->name, 'Name', $errors);
         FieldValidator::requireNonEmpty('style', $data->style, 'Style', $errors);
         FieldValidator::requireNonEmpty('cardDescription', $data->cardDescription, 'Card description', $errors);
-        FieldValidator::requireNonEmpty('bioHtml', $data->bioHtml, 'Bio', $errors);
+        FieldValidator::requireNonEmpty('bioHtml', TextHelper::stripHtmlToText($data->bioHtml), 'Bio', $errors);
         if ($data->cardSortOrder < 0) {
             $errors['cardSortOrder'] = 'Card sort order must be 0 or greater.';
         }

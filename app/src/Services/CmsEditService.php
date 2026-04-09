@@ -45,7 +45,8 @@ class CmsEditService implements ICmsEditService
         private readonly IArtistRepository $artistRepository,
         private readonly ICmsItemEnricher $itemEnricher,
         private readonly ICmsPreviewUrlResolver $previewUrlResolver,
-    ) {}
+    ) {
+    }
 
     /**
      * Loads a CMS page with all its sections and items, ready for the editor view.
@@ -225,7 +226,7 @@ class CmsEditService implements ICmsEditService
         $pageItemsById = $this->indexPageItemsById($pageId);
 
         foreach ($items as $itemId => $rawValue) {
-            $result = $this->processSingleItem((int) $itemId, (string) $rawValue, $pageItemsById);
+            $result = $this->processSingleItem((int)$itemId, (string)$rawValue, $pageItemsById);
             if ($result === true) {
                 $updatedCount++;
             } elseif (is_string($result)) {
@@ -437,3 +438,5 @@ class CmsEditService implements ICmsEditService
         return strip_tags(html_entity_decode($value));
     }
 }
+
+

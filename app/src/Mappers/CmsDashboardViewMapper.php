@@ -60,10 +60,19 @@ final class CmsDashboardViewMapper
      *
      * @param CmsPage[] $allPages
      */
-    public static function toPagesListViewModel(array $allPages, string $searchQuery, string $userName): PagesListViewModel
+    public static function toPagesListViewModel(array $allPages, string $searchQuery, string $statusFilter, string $userName): PagesListViewModel
     {
+        $items = array_map([self::class, 'toPageListItemViewModel'], $allPages);
+
+        if ($statusFilter !== '') {
+            $items = array_values(array_filter(
+                $items,
+                fn(PageListItemViewModel $p) => strtolower($p->status) === $statusFilter,
+            ));
+        }
+
         return new PagesListViewModel(
-            pages: array_map([self::class, 'toPageListItemViewModel'], $allPages),
+            pages: $items,
             searchQuery: $searchQuery,
             userName: $userName,
         );

@@ -15,11 +15,6 @@ $pages ??= [];
         <div class="text-sm text-gray-700" aria-live="polite">
             <?= count($pages) ?> <?= count($pages) === 1 ? 'page' : 'pages' ?>
         </div>
-        <button type="button"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-            <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i>
-            New Page
-        </button>
     </div>
 
     <table class="w-full">

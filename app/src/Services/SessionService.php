@@ -19,9 +19,19 @@ class SessionService implements ISessionService
     private const FLASH_KEY = '_flash';
     private const CSRF_KEY = '_csrf_tokens';
 
+    private const SESSION_LIFETIME = 60 * 60 * 8; // 8 hours
+
     public function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            session_set_cookie_params([
+                'lifetime' => self::SESSION_LIFETIME,
+                'path'     => '/',
+                'secure'   => isset($_SERVER['HTTPS']),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+            ini_set('session.gc_maxlifetime', (string) self::SESSION_LIFETIME);
             session_start();
         }
     }

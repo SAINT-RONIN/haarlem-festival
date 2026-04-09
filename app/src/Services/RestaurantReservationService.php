@@ -128,7 +128,7 @@ class RestaurantReservationService implements IRestaurantReservationService
      * It returns an integer because the reservation fee is stored as a whole-number amount
      * in the current domain model, not as a floating-point currency value.
      */
-    private function calculateReservationFee(ReservationFormData $data): int
+    private function calculateReservationFee(ReservationFormData $data): float
     {
         return $data->totalGuests() * RestaurantPageConstants::RESERVATION_FEE;
     }

@@ -674,7 +674,7 @@ final class JazzMapper
         ), $tracks);
     }
 
-    private static function buildPrimaryOverviewFallbackFromModel(\App\DTOs\Events\JazzArtistDetailEvent $event): string
+    private static function buildPrimaryOverviewFallbackFromModel(\App\DTOs\Domain\Events\JazzArtistDetailEvent $event): string
     {
         if ($event->longDescriptionHtml === '') {
             return '';
