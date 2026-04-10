@@ -18,6 +18,7 @@ use App\DTOs\Domain\Schedule\SessionWithEvent;
 use App\Enums\DayOfWeek;
 use App\Enums\PriceTierId;
 use App\Exceptions\CmsOperationException;
+use App\Exceptions\RepositoryException;
 use App\Exceptions\ValidationException;
 use App\Helpers\FormatHelper;
 use App\Models\EventType;
@@ -317,11 +318,8 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
 
         try {
             return $this->sessionRepository->delete($sessionId);
-        } catch (\PDOException $e) {
-            if (str_starts_with($e->getCode(), '23')) {
-                throw new ValidationException(['This session cannot be deleted because it is still linked to one or more program items. Remove those first.']);
-            }
-            throw $e;
+        } catch (RepositoryException) {
+            throw new ValidationException(['This session cannot be deleted because it is still linked to one or more program items. Remove those first.']);
         }
     }
 

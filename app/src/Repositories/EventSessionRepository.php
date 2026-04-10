@@ -420,10 +420,17 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
     // Hard delete -- will fail if order items reference this session.
     public function delete(int $sessionId): bool
     {
-        $this->execute(
-            'DELETE FROM EventSession WHERE EventSessionId = :sessionId',
-            ['sessionId' => $sessionId],
-        );
+        try {
+            $this->execute(
+                'DELETE FROM EventSession WHERE EventSessionId = :sessionId',
+                ['sessionId' => $sessionId],
+            );
+        } catch (\PDOException $e) {
+            if (str_starts_with((string) $e->getCode(), '23')) {
+                throw new RepositoryException('Session is still referenced by one or more records and cannot be deleted.', 0, $e);
+            }
+            throw $e;
+        }
 
         return true;
     }
