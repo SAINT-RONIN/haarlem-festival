@@ -327,7 +327,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         $sql = $this->getSessionSelectColumns() . ' ' . $this->getBaseFromClause() . ' ' . $whereClause . ' ORDER BY ' . $orderBy;
 
         if ($filters->limit !== null && $filters->limit > 0) {
-            $sql .= ' LIMIT ' . (int) $limit;
+            $sql .= ' LIMIT ' . (int) $filters->limit;
         }
 
         $stmt = $this->execute($sql, $params);
