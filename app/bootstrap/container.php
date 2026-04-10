@@ -181,17 +181,18 @@ return static function (string $controllerClass): object {
     $emailService = fn() => $make('emailService', fn() => new EmailService());
     $pdfAssetStorage = fn() => $make('pdfAssetStorage', fn() => new PdfAssetStorage($mediaAssetRepo()));
     $ticketFulfillmentService = fn() => $make('ticketFulfillmentService', fn() => new TicketFulfillmentService(
-        $orderRepo(),
-        $orderItemRepo(),
-        $eventSessionRepo(),
-        $ticketRepo(),
-        $mediaAssetRepo(),
-        $userAccountRepo(),
+        new \App\Repositories\TicketFulfillmentRepository(
+            $orderRepo(),
+            $orderItemRepo(),
+            $eventSessionRepo(),
+            $ticketRepo(),
+            $userAccountRepo(),
+            new TicketCodeGenerator(),
+        ),
         $emailService(),
         $pdfAssetStorage(),
         new QrCodeGenerator(),
         new PdfTicketGenerator(),
-        new TicketCodeGenerator(),
     ));
 
     $invoiceFulfillmentService = fn() => $make('invoiceFulfillmentService', fn() => new InvoiceFulfillmentService(
@@ -393,29 +394,35 @@ return static function (string $controllerClass): object {
                 $programService(),
                 $sessionService,
                 new CheckoutService(
-                    $orderRepo(),
-                    $orderItemRepo(),
-                    $paymentRepo(),
+                    new \App\Repositories\CheckoutOrderRepository(
+                        $orderRepo(),
+                        $orderItemRepo(),
+                        $paymentRepo(),
+                        $passPurchaseRepo(),
+                        $eventSessionRepo(),
+                        $programRepo(),
+                        $orderCapacityRestorer(),
+                        $pdo(),
+                    ),
                     $eventSessionRepo(),
                     $stripeService,
                     $runtimeConfig,
-                    $pdo(),
                     $checkoutContentRepo(),
-                    $orderCapacityRestorer(),
                     $ticketFulfillmentService(),
-                    $passPurchaseRepo(),
-                    $programRepo(),
                 ),
                 new StripeWebhookHandler(
                     $stripeService,
                     new StripeWebhookEventRepository($pdo()),
-                    $orderRepo(),
-                    $paymentRepo(),
-                    $programRepo(),
-                    $orderCapacityRestorer(),
+                    new \App\Repositories\WebhookOrderRepository(
+                        $orderRepo(),
+                        $paymentRepo(),
+                        $programRepo(),
+                        $orderItemRepo(),
+                        $eventSessionRepo(),
+                        $pdo(),
+                    ),
                     $ticketFulfillmentService(),
                     $invoiceFulfillmentService(),
-                    $pdo(),
                 ),
                 new StripeWebhookRequestFactory(),
             );
