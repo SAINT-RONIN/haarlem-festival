@@ -38,4 +38,27 @@ interface IEmailService
      * @throws \App\Exceptions\EmailDeliveryException When SMTP delivery fails unexpectedly
      */
     public function sendInvoiceEmail(InvoiceEmailMessage $message): bool;
+
+    /**
+     * Sends an email confirmation for account email changes.
+     *
+     * @param string $toEmail Recipient email address
+     * @param string $rawToken The raw token (will be included in URL)
+     * @return bool True if sent successfully
+     * @throws \App\Exceptions\SmtpNotConfiguredException When SMTP is not configured or local sending is blocked
+     * @throws \App\Exceptions\EmailDeliveryException When SMTP delivery fails unexpectedly
+     */
+    public function sendEmailConfirmationEmail(string $toEmail, string $rawToken): bool;
+
+    /**
+     * Sends an account update confirmation email for any account data change.
+     *
+     * @param string $toEmail Recipient email address
+     * @param string $userName User's full name for personalization
+     * @param string $changeDescription Description of what was changed (e.g., "password", "email", "profile name", "profile picture")
+     * @return bool True if sent successfully
+     * @throws \App\Exceptions\SmtpNotConfiguredException When SMTP is not configured or local sending is blocked
+     * @throws \App\Exceptions\EmailDeliveryException When SMTP delivery fails unexpectedly
+     */
+    public function sendAccountUpdateConfirmationEmail(string $toEmail, string $userName, string $changeDescription): bool;
 }

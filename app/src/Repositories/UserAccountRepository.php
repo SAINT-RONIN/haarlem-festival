@@ -121,6 +121,29 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
+    public function updateProfileInfo(
+        int $userId,
+        string $email,
+        string $firstName,
+        string $lastName,
+        ?int $profilePictureAssetId = null,
+    ): void {
+        $this->execute(
+            'UPDATE UserAccount 
+             SET Email = :email, FirstName = :firstName, LastName = :lastName, 
+                 ProfilePictureAssetId = :profilePictureAssetId, UpdatedAtUtc = NOW() 
+             WHERE UserAccountId = :id',
+            [
+                ':email' => $email,
+                ':firstName' => $firstName,
+                ':lastName' => $lastName,
+                ':profilePictureAssetId' => $profilePictureAssetId,
+                ':id' => $userId,
+            ],
+        );
+    }
+
+
     /**
      * Updates a user account's profile fields (does not change the password).
      */
@@ -168,5 +191,23 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
             'UPDATE UserAccount SET IsActive = 1, UpdatedAtUtc = NOW() WHERE UserAccountId = :id',
             [':id' => $id],
         );
+    }
+
+
+    /**
+     * Checks if email exists for another user (excluding given user ID).
+     *
+     * @param string $email Email to check
+     * @param int $excludeUserId User ID to exclude from check
+     * @return bool True if email exists for another user
+     */
+    public function emailExistsForOtherUser(string $email, int $excludeUserId): bool
+    {
+        $stmt = $this->execute(
+            'SELECT 1 FROM UserAccount WHERE Email = :email AND UserAccountId != :userId LIMIT 1',
+            [':email' => $email, ':userId' => $excludeUserId],
+        );
+
+        return $stmt->fetch() !== false;
     }
 }
