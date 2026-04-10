@@ -88,6 +88,27 @@ class EmailService implements IEmailService
         return $this->send($message->recipientEmail, $subject, $body, $message->attachments);
     }
 
+    public function sendEmailConfirmationEmail(string $toEmail, string $rawToken): bool
+    {
+        $confirmUrl = $this->appUrl . '/confirm-email?token=' . urlencode($rawToken);
+
+        $subject = 'Confirm Your Email - Haarlem Festival';
+        $body = <<<EMAIL
+            Hello,
+
+            Please confirm your email address for your Haarlem Festival account by clicking the link below:
+
+            {$confirmUrl}
+
+            If you did not create an account, you can safely ignore this email.
+
+            Best regards,
+            Haarlem Festival Team
+            EMAIL;
+
+        return $this->send($toEmail, $subject, $body);
+    }
+
     public function sendAccountUpdateConfirmationEmail(string $toEmail, string $userName, string $changeDescription): bool
     {
         $subject = 'Your Account Has Been Updated - Haarlem Festival';

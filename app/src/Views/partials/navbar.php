@@ -204,25 +204,18 @@ $stickyClass = $isSticky ? 'sticky top-0 z-50' : '';
                     <div id="user-menu-dropdown"
                          class="hidden absolute right-0 xl:right-auto xl:left-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50"
                          role="menu" aria-labelledby="user-menu-btn">
-                        <!-- Profile (placeholder) -->
-                        <span role="menuitem" aria-disabled="true"
-                              class="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 cursor-default select-none">
+                        <!-- Profile -->
+                        <a href="/account" role="menuitem"
+                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">
                             <i data-lucide="user" class="w-4 h-4 flex-shrink-0" aria-hidden="true"></i>
                             Profile
-                        </span>
+                        </a>
                         <div class="border-t border-gray-100"></div>
                         <!-- My Orders -->
                         <a href="/my-orders" role="menuitem"
                            class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">
                             <i data-lucide="receipt" class="w-4 h-4 flex-shrink-0" aria-hidden="true"></i>
                             My Orders
-                        </a>
-                        <div class="border-t border-gray-100"></div>
-                        <!-- Login -->
-                        <a href="/login" role="menuitem"
-                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">
-                            <i data-lucide="log-in" class="w-4 h-4 flex-shrink-0" aria-hidden="true"></i>
-                            Login
                         </a>
                         <div class="border-t border-gray-100"></div>
                         <!-- Logout -->
