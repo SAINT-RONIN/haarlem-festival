@@ -66,16 +66,25 @@ interface IUserAccountRepository
     public function updatePasswordHash(int $userId, string $passwordHash): void;
 
     /**
-     * Updates a user account's profile fields (does not change the password).
+     * Does not change password
      */
-    public function updateUser(
-        int $id,
-        string $username,
+    public function updateProfileInfo(
+        int $userId,
         string $email,
         string $firstName,
         string $lastName,
-        int $roleId,
+        ?int $profilePictureAssetId = null,
     ): void;
+
+
+    /**
+     * Checks if email exists for another user (excluding given user ID).
+     *
+     * @param string $email Email to check
+     * @param int $excludeUserId User ID to exclude from check
+     * @return bool True if email exists for another user
+     */
+    public function emailExistsForOtherUser(string $email, int $excludeUserId): bool;
 
     /**
      * Soft-deletes a user by setting IsActive = 0.

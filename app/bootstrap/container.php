@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controllers\AccountController;
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsArtistsController;
@@ -99,6 +100,7 @@ use App\Services\RestaurantService;
 use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
 use App\Services\AuthService;
+use App\Services\AccountService;
 use App\Services\CaptchaService;
 use App\Services\ScannerService;
 use App\Services\SessionService;
@@ -227,6 +229,12 @@ return static function (string $controllerClass): object {
         $userAccountRepo(),
         $resetTokenRepo(),
         $emailService(),
+    ));
+
+    $accountService = fn() => $make('accountService', fn() => new AccountService(
+        $userAccountRepo(),
+        $emailService(),
+        $pdo(),
     ));
 
     // ── Lazy service singletons shared across multiple controllers ──
@@ -468,6 +476,11 @@ return static function (string $controllerClass): object {
         ),
         OrderHistoryController::class => new OrderHistoryController(
             new OrderHistoryService(new OrderHistoryRepository($pdo())),
+            $sessionService,
+        ),
+        AccountController::class => new AccountController(
+            $accountService(),
+            $mediaAssetService(),
             $sessionService,
         ),
         default => new $controllerClass(),

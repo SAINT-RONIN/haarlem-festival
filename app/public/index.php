@@ -37,6 +37,7 @@ $isLocalHost = in_array($appUrlHost, ['localhost', '127.0.0.1'], true)
 $disableRouteCache = in_array($appEnv, ['local', 'development', 'dev'], true) || $isLocalHost;
 
 use App\Controllers\AuthController;
+use App\Controllers\AccountController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
@@ -142,6 +143,11 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/forgot-password', [AuthController::class, 'forgotPassword']);
     $r->addRoute('GET', '/reset-password', [AuthController::class, 'showResetPassword']);
     $r->addRoute('POST', '/reset-password', [AuthController::class, 'resetPassword']);
+
+    // Account Management Routes (authenticated)
+    $r->addRoute('GET', '/account', [AccountController::class, 'showAccount']);
+    $r->addRoute('POST', '/account/update-profile', [AccountController::class, 'updateProfile']);
+    $r->addRoute('POST', '/account/update-password', [AccountController::class, 'updatePassword']);
 
     // CMS Authentication Routes
     $r->addRoute('GET', '/cms/login', [CmsAuthController::class, 'showLogin']);

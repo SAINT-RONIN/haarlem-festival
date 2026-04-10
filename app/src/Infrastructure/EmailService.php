@@ -71,6 +71,7 @@ class EmailService implements IEmailService
         return $this->send($toEmail, $subject, $body);
     }
 
+
     public function sendOrderTicketsEmail(TicketEmailMessage $message): bool
     {
         $subject = 'Your Haarlem Festival Tickets - ' . $message->orderReference;
@@ -85,6 +86,14 @@ class EmailService implements IEmailService
         $body = $this->buildInvoiceEmailBody($message);
 
         return $this->send($message->recipientEmail, $subject, $body, $message->attachments);
+    }
+
+    public function sendAccountUpdateConfirmationEmail(string $toEmail, string $userName, string $changeDescription): bool
+    {
+        $subject = 'Your Account Has Been Updated - Haarlem Festival';
+        $body = $this->buildAccountUpdateConfirmationBody($userName, $changeDescription);
+
+        return $this->send($toEmail, $subject, $body);
     }
 
     /**
@@ -103,6 +112,22 @@ class EmailService implements IEmailService
             This link will expire in 1 hour.
 
             If you did not request this reset, you can safely ignore this email.
+
+            Best regards,
+            Haarlem Festival Team
+            EMAIL;
+    }
+
+    private function buildAccountUpdateConfirmationBody(string $userName, string $changeDescription): string
+    {
+        $displayName = $userName !== '' ? $userName : 'valued customer';
+
+        return <<<EMAIL
+            Hello {$displayName},
+
+            We are writing to confirm that your {$changeDescription} for the Haarlem Festival account has been successfully changed.
+
+            If you did not make this change or believe your account has been compromised, please contact us immediately at support@haarlemfestival.nl.
 
             Best regards,
             Haarlem Festival Team
@@ -163,7 +188,7 @@ class EmailService implements IEmailService
      *
      * @throws \RuntimeException When SMTP is not configured or local sending is blocked
      */
-    private function send(string $to, string $subject, string $body, array $attachments = []): bool
+    public function send(string $to, string $subject, string $body, array $attachments = []): bool
     {
         if (!$this->isSmtpConfigured()) {
             throw new SmtpNotConfiguredException("SMTP not configured. Email to {$to} with subject '{$subject}' was not sent.");
