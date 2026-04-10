@@ -44,7 +44,7 @@ class ScheduleService implements IScheduleService
         private readonly IScheduleDayVisibilityResolver $visibilityResolver,
     ) {}
 
-    /** @throws PageLoadException When an unexpected error occurs while building schedule data */
+    /** @throws PageLoadException */
     public function getScheduleData(
         string $pageSlug,
         int $eventTypeId,
@@ -60,7 +60,6 @@ class ScheduleService implements IScheduleService
         }
     }
 
-    /** Converts a day name (e.g. "Monday") to a MySQL DAYOFWEEK number (1=Sunday..7=Saturday). */
     private function convertDayNameToNumber(?string $dayName): ?int
     {
         if ($dayName === null || $dayName === '') {
@@ -114,7 +113,6 @@ class ScheduleService implements IScheduleService
         return $eventType?->slug ?? $fallback;
     }
 
-    /** Fetches distinct calendar days that have at least one matching session (used for day-tab navigation). */
     private function fetchAvailableDays(int $eventTypeId, array $visibleDays, ?int $eventId, int $maxDays): array
     {
         return $this->sessionRepository->findDistinctDays(
@@ -171,10 +169,7 @@ class ScheduleService implements IScheduleService
         );
     }
 
-    /**
-     * @param SessionWithEvent[] $sessions
-     * @return int[]
-     */
+    /** @param SessionWithEvent[] $sessions @return int[] */
     private function collectSessionIds(array $sessions): array
     {
         return array_map(static fn($s) => $s->eventSessionId, $sessions);
@@ -217,11 +212,8 @@ class ScheduleService implements IScheduleService
             : [];
     }
 
-    /**
-     * For History tours, sessions at the same time slot (one per language) are first merged
-     * into a single session via groupSessionsByTimeSlot. $labelsMap is passed by reference
-     * because History grouping may append merged language labels to it.
-     */
+    // History tours: sessions at the same time slot are merged via groupSessionsByTimeSlot.
+    // $labelsMap is passed by reference because grouping may append merged language labels.
     private function buildSingleDay(
         object $day,
         array $sessionsByDate,
@@ -247,13 +239,7 @@ class ScheduleService implements IScheduleService
         );
     }
 
-    /**
-     * Groups History tour sessions by StartDateTime, merging language labels.
-     * Multiple sessions at the same time slot (one per language) become one card with combined labels.
-     *
-     * @param SessionWithEvent[] $sessions
-     * @return array{0: SessionWithEvent[], 1: array, 2: array<int, array<int, array<string, mixed>>>}
-     */
+    /** @param SessionWithEvent[] $sessions @return array{0: SessionWithEvent[], 1: array, 2: array<int, array<int, array<string, mixed>>>} */
     private function groupSessionsByTimeSlot(array $sessions, array $labelsMap, array $pricesMap): array
     {
         $grouped = [];
@@ -281,7 +267,6 @@ class ScheduleService implements IScheduleService
         return [array_values($grouped), $labelsMap, $historyTourOptionsMap];
     }
 
-    /** Merges unique labels from a secondary session into the primary session's label list. */
     private function mergeSessionLabels(array $labelsMap, int $primaryId, int $sourceId): array
     {
         $sourceLabels = $labelsMap[$sourceId] ?? [];
@@ -365,11 +350,7 @@ class ScheduleService implements IScheduleService
         ));
     }
 
-    /**
-     * Returns the filter categories shown in the schedule UI for a given event type.
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     private function resolveFilterGroupTypes(string $eventTypeSlug): array
     {
         return match ($eventTypeSlug) {
@@ -393,11 +374,8 @@ class ScheduleService implements IScheduleService
         };
     }
 
-    /**
-     * Jazz events don't support pay-what-you-like, so that option is excluded for jazz.
-     *
-     * @return string[]
-     */
+    // Jazz doesn't support pay-what-you-like, so that option is excluded.
+    /** @return string[] */
     private function resolvePriceTypeOptions(string $eventTypeSlug): array
     {
         return $eventTypeSlug === JazzPageConstants::PAGE_SLUG

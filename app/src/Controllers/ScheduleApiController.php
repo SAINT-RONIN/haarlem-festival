@@ -25,10 +25,6 @@ class ScheduleApiController extends BaseController
         private readonly IScheduleService $scheduleService,
     ) {}
 
-    /**
-     * Returns the rendered schedule section HTML for AJAX filter requests.
-     * GET /api/schedule/{pageSlug}
-     */
     public function getScheduleHtml(string $pageSlug): void
     {
         $this->handlePageRequest(function () use ($pageSlug): void {
@@ -59,10 +55,7 @@ class ScheduleApiController extends BaseController
         return ScheduleMapper::toScheduleSection($scheduleData);
     }
 
-    /**
-     * Maps a URL slug to event-type-specific configuration. New event types require a new case here.
-     * @throws SchedulePageNotFoundException if the slug doesn't match any known event page
-     */
+    // Add a new case here when a new event type page needs schedule filtering.
     private function resolveConfig(string $pageSlug): ScheduleRouteConfig
     {
         return match ($pageSlug) {

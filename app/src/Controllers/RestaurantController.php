@@ -14,12 +14,8 @@ use App\Services\Interfaces\IRestaurantReservationService;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\ISessionService;
 
-/**
- * Controller for Restaurant pages: listing, detail, and reservation.
- */
 class RestaurantController extends BaseController
 {
-    /** Injects the services used to render restaurant pages and save reservations. */
     public function __construct(
         private readonly IRestaurantService $restaurantService,
         private readonly IRestaurantDetailService $restaurantDetailService,
@@ -30,11 +26,6 @@ class RestaurantController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the restaurant listing page.
-     *
-     * GET /restaurant
-     */
     public function index(): void
     {
         $this->handlePageRequest(function (): void {
@@ -44,11 +35,6 @@ class RestaurantController extends BaseController
         });
     }
 
-    /**
-     * Displays a single restaurant detail page by slug.
-     *
-     * GET /restaurant/{slug}
-     */
     public function detail(string $slug): void
     {
         $this->handlePageRequest(function () use ($slug): void {
@@ -58,11 +44,6 @@ class RestaurantController extends BaseController
         });
     }
 
-    /**
-     * Displays the reservation form for a restaurant.
-     *
-     * GET /restaurant/{slug}/reservation
-     */
     public function reservationPage(string $slug): void
     {
         $this->handlePageRequest(function () use ($slug): void {
@@ -72,11 +53,6 @@ class RestaurantController extends BaseController
         });
     }
 
-    /**
-     * Processes a reservation form submission.
-     *
-     * POST /restaurant/{slug}/reservation
-     */
     public function submitReservation(string $slug): void
     {
         $this->handleJsonRequest(function () use ($slug): void {

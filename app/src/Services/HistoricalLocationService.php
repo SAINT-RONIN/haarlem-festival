@@ -13,9 +13,6 @@ use App\Repositories\Interfaces\IHistoricalLocationContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IHistoricalLocationService;
 
-/**
- * Composes the CMS-driven domain payload for a single historical location page.
- */
 class HistoricalLocationService extends BaseContentService implements IHistoricalLocationService
 {
     public function __construct(
@@ -26,7 +23,6 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
         parent::__construct($globalContentRepo);
     }
 
-    /** Loads the full CMS-driven payload for one historical location page by slug. */
     public function getHistoralLocationPageData(string $name): HistoricalLocationPageData
     {
         $heroRaw = $this->cmsContentRepository->getSectionContent($name, SharedSectionKeys::SECTION_HERO);
@@ -38,7 +34,6 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
         return $this->buildPageData($name, $heroRaw);
     }
 
-    /** Builds the final page data object once the required hero content has been found. */
     /** @param array<string, ?string> $heroRaw */
     private function buildPageData(string $slug, array $heroRaw): HistoricalLocationPageData
     {

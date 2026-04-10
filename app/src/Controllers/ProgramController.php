@@ -24,10 +24,6 @@ class ProgramController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the "My Program" page listing all items the user has added.
-     * GET /my-program
-     */
     public function index(): void
     {
         $this->handlePageRequest(function (): void {
@@ -47,10 +43,6 @@ class ProgramController extends BaseController
         $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);
     }
 
-    /**
-     * Adds an event session to the user's program with a given quantity and optional donation.
-     * POST /my-program/add (JSON)
-     */
     public function add(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -74,10 +66,6 @@ class ProgramController extends BaseController
         $this->json(['success' => true]);
     }
 
-    /**
-     * Adds a festival pass to the user's program with a given quantity.
-     * POST /api/program/add-pass (JSON)
-     */
     public function addPass(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -100,10 +88,6 @@ class ProgramController extends BaseController
         $this->json(['success' => true, 'programItemId' => $item->programItemId]);
     }
 
-    /**
-     * Updates the ticket quantity for a program item and returns recalculated totals.
-     * PATCH /my-program/update-quantity (JSON)
-     */
     public function updateQuantity(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -125,10 +109,6 @@ class ProgramController extends BaseController
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }
 
-    /**
-     * Updates the donation amount for a program item and returns recalculated totals.
-     * PATCH /my-program/update-donation (JSON)
-     */
     public function updateDonation(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -150,10 +130,6 @@ class ProgramController extends BaseController
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }
 
-    /**
-     * Removes a single item from the program and returns recalculated totals.
-     * DELETE /my-program/remove (JSON)
-     */
     public function remove(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -174,10 +150,6 @@ class ProgramController extends BaseController
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }
 
-    /**
-     * Removes all items from the user's program.
-     * DELETE /my-program/clear (JSON)
-     */
     public function clear(): void
     {
         $this->handleJsonRequest(function (): void {

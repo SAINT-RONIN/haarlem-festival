@@ -450,15 +450,7 @@ class CheckoutService implements ICheckoutService
         );
     }
 
-    /**
-     * Retrieves a Stripe checkout session and returns a normalized summary
-     * used to display the order confirmation or failure page.
-     *
-     * The returned summary is intentionally smaller than the raw Stripe response
-     * because the view only needs a few safe, display-ready values.
-     *
-     * @throws \InvalidArgumentException When sessionId is empty
-     */
+    /** @throws \InvalidArgumentException */
     public function getSessionSummary(string $sessionId): CheckoutSessionSummary
     {
         if ($sessionId === '') {
@@ -475,14 +467,7 @@ class CheckoutService implements ICheckoutService
         );
     }
 
-    /**
-     * Returns the raw Stripe checkout session for the given session id.
-     *
-     * Wrapping the Stripe call here means the rest of the service only has to deal
-     * with one project-specific exception type when session retrieval fails.
-     *
-     * @return array<string,mixed>
-     */
+    /** @return array<string,mixed> */
     private function loadCheckoutSession(string $sessionId): array
     {
         try {
@@ -492,16 +477,8 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Uses the verified Stripe success return as a fulfillment fallback when the
-     * webhook is unavailable in local/dev. The fulfillment service is idempotent,
-     * so repeated success-page refreshes are safe.
-     *
-     * It returns nothing because the useful outcome is the side effect:
-     * local order state is corrected and ticket fulfillment can proceed.
-     *
-     * @param array<string,mixed> $session
-     */
+    // Fallback fulfillment when the webhook is unavailable in local/dev. Idempotent.
+    /** @param array<string,mixed> $session */
     private function fulfillPaidOrderFromSession(array $session): void
     {
         if (!$this->isPaidSession($session)) {
@@ -523,10 +500,7 @@ class CheckoutService implements ICheckoutService
         );
     }
 
-    /**
-     * Marks the order and payment as Paid when the success page confirms payment.
-     * Idempotent — only transitions from Pending, so webhook + success-page can both fire safely.
-     */
+    // Idempotent — only transitions from Pending.
     private function markOrderPaidFromSession(array $session, int $orderId): void
     {
         $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Paid, [OrderStatus::Pending]);
@@ -547,12 +521,6 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Returns the internal payment id stored in Stripe metadata, or null when it is missing.
-     *
-     * Null is acceptable here because success-page handling can still continue partially
-     * even if the payment id was not present in the returned metadata.
-     */
     private function extractPaymentIdFromSession(array $session): ?int
     {
         $metadata = $session['metadata'] ?? null;
@@ -563,12 +531,6 @@ class CheckoutService implements ICheckoutService
         return $id > 0 ? $id : null;
     }
 
-    /**
-     * Returns the internal program id stored in Stripe metadata, or zero when none exists.
-     *
-     * Zero is used as the "no valid program id" marker because later code only needs to know
-     * whether there is a positive id worth marking as checked out.
-     */
     private function extractProgramIdFromSession(array $session): int
     {
         $metadata = $session['metadata'] ?? null;
@@ -578,27 +540,11 @@ class CheckoutService implements ICheckoutService
         return (int) $metadata['program_id'];
     }
 
-    /**
-     * Returns true only when Stripe reported this session as paid.
-     *
-     * This helper exists so later fulfillment code reads like a business rule
-     * instead of a raw array comparison.
-     *
-     * @param array<string,mixed> $session
-     */
     private function isPaidSession(array $session): bool
     {
         return ($session['payment_status'] ?? null) === 'paid';
     }
 
-    /**
-     * Returns the internal order id stored in Stripe metadata, or null when it is missing.
-     *
-     * Null is returned on purpose because callers use it as a signal to stop gracefully
-     * when the Stripe session does not contain enough metadata to continue fulfillment.
-     *
-     * @param array<string,mixed> $session
-     */
     private function extractOrderIdFromSession(array $session): ?int
     {
         $metadata = $session['metadata'] ?? null;
@@ -610,14 +556,7 @@ class CheckoutService implements ICheckoutService
         return $orderId > 0 ? $orderId : null;
     }
 
-    /**
-     * Returns the best available customer email from the Stripe session payload.
-     *
-     * customer_details is checked first because it is the most structured source;
-     * customer_email is kept as a fallback when that block is absent.
-     *
-     * @param array<string,mixed> $session
-     */
+    // customer_details checked first (most structured), customer_email as fallback.
     private function extractCustomerEmailFromSession(array $session): ?string
     {
         $customerDetails = $session['customer_details'] ?? null;
@@ -637,14 +576,6 @@ class CheckoutService implements ICheckoutService
         return $customerEmail !== '' ? $customerEmail : null;
     }
 
-    /**
-     * Returns one trimmed metadata value from the Stripe session, or null when it is missing.
-     *
-     * Returning null keeps callers simple because optional metadata such as first and last name
-     * should not break fulfillment when Stripe sends them back empty.
-     *
-     * @param array<string,mixed> $session
-     */
     private function extractMetadataString(array $session, string $key): ?string
     {
         $metadata = $session['metadata'] ?? null;
@@ -656,14 +587,8 @@ class CheckoutService implements ICheckoutService
         return $value !== '' ? $value : null;
     }
 
-    /**
-     * Returns the single line-item array sent to Stripe for this order total.
-     *
-     * One line item is enough because Stripe only needs the final amount for payment,
-     * while the detailed order breakdown already lives in our own database.
-     *
-     * @return array<int, array{price_data: array{currency: string, unit_amount: int, product_data: array{name: string}}, quantity: int}>
-     */
+    // One line item is enough — Stripe only needs the final amount; our DB has the breakdown.
+    /** @return array<int, array{price_data: array{currency: string, unit_amount: int, product_data: array{name: string}}, quantity: int}> */
     private function buildStripeLineItems(float $total, string $orderNumber): array
     {
         return [[
@@ -676,14 +601,6 @@ class CheckoutService implements ICheckoutService
         ]];
     }
 
-    /**
-     * Validates the checkout payload before the transaction starts.
-     *
-     * Now that the DTO handles presence checks, this method validates format rules
-     * that require runtime inspection (email format, payment method validity).
-     *
-     * It returns nothing because invalid form data should stop checkout immediately.
-     */
     private function validatePayload(CheckoutPayloadData $payload): void
     {
         if (!filter_var($payload->email, FILTER_VALIDATE_EMAIL)) {
@@ -693,12 +610,6 @@ class CheckoutService implements ICheckoutService
         $this->mapPaymentMethod($payload->paymentMethod);
     }
 
-    /**
-     * Returns the internal PaymentMethod enum for the posted payment string.
-     *
-     * Converting to an enum early makes later code safer because the rest of checkout
-     * no longer has to work with loose string values.
-     */
     private function mapPaymentMethod(string $rawMethod): PaymentMethod
     {
         return match ($rawMethod) {
@@ -708,14 +619,7 @@ class CheckoutService implements ICheckoutService
         };
     }
 
-    /**
-     * Returns the Stripe payment-method type list for the chosen internal payment method.
-     *
-     * The result is an array because Stripe expects its method types in that format,
-     * even when only one option is allowed.
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     private function mapStripePaymentMethodTypes(PaymentMethod $method): array
     {
         return match ($method) {
@@ -725,16 +629,7 @@ class CheckoutService implements ICheckoutService
         };
     }
 
-    /**
-     * Validates that every session in the cart has enough capacity.
-     * Enforces sold-out prevention, quantity limits, and the single-ticket cap.
-     *
-     * It returns nothing because the useful outcome is permission to continue checkout:
-     * when any item fails validation, the method throws and the flow stops.
-     *
-     * @param ProgramItemData[] $items
-     * @throws CheckoutException When any session lacks sufficient capacity
-     */
+    /** @param ProgramItemData[] $items @throws CheckoutException */
     private function validateItemAvailability(array $items): void
     {
         foreach ($items as $item) {
@@ -745,12 +640,6 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Validates one session-based program item against all capacity rules.
-     *
-     * Keeping this logic in a separate method makes the rule set easier to explain
-     * than embedding everything inside the cart loop.
-     */
     private function validateSingleItemAvailability(ProgramItemData $item): void
     {
         $capacity = $this->eventSessionRepository->getCapacityInfo($item->eventSessionId);
@@ -764,12 +653,6 @@ class CheckoutService implements ICheckoutService
         $this->validateSingleTicketCap($item, $capacity);
     }
 
-    /**
-     * Checks whether the requested seats still fit within remaining capacity.
-     *
-     * It throws user-facing input errors because this is a recoverable checkout problem:
-     * the visitor can usually fix it by reducing quantity or removing the item.
-     */
     private function validateSeatAvailability(ProgramItemData $item, int $available): void
     {
         if ($available <= 0) {
@@ -785,15 +668,7 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Enforces the single-ticket cap that keeps some capacity available for pass holders.
-     *
-     * Uses the session's configured CapacitySingleTicketLimit if set, otherwise
-     * falls back to 90% of total capacity.
-     *
-     * It returns nothing because this is another guard rule:
-     * either the item respects the cap or checkout stops with a clear explanation.
-     */
+    // Uses configured limit if set, otherwise falls back to 90% of total capacity.
     private function validateSingleTicketCap(ProgramItemData $item, SessionCapacityInfo $capacity): void
     {
         // Use configured limit if available, otherwise calculate from ratio
@@ -812,12 +687,6 @@ class CheckoutService implements ICheckoutService
         );
     }
 
-    /**
-     * Cancels the order when it exists and restores any seats that were reserved for it.
-     *
-     * It returns nothing because the important result is the cleaned-up database state,
-     * not a value handed back to the caller.
-     */
     private function cancelOrderIfPresent(?int $orderId): void
     {
         if ($orderId === null) {
@@ -828,12 +697,6 @@ class CheckoutService implements ICheckoutService
         $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Cancelled, [OrderStatus::Pending]);
     }
 
-    /**
-     * Cancels the payment row when a matching pending payment exists.
-     *
-     * This is separate from order cancellation because one identifier may be present
-     * while the other is missing.
-     */
     private function cancelPaymentIfPresent(?int $paymentId): void
     {
         if ($paymentId === null) {
@@ -843,34 +706,16 @@ class CheckoutService implements ICheckoutService
         $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Cancelled, [PaymentStatus::Pending]);
     }
 
-    /**
-     * Returns a money string in the decimal format expected by the repository layer.
-     *
-     * The repositories accept money as strings so decimal precision is preserved
-     * instead of relying on raw floating-point values.
-     */
     private function toMoneyString(float $value): string
     {
         return number_format($value, 2, '.', '');
     }
 
-    /**
-     * Returns a unique order reference for customers, support staff, and Stripe metadata.
-     *
-     * The format combines a timestamp and random bytes so the number stays readable
-     * while still being very unlikely to collide.
-     */
     private function generateOrderNumber(): string
     {
         return 'HF-' . gmdate('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(3)));
     }
 
-    /**
-     * Returns the CMS-managed text and labels for the checkout page.
-     *
-     * This method exists so controllers do not need to know where checkout copy lives;
-     * they just request one typed content object from the service layer.
-     */
     public function getCheckoutMainContent(): CheckoutMainContent
     {
         return $this->checkoutContentRepository->findCheckoutMainContent('checkout', 'main');

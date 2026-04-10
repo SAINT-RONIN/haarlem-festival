@@ -15,12 +15,6 @@ use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\IRestaurantContentRepository;
 use App\Services\Interfaces\IRestaurantDetailService;
 
-/**
- * Assembles the detail-page payload for a single restaurant event.
- *
- * Combines event data, per-event CMS content, shared labels, featured image,
- * parsed time slots, and derived price cards into a single RestaurantDetailPageData.
- */
 class RestaurantDetailService extends BaseContentService implements IRestaurantDetailService
 {
     public function __construct(
@@ -32,9 +26,7 @@ class RestaurantDetailService extends BaseContentService implements IRestaurantD
         parent::__construct($globalContentRepo);
     }
 
-    /**
-     * @throws RestaurantEventNotFoundException if the event is not found or slug is invalid
-     */
+    /** @throws RestaurantEventNotFoundException */
     public function getDetailPageData(string $slug): RestaurantDetailPageData
     {
         $normalizedSlug = $this->normalizeSlug($slug);
@@ -58,9 +50,7 @@ class RestaurantDetailService extends BaseContentService implements IRestaurantD
         );
     }
 
-    /**
-     * @throws RestaurantEventNotFoundException if the slug is empty or contains a path separator
-     */
+    /** @throws RestaurantEventNotFoundException */
     private function normalizeSlug(string $slug): string
     {
         $normalized = trim(strtolower(rawurldecode($slug)));
@@ -72,9 +62,7 @@ class RestaurantDetailService extends BaseContentService implements IRestaurantD
         return trim($normalized, '-');
     }
 
-    /**
-     * @throws RestaurantEventNotFoundException if no active restaurant event matches the slug
-     */
+    /** @throws RestaurantEventNotFoundException */
     private function findRestaurantEventBySlug(string $slug): RestaurantDetailEvent
     {
         $event = $this->eventRepository->findActiveRestaurantBySlug($slug);
@@ -107,13 +95,8 @@ class RestaurantDetailService extends BaseContentService implements IRestaurantD
         return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }
 
-    /**
-     * Builds price cards from the adult price. Under-12 price is always half the adult price.
-     *
-     * Negative or non-numeric prices are clamped to zero so users never see negative EUR amounts.
-     *
-     * @return array{label: string, price: string}[]
-     */
+    // Under-12 price is always half the adult price. Negative prices clamped to zero.
+    /** @return array{label: string, price: string}[] */
     private function buildPriceCards(?string $priceAdultStr): array
     {
         if ($priceAdultStr === null || $priceAdultStr === '') {

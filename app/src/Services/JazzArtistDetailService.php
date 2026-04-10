@@ -15,12 +15,7 @@ use App\Repositories\Interfaces\IArtistRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Services\Interfaces\IJazzArtistDetailService;
 
-/**
- * Assembles the full detail-page payload for a single Jazz artist.
- *
- * Results are cached in-memory with a configurable TTL to avoid
- * redundant queries within the same request cycle.
- */
+// In-memory cache with configurable TTL to avoid redundant queries within the same request.
 class JazzArtistDetailService implements IJazzArtistDetailService
 {
     /** @var array<string, array{expiresAt:int, data:JazzArtistDetailPageData}> */

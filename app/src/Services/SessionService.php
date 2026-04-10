@@ -7,11 +7,8 @@ namespace App\Services;
 use App\Enums\UserRoleId;
 use App\Services\Interfaces\ISessionService;
 
-/**
- * Centralised wrapper around PHP's native session handling.
- * Controllers and middleware use this instead of touching $_SESSION directly,
- * so session key names stay consistent and security logic stays in one place.
- */
+// Controllers and middleware use this instead of touching $_SESSION directly
+// so session key names stay consistent and security logic stays in one place.
 class SessionService implements ISessionService
 {
     private const USER_ID_KEY = 'user_id';
@@ -119,14 +116,12 @@ class SessionService implements ISessionService
         return $_SESSION[self::ROLE_ID_KEY] ?? null;
     }
 
-    /** Stores one arbitrary session value under the provided key. */
     public function set(string $key, mixed $value): void
     {
         $this->start();
         $_SESSION[$key] = $value;
     }
 
-    /** Reads one arbitrary session value and falls back to the provided default when missing. */
     public function get(string $key, mixed $default = null): mixed
     {
         $this->start();

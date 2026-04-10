@@ -41,17 +41,7 @@ class CmsVenuesController extends CmsBaseController
         });
     }
 
-    /**
-     * Soft-deletes a venue by ID and redirects back to the venue list.
-     *
-     * Events that reference the deleted venue keep their existing venue assignment —
-     * deletion only prevents the venue from appearing in the creation dropdown.
-     *
-     * POST /cms/venues/{id}/delete
-     *
-     * @param int $id The venue record ID.
-     * @throws \App\Exceptions\ValidationException Redirects with error flash on failure.
-     */
+    // Deletion only hides the venue from the creation dropdown; existing event references are kept.
     public function delete(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {

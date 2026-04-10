@@ -9,18 +9,13 @@ use App\Enums\DayOfWeek;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 
-/**
- * Pure schedule-domain helper for resolving visible days from global and per-type config.
- */
 final class ScheduleDayVisibilityResolver implements IScheduleDayVisibilityResolver
 {
     public function __construct(
         private readonly IScheduleDayConfigRepository $scheduleDayConfigRepository,
     ) {}
 
-    /**
-     * @return int[] Day numbers (0=Sunday through 6=Saturday) that are visible
-     */
+    /** @return int[] Day numbers (0=Sunday through 6=Saturday) that are visible */
     public function getVisibleDays(?int $eventTypeId = null): array
     {
         return $this->mergeVisibilitySettings(
@@ -29,17 +24,11 @@ final class ScheduleDayVisibilityResolver implements IScheduleDayVisibilityResol
         );
     }
 
-    /**
-     * @return array<int, bool>
-     */
     private function loadGlobalDaySettings(): array
     {
         return $this->loadDaySettingsForScope(0);
     }
 
-    /**
-     * @return array<int, bool>
-     */
     private function loadTypeDaySettings(?int $eventTypeId): array
     {
         if ($eventTypeId === null) {
@@ -49,9 +38,6 @@ final class ScheduleDayVisibilityResolver implements IScheduleDayVisibilityResol
         return $this->loadDaySettingsForScope($eventTypeId);
     }
 
-    /**
-     * @return array<int, bool>
-     */
     private function loadDaySettingsForScope(int $eventTypeId): array
     {
         $settings = [];
@@ -65,11 +51,7 @@ final class ScheduleDayVisibilityResolver implements IScheduleDayVisibilityResol
         return $settings;
     }
 
-    /**
-     * @param array<int, bool> $globalSettings
-     * @param array<int, bool> $typeSettings
-     * @return int[]
-     */
+    /** @param array<int, bool> $globalSettings @param array<int, bool> $typeSettings @return int[] */
     private function mergeVisibilitySettings(array $globalSettings, array $typeSettings): array
     {
         $visibleDays = [];
@@ -83,10 +65,7 @@ final class ScheduleDayVisibilityResolver implements IScheduleDayVisibilityResol
         return $visibleDays;
     }
 
-    /**
-     * @param array<int, bool> $globalSettings
-     * @param array<int, bool> $typeSettings
-     */
+    /** @param array<int, bool> $globalSettings @param array<int, bool> $typeSettings */
     private function isDayVisible(int $dayOfWeek, array $globalSettings, array $typeSettings): bool
     {
         return $typeSettings[$dayOfWeek] ?? $globalSettings[$dayOfWeek] ?? true;

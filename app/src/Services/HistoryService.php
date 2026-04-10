@@ -11,9 +11,6 @@ use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IHistoryContentRepository;
 use App\Services\Interfaces\IHistoryService;
 
-/**
- * Composes the CMS-driven domain payload for the History overview page.
- */
 class HistoryService extends BaseContentService implements IHistoryService
 {
     public function __construct(
@@ -23,7 +20,6 @@ class HistoryService extends BaseContentService implements IHistoryService
         parent::__construct($globalContentRepo);
     }
 
-    /** Loads every content section needed by the History overview page. */
     public function getHistoryPageData(): HistoryPageData
     {
         return $this->guardPageLoad(
@@ -32,7 +28,6 @@ class HistoryService extends BaseContentService implements IHistoryService
         );
     }
 
-    /** Builds the full History page payload from shared and page-specific content repositories. */
     private function buildPageData(string $pageSlug): HistoryPageData
     {
         return new HistoryPageData(

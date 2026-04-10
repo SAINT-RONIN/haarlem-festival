@@ -15,12 +15,6 @@ use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\IRestaurantContentRepository;
 use App\Services\Interfaces\IRestaurantService;
 
-/**
- * Service for preparing all data needed by the Restaurant listing page.
- *
- * Fetches event-based restaurant listings and CMS content sections,
- * then returns a typed RestaurantPageData for the mapper.
- */
 class RestaurantService extends BaseContentService implements IRestaurantService
 {
     public function __construct(
@@ -32,7 +26,6 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         parent::__construct($globalContentRepo);
     }
 
-    /** Loads all CMS sections and restaurant listings needed by the restaurant overview page. */
     public function getRestaurantPageData(): RestaurantPageData
     {
         return $this->guardPageLoad(
@@ -41,7 +34,6 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         );
     }
 
-    /** Builds the restaurant page payload from CMS content and restaurant event data. */
     private function assembleRestaurantPageData(): RestaurantPageData
     {
         return new RestaurantPageData(
@@ -56,11 +48,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         );
     }
 
-    /**
-     * Converts active restaurant events into listing cards enriched with CMS content and images.
-     *
-     * @return RestaurantListingData[]
-     */
+    /** @return RestaurantListingData[] */
     private function buildEventListings(): array
     {
         $listings = [];
