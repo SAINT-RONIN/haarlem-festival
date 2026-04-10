@@ -16,6 +16,5 @@ final readonly class JazzArtistTrackData
         public string $duration,
         public string $imageUrl,
         public string $progressClass,
-    ) {
-    }
+    ) {}
 }

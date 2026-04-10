@@ -23,8 +23,7 @@ final readonly class Program
         public ?string            $sessionKey,
         public \DateTimeImmutable $createdAtUtc,
         public bool               $isCheckedOut,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a Program instance from a database row array.
@@ -33,11 +32,11 @@ final readonly class Program
     public static function fromRow(array $row): self
     {
         return new self(
-            programId: (int)$row['ProgramId'],
-            userAccountId: isset($row['UserAccountId']) ? (int)$row['UserAccountId'] : null,
+            programId: (int) $row['ProgramId'],
+            userAccountId: isset($row['UserAccountId']) ? (int) $row['UserAccountId'] : null,
             sessionKey: $row['SessionKey'] ?? null,
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
-            isCheckedOut: (bool)$row['IsCheckedOut'],
+            isCheckedOut: (bool) $row['IsCheckedOut'],
         );
     }
 

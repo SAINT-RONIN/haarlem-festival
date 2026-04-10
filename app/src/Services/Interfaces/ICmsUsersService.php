@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\Models\UserAccount;
-use App\DTOs\User\UserWithRole;
+use App\DTOs\Domain\User\UserWithRole;
 
 /**
  * Defines the contract for CMS user account management (CRUD and validation).
@@ -40,6 +40,7 @@ interface ICmsUsersService
         string $password,
         string $firstName,
         string $lastName,
+        int $roleId,
     ): array;
 
     /**
@@ -54,6 +55,7 @@ interface ICmsUsersService
         ?string $password,
         string $firstName,
         string $lastName,
+        int $roleId,
     ): array;
 
     /**

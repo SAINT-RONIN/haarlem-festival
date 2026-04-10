@@ -24,8 +24,7 @@ final readonly class PassPurchase
         public ?\DateTimeImmutable $validFromDate,
         public ?\DateTimeImmutable $validToDate,
         public \DateTimeImmutable  $createdAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a PassPurchase instance from a database row array.
@@ -34,9 +33,9 @@ final readonly class PassPurchase
     public static function fromRow(array $row): self
     {
         return new self(
-            passPurchaseId: (int)$row['PassPurchaseId'],
-            passTypeId: (int)$row['PassTypeId'],
-            userAccountId: (int)$row['UserAccountId'],
+            passPurchaseId: (int) $row['PassPurchaseId'],
+            passTypeId: (int) $row['PassTypeId'],
+            userAccountId: (int) $row['UserAccountId'],
             validDate: isset($row['ValidDate']) ? new \DateTimeImmutable($row['ValidDate']) : null,
             validFromDate: isset($row['ValidFromDate']) ? new \DateTimeImmutable($row['ValidFromDate']) : null,
             validToDate: isset($row['ValidToDate']) ? new \DateTimeImmutable($row['ValidToDate']) : null,

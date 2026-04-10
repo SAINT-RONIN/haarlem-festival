@@ -17,6 +17,5 @@ final readonly class VenuesData
         public string $subheadingText,
         public string $descriptionText,
         public array $venues,
-    ) {
-    }
+    ) {}
 }

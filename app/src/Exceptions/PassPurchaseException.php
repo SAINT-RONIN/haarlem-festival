@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Exception thrown when a pass purchase operation fails unexpectedly.
  */
-class PassPurchaseException extends ProgramException
-{
-}
+class PassPurchaseException extends ProgramException {}

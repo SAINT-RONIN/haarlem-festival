@@ -16,6 +16,5 @@ final readonly class ChefSectionData
 
         // CMS label
         public string $labelTitle = 'Chef & Philosophy',
-    ) {
-    }
+    ) {}
 }

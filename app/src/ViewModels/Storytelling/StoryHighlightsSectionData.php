@@ -16,6 +16,5 @@ final readonly class StoryHighlightsSectionData
     public function __construct(
         public string $heading,
         public array $items,
-    ) {
-    }
+    ) {}
 }

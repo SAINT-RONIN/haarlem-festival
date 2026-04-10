@@ -1,8 +1,7 @@
 <?php
-/**
- * CMS Create User form page.
- *
- * @var string $currentView
- * @var \App\ViewModels\Cms\CmsUserFormViewModel $viewModel
- */
-require __DIR__ . '/../../partials/cms/_user-form.php';
+/** @var \App\ViewModels\Cms\CmsUserFormViewModel $viewModel */
+use App\View\ViewRenderer;
+ViewRenderer::render(__DIR__ . '/../../partials/cms/_user-form.php', [
+    'viewModel' => $viewModel,
+]);
+?>

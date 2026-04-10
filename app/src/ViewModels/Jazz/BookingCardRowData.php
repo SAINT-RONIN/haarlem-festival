@@ -14,6 +14,5 @@ final readonly class BookingCardRowData
     public function __construct(
         public string $icon,
         public array $lines,
-    ) {
-    }
+    ) {}
 }

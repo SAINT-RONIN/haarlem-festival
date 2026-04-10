@@ -12,15 +12,12 @@ use App\Services\Interfaces\IScannerService;
 use App\Services\Interfaces\ISessionService;
 
 /**
- * Ticket scanner for employees and administrators at venue entrances.
+ * Ticket scanner for employees and administrators.
  *
- * Extends BaseController (not CmsBaseController) because the CMS base
- * controller restricts access to administrators only, while the scanner
- * must also be accessible to employees.
+ * Extends BaseController (not CmsBaseController) so employees can access it too.
  */
 class ScannerController extends BaseController
 {
-    /** Injects the scanner service and the shared session service used for access control. */
     public function __construct(
         private readonly IScannerService $scannerService,
         ISessionService $sessionService,
@@ -39,15 +36,6 @@ class ScannerController extends BaseController
         });
     }
 
-    /**
-     * Accepts a ticket code, attempts a scan, and returns a JSON result for the scanner UI.
-     *
-     * Reads `ticketCode` from the JSON request body, normalises it to uppercase/trimmed,
-     * and delegates to the scanner service. On success, returns a scan-success payload.
-     * On failure, returns a typed error payload with the appropriate HTTP status code.
-     *
-     * @throws \RuntimeException When no authenticated user ID is available in the session.
-     */
     public function scan(): void
     {
         $this->requireEmployeeOrAdmin();
@@ -55,6 +43,11 @@ class ScannerController extends BaseController
         $this->handleJsonRequest(function (): void {
             $ticketCode = $this->resolveTicketCode($this->readJsonBody());
             $userId     = $this->requireAuthenticatedUserId();
+
+            if ($ticketCode === '') {
+                $this->json(['success' => false, 'error' => 'Ticket code is required.'], 400);
+                return;
+            }
 
             try {
                 $detail = $this->scannerService->scanTicket($ticketCode, $userId);
@@ -67,30 +60,12 @@ class ScannerController extends BaseController
         });
     }
 
-    /**
-     * Extracts and normalises the ticket code from the decoded JSON request body.
-     *
-     * Trims whitespace and converts to uppercase so that physical scanners that add
-     * trailing newlines or mixed-case codes still match the stored ticket codes correctly.
-     *
-     * @param array $body Decoded JSON body from the scan request.
-     * @return string Normalised ticket code (may be empty string if not provided).
-     */
+    // Normalises to uppercase/trimmed so physical scanners with trailing newlines still match.
     private function resolveTicketCode(array $body): string
     {
         return strtoupper(trim((string) ($body['ticketCode'] ?? '')));
     }
 
-    /**
-     * Returns the authenticated user's account ID, or throws if no user is logged in.
-     *
-     * The scanner requires a user ID to record who performed the scan in the audit log.
-     * A null ID should never happen because requireEmployeeOrAdmin() already gates the
-     * request, but this guard prevents silent data corruption if that check is bypassed.
-     *
-     * @return int The logged-in user's account ID.
-     * @throws \RuntimeException When the session contains no user ID.
-     */
     private function requireAuthenticatedUserId(): int
     {
         $userId = $this->requireSessionService()->getUserId();

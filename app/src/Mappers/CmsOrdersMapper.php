@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\DTOs\Cms\CmsOrderDetailPageData;
+use App\DTOs\Domain\Checkout\OrderWithDetails;
+use App\Enums\OrderStatus;
 use App\Helpers\CmsOrderViewHelper;
 use App\Helpers\FormatHelper;
-use App\DTOs\Checkout\OrderWithDetails;
-use App\Enums\OrderStatus;
 use App\ViewModels\Cms\CmsOrderDetailViewModel;
 use App\ViewModels\Cms\CmsOrderListItemViewModel;
 use App\ViewModels\Cms\CmsOrdersListViewModel;
@@ -29,7 +30,7 @@ final class CmsOrdersMapper
     ): CmsOrdersListViewModel {
         return new CmsOrdersListViewModel(
             orders: array_map([self::class, 'toListItem'], $orders),
-            statusOptions: array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
+            statusOptions: array_map(fn(OrderStatus $s) => $s->value, OrderStatus::cases()),
             selectedStatus: $selectedStatus,
             successMessage: $successMessage,
             errorMessage: $errorMessage,
@@ -47,46 +48,34 @@ final class CmsOrdersMapper
         $paymentStatus = $order->paymentStatus ?? 'No payment';
 
         return new CmsOrderListItemViewModel(
-            orderId:           $order->orderId,
-            orderNumber:       $order->orderNumber,
-            userAccountId:     $order->userAccountId,
-            userEmail:         $order->email !== '' ? $order->email : 'Unknown',
-            itemsSummary:      $order->itemsSummary ?? 'No items',
-            orderStatus:       $orderStatus,
-            paymentStatus:     $paymentStatus,
-            totalAmount:       FormatHelper::price((float)$order->totalAmount),
-            createdAt:         CmsOrderViewHelper::formatUtcDate($order->createdAtUtc),
-            statusBadgeClass:  CmsOrderViewHelper::resolveOrderBadgeClass($orderStatus),
+            orderId: $order->orderId,
+            orderNumber: $order->orderNumber,
+            userAccountId: $order->userAccountId,
+            userEmail: $order->email !== '' ? $order->email : 'Unknown',
+            itemsSummary: $order->itemsSummary ?? 'No items',
+            orderStatus: $orderStatus,
+            paymentStatus: $paymentStatus,
+            totalAmount: FormatHelper::price((float) $order->totalAmount),
+            createdAt: CmsOrderViewHelper::formatUtcDate($order->createdAtUtc),
+            statusBadgeClass: CmsOrderViewHelper::resolveOrderBadgeClass($orderStatus),
             paymentBadgeClass: CmsOrderViewHelper::resolvePaymentBadgeClass($paymentStatus),
         );
     }
 
-    /**
-     * Builds the CMS order detail page ViewModel from pre-typed service data.
-     *
-     * @param array{
-     *     order: \App\DTOs\Cms\CmsOrderDetailDto,
-     *     items: \App\DTOs\Cms\CmsOrderItemDto[],
-     *     payments: \App\DTOs\Cms\CmsOrderPaymentDto[],
-     *     tickets: \App\DTOs\Cms\CmsOrderTicketDto[],
-     *     invoice: ?\App\Models\Invoice,
-     *     invoicePdfPath: ?string
-     * } $data
-     */
     public static function toDetailViewModel(
-        array $data,
+        CmsOrderDetailPageData $data,
         ?string $successMessage,
         ?string $errorMessage,
     ): CmsOrderDetailViewModel {
         return new CmsOrderDetailViewModel(
-            order:          $data['order'],
-            items:          $data['items'],
-            payments:       $data['payments'],
-            tickets:        $data['tickets'],
-            invoice:        $data['invoice'],
-            invoicePdfPath: $data['invoicePdfPath'],
+            order: $data->order,
+            items: $data->items,
+            payments: $data->payments,
+            tickets: $data->tickets,
+            invoice: $data->invoice,
+            invoicePdfPath: $data->invoicePdfPath,
             successMessage: $successMessage,
-            errorMessage:   $errorMessage,
+            errorMessage: $errorMessage,
         );
     }
 

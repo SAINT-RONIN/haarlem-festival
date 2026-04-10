@@ -21,8 +21,8 @@ final class RestaurantPageConstants
     public const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
     public const RESERVATION_FEE = 10.00;
     public const VALID_DATES = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
+    public const MAX_SPECIAL_REQUESTS_LENGTH = 1000;
+    public const MAX_GUEST_COUNT = 20;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

@@ -25,14 +25,14 @@ final readonly class ArtistAlbum
     public static function fromRow(array $row): self
     {
         return new self(
-            artistAlbumId: (int)$row['ArtistAlbumId'],
-            artistId:      (int)$row['ArtistId'],
-            title:         (string)$row['Title'],
-            description:   (string)$row['Description'],
-            year:          (string)$row['Year'],
-            tag:           (string)$row['Tag'],
-            imagePath:     (string)$row['ImagePath'],
-            sortOrder:     (int)$row['SortOrder'],
+            artistAlbumId: (int) $row['ArtistAlbumId'],
+            artistId: (int) $row['ArtistId'],
+            title: (string) $row['Title'],
+            description: (string) $row['Description'],
+            year: (string) $row['Year'],
+            tag: (string) $row['Tag'],
+            imagePath: (string) $row['ImagePath'],
+            sortOrder: (int) $row['SortOrder'],
         );
     }
 }

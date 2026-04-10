@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Exception thrown when the request body is missing or contains invalid JSON.
  */
-class JsonBodyParseException extends AppException
-{
-}
+class JsonBodyParseException extends AppException {}

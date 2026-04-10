@@ -10,11 +10,14 @@
  * @var string $secondaryHref
  * @var string $secondaryLabel
  */
-$title = (string)($title ?? 'Checkout status');
-$message = (string)($message ?? '');
-$details = $details ?? [];
+$title = (string) ($title ?? 'Checkout status');
+$message = (string) ($message ?? '');
+$details ??= [];
+/*
+ * Rendered inside the shell's <main>; caller sets mainClass on its
+ * PublicPageLayout to 'w-full bg-[#F5F1EB] min-h-screen px-4 sm:px-8 lg:px-24 py-12'.
+ */
 ?>
-<main class="w-full bg-[#F5F1EB] min-h-screen px-4 sm:px-8 lg:px-24 py-12">
     <section class="max-w-3xl mx-auto p-6 sm:p-8 bg-white rounded-3xl outline outline-2 outline-offset-[-2px] outline-gray-200">
         <h1 class="text-gray-900 text-3xl sm:text-4xl font-bold font-['Montserrat'] leading-tight">
             <?= htmlspecialchars($title) ?>
@@ -26,8 +29,14 @@ $details = $details ?? [];
             </p>
         <?php endif; ?>
 
-        <?php require __DIR__ . '/checkout-status-metadata.php'; ?>
-        <?php require __DIR__ . '/checkout-status-actions.php'; ?>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/checkout-status-metadata.php', [
+            'details' => $details,
+        ]); ?>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/checkout-status-actions.php', [
+            'primaryHref'   => $primaryHref ?? '/',
+            'primaryLabel'  => $primaryLabel ?? 'Continue',
+            'secondaryHref' => $secondaryHref ?? '/my-program',
+            'secondaryLabel'=> $secondaryLabel ?? 'Back',
+        ]); ?>
     </section>
-</main>
 

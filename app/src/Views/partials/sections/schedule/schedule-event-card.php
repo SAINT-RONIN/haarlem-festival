@@ -161,7 +161,7 @@ if ($isHistoryEvent && $event->historyTourOptions !== []) {
                         <?php if ($isJazzEvent): ?>
                             <button
                                 type="button"
-                                data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
+                                data-event-session-id="<?= htmlspecialchars((string) $event->eventSessionId) ?>"
                                 data-price="<?= htmlspecialchars($event->priceDisplay) ?>"
                                 data-is-pay-what-you-like="<?= $event->isPayWhatYouLike ? '1' : '0' ?>"
                                 data-is-history-event="0"
@@ -177,8 +177,8 @@ if ($isHistoryEvent && $event->historyTourOptions !== []) {
                         <?php elseif ($isHistoryEvent): ?>
                             <button
                                     type="button"
-                                    data-event-session-id="<?= htmlspecialchars((string)$event->eventSessionId) ?>"
-                                    data-event-id="<?= htmlspecialchars((string)$event->eventId) ?>"
+                                    data-event-session-id="<?= htmlspecialchars((string) $event->eventSessionId) ?>"
+                                    data-event-id="<?= htmlspecialchars((string) $event->eventId) ?>"
                                     data-datetime="<?= htmlspecialchars($event->datetime->format('U')) ?>"
                                     data-history-tour-info="<?= htmlspecialchars($historyTourInfoJson, ENT_QUOTES) ?>"
                                     data-price="<?= htmlspecialchars($event->priceDisplay) ?>"

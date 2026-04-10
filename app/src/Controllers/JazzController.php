@@ -18,15 +18,7 @@ use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
- * Public-facing controller for the Jazz festival section.
- *
- * Serves the Jazz event listing page (all artists + filterable schedule)
- * and individual artist detail pages (bio + that artist's performances).
- *
- * Schedule data is fetched via IScheduleService which applies CMS-configured
- * day visibility rules and optional query-string filters (day, time range,
- * price type, venue). The schedule is scoped to EventTypeId::Jazz so only
- * jazz events appear.
+ * Jazz listing page and artist detail pages with filterable schedule.
  */
 class JazzController extends BaseController
 {
@@ -39,10 +31,6 @@ class JazzController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Renders the main Jazz listing page with all artists and a filterable schedule.
-     * GET /jazz
-     */
     public function index(): void
     {
         $this->handlePageRequest(function (): void {
@@ -64,10 +52,6 @@ class JazzController extends BaseController
         return ScheduleMapper::toScheduleSection($scheduleData);
     }
 
-    /**
-     * Renders the detail page for a single Jazz artist, identified by URL slug. Returns 404 if not found.
-     * GET /jazz/{slug}
-     */
     public function detail(string $slug): void
     {
         $this->handlePageRequest(function () use ($slug): void {
@@ -89,7 +73,7 @@ class JazzController extends BaseController
         // Flatten day-grouped schedule into a flat list of performance view-models for the detail layout
         $performances = ScheduleMapper::flattenEventsAsViewModels($scheduleData);
         $currentUri = $_SERVER['REQUEST_URI'] ?? '';
-        $appUrl = (string)(getenv('APP_URL') ?: GlobalUiConstants::DEFAULT_APP_URL);
+        $appUrl = (string) (getenv('APP_URL') ?: GlobalUiConstants::DEFAULT_APP_URL);
         $viewModel = JazzMapper::toArtistDetailViewModel($pageData, $performances, $currentUri, $appUrl);
         $this->renderView(__DIR__ . '/../Views/pages/jazz-artist-detail.php', $viewModel);
     }

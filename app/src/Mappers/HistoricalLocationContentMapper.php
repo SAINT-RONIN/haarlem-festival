@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Content\HistoricalLocationFactsContent;
-use App\Content\HistoricalLocationHeroContent;
-use App\Content\HistoricalLocationIntroContent;
-use App\Content\HistoricalLocationSignificanceContent;
+use App\DTOs\Cms\HistoricalLocationFactsContent;
+use App\DTOs\Cms\HistoricalLocationHeroContent;
+use App\DTOs\Cms\HistoricalLocationIntroContent;
+use App\DTOs\Cms\HistoricalLocationSignificanceContent;
 
 /**
  * Maps raw CMS arrays into HistoricalLocation content models.

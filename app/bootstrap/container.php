@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controllers\AccountController;
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsArtistsController;
@@ -23,12 +24,11 @@ use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
 use App\Controllers\ProgramController;
-use App\Controllers\RestaurantApiController;
 use App\Controllers\ScannerController;
 use App\Controllers\RestaurantController;
 use App\Controllers\ScheduleApiController;
 use App\Controllers\StorytellingController;
-use App\Checkout\OrderCapacityRestorer;
+use App\Services\OrderCapacityRestorer;
 use App\Http\Requests\StripeWebhookRequestFactory;
 use App\Infrastructure\CheckoutRuntimeConfig;
 use App\Infrastructure\Database;
@@ -97,9 +97,10 @@ use App\Services\ProgramService;
 use App\Services\RestaurantDetailService;
 use App\Services\RestaurantReservationService;
 use App\Services\RestaurantService;
-use App\Schedule\ScheduleDayVisibilityResolver;
+use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
 use App\Services\AuthService;
+use App\Services\AccountService;
 use App\Services\CaptchaService;
 use App\Services\ScannerService;
 use App\Services\SessionService;
@@ -228,6 +229,12 @@ return static function (string $controllerClass): object {
         $userAccountRepo(),
         $resetTokenRepo(),
         $emailService(),
+    ));
+
+    $accountService = fn() => $make('accountService', fn() => new AccountService(
+        $userAccountRepo(),
+        $emailService(),
+        $pdo(),
     ));
 
     // ── Lazy service singletons shared across multiple controllers ──
@@ -374,12 +381,12 @@ return static function (string $controllerClass): object {
         CheckoutController::class => (function () use ($programService, $sessionService, $orderRepo, $orderItemRepo, $paymentRepo, $eventSessionRepo, $programRepo, $pdo, $checkoutContentRepo, $orderCapacityRestorer, $ticketFulfillmentService, $invoiceFulfillmentService, $passPurchaseRepo) {
             // Stripe setup is only needed for checkout routes, so other pages do not create it.
             $stripeService = new StripeService(
-                (string)(getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
-                (string)(getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
+                (string) (getenv('STRIPE_SECRET_KEY') !== false ? getenv('STRIPE_SECRET_KEY') : ''),
+                (string) (getenv('STRIPE_WEBHOOK_SECRET') !== false ? getenv('STRIPE_WEBHOOK_SECRET') : ''),
             );
             $runtimeConfig = new CheckoutRuntimeConfig(
-                (string)getenv('APP_URL'),
-                (float)(getenv('VAT_RATE') !== false ? getenv('VAT_RATE') : 0.21),
+                (string) getenv('APP_URL'),
+                (float) (getenv('VAT_RATE') !== false ? getenv('VAT_RATE') : 0.21),
             );
 
             return new CheckoutController(
@@ -467,12 +474,13 @@ return static function (string $controllerClass): object {
         ScheduleApiController::class => new ScheduleApiController(
             $scheduleService(),
         ),
-        RestaurantApiController::class => new RestaurantApiController(
-            $restaurantService(),
-            $sessionService,
-        ),
         OrderHistoryController::class => new OrderHistoryController(
             new OrderHistoryService(new OrderHistoryRepository($pdo())),
+            $sessionService,
+        ),
+        AccountController::class => new AccountController(
+            $accountService(),
+            $mediaAssetService(),
             $sessionService,
         ),
         default => new $controllerClass(),

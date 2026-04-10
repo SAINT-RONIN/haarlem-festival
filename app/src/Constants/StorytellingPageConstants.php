@@ -15,7 +15,5 @@ final class StorytellingPageConstants
 
     public const SECTION_MASONRY = 'masonry_section';
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

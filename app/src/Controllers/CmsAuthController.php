@@ -22,10 +22,6 @@ class CmsAuthController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Renders the CMS login page, or redirects to the dashboard if already authenticated.
-     * GET /cms/login
-     */
     public function showLogin(): void
     {
         $this->handlePageRequest(function (): void {
@@ -39,10 +35,6 @@ class CmsAuthController extends BaseController
         });
     }
 
-    /**
-     * Authenticates admin credentials and starts a session on success.
-     * POST /cms/login
-     */
     public function login(): void
     {
         $this->handlePageRequest(function (): void {
@@ -50,10 +42,6 @@ class CmsAuthController extends BaseController
         });
     }
 
-    /**
-     * Destroys the admin session and redirects to the login page.
-     * POST /cms/logout
-     */
     public function logout(): void
     {
         $this->handlePageRequest(function (): void {
@@ -80,6 +68,7 @@ class CmsAuthController extends BaseController
         }
 
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
+        $this->sessionService->set('first_name', $user->firstName);
         $this->redirectAndExit('/cms');
     }
 

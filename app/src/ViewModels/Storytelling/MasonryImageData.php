@@ -14,6 +14,5 @@ final readonly class MasonryImageData
         public string $imageUrl,
         public string $altText,
         public string $sizeClass,
-    ) {
-    }
+    ) {}
 }

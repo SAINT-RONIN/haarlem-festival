@@ -7,7 +7,7 @@ namespace App\Mappers;
 use App\Enums\UserRoleId;
 use App\Helpers\FormatHelper;
 use App\Models\UserAccount;
-use App\DTOs\User\UserWithRole;
+use App\DTOs\Domain\User\UserWithRole;
 use App\ViewModels\Cms\CmsSortColumnViewModel;
 use App\ViewModels\Cms\CmsUserFormViewModel;
 use App\ViewModels\Cms\CmsUserListItemViewModel;
@@ -41,12 +41,12 @@ final class CmsUsersMapper
     public static function fromFormInput(array $input): array
     {
         return [
-            'username' => (string)($input['username'] ?? ''),
-            'email' => (string)($input['email'] ?? ''),
-            'password' => (string)($input['password'] ?? ''),
-            'firstName' => (string)($input['firstName'] ?? ''),
-            'lastName' => (string)($input['lastName'] ?? ''),
-            'roleId' => isset($input['roleId']) ? (int)$input['roleId'] : UserRoleId::Customer->value,
+            'username' => (string) ($input['username'] ?? ''),
+            'email' => (string) ($input['email'] ?? ''),
+            'password' => (string) ($input['password'] ?? ''),
+            'firstName' => (string) ($input['firstName'] ?? ''),
+            'lastName' => (string) ($input['lastName'] ?? ''),
+            'roleId' => isset($input['roleId']) ? (int) $input['roleId'] : UserRoleId::Customer->value,
         ];
     }
 
@@ -82,17 +82,17 @@ final class CmsUsersMapper
         string $deleteCsrfToken = '',
     ): CmsUsersListViewModel {
         return new CmsUsersListViewModel(
-            users:             array_map([self::class, 'toListItem'], $users),
-            selectedRole:      $selectedRole,
-            successMessage:    $successMessage,
-            errorMessage:      $errorMessage,
-            searchQuery:       $searchQuery,
-            sortBy:            $sortBy,
-            sortDir:           $sortDir,
-            deleteCsrfToken:   $deleteCsrfToken,
+            users: array_map([self::class, 'toListItem'], $users),
+            selectedRole: $selectedRole,
+            successMessage: $successMessage,
+            errorMessage: $errorMessage,
+            searchQuery: $searchQuery,
+            sortBy: $sortBy,
+            sortDir: $sortDir,
+            deleteCsrfToken: $deleteCsrfToken,
             roleFilterOptions: self::buildRoleOptions(),
-            sortColumns:       self::buildSortColumns($sortBy, $sortDir, $selectedRole, $searchQuery),
-            hasActiveFilters:  $selectedRole !== '' || $searchQuery !== '',
+            sortColumns: self::buildSortColumns($sortBy, $sortDir, $selectedRole, $searchQuery),
+            hasActiveFilters: $selectedRole !== '' || $searchQuery !== '',
         );
     }
 
@@ -106,17 +106,17 @@ final class CmsUsersMapper
         $isActive = $user->isActive;
 
         return new CmsUserListItemViewModel(
-            userAccountId:    $user->userAccountId,
-            username:         $user->username,
-            email:            $user->email,
-            fullName:         trim($user->firstName . ' ' . $user->lastName),
-            roleName:         $roleName,
-            roleBadgeClass:   self::resolveRoleBadgeClass($roleName),
-            isActive:         $isActive,
-            statusText:       $isActive ? 'Active' : 'Inactive',
+            userAccountId: $user->userAccountId,
+            username: $user->username,
+            email: $user->email,
+            fullName: trim($user->firstName . ' ' . $user->lastName),
+            roleName: $roleName,
+            roleBadgeClass: self::resolveRoleBadgeClass($roleName),
+            isActive: $isActive,
+            statusText: $isActive ? 'Active' : 'Inactive',
             statusBadgeClass: $isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
-            registeredAt:     $user->registeredAtUtc !== ''
-                                  ? (new \DateTimeImmutable($user->registeredAtUtc))->format(FormatHelper::CMS_DATE_FORMAT)
+            registeredAt: $user->registeredAtUtc !== ''
+                                  ? new \DateTimeImmutable($user->registeredAtUtc)->format(FormatHelper::CMS_DATE_FORMAT)
                                   : '',
         );
     }
@@ -140,17 +140,17 @@ final class CmsUsersMapper
         array $errors,
     ): CmsUserFormViewModel {
         return new CmsUserFormViewModel(
-            userAccountId:  $user?->userAccountId,
-            username:       $username,
-            email:          $email,
-            firstName:      $firstName,
-            lastName:       $lastName,
+            userAccountId: $user?->userAccountId,
+            username: $username,
+            email: $email,
+            firstName: $firstName,
+            lastName: $lastName,
             selectedRoleId: $selectedRoleId,
-            csrfToken:      $csrfToken,
-            formAction:     $formAction,
-            pageTitle:      $pageTitle,
-            errors:         $errors,
-            roleOptions:    self::buildRoleOptions(),
+            csrfToken: $csrfToken,
+            formAction: $formAction,
+            pageTitle: $pageTitle,
+            errors: $errors,
+            roleOptions: self::buildRoleOptions(),
         );
     }
 

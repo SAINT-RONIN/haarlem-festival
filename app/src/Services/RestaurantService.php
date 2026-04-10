@@ -7,20 +7,14 @@ namespace App\Services;
 use App\Constants\RestaurantDetailConstants;
 use App\Constants\RestaurantPageConstants;
 use App\Constants\SharedSectionKeys;
-use App\DTOs\Pages\RestaurantListingData;
-use App\DTOs\Pages\RestaurantPageData;
+use App\DTOs\Domain\Pages\RestaurantListingData;
+use App\DTOs\Domain\Pages\RestaurantPageData;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Repositories\Interfaces\IRestaurantContentRepository;
 use App\Services\Interfaces\IRestaurantService;
 
-/**
- * Service for preparing all data needed by the Restaurant listing page.
- *
- * Fetches event-based restaurant listings and CMS content sections,
- * then returns a typed RestaurantPageData for the mapper.
- */
 class RestaurantService extends BaseContentService implements IRestaurantService
 {
     public function __construct(
@@ -32,16 +26,14 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         parent::__construct($globalContentRepo);
     }
 
-    /** Loads all CMS sections and restaurant listings needed by the restaurant overview page. */
     public function getRestaurantPageData(): RestaurantPageData
     {
         return $this->guardPageLoad(
-            fn (): RestaurantPageData => $this->assembleRestaurantPageData(),
+            fn(): RestaurantPageData => $this->assembleRestaurantPageData(),
             'Failed to load the Restaurant page.',
         );
     }
 
-    /** Builds the restaurant page payload from CMS content and restaurant event data. */
     private function assembleRestaurantPageData(): RestaurantPageData
     {
         return new RestaurantPageData(
@@ -56,11 +48,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         );
     }
 
-    /**
-     * Converts active restaurant events into listing cards enriched with CMS content and images.
-     *
-     * @return RestaurantListingData[]
-     */
+    /** @return RestaurantListingData[] */
     private function buildEventListings(): array
     {
         $listings = [];

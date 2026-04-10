@@ -21,6 +21,5 @@ final readonly class MenuSectionData
         // CMS labels
         public string $labelTitle       = 'Menu Style',
         public string $labelCuisineType = 'Cuisine type:',
-    ) {
-    }
+    ) {}
 }

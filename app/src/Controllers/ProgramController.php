@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\JsonBodyParseException;
+use App\Exceptions\ProgramException;
+use App\Exceptions\ValidationException;
 use App\Mappers\ProgramMapper;
 use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\ISessionService;
@@ -21,10 +24,6 @@ class ProgramController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the "My Program" page listing all items the user has added.
-     * GET /my-program
-     */
     public function index(): void
     {
         $this->handlePageRequest(function (): void {
@@ -44,15 +43,11 @@ class ProgramController extends BaseController
         $this->renderView(__DIR__ . '/../Views/pages/my-program.php', $viewModel);
     }
 
-    /**
-     * Adds an event session to the user's program with a given quantity and optional donation.
-     * POST /my-program/add (JSON)
-     */
     public function add(): void
     {
         $this->handleJsonRequest(function (): void {
             $this->processAdd();
-        });
+        }, [\InvalidArgumentException::class, JsonBodyParseException::class, ValidationException::class, ProgramException::class]);
     }
 
     /** Reads JSON body, resolves session context, casts input fields, and adds a session to the program. */
@@ -61,20 +56,16 @@ class ProgramController extends BaseController
         $body = $this->readJsonBody();
         $context = $this->resolveSessionContext();
 
-        $eventSessionId = (int)($body['eventSessionId'] ?? 0);
-        $quantity = (int)($body['quantity'] ?? 1);
-        $groupTicketQuantity = (int)($body['groupTicketQuantity'] ?? 0);
-        $donationAmount = (float)($body['donationAmount'] ?? 0.0);
+        $eventSessionId = (int) ($body['eventSessionId'] ?? 0);
+        $quantity = (int) ($body['quantity'] ?? 1);
+        $groupTicketQuantity = (int) ($body['groupTicketQuantity'] ?? 0);
+        $donationAmount = (float) ($body['donationAmount'] ?? 0.0);
 
         $this->programService->addToProgram($context->sessionKey, $context->userId, $eventSessionId, $quantity, $groupTicketQuantity, $donationAmount);
 
         $this->json(['success' => true]);
     }
 
-    /**
-     * Adds a festival pass to the user's program with a given quantity.
-     * POST /api/program/add-pass (JSON)
-     */
     public function addPass(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -88,24 +79,20 @@ class ProgramController extends BaseController
         $body = $this->readJsonBody();
         $context = $this->resolveSessionContext();
 
-        $passTypeId = (int)($body['passTypeId'] ?? 0);
-        $quantity = (int)($body['quantity'] ?? 1);
-        $validDate = isset($body['validDate']) ? (string)$body['validDate'] : null;
+        $passTypeId = (int) ($body['passTypeId'] ?? 0);
+        $quantity = (int) ($body['quantity'] ?? 1);
+        $validDate = isset($body['validDate']) ? (string) $body['validDate'] : null;
 
         $item = $this->programService->addPassToProgram($context->sessionKey, $context->userId, $passTypeId, $validDate, $quantity);
 
         $this->json(['success' => true, 'programItemId' => $item->programItemId]);
     }
 
-    /**
-     * Updates the ticket quantity for a program item and returns recalculated totals.
-     * PATCH /my-program/update-quantity (JSON)
-     */
     public function updateQuantity(): void
     {
         $this->handleJsonRequest(function (): void {
             $this->processUpdateQuantity();
-        });
+        }, [\InvalidArgumentException::class, JsonBodyParseException::class, ValidationException::class, ProgramException::class]);
     }
 
     /** Reads JSON body, updates one program item's quantity, and responds with recalculated totals. */
@@ -114,18 +101,14 @@ class ProgramController extends BaseController
         $body = $this->readJsonBody();
         $context = $this->resolveSessionContext();
 
-        $programItemId = (int)($body['programItemId'] ?? 0);
-        $quantity = (int)($body['quantity'] ?? 0);
+        $programItemId = (int) ($body['programItemId'] ?? 0);
+        $quantity = (int) ($body['quantity'] ?? 0);
 
         $this->programService->updateQuantity($context->sessionKey, $context->userId, $programItemId, $quantity);
 
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }
 
-    /**
-     * Updates the donation amount for a program item and returns recalculated totals.
-     * PATCH /my-program/update-donation (JSON)
-     */
     public function updateDonation(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -139,18 +122,14 @@ class ProgramController extends BaseController
         $body = $this->readJsonBody();
         $context = $this->resolveSessionContext();
 
-        $programItemId = (int)($body['programItemId'] ?? 0);
-        $donationAmount = (float)($body['donationAmount'] ?? 0.0);
+        $programItemId = (int) ($body['programItemId'] ?? 0);
+        $donationAmount = (float) ($body['donationAmount'] ?? 0.0);
 
         $this->programService->updateDonation($context->sessionKey, $context->userId, $programItemId, $donationAmount);
 
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }
 
-    /**
-     * Removes a single item from the program and returns recalculated totals.
-     * DELETE /my-program/remove (JSON)
-     */
     public function remove(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -164,17 +143,13 @@ class ProgramController extends BaseController
         $body = $this->readJsonBody();
         $context = $this->resolveSessionContext();
 
-        $programItemId = (int)($body['programItemId'] ?? 0);
+        $programItemId = (int) ($body['programItemId'] ?? 0);
 
         $this->programService->removeItem($context->sessionKey, $context->userId, $programItemId);
 
         $this->respondJsonWithTotals($context->sessionKey, $context->userId);
     }
 
-    /**
-     * Removes all items from the user's program.
-     * DELETE /my-program/clear (JSON)
-     */
     public function clear(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -205,8 +180,8 @@ class ProgramController extends BaseController
     {
         $this->handleJsonRequest(function (): void {
             $body = $this->readJsonBody();
-            $eventId = (int)($body['eventId'] ?? 0);
-            $dateTime = isset($body['dateTime']) ? (string)$body['dateTime'] : '';
+            $eventId = (int) ($body['eventId'] ?? 0);
+            $dateTime = isset($body['dateTime']) ? (string) $body['dateTime'] : '';
 
             $tours = $this->programService->getTourInfo($eventId, $dateTime);
 

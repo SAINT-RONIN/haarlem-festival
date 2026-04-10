@@ -18,7 +18,7 @@ final class CmsOrderViewHelper
             return '';
         }
 
-        return (new \DateTimeImmutable($dateString))->format(FormatHelper::CMS_DATE_FORMAT);
+        return new \DateTimeImmutable($dateString)->format(FormatHelper::CMS_DATE_FORMAT);
     }
 
     public static function resolveOrderBadgeClass(string $status): string

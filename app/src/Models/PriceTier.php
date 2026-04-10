@@ -20,8 +20,7 @@ final readonly class PriceTier
     public function __construct(
         public int    $priceTierId,
         public string $name,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a PriceTier instance from a database row array.
@@ -30,8 +29,8 @@ final readonly class PriceTier
     public static function fromRow(array $row): self
     {
         return new self(
-            priceTierId: (int)$row['PriceTierId'],
-            name: (string)$row['Name'],
+            priceTierId: (int) $row['PriceTierId'],
+            name: (string) $row['Name'],
         );
     }
 

@@ -25,8 +25,7 @@ final readonly class Ticket
         public ?\DateTimeImmutable $scannedAtUtc,
         public ?int                $scannedByUserId,
         public ?int                $pdfAssetId,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a Ticket instance from a database row array.
@@ -35,13 +34,13 @@ final readonly class Ticket
     public static function fromRow(array $row): self
     {
         return new self(
-            ticketId: (int)$row['TicketId'],
-            orderItemId: (int)$row['OrderItemId'],
-            ticketCode: (string)$row['TicketCode'],
-            isScanned: (bool)$row['IsScanned'],
+            ticketId: (int) $row['TicketId'],
+            orderItemId: (int) $row['OrderItemId'],
+            ticketCode: (string) $row['TicketCode'],
+            isScanned: (bool) $row['IsScanned'],
             scannedAtUtc: isset($row['ScannedAtUtc']) ? new \DateTimeImmutable($row['ScannedAtUtc']) : null,
-            scannedByUserId: isset($row['ScannedByUserId']) ? (int)$row['ScannedByUserId'] : null,
-            pdfAssetId: isset($row['PdfAssetId']) ? (int)$row['PdfAssetId'] : null,
+            scannedByUserId: isset($row['ScannedByUserId']) ? (int) $row['ScannedByUserId'] : null,
+            pdfAssetId: isset($row['PdfAssetId']) ? (int) $row['PdfAssetId'] : null,
         );
     }
 

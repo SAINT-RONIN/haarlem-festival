@@ -21,10 +21,10 @@ final readonly class ArtistLineupMember
     public static function fromRow(array $row): self
     {
         return new self(
-            artistLineupMemberId: (int)$row['ArtistLineupMemberId'],
-            artistId:             (int)$row['ArtistId'],
-            memberText:           (string)$row['MemberText'],
-            sortOrder:            (int)$row['SortOrder'],
+            artistLineupMemberId: (int) $row['ArtistLineupMemberId'],
+            artistId: (int) $row['ArtistId'],
+            memberText: (string) $row['MemberText'],
+            sortOrder: (int) $row['SortOrder'],
         );
     }
 }

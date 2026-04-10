@@ -17,6 +17,5 @@ final readonly class BookingCardData
         public string $descriptionText,
         public array $rows,
         public bool $isHighlighted = false,
-    ) {
-    }
+    ) {}
 }

@@ -9,10 +9,10 @@
 
 use App\View\ViewRenderer;
 
-$currentPage = $currentPage ?? 'home';
-$includeNav = $includeNav ?? false;
-$useLayoutWrapper = $useLayoutWrapper ?? false;
-$isLoggedIn = $isLoggedIn ?? false;
+$currentPage ??= 'home';
+$includeNav ??= false;
+$useLayoutWrapper ??= false;
+$isLoggedIn ??= false;
 ?>
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">

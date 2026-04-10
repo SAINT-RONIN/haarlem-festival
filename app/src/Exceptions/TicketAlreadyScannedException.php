@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\DTOs\Scanner\TicketScanDetail;
+use App\DTOs\Domain\Scanner\TicketScanDetail;
 
 /**
  * Thrown when a ticket has already been scanned at the venue.

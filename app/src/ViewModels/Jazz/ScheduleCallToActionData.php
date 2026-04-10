@@ -14,6 +14,5 @@ final readonly class ScheduleCallToActionData
         public string $descriptionText,
         public string $buttonText,
         public string $buttonLink,
-    ) {
-    }
+    ) {}
 }

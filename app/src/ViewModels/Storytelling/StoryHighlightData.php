@@ -14,6 +14,5 @@ final readonly class StoryHighlightData
         public string $imageUrl,
         public string $title,
         public string $description,
-    ) {
-    }
+    ) {}
 }

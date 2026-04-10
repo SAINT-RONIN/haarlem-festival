@@ -11,4 +11,3 @@ final class JazzArtistDetailNotFoundException extends NotFoundException
         parent::__construct('Jazz artist detail slug', $slug);
     }
 }
-

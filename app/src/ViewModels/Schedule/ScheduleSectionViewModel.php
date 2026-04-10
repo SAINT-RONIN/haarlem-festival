@@ -42,6 +42,5 @@ final readonly class ScheduleSectionViewModel
         public bool    $hasActiveFilters = false,
         public string  $gridClasses = 'lg:flex-row lg:flex-nowrap',
         public string  $itemClasses = 'lg:flex-1',
-    ) {
-    }
+    ) {}
 }

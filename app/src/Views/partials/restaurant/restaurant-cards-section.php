@@ -49,7 +49,7 @@ $activeFilter = $restaurantCardsSection->activeFilter;
                     <?php foreach ($filters as $idx => $label): ?>
                         <?php
                             $filterValue = ($idx === 0) ? 'all' : strtolower(trim($label));
-                            $isActive = ($activeFilter === '' && $idx === 0) || ($activeFilter !== '' && $filterValue === $activeFilter);
+                        $isActive = ($activeFilter === '' && $idx === 0) || ($activeFilter !== '' && $filterValue === $activeFilter);
                         ?>
                         <button type="button"
                                 data-filter-value="<?= htmlspecialchars($filterValue) ?>"

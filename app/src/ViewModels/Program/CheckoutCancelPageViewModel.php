@@ -14,6 +14,5 @@ final readonly class CheckoutCancelPageViewModel
         public bool $hasCancelData,
         public string $orderId,
         public string $paymentId,
-    ) {
-    }
+    ) {}
 }

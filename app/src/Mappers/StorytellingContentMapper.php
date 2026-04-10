@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\Content\StorytellingEventCmsData;
-use App\Content\StorytellingMasonrySectionContent;
+use App\DTOs\Cms\StorytellingEventCmsData;
+use App\DTOs\Cms\StorytellingMasonrySectionContent;
 
 /**
  * Maps raw CMS arrays into Storytelling page content models.

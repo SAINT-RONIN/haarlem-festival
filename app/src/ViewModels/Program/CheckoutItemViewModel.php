@@ -13,6 +13,5 @@ final readonly class CheckoutItemViewModel
         public string $quantityDisplay,
         public string $eventTitle,
         public string $priceDisplay,
-    ) {
-    }
+    ) {}
 }

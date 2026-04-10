@@ -36,7 +36,10 @@ class CmsPageImageController extends CmsBaseController
     {
         $this->validateUploadCsrf();
         $itemId = $this->readOptionalIntPostParam('item_id') ?? 0;
-        if ($itemId > 0) { $this->handleItemUpload($itemId); return; }
+        if ($itemId > 0) {
+            $this->handleItemUpload($itemId);
+            return;
+        }
         $this->uploadTinyMceImage();
     }
 

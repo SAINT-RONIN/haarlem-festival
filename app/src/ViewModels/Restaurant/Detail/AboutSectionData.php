@@ -18,6 +18,5 @@ final readonly class AboutSectionData
 
         // CMS label
         public string $labelTitlePrefix = 'About',
-    ) {
-    }
+    ) {}
 }

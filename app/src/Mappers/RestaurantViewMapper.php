@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Constants\RestaurantPageConstants;
-use App\Content\RestaurantCardsSectionContent;
-use App\Content\RestaurantDetailSectionContent;
-use App\Content\RestaurantEventCmsData;
-use App\Content\GradientSectionContent;
-use App\Content\RestaurantInstructionsSectionContent;
-use App\Content\RestaurantIntroSectionContent;
-use App\Content\RestaurantIntroSplit2SectionContent;
-use App\DTOs\Events\RestaurantDetailEvent;
-use App\DTOs\Pages\RestaurantDetailPageData;
-use App\DTOs\Pages\RestaurantListingData;
-use App\DTOs\Pages\RestaurantPageData;
+use App\DTOs\Cms\RestaurantCardsSectionContent;
+use App\DTOs\Cms\RestaurantDetailSectionContent;
+use App\DTOs\Cms\RestaurantEventCmsData;
+use App\DTOs\Cms\GradientSectionContent;
+use App\DTOs\Cms\RestaurantInstructionsSectionContent;
+use App\DTOs\Cms\RestaurantIntroSectionContent;
+use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
+use App\DTOs\Domain\Events\RestaurantDetailEvent;
+use App\DTOs\Domain\Pages\RestaurantDetailPageData;
+use App\DTOs\Domain\Pages\RestaurantListingData;
+use App\DTOs\Domain\Pages\RestaurantPageData;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
 use App\ViewModels\IntroSplitSectionData;
@@ -47,12 +47,12 @@ final class RestaurantViewMapper
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return new RestaurantPageViewModel(
-            heroData:               $heroData,
-            globalUi:               $globalUi,
-            gradientSection:        self::toGradientSection($data->gradientSection),
-            introSplitSection:      self::toIntroSplitSection($data->introSplitSection),
-            introSplit2Section:     self::toIntroSplit2Section($data->introSplit2Section),
-            instructionsSection:    self::toInstructionsSection($data->instructionsSection),
+            heroData: $heroData,
+            globalUi: $globalUi,
+            gradientSection: self::toGradientSection($data->gradientSection),
+            introSplitSection: self::toIntroSplitSection($data->introSplitSection),
+            introSplit2Section: self::toIntroSplit2Section($data->introSplit2Section),
+            instructionsSection: self::toInstructionsSection($data->instructionsSection),
             restaurantCardsSection: self::toRestaurantCardsSection($data->cardsSection, $data->listings),
         );
     }
@@ -79,7 +79,7 @@ final class RestaurantViewMapper
             locationSection: self::buildLocationSection($cms, $sharedCms),
             practicalInfoSection: self::buildPracticalInfoSection($cms, $sharedCms, $data->priceCards),
             gallerySection: self::buildGallerySection($cms, $sharedCms),
-            reservationSection: self::buildReservationSection($cms, $sharedCms, $data->timeSlots, $data->priceCards),
+            reservationSection: self::buildReservationSection($cms, $sharedCms, $data->timeSlots, $data->priceCards, $data->featuredImagePath),
         );
     }
 
@@ -139,8 +139,7 @@ final class RestaurantViewMapper
         RestaurantEventCmsData $cms,
         RestaurantDetailSectionContent $sharedCms,
         array $timeSlots,
-    ): ContactSectionData
-    {
+    ): ContactSectionData {
         return new ContactSectionData(
             address: self::formatAddress($cms->addressLine, $cms->city),
             phone: $cms->phone ?? '',
@@ -211,12 +210,11 @@ final class RestaurantViewMapper
         RestaurantEventCmsData $cms,
         RestaurantDetailSectionContent $sharedCms,
         array $priceCards,
-    ): PracticalInfoSectionData
-    {
+    ): PracticalInfoSectionData {
         return new PracticalInfoSectionData(
             cuisine: $cms->cuisineType ?? '',
-            rating: (int)($cms->stars ?? 0),
-            michelinStars: (int)($cms->michelinStars ?? 0),
+            rating: (int) ($cms->stars ?? 0),
+            michelinStars: (int) ($cms->michelinStars ?? 0),
             specialRequestsNote: $cms->specialRequestsNote ?? '',
             priceCards: $priceCards,
             labelTitle: $sharedCms->detailPracticalTitle ?? 'Practical Information',
@@ -255,7 +253,13 @@ final class RestaurantViewMapper
         RestaurantDetailSectionContent $sharedCms,
         array $timeSlots,
         array $priceCards,
+        ?string $featuredImagePath = null,
     ): ReservationSectionData {
+        $reservationImage = RestaurantContentParser::validateImagePath($cms->reservationImage ?? '');
+        if ($reservationImage === RestaurantContentParser::DEFAULT_IMAGE && $featuredImagePath !== null) {
+            $reservationImage = RestaurantContentParser::validateImagePath($featuredImagePath);
+        }
+
         return new ReservationSectionData(
             title: $sharedCms->detailReservationTitle ?? 'Make a Reservation',
             description: $sharedCms->detailReservationDescription ?? '',
@@ -264,7 +268,7 @@ final class RestaurantViewMapper
             buttonText: $sharedCms->detailReservationBtn ?? 'Book Now',
             timeSlots: $timeSlots,
             priceCards: $priceCards,
-            reservationImage: RestaurantContentParser::validateImagePath($cms->reservationImage ?? ''),
+            reservationImage: $reservationImage,
             reservationFee: RestaurantPageConstants::RESERVATION_FEE,
             validDates: RestaurantPageConstants::VALID_DATES,
         );
@@ -273,7 +277,7 @@ final class RestaurantViewMapper
     private static function formatAddress(?string $addressLine, ?string $city): string
     {
         $parts = array_filter(
-            [trim((string)$addressLine), trim((string)$city)],
+            [trim((string) $addressLine), trim((string) $city)],
             static fn(string $part): bool => $part !== '',
         );
 
@@ -441,7 +445,7 @@ final class RestaurantViewMapper
         ];
 
         foreach ($candidates as $candidate) {
-            $description = RestaurantContentParser::cleanDescription((string)($candidate ?? ''));
+            $description = RestaurantContentParser::cleanDescription((string) ($candidate ?? ''));
             if ($description !== '') {
                 return $description;
             }
@@ -452,9 +456,9 @@ final class RestaurantViewMapper
 
     private static function buildCardRating(RestaurantListingData $listing): int
     {
-        $cmsStars = trim((string)($listing->cms->stars ?? ''));
+        $cmsStars = trim((string) ($listing->cms->stars ?? ''));
         if ($cmsStars !== '' && is_numeric($cmsStars)) {
-            return (int)$cmsStars;
+            return (int) $cmsStars;
         }
 
         return 0;
@@ -463,7 +467,7 @@ final class RestaurantViewMapper
     private static function firstNonEmpty(?string ...$values): string
     {
         foreach ($values as $value) {
-            $trimmed = trim((string)($value ?? ''));
+            $trimmed = trim((string) ($value ?? ''));
             if ($trimmed !== '') {
                 return $trimmed;
             }

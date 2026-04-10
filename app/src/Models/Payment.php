@@ -28,8 +28,7 @@ final readonly class Payment
         public ?string             $providerRef,
         public \DateTimeImmutable  $createdAtUtc,
         public ?\DateTimeImmutable $paidAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a Payment instance from a database row array.
@@ -38,8 +37,8 @@ final readonly class Payment
     public static function fromRow(array $row): self
     {
         return new self(
-            paymentId: (int)$row['PaymentId'],
-            orderId: (int)$row['OrderId'],
+            paymentId: (int) $row['PaymentId'],
+            orderId: (int) $row['OrderId'],
             method: PaymentMethod::from($row['Method']),
             status: PaymentStatus::from($row['Status']),
             providerRef: $row['ProviderRef'] ?? null,

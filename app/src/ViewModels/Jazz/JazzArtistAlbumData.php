@@ -15,6 +15,5 @@ final readonly class JazzArtistAlbumData
         public string $year,
         public string $tag,
         public string $imageUrl,
-    ) {
-    }
+    ) {}
 }

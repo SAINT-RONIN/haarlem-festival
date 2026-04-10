@@ -15,6 +15,5 @@ final readonly class LocationFacts
     public function __construct(
         public string $headingText,
         public array $facts,
-    ) {
-    }
+    ) {}
 }

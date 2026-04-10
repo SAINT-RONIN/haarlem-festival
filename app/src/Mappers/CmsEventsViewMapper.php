@@ -7,10 +7,11 @@ namespace App\Mappers;
 use App\Helpers\AgeLabelFormatter;
 use App\Helpers\FormatHelper;
 use App\Models\EventSession;
-use App\DTOs\Events\EventsListPageData;
+use App\DTOs\Domain\Events\EventEditPageData;
+use App\DTOs\Domain\Events\EventsListPageData;
 use App\Models\EventType;
-use App\DTOs\Events\EventWithDetails;
-use App\DTOs\Schedule\SessionWithEvent;
+use App\DTOs\Domain\Events\EventWithDetails;
+use App\DTOs\Domain\Schedule\SessionWithEvent;
 use App\ViewModels\Cms\CmsEventCreateViewModel;
 use App\ViewModels\Cms\CmsEventEditViewModel;
 use App\ViewModels\Cms\CmsEventListItemViewModel;
@@ -70,28 +71,36 @@ final class CmsEventsViewMapper
     }
 
     /**
-     * Builds the full event-edit page ViewModel, including session sub-ViewModels and
-     * price-tier enrichment. Consumed by the CMS event-edit form.
+     * Builds the full event-edit page ViewModel from the service bundle plus view-layer state.
+     *
+     * The bundle carries everything the service assembled (event, sessions, prices, labels,
+     * restaurant CMS fields). The remaining arguments are view-layer concerns that the service
+     * does not own: flash messages, price tier display names, and the venue dropdown list.
      */
     public static function toEventEditViewModel(
-        EventWithDetails $event,
-        array $sessions,
-        array $pricesData = [],
-        array $labelsData = [],
-        ?string $successMessage = null,
-        ?string $errorMessage = null,
+        EventEditPageData $bundle,
+        ?string $successMessage,
+        ?string $errorMessage,
         array $priceTiers = [],
-        ?string $cmsDetailEditUrl = null,
-        ?string $restaurantStars = null,
-        ?string $restaurantCuisine = null,
-        ?string $restaurantShortDescription = null,
         array $venues = [],
-        ?string $featuredImagePath = null,
     ): CmsEventEditViewModel {
-        $sessionViewModels = self::buildSessionViewModels($sessions, $event->title, $event->eventTypeSlug);
-        $enrichedPrices = self::enrichPricesWithTierNames($pricesData, $priceTiers);
+        $sessionViewModels = self::buildSessionViewModels($bundle->sessions, $bundle->event->title, $bundle->event->eventTypeSlug);
+        $enrichedPrices    = self::enrichPricesWithTierNames($bundle->pricesMap, $priceTiers);
 
-        return self::assembleEditViewModel($event, $sessionViewModels, $enrichedPrices, $labelsData, $cmsDetailEditUrl, $successMessage, $errorMessage, $restaurantStars, $restaurantCuisine, $restaurantShortDescription, $venues, $featuredImagePath);
+        return self::assembleEditViewModel(
+            $bundle->event,
+            $sessionViewModels,
+            $enrichedPrices,
+            $bundle->labelsMap,
+            $bundle->cmsDetailEditUrl,
+            $successMessage,
+            $errorMessage,
+            $bundle->restaurantStars,
+            $bundle->restaurantCuisine,
+            $bundle->restaurantShortDescription,
+            $venues,
+            $bundle->featuredImagePath,
+        );
     }
 
     /**
@@ -357,30 +366,30 @@ final class CmsEventsViewMapper
     private static function toEventSession(SessionWithEvent $s): EventSession
     {
         return new EventSession(
-            eventSessionId:            $s->eventSessionId,
-            eventId:                   $s->eventId,
-            startDateTime:             $s->startDateTime,
-            endDateTime:               $s->endDateTime,
-            capacityTotal:             $s->capacityTotal,
+            eventSessionId: $s->eventSessionId,
+            eventId: $s->eventId,
+            startDateTime: $s->startDateTime,
+            endDateTime: $s->endDateTime,
+            capacityTotal: $s->capacityTotal,
             capacitySingleTicketLimit: $s->capacitySingleTicketLimit,
-            seatsAvailable:            $s->seatsAvailable,
-            soldSingleTickets:         $s->soldSingleTickets,
-            soldReservedSeats:         $s->soldReservedSeats,
-            hallName:                  $s->hallName,
-            sessionType:               $s->sessionType,
-            durationMinutes:           $s->durationMinutes,
-            languageCode:              $s->languageCode,
-            minAge:                    $s->minAge,
-            maxAge:                    $s->maxAge,
-            reservationRequired:       $s->reservationRequired,
-            isFree:                    $s->isFree,
-            notes:                     $s->notes,
-            historyTicketLabel:        $s->historyTicketLabel,
-            ctaLabel:                  $s->ctaLabel,
-            ctaUrl:                    $s->ctaUrl,
-            isCancelled:               $s->isCancelled,
-            createdAtUtc:              $s->createdAtUtc,
-            isActive:                  $s->isActive,
+            seatsAvailable: $s->seatsAvailable,
+            soldSingleTickets: $s->soldSingleTickets,
+            soldReservedSeats: $s->soldReservedSeats,
+            hallName: $s->hallName,
+            sessionType: $s->sessionType,
+            durationMinutes: $s->durationMinutes,
+            languageCode: $s->languageCode,
+            minAge: $s->minAge,
+            maxAge: $s->maxAge,
+            reservationRequired: $s->reservationRequired,
+            isFree: $s->isFree,
+            notes: $s->notes,
+            historyTicketLabel: $s->historyTicketLabel,
+            ctaLabel: $s->ctaLabel,
+            ctaUrl: $s->ctaUrl,
+            isCancelled: $s->isCancelled,
+            createdAtUtc: $s->createdAtUtc,
+            isActive: $s->isActive,
         );
     }
 

@@ -30,6 +30,5 @@ final readonly class ProgramItemViewModel
         public ?string $languageLabel,
         public ?string $ageLabel,
         public bool $isReservation = false,
-    ) {
-    }
+    ) {}
 }

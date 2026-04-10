@@ -18,6 +18,5 @@ final readonly class TicketScannerPageViewModel
         public string $pageTitle,
         public string $layoutVariant,
         public string $currentView,
-    ) {
-    }
+    ) {}
 }

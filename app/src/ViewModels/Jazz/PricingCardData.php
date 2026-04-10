@@ -22,6 +22,5 @@ final readonly class PricingCardData
         public string $additionalInfo,
         public bool $isHighlighted = false,
         public ?int $passTypeId = null,
-    ) {
-    }
+    ) {}
 }

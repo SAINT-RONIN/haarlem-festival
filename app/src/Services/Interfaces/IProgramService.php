@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Content\ProgramMainContent;
-use App\DTOs\Program\ProgramData;
+use App\DTOs\Cms\ProgramMainContent;
+use App\DTOs\Domain\Program\ProgramData;
 use App\Models\Program;
 use App\Models\ProgramItem;
 

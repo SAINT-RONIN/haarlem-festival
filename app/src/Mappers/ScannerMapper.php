@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Scanner\TicketScanDetail;
+use App\DTOs\Domain\Scanner\TicketScanDetail;
 
 /**
  * Maps scanner DTOs to JSON response arrays.

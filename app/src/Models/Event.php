@@ -29,8 +29,7 @@ final readonly class Event
         public ?int               $artistId,
         public bool               $isActive,
         public \DateTimeImmutable $createdAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates an Event instance from a database row array.
@@ -39,16 +38,16 @@ final readonly class Event
     public static function fromRow(array $row): self
     {
         return new self(
-            eventId: (int)$row['EventId'],
-            eventTypeId: (int)$row['EventTypeId'],
-            title: (string)$row['Title'],
-            slug: isset($row['Slug']) ? (string)$row['Slug'] : null,
-            shortDescription: (string)$row['ShortDescription'],
-            longDescriptionHtml: (string)$row['LongDescriptionHtml'],
-            featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int)$row['FeaturedImageAssetId'] : null,
-            venueId: isset($row['VenueId']) ? (int)$row['VenueId'] : null,
-            artistId: isset($row['ArtistId']) ? (int)$row['ArtistId'] : null,
-            isActive: (bool)$row['IsActive'],
+            eventId: (int) $row['EventId'],
+            eventTypeId: (int) $row['EventTypeId'],
+            title: (string) $row['Title'],
+            slug: isset($row['Slug']) ? (string) $row['Slug'] : null,
+            shortDescription: (string) $row['ShortDescription'],
+            longDescriptionHtml: (string) $row['LongDescriptionHtml'],
+            featuredImageAssetId: isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null,
+            venueId: isset($row['VenueId']) ? (int) $row['VenueId'] : null,
+            artistId: isset($row['ArtistId']) ? (int) $row['ArtistId'] : null,
+            isActive: (bool) $row['IsActive'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
         );
     }

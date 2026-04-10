@@ -5,16 +5,21 @@
  * @var \App\ViewModels\History\HistoricalLocationViewModel $viewModel
  */
 
-$currentPage = $viewModel->currentPage;
-$includeNav = $viewModel->includeNav;
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
+use App\View\ViewTemplate;
+
+$layout = new PublicPageLayout(
+    contentTemplates: [
+        new ViewTemplate(__DIR__ . '/../partials/history/detail/_body.php', [
+            'viewModel' => $viewModel,
+        ]),
+    ],
+    includeHero: false,
+    mainClass: 'w-full bg-sand flex flex-col justify-start items-center',
+);
 ?>
-<?php require __DIR__ . '/../partials/header.php'; ?>
-
-<main class="w-full bg-sand flex flex-col justify-start items-center">
-    <?php require __DIR__ . '/../partials/history/detail/hero-section.php'; ?>
-    <?php require __DIR__ . '/../partials/history/detail/intro-section.php'; ?>
-    <?php require __DIR__ . '/../partials/history/detail/facts-section.php'; ?>
-    <?php require __DIR__ . '/../partials/history/detail/significance-section.php'; ?>
-</main>
-
-<?php require __DIR__ . '/../partials/footer.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', [
+    'layout' => $layout,
+    'viewModel' => $viewModel,
+]); ?>

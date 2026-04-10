@@ -16,6 +16,5 @@ final readonly class ScheduleDayData
         public string $dayName,
         public string $fullDate,
         public array $events,
-    ) {
-    }
+    ) {}
 }

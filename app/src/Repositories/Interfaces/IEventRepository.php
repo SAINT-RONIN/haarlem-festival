@@ -6,12 +6,12 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\Event;
 use App\DTOs\Cms\EventUpsertData;
-use App\DTOs\Filters\EventFilter;
-use App\DTOs\Events\EventWithDetails;
-use App\DTOs\Events\JazzArtistCardRecord;
-use App\DTOs\Events\JazzArtistDetailEvent;
-use App\DTOs\Events\RestaurantDetailEvent;
-use App\DTOs\Events\StorytellingDetailEvent;
+use App\DTOs\Domain\Filters\EventFilter;
+use App\DTOs\Domain\Events\EventWithDetails;
+use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\JazzArtistDetailEvent;
+use App\DTOs\Domain\Events\RestaurantDetailEvent;
+use App\DTOs\Domain\Events\StorytellingDetailEvent;
 
 /**
  * Contract for CRUD operations on the Event table. Supports filtered listing with

@@ -51,11 +51,11 @@ class TimeFormatter
         }
 
         if ($diff->days < 30) {
-            $weeks = (int)floor($diff->days / 7);
+            $weeks = (int) floor($diff->days / 7);
             return $weeks . 'w ago';
         }
 
-        $months = (int)floor($diff->days / 30);
+        $months = (int) floor($diff->days / 30);
         return $months . 'mo ago';
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Interfaces;
 
 use App\Models\EventType;
-use App\DTOs\Filters\EventTypeFilter;
+use App\DTOs\Domain\Filters\EventTypeFilter;
 
 /**
  * Contract for accessing the EventType lookup table. Event types categorise festival

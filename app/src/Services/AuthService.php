@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Auth\RegistrationFormData;
+use App\DTOs\Domain\Auth\RegistrationFormData;
 use App\Enums\UserRoleId;
 use App\Exceptions\AuthenticationException;
 use App\Exceptions\ValidationException;
@@ -17,16 +17,8 @@ use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\IAuthService;
 use App\Utils\PasswordHasher;
 
-/**
- * Owns all credential-related business logic: login (customer + admin), new-account
- * registration with field-level validation, and the full password-reset flow
- * (token generation, token validation, password update).
- *
- * Security notes:
- * - All password hashing uses Argon2id via PasswordHasher.
- * - Login and reset endpoints return generic errors to prevent account enumeration.
- * - Reset tokens are SHA-256 hashed before storage; only the raw token travels via email.
- */
+// Reset tokens are SHA-256 hashed before storage; only the raw token travels via email.
+// Login/reset endpoints return generic errors to prevent account enumeration.
 class AuthService implements IAuthService
 {
     private const RESET_TOKEN_EXPIRY_HOURS = 1;
@@ -36,14 +28,9 @@ class AuthService implements IAuthService
         private readonly IUserAccountRepository $userRepository,
         private readonly IPasswordResetTokenRepository $resetTokenRepository,
         private readonly IEmailService $emailService,
-    ) {
-    }
+    ) {}
 
-    /**
-     * Attempts to authenticate a user with username/email and password.
-     *
-     * @throws AuthenticationException When credentials are invalid
-     */
+    /** @throws AuthenticationException */
     public function attemptLogin(string $login, string $password): UserAccount
     {
         $user = $this->userRepository->findByUsernameOrEmail($login);
@@ -55,11 +42,7 @@ class AuthService implements IAuthService
         return $user;
     }
 
-    /**
-     * Attempts login and additionally checks that the user has Administrator role.
-     *
-     * @throws AuthenticationException When credentials are invalid or user is not an administrator
-     */
+    /** @throws AuthenticationException */
     public function attemptAdminLogin(string $login, string $password): UserAccount
     {
         $user = $this->attemptLogin($login, $password);
@@ -71,11 +54,7 @@ class AuthService implements IAuthService
         return $user;
     }
 
-    /**
-     * Validates registration data and returns any errors.
-     *
-     * @return array<string, string> Field name => error message
-     */
+    /** @return array<string, string> */
     public function validateRegistration(RegistrationFormData $data): array
     {
         $errors = [];
@@ -92,9 +71,6 @@ class AuthService implements IAuthService
         return array_merge($errors, UserValidationHelper::checkNames($data->firstName, $data->lastName));
     }
 
-    /**
-     * Validates username format and uniqueness.
-     */
     private function validateUsername(string $username, array $errors): array
     {
         $username = trim($username);
@@ -144,12 +120,7 @@ class AuthService implements IAuthService
         return $errors;
     }
 
-    /**
-     * Registers a new user account.
-     *
-     * @return int The new user's ID
-     * @throws AuthenticationException When registration persistence fails
-     */
+    /** @throws AuthenticationException */
     public function register(RegistrationFormData $data): int
     {
         try {
@@ -168,13 +139,8 @@ class AuthService implements IAuthService
         }
     }
 
-    /**
-     * Initiates password reset flow.
-     * Always returns true to prevent account enumeration.
-     */
-    /**
-     * @throws AuthenticationException When an unexpected failure occurs during the reset flow
-     */
+    // Always returns true to prevent account enumeration.
+    /** @throws AuthenticationException */
     public function requestPasswordReset(string $email): bool
     {
         $user = $this->userRepository->findByEmail(trim($email));
@@ -199,11 +165,7 @@ class AuthService implements IAuthService
         return true;
     }
 
-    /**
-     * Validates a password reset token from the URL.
-     *
-     * @throws AuthenticationException When the token is invalid or has expired
-     */
+    /** @throws AuthenticationException */
     public function validateResetToken(string $rawToken): PasswordResetToken
     {
         $tokenHash = hash('sha256', $rawToken);
@@ -216,12 +178,7 @@ class AuthService implements IAuthService
         return $token;
     }
 
-    /**
-     * Resets a user's password using a valid reset token.
-     *
-     * @throws AuthenticationException When the token is invalid or the password update fails
-     * @throws ValidationException When the new password fails validation
-     */
+    /** @throws AuthenticationException|ValidationException */
     public function resetPassword(string $rawToken, string $newPassword, string $confirmPassword): void
     {
         $token = $this->validateResetToken($rawToken);
@@ -248,9 +205,6 @@ class AuthService implements IAuthService
         }
     }
 
-    /**
-     * Returns the landing page that matches the authenticated user's role.
-     */
     public function resolvePostLoginRedirect(?int $roleId): string
     {
         return match ($roleId) {

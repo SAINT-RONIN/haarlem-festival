@@ -28,8 +28,7 @@ final readonly class CmsItem
         public ?string            $htmlValue,
         public ?int               $mediaAssetId,
         public \DateTimeImmutable $updatedAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a CmsItem instance from a database row array.
@@ -38,13 +37,13 @@ final readonly class CmsItem
     public static function fromRow(array $row): self
     {
         return new self(
-            cmsItemId: (int)($row['CmsItemId'] ?? throw new \InvalidArgumentException('Missing required field: CmsItemId')),
-            cmsSectionId: (int)($row['CmsSectionId'] ?? throw new \InvalidArgumentException('Missing required field: CmsSectionId')),
-            itemKey: (string)($row['ItemKey'] ?? throw new \InvalidArgumentException('Missing required field: ItemKey')),
+            cmsItemId: (int) ($row['CmsItemId'] ?? throw new \InvalidArgumentException('Missing required field: CmsItemId')),
+            cmsSectionId: (int) ($row['CmsSectionId'] ?? throw new \InvalidArgumentException('Missing required field: CmsSectionId')),
+            itemKey: (string) ($row['ItemKey'] ?? throw new \InvalidArgumentException('Missing required field: ItemKey')),
             itemType: CmsItemType::from($row['ItemType'] ?? throw new \InvalidArgumentException('Missing required field: ItemType')),
             textValue: $row['TextValue'] ?? null,
             htmlValue: $row['HtmlValue'] ?? null,
-            mediaAssetId: isset($row['MediaAssetId']) ? (int)$row['MediaAssetId'] : null,
+            mediaAssetId: isset($row['MediaAssetId']) ? (int) $row['MediaAssetId'] : null,
             updatedAtUtc: new \DateTimeImmutable($row['UpdatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: UpdatedAtUtc')),
         );
     }

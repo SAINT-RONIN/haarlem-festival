@@ -7,12 +7,8 @@ namespace App\Repositories;
 use App\Models\Ticket;
 use App\Repositories\Interfaces\ITicketRepository;
 
-/**
- * Persistent ticket rows plus scan/PDF linkage state.
- */
 class TicketRepository extends BaseRepository implements ITicketRepository
 {
-    /** Inserts one new ticket row for an order item and returns the generated ticket id. */
     public function create(int $orderItemId, string $ticketCode): int
     {
         return $this->executeInsert(
@@ -24,12 +20,7 @@ class TicketRepository extends BaseRepository implements ITicketRepository
         );
     }
 
-    /**
-     * Loads all ticket rows for the given order item ids, ordered by ticket id.
-     *
-     * @param int[] $orderItemIds
-     * @return Ticket[]
-     */
+    /** @param int[] $orderItemIds */
     public function findByOrderItemIds(array $orderItemIds): array
     {
         $orderItemIds = array_values(array_filter(array_map('intval', $orderItemIds), fn(int $id) => $id > 0));
@@ -37,7 +28,6 @@ class TicketRepository extends BaseRepository implements ITicketRepository
             return [];
         }
 
-        // The helper builds named placeholders so we can safely query a dynamic list of ids.
         $inClause = $this->buildInClause($orderItemIds, 'orderItemId');
 
         return $this->fetchAll(
@@ -47,7 +37,6 @@ class TicketRepository extends BaseRepository implements ITicketRepository
         );
     }
 
-    /** Loads one ticket row by its unique ticket code. */
     public function findByCode(string $ticketCode): ?Ticket
     {
         return $this->fetchOne(
@@ -57,7 +46,6 @@ class TicketRepository extends BaseRepository implements ITicketRepository
         );
     }
 
-    /** Links a generated PDF media asset to a ticket row. */
     public function updatePdfAssetId(int $ticketId, ?int $pdfAssetId): void
     {
         $this->execute(
@@ -69,7 +57,7 @@ class TicketRepository extends BaseRepository implements ITicketRepository
         );
     }
 
-    /** Marks a ticket as scanned and stores who scanned it and when. */
+    // Only succeeds when IsScanned = 0 (prevents double-scans).
     public function markScanned(int $ticketId, int $scannedByUserId, ?\DateTimeImmutable $scannedAtUtc = null): bool
     {
         $statement = $this->execute(

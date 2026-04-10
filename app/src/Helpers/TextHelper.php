@@ -22,7 +22,5 @@ final class TextHelper
         return trim(strip_tags(html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
     }
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

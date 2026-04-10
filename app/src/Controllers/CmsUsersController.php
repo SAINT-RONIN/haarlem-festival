@@ -10,11 +10,7 @@ use App\Services\Interfaces\ISessionService;
 
 /**
  * CMS controller for managing user accounts.
- *
- * Handles listing (with role/search/sort filters), creating, editing,
- * and soft-deleting user accounts through the admin panel.
  * Includes a safety guard preventing admins from deactivating their own account.
- * Password is required on create but optional on update (empty = keep current).
  */
 class CmsUsersController extends CmsBaseController
 {
@@ -25,10 +21,6 @@ class CmsUsersController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the user list with optional role, search, and sort filters.
-     * GET /cms/users
-     */
     public function index(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -40,10 +32,6 @@ class CmsUsersController extends CmsBaseController
         });
     }
 
-    /**
-     * Renders the blank user creation form with default role set to Customer.
-     * GET /cms/users/create
-     */
     public function create(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -51,10 +39,6 @@ class CmsUsersController extends CmsBaseController
         });
     }
 
-    /**
-     * Validates and persists a new user account from the creation form.
-     * POST /cms/users
-     */
     public function store(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -62,10 +46,6 @@ class CmsUsersController extends CmsBaseController
         });
     }
 
-    /**
-     * Renders the edit form for an existing user, pre-filled with current data.
-     * GET /cms/users/{id}/edit
-     */
     public function edit(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -73,10 +53,6 @@ class CmsUsersController extends CmsBaseController
         });
     }
 
-    /**
-     * Validates and applies updates to an existing user account. Password is optional on update.
-     * POST /cms/users/{id}/edit
-     */
     public function update(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -84,10 +60,6 @@ class CmsUsersController extends CmsBaseController
         });
     }
 
-    /**
-     * Soft-deletes (deactivates) a user account. Prevents admins from deactivating themselves.
-     * POST /cms/users/{id}/delete
-     */
     public function delete(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -95,10 +67,6 @@ class CmsUsersController extends CmsBaseController
         });
     }
 
-    /**
-     * Reactivates a previously deactivated user account.
-     * POST /cms/users/{id}/activate
-     */
     public function activate(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -120,7 +88,7 @@ class CmsUsersController extends CmsBaseController
         $this->validateCsrf('cms_user_create', '/cms/users/create');
         $data   = $this->extractUserFormData();
         // Re-render the form with errors if validation fails
-        $errors = $this->usersService->validateForCreate($data['username'], $data['email'], $data['password'], $data['firstName'], $data['lastName']);
+        $errors = $this->usersService->validateForCreate($data['username'], $data['email'], $data['password'], $data['firstName'], $data['lastName'], $data['roleId']);
         if (!empty($errors)) {
             $this->renderCreateForm($data, $errors);
             return;
@@ -147,7 +115,7 @@ class CmsUsersController extends CmsBaseController
         $this->validateCsrf('cms_user_edit_' . $id, '/cms/users/' . $id . '/edit');
         $data   = $this->extractUserFormData();
         // Empty password string is coerced to null so the service preserves the existing hash
-        $errors = $this->usersService->validateForUpdate($id, $data['username'], $data['email'], $data['password'] ?: null, $data['firstName'], $data['lastName']);
+        $errors = $this->usersService->validateForUpdate($id, $data['username'], $data['email'], $data['password'] ?: null, $data['firstName'], $data['lastName'], $data['roleId']);
         if (!empty($errors)) {
             $this->renderEditForm($id, $data, $errors);
             return;

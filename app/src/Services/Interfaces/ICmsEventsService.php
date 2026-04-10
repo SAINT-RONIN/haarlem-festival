@@ -6,9 +6,14 @@ namespace App\Services\Interfaces;
 
 use App\DTOs\Cms\EventSessionUpsertData;
 use App\DTOs\Cms\EventUpsertData;
+use App\DTOs\Domain\Events\EventEditPageData;
+use App\DTOs\Domain\Events\EventsListPageData;
+use App\DTOs\Domain\Events\EventWithDetails;
+use App\DTOs\Domain\Schedule\SessionWithEvent;
 use App\Exceptions\ValidationException;
-use App\DTOs\Events\EventEditBundle;
-use App\DTOs\Events\EventsListPageData;
+use App\Models\EventType;
+use App\Models\PriceTier;
+use App\Models\Venue;
 
 /**
  * Contract for CMS event lifecycle: CRUD for events, sessions, labels, and prices,
@@ -21,57 +26,62 @@ interface ICmsEventsService
     /**
      * Returns active events enriched with session counts, for the CMS events list.
      *
-     * @return \App\Models\Event[]
+     * @return EventWithDetails[]
      */
     public function getAllEventsWithDetails(?int $eventTypeId = null, ?string $dayOfWeek = null): array;
 
     /**
-     * Gets all event types for dropdown.
+     * Returns all event types ordered by name, for use in dropdowns.
+     *
+     * @return EventType[]
      */
     public function getEventTypes(): array;
 
     /**
-     * Gets all venues for dropdown.
+     * Returns all active venues, for use in dropdowns.
+     *
+     * @return Venue[]
      */
     public function getVenues(): array;
 
     /**
-     * Assembles all data needed for the CMS events list page.
+     * Assembles all data needed to render the CMS events list page.
      */
     public function getEventsListPageData(?int $eventTypeId = null, ?string $dayOfWeek = null): EventsListPageData;
 
     /**
-     * Creates a new venue.
+     * Creates a new venue and returns its ID.
      *
      * @throws ValidationException
      */
     public function createVenue(string $name, string $addressLine): int;
 
     /**
-     * Gets all price tiers for dropdown.
+     * Returns all price tiers, for use in the session price form.
+     *
+     * @return PriceTier[]
      */
     public function getPriceTiers(): array;
 
     /**
-     * Gets weekly schedule overview for CMS.
-     * Returns SessionWithEvent models grouped by day name.
+     * Returns active sessions grouped by day name (Monday–Sunday) for the weekly schedule grid.
      *
-     * @return array<string, \App\DTOs\Schedule\SessionWithEvent[]>
+     * @return array<string, SessionWithEvent[]>
      */
     public function getWeeklyScheduleOverview(?int $eventTypeId = null): array;
 
     /**
-     * Creates a new event.
+     * Creates a new event and returns its ID.
      *
      * @throws ValidationException
      */
     public function createEvent(EventUpsertData $data): int;
 
     /**
-     * Gets a single event with all related data for editing.
+     * Returns a single event with all related data for the CMS edit form.
      * Returns null when the event does not exist.
      */
-    public function getEventForEdit(int $eventId): ?EventEditBundle;
+    public function getEventForEdit(int $eventId): ?EventEditPageData;
 
     /**
      * Updates an event's basic information.
@@ -81,55 +91,50 @@ interface ICmsEventsService
     public function updateEvent(int $eventId, EventUpsertData $data): bool;
 
     /**
-     * Creates a new event session.
+     * Creates a new session for an event and returns its ID.
      *
      * @throws ValidationException
      */
     public function createSession(int $eventId, EventSessionUpsertData $data): int;
 
     /**
-     * Updates an event session.
+     * Updates an existing session.
      *
      * @throws ValidationException
      */
     public function updateSession(int $sessionId, EventSessionUpsertData $data): bool;
 
     /**
-     * Hard-deletes an event session. Blocked if tickets have been sold for this session.
+     * Hard-deletes a session. Blocked when tickets have already been sold for it.
      *
      * @throws ValidationException
      */
     public function deleteSession(int $sessionId): bool;
 
     /**
-     * Adds a label to a session.
+     * Adds a text label to a session (e.g. "English", "Sold Out").
      *
      * @throws ValidationException
      */
     public function addLabel(int $sessionId, string $labelText): int;
 
-    /**
-     * Deletes a label.
-     */
+    /** Removes a label. This is immediate and permanent. */
     public function deleteLabel(int $labelId): bool;
 
     /**
-     * Sets the price for a session.
+     * Sets the price for a session under a given price tier.
      *
      * @throws ValidationException
      */
     public function setSessionPrice(int $sessionId, ?int $priceTierId, string $rawPrice): bool;
 
     /**
-     * Soft-deletes an event and cascades deactivation to all its sessions.
+     * Soft-deletes an event and deactivates all its sessions in a single transaction.
      *
      * @throws ValidationException
      */
     public function deleteEvent(int $eventId): void;
 
-    /**
-     * Soft-deletes a venue.
-     */
+    /** Soft-deletes a venue. */
     public function deleteVenue(int $venueId): bool;
-
 }

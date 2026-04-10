@@ -13,6 +13,5 @@ final readonly class HomeScheduleSectionViewModel
         public string $title,
         public string $subtitlePrimary,
         public string $subtitleSecondary,
-    ) {
-    }
+    ) {}
 }

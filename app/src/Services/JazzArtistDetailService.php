@@ -8,21 +8,14 @@ use App\Constants\JazzArtistDetailConstants;
 use App\Exceptions\JazzArtistDetailNotFoundException;
 use App\Helpers\SlugHelper;
 use App\Models\Artist;
-use App\DTOs\Events\JazzArtistDetailEvent;
-use App\DTOs\Pages\JazzArtistDetailPageData;
+use App\DTOs\Domain\Events\JazzArtistDetailEvent;
+use App\DTOs\Domain\Pages\JazzArtistDetailPageData;
 use App\Repositories\Interfaces\IArtistDetailRepository;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Services\Interfaces\IJazzArtistDetailService;
 
-/**
- * Assembles the full detail-page payload for a single Jazz artist.
- *
- * Combines event data, artist profile content, and aggregated artist detail data
- * (albums, tracks, lineup members, highlights, gallery images).
- * Results are cached in-memory with a configurable TTL to avoid
- * redundant queries within the same request cycle.
- */
+// In-memory cache with configurable TTL to avoid redundant queries within the same request.
 class JazzArtistDetailService implements IJazzArtistDetailService
 {
     /** @var array<string, array{expiresAt:int, data:JazzArtistDetailPageData}> */
@@ -32,18 +25,9 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         private readonly IEventRepository $eventRepository,
         private readonly IArtistRepository $artistRepository,
         private readonly IArtistDetailRepository $artistDetailRepository,
-    ) {
-    }
+    ) {}
 
-    /**
-     * Returns the complete artist detail page payload for a given URL slug.
-     *
-     * Normalises the slug, checks the in-memory cache, and if missing
-     * resolves the event then aggregates artist + repository data into a
-     * single JazzArtistDetailPageData object.
-     *
-     * @throws JazzArtistDetailNotFoundException if the slug is invalid or no matching active Jazz event exists
-     */
+    /** @throws JazzArtistDetailNotFoundException */
     public function getArtistPageDataBySlug(string $slug): JazzArtistDetailPageData
     {
         $normalizedSlug = $this->normalizeSlug($slug);
@@ -52,7 +36,6 @@ class JazzArtistDetailService implements IJazzArtistDetailService
             return $cached;
         }
 
-        // Resolve the event from the database and build the full page payload
         $event = $this->findJazzEventBySlug($normalizedSlug);
         $pageData = $this->buildPageData($event);
         $this->setCachedPageData($normalizedSlug, $pageData);
@@ -60,9 +43,6 @@ class JazzArtistDetailService implements IJazzArtistDetailService
         return $pageData;
     }
 
-    /**
-     * Aggregates artist content and all artist-related collections into a single page-data object.
-     */
     private function buildPageData(JazzArtistDetailEvent $event): JazzArtistDetailPageData
     {
         $artist = $this->findArtistForEvent($event);
@@ -95,7 +75,7 @@ class JazzArtistDetailService implements IJazzArtistDetailService
             return null;
         }
 
-        if ((int)($entry['expiresAt'] ?? 0) < time()) {
+        if ((int) ($entry['expiresAt'] ?? 0) < time()) {
             unset(self::$pageCache[$slug]);
             return null;
         }

@@ -7,14 +7,8 @@ namespace App\Repositories;
 use App\Models\Reservation;
 use App\Repositories\Interfaces\IReservationRepository;
 
-/**
- * Manages persistence operations on the Reservation table.
- */
 class ReservationRepository extends BaseRepository implements IReservationRepository
 {
-    /**
-     * Inserts a new reservation and returns its generated ID.
-     */
     public function insert(Reservation $r): int
     {
         return $this->executeInsert(
@@ -34,9 +28,7 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
         );
     }
 
-    /**
-     * Fetches a reservation by ID with display name from the linked Event.
-     */
+    // Joins Event to get the restaurant display name.
     public function findWithRestaurant(int $reservationId): ?Reservation
     {
         return $this->fetchOne(

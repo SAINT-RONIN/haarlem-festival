@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\OrderHistory\OrderSummaryDto;
-use App\DTOs\OrderHistory\TicketPdfDto;
+use App\DTOs\Domain\OrderHistory\OrderSummaryData;
+use App\DTOs\Domain\OrderHistory\TicketPdfData;
 use App\Helpers\FormatHelper;
 use App\ViewModels\Program\MyOrdersItemViewModel;
 use App\ViewModels\Program\MyOrdersViewModel;
@@ -19,8 +19,8 @@ final class OrderHistoryMapper
     /**
      * Assembles the full "My Orders" page ViewModel from order summaries and ticket data.
      *
-     * @param OrderSummaryDto[] $orderDtos
-     * @param array<int, TicketPdfDto[]> $ticketsByOrder Keyed by orderId.
+     * @param OrderSummaryData[] $orderDtos
+     * @param array<int, TicketPdfData[]> $ticketsByOrder Keyed by orderId.
      */
     public static function toMyOrdersViewModel(
         array $orderDtos,
@@ -28,7 +28,7 @@ final class OrderHistoryMapper
         bool $isLoggedIn,
     ): MyOrdersViewModel {
         $orderViewModels = array_map(
-            fn(OrderSummaryDto $dto) => self::toOrderItemViewModel(
+            fn(OrderSummaryData $dto) => self::toOrderItemViewModel(
                 $dto,
                 $ticketsByOrder[$dto->orderId] ?? [],
             ),
@@ -44,14 +44,14 @@ final class OrderHistoryMapper
     /**
      * Converts a single order summary DTO into a display-ready card ViewModel.
      *
-     * @param TicketPdfDto[] $ticketPdfs
+     * @param TicketPdfData[] $ticketPdfs
      */
     public static function toOrderItemViewModel(
-        OrderSummaryDto $dto,
+        OrderSummaryData $dto,
         array $ticketPdfs,
     ): MyOrdersItemViewModel {
         $ticketPdfUrls = array_map(
-            fn(TicketPdfDto $pdf) => [
+            fn(TicketPdfData $pdf) => [
                 'ticketCode' => $pdf->ticketCode,
                 'url' => $pdf->filePath,
             ],
@@ -105,7 +105,7 @@ final class OrderHistoryMapper
     }
 
     /** Determines whether a pending order is still eligible for a retry payment attempt. */
-    private static function canRetryPayment(OrderSummaryDto $dto): bool
+    private static function canRetryPayment(OrderSummaryData $dto): bool
     {
         if ($dto->status !== 'Pending') {
             return false;

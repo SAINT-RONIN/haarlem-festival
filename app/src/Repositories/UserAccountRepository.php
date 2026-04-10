@@ -7,18 +7,9 @@ namespace App\Repositories;
 use App\Models\UserAccount;
 use App\Repositories\Interfaces\IUserAccountRepository;
 
-/**
- * Repository for UserAccount database operations.
- *
- * Handles all SQL queries related to user accounts including
- * authentication lookups, registration, and password updates.
- */
 class UserAccountRepository extends BaseRepository implements IUserAccountRepository
 {
-    /**
-     * Finds an active user matching by either username or email.
-     * Used at login time so users can sign in with either credential.
-     */
+    // Login lookup: matches either username or email, active users only.
     public function findByUsernameOrEmail(string $login): ?UserAccount
     {
         return $this->fetchOne(
@@ -30,9 +21,6 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    /**
-     * Finds a user by email address.
-     */
     public function findByEmail(string $email): ?UserAccount
     {
         return $this->fetchOne(
@@ -42,9 +30,6 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    /**
-     * Finds a user by ID.
-     */
     public function findById(int $id): ?UserAccount
     {
         return $this->fetchOne(
@@ -54,9 +39,6 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    /**
-     * Checks if a username is already taken.
-     */
     public function existsByUsername(string $username): bool
     {
         $stmt = $this->execute(
@@ -64,12 +46,9 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
             ['username' => $username],
         );
 
-        return (int)$stmt->fetchColumn() > 0;
+        return (int) $stmt->fetchColumn() > 0;
     }
 
-    /**
-     * Checks if an email is already registered.
-     */
     public function existsByEmail(string $email): bool
     {
         $stmt = $this->execute(
@@ -77,15 +56,11 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
             ['email' => $email],
         );
 
-        return (int)$stmt->fetchColumn() > 0;
+        return (int) $stmt->fetchColumn() > 0;
     }
 
-    /**
-     * Creates a new user account. PasswordSalt is always NULL because the app uses
-     * bcrypt/argon2 (salt is embedded in the hash). The column exists for legacy compatibility.
-     *
-     * @return int The new user's ID
-     */
+    // PasswordSalt is NULL -- app uses bcrypt/argon2 (salt is embedded in the hash).
+    // Column exists for legacy compatibility.
     public function createUser(
         string $username,
         string $email,
@@ -110,9 +85,6 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    /**
-     * Updates a user's password hash.
-     */
     public function updatePasswordHash(int $userId, string $passwordHash): void
     {
         $this->execute(
@@ -121,9 +93,28 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    /**
-     * Updates a user account's profile fields (does not change the password).
-     */
+    public function updateProfileInfo(
+        int $userId,
+        string $email,
+        string $firstName,
+        string $lastName,
+        ?int $profilePictureAssetId = null,
+    ): void {
+        $this->execute(
+            'UPDATE UserAccount
+             SET Email = :email, FirstName = :firstName, LastName = :lastName,
+                 ProfilePictureAssetId = :profilePictureAssetId, UpdatedAtUtc = NOW()
+             WHERE UserAccountId = :id',
+            [
+                ':email' => $email,
+                ':firstName' => $firstName,
+                ':lastName' => $lastName,
+                ':profilePictureAssetId' => $profilePictureAssetId,
+                ':id' => $userId,
+            ],
+        );
+    }
+
     public function updateUser(
         int $id,
         string $username,
@@ -148,9 +139,7 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    /**
-     * Soft-deletes a user by setting IsActive = 0 (preserves order/FK history).
-     */
+    // Soft-delete preserves order/FK history.
     public function deleteUser(int $id): void
     {
         $this->execute(
@@ -159,14 +148,22 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    /**
-     * Reactivates a soft-deleted user by setting IsActive = 1.
-     */
     public function reactivateUser(int $id): void
     {
         $this->execute(
             'UPDATE UserAccount SET IsActive = 1, UpdatedAtUtc = NOW() WHERE UserAccountId = :id',
             [':id' => $id],
         );
+    }
+
+    // For edit-form uniqueness checks (excludes the user being edited).
+    public function emailExistsForOtherUser(string $email, int $excludeUserId): bool
+    {
+        $stmt = $this->execute(
+            'SELECT 1 FROM UserAccount WHERE Email = :email AND UserAccountId != :userId LIMIT 1',
+            [':email' => $email, ':userId' => $excludeUserId],
+        );
+
+        return $stmt->fetch() !== false;
     }
 }

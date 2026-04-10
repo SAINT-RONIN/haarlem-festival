@@ -30,6 +30,5 @@ final readonly class PracticalInfoSectionData
         public string $labelFestivalRated   = 'Festival-rated',
         public string $labelMichelin        = 'Michelin-star',
         public string $labelCuisineType     = 'Cuisine type:',
-    ) {
-    }
+    ) {}
 }

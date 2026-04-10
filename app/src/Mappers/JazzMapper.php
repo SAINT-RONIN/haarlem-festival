@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Constants\JazzPageConstants;
-use App\DTOs\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\JazzArtistCardRecord;
 use App\Helpers\FormatHelper;
 use App\Helpers\TextHelper;
 use App\Enums\PassScope;
@@ -14,13 +14,13 @@ use App\Models\ArtistGalleryImage;
 use App\Models\ArtistHighlight;
 use App\Models\ArtistLineupMember;
 use App\Models\ArtistTrack;
-use App\DTOs\Pages\JazzArtistDetailPageData;
-use App\Content\JazzArtistsSectionContent;
-use App\Content\JazzBookingCtaSectionContent;
-use App\DTOs\Pages\JazzPageData;
-use App\Content\JazzPricingSectionContent;
-use App\Content\JazzScheduleCtaSectionContent;
-use App\Content\JazzVenuesSectionContent;
+use App\DTOs\Domain\Pages\JazzArtistDetailPageData;
+use App\DTOs\Cms\JazzArtistsSectionContent;
+use App\DTOs\Cms\JazzBookingCtaSectionContent;
+use App\DTOs\Domain\Pages\JazzPageData;
+use App\DTOs\Cms\JazzPricingSectionContent;
+use App\DTOs\Cms\JazzScheduleCtaSectionContent;
+use App\DTOs\Cms\JazzVenuesSectionContent;
 use App\Models\PassType;
 use App\ViewModels\Jazz\ArtistCardData;
 use App\ViewModels\Jazz\ArtistsData;
@@ -65,7 +65,8 @@ final class JazzMapper
         $pricingData = self::buildPricingData($domain->pricingSection, $domain->passPrices);
 
         return new JazzPageViewModel(
-            heroData: $heroData, globalUi: $globalUi,
+            heroData: $heroData,
+            globalUi: $globalUi,
             gradientSection: CmsMapper::toGradientSection($domain->gradientSection, JazzPageConstants::DEFAULT_GRADIENT_BACKGROUND_IMAGE),
             introSplitSection: CmsMapper::toIntroSplitSection($domain->introSection, JazzPageConstants::DEFAULT_INTRO_IMAGE, JazzPageConstants::DEFAULT_INTRO_IMAGE_ALT),
             venuesData: $venuesData,
@@ -219,7 +220,8 @@ final class JazzMapper
     {
         return new VenueData(
             name: $section->venuePatronaatName ?? '',
-            addressLine1: $section->venuePatronaatAddress1 ?? '', addressLine2: $section->venuePatronaatAddress2 ?? '',
+            addressLine1: $section->venuePatronaatAddress1 ?? '',
+            addressLine2: $section->venuePatronaatAddress2 ?? '',
             contactInfo: $section->venuePatronaatContact ?? '',
             halls: self::buildPatronaatHalls($section),
             isDark: false,
@@ -346,8 +348,8 @@ final class JazzMapper
         $parts = explode(' - ', $rawItem);
 
         return new PricingCardItemData(
-            name:     $parts[0] ?? '',
-            price:    $parts[1] ?? '',
+            name: $parts[0] ?? '',
+            price: $parts[1] ?? '',
             capacity: $parts[2] ?? '',
         );
     }
@@ -452,7 +454,7 @@ final class JazzMapper
             headingText: $section->artistsHeading ?? '',
             artists: self::buildArtistCards($featuredArtists),
             currentPage: 1,
-            totalPages: max(1, (int)ceil(max($artistCount, 1) / 3)),
+            totalPages: max(1, (int) ceil(max($artistCount, 1) / 3)),
             totalArtists: $artistCount,
         );
     }
@@ -486,8 +488,7 @@ final class JazzMapper
         JazzBookingCtaSectionContent $section,
         VenuesData $venuesData,
         PricingData $pricingData,
-    ): BookingCallToActionData
-    {
+    ): BookingCallToActionData {
         return new BookingCallToActionData(
             headingText: $section->bookingCtaHeading ?? '',
             descriptionText: $section->bookingCtaDescription ?? '',
@@ -620,7 +621,7 @@ final class JazzMapper
     private static function formatCompactPrice(float $amount): string
     {
         if (fmod($amount, 1.0) === 0.0) {
-            return '€' . (string)((int)$amount);
+            return '€' . (string) ((int) $amount);
         }
 
         return FormatHelper::price($amount);
@@ -673,7 +674,7 @@ final class JazzMapper
         ), $tracks);
     }
 
-    private static function buildPrimaryOverviewFallbackFromModel(\App\DTOs\Events\JazzArtistDetailEvent $event): string
+    private static function buildPrimaryOverviewFallbackFromModel(\App\DTOs\Domain\Events\JazzArtistDetailEvent $event): string
     {
         if ($event->longDescriptionHtml === '') {
             return '';
@@ -729,7 +730,7 @@ final class JazzMapper
 
     private static function normalizeJazzScheduleLink(?string $link): string
     {
-        $trimmed = trim((string)$link);
+        $trimmed = trim((string) $link);
 
         if ($trimmed === '' || $trimmed === '#schedule' || $trimmed === '/jazz#schedule') {
             return '#jazz-schedule';

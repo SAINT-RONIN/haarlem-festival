@@ -13,6 +13,5 @@ final readonly class RouteVenue
         public string $venueName,
         public string $venueBadgeColor,
         public string $venueDescription,
-    ) {
-    }
+    ) {}
 }

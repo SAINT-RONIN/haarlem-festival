@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Thrown when invoice PDF generation or persistence fails.
  */
-class InvoiceGenerationException extends InvoiceException
-{
-}
+class InvoiceGenerationException extends InvoiceException {}

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\DTOs\Pages\HistoricalLocationPageData;
+use App\DTOs\Domain\Pages\HistoricalLocationPageData;
 
 /**
  * Interface for historical location page service.

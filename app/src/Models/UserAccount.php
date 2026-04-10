@@ -31,8 +31,7 @@ final readonly class UserAccount
         public bool               $isActive,
         public \DateTimeImmutable $registeredAtUtc,
         public \DateTimeImmutable $updatedAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a UserAccount instance from a database row array.
@@ -41,19 +40,19 @@ final readonly class UserAccount
     public static function fromRow(array $row): self
     {
         return new self(
-            userAccountId:         (int)($row['UserAccountId'] ?? throw new \InvalidArgumentException('Missing required field: UserAccountId')),
-            userRoleId:            (int)($row['UserRoleId'] ?? throw new \InvalidArgumentException('Missing required field: UserRoleId')),
-            username:              (string)($row['Username'] ?? throw new \InvalidArgumentException('Missing required field: Username')),
-            email:                 (string)($row['Email'] ?? throw new \InvalidArgumentException('Missing required field: Email')),
-            passwordHash:          (string)($row['PasswordHash'] ?? throw new \InvalidArgumentException('Missing required field: PasswordHash')),
-            passwordSalt:          isset($row['PasswordSalt']) ? (string)$row['PasswordSalt'] : null,
-            firstName:             (string)($row['FirstName'] ?? throw new \InvalidArgumentException('Missing required field: FirstName')),
-            lastName:              (string)($row['LastName'] ?? throw new \InvalidArgumentException('Missing required field: LastName')),
-            profilePictureAssetId: isset($row['ProfilePictureAssetId']) ? (int)$row['ProfilePictureAssetId'] : null,
-            isEmailConfirmed:      (bool)($row['IsEmailConfirmed'] ?? throw new \InvalidArgumentException('Missing required field: IsEmailConfirmed')),
-            isActive:              (bool)($row['IsActive'] ?? throw new \InvalidArgumentException('Missing required field: IsActive')),
-            registeredAtUtc:       new \DateTimeImmutable($row['RegisteredAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: RegisteredAtUtc')),
-            updatedAtUtc:          new \DateTimeImmutable($row['UpdatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: UpdatedAtUtc')),
+            userAccountId: (int) ($row['UserAccountId'] ?? throw new \InvalidArgumentException('Missing required field: UserAccountId')),
+            userRoleId: (int) ($row['UserRoleId'] ?? throw new \InvalidArgumentException('Missing required field: UserRoleId')),
+            username: (string) ($row['Username'] ?? throw new \InvalidArgumentException('Missing required field: Username')),
+            email: (string) ($row['Email'] ?? throw new \InvalidArgumentException('Missing required field: Email')),
+            passwordHash: (string) ($row['PasswordHash'] ?? throw new \InvalidArgumentException('Missing required field: PasswordHash')),
+            passwordSalt: isset($row['PasswordSalt']) ? (string) $row['PasswordSalt'] : null,
+            firstName: (string) ($row['FirstName'] ?? throw new \InvalidArgumentException('Missing required field: FirstName')),
+            lastName: (string) ($row['LastName'] ?? throw new \InvalidArgumentException('Missing required field: LastName')),
+            profilePictureAssetId: isset($row['ProfilePictureAssetId']) ? (int) $row['ProfilePictureAssetId'] : null,
+            isEmailConfirmed: (bool) ($row['IsEmailConfirmed'] ?? throw new \InvalidArgumentException('Missing required field: IsEmailConfirmed')),
+            isActive: (bool) ($row['IsActive'] ?? throw new \InvalidArgumentException('Missing required field: IsActive')),
+            registeredAtUtc: new \DateTimeImmutable($row['RegisteredAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: RegisteredAtUtc')),
+            updatedAtUtc: new \DateTimeImmutable($row['UpdatedAtUtc'] ?? throw new \InvalidArgumentException('Missing required field: UpdatedAtUtc')),
         );
     }
 

@@ -11,6 +11,4 @@ namespace App\Exceptions;
  * uniformly at the controller level while still supporting specific
  * catch blocks for targeted error handling.
  */
-class AppException extends \RuntimeException
-{
-}
+class AppException extends \RuntimeException {}

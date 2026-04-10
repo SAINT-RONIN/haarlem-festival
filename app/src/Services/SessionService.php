@@ -7,15 +7,8 @@ namespace App\Services;
 use App\Enums\UserRoleId;
 use App\Services\Interfaces\ISessionService;
 
-/**
- * Centralised wrapper around PHP's native session handling.
- *
- * Owns session lifecycle (start/destroy), authenticated-user state (userId + roleId),
- * flash messages (single-read values for post-redirect-get), and per-scope CSRF
- * tokens (timing-safe comparison). Controllers and middleware use this instead of
- * touching $_SESSION directly, which keeps session key names consistent and
- * security measures (session fixation prevention, cookie cleanup) in one place.
- */
+// Controllers and middleware use this instead of touching $_SESSION directly
+// so session key names stay consistent and security logic stays in one place.
 class SessionService implements ISessionService
 {
     private const USER_ID_KEY = 'user_id';
@@ -23,22 +16,33 @@ class SessionService implements ISessionService
     private const FLASH_KEY = '_flash';
     private const CSRF_KEY = '_csrf_tokens';
 
-    /**
-     * Starts the session if not already started.
-     */
+    private const SESSION_LIFETIME = 60 * 60 * 8; // 8 hours
+
     public function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            session_set_cookie_params([
+                'lifetime' => self::SESSION_LIFETIME,
+                'path'     => '/',
+                'secure'   => isset($_SERVER['HTTPS']),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+            ini_set('session.gc_maxlifetime', (string) self::SESSION_LIFETIME);
             session_start();
         }
     }
 
-    /**
-     * Logs in a user by storing their ID and role in session.
-     * Regenerates session ID to prevent session fixation attacks.
-     */
     public function login(int $userId, int $roleId): void
     {
+        if ($userId <= 0) {
+            throw new \InvalidArgumentException('User ID must be a positive integer.');
+        }
+
+        if (UserRoleId::tryFrom($roleId) === null) {
+            throw new \InvalidArgumentException('Invalid role ID.');
+        }
+
         $this->start();
 
         // Regenerate session ID to prevent session fixation
@@ -48,17 +52,12 @@ class SessionService implements ISessionService
         $_SESSION[self::ROLE_ID_KEY] = $roleId;
     }
 
-    /**
-     * Logs out the current user by destroying the session.
-     */
     public function logout(): void
     {
         $this->start();
 
-        // Clear all session data
         $_SESSION = [];
 
-        // Delete session cookie
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(
@@ -72,22 +71,15 @@ class SessionService implements ISessionService
             );
         }
 
-        // Destroy the session
         session_destroy();
     }
 
-    /**
-     * Checks if a user is currently logged in.
-     */
     public function isLoggedIn(): bool
     {
         $this->start();
         return isset($_SESSION[self::USER_ID_KEY]);
     }
 
-    /**
-     * Checks if the current user is an administrator.
-     */
     public function isAdmin(): bool
     {
         $this->start();
@@ -95,9 +87,6 @@ class SessionService implements ISessionService
             && $_SESSION[self::ROLE_ID_KEY] === UserRoleId::Administrator->value;
     }
 
-    /**
-     * Checks if the current user is an employee or administrator.
-     */
     public function isEmployeeOrAdmin(): bool
     {
         $this->start();
@@ -108,9 +97,6 @@ class SessionService implements ISessionService
             || $roleId === UserRoleId::Administrator->value;
     }
 
-    /**
-     * Checks if the current user is an employee.
-     */
     public function isEmployee(): bool
     {
         $this->start();
@@ -118,50 +104,36 @@ class SessionService implements ISessionService
             && $_SESSION[self::ROLE_ID_KEY] === UserRoleId::Employee->value;
     }
 
-    /**
-     * Gets the current user's ID, or null if not logged in.
-     */
     public function getUserId(): ?int
     {
         $this->start();
         return $_SESSION[self::USER_ID_KEY] ?? null;
     }
 
-    /**
-     * Gets the current user's role ID, or null if not logged in.
-     */
     public function getRoleId(): ?int
     {
         $this->start();
         return $_SESSION[self::ROLE_ID_KEY] ?? null;
     }
 
-    /** Stores one arbitrary session value under the provided key. */
     public function set(string $key, mixed $value): void
     {
         $this->start();
         $_SESSION[$key] = $value;
     }
 
-    /** Reads one arbitrary session value and falls back to the provided default when missing. */
     public function get(string $key, mixed $default = null): mixed
     {
         $this->start();
         return $_SESSION[$key] ?? $default;
     }
 
-    /**
-     * Stores a flash message that survives exactly one subsequent read via consumeFlash().
-     */
     public function setFlash(string $key, mixed $value): void
     {
         $this->start();
         $_SESSION[self::FLASH_KEY][$key] = $value;
     }
 
-    /**
-     * Reads and removes a flash message in one step. Returns null if the key does not exist.
-     */
     public function consumeFlash(string $key): mixed
     {
         $this->start();
@@ -195,10 +167,7 @@ class SessionService implements ISessionService
         return $token;
     }
 
-    /**
-     * Validates a submitted CSRF token against the stored token for the given scope.
-     * Uses timing-safe comparison to prevent timing attacks.
-     */
+    /** Uses timing-safe comparison to prevent timing attacks. */
     public function isValidCsrfToken(string $scope, ?string $token): bool
     {
         $this->start();

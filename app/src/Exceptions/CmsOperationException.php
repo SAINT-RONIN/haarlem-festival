@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Exception thrown when a CMS management operation (create, update, delete) fails.
  */
-class CmsOperationException extends AppException
-{
-}
+class CmsOperationException extends AppException {}

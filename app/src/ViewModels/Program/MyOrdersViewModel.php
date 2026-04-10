@@ -15,6 +15,5 @@ final readonly class MyOrdersViewModel
         public array $orders,
         public bool $isLoggedIn,
         public string $currentPage = 'my-orders',
-    ) {
-    }
+    ) {}
 }

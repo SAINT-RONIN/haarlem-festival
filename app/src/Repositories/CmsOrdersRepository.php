@@ -4,24 +4,16 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\DTOs\Checkout\OrderWithDetails;
-use App\DTOs\Cms\CmsOrderDetailDto;
-use App\DTOs\Cms\CmsOrderItemDto;
-use App\DTOs\Cms\CmsOrderPaymentDto;
-use App\DTOs\Cms\CmsOrderTicketDto;
+use App\DTOs\Domain\Checkout\OrderWithDetails;
+use App\DTOs\Cms\CmsOrderDetailData;
+use App\DTOs\Cms\CmsOrderItemData;
+use App\DTOs\Cms\CmsOrderPaymentData;
+use App\DTOs\Cms\CmsOrderTicketData;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
 
-/**
- * Fetches orders joined with user email, item summary, and latest payment status
- * for the CMS orders list page.
- */
+// CMS orders list/detail queries with joined user email, item summary, and payment status.
 class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
 {
-    /**
-     * Returns all orders with joined details, optionally filtered by status.
-     *
-     * @return OrderWithDetails[]
-     */
     public function findOrdersWithDetails(?string $statusFilter = null): array
     {
         $sql    = $this->buildQuery($statusFilter !== null);
@@ -30,11 +22,6 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchAll($sql, $params, fn(array $row) => OrderWithDetails::fromRow($row));
     }
 
-    /**
-     * Builds the orders listing query with two correlated subqueries:
-     * - ItemsSummary: concatenates each order's line items (event title, tour, or pass)
-     * - PaymentStatus: picks the most recent payment status for the order
-     */
     private function buildQuery(bool $withStatusFilter): string
     {
         return "
@@ -60,6 +47,7 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $withStatusFilter ? ' AND o.Status = :status' : '';
     }
 
+    // Correlated subquery: concatenates line items (event title, tour, or pass)
     private function buildItemsSummarySelect(): string
     {
         return "(
@@ -80,6 +68,7 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         )";
     }
 
+    // Correlated subquery: most recent payment status for the order
     private function buildPaymentStatusSelect(): string
     {
         return "(
@@ -91,11 +80,7 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         )";
     }
 
-    /**
-     * Returns a single order with user/recipient details for the CMS detail page,
-     * or null if the order does not exist.
-     */
-    public function findOrderById(int $orderId): ?CmsOrderDetailDto
+    public function findOrderById(int $orderId): ?CmsOrderDetailData
     {
         $sql = "
             SELECT o.*, ua.Email AS UserEmail
@@ -107,15 +92,10 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchOne(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => CmsOrderDetailDto::fromRow($row),
+            fn(array $row) => CmsOrderDetailData::fromRow($row),
         );
     }
 
-    /**
-     * Returns all line items for a given order.
-     *
-     * @return CmsOrderItemDto[]
-     */
     public function findOrderItems(int $orderId): array
     {
         $sql = "
@@ -133,15 +113,10 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchAll(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => CmsOrderItemDto::fromRow($row),
+            fn(array $row) => CmsOrderItemData::fromRow($row),
         );
     }
 
-    /**
-     * Returns all payment records for a given order in reverse-chronological order.
-     *
-     * @return CmsOrderPaymentDto[]
-     */
     public function findOrderPayments(int $orderId): array
     {
         $sql = "
@@ -153,15 +128,11 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchAll(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => CmsOrderPaymentDto::fromRow($row),
+            fn(array $row) => CmsOrderPaymentData::fromRow($row),
         );
     }
 
-    /**
-     * Returns all tickets for a given order with joined scanner/pdf metadata.
-     *
-     * @return CmsOrderTicketDto[]
-     */
+    // Joins scanner user and PDF asset for the ticket list
     public function findOrderTickets(int $orderId): array
     {
         $sql = "
@@ -177,7 +148,7 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
         return $this->fetchAll(
             $sql,
             [':orderId' => $orderId],
-            fn(array $row) => CmsOrderTicketDto::fromRow($row),
+            fn(array $row) => CmsOrderTicketData::fromRow($row),
         );
     }
 }

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Pages\HomeEventTypeData;
-use App\DTOs\Pages\HomeLocationData;
-use App\DTOs\Pages\HomePageData;
-use App\DTOs\Pages\HomeScheduleDayData;
-use App\DTOs\Pages\HomeScheduleSessionData;
+use App\DTOs\Domain\Pages\HomeEventTypeData;
+use App\DTOs\Domain\Pages\HomeLocationData;
+use App\DTOs\Domain\Pages\HomePageData;
+use App\DTOs\Domain\Pages\HomeScheduleDayData;
+use App\DTOs\Domain\Pages\HomeScheduleSessionData;
 use App\Constants\HomeUiConfig;
 use App\ViewModels\HomeEventTypeViewModel;
 use App\ViewModels\HomeEventsHeaderViewModel;
@@ -37,15 +37,15 @@ final class HomeMapper
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return new HomePageViewModel(
-            heroData:     $heroData,
-            globalUi:     $globalUi,
+            heroData: $heroData,
+            globalUi: $globalUi,
             exploreBanner: self::buildExploreBanner($data->cmsContent),
             introSection: self::buildIntroSection($data->cmsContent),
             eventsHeader: self::buildEventsHeader($data->cmsContent),
             locationsSection: self::buildLocationsSection($data->cmsContent),
             schedulePreviewSection: self::buildSchedulePreviewSection($data->cmsContent),
-            eventTypes:   self::formatEventTypes($data->eventTypes),
-            locations:    self::formatLocations($data->locations),
+            eventTypes: self::formatEventTypes($data->eventTypes),
+            locations: self::formatLocations($data->locations),
             scheduleDays: self::formatScheduleDays($data->scheduleDays),
         );
     }
@@ -143,7 +143,7 @@ final class HomeMapper
      */
     private static function value(array $section, string $key, string $default = ''): string
     {
-        return (string)($section[$key] ?? $default);
+        return (string) ($section[$key] ?? $default);
     }
 
     /**
@@ -153,15 +153,15 @@ final class HomeMapper
     private static function formatEventTypes(array $eventTypes): array
     {
         return array_map(fn(HomeEventTypeData $t) => new HomeEventTypeViewModel(
-            slug:        $t->slug,
-            title:       $t->title,
+            slug: $t->slug,
+            title: $t->title,
             description: $t->description,
-            button:      $t->button,
-            image:       $t->image,
-            darkBg:      $t->darkBg,
-            badgeClass:  HomeUiConfig::EVENT_TYPE_CONFIG[$t->slug]['badgeColor'] ?? 'bg-gray-500',
-            imageSrc:    self::resolveEventTypeImage($t->slug, $t->image),
-            imageAlt:    self::resolveEventTypeAlt($t->slug, $t->title),
+            button: $t->button,
+            image: $t->image,
+            darkBg: $t->darkBg,
+            badgeClass: HomeUiConfig::EVENT_TYPE_CONFIG[$t->slug]['badgeColor'] ?? 'bg-gray-500',
+            imageSrc: self::resolveEventTypeImage($t->slug, $t->image),
+            imageAlt: self::resolveEventTypeAlt($t->slug, $t->title),
         ), $eventTypes);
     }
 
@@ -204,9 +204,9 @@ final class HomeMapper
     private static function formatLocations(array $locations): array
     {
         return array_map(fn(HomeLocationData $l) => new HomeLocationViewModel(
-            name:       $l->name,
-            address:    $l->address,
-            category:   $l->category,
+            name: $l->name,
+            address: $l->address,
+            category: $l->category,
             badgeClass: HomeUiConfig::EVENT_TYPE_CONFIG[$l->category]['badgeColor'] ?? 'bg-gray-500',
         ), $locations);
     }
@@ -230,14 +230,14 @@ final class HomeMapper
         $htmlId = 'schedule-day-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $dayName)) . '-' . $dayNumber;
 
         return new HomeScheduleDayViewModel(
-            date:       $day->date,
-            dayName:    $dayName,
-            dayNumber:  $dayNumber,
+            date: $day->date,
+            dayName: $dayName,
+            dayNumber: $dayNumber,
             monthShort: strtoupper($dateObj->format('M')),
-            isoDate:    $dateObj->format('Y-m-d'),
+            isoDate: $dateObj->format('Y-m-d'),
             eventCount: $day->eventCount,
-            sessions:   self::formatSessions($day->sessions),
-            htmlId:     $htmlId,
+            sessions: self::formatSessions($day->sessions),
+            htmlId: $htmlId,
         );
     }
 
@@ -259,10 +259,10 @@ final class HomeMapper
         $slug = $session->eventTypeSlug;
 
         return new HomeScheduleSessionViewModel(
-            timeLabel:     self::formatSessionTimes($session->earliestStart, $session->latestEnd),
-            title:         HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['summaryTitle'] ?? $session->firstEventTitle,
+            timeLabel: self::formatSessionTimes($session->earliestStart, $session->latestEnd),
+            title: HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['summaryTitle'] ?? $session->firstEventTitle,
             categoryLabel: $session->typeName,
-            borderClass:   HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['scheduleColor'] ?? 'bg-gray-500',
+            borderClass: HomeUiConfig::EVENT_TYPE_CONFIG[$slug]['scheduleColor'] ?? 'bg-gray-500',
         );
     }
 

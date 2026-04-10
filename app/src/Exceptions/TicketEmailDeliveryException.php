@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Thrown when ticket email delivery fails after payment completed.
  */
-final class TicketEmailDeliveryException extends TicketDeliveryException
-{
-}
+final class TicketEmailDeliveryException extends TicketDeliveryException {}

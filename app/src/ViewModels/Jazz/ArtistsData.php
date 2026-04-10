@@ -18,6 +18,5 @@ final readonly class ArtistsData
         public int $currentPage,
         public int $totalPages,
         public int $totalArtists,
-    ) {
-    }
+    ) {}
 }

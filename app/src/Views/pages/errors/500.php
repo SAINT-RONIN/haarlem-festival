@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$errorMessage = $errorMessage ?? 'Unexpected error occurred.';
+$errorMessage ??= 'Unexpected error occurred.';
 ?>
 <!doctype html>
 <html lang="en">

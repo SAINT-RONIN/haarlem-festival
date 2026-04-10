@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Exception thrown when loading a public-facing page fails unexpectedly.
  */
-class PageLoadException extends AppException
-{
-}
+class PageLoadException extends AppException {}

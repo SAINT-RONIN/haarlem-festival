@@ -20,7 +20,7 @@
         <?php foreach ($viewModel->lineup->galleryImages as $index => $galleryImage): ?>
             <figure class="rounded-2xl overflow-hidden shadow-xl">
                 <img src="<?= htmlspecialchars($galleryImage) ?>"
-                     alt="<?= htmlspecialchars($viewModel->hero->heroTitle) ?> gallery image <?= (int)$index + 1 ?>"
+                     alt="<?= htmlspecialchars($viewModel->hero->heroTitle) ?> gallery image <?= (int) $index + 1 ?>"
                      class="w-full aspect-[552/450] object-cover">
             </figure>
         <?php endforeach; ?>

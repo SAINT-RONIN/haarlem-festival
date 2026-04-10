@@ -8,7 +8,55 @@
 document.addEventListener('DOMContentLoaded', function () {
     initCounterButtons();
     initDisplays();
+    initFormSubmit();
 });
+
+function initFormSubmit() {
+    var form = document.getElementById('reservation-form-fields');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        var submitBtn = form.querySelector('[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.success && data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    showFormError(data.errors ? data.errors.join(' ') : 'Something went wrong. Please try again.');
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            })
+            .catch(function () {
+                showFormError('Something went wrong. Please try again.');
+                if (submitBtn) submitBtn.disabled = false;
+            });
+    });
+}
+
+function showFormError(message) {
+    var existing = document.getElementById('reservation-form-error');
+    if (existing) {
+        existing.textContent = message;
+        return;
+    }
+
+    var el = document.createElement('p');
+    el.id = 'reservation-form-error';
+    el.className = 'text-red-600 font-medium mt-2';
+    el.textContent = message;
+
+    var form = document.getElementById('reservation-form-fields');
+    form.insertBefore(el, form.querySelector('[type="submit"]').parentElement);
+}
 
 function initCounterButtons() {
     document.querySelectorAll('[data-counter-action]').forEach(function (btn) {

@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
+use App\Constants\GlobalUiConstants;
+use App\Constants\RestaurantDetailConstants;
+use App\Constants\RouteConstants;
+use App\Constants\StorytellingDetailConstants;
 use App\Enums\PageStatus;
 use App\Helpers\FormatHelper;
 use App\DTOs\Cms\ActivityData;
 use App\DTOs\Cms\CmsItemEditData;
 use App\DTOs\Cms\CmsMediaAssetData;
 use App\DTOs\Cms\JazzLineupManagerData;
-use App\DTOs\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\JazzArtistCardRecord;
 use App\Models\CmsPage;
 use App\Models\Artist;
 use App\DTOs\Cms\CmsPageEditData;
@@ -60,10 +64,19 @@ final class CmsDashboardViewMapper
      *
      * @param CmsPage[] $allPages
      */
-    public static function toPagesListViewModel(array $allPages, string $searchQuery, string $userName): PagesListViewModel
+    public static function toPagesListViewModel(array $allPages, string $searchQuery, string $statusFilter, string $userName): PagesListViewModel
     {
+        $items = array_map([self::class, 'toPageListItemViewModel'], $allPages);
+
+        if ($statusFilter !== '') {
+            $items = array_values(array_filter(
+                $items,
+                fn(PageListItemViewModel $p) => strtolower($p->status) === $statusFilter,
+            ));
+        }
+
         return new PagesListViewModel(
-            pages: array_map([self::class, 'toPageListItemViewModel'], $allPages),
+            pages: $items,
             searchQuery: $searchQuery,
             userName: $userName,
         );
@@ -88,7 +101,20 @@ final class CmsDashboardViewMapper
             slug: $page->slug,
             status: self::resolvePageStatus($page)->value,
             updatedAt: TimeFormatter::formatTimeAgo($page->updatedAtUtc?->format('Y-m-d H:i:s')),
+            previewUrl: self::resolvePageListPreviewUrl($page->slug),
         );
+    }
+
+    /** Maps a page slug to a public-facing preview URL for the pages list. */
+    private static function resolvePageListPreviewUrl(string $slug): string
+    {
+        return match ($slug) {
+            GlobalUiConstants::PAGE_SLUG                  => RouteConstants::HOME,
+            StorytellingDetailConstants::DETAIL_PAGE_SLUG => RouteConstants::STORYTELLING,
+            RestaurantDetailConstants::PAGE_SLUG           => RouteConstants::RESTAURANT,
+            'grote-markt', 'amsterdamse-poort', 'molen-de-adriaan' => RouteConstants::HISTORY . '/' . $slug,
+            default                                        => '/' . $slug,
+        };
     }
 
     /** Derives Published/Draft status: a page with an updatedAt timestamp is considered published. */
@@ -116,8 +142,7 @@ final class CmsDashboardViewMapper
         CmsPageEditData $pageData,
         string $jazzOverviewAddCsrfToken = '',
         string $jazzOverviewRemoveCsrfToken = '',
-    ): CmsPageEditViewModel
-    {
+    ): CmsPageEditViewModel {
         return new CmsPageEditViewModel(
             page: self::formatPage($pageData->page),
             sections: array_map([self::class, 'formatSingleSection'], $pageData->sections),
@@ -135,9 +160,9 @@ final class CmsDashboardViewMapper
     private static function formatPage(CmsPage $page): CmsPageInfoViewModel
     {
         return new CmsPageInfoViewModel(
-            id:    $page->cmsPageId,
+            id: $page->cmsPageId,
             title: $page->title,
-            slug:  $page->slug,
+            slug: $page->slug,
         );
     }
 
@@ -145,12 +170,12 @@ final class CmsDashboardViewMapper
     private static function formatSingleSection(CmsSectionEditData $section): CmsSectionDisplayViewModel
     {
         return new CmsSectionDisplayViewModel(
-            id:          $section->sectionId,
-            key:         $section->sectionKey,
+            id: $section->sectionId,
+            key: $section->sectionKey,
             displayName: self::resolveSectionDisplayName($section->displayName),
-            isEditable:  self::isSectionEditable($section->sectionKey),
-            items:       self::groupItemsByType($section->items),
-            subGroups:   CmsSectionGroupRouter::buildSubGroups($section->sectionKey, $section->items),
+            isEditable: self::isSectionEditable($section->sectionKey),
+            items: self::groupItemsByType($section->items),
+            subGroups: CmsSectionGroupRouter::buildSubGroups($section->sectionKey, $section->items),
         );
     }
 
@@ -209,17 +234,17 @@ final class CmsDashboardViewMapper
         $isTextarea = strlen($item->value) > 100 || $item->type === 'TEXT';
 
         return new CmsItemDisplayViewModel(
-            itemId:       $item->itemId,
-            itemKey:      $item->itemKey,
-            displayName:  self::formatItemKeyName($item->displayName),
-            type:         $item->type,
-            typeLabel:    $item->typeLabel,
-            inputType:    $item->inputType,
-            maxChars:     $item->maxChars,
-            value:        $item->value,
+            itemId: $item->itemId,
+            itemKey: $item->itemKey,
+            displayName: self::formatItemKeyName($item->displayName),
+            type: $item->type,
+            typeLabel: $item->typeLabel,
+            inputType: $item->inputType,
+            maxChars: $item->maxChars,
+            value: $item->value,
             mediaAssetId: $item->mediaAssetId,
-            mediaAsset:   self::toMediaAssetViewModel($item->mediaAsset),
-            isTextarea:   $isTextarea,
+            mediaAsset: self::toMediaAssetViewModel($item->mediaAsset),
+            isTextarea: $isTextarea,
         );
     }
 
@@ -231,9 +256,9 @@ final class CmsDashboardViewMapper
         }
 
         return new CmsMediaAssetDisplayViewModel(
-            filePath:         $asset->filePath,
+            filePath: $asset->filePath,
             originalFileName: $asset->originalFileName,
-            altText:          self::formatItemKeyName($asset->altText),
+            altText: self::formatItemKeyName($asset->altText),
         );
     }
 
@@ -254,8 +279,7 @@ final class CmsDashboardViewMapper
         CmsPageEditData $pageData,
         string $jazzOverviewAddCsrfToken,
         string $jazzOverviewRemoveCsrfToken,
-    ): ?CmsJazzLineupManagerViewModel
-    {
+    ): ?CmsJazzLineupManagerViewModel {
         $managerData = $pageData->jazzLineupManager;
         if (!$managerData instanceof JazzLineupManagerData) {
             return null;
@@ -357,12 +381,12 @@ final class CmsDashboardViewMapper
     private static function getImageLimits(): CmsImageLimitsViewModel
     {
         return new CmsImageLimitsViewModel(
-            maxWidth:             CmsContentLimits::IMAGE_MAX_WIDTH,
-            maxHeight:            CmsContentLimits::IMAGE_MAX_HEIGHT,
-            maxFileSize:          CmsContentLimits::IMAGE_MAX_FILE_SIZE,
+            maxWidth: CmsContentLimits::IMAGE_MAX_WIDTH,
+            maxHeight: CmsContentLimits::IMAGE_MAX_HEIGHT,
+            maxFileSize: CmsContentLimits::IMAGE_MAX_FILE_SIZE,
             maxFileSizeFormatted: FormatHelper::fileSize(CmsContentLimits::IMAGE_MAX_FILE_SIZE),
-            allowedMimes:         CmsContentLimits::IMAGE_ALLOWED_MIMES,
-            allowedExtensions:    ['jpg', 'jpeg', 'png', 'webp'],
+            allowedMimes: CmsContentLimits::IMAGE_ALLOWED_MIMES,
+            allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
         );
     }
 }

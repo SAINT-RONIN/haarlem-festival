@@ -24,6 +24,5 @@ final readonly class GlobalUiData
         public string $labelNoEvents,
         public string $btnExploreTemplate,
         public bool   $isLoggedIn = false,
-    ) {
-    }
+    ) {}
 }

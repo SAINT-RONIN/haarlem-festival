@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\GlobalUiConstants;
+use App\Constants\RestaurantDetailConstants;
+use App\Constants\RouteConstants;
+use App\Constants\StorytellingDetailConstants;
 use App\DTOs\Cms\CmsSectionEditData;
 use App\Models\CmsPage;
 use App\Services\Interfaces\ICmsPreviewUrlResolver;
 
-/**
- * Builds route-aware preview URLs for CMS page edit screens.
- *
- * For detail pages (storytelling-detail, restaurant-detail)
- * it extracts the first event name/ID from the sections to build a slug-based URL.
- * For all other pages it returns /{pageSlug} (or "/" for "home").
- */
+// For detail pages, extracts the first event name from sections to build a slug-based URL.
+// For all other pages, returns /{pageSlug} (or "/" for "home").
 final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
 {
     /**
@@ -22,7 +21,7 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
      */
     public function resolve(CmsPage $page, array $sections): string
     {
-        if ($page->slug === 'home') {
+        if ($page->slug === GlobalUiConstants::PAGE_SLUG) {
             return '/';
         }
 
@@ -35,28 +34,18 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
      */
     private function resolveDetailPageUrl(string $slug, array $sections): ?string
     {
-        if ($slug === 'storytelling-detail') {
+        if ($slug === StorytellingDetailConstants::DETAIL_PAGE_SLUG) {
             $eventName = $this->extractFirstEventDisplayName($sections);
-            return $eventName !== null ? '/storytelling/' . $this->toSlug($eventName) : '/storytelling';
+            return $eventName !== null
+                ? RouteConstants::STORYTELLING . '/' . $this->toSlug($eventName)
+                : RouteConstants::STORYTELLING;
         }
 
-        if ($slug === 'restaurant-detail') {
-            $eventId = $this->extractFirstEventId($sections);
-            return $eventId !== null ? '/restaurant/' . $eventId : '/restaurant';
-        }
-
-        return null;
-    }
-
-    /**
-     * @param CmsSectionEditData[] $sections
-     */
-    private function extractFirstEventId(array $sections): ?int
-    {
-        foreach ($sections as $section) {
-            if (preg_match('/^event_(\d+)$/', $section->sectionKey, $matches) === 1) {
-                return (int)$matches[1];
-            }
+        if ($slug === RestaurantDetailConstants::PAGE_SLUG) {
+            $eventName = $this->extractFirstEventDisplayName($sections);
+            return $eventName !== null
+                ? RouteConstants::RESTAURANT . '/' . $this->toSlug($eventName)
+                : RouteConstants::RESTAURANT;
         }
 
         return null;
@@ -85,6 +74,6 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
     {
         $lower = strtolower(trim($value));
         $slug = preg_replace('/[^a-z0-9]+/', '-', $lower);
-        return trim((string)$slug, '-');
+        return trim((string) $slug, '-');
     }
 }

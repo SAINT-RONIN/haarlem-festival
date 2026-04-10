@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Base exception for invoice-related failures during order fulfillment.
  */
-class InvoiceException extends CheckoutException
-{
-}
+class InvoiceException extends CheckoutException {}

@@ -5,21 +5,22 @@
  * @var \App\ViewModels\Jazz\JazzArtistDetailPageViewModel $viewModel
  */
 
-$currentPage = 'jazz';
-$includeNav = false;
+use App\View\PublicPageLayout;
+use App\View\ViewRenderer;
+use App\View\ViewTemplate;
+
+$layout = new PublicPageLayout(
+    contentTemplates: [
+        new ViewTemplate(__DIR__ . '/../partials/jazz/detail/_body.php', [
+            'viewModel' => $viewModel,
+        ]),
+    ],
+    includeHero: false,
+    mainClass: 'w-full bg-sand flex flex-col justify-start items-center',
+    currentPage: 'jazz',
+    includeNav: false,
+    isLoggedIn: false,
+    extraScripts: ['/assets/js/add-to-program.js'],
+);
 ?>
-<?php require __DIR__ . '/../partials/header.php'; ?>
-
-<main class="w-full bg-sand flex flex-col justify-start items-center">
-    <?php require __DIR__ . '/../partials/jazz/detail/hero-section.php'; ?>
-    <?php require __DIR__ . '/../partials/jazz/detail/overview-section.php'; ?>
-    <?php require __DIR__ . '/../partials/jazz/detail/photo-gallery-section.php'; ?>
-    <?php require __DIR__ . '/../partials/jazz/detail/featured-albums-section.php'; ?>
-    <?php require __DIR__ . '/../partials/jazz/detail/listen-now-section.php'; ?>
-    <?php require __DIR__ . '/../partials/jazz/detail/live-cta-section.php'; ?>
-    <?php require __DIR__ . '/../partials/jazz/detail/performances-section.php'; ?>
-</main>
-
-<script src="/assets/js/add-to-program.js"></script>
-
-<?php require __DIR__ . '/../partials/footer.php'; ?>
+<?php ViewRenderer::render(__DIR__ . '/../partials/_shell.php', ['layout' => $layout]); ?>

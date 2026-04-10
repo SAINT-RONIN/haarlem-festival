@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Checkout\CheckoutCancelResult;
-use App\DTOs\Checkout\CheckoutSessionSummary;
+use App\DTOs\Domain\Checkout\CheckoutCancelResult;
+use App\DTOs\Domain\Checkout\CheckoutSessionSummary;
 use App\Helpers\FormatHelper;
 use App\ViewModels\Program\CheckoutCancelPageViewModel;
 use App\ViewModels\Program\CheckoutSuccessPageViewModel;
@@ -39,8 +39,8 @@ final class CheckoutMapper
         return new CheckoutCancelPageViewModel(
             isLoggedIn: $isLoggedIn,
             hasCancelData: true,
-            orderId: (string)($cancelResult->orderId ?? 'n/a'),
-            paymentId: (string)($cancelResult->paymentId ?? 'n/a'),
+            orderId: (string) ($cancelResult->orderId ?? 'n/a'),
+            paymentId: (string) ($cancelResult->paymentId ?? 'n/a'),
         );
     }
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Interfaces;
 
-use App\DTOs\Tickets\QrCodeMatrix;
-use App\DTOs\Tickets\TicketDocumentData;
+use App\DTOs\Domain\Tickets\QrCodeMatrix;
+use App\DTOs\Domain\Tickets\TicketDocumentData;
 
 /**
  * Generates a PDF document for a single ticket.

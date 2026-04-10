@@ -9,7 +9,5 @@ final class HistoricalLocationPageConstants
     public const SECTION_FACTS = 'facts_section';
     public const SECTION_SIGNIFICANCE = 'significance_section';
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

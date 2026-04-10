@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\DTOs\Domain\Checkout\CheckoutPayloadData;
 use App\Exceptions\CheckoutException;
 use App\Exceptions\CheckoutInputException;
 use App\Exceptions\RetryPaymentException;
@@ -34,11 +35,7 @@ class CheckoutController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the checkout page with the user's program items and CMS content.
-     * Redirects to /my-program if the cart is empty.
-     * GET /checkout
-     */
+    // Redirects to /my-program if the cart is empty.
     public function index(): void
     {
         $this->handlePageRequest(function (): void {
@@ -64,11 +61,7 @@ class CheckoutController extends BaseController
         $this->renderView(__DIR__ . '/../Views/pages/checkout.php', $viewModel);
     }
 
-    /**
-     * Creates a Stripe Checkout session and returns the redirect URL as JSON.
-     * Requires the user to be authenticated.
-     * POST /checkout/create-session
-     */
+    // Requires the user to be authenticated.
     public function createSession(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -82,7 +75,13 @@ class CheckoutController extends BaseController
         $context = $this->resolveSessionContext();
         $userId = $this->requireAuthenticatedUserId();
 
-        $payload = $this->readJsonBody();
+        $rawPayload = $this->readJsonBody();
+        $payload = CheckoutPayloadData::fromArray($rawPayload);
+        if ($payload === null) {
+            $this->json(['error' => 'All fields are required: firstName, lastName, email, paymentMethod.'], 422);
+            return;
+        }
+
         $programData = $this->programService->getProgramData($context->sessionKey, $userId);
         $result = $this->checkoutService->createCheckoutSession($programData, $userId, $payload);
 
@@ -92,10 +91,6 @@ class CheckoutController extends BaseController
         ], 200);
     }
 
-    /**
-     * Renders the post-payment success page with an order summary from Stripe.
-     * GET /checkout/success?session_id=...
-     */
     public function success(): void
     {
         $this->handlePageRequest(function (): void {
@@ -107,10 +102,6 @@ class CheckoutController extends BaseController
         });
     }
 
-    /**
-     * Handles payment cancellation, marks the order accordingly, and shows the cancel page.
-     * GET /checkout/cancel?order_id=...&payment_id=...
-     */
     public function cancel(): void
     {
         $this->handlePageRequest(function (): void {
@@ -124,10 +115,6 @@ class CheckoutController extends BaseController
         });
     }
 
-    /**
-     * Displays the retry payment page for a pending order.
-     * GET /checkout/retry/{orderId}
-     */
     public function retryIndex(int $orderId): void
     {
         $this->handlePageRequest(function () use ($orderId): void {
@@ -139,10 +126,6 @@ class CheckoutController extends BaseController
         });
     }
 
-    /**
-     * Creates a new Stripe session for an existing pending order.
-     * POST /api/checkout/retry-session
-     */
     public function retrySession(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -159,10 +142,6 @@ class CheckoutController extends BaseController
         }, [RetryPaymentException::class, CheckoutInputException::class, \InvalidArgumentException::class]);
     }
 
-    /**
-     * Receives Stripe webhook events (e.g. payment confirmation) and processes them.
-     * POST /checkout/webhook
-     */
     public function webhook(): void
     {
         $this->handleJsonRequest(function (): void {
@@ -188,9 +167,7 @@ class CheckoutController extends BaseController
         ], 200);
     }
 
-    /**
-     * @throws CheckoutException if no user is logged in
-     */
+    /** @throws CheckoutException if no user is logged in */
     private function requireAuthenticatedUserId(): int
     {
         $context = $this->resolveSessionContext();

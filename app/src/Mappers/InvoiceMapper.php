@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-use App\DTOs\Invoice\InvoiceDocumentData;
-use App\DTOs\Invoice\InvoiceEmailMessage;
-use App\DTOs\Invoice\InvoiceLineData;
+use App\DTOs\Domain\Invoice\InvoiceDocumentData;
+use App\DTOs\Domain\Invoice\InvoiceEmailMessage;
+use App\DTOs\Domain\Invoice\InvoiceLineData;
 use App\Models\Invoice;
 use App\Models\InvoiceLine;
 
@@ -63,7 +63,7 @@ class InvoiceMapper
             orderNumber: $orderNumber,
             invoiceNumber: $invoiceNumber,
             attachments: [
-                (object)[
+                (object) [
                     'absolutePath' => $pdfAbsolutePath,
                     'displayName' => $pdfFileName,
                 ],
@@ -77,12 +77,12 @@ class InvoiceMapper
     public static function buildLineDescription(array $orderItemRow): string
     {
         if (!empty($orderItemRow['PassTypeName'])) {
-            return (string)$orderItemRow['PassTypeName'];
+            return (string) $orderItemRow['PassTypeName'];
         }
 
-        $title = (string)($orderItemRow['EventTitle'] ?? 'Event');
+        $title = (string) ($orderItemRow['EventTitle'] ?? 'Event');
         $date = isset($orderItemRow['StartDateTime'])
-            ? (new \DateTimeImmutable($orderItemRow['StartDateTime']))->format('d M Y')
+            ? new \DateTimeImmutable($orderItemRow['StartDateTime'])->format('d M Y')
             : '';
 
         return $date !== '' ? $title . ' - ' . $date : $title;

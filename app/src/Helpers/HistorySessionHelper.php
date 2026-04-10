@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
-use App\DTOs\Schedule\SessionWithEvent;
+use App\DTOs\Domain\Schedule\SessionWithEvent;
 use App\Enums\PriceTierId;
 use App\Models\EventSessionLabel;
 use App\Models\EventSessionPrice;
@@ -29,7 +29,7 @@ final class HistorySessionHelper
                 continue;
             }
 
-            if ((float)$price->price > (float)$sharedPricesByKey[$priceKey]->price) {
+            if ((float) $price->price > (float) $sharedPricesByKey[$priceKey]->price) {
                 $sharedPricesByKey[$priceKey] = $price;
             }
         }

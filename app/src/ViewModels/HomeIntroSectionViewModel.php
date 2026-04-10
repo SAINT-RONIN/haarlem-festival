@@ -17,6 +17,5 @@ final readonly class HomeIntroSectionViewModel
         public string $buttonUrl,
         public string $imageUrl,
         public string $imageAlt,
-    ) {
-    }
+    ) {}
 }

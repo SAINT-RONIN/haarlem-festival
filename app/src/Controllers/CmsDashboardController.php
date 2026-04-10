@@ -42,8 +42,9 @@ class CmsDashboardController extends CmsBaseController
 
     private function renderPages(): void
     {
-        $searchQuery = trim((string) filter_input(INPUT_GET, 'search'));
-        ViewRenderer::render(self::VIEW, ['currentView' => 'pages', 'searchQuery' => $searchQuery, 'viewModel' => $this->pagesViewModel($searchQuery)]);
+        $searchQuery  = trim((string) filter_input(INPUT_GET, 'search'));
+        $statusFilter = trim(strtolower((string) filter_input(INPUT_GET, 'filter')));
+        ViewRenderer::render(self::VIEW, ['currentView' => 'pages', 'searchQuery' => $searchQuery, 'viewModel' => $this->pagesViewModel($searchQuery, $statusFilter)]);
     }
 
     private function dashboardViewModel(): \App\ViewModels\Cms\DashboardViewModel
@@ -52,9 +53,9 @@ class CmsDashboardController extends CmsBaseController
         return CmsDashboardViewMapper::toDashboardViewModel($data->recentPages, $data->activities, $this->userName());
     }
 
-    private function pagesViewModel(string $searchQuery): \App\ViewModels\Cms\PagesListViewModel
+    private function pagesViewModel(string $searchQuery, string $statusFilter = ''): \App\ViewModels\Cms\PagesListViewModel
     {
-        return CmsDashboardViewMapper::toPagesListViewModel($this->cmsDashboardService->getPagesListData(), $searchQuery, $this->userName());
+        return CmsDashboardViewMapper::toPagesListViewModel($this->cmsDashboardService->getPagesListData(), $searchQuery, $statusFilter, $this->userName());
     }
 
     private function userName(): string

@@ -26,6 +26,5 @@ final readonly class CmsEventListItemViewModel
         public string  $typeClass,
         public string  $statusText,
         public string  $statusClass,
-    ) {
-    }
+    ) {}
 }

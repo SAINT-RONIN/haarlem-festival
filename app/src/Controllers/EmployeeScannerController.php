@@ -28,14 +28,14 @@ class EmployeeScannerController extends BaseController
             $this->requireEmployee();
 
             $viewModel = new TicketScannerPageViewModel(
-                scanEndpoint:    '/api/employee/scanner/scan',
-                logoutUrl:       '/logout',
+                scanEndpoint: '/api/employee/scanner/scan',
+                logoutUrl: '/logout',
                 logoutCsrfToken: $this->sessionService->getCsrfToken('logout'),
-                roleLabel:       'Employee Scanner',
-                scriptVersion:   AssetVersionHelper::resolveJsVersion(__DIR__ . '/../../public/assets/js/employee-ticket-scanner.js'),
-                pageTitle:       'Ticket Scanner',
-                layoutVariant:   'employee',
-                currentView:     'scanner',
+                roleLabel: 'Employee Scanner',
+                scriptVersion: AssetVersionHelper::resolveJsVersion(__DIR__ . '/../../public/assets/js/employee-ticket-scanner.js'),
+                pageTitle: 'Ticket Scanner',
+                layoutVariant: 'employee',
+                currentView: 'scanner',
             );
 
             $this->renderView(__DIR__ . '/../Views/pages/employee-ticket-scanner.php', $viewModel);
@@ -47,7 +47,14 @@ class EmployeeScannerController extends BaseController
         $this->handleJsonRequest(function (): void {
             $employeeUserId = $this->requireEmployee();
             $payload = $this->readJsonBody();
-            $result = $this->ticketScannerService->scanTicket((string)($payload['ticketCode'] ?? ''), $employeeUserId);
+            $ticketCode = strtoupper(trim((string) ($payload['ticketCode'] ?? '')));
+
+            if ($ticketCode === '') {
+                $this->json(['success' => false, 'error' => 'Ticket code is required.'], 400);
+                return;
+            }
+
+            $result = $this->ticketScannerService->scanTicket($ticketCode, $employeeUserId);
 
             $this->json([
                 'success' => true,

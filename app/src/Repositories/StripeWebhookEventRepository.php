@@ -6,17 +6,10 @@ namespace App\Repositories;
 
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
 
-/**
- * Idempotency guard for Stripe webhook processing.
- *
- * Stores each processed Stripe event ID in the StripeWebhookEvent table so
- * duplicate webhook deliveries can be detected and skipped.
- */
+// Idempotency guard for Stripe webhooks. Stores processed event IDs so
+// duplicate deliveries can be detected and skipped.
 class StripeWebhookEventRepository extends BaseRepository implements IStripeWebhookEventRepository
 {
-    /**
-     * Returns true if this Stripe event ID has already been handled (prevents duplicate processing).
-     */
     public function hasProcessed(string $eventId): bool
     {
         $stmt = $this->execute(
@@ -24,12 +17,9 @@ class StripeWebhookEventRepository extends BaseRepository implements IStripeWebh
             ['eventId' => $eventId],
         );
 
-        return (bool)$stmt->fetchColumn();
+        return (bool) $stmt->fetchColumn();
     }
 
-    /**
-     * Records a Stripe event as processed so future webhook retries are skipped.
-     */
     public function markProcessed(string $eventId, string $eventType): void
     {
         $this->execute(
@@ -39,11 +29,8 @@ class StripeWebhookEventRepository extends BaseRepository implements IStripeWebh
         );
     }
 
-    /**
-     * Atomically marks a Stripe event as processed. Returns false if already processed
-     * (duplicate delivery). Uses INSERT IGNORE to handle the race condition where
-     * concurrent webhook requests pass hasProcessed() simultaneously.
-     */
+    // INSERT IGNORE handles the race where two webhook requests pass hasProcessed() simultaneously.
+    // Returns false when the row already existed (duplicate delivery).
     public function markProcessedIfNew(string $eventId, string $eventType): bool
     {
         $stmt = $this->execute(
@@ -55,7 +42,7 @@ class StripeWebhookEventRepository extends BaseRepository implements IStripeWebh
         return $stmt->rowCount() > 0;
     }
 
-    /** Removes the idempotency lock when webhook processing fails and needs to be retried later. */
+    // Removes the idempotency lock so the event can be retried later.
     public function release(string $eventId): void
     {
         $this->execute(

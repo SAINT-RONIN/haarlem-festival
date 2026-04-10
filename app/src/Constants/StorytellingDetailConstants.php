@@ -13,7 +13,5 @@ final class StorytellingDetailConstants
     public const DETAIL_PAGE_SLUG = 'storytelling-detail';
     public const SCHEDULE_PAGE_SLUG = 'storytelling';
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

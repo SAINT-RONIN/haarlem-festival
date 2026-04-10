@@ -1,8 +1,7 @@
 <?php
-/**
- * CMS Create Artist form page.
- *
- * @var string $currentView
- * @var \App\ViewModels\Cms\CmsArtistFormViewModel $viewModel
- */
-require __DIR__ . '/../../partials/cms/_artist-form.php';
+/** @var \App\ViewModels\Cms\CmsArtistFormViewModel $viewModel */
+use App\View\ViewRenderer;
+ViewRenderer::render(__DIR__ . '/../../partials/cms/_artist-form.php', [
+    'viewModel' => $viewModel,
+]);
+?>

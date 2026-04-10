@@ -16,6 +16,5 @@ final readonly class MasonrySectionData
     public function __construct(
         public string $headingText,
         public array $images,
-    ) {
-    }
+    ) {}
 }

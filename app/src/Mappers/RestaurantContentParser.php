@@ -86,7 +86,7 @@ final class RestaurantContentParser
         $headingStartIndex = count($blocks);
 
         for ($i = 0; $i < count($blocks); $i++) {
-            $b = trim((string)$blocks[$i]);
+            $b = trim((string) $blocks[$i]);
             if (str_starts_with($b, '## ')) {
                 $headingStartIndex = $i;
                 break;
@@ -108,7 +108,7 @@ final class RestaurantContentParser
         $closingLine = null;
 
         for ($i = $startIndex; $i < count($blocks); $i++) {
-            $b = trim((string)$blocks[$i]);
+            $b = trim((string) $blocks[$i]);
             if ($b === '') {
                 continue;
             }
@@ -118,7 +118,7 @@ final class RestaurantContentParser
                 $text = '';
 
                 if (($i + 1) < count($blocks)) {
-                    $next = trim((string)$blocks[$i + 1]);
+                    $next = trim((string) $blocks[$i + 1]);
                     if ($next !== '' && !str_starts_with($next, '## ')) {
                         $text = $next;
                         $i++;

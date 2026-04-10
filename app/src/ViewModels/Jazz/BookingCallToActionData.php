@@ -16,6 +16,5 @@ final readonly class BookingCallToActionData
         public string $headingText,
         public string $descriptionText,
         public array $cards,
-    ) {
-    }
+    ) {}
 }

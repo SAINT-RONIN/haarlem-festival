@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Constants\SharedSectionKeys;
 use App\Constants\StorytellingPageConstants;
-use App\DTOs\Pages\StorytellingPageData;
+use App\DTOs\Domain\Pages\StorytellingPageData;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\IStorytellingContentRepository;
 use App\Services\Interfaces\IStorytellingService;
@@ -35,7 +35,7 @@ class StorytellingService extends BaseContentService implements IStorytellingSer
     public function getStorytellingPageData(): StorytellingPageData
     {
         return $this->guardPageLoad(
-            fn (): StorytellingPageData => $this->assembleStorytellingPageData(),
+            fn(): StorytellingPageData => $this->assembleStorytellingPageData(),
             'Failed to load the Storytelling page.',
         );
     }
@@ -45,11 +45,11 @@ class StorytellingService extends BaseContentService implements IStorytellingSer
     {
         $slug = StorytellingPageConstants::PAGE_SLUG;
         return new StorytellingPageData(
-            heroSection:       $this->globalContentRepo->findHeroContent($slug),
-            gradientSection:   $this->globalContentRepo->findGradientContent($slug, SharedSectionKeys::SECTION_GRADIENT),
+            heroSection: $this->globalContentRepo->findHeroContent($slug),
+            gradientSection: $this->globalContentRepo->findGradientContent($slug, SharedSectionKeys::SECTION_GRADIENT),
             introSplitSection: $this->globalContentRepo->findIntroContent($slug, SharedSectionKeys::SECTION_INTRO_SPLIT),
-            masonrySection:    $this->storyContentRepo->findMasonryContent($slug, StorytellingPageConstants::SECTION_MASONRY),
-            globalUiContent:   $this->loadGlobalUi(),
+            masonrySection: $this->storyContentRepo->findMasonryContent($slug, StorytellingPageConstants::SECTION_MASONRY),
+            globalUiContent: $this->loadGlobalUi(),
         );
     }
 }

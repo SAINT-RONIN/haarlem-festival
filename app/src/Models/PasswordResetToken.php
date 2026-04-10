@@ -22,8 +22,7 @@ final readonly class PasswordResetToken
         public string              $token,
         public \DateTimeImmutable  $expiresAtUtc,
         public ?\DateTimeImmutable $usedAtUtc,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a PasswordResetToken instance from a database row array.
@@ -32,9 +31,9 @@ final readonly class PasswordResetToken
     public static function fromRow(array $row): self
     {
         return new self(
-            passwordResetTokenId: (int)$row['PasswordResetTokenId'],
-            userAccountId: (int)$row['UserAccountId'],
-            token: (string)$row['Token'],
+            passwordResetTokenId: (int) $row['PasswordResetTokenId'],
+            userAccountId: (int) $row['UserAccountId'],
+            token: (string) $row['Token'],
             expiresAtUtc: new \DateTimeImmutable($row['ExpiresAtUtc']),
             usedAtUtc: isset($row['UsedAtUtc']) ? new \DateTimeImmutable($row['UsedAtUtc']) : null,
         );

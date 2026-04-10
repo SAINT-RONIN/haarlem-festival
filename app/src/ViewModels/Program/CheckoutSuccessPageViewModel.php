@@ -14,6 +14,5 @@ final readonly class CheckoutSuccessPageViewModel
         public bool $hasSessionData,
         public ?string $orderReference,
         public ?string $totalLabel,
-    ) {
-    }
+    ) {}
 }

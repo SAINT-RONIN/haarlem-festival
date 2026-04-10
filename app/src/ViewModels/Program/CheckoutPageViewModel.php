@@ -35,6 +35,5 @@ final readonly class CheckoutPageViewModel
         public string $total,
         public bool $isLoggedIn,
         public string $checkoutJsVersion = '',
-    ) {
-    }
+    ) {}
 }

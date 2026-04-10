@@ -6,8 +6,8 @@
  */
 use App\Services\SessionService;
 
-$currentView = $currentView ?? 'dashboard';
-$logoutCsrfToken = (new SessionService())->getCsrfToken('cms_logout');
+$currentView ??= 'dashboard';
+$logoutCsrfToken = new SessionService()->getCsrfToken('cms_logout');
 ?>
 <!-- Sidebar -->
 <aside class="w-64 bg-white border-r border-gray-200 flex flex-col" aria-label="CMS sidebar">

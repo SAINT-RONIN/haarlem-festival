@@ -18,6 +18,5 @@ final readonly class ArtistCardData
         public string $firstPerformance,
         public string $morePerformancesText,
         public ?string $profileUrl = null,
-    ) {
-    }
+    ) {}
 }

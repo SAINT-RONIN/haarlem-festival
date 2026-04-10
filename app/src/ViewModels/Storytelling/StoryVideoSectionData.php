@@ -14,6 +14,5 @@ final readonly class StoryVideoSectionData
         public string $heading,
         public string $url,
         public string $placeholderText,
-    ) {
-    }
+    ) {}
 }

@@ -13,7 +13,5 @@ final class RouteConstants
     public const RESTAURANT = '/restaurant';
     public const STORYTELLING = '/storytelling';
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

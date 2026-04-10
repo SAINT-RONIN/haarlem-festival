@@ -21,8 +21,7 @@ final readonly class CmsSection
         public int    $cmsSectionId,
         public int    $cmsPageId,
         public string $sectionKey,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a CmsSection instance from a database row array.
@@ -31,9 +30,9 @@ final readonly class CmsSection
     public static function fromRow(array $row): self
     {
         return new self(
-            cmsSectionId: (int)($row['CmsSectionId'] ?? throw new \InvalidArgumentException('Missing required field: CmsSectionId')),
-            cmsPageId: (int)($row['CmsPageId'] ?? throw new \InvalidArgumentException('Missing required field: CmsPageId')),
-            sectionKey: (string)($row['SectionKey'] ?? throw new \InvalidArgumentException('Missing required field: SectionKey')),
+            cmsSectionId: (int) ($row['CmsSectionId'] ?? throw new \InvalidArgumentException('Missing required field: CmsSectionId')),
+            cmsPageId: (int) ($row['CmsPageId'] ?? throw new \InvalidArgumentException('Missing required field: CmsPageId')),
+            sectionKey: (string) ($row['SectionKey'] ?? throw new \InvalidArgumentException('Missing required field: SectionKey')),
         );
     }
 

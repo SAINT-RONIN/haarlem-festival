@@ -10,10 +10,11 @@
          aria-labelledby="artist-detail-hero-heading">
     <div class="self-stretch min-h-[500px] h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-1rem)] rounded-bl-[20px] rounded-br-[20px] sm:rounded-bl-[30px] sm:rounded-br-[30px] md:rounded-bl-[50px] md:rounded-br-[50px] flex flex-col justify-between items-end relative overflow-hidden bg-dynamic-fade-light"
          style="--bg-url: url('<?= htmlspecialchars($viewModel->hero->heroBackgroundImageUrl) ?>')">
-        <?php
-        $isSticky = false;
-        require __DIR__ . '/../../navbar.php';
-        ?>
+        <?php \App\View\ViewRenderer::render(__DIR__ . '/../../navbar.php', [
+            'isSticky'    => false,
+            'currentPage' => 'jazz',
+            'isLoggedIn'  => $viewModel->globalUi->isLoggedIn ?? false,
+        ]); ?>
 
         <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 pt-2 sm:pt-4 pb-6 sm:pb-8 md:pb-10 flex flex-col gap-6 sm:gap-8">
             <div class="flex flex-col gap-2 sm:gap-3">

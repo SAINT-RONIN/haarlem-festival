@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\DTOs\Auth\RegistrationFormData;
+use App\DTOs\Domain\Auth\RegistrationFormData;
 use App\Exceptions\AuthenticationException;
 use App\Exceptions\ValidationException;
 use App\Mappers\AuthMapper;
@@ -28,10 +28,6 @@ class AuthController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Renders the login page with any flash error/success messages.
-     * GET /login
-     */
     public function showLogin(): void
     {
         $this->handlePageRequest(function (): void {
@@ -44,10 +40,6 @@ class AuthController extends BaseController
         });
     }
 
-    /**
-     * Authenticates the user with submitted credentials and starts a session on success.
-     * POST /login
-     */
     public function login(): void
     {
         $this->handlePageRequest(function (): void {
@@ -55,10 +47,6 @@ class AuthController extends BaseController
         });
     }
 
-    /**
-     * Destroys the user session and redirects to the homepage.
-     * POST /logout
-     */
     public function logout(): void
     {
         $this->handlePageRequest(function (): void {
@@ -71,10 +59,6 @@ class AuthController extends BaseController
         });
     }
 
-    /**
-     * Renders the registration form with reCAPTCHA, repopulating fields from flash on validation failure.
-     * GET /register
-     */
     public function showRegister(): void
     {
         $this->handlePageRequest(function (): void {
@@ -88,10 +72,6 @@ class AuthController extends BaseController
         });
     }
 
-    /**
-     * Validates CAPTCHA and registration data, then creates a new user account.
-     * POST /register
-     */
     public function register(): void
     {
         $this->handlePageRequest(function (): void {
@@ -105,10 +85,6 @@ class AuthController extends BaseController
         });
     }
 
-    /**
-     * Renders the forgot-password form with flash feedback.
-     * GET /forgot-password
-     */
     public function showForgotPassword(): void
     {
         $this->handlePageRequest(function (): void {
@@ -119,10 +95,7 @@ class AuthController extends BaseController
         });
     }
 
-    /**
-     * Triggers a password-reset email (always shows success to prevent user enumeration).
-     * POST /forgot-password
-     */
+    // Always shows success to prevent user enumeration
     public function forgotPassword(): void
     {
         $this->handlePageRequest(function (): void {
@@ -133,10 +106,6 @@ class AuthController extends BaseController
         });
     }
 
-    /**
-     * Validates the reset token from the query string and renders the password-reset form.
-     * GET /reset-password?token=...
-     */
     public function showResetPassword(): void
     {
         $this->handlePageRequest(function (): void {
@@ -157,10 +126,6 @@ class AuthController extends BaseController
         });
     }
 
-    /**
-     * Processes the new password submission and redirects to login on success.
-     * POST /reset-password
-     */
     public function resetPassword(): void
     {
         $this->handlePageRequest(function (): void {
@@ -168,7 +133,7 @@ class AuthController extends BaseController
 
             try {
                 $this->authService->resetPassword($token, $_POST['password'] ?? '', $_POST['confirm_password'] ?? '');
-            } catch (AuthenticationException | ValidationException $e) {
+            } catch (AuthenticationException|ValidationException $e) {
                 $this->sessionService->setFlash('reset_error', $e->getMessage());
                 $this->redirectAndExit('/reset-password?token=' . urlencode($token));
                 return;
@@ -240,6 +205,7 @@ class AuthController extends BaseController
         }
 
         $this->sessionService->login($user->userAccountId, $user->userRoleId);
+        $this->sessionService->set('first_name', $user->firstName);
         $this->redirectAndExit($this->authService->resolvePostLoginRedirect($user->userRoleId));
     }
 }

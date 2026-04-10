@@ -47,8 +47,8 @@ final class ImageHelper
         }
 
         $normalized = preg_replace('/[_\-]+/', ' ', $name);
-        $normalized = preg_replace('/\s+/', ' ', (string)$normalized);
-        $normalized = trim((string)$normalized);
+        $normalized = preg_replace('/\s+/', ' ', (string) $normalized);
+        $normalized = trim((string) $normalized);
 
         if ($normalized === '') {
             return $fallback;

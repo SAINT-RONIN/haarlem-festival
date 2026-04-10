@@ -28,8 +28,13 @@ $qrPattern = [
     '100010110100101',
     '111110001011111',
 ];
+/*
+ * Rendered inside the shell's <main>; this partial only emits inner content.
+ * The checkout-success page sets mainId='checkout-success-main',
+ * mainFocusable=true, mainClass='flex-1 w-full bg-sand py-8 sm:py-10 xl:py-12'
+ * on its PublicPageLayout to preserve the original attributes.
+ */
 ?>
-<main id="checkout-success-main" class="flex-1 w-full bg-sand py-8 sm:py-10 xl:py-12" tabindex="-1">
     <div class="mx-auto w-full max-w-[122rem] px-4 sm:px-8 lg:px-10 xl:px-16">
         <section class="rounded-[1.75rem] border-2 border-green-700 bg-green-50 px-4 py-5 sm:px-6 lg:px-8 lg:py-6"
                  role="status"
@@ -142,4 +147,3 @@ $qrPattern = [
             </div>
         </section>
     </div>
-</main>

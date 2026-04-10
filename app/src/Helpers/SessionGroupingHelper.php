@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
-use App\DTOs\Schedule\SessionWithEvent;
+use App\DTOs\Domain\Schedule\SessionWithEvent;
 
 /**
  * Groups SessionWithEvent arrays by their pre-computed session date.

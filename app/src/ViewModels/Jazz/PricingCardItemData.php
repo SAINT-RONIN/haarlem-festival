@@ -13,6 +13,5 @@ final readonly class PricingCardItemData
         public string $name,
         public string $price,
         public string $capacity,
-    ) {
-    }
+    ) {}
 }

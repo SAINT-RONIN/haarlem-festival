@@ -14,6 +14,5 @@ final readonly class CmsSortColumnViewModel
     public function __construct(
         public string $url,
         public string $icon,
-    ) {
-    }
+    ) {}
 }

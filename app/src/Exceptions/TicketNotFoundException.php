@@ -7,6 +7,4 @@ namespace App\Exceptions;
 /**
  * Thrown when a ticket code does not match any record in the database.
  */
-class TicketNotFoundException extends ScannerException
-{
-}
+class TicketNotFoundException extends ScannerException {}

@@ -10,6 +10,4 @@ namespace App\Exceptions;
  * Wraps \PDOException so callers in the service layer receive a
  * domain-level exception instead of a raw PDO failure.
  */
-final class RepositoryException extends AppException
-{
-}
+final class RepositoryException extends AppException {}

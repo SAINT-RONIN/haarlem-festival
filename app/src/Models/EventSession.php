@@ -37,8 +37,7 @@ final readonly class EventSession
         public bool                $isCancelled,
         public \DateTimeImmutable  $createdAtUtc,
         public bool                $isActive,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates an EventSession instance from a database row array.
@@ -47,30 +46,30 @@ final readonly class EventSession
     public static function fromRow(array $row): self
     {
         return new self(
-            eventSessionId: (int)$row['EventSessionId'],
-            eventId: (int)$row['EventId'],
+            eventSessionId: (int) $row['EventSessionId'],
+            eventId: (int) $row['EventId'],
             startDateTime: new \DateTimeImmutable($row['StartDateTime']),
             endDateTime: isset($row['EndDateTime']) ? new \DateTimeImmutable($row['EndDateTime']) : null,
-            capacityTotal: (int)$row['CapacityTotal'],
-            capacitySingleTicketLimit: (int)$row['CapacitySingleTicketLimit'],
-            seatsAvailable: isset($row['SeatsAvailable']) ? (int)$row['SeatsAvailable'] : null,
-            soldSingleTickets: (int)$row['SoldSingleTickets'],
-            soldReservedSeats: (int)$row['SoldReservedSeats'],
+            capacityTotal: (int) $row['CapacityTotal'],
+            capacitySingleTicketLimit: (int) $row['CapacitySingleTicketLimit'],
+            seatsAvailable: isset($row['SeatsAvailable']) ? (int) $row['SeatsAvailable'] : null,
+            soldSingleTickets: (int) $row['SoldSingleTickets'],
+            soldReservedSeats: (int) $row['SoldReservedSeats'],
             hallName: $row['HallName'] ?? null,
             sessionType: $row['SessionType'] ?? null,
-            durationMinutes: isset($row['DurationMinutes']) ? (int)$row['DurationMinutes'] : null,
+            durationMinutes: isset($row['DurationMinutes']) ? (int) $row['DurationMinutes'] : null,
             languageCode: $row['LanguageCode'] ?? null,
-            minAge: isset($row['MinAge']) ? (int)$row['MinAge'] : null,
-            maxAge: isset($row['MaxAge']) ? (int)$row['MaxAge'] : null,
-            reservationRequired: (bool)$row['ReservationRequired'],
-            isFree: (bool)$row['IsFree'],
-            notes: (string)$row['Notes'],
+            minAge: isset($row['MinAge']) ? (int) $row['MinAge'] : null,
+            maxAge: isset($row['MaxAge']) ? (int) $row['MaxAge'] : null,
+            reservationRequired: (bool) $row['ReservationRequired'],
+            isFree: (bool) $row['IsFree'],
+            notes: (string) $row['Notes'],
             historyTicketLabel: $row['HistoryTicketLabel'] ?? null,
             ctaLabel: $row['CtaLabel'] ?? null,
             ctaUrl: $row['CtaUrl'] ?? null,
-            isCancelled: (bool)$row['IsCancelled'],
+            isCancelled: (bool) $row['IsCancelled'],
             createdAtUtc: new \DateTimeImmutable($row['CreatedAtUtc']),
-            isActive: (bool)$row['IsActive'],
+            isActive: (bool) $row['IsActive'],
         );
     }
 

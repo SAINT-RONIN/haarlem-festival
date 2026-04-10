@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Scanner\TicketScanDetail;
+use App\DTOs\Domain\Scanner\TicketScanDetail;
 use App\Exceptions\TicketAlreadyScannedException;
 use App\Exceptions\TicketNotFoundException;
 use App\Repositories\Interfaces\IScannerRepository;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Services\Interfaces\IScannerService;
 
-/**
- * Validates and processes ticket scans at venue entrances.
- */
 class ScannerService implements IScannerService
 {
     private const TICKET_CODE_PATTERN = '/HF-[A-Z0-9]+/';
@@ -21,8 +18,7 @@ class ScannerService implements IScannerService
     public function __construct(
         private readonly IScannerRepository $scannerRepository,
         private readonly ITicketRepository $ticketRepository,
-    ) {
-    }
+    ) {}
 
     /** Validates a ticket code, loads its details, rejects duplicates, and marks it as scanned. */
     public function scanTicket(string $ticketCode, int $scannedByUserId): TicketScanDetail
@@ -51,7 +47,6 @@ class ScannerService implements IScannerService
         return $normalizedTicketCode;
     }
 
-    /** Rejects empty ticket codes before we hit the database. */
     private function validateTicketCode(string $ticketCode): void
     {
         if ($ticketCode === '') {
@@ -59,7 +54,6 @@ class ScannerService implements IScannerService
         }
     }
 
-    /** Loads the ticket scan details needed by the scanner screen or throws when no ticket matches. */
     private function findTicketOrFail(string $ticketCode): TicketScanDetail
     {
         $detail = $this->scannerRepository->findTicketWithDetails($ticketCode);
@@ -71,7 +65,6 @@ class ScannerService implements IScannerService
         return $detail;
     }
 
-    /** Stops the scan flow when the ticket has already been scanned earlier. */
     private function validateNotAlreadyScanned(TicketScanDetail $detail): void
     {
         if ($detail->isScanned) {
@@ -79,7 +72,6 @@ class ScannerService implements IScannerService
         }
     }
 
-    /** Persists the successful scan together with the user who performed it. */
     private function markAsScanned(int $ticketId, int $userId): void
     {
         $this->ticketRepository->markScanned($ticketId, $userId);

@@ -42,7 +42,7 @@ final class CmsOutputHelper
             return '';
         }
 
-        $clean = (string)$content;
+        $clean = (string) $content;
 
         // Remove any style attributes that contain text-decoration: underline
         $clean = preg_replace(

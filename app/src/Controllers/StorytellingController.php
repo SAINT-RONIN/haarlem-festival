@@ -18,14 +18,8 @@ use App\Services\Interfaces\IStorytellingService;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
 /**
- * Public-facing controller for the Storytelling festival section.
- *
- * Serves the Storytelling event listing page (all events + filterable schedule)
- * and individual event detail pages (description + that event's sessions).
- *
+ * Storytelling listing page and event detail pages with filterable schedule.
  * Mirrors JazzController's structure but scoped to EventTypeId::Storytelling.
- * Detail pages support a CMS-configurable CTA button text on the schedule,
- * allowing editors to customize the booking prompt per event.
  */
 class StorytellingController extends BaseController
 {
@@ -38,10 +32,6 @@ class StorytellingController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Renders the main Storytelling listing page with all events and a filterable schedule.
-     * GET /storytelling
-     */
     public function index(): void
     {
         $this->handlePageRequest(function (): void {
@@ -64,10 +54,6 @@ class StorytellingController extends BaseController
         return ScheduleMapper::toScheduleSection($scheduleData);
     }
 
-    /**
-     * Renders the detail page for a single Storytelling event, identified by URL slug. Returns 404 if not found.
-     * GET /storytelling/{slug}
-     */
     public function detail(string $slug): void
     {
         $this->handlePageRequest(function () use ($slug): void {
@@ -83,7 +69,7 @@ class StorytellingController extends BaseController
         $scheduleSection = $this->buildDetailScheduleSection($pageData->event->eventId, $pageData->scheduleCtaButtonText ?: null);
         $isLoggedIn = $this->isLoggedIn();
         $currentUri = $_SERVER['REQUEST_URI'] ?? '';
-        $appUrl = (string)(getenv('APP_URL') ?: GlobalUiConstants::DEFAULT_APP_URL);
+        $appUrl = (string) (getenv('APP_URL') ?: GlobalUiConstants::DEFAULT_APP_URL);
         $viewModel = StorytellingMapper::toDetailPageViewModel($pageData, $scheduleSection, $isLoggedIn, $currentUri, $appUrl);
         $this->renderPage(__DIR__ . '/../Views/pages/storytelling-detail.php', $viewModel);
     }

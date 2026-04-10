@@ -22,8 +22,7 @@ final readonly class UserRole
     public function __construct(
         public int          $userRoleId,
         public UserRoleName $roleName,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a UserRole instance from a database row array.
@@ -32,7 +31,7 @@ final readonly class UserRole
     public static function fromRow(array $row): self
     {
         return new self(
-            userRoleId: (int)$row['UserRoleId'],
+            userRoleId: (int) $row['UserRoleId'],
             roleName: UserRoleName::from($row['RoleName']),
         );
     }

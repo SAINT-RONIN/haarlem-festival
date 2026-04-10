@@ -26,6 +26,5 @@ final readonly class ContactSectionData
         public string $labelAddress   = 'ADDRESS',
         public string $labelContact   = 'CONTACT',
         public string $labelOpenHours = 'OPEN HOURS FOR YUMMY',
-    ) {
-    }
+    ) {}
 }

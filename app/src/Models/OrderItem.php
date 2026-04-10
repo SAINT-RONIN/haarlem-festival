@@ -28,8 +28,7 @@ final readonly class OrderItem
         public string  $vatRate,
         public ?string $donationAmount,
         public string  $specialRequest,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates an OrderItem instance from a database row array.
@@ -38,16 +37,16 @@ final readonly class OrderItem
     public static function fromRow(array $row): self
     {
         return new self(
-            orderItemId: (int)$row['OrderItemId'],
-            orderId: (int)$row['OrderId'],
-            eventSessionId: isset($row['EventSessionId']) ? (int)$row['EventSessionId'] : null,
-            historyTourId: isset($row['HistoryTourId']) ? (int)$row['HistoryTourId'] : null,
-            passPurchaseId: isset($row['PassPurchaseId']) ? (int)$row['PassPurchaseId'] : null,
-            quantity: (int)$row['Quantity'],
-            unitPrice: (string)$row['UnitPrice'],
-            vatRate: (string)$row['VatRate'],
+            orderItemId: (int) $row['OrderItemId'],
+            orderId: (int) $row['OrderId'],
+            eventSessionId: isset($row['EventSessionId']) ? (int) $row['EventSessionId'] : null,
+            historyTourId: isset($row['HistoryTourId']) ? (int) $row['HistoryTourId'] : null,
+            passPurchaseId: isset($row['PassPurchaseId']) ? (int) $row['PassPurchaseId'] : null,
+            quantity: (int) $row['Quantity'],
+            unitPrice: (string) $row['UnitPrice'],
+            vatRate: (string) $row['VatRate'],
             donationAmount: $row['DonationAmount'] ?? null,
-            specialRequest: (string)$row['SpecialRequest'],
+            specialRequest: (string) $row['SpecialRequest'],
         );
     }
 

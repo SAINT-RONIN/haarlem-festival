@@ -16,6 +16,5 @@ final readonly class VenuesData
         public string $headingText,
         public string $viewMoreLabel,
         public array $venues,
-    ) {
-    }
+    ) {}
 }

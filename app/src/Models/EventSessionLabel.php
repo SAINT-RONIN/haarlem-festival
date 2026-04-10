@@ -20,8 +20,7 @@ final readonly class EventSessionLabel
         public int    $eventSessionLabelId,
         public int    $eventSessionId,
         public string $labelText,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates an EventSessionLabel instance from a database row array.
@@ -30,9 +29,9 @@ final readonly class EventSessionLabel
     public static function fromRow(array $row): self
     {
         return new self(
-            eventSessionLabelId: (int)($row['EventSessionLabelId'] ?? throw new \InvalidArgumentException('Missing required field: EventSessionLabelId')),
-            eventSessionId: (int)($row['EventSessionId'] ?? throw new \InvalidArgumentException('Missing required field: EventSessionId')),
-            labelText: (string)($row['LabelText'] ?? throw new \InvalidArgumentException('Missing required field: LabelText')),
+            eventSessionLabelId: (int) ($row['EventSessionLabelId'] ?? throw new \InvalidArgumentException('Missing required field: EventSessionLabelId')),
+            eventSessionId: (int) ($row['EventSessionId'] ?? throw new \InvalidArgumentException('Missing required field: EventSessionId')),
+            labelText: (string) ($row['LabelText'] ?? throw new \InvalidArgumentException('Missing required field: LabelText')),
         );
     }
 

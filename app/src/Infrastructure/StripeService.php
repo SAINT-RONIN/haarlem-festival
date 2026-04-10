@@ -23,8 +23,10 @@ final class StripeService implements IStripeService
     private string $webhookSecret;
 
     public function __construct(
-        #[\SensitiveParameter] string $secretKey,
-        #[\SensitiveParameter] string $webhookSecret,
+        #[\SensitiveParameter]
+        string $secretKey,
+        #[\SensitiveParameter]
+        string $webhookSecret,
     ) {
         $normalizedSecretKey = trim($secretKey);
         $normalizedWebhookSecret = trim($webhookSecret);

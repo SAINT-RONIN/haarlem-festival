@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Constants\CmsMessages;
-use App\Controllers\Support\ControllerErrorResponder;
 use App\DTOs\Cms\CmsPageEditData;
 use App\DTOs\Cms\CmsUpdateResult;
 use App\Exceptions\CmsEditException;
@@ -36,11 +35,13 @@ class CmsPageEditorController extends CmsBaseController
 
     public function update(int $id): void
     {
-        try {
-            $this->processUpdate($id);
-        } catch (\Throwable $error) {
-            $this->handleUpdateError($error, $id);
-        }
+        $this->handleCmsPageRequest(function () use ($id): void {
+            try {
+                $this->processUpdate($id);
+            } catch (CmsEditException) {
+                $this->redirectWithFlash(CmsMessages::UPDATE_UNEXPECTED_ERROR, 'cms_error', $this->editUrl($id));
+            }
+        });
     }
 
     private function renderEditor(int $pageId): void
@@ -123,14 +124,6 @@ class CmsPageEditorController extends CmsBaseController
     private function updateErrorMessage(CmsUpdateResult $result): string
     {
         return $result->errors !== [] ? implode(', ', $result->errors) : CmsMessages::UPDATE_FAILED;
-    }
-
-    private function handleUpdateError(\Throwable $error, int $pageId): void
-    {
-        if ($error instanceof CmsEditException) {
-            $this->redirectWithFlash(CmsMessages::UPDATE_UNEXPECTED_ERROR, 'cms_error', $this->editUrl($pageId));
-        }
-        ControllerErrorResponder::respond($error);
     }
 
     private function editUrl(int $pageId): string

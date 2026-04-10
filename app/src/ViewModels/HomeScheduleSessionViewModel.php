@@ -14,6 +14,5 @@ final readonly class HomeScheduleSessionViewModel
         public string $title,
         public string $categoryLabel,
         public string $borderClass,
-    ) {
-    }
+    ) {}
 }

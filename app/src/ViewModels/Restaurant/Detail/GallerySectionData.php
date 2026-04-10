@@ -17,6 +17,5 @@ final readonly class GallerySectionData
 
         // CMS label
         public string $labelTitle = 'Restaurant Gallery',
-    ) {
-    }
+    ) {}
 }

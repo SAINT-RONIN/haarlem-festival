@@ -17,6 +17,5 @@ final readonly class PricingData
         public string $subheadingText,
         public string $descriptionText,
         public array $pricingCards,
-    ) {
-    }
+    ) {}
 }

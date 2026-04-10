@@ -10,4 +10,3 @@ interface IStripeWebhookRequestFactory
 {
     public function createFromGlobals(): StripeWebhookRequest;
 }
-

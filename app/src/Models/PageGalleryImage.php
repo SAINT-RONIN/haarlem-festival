@@ -22,11 +22,11 @@ final readonly class PageGalleryImage
     public static function fromRow(array $row): self
     {
         return new self(
-            pageGalleryImageId: (int)($row['PageGalleryImageId'] ?? throw new \InvalidArgumentException('Missing required field: PageGalleryImageId')),
-            cmsPageId:          (int)($row['CmsPageId'] ?? throw new \InvalidArgumentException('Missing required field: CmsPageId')),
-            imagePath:          (string)($row['ImagePath'] ?? throw new \InvalidArgumentException('Missing required field: ImagePath')),
-            imageType:          (string)($row['ImageType'] ?? throw new \InvalidArgumentException('Missing required field: ImageType')),
-            sortOrder:          (int)($row['SortOrder'] ?? throw new \InvalidArgumentException('Missing required field: SortOrder')),
+            pageGalleryImageId: (int) ($row['PageGalleryImageId'] ?? throw new \InvalidArgumentException('Missing required field: PageGalleryImageId')),
+            cmsPageId: (int) ($row['CmsPageId'] ?? throw new \InvalidArgumentException('Missing required field: CmsPageId')),
+            imagePath: (string) ($row['ImagePath'] ?? throw new \InvalidArgumentException('Missing required field: ImagePath')),
+            imageType: (string) ($row['ImageType'] ?? throw new \InvalidArgumentException('Missing required field: ImageType')),
+            sortOrder: (int) ($row['SortOrder'] ?? throw new \InvalidArgumentException('Missing required field: SortOrder')),
         );
     }
 }
