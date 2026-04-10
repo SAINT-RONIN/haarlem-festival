@@ -26,9 +26,6 @@ class AccountController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * GET /account
-     */
     public function showAccount(): void
     {
         $this->handlePageRequest(function (): void {
@@ -207,11 +204,7 @@ class AccountController extends BaseController
         return $userId;
     }
 
-    /**
-     * @param string $url URL to redirect to
-     * @param array<string, string> $errors Errors to flash
-     * @param array<string, mixed> $input Old form input to flash (optional)
-     */
+
     private function redirectWithErrors(string $url, array $errors, array $input = []): void
     {
         $this->sessionService->setFlash('account_errors', $errors);

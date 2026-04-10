@@ -8,21 +8,10 @@ use App\Services\Interfaces\ICmsEventsService;
 use App\Services\Interfaces\ISessionService;
 
 /**
- * CMS controller for managing event venues.
- *
- * Venues are shared locations (name + address) that event sessions reference.
- * This controller handles the venue list page, the inline AJAX endpoint for
- * creating a venue without leaving the event-create form, and soft-deletion.
- *
- * All database operations delegate to ICmsEventsService; this controller owns
- * only HTTP flow (auth gating, JSON vs. page response, flash-message redirects).
+ * CMS controller for managing event venues (list, AJAX create, soft-delete).
  */
 class CmsVenuesController extends CmsBaseController
 {
-    /**
-     * @param ICmsEventsService $eventsService Provides venue CRUD and lookup operations.
-     * @param ISessionService   $sessionService Session, CSRF, and flash-message support.
-     */
     public function __construct(
         private readonly ICmsEventsService $eventsService,
         ISessionService $sessionService,
@@ -30,10 +19,6 @@ class CmsVenuesController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the venues management page with the full venue list.
-     * GET /cms/venues
-     */
     public function index(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -45,17 +30,7 @@ class CmsVenuesController extends CmsBaseController
         });
     }
 
-    /**
-     * Creates a new venue via AJAX and returns the new venue ID as JSON.
-     *
-     * Called from the event-create form's inline "add venue" modal so the admin
-     * can add a venue without leaving the page. Returns a JSON object with keys
-     * `success`, `venueId`, and `name` on success, or a 400 error on failure.
-     *
-     * POST /cms/venues
-     *
-     * @throws \App\Exceptions\ValidationException Returns 400 JSON on validation failure.
-     */
+    // Called from the event-create form's inline "add venue" modal.
     public function create(): void
     {
         $this->handleCmsJsonRequest(function (): void {

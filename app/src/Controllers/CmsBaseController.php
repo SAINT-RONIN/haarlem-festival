@@ -11,9 +11,8 @@ use App\Services\Interfaces\ISessionService;
 /**
  * Base controller for CMS entity controllers.
  *
- * Provides the admin authentication guard (called automatically in the constructor),
- * shared CSRF validation, and flash-redirect helpers so individual CMS controllers
- * don't duplicate this logic.
+ * Provides admin authentication guard (auto-called in constructor), CSRF validation,
+ * and flash-redirect helpers.
  */
 abstract class CmsBaseController extends BaseController
 {
@@ -23,11 +22,6 @@ abstract class CmsBaseController extends BaseController
         $this->requireAdmin();
     }
 
-    /**
-     * Resolves the admin guard for all CMS controllers.
-     * Called automatically in the constructor so child controllers
-     * do not need to repeat the check.
-     */
     private function requireAdmin(): void
     {
         try {
@@ -41,18 +35,12 @@ abstract class CmsBaseController extends BaseController
         }
     }
 
-    /**
-     * @param callable(): void $action
-     */
     protected function handleCmsPageRequest(callable $action): void
     {
         $this->handlePageRequest($action);
     }
 
-    /**
-     * @param callable(): void $action
-     * @param string|callable(): string $validationRedirectUrl
-     */
+    /** @param string|callable(): string $validationRedirectUrl */
     protected function handleCmsValidationRequest(callable $action, string|callable $validationRedirectUrl): void
     {
         try {
@@ -65,17 +53,12 @@ abstract class CmsBaseController extends BaseController
         }
     }
 
-    /**
-     * @param callable(): void $action
-     */
     protected function handleCmsJsonRequest(callable $action): void
     {
         $this->handleJsonRequest($action, [ValidationException::class]);
     }
 
-    /**
-     * Verifies the CSRF token from POST data; redirects with an error flash if invalid.
-     */
+    /** Verifies the CSRF token from POST data; redirects with an error flash if invalid. */
     protected function validateCsrf(string $scope, string $redirectUrl): void
     {
         if (!$this->sessionService->isValidCsrfToken($scope, $this->readStringPostParam('_csrf'))) {
@@ -84,18 +67,12 @@ abstract class CmsBaseController extends BaseController
         }
     }
 
-    /**
-     * Sets a flash message on the session and issues a redirect to the given URL.
-     */
     protected function redirectWithFlash(string $message, string $type, string $url): void
     {
         $this->sessionService->setFlash($type, $message);
         $this->redirectAndExit($url);
     }
 
-    /**
-     * Redirects with a comma-separated error flash from a ValidationException.
-     */
     protected function redirectWithValidationErrors(ValidationException $error, string $url): void
     {
         $this->redirectWithFlash(implode(', ', $error->getErrors()), 'error', $url);

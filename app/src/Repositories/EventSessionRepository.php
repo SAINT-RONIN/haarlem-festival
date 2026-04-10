@@ -15,20 +15,8 @@ use App\Exceptions\RepositoryException;
 use App\Repositories\Interfaces\IEventSessionRepository;
 use PDO;
 
-/**
- * Queries and manages rows in the EventSession table. Supports heavily-filtered session
- * listing with joins to Event, EventType, Venue, Artist, and MediaAsset. Provides both
- * flat session lists and day-grouped results for the public schedule UI.
- */
 class EventSessionRepository extends BaseRepository implements IEventSessionRepository
 {
-    /**
-     * Builds and executes a dynamic query for event sessions with extensive filter support.
-     * When groupByDay is enabled, runs a two-pass query: first fetches distinct dates,
-     * then retrieves sessions only within those dates.
-     *
-     * @return SessionQueryResult Contains sessions and optionally day metadata.
-     */
     public function findSessions(EventSessionFilter $filters = new EventSessionFilter()): SessionQueryResult
     {
         [$conditions, $params] = $this->buildFilterConditions($filters);
@@ -45,11 +33,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return $this->executeFlatQuery($filters, $whereClause, $params, $orderBy);
     }
 
-    /**
-     * Builds all WHERE conditions and bound parameters from the filter DTO.
-     *
-     * @return array{0: string[], 1: array<string, mixed>}
-     */
+    /** @return array{0: string[], 1: array<string, mixed>} */
     private function buildFilterConditions(EventSessionFilter $filters): array
     {
         $conditions = [];
@@ -67,7 +51,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return [$conditions, $params];
     }
 
-    /** Adds event ID, event type, session ID, and session ID list conditions. */
     private function addIdentityFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->eventId !== null) {
@@ -96,7 +79,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         }
     }
 
-    /** Adds active/cancelled/event-active status conditions. */
     private function addStatusFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->isActive !== null) {
@@ -115,7 +97,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         }
     }
 
-    /** Adds start/end date range and day-of-week conditions. */
     private function addDateFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->startDate !== null) {
@@ -134,7 +115,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         }
     }
 
-    /** Restricts results to specific weekdays (0=Sunday..6=Saturday). */
+    // Restricts to specific weekdays (0=Sunday..6=Saturday).
     private function addVisibleDaysFilter(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         $visibleDays = $filters->visibleDays;
@@ -159,7 +140,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         }
     }
 
-    /** Adds morning/afternoon/evening time range condition. */
+    // morning < 12, afternoon 12-17, evening >= 17
     private function addTimeRangeFilter(EventSessionFilter $filters, array &$conditions): void
     {
         if ($filters->timeRange === null) {
@@ -173,7 +154,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         };
     }
 
-    /** Filters by exact session start time, accepting either HH:MM or HH:MM:SS input. */
+    // Accepts HH:MM or HH:MM:SS.
     private function addStartTimeFilter(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->startTime === null) {
@@ -186,7 +167,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
             : $filters->startTime;
     }
 
-    /** Classifies sessions as free, fixed-price, or pay-what-you-like via subqueries. */
+    // Classifies sessions as free, fixed-price, or pay-what-you-like via subqueries.
     private function addPriceTypeFilter(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->priceType === null) {
@@ -213,7 +194,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         $conditions[] = 'EXISTS (SELECT 1 FROM EventSessionPrice esp WHERE esp.EventSessionId = es.EventSessionId AND esp.Price > 0 AND esp.PriceTierId != :pwylTierId)';
     }
 
-    /** Adds venue name, language code, and minimum age conditions. */
     private function addTextFilters(EventSessionFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->venueName !== null && $filters->venueName !== '') {
@@ -232,7 +212,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         }
     }
 
-    /** Whitelist-based ORDER BY to prevent SQL injection via user-supplied sort values. */
+    // Whitelist-based ORDER BY to prevent SQL injection.
     private function resolveOrderBy(?string $requestedOrderBy): string
     {
         $allowed = [
@@ -246,7 +226,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return in_array($value, $allowed, true) ? $value : 'es.StartDateTime ASC';
     }
 
-    /** Returns the shared FROM clause with all necessary JOINs. */
     private function getBaseFromClause(): string
     {
         return '
@@ -260,7 +239,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         ';
     }
 
-    /** Returns the standard SELECT columns for session queries. */
     private function getSessionSelectColumns(): string
     {
         return '
@@ -279,10 +257,8 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         ';
     }
 
-    /**
-     * Two-pass grouped query: fetches distinct dates first, then sessions within those dates.
-     * Powers the paginated day-tab schedule UI.
-     */
+    // Two-pass: fetch distinct dates, then sessions within those dates.
+    // Powers the paginated day-tab schedule UI.
     private function executeGroupedDayQuery(EventSessionFilter $filters, string $whereClause, array $params, string $orderBy): SessionQueryResult
     {
         $maxDays = max(1, (int) $filters->maxDays);
@@ -302,7 +278,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         );
     }
 
-    /** Fetches distinct session dates matching the current filters. */
     private function fetchDistinctDates(string $baseFrom, string $whereClause, array $params, int $maxDays): array
     {
         $sql = 'SELECT DISTINCT DATE(es.StartDateTime) AS Date ' . $baseFrom . ' ' . $whereClause . ' ORDER BY Date ASC LIMIT :maxDays';
@@ -321,7 +296,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         }
     }
 
-    /** Fetches sessions limited to the given set of dates. */
     private function fetchSessionsForDates(array $days, string $baseFrom, string $whereClause, array $params, string $orderBy, ?int $limit): array
     {
         $dates = array_column($days, 'Date');
@@ -348,13 +322,12 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Executes a simple flat session query (no day grouping). */
     private function executeFlatQuery(EventSessionFilter $filters, string $whereClause, array $params, string $orderBy): SessionQueryResult
     {
         $sql = $this->getSessionSelectColumns() . ' ' . $this->getBaseFromClause() . ' ' . $whereClause . ' ORDER BY ' . $orderBy;
 
         if ($filters->limit !== null && $filters->limit > 0) {
-            $sql .= ' LIMIT ' . (int) $filters->limit;
+            $sql .= ' LIMIT ' . (int) $limit;
         }
 
         $stmt = $this->execute($sql, $params);
@@ -364,11 +337,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         );
     }
 
-    /**
-     * Inserts a new session from the typed CMS upsert payload.
-     *
-     * @return int The auto-incremented EventSessionId.
-     */
     public function create(EventSessionUpsertData $data): int
     {
         return $this->executeInsert(
@@ -409,9 +377,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         );
     }
 
-    /**
-     * Updates all mutable session fields from the typed CMS upsert payload.
-     */
     public function update(int $sessionId, EventSessionUpsertData $data): bool
     {
         $this->execute(
@@ -452,9 +417,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return true;
     }
 
-    /**
-     * Hard-deletes a session row. Will fail if order items reference this session.
-     */
+    // Hard delete -- will fail if order items reference this session.
     public function delete(int $sessionId): bool
     {
         $this->execute(
@@ -465,12 +428,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return true;
     }
 
-    /**
-     * Returns distinct session dates matching the base filters (ignoring user-facing schedule filters).
-     * Used to build the day filter UI with all available days, even when other filters narrow results.
-     *
-     * @return ScheduleDayData[]
-     */
+    // Used to build the day filter UI (ignores user-facing schedule filters).
     public function findDistinctDays(EventSessionFilter $filter): array
     {
         $params = [];
@@ -482,10 +440,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return array_map([ScheduleDayData::class, 'fromRow'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
-    /**
-     * @param array<string,mixed> $params
-     * @return string[]
-     */
     private function buildDistinctDayConditions(EventSessionFilter $filter, array &$params): array
     {
         $conditions = ['es.IsCancelled = 0'];
@@ -515,11 +469,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return $conditions;
     }
 
-    /**
-     * @param string[] $conditions
-     * @param array<string,mixed> $params
-     * @param int[]|null $visibleDays
-     */
     private function appendVisibleDayCondition(array &$conditions, array &$params, ?array $visibleDays): void
     {
         if ($visibleDays === null || $visibleDays === [] || count($visibleDays) >= 7) {
@@ -537,9 +486,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         $conditions[] = 'DAYOFWEEK(es.StartDateTime) - 1 IN (' . implode(',', $dayParams) . ')';
     }
 
-    /**
-     * @param string[] $conditions
-     */
+    /** @param string[] $conditions */
     private function buildDistinctDayQuery(array $conditions, int $maxDays): string
     {
         $whereClause = $conditions !== [] ? 'WHERE ' . implode(' AND ', $conditions) : '';
@@ -554,10 +501,7 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         ";
     }
 
-    /**
-     * Bulk-deactivates all sessions belonging to an event. Called when the parent event
-     * is deactivated to ensure no sessions remain bookable.
-     */
+    // Called when the parent event is deactivated.
     public function deactivateByEventId(int $eventId): bool
     {
         $this->execute(
@@ -568,13 +512,9 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return true;
     }
 
-    /**
-     * Returns the number of remaining seats for a session.
-     * Computes available = CapacityTotal - SoldSingleTickets - SoldReservedSeats.
-     */
+    // available = CapacityTotal - SoldSingleTickets - SoldReservedSeats
     public function getAvailableSeats(int $sessionId): int
     {
-        // Remaining seats = total capacity minus all sold tickets (single + reserved)
         $stmt = $this->execute(
             'SELECT (CapacityTotal - SoldSingleTickets - SoldReservedSeats) AS available
             FROM EventSession
@@ -586,16 +526,9 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return $row ? max(0, (int) $row['available']) : 0;
     }
 
-    /**
-     * Atomically increments SoldSingleTickets for a session. The WHERE condition
-     * ensures the update only applies when enough capacity remains, preventing
-     * overselling under concurrent checkouts.
-     *
-     * @return bool True if the reservation succeeded, false if insufficient capacity.
-     */
+    // Atomic seat reservation -- only succeeds if enough capacity remains.
     public function decrementCapacity(int $sessionId, int $quantity): bool
     {
-        // Atomic seat reservation — only succeeds if enough capacity remains
         $stmt = $this->execute(
             'UPDATE EventSession
             SET SoldSingleTickets = SoldSingleTickets + :quantity
@@ -607,10 +540,6 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         return $stmt->rowCount() > 0;
     }
 
-    /**
-     * Returns capacity and ticket-sale counts for a session.
-     * Used for pre-checkout validation including the single-ticket cap and per-booking limits.
-     */
     public function getCapacityInfo(int $sessionId): ?SessionCapacityInfo
     {
         return $this->fetchOne(
@@ -623,13 +552,9 @@ class EventSessionRepository extends BaseRepository implements IEventSessionRepo
         );
     }
 
-    /**
-     * Restores reserved capacity when an order is cancelled or expires.
-     * Decrements SoldSingleTickets by the given quantity.
-     */
+    // Restores seats for a cancelled/expired order.
     public function restoreCapacity(int $sessionId, int $quantity): void
     {
-        // Restore seats that were previously reserved for a cancelled/expired order
         $this->execute(
             'UPDATE EventSession
             SET SoldSingleTickets = GREATEST(0, SoldSingleTickets - :quantity)

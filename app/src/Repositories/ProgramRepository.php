@@ -11,20 +11,11 @@ use App\Models\ProgramItem;
 use App\DTOs\Domain\Filters\ProgramItemFilter;
 use App\Repositories\Interfaces\IProgramRepository;
 
-/**
- * Manages the Program and ProgramItem tables. A Program is a shopping cart tied to either
- * an anonymous browser session (via SessionKey) or an authenticated user. ProgramItems are
- * the individual session selections within a program, each with a quantity and optional
- * donation. Once checkout completes, the program is marked as checked out and an Order is created.
- */
+// Shopping-cart persistence. A Program is tied to either a browser session
+// (SessionKey) or an authenticated user. Once checkout completes it is locked
+// via IsCheckedOut = 1 and an Order is created from its items.
 class ProgramRepository extends BaseRepository implements IProgramRepository
 {
-    /**
-     * Retrieves programs matching the given filter criteria (by ID, session key, user, or
-     * checkout status). Returns newest programs first.
-     *
-     * @return Program[] Empty array if no programs match.
-     */
     public function findPrograms(ProgramFilter $filter): array
     {
         $conditions = [];
@@ -56,11 +47,6 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         return $this->fetchAll($sql, $params, fn(array $row) => Program::fromRow($row));
     }
 
-    /**
-     * Retrieves program items (cart line items) matching the given filter criteria.
-     *
-     * @return ProgramItem[] Ordered by ProgramItemId ascending. Empty array if no matches.
-     */
     public function findProgramItems(ProgramItemFilter $filter): array
     {
         $conditions = [];
@@ -92,14 +78,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         return $this->fetchAll($sql, $params, fn(array $row) => ProgramItem::fromRow($row));
     }
 
-    /**
-     * Creates a new empty program (cart) and immediately fetches it back to return
-     * a fully populated model including server-generated defaults (e.g. CreatedAtUtc).
-     *
-     * @param string $sessionKey Browser session identifier for anonymous users.
-     * @param int|null $userAccountId Null for guest users, set for authenticated users.
-     * @throws ProgramPersistenceException If the inserted row cannot be read back.
-     */
+    // Inserts then re-fetches to return a fully populated model.
     public function createProgram(string $sessionKey, ?int $userAccountId): Program
     {
         $programId = $this->executeInsert(
@@ -117,12 +96,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         return $programs[0];
     }
 
-    /**
-     * Adds an event session to the program cart and returns the newly created item
-     * with server-generated fields populated.
-     *
-     * @throws ProgramPersistenceException If the inserted row cannot be read back.
-     */
+    // Inserts then re-fetches to return a fully populated model.
     public function addItem(int $programId, int $eventSessionId, int $quantity, int $priceTierId, float $donationAmount): ProgramItem
     {
         $itemId = $this->executeInsert(
@@ -146,12 +120,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         return $items[0];
     }
 
-    /**
-     * Adds a pass to the program cart and returns the newly created item
-     * with server-generated fields populated.
-     *
-     * @throws ProgramPersistenceException If the inserted row cannot be read back.
-     */
+    // Inserts then re-fetches to return a fully populated model.
     public function addPassItem(int $programId, int $passTypeId, ?string $passValidDate, int $quantity, float $donationAmount): ProgramItem
     {
         $itemId = $this->executeInsert(
@@ -175,9 +144,6 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         return $items[0];
     }
 
-    /**
-     * Updates the ticket quantity for a cart item (e.g. user changes "2 tickets" to "3").
-     */
     public function updateItemQuantity(int $programItemId, int $quantity): void
     {
         $this->execute(
@@ -186,9 +152,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         );
     }
 
-    /**
-     * Updates the voluntary donation amount for a pay-what-you-like cart item.
-     */
+    // For pay-what-you-like items.
     public function updateItemDonation(int $programItemId, float $donationAmount): void
     {
         $this->execute(
@@ -197,9 +161,6 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         );
     }
 
-    /**
-     * Removes a single item from the cart.
-     */
     public function removeItem(int $programItemId): void
     {
         $this->execute(
@@ -208,9 +169,6 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         );
     }
 
-    /**
-     * Removes all items from a program, effectively emptying the cart.
-     */
     public function clearProgram(int $programId): void
     {
         $this->execute(
@@ -219,10 +177,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         );
     }
 
-    /**
-     * Flags the program as checked out, preventing further modifications.
-     * Called after an Order has been successfully created from this program.
-     */
+    // Called after an Order has been successfully created from this program.
     public function markCheckedOut(int $programId): void
     {
         $this->execute(
@@ -231,12 +186,7 @@ class ProgramRepository extends BaseRepository implements IProgramRepository
         );
     }
 
-    /**
-     * Adds a reservation to the program cart and returns the newly created item
-     * with server-generated fields populated.
-     *
-     * @throws ProgramPersistenceException If the inserted row cannot be read back.
-     */
+    // Inserts then re-fetches to return a fully populated model.
     public function addReservationItem(int $programId, int $reservationId, int $quantity): ProgramItem
     {
         $itemId = $this->executeInsert(

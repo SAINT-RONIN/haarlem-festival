@@ -15,12 +15,7 @@ use App\DTOs\Domain\Schedule\GroupedScheduleDayConfigs;
 use App\Services\Interfaces\IScheduleDayVisibilityResolver;
 use App\Services\Interfaces\ICmsScheduleDayService;
 
-/**
- * CMS-side schedule day visibility management.
- *
- * Extracted from CmsEventsService to reduce its dependency count and isolate
- * schedule day configuration logic from event CRUD operations.
- */
+// Extracted from CmsEventsService to isolate schedule-day config from event CRUD.
 class CmsScheduleDayService implements ICmsScheduleDayService
 {
     public function __construct(
@@ -45,10 +40,7 @@ class CmsScheduleDayService implements ICmsScheduleDayService
         );
     }
 
-    /**
-     * Splits configs into global defaults (no event type) and per-type overrides.
-     * Both buckets are keyed by day-of-week number for O(1) grid lookups.
-     */
+    // Keyed by day-of-week number for O(1) grid lookups.
     public function getGroupedScheduleDayConfigs(): GroupedScheduleDayConfigs
     {
         $dayConfigs = $this->getScheduleDayConfigs();

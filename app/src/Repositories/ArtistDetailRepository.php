@@ -12,12 +12,7 @@ use App\Repositories\Interfaces\IArtistHighlightRepository;
 use App\Repositories\Interfaces\IArtistLineupMemberRepository;
 use App\Repositories\Interfaces\IArtistTrackRepository;
 
-/**
- * Aggregates five artist sub-entity repositories into a single detail lookup.
- *
- * Reduces the dependency count of JazzArtistDetailService from 7 to 3 by
- * providing a single entry point for fetching all artist-related collections.
- */
+// Aggregates five artist sub-entity repositories into a single detail lookup.
 class ArtistDetailRepository implements IArtistDetailRepository
 {
     public function __construct(
@@ -28,11 +23,6 @@ class ArtistDetailRepository implements IArtistDetailRepository
         private readonly IArtistGalleryImageRepository $galleryImageRepository,
     ) {}
 
-    /**
-     * Fetches all artist detail data for a given artist.
-     *
-     * @param int $artistId The artist whose detail collections should be loaded
-     */
     public function findByArtistId(int $artistId): ArtistDetailData
     {
         return new ArtistDetailData(

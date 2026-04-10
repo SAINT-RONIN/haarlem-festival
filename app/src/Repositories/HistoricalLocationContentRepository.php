@@ -10,47 +10,32 @@ use App\DTOs\Cms\HistoricalLocationHeroContent;
 use App\DTOs\Cms\HistoricalLocationIntroContent;
 use App\DTOs\Cms\HistoricalLocationSignificanceContent;
 
-/**
- * Provides typed access to HistoricalLocation CMS content sections.
- *
- * Wraps the generic ICmsContentRepository and delegates field mapping
- * to HistoricalLocationContentMapper.
- */
 class HistoricalLocationContentRepository extends BaseContentRepository implements Interfaces\IHistoricalLocationContentRepository
 {
-    /** Fetches the location-specific hero content. */
     public function findHeroContent(string $pageSlug, string $sectionKey): HistoricalLocationHeroContent
     {
         $raw = $this->fetchSectionContent($pageSlug, $sectionKey);
         return HistoricalLocationContentMapper::mapHero($raw);
     }
 
-    /**
-     * Maps an already-fetched raw hero array to a location hero model.
-     *
-     * Used when the hero raw data is shared with the generic HeroSectionContent
-     * and has already been retrieved to check for page existence.
-     */
+    // Re-maps already-fetched raw hero data (avoids double-fetching after existence check).
     public function mapHeroFromRaw(array $raw): HistoricalLocationHeroContent
     {
         return HistoricalLocationContentMapper::mapHero($raw);
     }
 
-    /** Fetches the location intro content. */
     public function findIntroContent(string $pageSlug, string $sectionKey): HistoricalLocationIntroContent
     {
         $raw = $this->fetchSectionContent($pageSlug, $sectionKey);
         return HistoricalLocationContentMapper::mapIntro($raw);
     }
 
-    /** Fetches the location facts content. */
     public function findFactsContent(string $pageSlug, string $sectionKey): HistoricalLocationFactsContent
     {
         $raw = $this->fetchSectionContent($pageSlug, $sectionKey);
         return HistoricalLocationContentMapper::mapFacts($raw);
     }
 
-    /** Fetches the location significance content. */
     public function findSignificanceContent(string $pageSlug, string $sectionKey): HistoricalLocationSignificanceContent
     {
         $raw = $this->fetchSectionContent($pageSlug, $sectionKey);

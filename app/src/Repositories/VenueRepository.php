@@ -8,19 +8,8 @@ use App\Models\Venue;
 use App\DTOs\Domain\Filters\VenueFilter;
 use App\Repositories\Interfaces\IVenueRepository;
 
-/**
- * Reads and creates records in the Venue table.
- *
- * Venues represent physical locations in Haarlem where festival events take place.
- * Supports optional active/inactive filtering for the venue list.
- */
 class VenueRepository extends BaseRepository implements IVenueRepository
 {
-    /**
-     * Returns venues ordered by name, optionally filtered by active status.
-     *
-     * @return Venue[]
-     */
     public function findVenues(VenueFilter $filter = new VenueFilter()): array
     {
         $sql = '
@@ -41,9 +30,7 @@ class VenueRepository extends BaseRepository implements IVenueRepository
         return $this->fetchAll($sql, $params, fn(array $row) => Venue::fromRow($row));
     }
 
-    /**
-     * Inserts a new venue (defaults to Haarlem) and returns the new VenueId.
-     */
+    // Defaults city to 'Haarlem' when omitted.
     public function create(string $name, string $addressLine, string $city = 'Haarlem'): int
     {
         return $this->executeInsert(
@@ -53,9 +40,6 @@ class VenueRepository extends BaseRepository implements IVenueRepository
         );
     }
 
-    /**
-     * Finds a single venue by its primary key, or null if not found.
-     */
     public function findById(int $venueId): ?Venue
     {
         $rows = $this->fetchAll(
@@ -66,9 +50,6 @@ class VenueRepository extends BaseRepository implements IVenueRepository
         return $rows[0] ?? null;
     }
 
-    /**
-     * Soft-deletes a venue by setting IsActive = 0.
-     */
     public function softDelete(int $venueId): bool
     {
         $statement = $this->execute(
@@ -79,10 +60,7 @@ class VenueRepository extends BaseRepository implements IVenueRepository
         return $statement->rowCount() > 0;
     }
 
-    /**
-     * Checks whether an active venue with the given name already exists.
-     * Comparison is case-insensitive to prevent near-duplicate entries.
-     */
+    // Case-insensitive to prevent near-duplicate entries.
     public function existsByName(string $name): bool
     {
         $rows = $this->fetchAll(

@@ -8,19 +8,11 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Repositories\Interfaces\IPaymentRepository;
 
-/**
- * Manages the Payment table, which tracks payment attempts for orders. Each order
- * can have one payment record linking to a Stripe checkout session/payment intent.
- * Supports conditional status transitions to safely handle concurrent webhook deliveries.
- */
+// Tracks payment attempts per order. Supports conditional status transitions
+// for safe concurrent webhook handling.
 class PaymentRepository extends BaseRepository implements IPaymentRepository
 {
-    /**
-     * Creates a payment record when checkout begins. The Stripe session/intent IDs
-     * are stored later via dedicated update methods once Stripe returns them.
-     *
-     * @return int The auto-incremented PaymentId.
-     */
+    // Stripe session/intent IDs are stored later via dedicated update methods.
     public function create(int $orderId, PaymentMethod $method, PaymentStatus $status): int
     {
         return $this->executeInsert(
@@ -34,10 +26,7 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
         );
     }
 
-    /**
-     * Unconditionally sets payment status and optional paid-at timestamp.
-     * Use updateStatusIfCurrentIn() when guarding against concurrent webhook race conditions.
-     */
+    // Unconditional -- use updateStatusIfCurrentIn() for race-condition safety.
     public function updateStatus(int $paymentId, PaymentStatus $status, ?\DateTimeImmutable $paidAtUtc = null): void
     {
         $this->execute(
@@ -50,10 +39,6 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
         );
     }
 
-    /**
-     * Stores the Stripe Checkout Session ID after creating the checkout session,
-     * enabling later retrieval/verification of the session via the Stripe API.
-     */
     public function updateStripeSessionId(int $paymentId, string $stripeSessionId): void
     {
         $this->execute(
@@ -62,10 +47,7 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
         );
     }
 
-    /**
-     * Stores the Stripe PaymentIntent ID received from a webhook, used for
-     * refund processing and payment reconciliation.
-     */
+    // Used for refund processing and payment reconciliation.
     public function updateStripePaymentIntentId(int $paymentId, string $stripePaymentIntentId): void
     {
         $this->execute(
@@ -74,9 +56,6 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
         );
     }
 
-    /**
-     * Stores a generic payment provider reference (e.g. transaction ID from non-Stripe providers).
-     */
     public function updateProviderRef(int $paymentId, string $providerRef): void
     {
         $this->execute(
@@ -85,13 +64,8 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
         );
     }
 
-    /**
-     * Atomically transitions payment status only if the current status is in the allowed set.
-     * The caller supplies PaidAtUtc when transitioning to Paid. No-op if
-     * allowedCurrentStatuses is empty or the current status is not in the allowed set.
-     *
-     * @param PaymentStatus[] $allowedCurrentStatuses
-     */
+    // Atomic transition: only fires when current status is in $allowedCurrentStatuses.
+    // No-op if the set is empty or the current status is not allowed.
     public function updateStatusIfCurrentIn(
         int $paymentId,
         PaymentStatus $newStatus,
@@ -101,7 +75,6 @@ class PaymentRepository extends BaseRepository implements IPaymentRepository
         if ($allowedCurrentStatuses === []) {
             return;
         }
-        // Build dynamic IN clause for the allowed-status guard condition
         $formattedPaidAt = $paidAtUtc?->format('Y-m-d H:i:s');
         $inPlaceholders = [];
         $params = [':newStatus' => $newStatus->value, ':paidAtUtc' => $formattedPaidAt, ':paymentId' => $paymentId];

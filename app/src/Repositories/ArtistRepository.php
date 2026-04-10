@@ -9,19 +9,9 @@ use App\DTOs\Cms\ArtistUpsertData;
 use App\DTOs\Cms\JazzLineupCardUpsertData;
 use App\Repositories\Interfaces\IArtistRepository;
 
-/**
- * Provides CRUD operations against the Artist table.
- *
- * Supports optional name-based search for the artist listing and uses
- * soft-delete (IsActive = 0) instead of removing rows.
- */
+// Soft-delete via IsActive = 0; backtick not needed (not a reserved word).
 class ArtistRepository extends BaseRepository implements IArtistRepository
 {
-    /**
-     * Retrieves all artists, optionally filtered by a partial name match.
-     *
-     * @return Artist[]
-     */
     public function findAll(?string $search = null): array
     {
         $sql = 'SELECT a.*, ma.FilePath AS ImagePath FROM Artist a LEFT JOIN MediaAsset ma ON ma.MediaAssetId = a.ImageAssetId';
@@ -35,9 +25,6 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
         return $this->fetchAll($sql, $params, fn(array $row) => Artist::fromRow($row));
     }
 
-    /**
-     * Looks up a single artist by primary key, or null if not found.
-     */
     public function findById(int $id): ?Artist
     {
         return $this->fetchOne(
@@ -51,9 +38,6 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
         );
     }
 
-    /**
-     * Inserts a new artist and returns the auto-incremented ID.
-     */
     public function create(ArtistUpsertData $data): int
     {
         return $this->executeInsert(
@@ -125,9 +109,6 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
         );
     }
 
-    /**
-     * Overwrites all mutable fields of an existing artist.
-     */
     public function update(int $id, ArtistUpsertData $data): void
     {
         $this->execute(
@@ -230,6 +211,7 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
         return max(1, (int) $value);
     }
 
+    // Showing on jazz overview also assigns a sort order if the artist doesn't have one yet
     public function setJazzOverviewVisibility(int $id, bool $visible): void
     {
         if (!$visible) {
@@ -260,17 +242,11 @@ class ArtistRepository extends BaseRepository implements IArtistRepository
         );
     }
 
-    /**
-     * Soft-deletes an artist by setting IsActive to 0 (row is preserved for FK integrity).
-     */
     public function delete(int $id): void
     {
         $this->execute('UPDATE Artist SET IsActive = 0 WHERE ArtistId = :id', [':id' => $id]);
     }
 
-    /**
-     * Reactivates a previously deleted artist by setting IsActive to 1.
-     */
     public function reactivate(int $id): void
     {
         $this->execute('UPDATE Artist SET IsActive = 1 WHERE ArtistId = :id', [':id' => $id]);

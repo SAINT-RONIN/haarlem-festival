@@ -13,11 +13,6 @@ use App\Helpers\TextHelper;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Services\Interfaces\ICmsArtistsService;
 
-/**
- * CMS-side artist management: listing, creating, updating, and deleting artist profiles.
- *
- * Validates that required fields (name, style, bio) are present before persisting changes.
- */
 class CmsArtistsService implements ICmsArtistsService
 {
     public function __construct(
@@ -74,11 +69,7 @@ class CmsArtistsService implements ICmsArtistsService
         }
     }
 
-    /**
-     * All fields are replaced — partial updates are not supported.
-     *
-     * @throws CmsOperationException
-     */
+    /** @throws CmsOperationException */
     public function updateArtist(int $id, ArtistUpsertData $data): void
     {
         try {
@@ -114,12 +105,8 @@ class CmsArtistsService implements ICmsArtistsService
         }
     }
 
-    /**
-     * Hard delete — the repository must also remove related Jazz lineup cards
-     * or the delete will fail on a foreign-key constraint.
-     *
-     * @throws CmsOperationException
-     */
+    // Repository must also remove related Jazz lineup cards (FK constraint).
+    /** @throws CmsOperationException */
     public function deleteArtist(int $id): void
     {
         try {
@@ -139,13 +126,7 @@ class CmsArtistsService implements ICmsArtistsService
         }
     }
 
-    /**
-     * Shared validation for full artist records used by both create and update.
-     *
-     * Sort-order range check is done inline because FieldValidator has no numeric-range rule.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     private function validate(ArtistUpsertData $data): array
     {
         $errors = [];
@@ -159,11 +140,8 @@ class CmsArtistsService implements ICmsArtistsService
         return $errors;
     }
 
-    /**
-     * Jazz cards need fewer fields than a full artist profile — bio is not required.
-     *
-     * @return array<string, string>
-     */
+    // Jazz cards don't require a bio, unlike full artist profiles.
+    /** @return array<string, string> */
     private function validateJazzCard(JazzLineupCardUpsertData $data): array
     {
         $errors = [];

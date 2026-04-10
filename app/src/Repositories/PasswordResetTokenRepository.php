@@ -7,22 +7,10 @@ namespace App\Repositories;
 use App\Models\PasswordResetToken;
 use App\Repositories\Interfaces\IPasswordResetTokenRepository;
 
-/**
- * Repository for PasswordResetToken database operations.
- *
- * Handles creation, lookup, and status updates for password reset tokens.
- * Note: The Token column stores SHA-256 hashes, never raw tokens.
- */
+// The Token column stores SHA-256 hashes, never raw tokens.
+// Raw tokens are sent in the reset email; only the hash is persisted.
 class PasswordResetTokenRepository extends BaseRepository implements IPasswordResetTokenRepository
 {
-    /**
-     * Creates a new password reset token.
-     *
-     * @param int $userId The user requesting the reset
-     * @param string $tokenHash SHA-256 hash of the raw token (raw token goes in email)
-     * @param \DateTimeImmutable $expiresAt When the token expires
-     * @return int The new token record ID
-     */
     public function create(int $userId, string $tokenHash, \DateTimeImmutable $expiresAt): int
     {
         return $this->executeInsert(
@@ -38,12 +26,7 @@ class PasswordResetTokenRepository extends BaseRepository implements IPasswordRe
         );
     }
 
-    /**
-     * Finds a valid (not expired, not used) token by its hash.
-     *
-     * @param string $tokenHash SHA-256 hash of the token from the URL
-     * @return PasswordResetToken|null Token or null if invalid
-     */
+    // Not expired (ExpiresAtUtc > NOW) and not used (UsedAtUtc IS NULL).
     public function findValidByTokenHash(string $tokenHash): ?PasswordResetToken
     {
         return $this->fetchOne(
@@ -56,9 +39,6 @@ class PasswordResetTokenRepository extends BaseRepository implements IPasswordRe
         );
     }
 
-    /**
-     * Marks a token as used (prevents reuse).
-     */
     public function markAsUsed(int $tokenId): void
     {
         $this->execute(
@@ -67,12 +47,7 @@ class PasswordResetTokenRepository extends BaseRepository implements IPasswordRe
         );
     }
 
-    /**
-     * Deletes expired tokens (cleanup utility). Not part of the interface contract
-     * because it is only called by maintenance/cron tasks, not by the reset flow.
-     *
-     * @return int Number of deleted rows.
-     */
+    // For cron/maintenance cleanup -- not part of the normal reset flow.
     public function deleteExpiredTokens(): int
     {
         $stmt = $this->execute(

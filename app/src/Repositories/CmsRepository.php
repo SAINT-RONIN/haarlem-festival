@@ -12,27 +12,13 @@ use App\Models\CmsSection;
 use App\DTOs\Domain\Filters\CmsSectionFilter;
 use App\Repositories\Interfaces\ICmsRepository;
 
-/**
- * Low-level data access for the three core CMS tables: CmsPage, CmsSection, and CmsItem.
- *
- * Provides filtered reads and partial updates. Higher-level content resolution
- * (slug lookup, caching, media-asset hydration) lives in CmsContentRepository.
- */
+// Low-level CRUD for CmsPage, CmsSection, and CmsItem.
+// Higher-level content resolution lives in CmsContentRepository.
 class CmsRepository extends BaseRepository implements ICmsRepository
 {
-    /**
-     * Finds CMS pages with optional filtering by ID or slug.
-     *
-     * When includeLastUpdated is set, the query joins through CmsSection -> CmsItem
-     * and aggregates MAX(UpdatedAtUtc) so the CMS dashboard can show when a page was
-     * last edited.
-     *
-     * @return CmsPage[]
-     */
     public function findPages(CmsPageFilter $filter): array
     {
-        // When last-updated info is requested, join page -> sections -> items to find
-        // the most recent CmsItem edit timestamp across the whole page
+        // When last-updated info is requested, join through sections -> items
         $select = $filter->includeLastUpdated
             ? '
                 SELECT cp.*, MAX(ci.UpdatedAtUtc) AS UpdatedAtUtc
@@ -67,11 +53,6 @@ class CmsRepository extends BaseRepository implements ICmsRepository
         return $this->fetchAll($sql, $params, fn(array $row) => CmsPage::fromRow($row));
     }
 
-    /**
-     * Finds CMS sections, optionally scoped to a page and/or section key.
-     *
-     * @return CmsSection[]
-     */
     public function findSections(CmsSectionFilter $filter): array
     {
         $sql = 'SELECT * FROM CmsSection WHERE 1 = 1';
@@ -92,17 +73,9 @@ class CmsRepository extends BaseRepository implements ICmsRepository
         return $this->fetchAll($sql, $params, fn(array $row) => CmsSection::fromRow($row));
     }
 
-    /**
-     * Finds CMS items with optional filtering by item ID, section, page, or section key.
-     *
-     * The query joins CmsItem -> CmsSection -> CmsPage so callers can filter items
-     * by page-level or section-level criteria in a single call.
-     *
-     * @return CmsItem[]
-     */
+    // Joins CmsItem -> CmsSection -> CmsPage so callers can filter by page/section in one call.
     public function findItems(CmsItemFilter $filter): array
     {
-        // Join up to CmsPage so we can filter by page ID or section key
         $sql = '
             SELECT ci.*
             FROM CmsItem ci
@@ -137,13 +110,7 @@ class CmsRepository extends BaseRepository implements ICmsRepository
         return $this->fetchAll($sql, $params, fn(array $row) => CmsItem::fromRow($row));
     }
 
-    /**
-     * Partially updates a CMS item's text or HTML value.
-     * Only columns present in $data are written; others are left untouched.
-     *
-     * @param array<string, mixed> $data Allowed keys: TextValue, HtmlValue
-     * @return bool False when $data had no recognised keys; true on execute.
-     */
+    // Only writes columns present in $data; returns false when $data has no recognised keys.
     public function updateItem(int $cmsItemId, array $data): bool
     {
         $fields = [];
@@ -170,9 +137,6 @@ class CmsRepository extends BaseRepository implements ICmsRepository
         return true;
     }
 
-    /**
-     * Replaces (or clears) the media asset linked to a CMS item.
-     */
     public function updateItemMediaAsset(int $cmsItemId, ?int $mediaAssetId): bool
     {
         $this->execute(
@@ -183,9 +147,6 @@ class CmsRepository extends BaseRepository implements ICmsRepository
         return true;
     }
 
-    /**
-     * Returns the CmsPage with the given slug, or null if not found.
-     */
     public function findPageBySlug(string $slug): ?CmsPage
     {
         return $this->fetchOne(
@@ -195,9 +156,6 @@ class CmsRepository extends BaseRepository implements ICmsRepository
         );
     }
 
-    /**
-     * Inserts a new CmsSection row and returns the auto-incremented ID.
-     */
     public function insertSection(int $cmsPageId, string $sectionKey): int
     {
         return $this->executeInsert(
@@ -206,9 +164,7 @@ class CmsRepository extends BaseRepository implements ICmsRepository
         );
     }
 
-    /**
-     * Inserts or updates a TEXT CmsItem by section + key. Creates if not exists, updates if it does.
-     */
+    // Upsert TEXT item by section + key (ON DUPLICATE KEY UPDATE).
     public function upsertCmsTextItem(int $cmsSectionId, string $itemKey, string $textValue): void
     {
         $this->execute(

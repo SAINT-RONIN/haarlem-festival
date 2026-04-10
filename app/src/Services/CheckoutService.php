@@ -36,23 +36,10 @@ use App\Services\Interfaces\ITicketFulfillmentService;
 use App\DTOs\Domain\Events\SessionCapacityInfo;
 use PDO;
 
-/**
- * Orchestrates the full checkout flow from program validation to Stripe redirection.
- *
- * This service exists because checkout is a multi-step business process, not a single query:
- * it has to validate the cart, create local order and payment rows, reserve capacity,
- * and then hand the customer over to Stripe with enough metadata for later callbacks.
- * Webhook handling is split into another service so this class stays focused on
- * the user-driven checkout path.
- */
+// Orchestrates the full checkout flow: validate cart, persist order, reserve capacity, redirect to Stripe.
+// Webhook handling is split into StripeWebhookHandler.
 class CheckoutService implements ICheckoutService
 {
-    /**
-     * Stores the dependencies needed for checkout persistence, capacity reservation, and Stripe.
-     *
-     * The constructor returns nothing because its only responsibility is setup:
-     * receiving collaborators once so the actual checkout methods can stay explicit and readable.
-     */
     public function __construct(
         private readonly IOrderRepository $orderRepository,
         private readonly IOrderItemRepository $orderItemRepository,
@@ -68,16 +55,7 @@ class CheckoutService implements ICheckoutService
         private readonly IProgramRepository $programRepository,
     ) {}
 
-    /**
-     * Validates the payload, persists an order with line items, creates a Stripe
-     * checkout session, and returns the redirect URL for the payment gateway.
-     *
-     * It returns CheckoutSessionResult because the caller needs more than the redirect URL:
-     * it also needs the created order and payment ids for later cancel, retry, and success flows.
-     *
-     * @throws CheckoutException When the program is empty or Stripe session creation fails
-     * @throws \InvalidArgumentException When required payload fields are missing or invalid
-     */
+    /** @throws CheckoutException|\InvalidArgumentException */
     public function createCheckoutSession(ProgramData $programData, int $userId, CheckoutPayloadData $payload): CheckoutSessionResult
     {
         $this->validatePayload($payload);
@@ -90,16 +68,7 @@ class CheckoutService implements ICheckoutService
         return $this->executeCheckoutTransaction($programData, $userId, $payload, $method);
     }
 
-    /**
-     * Rejects totals that cannot produce a valid payment.
-     *
-     * Guards against zero, negative, NaN, and Infinity values. NaN comparisons always
-     * return false in PHP, so is_nan() is checked explicitly. Infinity would pass a
-     * simple <= 0 check but is not a valid payment amount.
-     *
-     * It returns nothing because this is a guard method: invalid totals should stop checkout
-     * immediately instead of being passed through the rest of the flow.
-     */
+    // Guards against zero, negative, NaN, and Infinity.
     private function validatePositiveTotal(float $total): void
     {
         if (is_nan($total)) {
@@ -115,13 +84,6 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Returns the finished checkout result after all database writes and Stripe setup succeed.
-     *
-     * The transaction matters because order creation, order items, seat reservations,
-     * and payment creation belong to one unit of work. If one step fails, none of them
-     * should remain half-finished in the database.
-     */
     private function executeCheckoutTransaction(ProgramData $programData, int $userId, CheckoutPayloadData $payload, PaymentMethod $method): CheckoutSessionResult
     {
         $this->pdo->beginTransaction();
@@ -146,12 +108,6 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Ensures checkout only starts when the visitor actually has items in the program.
-     *
-     * It returns nothing because an empty program is a hard stop, not a warning the caller
-     * should try to work around inside the checkout flow.
-     */
     private function validateProgramNotEmpty(ProgramData $programData): void
     {
         if ($programData->program === null || $programData->items === []) {
@@ -159,12 +115,6 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Creates the order header row and returns the new order id.
-     *
-     * Only the header is stored here because line items, seat reservations, and payments
-     * all depend on the generated order id and happen in later steps.
-     */
     private function persistOrder(ProgramData $programData, int $userId, string $orderNumber, CheckoutPayloadData $payload): int
     {
         return $this->orderRepository->create(
@@ -181,11 +131,7 @@ class CheckoutService implements ICheckoutService
         );
     }
 
-    /**
-     * Persists each program item as an order line item.
-     *
-     * @param ProgramItemData[] $items
-     */
+    /** @param ProgramItemData[] $items */
     private function persistOrderLineItems(array $items, int $orderId, int $userId): void
     {
         foreach ($items as $item) {
@@ -207,12 +153,7 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Handles the extra write needed for pass products before the order item is created.
-     *
-     * It returns nothing because the important result is the persisted relationship:
-     * first a PassPurchase row, then an OrderItem row that points to it.
-     */
+    // Pass products need a PassPurchase row first, then an OrderItem pointing to it.
     private function persistPassOrderItem(ProgramItemData $item, int $orderId, int $userId): void
     {
         $passPurchaseId = $this->passPurchaseRepository->create(
@@ -235,13 +176,7 @@ class CheckoutService implements ICheckoutService
         );
     }
 
-    /**
-     * Atomically reserves seats for all items — prevents overselling under concurrent checkouts.
-     *
-     * Group tickets (Family, Group) count as 4 seats each.
-     *
-     * @param ProgramItemData[] $items
-     */
+    /** @param ProgramItemData[] $items */
     private function reserveSessionSeats(array $items): void
     {
         foreach ($items as $item) {
@@ -273,13 +208,6 @@ class CheckoutService implements ICheckoutService
         return $quantity;
     }
 
-    /**
-     * Creates a Stripe checkout session, links its identifiers to the payment record,
-     * and returns the redirect URL.
-     *
-     * The returned string is the exact URL the browser should redirect to because Stripe
-     * owns the next stage of payment once local checkout setup is complete.
-     */
     private function createAndLinkStripeSession(
         ProgramData $programData,
         int $userId,
@@ -354,12 +282,6 @@ class CheckoutService implements ICheckoutService
         );
     }
 
-    /**
-     * Saves Stripe identifiers onto the local payment row after session creation.
-     *
-     * It returns nothing because the useful result is the stored linkage itself:
-     * later webhook and cancel flows depend on these ids already being saved locally.
-     */
     private function linkStripeIds(int $paymentId, array $session, string $sessionId): void
     {
         $this->paymentRepository->updateStripeSessionId($paymentId, $sessionId);
@@ -371,12 +293,6 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Returns the order the current user is allowed to retry payment for.
-     *
-     * Throwing when the order is missing keeps the retry flow simple:
-     * the rest of the code can safely assume a real, user-owned order exists.
-     */
     public function getRetryOrder(int $orderId, int $userId): \App\Models\Order
     {
         $order = $this->orderRepository->findByIdAndUserId($orderId, $userId);
@@ -388,12 +304,6 @@ class CheckoutService implements ICheckoutService
         return $order;
     }
 
-    /**
-     * Creates a fresh payment attempt for an existing order and returns the new checkout result.
-     *
-     * The result includes a new payment id because each retry is tracked as its own payment record,
-     * even though the order itself stays the same.
-     */
     public function retryCheckoutSession(int $orderId, int $userId, array $payload): CheckoutSessionResult
     {
         $order = $this->getRetryOrder($orderId, $userId);
@@ -404,12 +314,6 @@ class CheckoutService implements ICheckoutService
         return $this->executeRetryTransaction($order, $method);
     }
 
-    /**
-     * Confirms the order can still be retried.
-     *
-     * It returns nothing because retry eligibility is a rule check:
-     * either the order is valid for retry or the method throws immediately.
-     */
     private function validateRetryEligibility(\App\Models\Order $order): void
     {
         if ($order->status !== OrderStatus::Pending) {
@@ -421,12 +325,6 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Returns the retry checkout result after creating a new payment row and Stripe session.
-     *
-     * The transaction exists because a retry payment should never be left behind without
-     * a usable Stripe session linked to it.
-     */
     private function executeRetryTransaction(\App\Models\Order $order, PaymentMethod $method): CheckoutSessionResult
     {
         $this->pdo->beginTransaction();
@@ -450,12 +348,6 @@ class CheckoutService implements ICheckoutService
         }
     }
 
-    /**
-     * Returns the Stripe checkout URL for a retry payment.
-     *
-     * The response is validated here so later code can safely assume Stripe returned both
-     * a session id and a redirect URL before the payment row is considered usable.
-     */
     private function createAndLinkRetryStripeSession(\App\Models\Order $order, int $paymentId, PaymentMethod $method): string
     {
         $params = $this->buildRetryStripeParams($order, $paymentId, $method);
@@ -473,14 +365,7 @@ class CheckoutService implements ICheckoutService
         return $checkoutUrl;
     }
 
-    /**
-     * Returns the Stripe payload for a retry payment attempt.
-     *
-     * It reuses the shared builder because a retry payment should behave like the original checkout,
-     * just with an existing order instead of a freshly created one.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     private function buildRetryStripeParams(\App\Models\Order $order, int $paymentId, PaymentMethod $method): array
     {
         return $this->buildStripeCheckoutParams(
@@ -501,15 +386,7 @@ class CheckoutService implements ICheckoutService
         );
     }
 
-    /**
-     * Returns the final Stripe checkout payload shared by new and retry payments.
-     *
-     * Centralizing this array matters because new and retry checkouts should only differ
-     * in their source data, not in the Stripe contract they send.
-     *
-     * @param array<string, string> $metadata
-     * @return array<string, mixed>
-     */
+    /** @param array<string, string> $metadata @return array<string, mixed> */
     private function buildStripeCheckoutParams(
         int $orderId,
         int $paymentId,
@@ -530,14 +407,7 @@ class CheckoutService implements ICheckoutService
         ];
     }
 
-    /**
-     * Returns the Stripe success and cancel URLs for one checkout attempt.
-     *
-     * The urls include our order and payment ids because the app needs those values later
-     * to cancel pending rows or reconnect the returning customer to the right payment.
-     *
-     * @return array{success_url: string, cancel_url: string}
-     */
+    /** @return array{success_url: string, cancel_url: string} */
     private function buildStripeUrls(int $orderId, int $paymentId): array
     {
         $appUrl = $this->runtimeConfig->getAppUrl();
@@ -548,21 +418,8 @@ class CheckoutService implements ICheckoutService
         ];
     }
 
-    /**
-     * Returns the metadata stored on the Stripe session so later callbacks can find our records.
-     *
-     * Everything is cast to strings because Stripe metadata is string-based, and webhook code
-     * later reads those same values back out of the Stripe payload.
-     *
-     * @return array{
-     *     order_id: string,
-     *     payment_id: string,
-     *     program_id: string,
-     *     user_id: string,
-     *     first_name: string,
-     *     last_name: string
-     * }
-     */
+    // All cast to strings because Stripe metadata is string-based.
+    /** @return array{order_id: string, payment_id: string, program_id: string, user_id: string, first_name: string, last_name: string} */
     private function buildStripeMetadata(
         int $orderId,
         int $paymentId,
@@ -581,13 +438,6 @@ class CheckoutService implements ICheckoutService
         ];
     }
 
-    /**
-     * Cancels the pending order and payment when the customer abandons checkout.
-     *
-     * It returns CheckoutCancelResult because the controller still needs a small, display-ready
-     * summary of what was cancelled. Status guards prevent this method from overwriting rows
-     * already changed by a webhook or another process.
-     */
     public function handleCancel(?int $orderId, ?int $paymentId): CheckoutCancelResult
     {
         $this->cancelOrderIfPresent($orderId);

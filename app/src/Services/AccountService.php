@@ -13,9 +13,6 @@ use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\IAccountService;
 use App\Infrastructure\Interfaces\IEmailService;
 
-/**
- * Manages user account operations: profile updates, password changes, and email confirmation.
- */
 class AccountService implements IAccountService
 {
     public function __construct(
@@ -33,9 +30,7 @@ class AccountService implements IAccountService
         return $user;
     }
 
-    /**
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     public function validateProfileUpdate(UpdateProfileFormData $data, int $currentUserId): array
     {
         $errors = [];
@@ -44,9 +39,7 @@ class AccountService implements IAccountService
         return $errors;
     }
 
-    /**
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     private function validateEmail(string $email, int $excludeUserId): array
     {
         $errors = [];
@@ -62,9 +55,7 @@ class AccountService implements IAccountService
         return $errors;
     }
 
-    /**
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     private function validateName(string $firstName, string $lastName): array
     {
         $errors = [];
@@ -73,11 +64,6 @@ class AccountService implements IAccountService
         return $errors;
     }
 
-    /**
-     * @param string $name The name value to validate
-     * @param string $fieldName The field name for error messages ('firstName' or 'lastName')
-     * @return array<string, string>
-     */
     private function validateNameField(string $name, string $fieldName): array
     {
         $errors = [];
@@ -160,10 +146,7 @@ class AccountService implements IAccountService
         }
     }
 
-    /**
-     *
-     * @throws ValidationException When any validation fails
-     */
+    /** @throws ValidationException */
     private function validatePassword(UserAccount $user, string $currentPassword, string $newPassword, string $confirmPassword): void
     {
         $errors = [];

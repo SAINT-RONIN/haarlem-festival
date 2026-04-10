@@ -35,13 +35,8 @@ use App\Repositories\Interfaces\IPriceTierRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Services\Interfaces\ICmsEventsService;
 
-/**
- * CMS-side event and session management: CRUD, pricing, and labels.
- *
- * Events are soft-deleted (IsActive = 0) so historical order references remain valid.
- * Sessions with sold tickets cannot be hard-deleted; cancel them instead.
- * Price input accepts European comma-decimal format (e.g. "12,50") and normalises to float.
- */
+// Events are soft-deleted (IsActive=0) so historical order references stay valid.
+// Price input accepts European comma-decimal format (e.g. "12,50") and normalises to float.
 class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
 {
     public function __construct(
@@ -111,11 +106,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return $this->venueRepository->create($name, $addressLine);
     }
 
-    /**
-     * The 120-character limit matches the DB column length so the error is caught here with a clear message.
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     private function validateVenueName(string $name): array
     {
         $errors = [];
@@ -141,12 +132,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return $this->priceTierRepository->findAll();
     }
 
-    /**
-     * All seven days are pre-seeded so the schedule grid always renders every day,
-     * even when a day has no sessions.
-     *
-     * @return array<string, SessionWithEvent[]>
-     */
+    /** @return array<string, SessionWithEvent[]> */
     public function getWeeklyScheduleOverview(?int $eventTypeId = null): array
     {
         $schedule = $this->initializeWeekSchedule();
@@ -248,11 +234,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         ))[0] ?? null;
     }
 
-    /**
-     * Cancelled sessions are included so editors can review or reactivate them.
-     *
-     * @return SessionWithEvent[]
-     */
+    /** @return SessionWithEvent[] */
     private function loadSessionsForEdit(int $eventId): array
     {
         return $this->sessionRepository->findSessions(new EventSessionFilter(
@@ -262,12 +244,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         ))->sessions;
     }
 
-    /**
-     * Fetches prices and labels in two bulk queries rather than per-session to avoid N+1.
-     *
-     * @param SessionWithEvent[] $sessions
-     * @return array{0: array, 1: array}
-     */
+    /** @return array{0: array, 1: array} */
     private function loadSessionPricesAndLabels(array $sessions): array
     {
         $sessionIds = array_map(
@@ -285,12 +262,8 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         ];
     }
 
-    /**
-     * The slug is immutable once set; updates always preserve the original from the DB.
-     *
-     * @throws ValidationException
-     * @throws CmsOperationException
-     */
+    // Slug is immutable once set; updates preserve the original from the DB.
+    /** @throws ValidationException|CmsOperationException */
     public function updateEvent(int $eventId, EventUpsertData $data): bool
     {
         $errors = $this->validateEvent($data);
@@ -312,11 +285,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         }
     }
 
-    /**
-     * The event ID comes from the route parameter, not the form — forEvent() binds it to the DTO.
-     *
-     * @throws ValidationException
-     */
+    /** @throws ValidationException */
     public function createSession(int $eventId, EventSessionUpsertData $data): int
     {
         $errors = $this->validateSession($data);
@@ -338,11 +307,8 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return $this->sessionRepository->update($sessionId, $data);
     }
 
-    /**
-     * Deleting a session with sold tickets would orphan order history; cancel it instead.
-     *
-     * @throws ValidationException
-     */
+    // Sessions with sold tickets cannot be hard-deleted; cancel them instead.
+    /** @throws ValidationException */
     public function deleteSession(int $sessionId): bool
     {
         if ($this->orderItemRepository->existsForSession($sessionId)) {
@@ -375,11 +341,8 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return $this->labelRepository->delete($labelId);
     }
 
-    /**
-     * European comma notation (e.g. "12,50") is normalised to dot-decimal before validation.
-     *
-     * @throws ValidationException
-     */
+    // European comma notation (e.g. "12,50") is normalised to dot-decimal.
+    /** @throws ValidationException */
     public function setSessionPrice(int $sessionId, ?int $priceTierId, string $rawPrice): bool
     {
         $resolvedPriceTierId = $this->resolvePriceTierId($priceTierId);
@@ -393,12 +356,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return $this->priceRepository->upsert($sessionId, $resolvedPriceTierId, $price);
     }
 
-    /**
-     * Soft-deletes the event and deactivates its sessions in a single transaction.
-     *
-     * @throws ValidationException
-     * @throws CmsOperationException
-     */
+    /** @throws ValidationException|CmsOperationException */
     public function deleteEvent(int $eventId): void
     {
         try {
@@ -453,11 +411,8 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return $errors;
     }
 
-    /**
-     * EventTypeId is only required at creation; updates preserve the existing type from the DB.
-     *
-     * @return string[]
-     */
+    // EventTypeId is only required at creation; updates preserve the existing type.
+    /** @return string[] */
     private function validateEventCreate(EventUpsertData $data): array
     {
         $errors = $this->validateEvent($data);
@@ -512,11 +467,8 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return [];
     }
 
-    /**
-     * Skips the range check when either field is blank; the presence checks above already report those errors.
-     *
-     * @return string[]
-     */
+    // Skips range check when either field is blank (presence checks handle those).
+    /** @return string[] */
     private function validateSessionDateRange(EventSessionUpsertData $data): array
     {
         if ($data->startDateTime === '' || $data->endDateTime === '') {
@@ -537,10 +489,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return [];
     }
 
-    /**
-     * Multiple formats are tried because the HTML datetime-local input and the DB use different ones.
-     * getLastErrors() is checked because createFromFormat can return a result but still log warnings on partial matches.
-     */
+    // Multiple formats tried because HTML datetime-local and DB use different ones.
     private function parseSessionDateTime(string $value): ?\DateTimeImmutable
     {
         foreach (['Y-m-d\TH:i', 'Y-m-d H:i:s', 'Y-m-d H:i'] as $format) {
@@ -558,11 +507,7 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return null;
     }
 
-    /**
-     * A bare word without a leading slash would silently become a broken relative link.
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     private function validateSessionCtaUrl(EventSessionUpsertData $data): array
     {
         if ($data->ctaUrl === null || $data->ctaUrl === '') {
@@ -668,11 +613,8 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         return $errors;
     }
 
-    /**
-     * Pay What YouLike price has to be 0 because the actual amount is collected separately at checkout.
-     *
-     * @return string[]
-     */
+    // Pay-what-you-like price must be 0; the actual amount is collected at checkout.
+    /** @return string[] */
     private function validatePrice(int $priceTierId, float $price): array
     {
         $errors = [];

@@ -16,20 +16,8 @@ use App\DTOs\Domain\Events\StorytellingDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
 
-/**
- * Manages CRUD operations on the Event table, with support for filtered listing
- * that joins Venue, EventType, and aggregated EventSession data.
- * Also provides slug-based lookups for public-facing Jazz and Storytelling detail pages.
- */
 class EventRepository extends BaseRepository implements IEventRepository
 {
-    /**
-     * Retrieves events with optional filtering by active status, event type, specific event,
-     * and day of week. Joins Venue and EventType for display names. When includeSessionCount
-     * is set, attaches aggregate session/ticket counts via a subquery on EventSession.
-     *
-     * @return EventWithDetails[] Sorted by event type name, then event title. Empty array if no matches.
-     */
     public function findEvents(EventFilter $filters = new EventFilter()): array
     {
         $conditions = [];
@@ -39,10 +27,7 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $this->fetchAll($sql, $params, fn(array $row) => EventWithDetails::fromRow($row));
     }
 
-    /**
-     * @param string[] $conditions
-     * @param array<string,mixed> $params
-     */
+    /** @param string[] $conditions */
     private function buildFindEventsQuery(EventFilter $filters, array &$conditions, array &$params): string
     {
         $sql = $this->buildEventSelectClause((bool) ($filters->includeSessionCount ?? false));
@@ -98,9 +83,6 @@ class EventRepository extends BaseRepository implements IEventRepository
         ';
     }
 
-    /**
-     * @param array<string,mixed> $params
-     */
     private function buildDayOfWeekJoinClause(?int $dayOfWeekNumber, array &$params): string
     {
         if ($dayOfWeekNumber === null) {
@@ -116,10 +98,7 @@ class EventRepository extends BaseRepository implements IEventRepository
         ';
     }
 
-    /**
-     * @param string[] $conditions
-     * @param array<string,mixed> $params
-     */
+    /** @param string[] $conditions */
     private function appendEventConditions(EventFilter $filters, array &$conditions, array &$params): void
     {
         if ($filters->isActive !== null) {
@@ -138,11 +117,7 @@ class EventRepository extends BaseRepository implements IEventRepository
         }
     }
 
-    /**
-     * Looks up a single active event by its URL slug and event type.
-     *
-     * @return array<string, mixed>|null Raw row data, or null if not found.
-     */
+    // Shared base query for slug-based lookups (active + featured image join).
     private function queryActiveEventBySlug(string $slug, EventTypeId $eventType): ?array
     {
         $stmt = $this->execute(
@@ -160,39 +135,25 @@ class EventRepository extends BaseRepository implements IEventRepository
         return is_array($row) ? $row : null;
     }
 
-    /**
-     * Finds an active Jazz event by its URL slug for the artist detail page.
-     *
-     * @return JazzArtistDetailEvent|null Null when no active Jazz event matches the slug.
-     */
     public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Jazz);
         return $row !== null ? JazzArtistDetailEvent::fromRow($row) : null;
     }
 
-    /**
-     * @return JazzArtistCardRecord[]
-     */
     public function findJazzOverviewArtists(): array
     {
         return $this->fetchJazzArtistCards(true);
     }
 
-    /**
-     * Finds an active Storytelling event by its URL slug for the detail page.
-     *
-     * @return StorytellingDetailEvent|null Null when no active Storytelling event matches the slug.
-     */
     public function findActiveStorytellingBySlug(string $slug): ?StorytellingDetailEvent
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
         return $row !== null ? StorytellingDetailEvent::fromRow($row) : null;
     }
 
-    /**
-     * @return JazzArtistCardRecord[]
-     */
+    // Heavy query: joins Artist -> Event -> EventSession -> Venue to build
+    // the overview cards with performance count and first-show location.
     private function fetchJazzArtistCards(bool $featuredOnly): array
     {
         $sql = '
@@ -268,9 +229,6 @@ class EventRepository extends BaseRepository implements IEventRepository
         );
     }
 
-    /**
-     * @return Event|null Null if no event exists with the given ID.
-     */
     public function findById(int $eventId): ?Event
     {
         return $this->fetchOne(
@@ -280,12 +238,6 @@ class EventRepository extends BaseRepository implements IEventRepository
         );
     }
 
-    /**
-     * Inserts a new event. Nullable foreign keys (VenueId, ArtistId) allow events
-     * that aren't tied to a specific venue or artist.
-     *
-     * @return int The auto-incremented EventId of the new row.
-     */
     public function create(EventUpsertData $data): int
     {
         return $this->executeInsert(
@@ -310,9 +262,6 @@ class EventRepository extends BaseRepository implements IEventRepository
         );
     }
 
-    /**
-     * Updates all mutable fields of an event.
-     */
     public function update(int $eventId, EventUpsertData $data): bool
     {
         $this->execute(
@@ -338,10 +287,7 @@ class EventRepository extends BaseRepository implements IEventRepository
         return true;
     }
 
-    /**
-     * Checks whether any event row uses the given slug (case-sensitive).
-     * Pass $excludeEventId to skip one row — used when updating an event's own slug.
-     */
+    // Pass $excludeEventId when updating an event's own slug.
     public function slugExists(string $slug, ?int $excludeEventId = null): bool
     {
         if ($excludeEventId !== null) {
@@ -359,10 +305,7 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $stmt->fetch() !== false;
     }
 
-    /**
-     * Hard-deletes an event. Will fail if foreign key constraints exist on related rows.
-     * Prefer softDelete() for user-facing deactivation.
-     */
+    // Hard delete -- will fail if FK constraints exist on related rows.
     public function delete(int $eventId): bool
     {
         $this->execute('DELETE FROM Event WHERE EventId = :eventId', ['eventId' => $eventId]);
@@ -370,9 +313,6 @@ class EventRepository extends BaseRepository implements IEventRepository
         return true;
     }
 
-    /**
-     * Checks whether an event row exists (regardless of active status).
-     */
     public function exists(int $eventId): bool
     {
         $stmt = $this->execute(
@@ -383,10 +323,6 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $stmt->fetch() !== false;
     }
 
-    /**
-     * Soft-deletes an event by setting IsActive = 0. The row remains in the database
-     * for historical reference. Typically paired with deactivateSessions().
-     */
     public function softDelete(int $eventId): bool
     {
         $this->execute('UPDATE Event SET IsActive = 0 WHERE EventId = :eventId', ['eventId' => $eventId]);
@@ -394,11 +330,6 @@ class EventRepository extends BaseRepository implements IEventRepository
         return true;
     }
 
-    /**
-     * Finds a single active restaurant event by its URL slug.
-     *
-     * @return RestaurantDetailEvent|null Null if no matching active restaurant event exists.
-     */
     public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Restaurant);
@@ -406,11 +337,6 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $row !== null ? RestaurantDetailEvent::fromRow($row) : null;
     }
 
-    /**
-     * Returns all active restaurant-type events, ordered by EventId.
-     *
-     * @return RestaurantDetailEvent[]
-     */
     public function findActiveRestaurantEvents(): array
     {
         return $this->fetchAll(

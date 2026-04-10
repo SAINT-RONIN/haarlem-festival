@@ -8,20 +8,9 @@ use App\Models\EventSessionPrice;
 use App\DTOs\Domain\Filters\EventSessionRelatedFilter;
 use App\Repositories\Interfaces\IEventSessionPriceRepository;
 
-/**
- * Manages the EventSessionPrice table, which stores per-session pricing by tier
- * (e.g. standard, VIP, pay-what-you-like). Each row links a session to a price tier
- * with an amount, currency, and VAT rate. Supports bulk lookup keyed by session ID
- * for efficiently hydrating session listings with their price options.
- */
+// Per-session pricing by tier (standard, VIP, pay-what-you-like).
 class EventSessionPriceRepository extends BaseRepository implements IEventSessionPriceRepository
 {
-    /**
-     * Retrieves prices with optional filtering by session ID. Uses a 'WHERE 1=1' base
-     * to simplify dynamic condition appending.
-     *
-     * @return EventSessionPrice[] Ordered by session then tier. Empty array if no matches.
-     */
     public function findPrices(EventSessionRelatedFilter $filters = new EventSessionRelatedFilter()): array
     {
         $sql = '
@@ -41,16 +30,9 @@ class EventSessionPriceRepository extends BaseRepository implements IEventSessio
         return $this->fetchAll($sql, $params, fn(array $row) => EventSessionPrice::fromRow($row));
     }
 
-    /**
-     * Batch-fetches prices for multiple sessions in a single query, then groups them
-     * by session ID. Used to efficiently attach price data when rendering session lists.
-     *
-     * @param int[] $sessionIds
-     * @return array<int, EventSessionPrice[]> Keyed by EventSessionId. Missing IDs are absent (not empty arrays).
-     */
+    /** @return array<int, EventSessionPrice[]> keyed by EventSessionId */
     public function findPricesBySessionIds(array $sessionIds): array
     {
-        // Deduplicate and cast IDs to int before building the IN clause
         $normalizedIds = array_values(array_unique(array_map('intval', $sessionIds)));
         if ($normalizedIds === []) {
             return [];
@@ -70,16 +52,10 @@ class EventSessionPriceRepository extends BaseRepository implements IEventSessio
         return $this->groupByKey($prices, 'eventSessionId');
     }
 
-    /**
-     * Creates or updates a price entry for a session+tier combination. New rows
-     * default to 21% VAT. The composite key (EventSessionId, PriceTierId) determines
-     * whether to insert or update.
-     *
-     * @inheritDoc
-     */
+    // Composite key (EventSessionId, PriceTierId) determines insert vs update.
+    // New rows default to 21% VAT.
     public function upsert(int $sessionId, int $priceTierId, float $price, string $currencyCode = 'EUR'): bool
     {
-        // Check if a price row already exists for this session+tier pair
         $stmt = $this->execute(
             'SELECT EventSessionPriceId FROM EventSessionPrice
             WHERE EventSessionId = :sessionId AND PriceTierId = :priceTierId',
@@ -112,11 +88,6 @@ class EventSessionPriceRepository extends BaseRepository implements IEventSessio
         return true;
     }
 
-    /**
-     * Removes a specific price tier from a session (e.g. when an admin removes VIP pricing).
-     *
-     * @inheritDoc
-     */
     public function deleteBySessionAndTier(int $sessionId, int $priceTierId): bool
     {
         $this->execute(

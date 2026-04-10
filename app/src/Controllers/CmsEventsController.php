@@ -16,23 +16,13 @@ use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsEventCreateViewModel;
 
 /**
- * CMS controller for managing festival events and their sessions.
- *
- * Handles full event CRUD, session (time-slot) management, label assignment,
- * and per-session pricing. Each event owns one or more Sessions (bookable
- * time-slots); each session can carry Labels (e.g. "Sold Out") and per-tier
- * Prices (Adult, Child, etc.).
+ * CMS controller for managing festival events, sessions, labels, and per-session pricing.
  *
  * Venue management is handled by CmsVenuesController.
  * Schedule-day visibility is handled by CmsScheduleDaysController.
  */
 class CmsEventsController extends CmsBaseController
 {
-    /**
-     * @param ICmsEventsService  $eventsService  Provides event, session, label, and price operations.
-     * @param ISessionService    $sessionService Session, CSRF, and flash-message support.
-     * @param ICmsArtistsService $artistsService Used to populate the artist dropdown on event forms.
-     */
     public function __construct(
         private readonly ICmsEventsService $eventsService,
         ISessionService $sessionService,
@@ -41,10 +31,6 @@ class CmsEventsController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the events list with optional event-type and day-of-week filters.
-     * GET /cms/events
-     */
     public function index(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -54,10 +40,6 @@ class CmsEventsController extends CmsBaseController
         });
     }
 
-    /**
-     * Renders the event creation form, pre-loading available types, venues, artists, and restaurants.
-     * GET /cms/events/create
-     */
     public function create(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -67,13 +49,7 @@ class CmsEventsController extends CmsBaseController
         });
     }
 
-    /**
-     * Validates and persists a new event, then redirects to its edit page
-     * so the admin can immediately add sessions and pricing.
-     * POST /cms/events
-     *
-     * @throws ValidationException Redirects with error flash on validation failure.
-     */
+    // Redirects to the edit page so the admin can immediately add sessions and pricing.
     public function store(): void
     {
         $this->handleCmsValidationRequest(function (): void {
@@ -83,10 +59,6 @@ class CmsEventsController extends CmsBaseController
         }, '/cms/events/create');
     }
 
-    /**
-     * Renders the event edit page with sessions, prices, and labels.
-     * GET /cms/events/{id}/edit
-     */
     public function edit(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -99,10 +71,6 @@ class CmsEventsController extends CmsBaseController
         });
     }
 
-    /**
-     * Validates and applies updates to an existing event.
-     * POST /cms/events/{id}/edit
-     */
     public function update(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
@@ -113,10 +81,6 @@ class CmsEventsController extends CmsBaseController
         }, '/cms/events/' . $id . '/edit');
     }
 
-    /**
-     * Adds a new time-slot session to an event.
-     * POST /cms/events/{eventId}/sessions
-     */
     public function createSession(int $eventId): void
     {
         $this->handleCmsValidationRequest(function () use ($eventId): void {
@@ -127,10 +91,6 @@ class CmsEventsController extends CmsBaseController
         }, '/cms/events/' . $eventId . '/edit');
     }
 
-    /**
-     * Updates an existing session's details (capacity, times, etc.).
-     * POST /cms/sessions/{id}/edit
-     */
     public function updateSession(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
@@ -141,10 +101,6 @@ class CmsEventsController extends CmsBaseController
         }, fn(): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
-    /**
-     * Removes a session from its parent event.
-     * POST /cms/sessions/{id}/delete
-     */
     public function deleteSession(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -154,10 +110,6 @@ class CmsEventsController extends CmsBaseController
         });
     }
 
-    /**
-     * Attaches a text label to a session (e.g. "Sold Out", "VIP").
-     * POST /cms/sessions/{id}/labels
-     */
     public function addLabel(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
@@ -167,10 +119,6 @@ class CmsEventsController extends CmsBaseController
         }, fn(): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
-    /**
-     * Removes a label from a session.
-     * POST /cms/labels/{id}/delete
-     */
     public function deleteLabel(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -180,10 +128,6 @@ class CmsEventsController extends CmsBaseController
         });
     }
 
-    /**
-     * Sets or updates the ticket price for a session at a given price tier.
-     * POST /cms/sessions/{id}/price
-     */
     public function setPrice(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
@@ -192,10 +136,6 @@ class CmsEventsController extends CmsBaseController
         }, fn(): string => '/cms/events/' . $this->getEventIdFromPost() . '/edit');
     }
 
-    /**
-     * Deletes an event and all its associated sessions.
-     * POST /cms/events/{id}/delete
-     */
     public function delete(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
@@ -268,10 +208,7 @@ class CmsEventsController extends CmsBaseController
         $this->redirectWithFlash('Price updated successfully.', 'success', "/cms/events/{$eventId}/edit");
     }
 
-    /**
-     * Session/label/price forms include a hidden EventId field so the controller
-     * can redirect back to the correct event edit page after the action.
-     */
+    // Session/label/price forms include a hidden EventId for redirecting back to the correct edit page.
     private function getEventIdFromPost(): int
     {
         return $this->readOptionalIntPostParam('EventId') ?? 0;
