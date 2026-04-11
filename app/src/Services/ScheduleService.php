@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\DancePageConstants;
 use App\Constants\HistoryPageConstants;
 use App\Constants\JazzPageConstants;
 use App\Constants\ScheduleConstants;
@@ -366,6 +367,10 @@ class ScheduleService implements IScheduleService
                 ScheduleConstants::FILTER_VENUE,
                 ScheduleConstants::FILTER_PRICE_TYPE,
             ],
+            DancePageConstants::PAGE_SLUG => [
+                ScheduleConstants::FILTER_DAY,
+                ScheduleConstants::FILTER_PRICE_TYPE,
+            ],
             HistoryPageConstants::PAGE_SLUG => [
                 ScheduleConstants::FILTER_DAY,
                 ScheduleConstants::FILTER_START_TIME,
@@ -374,11 +379,11 @@ class ScheduleService implements IScheduleService
         };
     }
 
-    // Jazz doesn't support pay-what-you-like, so that option is excluded.
+    // Jazz and Dance don't support pay-what-you-like, so that option is excluded.
     /** @return string[] */
     private function resolvePriceTypeOptions(string $eventTypeSlug): array
     {
-        return $eventTypeSlug === JazzPageConstants::PAGE_SLUG
+        return in_array($eventTypeSlug, [JazzPageConstants::PAGE_SLUG, DancePageConstants::PAGE_SLUG], true)
             ? [ScheduleConstants::PRICE_TYPE_FREE, ScheduleConstants::PRICE_TYPE_FIXED]
             : [ScheduleConstants::PRICE_TYPE_PAY_WHAT_YOU_LIKE, ScheduleConstants::PRICE_TYPE_FIXED];
     }

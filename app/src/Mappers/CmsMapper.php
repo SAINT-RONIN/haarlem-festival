@@ -60,6 +60,7 @@ final class CmsMapper
             bodyText: $content->introBody ?? '',
             imageUrl: $content->introImage ?? $defaultImage,
             imageAltText: $content->introImageAlt ?? $defaultAlt,
+            label: $content->introLabel ?? null,
         );
     }
 

@@ -33,12 +33,19 @@ if ($introBodyHtml === '') {
 
 <section id="<?= htmlspecialchars($sectionId) ?>"
          class="self-stretch px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-12 flex flex-col <?= $flexDirection ?> justify-center items-stretch gap-6 sm:gap-8 md:gap-10 lg:gap-12">
-    <div class="flex-1 flex flex-col justify-center items-start gap-4 sm:gap-5 md:gap-6">
-        <h2 class="text-gray-900 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+    <div class="flex-1 flex flex-col justify-center items-start gap-4 sm:gap-5 md:gap-7">
+        <h2 class="self-stretch text-slate-800 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold font-['Montserrat'] leading-tight">
             <?= htmlspecialchars($introSplitSection->headingText) ?>
         </h2>
-        <div class="w-full text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed [&>p]:m-0 [&>p+p]:mt-4 [&>ul]:my-4 [&>ol]:my-4 [&_li]:ml-6 [&_li]:list-disc">
-            <?= $introBodyHtml ?>
+        <div class="self-stretch flex flex-col gap-1">
+            <?php if (!empty($introSplitSection->label)): ?>
+                <p class="text-gray-800 text-lg sm:text-xl md:text-2xl font-medium font-['Roboto'] uppercase tracking-widest">
+                    <?= htmlspecialchars($introSplitSection->label) ?>
+                </p>
+            <?php endif; ?>
+            <div class="w-full text-zinc-600 text-base sm:text-lg md:text-xl font-medium font-['Montserrat'] leading-8 [&>p]:m-0 [&>p+p]:mt-4 [&>ul]:my-4 [&>ol]:my-4 [&_li]:ml-6 [&_li]:list-disc">
+                <?= $introBodyHtml ?>
+            </div>
         </div>
 
         <?php if (!empty($introSplitSection->subsections)) : ?>

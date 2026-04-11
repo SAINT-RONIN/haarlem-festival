@@ -10,6 +10,7 @@
 $eventId = 'event-' . $dayIndex . '-' . $eventIndex;
 $isHistoryEvent = $event->eventTypeSlug === 'history';
 $isJazzEvent = $event->eventTypeSlug === 'jazz';
+$isDanceEvent = $event->eventTypeSlug === 'dance';
 $historyTourInfoJson = '';
 
 if ($isHistoryEvent && $event->historyTourOptions !== []) {
@@ -158,7 +159,7 @@ if ($isHistoryEvent && $event->historyTourOptions !== []) {
 
                             <?= htmlspecialchars($event->priceDisplay) ?>
                         </span>
-                        <?php if ($isJazzEvent): ?>
+                        <?php if ($isJazzEvent || $isDanceEvent): ?>
                             <button
                                 type="button"
                                 data-event-session-id="<?= htmlspecialchars((string) $event->eventSessionId) ?>"

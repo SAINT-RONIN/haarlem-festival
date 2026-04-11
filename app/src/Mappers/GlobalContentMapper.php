@@ -69,6 +69,7 @@ final class GlobalContentMapper
             introBody: $raw['intro_body'] ?? null,
             introImage: $raw['intro_image'] ?? null,
             introImageAlt: $raw['intro_image_alt'] ?? null,
+            introLabel: $raw['intro_label'] ?? null,
         );
     }
 }

@@ -16,5 +16,6 @@ final readonly class IntroSectionContent
         public ?string $introBody,
         public ?string $introImage,
         public ?string $introImageAlt,
+        public ?string $introLabel = null,
     ) {}
 }
