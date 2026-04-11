@@ -132,7 +132,7 @@ if ($isHistoryEvent && $event->historyTourOptions !== []) {
                         </dd>
                     </div>
                 <?php else: ?>
-                    <!-- Default: time row used by jazz/storytelling/etc. -->
+                    <!-- Default: time row used by jazz, dance, storytelling, etc. -->
                     <div class="inline-flex justify-start items-center gap-[5px]">
                         <dt class="sr-only">Time</dt>
                         <dd class="inline-flex items-center gap-[5px]">

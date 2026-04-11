@@ -8,7 +8,7 @@ use App\DTOs\Cms\GlobalUiContent;
 use App\DTOs\Cms\GradientSectionContent;
 use App\DTOs\Cms\HeroSectionContent;
 use App\DTOs\Cms\IntroSectionContent;
-use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\ArtistCardRecord;
 use App\DTOs\Cms\JazzArtistsSectionContent;
 use App\DTOs\Cms\JazzBookingCtaSectionContent;
 use App\DTOs\Cms\JazzPricingSectionContent;
@@ -22,7 +22,7 @@ final readonly class JazzPageData
 {
     /**
      * @param PassType[] $passPrices
-     * @param JazzArtistCardRecord[] $featuredArtists
+     * @param ArtistCardRecord[] $featuredArtists
      */
     public function __construct(
         public HeroSectionContent $heroSection,

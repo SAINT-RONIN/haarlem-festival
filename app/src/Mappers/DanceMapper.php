@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Constants\DancePageConstants;
-use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\ArtistCardRecord;
 use App\DTOs\Domain\Pages\DancePageData;
 use App\Helpers\TextHelper;
+use App\ViewModels\Dance\DanceArtistCardData;
 use App\ViewModels\Dance\DancePageViewModel;
-use App\ViewModels\Dance\HeadlinerCardData;
 use App\ViewModels\Dance\HeadlinersData;
-use App\ViewModels\Dance\SupportingArtistCardData;
 use App\ViewModels\Dance\SupportingArtistsData;
 use App\ViewModels\Schedule\ScheduleSectionViewModel;
 
@@ -26,7 +25,7 @@ final class DanceMapper
         ?ScheduleSectionViewModel $scheduleSection = null,
         bool $isLoggedIn = false,
     ): DancePageViewModel {
-        $heroData  = CmsMapper::toHeroData($domain->heroSection, DancePageConstants::CURRENT_PAGE);
+        $heroData  = CmsMapper::toHeroData($domain->heroSection, DancePageConstants::PAGE_SLUG);
         $globalUi  = CmsMapper::toGlobalUiData($domain->globalUiContent, $isLoggedIn);
 
         return new DancePageViewModel(
@@ -70,36 +69,30 @@ final class DanceMapper
     }
 
     /**
-     * @param JazzArtistCardRecord[] $artists
-     * @return HeadlinerCardData[]
+     * @param ArtistCardRecord[] $artists
+     * @return DanceArtistCardData[]
      */
     private static function buildHeadlinerCards(array $artists): array
     {
-        return array_map(
-            static fn(JazzArtistCardRecord $a): HeadlinerCardData => new HeadlinerCardData(
-                name: $a->artistName,
-                genre: $a->artistStyle,
-                imageUrl: TextHelper::firstNonEmpty($a->imageUrl, DancePageConstants::DEFAULT_HERO_BACKGROUND_IMAGE),
-                profileUrl: '/dance/' . $a->eventSlug,
-            ),
-            $artists,
-        );
+        return array_map(static fn(ArtistCardRecord $a): DanceArtistCardData => self::toArtistCardData($a), $artists);
     }
 
     /**
-     * @param JazzArtistCardRecord[] $artists
-     * @return SupportingArtistCardData[]
+     * @param ArtistCardRecord[] $artists
+     * @return DanceArtistCardData[]
      */
     private static function buildSupportingCards(array $artists): array
     {
-        return array_map(
-            static fn(JazzArtistCardRecord $a): SupportingArtistCardData => new SupportingArtistCardData(
-                name: $a->artistName,
-                genre: $a->artistStyle,
-                imageUrl: TextHelper::firstNonEmpty($a->imageUrl, DancePageConstants::DEFAULT_HERO_BACKGROUND_IMAGE),
-                profileUrl: '/dance/' . $a->eventSlug,
-            ),
-            $artists,
+        return array_map(static fn(ArtistCardRecord $a): DanceArtistCardData => self::toArtistCardData($a), $artists);
+    }
+
+    private static function toArtistCardData(ArtistCardRecord $a): DanceArtistCardData
+    {
+        return new DanceArtistCardData(
+            name: $a->artistName,
+            genre: $a->artistStyle,
+            imageUrl: TextHelper::firstNonEmpty($a->imageUrl, DancePageConstants::DEFAULT_HERO_BACKGROUND_IMAGE),
+            profileUrl: '/dance/' . $a->eventSlug,
         );
     }
 }

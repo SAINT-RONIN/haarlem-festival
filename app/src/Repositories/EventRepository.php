@@ -9,7 +9,7 @@ use App\Models\Event;
 use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Domain\Filters\EventFilter;
 use App\DTOs\Domain\Events\EventWithDetails;
-use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\ArtistCardRecord;
 use App\DTOs\Domain\Events\JazzArtistDetailEvent;
 use App\DTOs\Domain\Events\RestaurantDetailEvent;
 use App\DTOs\Domain\Events\StorytellingDetailEvent;
@@ -155,7 +155,7 @@ class EventRepository extends BaseRepository implements IEventRepository
      * Fetches artists that have at least one active Dance event, with performance
      * counts and first-show location — mirrors fetchJazzArtistCards for EventTypeId::Dance.
      *
-     * @return JazzArtistCardRecord[]
+     * @return ArtistCardRecord[]
      */
     private function fetchDanceArtistCards(): array
     {
@@ -220,7 +220,7 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $this->fetchAll(
             $sql,
             ['eventTypeId' => EventTypeId::Dance->value],
-            fn(array $row) => JazzArtistCardRecord::fromRow($row),
+            fn(array $row) => ArtistCardRecord::fromRow($row),
         );
     }
 
@@ -303,7 +303,7 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $this->fetchAll(
             $sql,
             $params,
-            fn(array $row) => JazzArtistCardRecord::fromRow($row),
+            fn(array $row) => ArtistCardRecord::fromRow($row),
         );
     }
 

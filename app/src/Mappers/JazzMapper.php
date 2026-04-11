@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Constants\JazzPageConstants;
-use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\ArtistCardRecord;
 use App\Helpers\FormatHelper;
 use App\Helpers\TextHelper;
 use App\Enums\PassScope;
@@ -444,7 +444,7 @@ final class JazzMapper
     }
 
     /**
-     * @param JazzArtistCardRecord[] $featuredArtists
+     * @param ArtistCardRecord[] $featuredArtists
      */
     private static function buildArtistsData(JazzArtistsSectionContent $section, array $featuredArtists): ArtistsData
     {
@@ -460,13 +460,13 @@ final class JazzMapper
     }
 
     /**
-     * @param JazzArtistCardRecord[] $featuredArtists
+     * @param ArtistCardRecord[] $featuredArtists
      * @return ArtistCardData[]
      */
     private static function buildArtistCards(array $featuredArtists): array
     {
         return array_map(
-            static function (JazzArtistCardRecord $artist): ArtistCardData {
+            static function (ArtistCardRecord $artist): ArtistCardData {
                 $morePerformances = max(0, $artist->performanceCount - 1);
 
                 return new ArtistCardData(
@@ -716,7 +716,7 @@ final class JazzMapper
         return 'Catch ' . $artistName . ' performing during the Haarlem Jazz Festival. Each performance offers a unique experience.';
     }
 
-    private static function formatFirstPerformance(JazzArtistCardRecord $artist): string
+    private static function formatFirstPerformance(ArtistCardRecord $artist): string
     {
         if ($artist->firstPerformanceAt === null) {
             return '';

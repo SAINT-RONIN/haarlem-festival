@@ -6,8 +6,7 @@ namespace App\Constants;
 
 final class DancePageConstants
 {
-    public const PAGE_SLUG    = 'dance';
-    public const CURRENT_PAGE = 'dance';
+    public const PAGE_SLUG = 'dance';
 
     public const SECTION_HEADLINERS = 'headliners_section';
     public const SECTION_ARTISTS    = 'artists_section';

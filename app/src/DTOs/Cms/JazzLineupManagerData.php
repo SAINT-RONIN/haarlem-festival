@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTOs\Cms;
 
-use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\ArtistCardRecord;
 use App\Models\Artist;
 
 /**
@@ -14,7 +14,7 @@ use App\Models\Artist;
 final readonly class JazzLineupManagerData
 {
     /**
-     * @param JazzArtistCardRecord[] $visibleArtists
+     * @param ArtistCardRecord[] $visibleArtists
      * @param Artist[] $availableArtists
      */
     public function __construct(

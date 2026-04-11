@@ -10,7 +10,7 @@ use App\DTOs\Cms\GlobalUiContent;
 use App\DTOs\Cms\GradientSectionContent;
 use App\DTOs\Cms\HeroSectionContent;
 use App\DTOs\Cms\IntroSectionContent;
-use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\ArtistCardRecord;
 
 /**
  * Carries all CMS sections and domain data needed to render the Dance overview page.
@@ -18,7 +18,7 @@ use App\DTOs\Domain\Events\JazzArtistCardRecord;
 final readonly class DancePageData
 {
     /**
-     * @param JazzArtistCardRecord[] $danceArtists All dance artists (headliners + supporting combined).
+     * @param ArtistCardRecord[] $danceArtists All dance artists (headliners + supporting combined).
      */
     public function __construct(
         public HeroSectionContent $heroSection,

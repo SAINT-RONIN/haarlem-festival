@@ -8,7 +8,7 @@ use App\Models\Event;
 use App\DTOs\Cms\EventUpsertData;
 use App\DTOs\Domain\Filters\EventFilter;
 use App\DTOs\Domain\Events\EventWithDetails;
-use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\ArtistCardRecord;
 use App\DTOs\Domain\Events\JazzArtistDetailEvent;
 use App\DTOs\Domain\Events\RestaurantDetailEvent;
 use App\DTOs\Domain\Events\StorytellingDetailEvent;
@@ -30,7 +30,7 @@ interface IEventRepository
     /**
      * Returns the artists currently visible in the Jazz overview lineup section.
      *
-     * @return JazzArtistCardRecord[]
+     * @return ArtistCardRecord[]
      */
     public function findJazzOverviewArtists(): array;
 
@@ -38,7 +38,7 @@ interface IEventRepository
      * Returns all active artists that have at least one active Dance event,
      * ordered by CardSortOrder then name — used for headliners + supporting split on the Dance page.
      *
-     * @return JazzArtistCardRecord[]
+     * @return ArtistCardRecord[]
      */
     public function findDanceArtists(): array;
 

@@ -14,7 +14,7 @@ use App\DTOs\Cms\ActivityData;
 use App\DTOs\Cms\CmsItemEditData;
 use App\DTOs\Cms\CmsMediaAssetData;
 use App\DTOs\Cms\JazzLineupManagerData;
-use App\DTOs\Domain\Events\JazzArtistCardRecord;
+use App\DTOs\Domain\Events\ArtistCardRecord;
 use App\Models\CmsPage;
 use App\Models\Artist;
 use App\DTOs\Cms\CmsPageEditData;
@@ -298,7 +298,7 @@ final class CmsDashboardViewMapper
             addCsrfToken: $jazzOverviewAddCsrfToken,
             removeCsrfToken: $jazzOverviewRemoveCsrfToken,
             cards: array_map(
-                static fn(JazzArtistCardRecord $artist): CmsJazzLineupCardViewModel => self::toJazzLineupCardViewModel($artist, $returnTo),
+                static fn(ArtistCardRecord $artist): CmsJazzLineupCardViewModel => self::toJazzLineupCardViewModel($artist, $returnTo),
                 $managerData->visibleArtists,
             ),
             availableArtists: array_map(
@@ -309,7 +309,7 @@ final class CmsDashboardViewMapper
     }
 
     private static function toJazzLineupCardViewModel(
-        JazzArtistCardRecord $artist,
+        ArtistCardRecord $artist,
         string $returnTo,
     ): CmsJazzLineupCardViewModel {
         $performanceSummary = $artist->performanceCount > 0
@@ -350,7 +350,7 @@ final class CmsDashboardViewMapper
         );
     }
 
-    private static function formatPerformanceTimingSuffix(JazzArtistCardRecord $artist): string
+    private static function formatPerformanceTimingSuffix(ArtistCardRecord $artist): string
     {
         if ($artist->firstPerformanceAt === null) {
             return '';

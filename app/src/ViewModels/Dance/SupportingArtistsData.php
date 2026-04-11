@@ -10,7 +10,7 @@ namespace App\ViewModels\Dance;
 final readonly class SupportingArtistsData
 {
     /**
-     * @param SupportingArtistCardData[] $artists
+     * @param DanceArtistCardData[] $artists
      */
     public function __construct(
         public string $headingText,

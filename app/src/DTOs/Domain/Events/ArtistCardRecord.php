@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\DTOs\Domain\Events;
 
-final readonly class JazzArtistCardRecord
+/**
+ * Flat record representing an artist card fetched from the Event/Artist tables.
+ * Used by both the Jazz and Dance overview pages to populate artist grids.
+ */
+final readonly class ArtistCardRecord
 {
     public function __construct(
         public int $artistId,
