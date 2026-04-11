@@ -35,6 +35,14 @@ interface IEventRepository
     public function findJazzOverviewArtists(): array;
 
     /**
+     * Returns all active artists that have at least one active Dance event,
+     * ordered by CardSortOrder then name — used for headliners + supporting split on the Dance page.
+     *
+     * @return JazzArtistCardRecord[]
+     */
+    public function findDanceArtists(): array;
+
+    /**
      * Finds an active jazz event by its URL slug, including artist-specific detail fields.
      */
     public function findActiveJazzBySlug(string $slug): ?JazzArtistDetailEvent;

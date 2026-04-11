@@ -20,6 +20,7 @@ use App\Controllers\CmsEventsController;
 use App\Controllers\CmsMediaController;
 use App\Controllers\CmsOrdersController;
 use App\Controllers\CmsUsersController;
+use App\Controllers\DanceController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
@@ -68,6 +69,7 @@ use App\Repositories\PriceTierRepository;
 use App\Repositories\ScheduleDayConfigRepository;
 use App\Repositories\VenueRepository;
 use App\Repositories\CheckoutContentRepository;
+use App\Repositories\DanceContentRepository;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\HistoricalLocationContentRepository;
 use App\Repositories\HistoryContentRepository;
@@ -75,6 +77,7 @@ use App\Repositories\JazzContentRepository;
 use App\Repositories\RestaurantContentRepository;
 use App\Repositories\ScheduleContentRepository;
 use App\Repositories\StorytellingContentRepository;
+use App\Services\DanceService;
 use App\Services\CmsArtistsService;
 use App\Services\CmsDashboardService;
 use App\Services\CmsEventsService;
@@ -169,6 +172,7 @@ return static function (string $controllerClass): object {
     $scheduleContentRepo   = fn() => $make('scheduleContentRepo', fn() => new ScheduleContentRepository($cmsContent()));
     $checkoutContentRepo   = fn() => $make('checkoutContentRepo', fn() => new CheckoutContentRepository($cmsContent()));
     $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
+    $danceContentRepo      = fn() => $make('danceContentRepo', fn() => new DanceContentRepository($cmsContent()));
     $storyContentRepo      = fn() => $make('storyContentRepo', fn() => new StorytellingContentRepository($cmsContent()));
     $restaurantContentRepo = fn() => $make('restaurantContentRepo', fn() => new RestaurantContentRepository($cmsContent()));
     $historyContentRepo    = fn() => $make('historyContentRepo', fn() => new HistoryContentRepository($cmsContent()));
@@ -302,6 +306,15 @@ return static function (string $controllerClass): object {
                 $eventSessionLabel(),
                 $mediaAssetRepo(),
                 $globalContentRepo(),
+            ),
+            $sessionService,
+            $scheduleService(),
+        ),
+        DanceController::class => new DanceController(
+            new DanceService(
+                $globalContentRepo(),
+                $danceContentRepo(),
+                $eventRepo(),
             ),
             $sessionService,
             $scheduleService(),

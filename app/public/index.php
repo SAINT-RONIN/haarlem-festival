@@ -52,6 +52,7 @@ use App\Controllers\CmsVenuesController;
 use App\Controllers\CmsOrdersController;
 use App\Controllers\CmsUsersController;
 use App\Controllers\EmployeeScannerController;
+use App\Controllers\DanceController;
 use App\Controllers\HistoryController;
 use App\Controllers\HomeController;
 use App\Controllers\JazzController;
@@ -89,6 +90,9 @@ $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) {
     // History pages
     $r->addRoute('GET', '/history', [HistoryController::class, 'index']);
     $r->addRoute('GET', '/history/{name}', [HistoryController::class, 'location']);
+
+    // Dance page
+    $r->addRoute('GET', '/dance', [DanceController::class, 'index']);
 
     // Jazz page
     $r->addRoute('GET', '/jazz', [JazzController::class, 'index']);

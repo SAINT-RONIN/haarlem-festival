@@ -146,6 +146,84 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $this->fetchJazzArtistCards(true);
     }
 
+    public function findDanceArtists(): array
+    {
+        return $this->fetchDanceArtistCards();
+    }
+
+    /**
+     * Fetches artists that have at least one active Dance event, with performance
+     * counts and first-show location — mirrors fetchJazzArtistCards for EventTypeId::Dance.
+     *
+     * @return JazzArtistCardRecord[]
+     */
+    private function fetchDanceArtistCards(): array
+    {
+        $sql = '
+            SELECT
+                a.ArtistId,
+                COALESCE(MIN(e.EventId), 0) AS EventId,
+                COALESCE(
+                    SUBSTRING_INDEX(
+                        GROUP_CONCAT(
+                            DISTINCT NULLIF(e.Slug, \'\')
+                            ORDER BY e.EventId ASC
+                            SEPARATOR \'||\'
+                        ),
+                        \'||\',
+                        1
+                    ),
+                    \'\'
+                ) AS Slug,
+                COALESCE(NULLIF(a.Name, \'\'), \'\') AS ArtistName,
+                COALESCE(NULLIF(a.Style, \'\'), \'Dance/EDM\') AS ArtistStyle,
+                COALESCE(NULLIF(a.CardDescription, \'\'), \'\') AS CardDescription,
+                COALESCE(card_image.FilePath, \'\') AS ImageUrl,
+                a.CardSortOrder,
+                COUNT(DISTINCT es.EventSessionId) AS PerformanceCount,
+                MIN(es.StartDateTime) AS FirstPerformanceAt,
+                COALESCE(TRIM(SUBSTRING_INDEX(
+                    GROUP_CONCAT(
+                        TRIM(CONCAT_WS(\' \', COALESCE(sv.Name, v.Name, \'\'), COALESCE(NULLIF(es.HallName, \'\'), \'\')))
+                        ORDER BY es.StartDateTime ASC
+                        SEPARATOR \'||\'
+                    ),
+                    \'||\',
+                    1
+                )), \'\') AS FirstPerformanceLocation
+            FROM Artist a
+            LEFT JOIN MediaAsset card_image ON card_image.MediaAssetId = a.ImageAssetId
+            INNER JOIN Event e
+                ON e.ArtistId = a.ArtistId
+               AND e.EventTypeId = :eventTypeId
+               AND e.IsActive = 1
+            LEFT JOIN EventSession es
+                ON es.EventId = e.EventId
+               AND es.IsActive = 1
+               AND es.IsCancelled = 0
+            LEFT JOIN Venue sv ON sv.VenueId = es.VenueId
+            LEFT JOIN Venue v  ON v.VenueId  = e.VenueId
+            WHERE a.IsActive = 1
+            GROUP BY
+                a.ArtistId,
+                a.Name,
+                a.Style,
+                a.CardDescription,
+                card_image.FilePath,
+                a.CardSortOrder
+            ORDER BY
+                CASE WHEN a.CardSortOrder = 0 THEN 1 ELSE 0 END,
+                a.CardSortOrder ASC,
+                ArtistName ASC
+        ';
+
+        return $this->fetchAll(
+            $sql,
+            ['eventTypeId' => EventTypeId::Dance->value],
+            fn(array $row) => JazzArtistCardRecord::fromRow($row),
+        );
+    }
+
     public function findActiveStorytellingBySlug(string $slug): ?StorytellingDetailEvent
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Storytelling);
