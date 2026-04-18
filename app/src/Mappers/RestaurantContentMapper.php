@@ -10,6 +10,8 @@ use App\DTOs\Cms\RestaurantEventCmsData;
 use App\DTOs\Cms\RestaurantInstructionsSectionContent;
 use App\DTOs\Cms\RestaurantIntroSectionContent;
 use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
+use App\DTOs\Domain\Events\RestaurantDetailEvent;
+use App\DTOs\Domain\Restaurant\Restaurant;
 
 /**
  * Maps raw CMS arrays into Restaurant page content models.
@@ -101,5 +103,45 @@ final class RestaurantContentMapper
     public static function mapEventCmsData(array $raw): RestaurantEventCmsData
     {
         return RestaurantEventCmsData::fromRawArray($raw);
+    }
+
+    /** Maps an event record + its CMS data + resolved image path into a Restaurant domain object. */
+    public static function mapRestaurant(RestaurantDetailEvent $event, RestaurantEventCmsData $cms, ?string $imagePath): Restaurant
+    {
+        return new Restaurant(
+            id: $event->eventId,
+            slug: $event->slug,
+            name: $event->title,
+            shortDescription: $event->shortDescription,
+            longDescriptionHtml: $event->longDescriptionHtml,
+            featuredImagePath: $imagePath,
+            addressLine: $cms->addressLine,
+            city: $cms->city,
+            phone: $cms->phone,
+            email: $cms->email,
+            website: $cms->website,
+            aboutText: $cms->aboutText,
+            aboutImage: $cms->aboutImage,
+            chefName: $cms->chefName,
+            chefText: $cms->chefText,
+            chefImage: $cms->chefImage,
+            cuisineType: $cms->cuisineType,
+            menuDescription: $cms->menuDescription,
+            menuImage1: $cms->menuImage1,
+            menuImage2: $cms->menuImage2,
+            locationDescription: $cms->locationDescription,
+            mapEmbedUrl: $cms->mapEmbedUrl,
+            stars: $cms->stars,
+            michelinStars: $cms->michelinStars,
+            seatsPerSession: $cms->seatsPerSession,
+            durationMinutes: $cms->durationMinutes,
+            specialRequestsNote: $cms->specialRequestsNote,
+            priceAdult: $cms->priceAdult,
+            timeSlots: $cms->timeSlots,
+            reservationImage: $cms->reservationImage,
+            galleryImage1: $cms->galleryImage1,
+            galleryImage2: $cms->galleryImage2,
+            galleryImage3: $cms->galleryImage3,
+        );
     }
 }

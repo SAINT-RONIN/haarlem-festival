@@ -93,8 +93,6 @@ use App\Services\JazzArtistDetailService;
 use App\Services\JazzService;
 use App\Services\MediaAssetService;
 use App\Services\ProgramService;
-use App\Services\RestaurantDetailService;
-use App\Services\RestaurantReservationService;
 use App\Services\RestaurantService;
 use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
@@ -251,6 +249,7 @@ return static function (string $controllerClass): object {
         $restaurantContentRepo(),
         $eventRepo(),
         $mediaAssetRepo(),
+        $reservationRepo(),
     ));
 
     // ── Controller wiring — each arm only creates what it needs ──
@@ -268,16 +267,6 @@ return static function (string $controllerClass): object {
         ),
         RestaurantController::class => new RestaurantController(
             $restaurantService(),
-            new RestaurantDetailService(
-                $restaurantContentRepo(),
-                $eventRepo(),
-                $mediaAssetRepo(),
-                $globalContentRepo(),
-            ),
-            new RestaurantReservationService(
-                $eventRepo(),
-                $reservationRepo(),
-            ),
             $programService(),
             $sessionService,
         ),
