@@ -103,7 +103,7 @@
             <form method="POST" action="/account/update-password" class="space-y-5">
                 <!-- Current Password -->
                 <div>
-                    <label for="currentPassword" class="block text-sm font-semibold text-slate-700 mb-2">Current Password</label>
+                    <label for="currentPassword" class="block text-sm font-semibold text-slate-700 mb-2">Enter current password</label>
                     <input type="password"
                            id="currentPassword"
                            name="currentPassword"
@@ -150,27 +150,18 @@
                 </div>
             </form>
         </div>
-
-        <!-- Info Message -->
-        <div class="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <p class="text-sm text-slate-600">
-                <strong>Note:</strong> Your profile information is stored securely.
-                If you change your email address, you'll need to confirm it via a verification link sent to your new email.
-            </p>
-        </div>
     </div>
 </section>
 
 <?php
-// Extract error detection from viewModel
 $passwordErrors = [
-    'newPassword' => isset($viewModel->errors['newPassword']),
-    'confirmPassword' => isset($viewModel->errors['confirmPassword']),
-    'currentPassword' => isset($viewModel->errors['currentPassword']),
-    'password' => isset($viewModel->errors['password']),
+        'newPassword' => isset($viewModel->errors['newPassword']),
+        'confirmPassword' => isset($viewModel->errors['confirmPassword']),
+        'currentPassword' => isset($viewModel->errors['currentPassword']),
 ];
 $hasPasswordErrors = array_reduce($passwordErrors, fn($carry, $item) => $carry || $item, false);
 ?>
+
 
 <?php if ($hasPasswordErrors): ?>
 <!-- Load scroll-to-password-section script only when password errors exist -->
