@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\HistoricalLocationPageConstants;
+
 use App\Constants\SharedSectionKeys;
 use App\Exceptions\HistoricalLocationNotFoundException;
 use App\DTOs\Domain\Pages\HistoricalLocationPageData;
-use App\Mappers\GlobalContentMapper;
 use App\Mappers\HistoricalLocationContentMapper;
 use App\Repositories\Interfaces\IGlobalContentRepository;
-use App\Repositories\Interfaces\IHistoricalLocationContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IHistoricalLocationService;
 

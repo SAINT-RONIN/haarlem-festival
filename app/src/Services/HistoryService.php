@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\HistoryPageConstants;
 use App\DTOs\Domain\Pages\HistoryPageData;
 use App\Mappers\GlobalContentMapper;
 use App\Mappers\HistoryContentMapper;
@@ -26,7 +25,7 @@ class HistoryService extends BaseContentService implements IHistoryService
     public function getHistoryPageData(): HistoryPageData
     {
         return $this->guardPageLoad(
-            fn(): HistoryPageData => $this->buildPageData(HistoryPageConstants::PAGE_SLUG),
+            fn(): HistoryPageData => $this->buildPageData('history'),
             'Failed to load the History page.',
         );
     }
