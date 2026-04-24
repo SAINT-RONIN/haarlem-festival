@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Constants\GlobalUiConstants;
-use App\Constants\RestaurantDetailConstants;
+use App\Constants\RestaurantPageConstants;
 use App\Constants\RouteConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\Enums\PageStatus;
@@ -111,7 +111,7 @@ final class CmsDashboardViewMapper
         return match ($slug) {
             GlobalUiConstants::PAGE_SLUG                  => RouteConstants::HOME,
             StorytellingDetailConstants::DETAIL_PAGE_SLUG => RouteConstants::STORYTELLING,
-            RestaurantDetailConstants::PAGE_SLUG           => RouteConstants::RESTAURANT,
+            RestaurantPageConstants::DETAIL_PAGE_SLUG           => RouteConstants::RESTAURANT,
             'grote-markt', 'amsterdamse-poort', 'molen-de-adriaan' => RouteConstants::HISTORY . '/' . $slug,
             default                                        => '/' . $slug,
         };

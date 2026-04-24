@@ -8,7 +8,7 @@ namespace App\DTOs\Cms;
  * Carries all per-restaurant CMS content for a single restaurant event detail page.
  *
  * Mirrors StorytellingEventCmsData: content is loaded from a per-event CMS section
- * keyed by RestaurantDetailConstants::eventSectionKey($eventId).
+ * keyed by RestaurantPageConstants::eventSectionKey($eventId).
  *
  * Shared UI labels (section titles, button text, etc.) live in RestaurantDetailSectionContent
  * so they are edited once and apply to all restaurants.

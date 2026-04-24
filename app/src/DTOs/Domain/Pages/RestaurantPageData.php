@@ -11,7 +11,7 @@ use App\DTOs\Cms\RestaurantCardsSectionContent;
 use App\DTOs\Cms\RestaurantInstructionsSectionContent;
 use App\DTOs\Cms\RestaurantIntroSectionContent;
 use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
-use App\DTOs\Domain\Restaurant\Restaurant;
+use App\Models\Restaurant;
 
 /**
  * Carries all CMS sections and domain data needed to render the Restaurant listing page.

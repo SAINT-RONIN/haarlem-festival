@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\RestaurantDetailConstants;
 use App\Constants\RestaurantPageConstants;
 use App\Constants\SharedSectionKeys;
 use App\DTOs\Domain\Pages\RestaurantPageData;
 use App\DTOs\Domain\Restaurant\ReservationFormData;
-use App\DTOs\Domain\Restaurant\Restaurant;
+use App\DTOs\Domain\Events\RestaurantRow;
+use App\Models\Restaurant;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\DTOs\Cms\GlobalUiContent;
 use App\DTOs\Cms\RestaurantDetailSectionContent;
-use App\DTOs\Domain\Events\RestaurantDetailEvent;
 use App\Mappers\RestaurantContentMapper;
 use App\Exceptions\ValidationException;
 use App\Models\Reservation;
@@ -28,10 +27,10 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 {
     public function __construct(
         IGlobalContentRepository $globalContentRepo,
-        private readonly IRestaurantContentRepository $restaurantContentRepo,
-        private readonly IEventRepository $eventRepository,
-        private readonly IMediaAssetRepository $mediaAssetRepository,
-        private readonly IReservationRepository $reservationRepository,
+        private IRestaurantContentRepository $restaurantContentRepo,
+        private IEventRepository $eventRepository,
+        private IMediaAssetRepository $mediaAssetRepository,
+        private IReservationRepository $reservationRepository,
     ) {
         parent::__construct($globalContentRepo);
     }
@@ -80,13 +79,13 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     public function getRestaurant(string $slug): Restaurant
     {
         $normalized = $this->normalizeSlug($slug);
-        $event = $this->eventRepository->findActiveRestaurantBySlug($normalized);
+        $row = $this->eventRepository->findActiveRestaurantBySlug($normalized);
 
-        if ($event === null) {
+        if ($row === null) {
             throw new RestaurantEventNotFoundException($slug);
         }
 
-        return $this->buildRestaurant($event);
+        return $this->buildRestaurant($row);
     }
 
     public function getDetailLabels(): RestaurantDetailSectionContent
@@ -102,18 +101,17 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         return $this->loadGlobalUi();
     }
 
-    // ── Filters (domain logic, moved from mapper) ───────────────────────
+    // ── Filters ──────────────────────────────────────────────────────────
 
-    public function getActiveCuisines(): array
+    /** @param Restaurant[] $restaurants */
+    public function getActiveCuisines(array $restaurants): array
     {
-        $restaurants = $this->loadAllRestaurants();
-
         $unique = [];
         foreach ($restaurants as $restaurant) {
-            foreach ($this->parseCuisineTags($restaurant->cuisineType) as $tag) {
+            foreach ($restaurant->cuisineTags as $tag) {
                 $key = mb_strtolower($tag);
-                if ($key !== '' && !isset($unique[$key])) {
-                    $unique[$key] = $this->formatCuisineLabel($tag);
+                if (!isset($unique[$key])) {
+                    $unique[$key] = self::formatCuisineLabel($tag);
                 }
             }
         }
@@ -128,18 +126,18 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 
     public function submitReservation(string $slug, ReservationFormData $formData): int
     {
-        $event = $this->eventRepository->findActiveRestaurantBySlug(
+        $row = $this->eventRepository->findActiveRestaurantBySlug(
             $this->normalizeSlug($slug),
         );
 
-        if ($event === null) {
+        if ($row === null) {
             throw new RestaurantEventNotFoundException($slug);
         }
 
         $this->validateReservation($formData);
 
         $reservation = new Reservation(
-            eventId: $event->eventId,
+            eventId: $row->eventId,
             diningDate: $formData->diningDate,
             timeSlot: $formData->timeSlot,
             adultsCount: $formData->adultsCount,
@@ -156,34 +154,57 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     /**
      * Loads all active restaurants with their CMS data and resolved images.
      *
+     * Uses batch image loading to avoid N+1 queries on the MediaAsset table.
+     * CMS content is already cached per-page by CmsContentRepository, so
+     * repeated findEventCmsData() calls don't cause extra queries.
+     *
      * @return Restaurant[]
      */
     private function loadAllRestaurants(): array
     {
-        $restaurants = [];
+        $rows = $this->eventRepository->findActiveRestaurantEvents();
 
-        foreach ($this->eventRepository->findActiveRestaurantEvents() as $event) {
-            $restaurants[] = $this->buildRestaurant($event);
+        // Batch-load all featured images in one query instead of one per restaurant.
+        $imageAssetIds = array_filter(
+            array_map(fn(RestaurantRow $row) => $row->featuredImageAssetId, $rows),
+        );
+        $imageMap = $imageAssetIds !== []
+            ? $this->mediaAssetRepository->findByIds($imageAssetIds)
+            : [];
+
+        $restaurants = [];
+        foreach ($rows as $row) {
+            $cms = $this->restaurantContentRepo->findEventCmsData(
+                RestaurantPageConstants::DETAIL_PAGE_SLUG,
+                RestaurantPageConstants::eventSectionKey($row->eventId),
+            );
+
+            $imagePath = isset($imageMap[$row->featuredImageAssetId])
+                ? $imageMap[$row->featuredImageAssetId]->filePath
+                : null;
+
+            $restaurants[] = RestaurantContentMapper::mapRestaurant($row, $cms, $imagePath);
         }
 
         return $restaurants;
     }
 
     /**
-     * Fetches CMS content and image for an event, then delegates mapping to RestaurantContentMapper.
+     * Fetches CMS content and image for a single RestaurantRow.
+     * Used for detail/reservation pages where we only load one restaurant.
      */
-    private function buildRestaurant(RestaurantDetailEvent $event): Restaurant
+    private function buildRestaurant(RestaurantRow $row): Restaurant
     {
         $cms = $this->restaurantContentRepo->findEventCmsData(
-            RestaurantDetailConstants::PAGE_SLUG,
-            RestaurantDetailConstants::eventSectionKey($event->eventId),
+            RestaurantPageConstants::DETAIL_PAGE_SLUG,
+            RestaurantPageConstants::eventSectionKey($row->eventId),
         );
 
-        $imagePath = $event->featuredImageAssetId !== null
-            ? $this->mediaAssetRepository->findById($event->featuredImageAssetId)?->filePath
+        $imagePath = $row->featuredImageAssetId !== null
+            ? $this->mediaAssetRepository->findById($row->featuredImageAssetId)?->filePath
             : null;
 
-        return RestaurantContentMapper::mapRestaurant($event, $cms, $imagePath);
+        return RestaurantContentMapper::mapRestaurant($row, $cms, $imagePath);
     }
 
     private function normalizeSlug(string $slug): string
@@ -222,22 +243,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         }
     }
 
-    /**
-     * @return string[]
-     */
-    private function parseCuisineTags(?string $cuisineType): array
-    {
-        if ($cuisineType === null || trim($cuisineType) === '') {
-            return [];
-        }
-
-        return array_values(array_filter(
-            array_map('trim', explode(',', $cuisineType)),
-            static fn(string $tag): bool => $tag !== '',
-        ));
-    }
-
-    private function formatCuisineLabel(string $tag): string
+    private static function formatCuisineLabel(string $tag): string
     {
         $normalized = mb_strtolower(trim($tag));
 
@@ -245,38 +251,5 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             'fish and seafood' => 'fish and seafood',
             default => mb_convert_case($normalized, MB_CASE_TITLE, 'UTF-8'),
         };
-    }
-
-    /**
-     * Parses a comma-separated time slots string into an array.
-     *
-     * @return string[]
-     */
-    public function parseTimeSlots(?string $raw): array
-    {
-        if ($raw === null || $raw === '') {
-            return [];
-        }
-
-        return array_values(array_filter(array_map('trim', explode(',', $raw))));
-    }
-
-    /**
-     * Builds price cards from the adult price. Under-12 is always half.
-     *
-     * @return array{label: string, price: string}[]
-     */
-    public function buildPriceCards(?string $priceAdultStr): array
-    {
-        if ($priceAdultStr === null || $priceAdultStr === '') {
-            return [];
-        }
-
-        $adult = max(0.0, (float) $priceAdultStr);
-
-        return [
-            ['label' => 'Per adult', 'price' => 'EUR ' . number_format($adult, 2)],
-            ['label' => 'Under 12', 'price' => 'EUR ' . number_format($adult / 2, 2)],
-        ];
     }
 }

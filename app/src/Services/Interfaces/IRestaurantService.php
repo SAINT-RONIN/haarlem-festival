@@ -8,7 +8,7 @@ use App\DTOs\Cms\GlobalUiContent;
 use App\DTOs\Cms\RestaurantDetailSectionContent;
 use App\DTOs\Domain\Pages\RestaurantPageData;
 use App\DTOs\Domain\Restaurant\ReservationFormData;
-use App\DTOs\Domain\Restaurant\Restaurant;
+use App\Models\Restaurant;
 
 /**
  * Single interface for all restaurant operations: listing, detail, and reservation.
@@ -32,25 +32,12 @@ interface IRestaurantService
     public function getGlobalUi(): GlobalUiContent;
 
     /**
-     * Extracts the sorted list of unique cuisine labels from all active restaurants.
+     * Extracts the sorted list of unique cuisine labels from the given restaurants.
      *
+     * @param Restaurant[] $restaurants
      * @return string[] e.g. ['All', 'French', 'Italian', 'Vegan']
      */
-    public function getActiveCuisines(): array;
-
-    /**
-     * Parses a comma-separated time slots string into an array.
-     *
-     * @return string[]
-     */
-    public function parseTimeSlots(?string $raw): array;
-
-    /**
-     * Builds price cards from the adult price.
-     *
-     * @return array{label: string, price: string}[]
-     */
-    public function buildPriceCards(?string $priceAdultStr): array;
+    public function getActiveCuisines(array $restaurants): array;
 
     /**
      * Validates and persists a reservation for the restaurant identified by $slug.

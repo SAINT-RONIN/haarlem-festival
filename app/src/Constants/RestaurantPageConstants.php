@@ -12,6 +12,7 @@ namespace App\Constants;
 final class RestaurantPageConstants
 {
     public const PAGE_SLUG = 'restaurant';
+    public const DETAIL_PAGE_SLUG = 'restaurant-detail';
 
     public const SECTION_INTRO_SPLIT2 = 'intro_split2_section';
     public const SECTION_INSTRUCTIONS = 'instructions_section';
@@ -23,6 +24,11 @@ final class RestaurantPageConstants
     public const VALID_DATES = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
     public const MAX_SPECIAL_REQUESTS_LENGTH = 1000;
     public const MAX_GUEST_COUNT = 20;
+
+    public static function eventSectionKey(int $eventId): string
+    {
+        return SharedSectionKeys::eventSectionKey($eventId);
+    }
 
     private function __construct() {}
 }

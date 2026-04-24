@@ -33,7 +33,7 @@ class RestaurantController extends BaseController
     {
         $this->handlePageRequest(function (): void {
             $data = $this->restaurantService->getRestaurantPageData();
-            $cuisines = $this->restaurantService->getActiveCuisines();
+            $cuisines = $this->restaurantService->getActiveCuisines($data->restaurants);
             $viewModel = RestaurantViewMapper::toPageViewModel($data, $cuisines, $this->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         });

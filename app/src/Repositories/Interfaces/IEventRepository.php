@@ -10,7 +10,7 @@ use App\DTOs\Domain\Filters\EventFilter;
 use App\DTOs\Domain\Events\EventWithDetails;
 use App\DTOs\Domain\Events\JazzArtistCardRecord;
 use App\DTOs\Domain\Events\JazzArtistDetailEvent;
-use App\DTOs\Domain\Events\RestaurantDetailEvent;
+use App\DTOs\Domain\Events\RestaurantRow;
 use App\DTOs\Domain\Events\StorytellingDetailEvent;
 
 /**
@@ -75,14 +75,14 @@ interface IEventRepository
     public function softDelete(int $eventId): bool;
 
     /**
-     * Finds an active restaurant event by its URL slug.
+     * Finds an active restaurant by its URL slug.
      */
-    public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent;
+    public function findActiveRestaurantBySlug(string $slug): ?RestaurantRow;
 
     /**
-     * Returns all active restaurant-type events.
+     * Returns all active restaurants.
      *
-     * @return RestaurantDetailEvent[]
+     * @return RestaurantRow[]
      */
     public function findActiveRestaurantEvents(): array;
 

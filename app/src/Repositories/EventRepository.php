@@ -11,7 +11,7 @@ use App\DTOs\Domain\Filters\EventFilter;
 use App\DTOs\Domain\Events\EventWithDetails;
 use App\DTOs\Domain\Events\JazzArtistCardRecord;
 use App\DTOs\Domain\Events\JazzArtistDetailEvent;
-use App\DTOs\Domain\Events\RestaurantDetailEvent;
+use App\DTOs\Domain\Events\RestaurantRow;
 use App\DTOs\Domain\Events\StorytellingDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
@@ -395,21 +395,19 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
-     * Finds a single active restaurant event by its URL slug.
-     *
-     * @return RestaurantDetailEvent|null Null if no matching active restaurant event exists.
+     * Finds a single active restaurant by its URL slug.
      */
-    public function findActiveRestaurantBySlug(string $slug): ?RestaurantDetailEvent
+    public function findActiveRestaurantBySlug(string $slug): ?RestaurantRow
     {
         $row = $this->queryActiveEventBySlug($slug, EventTypeId::Restaurant);
 
-        return $row !== null ? RestaurantDetailEvent::fromRow($row) : null;
+        return $row !== null ? RestaurantRow::fromRow($row) : null;
     }
 
     /**
-     * Returns all active restaurant-type events, ordered by EventId.
+     * Returns all active restaurants, ordered by EventId.
      *
-     * @return RestaurantDetailEvent[]
+     * @return RestaurantRow[]
      */
     public function findActiveRestaurantEvents(): array
     {
@@ -420,7 +418,7 @@ class EventRepository extends BaseRepository implements IEventRepository
               AND IsActive = 1
             ORDER BY EventId ASC',
             ['eventTypeId' => EventTypeId::Restaurant->value],
-            fn(array $row) => RestaurantDetailEvent::fromRow($row),
+            fn(array $row) => RestaurantRow::fromRow($row),
         );
     }
 }

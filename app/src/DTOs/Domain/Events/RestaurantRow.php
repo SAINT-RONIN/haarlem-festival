@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\DTOs\Domain\Events;
 
 /**
- * Read-only projection for the restaurant detail page.
- *
- * Mirrors JazzArtistDetailEvent and StorytellingDetailEvent.
+ * Read-only projection of a restaurant record from the Event table.
  */
-final readonly class RestaurantDetailEvent
+final readonly class RestaurantRow
 {
     public function __construct(
         public int $eventId,

@@ -10,8 +10,8 @@ use App\DTOs\Cms\RestaurantEventCmsData;
 use App\DTOs\Cms\RestaurantInstructionsSectionContent;
 use App\DTOs\Cms\RestaurantIntroSectionContent;
 use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
-use App\DTOs\Domain\Events\RestaurantDetailEvent;
-use App\DTOs\Domain\Restaurant\Restaurant;
+use App\DTOs\Domain\Events\RestaurantRow;
+use App\Models\Restaurant;
 
 /**
  * Maps raw CMS arrays into Restaurant page content models.
@@ -105,15 +105,15 @@ final class RestaurantContentMapper
         return RestaurantEventCmsData::fromRawArray($raw);
     }
 
-    /** Maps an event record + its CMS data + resolved image path into a Restaurant domain object. */
-    public static function mapRestaurant(RestaurantDetailEvent $event, RestaurantEventCmsData $cms, ?string $imagePath): Restaurant
+    /** Maps a RestaurantRow + its CMS data + resolved image path into a Restaurant domain object. */
+    public static function mapRestaurant(RestaurantRow $row, RestaurantEventCmsData $cms, ?string $imagePath): Restaurant
     {
         return new Restaurant(
-            id: $event->eventId,
-            slug: $event->slug,
-            name: $event->title,
-            shortDescription: $event->shortDescription,
-            longDescriptionHtml: $event->longDescriptionHtml,
+            id: $row->eventId,
+            slug: $row->slug,
+            name: $row->title,
+            shortDescription: $row->shortDescription,
+            longDescriptionHtml: $row->longDescriptionHtml,
             featuredImagePath: $imagePath,
             addressLine: $cms->addressLine,
             city: $cms->city,
@@ -126,6 +126,7 @@ final class RestaurantContentMapper
             chefText: $cms->chefText,
             chefImage: $cms->chefImage,
             cuisineType: $cms->cuisineType,
+            cuisineTags: self::parseCuisineTags($cms->cuisineType),
             menuDescription: $cms->menuDescription,
             menuImage1: $cms->menuImage1,
             menuImage2: $cms->menuImage2,
@@ -143,5 +144,22 @@ final class RestaurantContentMapper
             galleryImage2: $cms->galleryImage2,
             galleryImage3: $cms->galleryImage3,
         );
+    }
+
+    /**
+     * Parses a comma-separated cuisine string into trimmed, non-empty tags.
+     *
+     * @return string[]
+     */
+    private static function parseCuisineTags(?string $cuisineType): array
+    {
+        if ($cuisineType === null || trim($cuisineType) === '') {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map('trim', explode(',', $cuisineType)),
+            static fn(string $tag): bool => $tag !== '',
+        ));
     }
 }

@@ -12,7 +12,7 @@ use App\DTOs\Cms\RestaurantInstructionsSectionContent;
 use App\DTOs\Cms\RestaurantIntroSectionContent;
 use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
 use App\DTOs\Domain\Pages\RestaurantPageData;
-use App\DTOs\Domain\Restaurant\Restaurant;
+use App\Models\Restaurant;
 use App\Services\Interfaces\IRestaurantService;
 use App\ViewModels\GradientSectionData;
 use App\ViewModels\HeroData;
@@ -64,8 +64,8 @@ final class RestaurantViewMapper
     {
         $sharedCms = $service->getDetailLabels();
         $globalUi = CmsMapper::toGlobalUiData($service->getGlobalUi(), $isLoggedIn);
-        $timeSlots = $service->parseTimeSlots($restaurant->timeSlots);
-        $priceCards = $service->buildPriceCards($restaurant->priceAdult);
+        $timeSlots = self::parseTimeSlots($restaurant->timeSlots);
+        $priceCards = self::buildPriceCards($restaurant->priceAdult);
         $heroData = self::toDetailHeroData($restaurant, $sharedCms);
 
         return new RestaurantDetailViewModel(
@@ -182,7 +182,7 @@ final class RestaurantViewMapper
 
         return new MenuSectionData(
             description: $r->menuDescription ?? '',
-            cuisineTags: self::parseCuisineTags($r->cuisineType),
+            cuisineTags: $r->cuisineTags,
             images: $images,
             labelTitle: $sharedCms->detailMenuTitle ?? 'Menu',
             labelCuisineType: $sharedCms->detailMenuCuisineLabel ?? 'Cuisine',
@@ -281,19 +281,40 @@ final class RestaurantViewMapper
         return implode(', ', $parts);
     }
 
+    // ── View-specific formatting helpers ────────────────────────────────
+
     /**
+     * Splits a comma-separated time slots string into an array for display.
+     *
      * @return string[]
      */
-    private static function parseCuisineTags(?string $cuisineType): array
+    private static function parseTimeSlots(?string $raw): array
     {
-        if ($cuisineType === null || trim($cuisineType) === '') {
+        if ($raw === null || $raw === '') {
             return [];
         }
 
-        return array_values(array_filter(
-            array_map('trim', explode(',', $cuisineType)),
-            static fn(string $tag): bool => $tag !== '',
-        ));
+        return array_values(array_filter(array_map('trim', explode(',', $raw))));
+    }
+
+    /**
+     * Formats the adult price into display-ready price cards.
+     * Under-12 is always half the adult price.
+     *
+     * @return array{label: string, price: string}[]
+     */
+    private static function buildPriceCards(?string $priceAdultStr): array
+    {
+        if ($priceAdultStr === null || $priceAdultStr === '') {
+            return [];
+        }
+
+        $adult = max(0.0, (float) $priceAdultStr);
+
+        return [
+            ['label' => 'Per adult', 'price' => 'EUR ' . number_format($adult, 2)],
+            ['label' => 'Under 12', 'price' => 'EUR ' . number_format($adult / 2, 2)],
+        ];
     }
 
     // ── Listing page section builders ──────────────────────────────────
