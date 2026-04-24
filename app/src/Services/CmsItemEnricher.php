@@ -13,20 +13,13 @@ use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\ICmsItemEnricher;
 use App\Utils\CmsContentLimits;
 
-/**
- * Enriches raw CmsItem records with media-asset metadata and editor-input type info
- * so the CMS editor UI has everything it needs to render each field correctly.
- */
 final class CmsItemEnricher implements ICmsItemEnricher
 {
     public function __construct(
         private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {}
 
-    /**
-     * @param CmsItem[] $items
-     * @return CmsItemEditData[]
-     */
+    /** @param CmsItem[] $items @return CmsItemEditData[] */
     public function enrichItems(array $items): array
     {
         $mediaAssets = $this->loadMediaAssetsForItems($items);
@@ -51,12 +44,7 @@ final class CmsItemEnricher implements ICmsItemEnricher
         return $this->buildEnrichedItem($item, $mediaAsset, $resolvedFilePath, $inputType);
     }
 
-    /**
-     * Batch-loads media assets for all items that reference one.
-     *
-     * @param CmsItem[] $items
-     * @return array<int, MediaAsset>
-     */
+    /** @param CmsItem[] $items @return array<int, MediaAsset> */
     private function loadMediaAssetsForItems(array $items): array
     {
         $mediaAssetIds = array_values(array_filter(
@@ -144,10 +132,6 @@ final class CmsItemEnricher implements ICmsItemEnricher
         );
     }
 
-    /**
-     * Extracts the display value for the CMS editor. HTML items use htmlValue directly;
-     * TEXT items that were accidentally stored with HTML tags get stripped back to plain text.
-     */
     private function getItemValue(CmsItem $item): string
     {
         $type = $item->itemType;

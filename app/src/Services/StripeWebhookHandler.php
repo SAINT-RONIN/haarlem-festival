@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Services\Interfaces\IOrderCapacityRestorer;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Exceptions\CheckoutException;
 use App\Exceptions\StripeWebhookException;
 use App\Infrastructure\Interfaces\IStripeService;
-use App\Repositories\Interfaces\IOrderRepository;
-use App\Repositories\Interfaces\IPaymentRepository;
-use App\Repositories\Interfaces\IProgramRepository;
 use App\Repositories\Interfaces\IStripeWebhookEventRepository;
+use App\Repositories\Interfaces\IWebhookOrderRepository;
 use App\DTOs\Domain\Checkout\WebhookHandlerResult;
 use App\Services\Interfaces\IStripeWebhookHandler;
 use App\Services\Interfaces\IInvoiceFulfillmentService;
 use App\Services\Interfaces\ITicketFulfillmentService;
-use PDO;
 
 /**
  * Processes Stripe webhook callbacks and converts them into local order/payment changes.
@@ -30,13 +26,9 @@ class StripeWebhookHandler implements IStripeWebhookHandler
     public function __construct(
         private readonly IStripeService $stripeService,
         private readonly IStripeWebhookEventRepository $webhookEventRepository,
-        private readonly IOrderRepository $orderRepository,
-        private readonly IPaymentRepository $paymentRepository,
-        private readonly IProgramRepository $programRepository,
-        private readonly IOrderCapacityRestorer $orderCapacityRestorer,
+        private readonly IWebhookOrderRepository $webhookOrderRepository,
         private readonly ITicketFulfillmentService $ticketFulfillmentService,
         private readonly IInvoiceFulfillmentService $invoiceFulfillmentService,
-        private readonly PDO $pdo,
     ) {}
 
     /** @throws CheckoutException When the event payload is invalid or malformed */
@@ -56,7 +48,7 @@ class StripeWebhookHandler implements IStripeWebhookHandler
             $object = $this->extractWebhookObject($event);
             // Metadata carries our internal ids because Stripe only knows about its own objects.
             [$metadata, $orderId, $paymentId] = $this->extractWebhookMetadata($object);
-            $this->processWebhookTransaction($eventType, $object, $metadata, $orderId, $paymentId);
+            $this->applyWebhookStatusTransition($eventType, $object, $metadata, $orderId, $paymentId);
             $this->fulfillTicketsIfPaymentCompleted($eventType, $object, $metadata, $orderId);
             $this->fulfillInvoiceIfPaymentCompleted($eventType, $orderId);
         } catch (\Throwable $error) {
@@ -106,40 +98,12 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         return [$metadata, $orderId, $paymentId];
     }
 
-    private function processWebhookTransaction(string $eventType, array $object, array $metadata, ?int $orderId, ?int $paymentId): void
-    {
-        $this->pdo->beginTransaction();
-
-        try {
-            // These mutations belong together so they either all succeed or all roll back.
-            $this->updatePaymentIntentIfPresent($paymentId, $object);
-            $this->applyWebhookStatusTransition($eventType, $metadata, $orderId, $paymentId);
-            $this->pdo->commit();
-        } catch (CheckoutException|\InvalidArgumentException|\RuntimeException $error) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
-            throw $error;
-        }
-    }
-
-    private function updatePaymentIntentIfPresent(?int $paymentId, array $object): void
-    {
-        if ($paymentId === null) {
-            return;
-        }
-        $intentId = $object['payment_intent'] ?? null;
-        if (is_string($intentId) && $intentId !== '') {
-            $this->paymentRepository->updateStripePaymentIntentId($paymentId, $intentId);
-        }
-    }
-
-    private function applyWebhookStatusTransition(string $eventType, array $metadata, ?int $orderId, ?int $paymentId): void
+    private function applyWebhookStatusTransition(string $eventType, array $object, array $metadata, ?int $orderId, ?int $paymentId): void
     {
         switch ($eventType) {
             case 'checkout.session.completed':
             case 'checkout.session.async_payment_succeeded':
-                $this->processPaymentCompleted($metadata, $orderId, $paymentId);
+                $this->processPaymentCompleted($object, $metadata, $orderId, $paymentId);
                 break;
 
             case 'checkout.session.expired':
@@ -149,52 +113,42 @@ class StripeWebhookHandler implements IStripeWebhookHandler
         }
     }
 
-    private function processPaymentCompleted(array $metadata, ?int $orderId, ?int $paymentId): void
+    private function processPaymentCompleted(array $object, array $metadata, ?int $orderId, ?int $paymentId): void
     {
-        if ($orderId !== null) {
-            $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Paid, [OrderStatus::Pending]);
+        if ($orderId === null || $paymentId === null) {
+            return;
         }
-        if ($paymentId !== null) {
-            $this->paymentRepository->updateStatusIfCurrentIn(
-                $paymentId,
-                PaymentStatus::Paid,
-                [PaymentStatus::Pending],
-                new \DateTimeImmutable(),
-            );
+
+        $paymentIntentId = $object['payment_intent'] ?? '';
+        if (!is_string($paymentIntentId) || $paymentIntentId === '') {
+            return;
         }
+
         $programId = isset($metadata['program_id']) ? (int) $metadata['program_id'] : 0;
-        if ($programId > 0) {
-            $this->programRepository->markCheckedOut($programId);
-        }
+
+        $this->webhookOrderRepository->completePayment(
+            orderId: $orderId,
+            paymentId: $paymentId,
+            paymentIntentId: $paymentIntentId,
+            programId: $programId,
+            paidAtUtc: new \DateTimeImmutable(),
+            allowedOrderStatuses: [OrderStatus::Pending],
+            allowedPaymentStatuses: [PaymentStatus::Pending],
+        );
     }
 
     private function processPaymentFailed(?int $orderId, ?int $paymentId): void
     {
-        $this->expireOrderIfPresent($orderId);
-        $this->failPaymentIfPresent($paymentId);
-    }
-
-    /**
-     * Restores reserved capacity and expires the order.
-     * Failed payments must release their reserved seats so capacity isn't blocked indefinitely.
-     */
-    private function expireOrderIfPresent(?int $orderId): void
-    {
-        if ($orderId === null) {
+        if ($orderId === null || $paymentId === null) {
             return;
         }
 
-        $this->orderCapacityRestorer->restore($orderId);
-        $this->orderRepository->updateStatusIfCurrentIn($orderId, OrderStatus::Expired, [OrderStatus::Pending]);
-    }
-
-    private function failPaymentIfPresent(?int $paymentId): void
-    {
-        if ($paymentId === null) {
-            return;
-        }
-
-        $this->paymentRepository->updateStatusIfCurrentIn($paymentId, PaymentStatus::Failed, [PaymentStatus::Pending]);
+        $this->webhookOrderRepository->failPayment(
+            orderId: $orderId,
+            paymentId: $paymentId,
+            allowedOrderStatuses: [OrderStatus::Pending],
+            allowedPaymentStatuses: [PaymentStatus::Pending],
+        );
     }
 
     private function fulfillTicketsIfPaymentCompleted(

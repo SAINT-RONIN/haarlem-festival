@@ -55,11 +55,7 @@ abstract class BaseController
         require __DIR__ . '/../Views/pages/errors/404.php';
     }
 
-    /**
-     * Wraps a controller action with shared HTML error handling.
-     *
-     * @param callable(): void $action
-     */
+    /** Wraps a controller action with shared HTML error handling. */
     protected function handlePageRequest(callable $action): void
     {
         try {
@@ -73,8 +69,6 @@ abstract class BaseController
 
     /**
      * Wraps a controller action with shared JSON error handling.
-     *
-     * @param callable(): void $action
      * @param array<int, class-string> $badRequestExceptions
      */
     protected function handleJsonRequest(
@@ -92,9 +86,7 @@ abstract class BaseController
         }
     }
 
-    /**
-     * @param array<string,mixed> $data
-     */
+    /** @param array<string,mixed> $data */
     protected function json(array $data, int $statusCode = 200): void
     {
         // Ensure API responses are clean JSON even if something echoed earlier.
@@ -148,10 +140,7 @@ abstract class BaseController
         return $intValue > 0 ? $intValue : null;
     }
 
-    /**
-     * Reads schedule filter parameters from the query string.
-     * Returns null if no filter params are present (no filtering applied).
-     */
+    /** Reads schedule filter parameters from the query string. Returns null when no filters are present. */
     protected function readScheduleFilterParams(): ?ScheduleFilterParams
     {
         $day = $this->readStringQueryParam('day');
@@ -238,7 +227,7 @@ abstract class BaseController
 
     /**
      * @return array<string,mixed>
-     * @throws \InvalidArgumentException if the body is missing, unparseable, or not a JSON object
+     * @throws \InvalidArgumentException if body is missing, unparseable, or not a JSON object
      */
     protected function readJsonBody(): array
     {
@@ -289,9 +278,7 @@ abstract class BaseController
         return $this->sessionService;
     }
 
-    /**
-     * @param array<int, class-string> $badRequestExceptions
-     */
+    /** @param array<int, class-string> $badRequestExceptions */
     private function resolveJsonStatusCode(\Throwable $error, array $badRequestExceptions): int
     {
         foreach ($badRequestExceptions as $exceptionClass) {

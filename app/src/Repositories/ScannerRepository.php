@@ -7,12 +7,9 @@ namespace App\Repositories;
 use App\DTOs\Domain\Scanner\TicketScanDetail;
 use App\Repositories\Interfaces\IScannerRepository;
 
-/**
- * Fetches ticket data enriched with event, session, and venue details for scanning.
- */
+// Enriches ticket rows with event/session/venue/order context for the scanner UI.
 class ScannerRepository extends BaseRepository implements IScannerRepository
 {
-    /** Loads one ticket together with the extra event and venue fields shown in the scanner UI. */
     public function findTicketWithDetails(string $ticketCode): ?TicketScanDetail
     {
         return $this->fetchOne(
@@ -39,7 +36,6 @@ class ScannerRepository extends BaseRepository implements IScannerRepository
         );
     }
 
-    /** Maps the joined ticket row into the DTO returned to the scanner service. */
     private function mapToDetail(array $row): TicketScanDetail
     {
         return new TicketScanDetail(

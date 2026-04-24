@@ -12,13 +12,8 @@ use App\DTOs\Cms\CmsSectionEditData;
 use App\Models\CmsPage;
 use App\Services\Interfaces\ICmsPreviewUrlResolver;
 
-/**
- * Builds route-aware preview URLs for CMS page edit screens.
- *
- * For detail pages (storytelling-detail, restaurant-detail)
- * it extracts the first event name/ID from the sections to build a slug-based URL.
- * For all other pages it returns /{pageSlug} (or "/" for "home").
- */
+// For detail pages, extracts the first event name from sections to build a slug-based URL.
+// For all other pages, returns /{pageSlug} (or "/" for "home").
 final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
 {
     /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Constants\HistoryPageConstants;
 use App\Constants\ScheduleConstants;
 use App\Enums\EventTypeId;
 use App\Mappers\HistoricalLocationMapper;
@@ -15,11 +14,6 @@ use App\Services\Interfaces\IHistoryService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ISessionService;
 
-/**
- * Controller for the history page.
- *
- * Handles HTTP requests for the history landing page.
- */
 class HistoryController extends BaseController
 {
     public function __construct(
@@ -31,9 +25,6 @@ class HistoryController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * GET /history/
-     */
     public function index(): void
     {
         $this->handlePageRequest(function (): void {
@@ -45,7 +36,7 @@ class HistoryController extends BaseController
     {
         $data = $this->historyService->getHistoryPageData();
         $scheduleData = $this->scheduleService->getScheduleData(
-            HistoryPageConstants::PAGE_SLUG,
+            'history',
             EventTypeId::History->value,
             ScheduleConstants::MAX_DAYS,
             filterParams: $this->readScheduleFilterParams(),
@@ -55,11 +46,6 @@ class HistoryController extends BaseController
         $this->renderPage(__DIR__ . '/../Views/pages/history.php', $viewModel);
     }
 
-    /**
-     * Displays a historical location page.
-     *
-     * GET /history/{id}
-     */
     public function location(string $name): void
     {
         $this->handlePageRequest(function () use ($name): void {

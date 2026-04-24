@@ -8,19 +8,10 @@ use App\DTOs\Domain\OrderHistory\OrderSummaryData;
 use App\DTOs\Domain\OrderHistory\TicketPdfData;
 use App\Repositories\Interfaces\IOrderHistoryRepository;
 
-/**
- * Reads order history data for the customer-facing "My Orders" page.
- * Uses subqueries to embed payment status and item counts directly
- * into each order row, avoiding extra round-trips.
- */
+// Customer-facing "My Orders" page queries.
+// Uses correlated subqueries for payment status and item count to avoid extra round-trips.
 final class OrderHistoryRepository extends BaseRepository implements IOrderHistoryRepository
 {
-    /**
-     * Returns all orders placed by the given user, newest first, with payment status
-     * and item count resolved via correlated subqueries.
-     *
-     * @return OrderSummaryData[]
-     */
     public function findOrdersForUser(int $userId): array
     {
         $sql = <<<'SQL'
@@ -45,11 +36,6 @@ final class OrderHistoryRepository extends BaseRepository implements IOrderHisto
         );
     }
 
-    /**
-     * Returns ticket-code → PDF path rows for every ticket in the order that has a generated PDF.
-     *
-     * @return TicketPdfData[]
-     */
     public function findTicketPdfPathsForOrder(int $orderId): array
     {
         $sql = <<<'SQL'

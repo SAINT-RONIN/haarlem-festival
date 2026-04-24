@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controllers\AccountController;
 use App\Controllers\AuthController;
 use App\Controllers\CheckoutController;
 use App\Controllers\CmsArtistsController;
@@ -68,8 +69,6 @@ use App\Repositories\ScheduleDayConfigRepository;
 use App\Repositories\VenueRepository;
 use App\Repositories\CheckoutContentRepository;
 use App\Repositories\GlobalContentRepository;
-use App\Repositories\HistoricalLocationContentRepository;
-use App\Repositories\HistoryContentRepository;
 use App\Repositories\JazzContentRepository;
 use App\Repositories\RestaurantContentRepository;
 use App\Repositories\ScheduleContentRepository;
@@ -97,6 +96,7 @@ use App\Services\RestaurantService;
 use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
 use App\Services\AuthService;
+use App\Services\AccountService;
 use App\Services\CaptchaService;
 use App\Services\ScannerService;
 use App\Services\SessionService;
@@ -167,7 +167,6 @@ return static function (string $controllerClass): object {
     $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
     $storyContentRepo      = fn() => $make('storyContentRepo', fn() => new StorytellingContentRepository($cmsContent()));
     $restaurantContentRepo = fn() => $make('restaurantContentRepo', fn() => new RestaurantContentRepository($cmsContent()));
-    $historyContentRepo    = fn() => $make('historyContentRepo', fn() => new HistoryContentRepository($cmsContent()));
     $histLocContentRepo    = fn() => $make('histLocContentRepo', fn() => new HistoricalLocationContentRepository($cmsContent()));
 
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
@@ -177,17 +176,18 @@ return static function (string $controllerClass): object {
     $emailService = fn() => $make('emailService', fn() => new EmailService());
     $pdfAssetStorage = fn() => $make('pdfAssetStorage', fn() => new PdfAssetStorage($mediaAssetRepo()));
     $ticketFulfillmentService = fn() => $make('ticketFulfillmentService', fn() => new TicketFulfillmentService(
-        $orderRepo(),
-        $orderItemRepo(),
-        $eventSessionRepo(),
-        $ticketRepo(),
-        $mediaAssetRepo(),
-        $userAccountRepo(),
+        new \App\Repositories\TicketFulfillmentRepository(
+            $orderRepo(),
+            $orderItemRepo(),
+            $eventSessionRepo(),
+            $ticketRepo(),
+            $userAccountRepo(),
+            new TicketCodeGenerator(),
+        ),
         $emailService(),
         $pdfAssetStorage(),
         new QrCodeGenerator(),
         new PdfTicketGenerator(),
-        new TicketCodeGenerator(),
     ));
 
     $invoiceFulfillmentService = fn() => $make('invoiceFulfillmentService', fn() => new InvoiceFulfillmentService(
@@ -225,6 +225,12 @@ return static function (string $controllerClass): object {
         $userAccountRepo(),
         $resetTokenRepo(),
         $emailService(),
+    ));
+
+    $accountService = fn() => $make('accountService', fn() => new AccountService(
+        $userAccountRepo(),
+        $emailService(),
+        $pdo(),
     ));
 
     // ── Lazy service singletons shared across multiple controllers ──
@@ -374,37 +380,43 @@ return static function (string $controllerClass): object {
                 $programService(),
                 $sessionService,
                 new CheckoutService(
-                    $orderRepo(),
-                    $orderItemRepo(),
-                    $paymentRepo(),
+                    new \App\Repositories\CheckoutOrderRepository(
+                        $orderRepo(),
+                        $orderItemRepo(),
+                        $paymentRepo(),
+                        $passPurchaseRepo(),
+                        $eventSessionRepo(),
+                        $programRepo(),
+                        $orderCapacityRestorer(),
+                        $pdo(),
+                    ),
                     $eventSessionRepo(),
                     $stripeService,
                     $runtimeConfig,
-                    $pdo(),
                     $checkoutContentRepo(),
-                    $orderCapacityRestorer(),
                     $ticketFulfillmentService(),
-                    $passPurchaseRepo(),
-                    $programRepo(),
                 ),
                 new StripeWebhookHandler(
                     $stripeService,
                     new StripeWebhookEventRepository($pdo()),
-                    $orderRepo(),
-                    $paymentRepo(),
-                    $programRepo(),
-                    $orderCapacityRestorer(),
+                    new \App\Repositories\WebhookOrderRepository(
+                        $orderRepo(),
+                        $paymentRepo(),
+                        $programRepo(),
+                        $orderItemRepo(),
+                        $eventSessionRepo(),
+                        $pdo(),
+                    ),
                     $ticketFulfillmentService(),
                     $invoiceFulfillmentService(),
-                    $pdo(),
                 ),
                 new StripeWebhookRequestFactory(),
             );
         })(),
         HistoryController::class => new HistoryController(
             new HistoryService(
+                $cmsContent(),
                 $globalContentRepo(),
-                $historyContentRepo(),
             ),
             new HistoricalLocationService(
                 $cmsContent(),
@@ -457,6 +469,11 @@ return static function (string $controllerClass): object {
         ),
         OrderHistoryController::class => new OrderHistoryController(
             new OrderHistoryService(new OrderHistoryRepository($pdo())),
+            $sessionService,
+        ),
+        AccountController::class => new AccountController(
+            $accountService(),
+            $mediaAssetService(),
             $sessionService,
         ),
         default => new $controllerClass(),

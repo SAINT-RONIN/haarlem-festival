@@ -105,6 +105,26 @@ final class PdfAssetStorage
     }
 
     /**
+     * Resolves a media asset into an email attachment, or returns null if the file doesn't exist.
+     */
+    public function resolvePdfAttachment(int $mediaAssetId): ?\App\DTOs\Domain\Tickets\TicketEmailAttachment
+    {
+        $asset = $this->mediaAssetRepository->findById($mediaAssetId);
+        if ($asset === null) {
+            return null;
+        }
+
+        $absolutePath = $this->resolveAbsolutePublicPath($asset->filePath);
+        if (!is_file($absolutePath)) {
+            return null;
+        }
+
+        $displayName = $asset->originalFileName !== '' ? $asset->originalFileName : basename($absolutePath);
+
+        return new \App\DTOs\Domain\Tickets\TicketEmailAttachment($absolutePath, $displayName);
+    }
+
+    /**
      * Builds the array shape expected by the MediaAsset repository for PDF files.
      * The returned array is intentionally repository-ready so callers do not need
      * to know the MediaAsset table column names.

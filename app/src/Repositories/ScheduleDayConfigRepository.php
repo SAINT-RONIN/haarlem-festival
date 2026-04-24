@@ -8,23 +8,10 @@ use App\Models\ScheduleDayConfig;
 use App\DTOs\Domain\Filters\ScheduleDayConfigFilter;
 use App\Repositories\Interfaces\IScheduleDayConfigRepository;
 
-/**
- * Manages the ScheduleDayConfig table, which controls which days of the week
- * are visible on the public schedule for each event type.
- *
- * Rows can be global (EventTypeId = 0) or scoped to a specific event type.
- */
+// Controls which days of the week are visible on the public schedule.
+// Rows can be global (EventTypeId = 0) or scoped to a specific event type.
 class ScheduleDayConfigRepository extends BaseRepository implements IScheduleDayConfigRepository
 {
-    /**
-     * Retrieves schedule-day visibility configs, optionally including event type names.
-     *
-     * Supports two sort orders:
-     * - "scope": global configs first (EventTypeId = 0), then by event type and day
-     * - "day": purely by day of week
-     *
-     * @return ScheduleDayConfig[]
-     */
     public function findConfigs(ScheduleDayConfigFilter $filter = new ScheduleDayConfigFilter()): array
     {
         $params = [];
@@ -62,9 +49,7 @@ class ScheduleDayConfigRepository extends BaseRepository implements IScheduleDay
         ';
     }
 
-    /**
-     * @param array<string,mixed> $params
-     */
+    /** @param array<string,mixed> $params */
     private function buildEventTypeFilterClause(?int $eventTypeId, array &$params): string
     {
         if ($eventTypeId === null) {
@@ -86,11 +71,7 @@ class ScheduleDayConfigRepository extends BaseRepository implements IScheduleDay
         return $allowedOrders[$requestedOrder] ?? $allowedOrders['scope'];
     }
 
-    /**
-     * Inserts or updates a day-visibility setting using MySQL ON DUPLICATE KEY UPDATE.
-     * The unique key is (EventTypeId, DayOfWeek), so repeated calls for the same
-     * combination simply flip the IsVisible flag.
-     */
+    // Unique key is (EventTypeId, DayOfWeek); repeated calls just flip IsVisible.
     public function upsert(?int $eventTypeId, int $dayOfWeek, bool $isVisible): void
     {
         $this->execute(

@@ -14,16 +14,8 @@ use App\Repositories\Interfaces\ICmsRepository;
 use App\Repositories\Interfaces\IEventRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 
-/**
- * Shared infrastructure for CMS event services.
- *
- * Holds the three repositories and the protected helpers that deal with the
- * restaurant CMS integration (dynamic per-event CMS sections, restaurant metadata
- * items, and the CMS detail-page editor URL). CmsEventsService extends this class
- * and calls these helpers from its public methods.
- *
- * Not a service in its own right — always bind ICmsEventsService to CmsEventsService.
- */
+// Shared CMS event helpers (slug resolution, restaurant metadata, detail-page sections).
+// Always bind ICmsEventsService to CmsEventsService, not this class directly.
 abstract class BaseCmsEventsService
 {
     public function __construct(
@@ -32,12 +24,6 @@ abstract class BaseCmsEventsService
         protected readonly ICmsRepository $cmsRepository,
     ) {}
 
-    /**
-     * Returns a URL-safe slug that is unique across all events.
-     * If the base is taken, appends -2, -3, … until a free slug is found.
-     *
-     * A hard cap prevents runaway loops from pathological input or database errors.
-     */
     protected function resolveUniqueSlug(string $base): string
     {
         if ($base === '') {
@@ -60,10 +46,7 @@ abstract class BaseCmsEventsService
         return "{$base}-{$counter}";
     }
 
-    /**
-     * Creates a CMS section for a new event on its event type's detail page, if one exists.
-     * Not every event type has a CMS detail page — the method exits silently when none is configured.
-     */
+    // No-op when no detail page is configured for this event type.
     protected function autoCreateCmsSection(int $eventTypeId, int $eventId): void
     {
         $config = EventDetailCmsHelper::forEventType($eventTypeId);
@@ -79,14 +62,6 @@ abstract class BaseCmsEventsService
         $this->cmsRepository->insertSection($page->cmsPageId, SharedSectionKeys::eventSectionKey($eventId));
     }
 
-    /**
-     * Returns the CMS section ID for a per-event dynamic section, or null when not found.
-     *
-     * Three independent reasons can each produce null:
-     * 1. No CMS config exists for this event type.
-     * 2. The detail page does not exist in the database.
-     * 3. No CMS section has been created for this specific event yet.
-     */
     protected function findEventCmsSectionId(int $eventTypeId, int $eventId): ?int
     {
         $config = EventDetailCmsHelper::forEventType($eventTypeId);
@@ -109,13 +84,8 @@ abstract class BaseCmsEventsService
         return $sections !== [] ? $sections[0]->cmsSectionId : null;
     }
 
-    /**
-     * Writes restaurant-specific CMS items (stars, cuisine, address, short description).
-     *
-     * Restaurant metadata lives in the CMS item system, not on the event row itself,
-     * so this must run after the event row is saved. Null values are skipped to avoid
-     * overwriting previously saved data when a field was not submitted.
-     */
+    // Restaurant metadata lives in the CMS item system, not on the event row.
+    // Null values are skipped to avoid overwriting previously saved data.
     protected function saveRestaurantCmsItems(int $eventTypeId, int $eventId, EventUpsertData $data): void
     {
         $sectionId = $this->findEventCmsSectionId($eventTypeId, $eventId);
@@ -146,7 +116,6 @@ abstract class BaseCmsEventsService
         }
     }
 
-    /** Reads back the restaurant CMS items saved by saveRestaurantCmsItems(). */
     protected function loadRestaurantCmsItems(int $eventTypeId, int $eventId): RestaurantCmsData
     {
         $sectionId = $this->findEventCmsSectionId($eventTypeId, $eventId);
@@ -174,7 +143,6 @@ abstract class BaseCmsEventsService
         return new RestaurantCmsData($stars, $cuisine, $shortDescription);
     }
 
-    /** @return string|null The editor URL (e.g. "/cms/pages/12/jazz-detail/edit"), or null. */
     protected function resolveCmsDetailEditUrl(int $eventTypeId): ?string
     {
         $config = EventDetailCmsHelper::forEventType($eventTypeId);

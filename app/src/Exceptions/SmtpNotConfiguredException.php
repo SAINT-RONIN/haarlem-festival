@@ -1,4 +1,4 @@
-<?php
+or <?php
 
 declare(strict_types=1);
 

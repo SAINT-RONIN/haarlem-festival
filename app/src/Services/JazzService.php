@@ -14,12 +14,6 @@ use App\Repositories\Interfaces\IJazzContentRepository;
 use App\Repositories\Interfaces\IPassTypeRepository;
 use App\Services\Interfaces\IJazzService;
 
-/**
- * Service for Jazz page domain payload.
- *
- * This service only composes raw domain/CMS data.
- * ViewModel mapping and UI defaults are handled in the ViewModel layer.
- */
 class JazzService extends BaseContentService implements IJazzService
 {
     public function __construct(
@@ -31,10 +25,6 @@ class JazzService extends BaseContentService implements IJazzService
         parent::__construct($globalContentRepo);
     }
 
-    /**
-     * Returns the complete domain payload for the Jazz overview page,
-     * including all CMS sections and Jazz pass prices.
-     */
     public function getJazzPageData(): JazzPageData
     {
         return $this->guardPageLoad(
@@ -43,10 +33,6 @@ class JazzService extends BaseContentService implements IJazzService
         );
     }
 
-    /**
-     * Fetches every CMS section for the Jazz page and combines them
-     * with pass-type pricing and shared global-UI content.
-     */
     private function buildPageData(string $pageSlug): JazzPageData
     {
         return new JazzPageData(

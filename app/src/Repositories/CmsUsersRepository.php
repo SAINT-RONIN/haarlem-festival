@@ -8,16 +8,10 @@ use App\Models\UserAccount;
 use App\DTOs\Domain\User\UserWithRole;
 use App\Repositories\Interfaces\ICmsUsersRepository;
 
-/**
- * Handles read-only UserAccount operations for the CMS admin users section.
- *
- * Queries the UserAccount table joined with UserRole for listing and filtering,
- * and provides uniqueness checks that can exclude a given user (for edit forms).
- * Write operations (create, update, delete) live in UserAccountRepository.
- */
+// Read-only user queries for the CMS admin panel. Write ops live in UserAccountRepository.
 class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
 {
-    /** @var array<string, string> Maps front-end sort keys to safe SQL column references */
+    /** @var array<string, string> front-end sort keys -> safe SQL columns */
     private const SORT_COLUMNS = [
         'username'   => 'ua.Username',
         'email'      => 'ua.Email',
@@ -28,11 +22,6 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
 
     private const SORT_DIRS = ['asc', 'desc'];
 
-    /**
-     * Returns all users with their role name, with optional filtering, search, and sort.
-     *
-     * @return UserWithRole[]
-     */
     public function findUsersWithRoles(
         ?int $roleFilter = null,
         ?string $search = null,
@@ -44,9 +33,7 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         return $this->fetchAll($sql, $params, fn(array $row) => UserWithRole::fromRow($row));
     }
 
-    /**
-     * Retrieves a single user by primary key (includes inactive users, for admin editing).
-     */
+    // Includes inactive users (admin editing needs access to all accounts).
     public function findById(int $id): ?UserAccount
     {
         return $this->fetchOne(
@@ -56,9 +43,6 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         );
     }
 
-    /**
-     * Checks whether a username is already taken (for create validation).
-     */
     public function existsByUsername(string $username): bool
     {
         $stmt = $this->execute(
@@ -69,9 +53,6 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         return $stmt->fetchColumn() !== false;
     }
 
-    /**
-     * Checks whether an email is already registered (for create validation).
-     */
     public function existsByEmail(string $email): bool
     {
         $stmt = $this->execute(
@@ -82,9 +63,7 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         return $stmt->fetchColumn() !== false;
     }
 
-    /**
-     * Same as existsByUsername but excludes a specific user (for edit-form uniqueness checks).
-     */
+    // For edit-form uniqueness checks (excludes the user being edited).
     public function existsByUsernameExcluding(string $username, int $excludeId): bool
     {
         $stmt = $this->execute(
@@ -95,9 +74,6 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         return $stmt->fetchColumn() !== false;
     }
 
-    /**
-     * Same as existsByEmail but excludes a specific user (for edit-form uniqueness checks).
-     */
     public function existsByEmailExcluding(string $email, int $excludeId): bool
     {
         $stmt = $this->execute(
@@ -108,12 +84,7 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         return $stmt->fetchColumn() !== false;
     }
 
-    /**
-     * Assembles the SQL and parameter array for the user list, applying
-     * optional role filter, search term (across username/email/name), and sort.
-     *
-     * @return array{0: string, 1: array<string, mixed>}
-     */
+    /** @return array{0: string, 1: array<string, mixed>} */
     private function buildListQuery(
         ?int $roleFilter,
         ?string $search,
@@ -143,10 +114,7 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         return [$sql, $params];
     }
 
-    /**
-     * Base SELECT for the user listing -- joins UserRole to include the role name.
-     * Ends with "WHERE 1 = 1" so callers can append AND clauses directly.
-     */
+    // Base SELECT joins UserRole; ends with WHERE 1 = 1 for easy AND appending.
     private function buildListSelect(): string
     {
         return '
@@ -165,13 +133,11 @@ class CmsUsersRepository extends BaseRepository implements ICmsUsersRepository
         ';
     }
 
-    /** Maps a front-end sort key to a safe column reference, falling back to registered date. */
     private function resolveSortColumn(string $sortBy): string
     {
         return self::SORT_COLUMNS[$sortBy] ?? 'ua.RegisteredAtUtc';
     }
 
-    /** Validates and normalises sort direction, defaulting to DESC. */
     private function resolveSortDir(string $sortDir): string
     {
         return in_array(strtolower($sortDir), self::SORT_DIRS, true) ? strtoupper($sortDir) : 'DESC';

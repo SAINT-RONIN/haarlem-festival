@@ -11,15 +11,8 @@ use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Cms\CmsMediaLibraryViewModel;
 
 /**
- * CMS controller for the media asset library.
- *
- * Handles browsing, uploading, and deleting image assets used across
- * the festival site. Provides both page-rendered views (index) and JSON
- * endpoints (upload, delete, list) consumed by AJAX pickers in the
- * page editor and event forms.
- *
- * Media assets are context-tagged (currently all "cms") so they can be
- * filtered or scoped in the future.
+ * CMS controller for the media asset library (upload, browse, delete).
+ * Provides both page views and JSON endpoints for AJAX pickers.
  */
 class CmsMediaController extends CmsBaseController
 {
@@ -30,10 +23,6 @@ class CmsMediaController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the media library page with all uploaded assets and upload limits.
-     * GET /cms/media
-     */
     public function index(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -43,10 +32,6 @@ class CmsMediaController extends CmsBaseController
         });
     }
 
-    /**
-     * Handles image file upload via AJAX and returns the new asset details as JSON.
-     * POST /cms/media/upload
-     */
     public function upload(): void
     {
         $this->handleCmsJsonRequest(function (): void {
@@ -56,10 +41,6 @@ class CmsMediaController extends CmsBaseController
         });
     }
 
-    /**
-     * Deletes a media asset by ID via AJAX and returns success/failure as JSON.
-     * POST /cms/media/delete
-     */
     public function delete(): void
     {
         $this->handleCmsJsonRequest(function (): void {
@@ -68,11 +49,6 @@ class CmsMediaController extends CmsBaseController
         });
     }
 
-    /**
-     * Returns all media assets as a JSON array for use by client-side pickers
-     * (e.g. the image-selection modal in the page editor).
-     * GET /cms/media/list
-     */
     public function list(): void
     {
         $this->handleCmsJsonRequest(function (): void {

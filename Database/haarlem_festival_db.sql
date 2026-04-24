@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Generation Time: Apr 09, 2026 at 06:45 PM
+-- Generation Time: Apr 10, 2026 at 02:18 PM
 -- Server version: 12.0.2-MariaDB-ubu2404
 -- PHP Version: 8.3.27
 
@@ -259,15 +259,15 @@ CREATE TABLE `CmsItem` (
 --
 
 INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
-(1, 1, 'hero_main_title', 'HEADING', 'Haarlem Festivals', NULL, NULL, '2026-04-01 19:09:48'),
-(2, 1, 'hero_subtitle', 'TEXT', 'Four July Days Bringing People Together', NULL, NULL, '2026-02-06 14:13:59'),
+(1, 1, 'hero_main_title', 'HEADING', 'Haarlem Festivals Hello', NULL, NULL, '2026-04-10 07:10:27'),
+(2, 1, 'hero_subtitle', 'TEXT', 'Four July Days Bringing People Together Friday', NULL, NULL, '2026-04-10 07:10:27'),
 (3, 1, 'hero_button_primary', 'BUTTON_TEXT', 'Discover all types of events', NULL, NULL, '2026-02-06 14:13:59'),
 (4, 1, 'hero_button_secondary', 'BUTTON_TEXT', 'Events schedule', NULL, NULL, '2026-02-06 14:13:59'),
 (5, 2, 'banner_main_title', 'HEADING', 'Explore all upcoming events', NULL, NULL, '2026-02-06 14:13:59'),
 (6, 2, 'banner_subtitle', 'TEXT', 'See every theme and activity happening during the festival weekend.', NULL, NULL, '2026-02-06 14:13:59'),
 (7, 3, 'about_main_title', 'HEADING', 'What is Haarlem Festival?', NULL, NULL, '2026-02-06 14:13:59'),
 (8, 3, 'about_tagline', 'TEXT', 'A celebration of culture and creativity', NULL, NULL, '2026-02-06 14:13:59'),
-(9, 3, 'about_description', 'HTML', NULL, '<p>Haarlem Festival is a four-day celebration that brings together the city\'s most inspiring music, stories, food, and cultural experiences. During the last weekend of July, Haarlem transforms into a lively meeting place where residents and visitors explore jazz performances, storytelling sessions, gourmet specials, historic routes, children\'s adventures at Teylers, and energetic DJ sets.</p>\r\n<p>The festival highlights the diversity and creativity of Haarlem, offering something for every age group and interest. Whether you want to discover new artists, enjoy local flavors, learn about the city\'s history, or simply experience Haarlem in a new way, the festival invites you to take part and enjoy the atmosphere.</p>', NULL, '2026-02-10 15:04:31'),
+(9, 3, 'about_description', 'HTML', NULL, '<p><strong>Haarlem Festival is a four-day celebration that brings together the city\'s most inspiring music, stories, food, and cultural experiences. During the last weekend of July, Haarlem transforms into a lively meeting place where residents and visitors explore jazz performances, storytelling sessions, gourmet specials, historic routes, children\'s adventures at Teylers, and energetic DJ sets.</strong></p>\r\n<p><strong>The festival highlights the diversity and creativity of Haarlem, offering something for every age group and interest. Whether you want to discover new artists, enjoy local flavors, learn about the city\'s history, or simply experience Haarlem in a new way, the festival invites you to take part and enjoy the atmosphere.</strong></p>', NULL, '2026-04-10 07:12:08'),
 (10, 3, 'about_button', 'BUTTON_TEXT', 'Events schedule', NULL, NULL, '2026-02-06 14:13:59'),
 (11, 4, 'events_main_title', 'HEADING', 'Explore Our Events', NULL, NULL, '2026-02-06 14:13:59'),
 (12, 4, 'events_subtitle', 'TEXT', 'Discover what\'s happening each day', NULL, NULL, '2026-02-06 14:13:59'),
@@ -312,13 +312,13 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (51, 1, 'hero_button_primary_link', 'LINK', '#events', NULL, NULL, '2026-02-08 12:17:16'),
 (52, 1, 'hero_button_secondary_link', 'LINK', '#schedule', NULL, NULL, '2026-02-08 12:17:16'),
 (53, 1, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/HeroImageHome.png', NULL, NULL, '2026-02-08 12:17:16'),
-(54, 13, 'hero_main_title', 'HEADING', 'Stories in Haarlem hello', NULL, NULL, '2026-03-23 19:59:39'),
-(55, 13, 'hero_subtitle', 'TEXT', 'Discover the art of storytelling in Haarlem', NULL, NULL, '2026-02-15 21:04:32'),
+(54, 13, 'hero_main_title', 'HEADING', 'Stories in Haarlem', NULL, NULL, '2026-04-09 18:48:57'),
+(55, 13, 'hero_subtitle', 'TEXT', 'Discover the art of storytelling in Haarlemhi', NULL, NULL, '2026-04-09 18:59:52'),
 (56, 13, 'hero_button_primary', 'BUTTON_TEXT', 'Discover storytelling events', NULL, NULL, '2026-02-08 12:17:16'),
-(57, 13, 'hero_button_primary_link', 'LINK', '#events', NULL, NULL, '2026-02-08 12:17:16'),
+(57, 13, 'hero_button_primary_link', 'LINK', '#events', NULL, NULL, '2026-04-09 18:54:35'),
 (58, 13, 'hero_button_secondary', 'BUTTON_TEXT', 'View schedule', NULL, NULL, '2026-02-08 12:17:16'),
 (59, 13, 'hero_button_secondary_link', 'LINK', '#schedule', NULL, NULL, '2026-02-08 12:17:16'),
-(60, 13, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/storytelling/hero-storytelling.jpg', NULL, 116, '2026-03-25 13:04:09'),
+(60, 13, 'hero_background_image', 'IMAGE_PATH', '/assets/Image/storytelling/hero-storytelling.jpg', NULL, 32, '2026-04-09 18:48:17'),
 (61, 14, 'gradient_heading', 'HEADING', 'Every story carries emotion, intention, and connection beyond what we say aloud.', NULL, NULL, '2026-02-08 12:17:16'),
 (62, 14, 'gradient_subheading', 'TEXT', 'The world where stories are not just told but truly experienced.', NULL, NULL, '2026-02-08 14:17:39'),
 (63, 15, 'intro_heading', 'HEADING', 'Where stories come alive in Haarlem', NULL, NULL, '2026-02-08 12:17:16'),
@@ -326,7 +326,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (65, 15, 'intro_image', 'IMAGE_PATH', '/assets/Image/storytelling/where-stories-come-alive.jpg', NULL, NULL, '2026-02-08 14:29:20'),
 (66, 16, 'masonry_heading', 'HEADING', 'Moments you are about to discover', NULL, NULL, '2026-02-08 12:17:16'),
 (94, 2, 'banner_background_image', 'MEDIA', NULL, NULL, 2, '2026-02-08 13:54:33'),
-(95, 3, 'about_image', 'MEDIA', NULL, NULL, 3, '2026-02-08 13:54:33'),
+(95, 3, 'about_image', 'MEDIA', NULL, NULL, 115, '2026-04-10 07:12:06'),
 (96, 5, 'jazz_image', 'MEDIA', NULL, NULL, 4, '2026-02-08 13:54:33'),
 (97, 6, 'dance_image', 'MEDIA', NULL, NULL, 5, '2026-02-08 13:54:33'),
 (98, 7, 'history_image', 'MEDIA', NULL, NULL, 6, '2026-02-08 13:54:33'),
@@ -1078,7 +1078,15 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1528, 99, 'menu_image_2', 'IMAGE_PATH', '/assets/Image/restaurants/toujours-menu-2.png', NULL, NULL, '2026-04-09 17:59:44'),
 (1529, 99, 'reservation_image', 'IMAGE_PATH', '/assets/Image/restaurants/toujours-reservation.png', NULL, NULL, '2026-04-09 17:59:44'),
 (1530, 94, 'map_embed_url', 'LINK', 'https://maps.google.com/maps?q=52.3786756,4.6376030&z=17&output=embed', NULL, NULL, '2026-04-09 18:15:10'),
-(1531, 99, 'map_embed_url', 'LINK', 'https://maps.google.com/maps?q=52.3806823,4.6370676&z=17&output=embed', NULL, NULL, '2026-04-09 18:15:10');
+(1531, 99, 'map_embed_url', 'LINK', 'https://maps.google.com/maps?q=52.3806823,4.6370676&z=17&output=embed', NULL, NULL, '2026-04-09 18:15:10'),
+(1532, 109, 'address_line', 'TEXT', 'Lange Begijnestraat 9, 2011 HH Haarlem', NULL, NULL, '2026-04-10 03:48:48'),
+(1533, 110, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-10 05:54:26'),
+(1534, 110, 'cuisine_type', 'TEXT', 'Test', NULL, NULL, '2026-04-10 05:54:26'),
+(1535, 110, 'about_text', 'TEXT', 'TEst', NULL, NULL, '2026-04-10 05:54:26'),
+(1536, 110, 'address_line', 'TEXT', 'Grote Markt 8', NULL, NULL, '2026-04-10 05:54:26'),
+(1537, 111, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-10 06:39:22'),
+(1538, 111, 'cuisine_type', 'TEXT', 'Brazilian Food', NULL, NULL, '2026-04-10 06:39:22'),
+(1539, 111, 'about_text', 'TEXT', 'This is good food', NULL, NULL, '2026-04-10 06:39:22');
 
 -- --------------------------------------------------------
 
@@ -1775,6 +1783,7 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (102, 7, 'event_67'),
 (104, 7, 'event_69'),
 (107, 7, 'event_77'),
+(109, 7, 'event_80'),
 (79, 9, 'main'),
 (80, 10, 'main'),
 (83, 11, 'facts_section'),
@@ -1799,7 +1808,9 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 (103, 14, 'event_68'),
 (105, 14, 'event_72'),
 (106, 14, 'event_73'),
-(108, 14, 'event_79');
+(108, 14, 'event_79'),
+(110, 14, 'event_81'),
+(111, 14, 'event_82');
 
 -- --------------------------------------------------------
 
@@ -1837,6 +1848,23 @@ CREATE TABLE `EmailConfirmationToken` (
   `ExpiresAtUtc` datetime NOT NULL,
   `UsedAtUtc` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `EmailConfirmationTokens`
+--
+
+CREATE TABLE `EmailConfirmationTokens` (
+  `TokenId` int(11) NOT NULL,
+  `UserAccountId` int(11) NOT NULL,
+  `Email` varchar(255) NOT NULL,
+  `Token` varchar(64) NOT NULL,
+  `ExpiresAtUtc` datetime NOT NULL,
+  `IsUsed` tinyint(1) NOT NULL DEFAULT 0,
+  `UsedAtUtc` datetime DEFAULT NULL,
+  `CreatedAtUtc` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -1929,10 +1957,13 @@ INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `DisplayOrder`, 
 (73, 5, 'Test CMS Create Restaurant', 'test-cms-create-restaurant', NULL, 'Test desc', '<p>Test</p>', NULL, NULL, NULL, 0, '2026-04-05 21:28:15'),
 (74, 1, 'TESTING with kian', 'testing-with-kian', NULL, 'kian', 'kian', NULL, 2, 15, 0, '2026-04-06 08:26:14'),
 (75, 3, 'test', 'test', NULL, 'test', 'test', NULL, 15, NULL, 0, '2026-04-06 11:44:11'),
-(76, 1, 'Kian The Goat', 'kian-the-goat', NULL, 'Kian The Goat', 'Kian The Goat', NULL, 2, 15, 1, '2026-04-06 12:01:21'),
-(77, 4, 'Leandro The Goat', 'leandro-the-goat', NULL, 'Leandro The Goat', 'Leandro The Goat', NULL, 12, NULL, 1, '2026-04-06 12:02:50'),
+(76, 1, 'Kian The Goat', 'kian-the-goat', NULL, 'Kian The Goat', 'Kian The Goat', NULL, 2, 15, 0, '2026-04-06 12:01:21'),
+(77, 4, 'Leandro The Goat', 'leandro-the-goat', NULL, 'Leandro The Goat', 'Leandro The Goat', NULL, 12, NULL, 0, '2026-04-06 12:02:50'),
 (78, 3, 'Daria The Goat', 'daria-the-goat', NULL, 'Daria The Goat', 'Daria The Goat', NULL, 15, NULL, 0, '2026-04-06 12:03:41'),
-(79, 5, 'Matheus The Goat', 'matheus-the-goat', NULL, 'Matheus The Goat', 'Matheus The Goat', 115, 8, NULL, 0, '2026-04-06 12:04:56');
+(79, 5, 'Matheus The Goat', 'matheus-the-goat', NULL, 'Matheus The Goat', 'Matheus The Goat', 115, 8, NULL, 0, '2026-04-06 12:04:56'),
+(80, 4, 'Friday Test', 'friday-test', NULL, 'This is just a small test', 'This is just a small test for Friday exam', NULL, 11, NULL, 1, '2026-04-10 03:48:48'),
+(81, 5, 'Test', 'test-2', NULL, 'Test', 'TEst', 116, 6, NULL, 0, '2026-04-10 05:54:26'),
+(82, 5, 'TEST', 'test-3', NULL, 'TEST', 'TEST', 112, 15, NULL, 0, '2026-04-10 06:39:22');
 
 -- --------------------------------------------------------
 
@@ -2141,13 +2172,13 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTi
 (10, 10, 1, '2026-07-24 18:00:00', '2026-07-24 19:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (11, 11, 1, '2026-07-24 19:30:00', '2026-07-24 20:30:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (12, 12, 1, '2026-07-24 21:00:00', '2026-07-24 22:00:00', 200, 200, NULL, 0, 0, 'Second Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(13, 13, 1, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(13, 13, 1, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 300, 300, NULL, 2, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, 'All-Access pass for this day €35,00, All-Access pass for Thu, Fri, Sat: €80,00.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (14, 14, 1, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (15, 15, 1, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 300, 300, NULL, 0, 0, 'Main Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (16, 16, 1, '2026-07-25 18:00:00', '2026-07-25 19:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (17, 17, 1, '2026-07-25 19:30:00', '2026-07-25 20:30:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (18, 18, 1, '2026-07-25 21:00:00', '2026-07-25 22:00:00', 150, 150, NULL, 0, 0, 'Third Hall', 'Live', 60, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(19, 19, 2, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, 'Free for all visitors. No reservation needed.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(19, 19, 2, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 300, 300, NULL, 1, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, 'Free for all visitors. No reservation needed.', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (20, 4, 2, '2026-07-26 16:00:00', '2026-07-26 17:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (21, 2, 2, '2026-07-26 17:00:00', '2026-07-26 18:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (22, 17, 2, '2026-07-26 18:00:00', '2026-07-26 19:00:00', 300, 300, NULL, 0, 0, 'Outdoor Stage', 'Live', 60, NULL, NULL, NULL, 0, 1, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
@@ -2166,7 +2197,7 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTi
 (35, 30, 5, '2026-07-26 19:00:00', '2026-07-26 20:30:00', 300, 270, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (36, 31, 6, '2026-07-26 21:00:00', '2026-07-26 22:30:00', 1500, 1350, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (37, 32, 4, '2026-07-26 18:00:00', '2026-07-26 19:30:00', 200, 180, NULL, 0, 0, NULL, 'Club', 90, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(38, 33, 15, '2026-07-23 10:00:00', '2026-07-23 12:00:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ENG', 12, NULL, 1, 0, 'Due to the nature of this walk participants must be a minimum of 12 years old and no strollers are allowed. Groups will consist of 12 participants + 1 guide.', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(38, 33, 15, '2026-07-23 10:00:00', '2026-07-23 12:00:00', 10000, 12, 12, 2, 0, NULL, 'Tour', 150, 'ENG', 12, NULL, 1, 0, 'Due to the nature of this walk participants must be a minimum of 12 years old and no strollers are allowed. Groups will consist of 12 participants + 1 guide.', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (39, 33, 15, '2026-07-23 13:00:00', '2026-07-23 15:00:00', 12, 12, 12, 0, 0, NULL, 'Tour', 150, 'ENG', 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (40, 33, 15, '2026-07-23 16:00:00', '2026-07-23 18:00:00', 12, 12, 12, 4, 0, NULL, 'Tour', 150, 'ENG', 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (41, 33, 15, '2026-07-24 10:00:00', '2026-07-24 12:00:00', 12, 12, 12, 12, 0, NULL, 'Tour', 150, 'ENG', 12, NULL, 1, 0, '', 'Group ticket - best value for 4 people', NULL, NULL, 0, '2026-02-06 15:30:32', 1),
@@ -2185,11 +2216,11 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTi
 (54, 38, 10, '2026-07-24 19:00:00', '2026-07-24 20:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (55, 39, 12, '2026-07-24 19:00:00', '2026-07-24 20:15:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 75, 'NL', 16, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (56, 40, 11, '2026-07-24 20:30:00', '2026-07-24 21:45:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'ENG', 16, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(57, 42, 14, '2026-07-25 10:00:00', '2026-07-25 11:00:00', 100, 90, NULL, 8, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(58, 42, 14, '2026-07-25 15:00:00', '2026-07-25 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(57, 42, 14, '2026-07-25 10:00:00', '2026-07-25 11:00:00', 100, 90, NULL, 11, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(58, 42, 14, '2026-07-25 15:00:00', '2026-07-25 16:00:00', 100, 90, NULL, 2, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (59, 43, 11, '2026-07-25 14:00:00', '2026-07-25 15:15:00', 100, 90, NULL, 0, 0, NULL, 'Podcast', 75, 'NL', 12, NULL, 0, 0, 'Recording podcast with audience', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (60, 44, 13, '2026-07-25 13:00:00', '2026-07-25 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'NL', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
-(61, 42, 14, '2026-07-26 10:00:00', '2026-07-26 11:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
+(61, 42, 14, '2026-07-26 10:00:00', '2026-07-26 11:00:00', 100, 90, NULL, 2, 0, NULL, 'Storytelling', 60, 'ENG', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (62, 42, 14, '2026-07-26 15:00:00', '2026-07-26 16:00:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 60, 'NL', 2, 102, 0, 0, 'Stories for the whole family', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (63, 45, 13, '2026-07-26 13:00:00', '2026-07-26 14:30:00', 80, 72, NULL, 0, 0, NULL, 'Storytelling', 90, 'ENG', 12, NULL, 0, 0, 'Stories with impact', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
 (64, 46, 10, '2026-07-26 16:00:00', '2026-07-26 17:30:00', 100, 90, NULL, 0, 0, NULL, 'Storytelling', 90, 'ENG', 12, NULL, 0, 0, 'Best off - the contest will be organized in June', NULL, NULL, NULL, 0, '2026-02-06 15:30:32', 1),
@@ -2317,8 +2348,8 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTi
 (214, 70, NULL, '2026-07-23 17:12:00', '2026-07-23 22:12:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-05 20:12:44', 0),
 (215, 71, NULL, '2026-07-23 17:13:00', '2026-07-23 22:13:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-05 20:13:53', 0),
 (216, 74, NULL, '2026-04-08 10:26:00', '2026-04-10 10:26:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 08:28:06', 0),
-(217, 76, NULL, '2026-04-06 14:01:00', '2026-04-11 14:01:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 12:01:32', 1),
-(218, 77, NULL, '2026-04-06 14:02:00', '2026-04-09 14:02:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, 'NL', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 12:03:00', 1),
+(217, 76, NULL, '2026-04-06 14:01:00', '2026-04-11 14:01:00', 100, 4, NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 12:01:32', 0),
+(218, 77, NULL, '2026-04-06 14:02:00', '2026-04-09 14:02:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, 'NL', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 12:03:00', 0),
 (219, 78, NULL, '2026-04-06 14:03:00', '2026-04-08 14:03:00', 100, 10, NULL, 0, 0, NULL, NULL, NULL, 'ZH', NULL, NULL, 0, 0, '', NULL, NULL, NULL, 0, '2026-04-06 12:03:57', 0);
 
 -- --------------------------------------------------------
@@ -3109,7 +3140,20 @@ INSERT INTO `MediaAsset` (`MediaAssetId`, `FilePath`, `OriginalFileName`, `MimeT
 (145, '/assets/tickets/Haarlem-Festival-Ticket-HF-TRCLCSXUKDHCU3CD.pdf', 'Haarlem-Festival-Ticket-HF-TRCLCSXUKDHCU3CD.pdf', 'application/pdf', 23120, 'Festival ticket PDF', '2026-04-08 21:45:55'),
 (146, '/assets/tickets/Haarlem-Festival-Ticket-HF-4DZ8ZF4684J4T37Y.pdf', 'Haarlem-Festival-Ticket-HF-4DZ8ZF4684J4T37Y.pdf', 'application/pdf', 23874, 'Festival ticket PDF', '2026-04-09 18:17:49'),
 (147, '/assets/tickets/Haarlem-Festival-Ticket-HF-LNHDWJYLUMF2L49R.pdf', 'Haarlem-Festival-Ticket-HF-LNHDWJYLUMF2L49R.pdf', 'application/pdf', 23159, 'Festival ticket PDF', '2026-04-09 18:17:50'),
-(148, '/assets/tickets/Haarlem-Festival-Ticket-HF-68ZPDDEHW7A7DQTT.pdf', 'Haarlem-Festival-Ticket-HF-68ZPDDEHW7A7DQTT.pdf', 'application/pdf', 23230, 'Festival ticket PDF', '2026-04-09 18:17:50');
+(148, '/assets/tickets/Haarlem-Festival-Ticket-HF-68ZPDDEHW7A7DQTT.pdf', 'Haarlem-Festival-Ticket-HF-68ZPDDEHW7A7DQTT.pdf', 'application/pdf', 23230, 'Festival ticket PDF', '2026-04-09 18:17:50'),
+(149, '/assets/Image/profile-pictures/img_69d873c91f1f70.98912062.png', 'CUBE-GRAPH.png', 'image/png', 613495, '', '2026-04-10 03:51:37'),
+(150, '/assets/tickets/Haarlem-Festival-Ticket-HF-4LUC4Z2F2596YDR9.pdf', 'Haarlem-Festival-Ticket-HF-4LUC4Z2F2596YDR9.pdf', 'application/pdf', 23354, 'Festival ticket PDF', '2026-04-10 05:39:54'),
+(151, '/assets/tickets/Haarlem-Festival-Ticket-HF-EHB3SBFFF8DJGEGW.pdf', 'Haarlem-Festival-Ticket-HF-EHB3SBFFF8DJGEGW.pdf', 'application/pdf', 23054, 'Festival ticket PDF', '2026-04-10 05:39:54'),
+(152, '/assets/tickets/Haarlem-Festival-Ticket-HF-R3Z945S84B8Q7Q7M.pdf', 'Haarlem-Festival-Ticket-HF-R3Z945S84B8Q7Q7M.pdf', 'application/pdf', 23324, 'Festival ticket PDF', '2026-04-10 05:39:54'),
+(153, '/assets/tickets/Haarlem-Festival-Ticket-HF-PUC7Q5QMBD6AZF62.pdf', 'Haarlem-Festival-Ticket-HF-PUC7Q5QMBD6AZF62.pdf', 'application/pdf', 23268, 'Festival ticket PDF', '2026-04-10 06:44:37'),
+(154, '/assets/tickets/Haarlem-Festival-Ticket-HF-XKS3WA4SSKJ2XFAQ.pdf', 'Haarlem-Festival-Ticket-HF-XKS3WA4SSKJ2XFAQ.pdf', 'application/pdf', 22702, 'Festival ticket PDF', '2026-04-10 06:44:38'),
+(155, '/assets/tickets/Haarlem-Festival-Ticket-HF-T9X4U49KV2BAUJNG.pdf', 'Haarlem-Festival-Ticket-HF-T9X4U49KV2BAUJNG.pdf', 'application/pdf', 22746, 'Festival ticket PDF', '2026-04-10 06:44:38'),
+(156, '/assets/tickets/Haarlem-Festival-Ticket-HF-NK4BHU4BEYNGUD3V.pdf', 'Haarlem-Festival-Ticket-HF-NK4BHU4BEYNGUD3V.pdf', 'application/pdf', 23020, 'Festival ticket PDF', '2026-04-10 06:44:38'),
+(157, '/assets/tickets/Haarlem-Festival-Ticket-HF-PT2H5AT78F7LZKX8.pdf', 'Haarlem-Festival-Ticket-HF-PT2H5AT78F7LZKX8.pdf', 'application/pdf', 24089, 'Festival ticket PDF', '2026-04-10 06:44:38'),
+(158, '/assets/tickets/Haarlem-Festival-Ticket-HF-YS7TCW3NCDSB5LC7.pdf', 'Haarlem-Festival-Ticket-HF-YS7TCW3NCDSB5LC7.pdf', 'application/pdf', 23351, 'Festival ticket PDF', '2026-04-10 07:08:46'),
+(159, '/assets/tickets/Haarlem-Festival-Ticket-HF-TURWQ8PWYPJ5BXZX.pdf', 'Haarlem-Festival-Ticket-HF-TURWQ8PWYPJ5BXZX.pdf', 'application/pdf', 24422, 'Festival ticket PDF', '2026-04-10 07:08:46'),
+(160, '/assets/tickets/Haarlem-Festival-Ticket-HF-4KK28DCB6RL6V2NR.pdf', 'Haarlem-Festival-Ticket-HF-4KK28DCB6RL6V2NR.pdf', 'application/pdf', 22868, 'Festival ticket PDF', '2026-04-10 07:08:46'),
+(161, '/assets/tickets/Haarlem-Festival-Ticket-HF-NWRT3AC8H7FNDZJC.pdf', 'Haarlem-Festival-Ticket-HF-NWRT3AC8H7FNDZJC.pdf', 'application/pdf', 24392, 'Festival ticket PDF', '2026-04-10 07:08:46');
 
 -- --------------------------------------------------------
 
@@ -3164,7 +3208,10 @@ INSERT INTO `Order` (`OrderId`, `OrderNumber`, `UserAccountId`, `ProgramId`, `St
 (34, 'HF-20260408-213031-A6316C', 1, 24, 'Paid', '2026-04-08 21:30:31', '2026-04-09 21:30:31', 447.50, 93.98, 541.48, 'Test', 'Test', 'test@test.test', NULL, 'Ticket QR payload could not be encoded.'),
 (35, 'HF-20260408-213422-46E9D6', 1, 25, 'Paid', '2026-04-08 21:34:22', '2026-04-09 21:34:22', 190.00, 39.90, 229.90, 'Test', 'Test', '727546@student.inholland.nl', NULL, 'Class \"chillerlan\\QRCode\\QROptions\" not found'),
 (36, 'HF-20260408-214010-9F46F8', 1, 26, 'Paid', '2026-04-08 21:40:10', '2026-04-09 21:40:10', 190.00, 39.90, 229.90, 'Test', 'Test', 'test@test.test', '2026-04-08 21:45:57', NULL),
-(37, 'HF-20260409-181725-8FA2D6', 1, 27, 'Paid', '2026-04-09 18:17:25', '2026-04-10 18:17:25', 18.00, 3.78, 21.78, 'Leandro Test', 'Leandro Test', 'propipplayer@gmail.com', '2026-04-09 18:17:52', NULL);
+(37, 'HF-20260409-181725-8FA2D6', 1, 27, 'Paid', '2026-04-09 18:17:25', '2026-04-10 18:17:25', 18.00, 3.78, 21.78, 'Leandro Test', 'Leandro Test', 'propipplayer@gmail.com', '2026-04-09 18:17:52', NULL),
+(38, 'HF-20260410-053934-D16BFB', 2, 29, 'Paid', '2026-04-10 05:39:34', '2026-04-11 05:39:34', 30.00, 6.30, 36.30, 'Leandro', 'Friday', 'mrleandron@gmail.com', '2026-04-10 05:39:57', NULL),
+(39, 'HF-20260410-064415-9C233C', 1, 28, 'Paid', '2026-04-10 06:44:15', '2026-04-11 06:44:15', 77.50, 16.28, 93.78, 'Leandro', 'Test', 'propipplayer@gmail.com', '2026-04-10 06:44:40', NULL),
+(40, 'HF-20260410-070827-6E2912', 2, 31, 'Paid', '2026-04-10 07:08:27', '2026-04-11 07:08:27', 57.50, 12.08, 69.58, 'Leandro', 'Nunez', 'propipplayer@gmail.com', '2026-04-10 07:08:48', NULL);
 
 -- --------------------------------------------------------
 
@@ -3232,7 +3279,16 @@ INSERT INTO `OrderItem` (`OrderItemId`, `OrderId`, `EventSessionId`, `HistoryTou
 (60, 35, 42, NULL, NULL, 2, 60.00, 21.00, 0.00, ''),
 (61, 36, 44, NULL, NULL, 4, 17.50, 21.00, 0.00, ''),
 (62, 36, 44, NULL, NULL, 2, 60.00, 21.00, 0.00, ''),
-(63, 37, 50, NULL, NULL, 3, 6.00, 21.00, 0.00, '');
+(63, 37, 50, NULL, NULL, 3, 6.00, 21.00, 0.00, ''),
+(64, 38, 57, NULL, NULL, 3, 10.00, 21.00, 0.00, ''),
+(65, 39, 13, NULL, NULL, 2, 15.00, 21.00, 0.00, ''),
+(66, 39, 38, NULL, NULL, 1, 17.50, 21.00, 0.00, ''),
+(67, 39, NULL, NULL, NULL, 1, 10.00, 21.00, 0.00, ''),
+(68, 39, 58, NULL, NULL, 2, 10.00, 21.00, 0.00, ''),
+(69, 40, 19, NULL, NULL, 1, 0.00, 21.00, 0.00, ''),
+(70, 40, 38, NULL, NULL, 1, 17.50, 21.00, 0.00, ''),
+(71, 40, NULL, NULL, NULL, 2, 10.00, 21.00, 0.00, ''),
+(72, 40, 61, NULL, NULL, 2, 10.00, 21.00, 0.00, '');
 
 -- --------------------------------------------------------
 
@@ -3439,7 +3495,10 @@ INSERT INTO `Payment` (`PaymentId`, `OrderId`, `Method`, `Status`, `ProviderRef`
 (41, 34, 'CreditCard', 'Paid', 'cs_test_a1TtfjjQMLf5m6KfryS8fbEeguCjxpPRisuWExuO7g93a0e4zlTtwSodYd', 'cs_test_a1TtfjjQMLf5m6KfryS8fbEeguCjxpPRisuWExuO7g93a0e4zlTtwSodYd', NULL, '2026-04-08 21:30:31', '2026-04-08 21:31:42'),
 (42, 35, 'CreditCard', 'Paid', 'cs_test_a1rdIWMjkxIAU9QSWeiBPIdcVLWVhoW92em0KJN1s4RA2ITjY3nBOXW6rB', 'cs_test_a1rdIWMjkxIAU9QSWeiBPIdcVLWVhoW92em0KJN1s4RA2ITjY3nBOXW6rB', NULL, '2026-04-08 21:34:22', '2026-04-08 21:34:51'),
 (43, 36, 'CreditCard', 'Paid', 'cs_test_a1A9eyV6khcWgVDLsxuJGBU3vNUAkDId92CgredB2UYy6WVRx6Yp4e3rg0', 'cs_test_a1A9eyV6khcWgVDLsxuJGBU3vNUAkDId92CgredB2UYy6WVRx6Yp4e3rg0', NULL, '2026-04-08 21:40:10', '2026-04-08 21:40:31'),
-(44, 37, 'CreditCard', 'Paid', 'cs_test_a1IZvrXsCNNBffr4w9hYgXebGoU2IHIUJn8MV6P2UFNON6xGRRju0dwcjb', 'cs_test_a1IZvrXsCNNBffr4w9hYgXebGoU2IHIUJn8MV6P2UFNON6xGRRju0dwcjb', NULL, '2026-04-09 18:17:25', '2026-04-09 18:17:49');
+(44, 37, 'CreditCard', 'Paid', 'cs_test_a1IZvrXsCNNBffr4w9hYgXebGoU2IHIUJn8MV6P2UFNON6xGRRju0dwcjb', 'cs_test_a1IZvrXsCNNBffr4w9hYgXebGoU2IHIUJn8MV6P2UFNON6xGRRju0dwcjb', NULL, '2026-04-09 18:17:25', '2026-04-09 18:17:49'),
+(45, 38, 'Ideal', 'Paid', 'cs_test_a1hzum5Fidcnm6eKqSbD3ElH6WPFhVycYDcRVtSn3aczxrWxWSfr13Ejxx', 'cs_test_a1hzum5Fidcnm6eKqSbD3ElH6WPFhVycYDcRVtSn3aczxrWxWSfr13Ejxx', NULL, '2026-04-10 05:39:34', '2026-04-10 05:39:54'),
+(46, 39, 'CreditCard', 'Paid', 'cs_test_a1fjwy12VUBJwGqMBlxu6Owz13i6XjUQY0z1ISr1T5Uw1GPkzrJX0oZ3iP', 'cs_test_a1fjwy12VUBJwGqMBlxu6Owz13i6XjUQY0z1ISr1T5Uw1GPkzrJX0oZ3iP', NULL, '2026-04-10 06:44:15', '2026-04-10 06:44:37'),
+(47, 40, 'CreditCard', 'Paid', 'cs_test_a1vUqr4ZMn0fy2ilyiIZEMFTuOnotlEuFUbZd5Q9Y8rMaPhdBYy3GQsbkb', 'cs_test_a1vUqr4ZMn0fy2ilyiIZEMFTuOnotlEuFUbZd5Q9Y8rMaPhdBYy3GQsbkb', NULL, '2026-04-10 07:08:27', '2026-04-10 07:08:45');
 
 --
 -- Triggers `Payment`
@@ -3560,7 +3619,12 @@ INSERT INTO `Program` (`ProgramId`, `UserAccountId`, `SessionKey`, `CreatedAtUtc
 (24, 1, 'b15b31c0bee04adf3d1d951badc3c7d2', '2026-04-08 16:24:11', 1),
 (25, 1, 'b15b31c0bee04adf3d1d951badc3c7d2', '2026-04-08 21:33:55', 1),
 (26, 1, 'b15b31c0bee04adf3d1d951badc3c7d2', '2026-04-08 21:39:43', 1),
-(27, 1, 'c1dd2bb6790f8de87844187828335345', '2026-04-09 18:16:54', 1);
+(27, 1, 'c1dd2bb6790f8de87844187828335345', '2026-04-09 18:16:54', 1),
+(28, 1, '959171acc6ca362fcedb3459a42ec1a5', '2026-04-09 19:30:15', 1),
+(29, 2, 'ac45a9552a7ddd22d7089248b77bf224', '2026-04-10 05:39:09', 1),
+(30, NULL, '58702467a4c0e382c9c11a4e601d67f2', '2026-04-10 07:02:36', 0),
+(31, 2, '5d751d84535ff7a1f6405be1b9edc37b', '2026-04-10 07:07:08', 1),
+(32, 1, '8f1a5b50936e96249a8fdec60b6c19eb', '2026-04-10 08:37:32', 0);
 
 -- --------------------------------------------------------
 
@@ -3609,7 +3673,22 @@ INSERT INTO `ProgramItem` (`ProgramItemId`, `ProgramId`, `EventSessionId`, `Hist
 (73, 25, 42, NULL, NULL, NULL, NULL, 2, 3, 0.00),
 (74, 26, 44, NULL, NULL, NULL, NULL, 4, 1, 0.00),
 (75, 26, 44, NULL, NULL, NULL, NULL, 2, 3, 0.00),
-(76, 27, 50, NULL, NULL, NULL, NULL, 3, 1, 0.00);
+(76, 27, 50, NULL, NULL, NULL, NULL, 3, 1, 0.00),
+(77, 29, 57, NULL, NULL, NULL, NULL, 3, 1, 0.00),
+(78, 28, 13, NULL, NULL, NULL, NULL, 2, 1, 0.00),
+(79, 28, 38, NULL, NULL, NULL, NULL, 1, 1, 0.00),
+(80, 28, NULL, NULL, 2, NULL, NULL, 1, NULL, NULL),
+(81, 28, 58, NULL, NULL, NULL, NULL, 2, 1, 0.00),
+(82, 30, 1, NULL, NULL, NULL, NULL, 1, 1, 0.00),
+(83, 30, 38, NULL, NULL, NULL, NULL, 1, 1, 0.00),
+(84, 30, NULL, NULL, 3, NULL, NULL, 1, NULL, NULL),
+(85, 30, 61, NULL, NULL, NULL, NULL, 2, 1, 0.00),
+(86, 31, 19, NULL, NULL, NULL, NULL, 1, 1, 0.00),
+(87, 31, 38, NULL, NULL, NULL, NULL, 1, 1, 0.00),
+(88, 31, NULL, NULL, 4, NULL, NULL, 1, NULL, NULL),
+(89, 31, 61, NULL, NULL, NULL, NULL, 2, 1, 0.00),
+(90, 32, 90, NULL, NULL, NULL, NULL, 3, 6, 0.00),
+(91, 32, 90, NULL, NULL, NULL, NULL, 1, 3, 0.00);
 
 -- --------------------------------------------------------
 
@@ -3628,6 +3707,15 @@ CREATE TABLE `Reservation` (
   `CreatedAt` datetime NOT NULL DEFAULT current_timestamp(),
   `EventId` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+--
+-- Dumping data for table `Reservation`
+--
+
+INSERT INTO `Reservation` (`ReservationId`, `DiningDate`, `TimeSlot`, `AdultsCount`, `ChildrenCount`, `SpecialRequests`, `TotalFee`, `CreatedAt`, `EventId`) VALUES
+(2, 'Thursday', '17:00', 1, 0, '', 10.00, '2026-04-10 06:43:38', 48),
+(3, 'Thursday', '17:00', 1, 1, '', 20.00, '2026-04-10 07:05:38', 48),
+(4, 'Thursday', '17:00', 1, 1, '', 20.00, '2026-04-10 07:07:33', 48);
 
 -- --------------------------------------------------------
 
@@ -3701,8 +3789,8 @@ INSERT INTO `ScheduleDayConfig` (`ScheduleDayConfigId`, `EventTypeId`, `DayOfWee
 (44, 1, 3, 1, '2026-03-19 13:41:37'),
 (49, 5, 3, 1, '2026-03-19 13:41:42'),
 (69, 2, 0, 1, '2026-03-30 18:02:06'),
-(79, 3, 1, 0, '2026-04-08 16:14:58'),
-(80, 3, 2, 0, '2026-04-08 16:15:00');
+(79, 3, 1, 1, '2026-04-10 04:07:21'),
+(80, 3, 2, 1, '2026-04-10 04:07:23');
 
 -- --------------------------------------------------------
 
@@ -3849,7 +3937,19 @@ INSERT INTO `Ticket` (`TicketId`, `OrderItemId`, `TicketCode`, `IsScanned`, `Sca
 (39, 62, 'HF-TRCLCSXUKDHCU3CD', 0, NULL, NULL, 145),
 (40, 63, 'HF-4DZ8ZF4684J4T37Y', 0, NULL, NULL, 146),
 (41, 63, 'HF-LNHDWJYLUMF2L49R', 0, NULL, NULL, 147),
-(42, 63, 'HF-68ZPDDEHW7A7DQTT', 0, NULL, NULL, 148);
+(42, 63, 'HF-68ZPDDEHW7A7DQTT', 0, NULL, NULL, 148),
+(43, 64, 'HF-4LUC4Z2F2596YDR9', 1, '2026-04-10 06:37:18', 1, 150),
+(44, 64, 'HF-EHB3SBFFF8DJGEGW', 0, NULL, NULL, 151),
+(45, 64, 'HF-R3Z945S84B8Q7Q7M', 0, NULL, NULL, 152),
+(46, 65, 'HF-PUC7Q5QMBD6AZF62', 0, NULL, NULL, 153),
+(47, 65, 'HF-XKS3WA4SSKJ2XFAQ', 0, NULL, NULL, 154),
+(48, 66, 'HF-T9X4U49KV2BAUJNG', 0, NULL, NULL, 155),
+(49, 68, 'HF-NK4BHU4BEYNGUD3V', 0, NULL, NULL, 156),
+(50, 68, 'HF-PT2H5AT78F7LZKX8', 0, NULL, NULL, 157),
+(51, 69, 'HF-YS7TCW3NCDSB5LC7', 1, '2026-04-10 07:15:14', 1, 158),
+(52, 70, 'HF-TURWQ8PWYPJ5BXZX', 0, NULL, NULL, 159),
+(53, 72, 'HF-4KK28DCB6RL6V2NR', 0, NULL, NULL, 160),
+(54, 72, 'HF-NWRT3AC8H7FNDZJC', 0, NULL, NULL, 161);
 
 -- --------------------------------------------------------
 
@@ -3878,12 +3978,13 @@ CREATE TABLE `UserAccount` (
 --
 
 INSERT INTO `UserAccount` (`UserAccountId`, `UserRoleId`, `Username`, `Email`, `PasswordHash`, `PasswordSalt`, `FirstName`, `LastName`, `ProfilePictureAssetId`, `IsEmailConfirmed`, `IsActive`, `RegisteredAtUtc`, `UpdatedAtUtc`) VALUES
-(1, 3, 'testadmin', 'admin@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SHlsUUo3eXBCY01WV1VJZQ$6n1f58bJE7i4MYphBXDuvpR4G+N261zuEVZde8BYGjY', NULL, 'Test', 'Admin', NULL, 1, 1, '2026-02-07 19:39:57', '2026-04-05 20:08:11'),
-(2, 1, 'testuser', 'user@test.com', '$argon2id$v=19$m=65536,t=4,p=1$amsvVU9QNU5QL1dKM3QzeQ$xmHiIhwxaWEOu5RXiOKUc5KPFex/JL0NV2cmtM0IKhc', NULL, 'Test', 'User', NULL, 1, 1, '2026-02-07 19:39:57', '2026-02-07 19:39:57'),
+(1, 3, 'administrator', 'admin@test.com', '$argon2id$v=19$m=65536,t=4,p=1$SHlsUUo3eXBCY01WV1VJZQ$6n1f58bJE7i4MYphBXDuvpR4G+N261zuEVZde8BYGjY', NULL, 'Administrator', 'Admin', 149, 1, 1, '2026-02-07 19:39:57', '2026-04-10 04:09:10'),
+(2, 1, 'customer', 'user@test.com', '$argon2id$v=19$m=65536,t=4,p=1$amsvVU9QNU5QL1dKM3QzeQ$xmHiIhwxaWEOu5RXiOKUc5KPFex/JL0NV2cmtM0IKhc', NULL, 'Mathias', 'Rodriguez', NULL, 1, 1, '2026-02-07 19:39:57', '2026-04-10 04:10:21'),
 (3, 2, 'leandro', 'propipplayer@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$YnBXZktSVEl6THJFUkQuLw$VDzijF0bET0wUsjprdH+3/kSW6Iit5wbErVX+ClELdE', NULL, 'Leandro', 'Nunez', NULL, 0, 1, '2026-02-07 20:19:38', '2026-03-30 10:25:37'),
 (4, 1, 'kianeutron', 'kianexample@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$bnkvRXZCYmlQdmgyUU9Jaw$7ewAMpBbmPhemB/2LRncDOALwuaSH1uCmHI+AdMIlKI', NULL, 'Kian', 'Khatibi', NULL, 0, 1, '2026-03-16 17:40:26', '2026-03-16 17:40:26'),
 (45, 2, 'employee1', 'employee1@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$SEFnWHBGZTRISFI4eGJpMQ$YK2ZFjrjEwM9Pl+XpNfnkvBxVZH1QjaJtOqsu6Afb7Y', NULL, 'Employee 1', 'Employee 1', NULL, 0, 0, '2026-04-02 14:52:59', '2026-04-06 12:05:42'),
-(46, 2, 'ThisTestUser', 'thistestuser@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$S1dNL2hOTTZJN1RKR1U2VA$SbGxT6SJchhlS90h+p9I+2Xa8jwm0ozJgESQI9NPXxs', NULL, 'TestUser', 'TestUser', NULL, 0, 1, '2026-04-06 12:06:45', '2026-04-06 12:06:45');
+(46, 2, 'employee', 'thistestuser@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$S1dNL2hOTTZJN1RKR1U2VA$SbGxT6SJchhlS90h+p9I+2Xa8jwm0ozJgESQI9NPXxs', NULL, 'Employee', 'Test', NULL, 0, 1, '2026-04-06 12:06:45', '2026-04-10 04:09:51'),
+(47, 1, 'jose', 'dev.sronin@gmail.com', '$argon2id$v=19$m=65536,t=4,p=1$OTBES0JJeTA1cmExUWVHLg$J2IAkseanssJiim9s/c9T+KcABoyWsJEC7GP28IbicI', NULL, 'Jose', 'Manuel', NULL, 0, 1, '2026-04-10 06:55:56', '2026-04-10 06:56:33');
 
 -- --------------------------------------------------------
 
@@ -3946,7 +4047,7 @@ INSERT INTO `Venue` (`VenueId`, `Name`, `AddressLine`, `City`, `CreatedAtUtc`, `
 (19, 'Test Venue Delete', 'Test Street', 'Haarlem', '2026-04-05 21:38:49', 1),
 (20, 'Test Venue Delete', 'Test Street', 'Haarlem', '2026-04-05 21:38:54', 0),
 (21, 'Test Delete Me', 'Nowhere', 'Haarlem', '2026-04-05 21:39:38', 0),
-(22, 'This Is Just A Test', 'Test 123', 'Haarlem', '2026-04-06 12:07:05', 1);
+(22, 'This Is Just A Test', 'Test 123', 'Haarlem', '2026-04-06 12:07:05', 0);
 
 --
 -- Indexes for dumped tables
@@ -4047,6 +4148,16 @@ ALTER TABLE `EmailConfirmationToken`
   ADD PRIMARY KEY (`EmailConfirmationTokenId`),
   ADD UNIQUE KEY `Token` (`Token`),
   ADD KEY `FK_EmailConfirmationToken_User` (`UserAccountId`);
+
+--
+-- Indexes for table `EmailConfirmationTokens`
+--
+ALTER TABLE `EmailConfirmationTokens`
+  ADD PRIMARY KEY (`TokenId`),
+  ADD UNIQUE KEY `Token` (`Token`),
+  ADD KEY `idx_token` (`Token`),
+  ADD KEY `idx_user_id` (`UserAccountId`),
+  ADD KEY `idx_expires_at` (`ExpiresAtUtc`);
 
 --
 -- Indexes for table `Event`
@@ -4397,7 +4508,7 @@ ALTER TABLE `ArtistTrack`
 -- AUTO_INCREMENT for table `CmsItem`
 --
 ALTER TABLE `CmsItem`
-  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1532;
+  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1540;
 
 --
 -- AUTO_INCREMENT for table `CmsPage`
@@ -4409,7 +4520,7 @@ ALTER TABLE `CmsPage`
 -- AUTO_INCREMENT for table `CmsSection`
 --
 ALTER TABLE `CmsSection`
-  MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+  MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
 
 --
 -- AUTO_INCREMENT for table `CuisineType`
@@ -4424,10 +4535,16 @@ ALTER TABLE `EmailConfirmationToken`
   MODIFY `EmailConfirmationTokenId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `EmailConfirmationTokens`
+--
+ALTER TABLE `EmailConfirmationTokens`
+  MODIFY `TokenId` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `Event`
 --
 ALTER TABLE `Event`
-  MODIFY `EventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
+  MODIFY `EventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT for table `EventGalleryImage`
@@ -4445,7 +4562,7 @@ ALTER TABLE `EventHighlight`
 -- AUTO_INCREMENT for table `EventSession`
 --
 ALTER TABLE `EventSession`
-  MODIFY `EventSessionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=220;
+  MODIFY `EventSessionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
 
 --
 -- AUTO_INCREMENT for table `EventSessionLabel`
@@ -4457,7 +4574,7 @@ ALTER TABLE `EventSessionLabel`
 -- AUTO_INCREMENT for table `EventSessionPrice`
 --
 ALTER TABLE `EventSessionPrice`
-  MODIFY `EventSessionPriceId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=466;
+  MODIFY `EventSessionPriceId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=467;
 
 --
 -- AUTO_INCREMENT for table `EventType`
@@ -4493,19 +4610,19 @@ ALTER TABLE `InvoiceLine`
 -- AUTO_INCREMENT for table `MediaAsset`
 --
 ALTER TABLE `MediaAsset`
-  MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
+  MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=162;
 
 --
 -- AUTO_INCREMENT for table `Order`
 --
 ALTER TABLE `Order`
-  MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `OrderItem`
 --
 ALTER TABLE `OrderItem`
-  MODIFY `OrderItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+  MODIFY `OrderItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
 -- AUTO_INCREMENT for table `PageGalleryImage`
@@ -4535,7 +4652,7 @@ ALTER TABLE `PasswordResetToken`
 -- AUTO_INCREMENT for table `Payment`
 --
 ALTER TABLE `Payment`
-  MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `PriceTier`
@@ -4547,19 +4664,19 @@ ALTER TABLE `PriceTier`
 -- AUTO_INCREMENT for table `Program`
 --
 ALTER TABLE `Program`
-  MODIFY `ProgramId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `ProgramId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `ProgramItem`
 --
 ALTER TABLE `ProgramItem`
-  MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
 
 --
 -- AUTO_INCREMENT for table `Reservation`
 --
 ALTER TABLE `Reservation`
-  MODIFY `ReservationId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `ReservationId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `ScheduleDay`
@@ -4571,7 +4688,7 @@ ALTER TABLE `ScheduleDay`
 -- AUTO_INCREMENT for table `ScheduleDayConfig`
 --
 ALTER TABLE `ScheduleDayConfig`
-  MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT for table `SessionDiscountRule`
@@ -4589,13 +4706,13 @@ ALTER TABLE `StripeWebhookEvent`
 -- AUTO_INCREMENT for table `Ticket`
 --
 ALTER TABLE `Ticket`
-  MODIFY `TicketId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `TicketId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `UserAccount`
 --
 ALTER TABLE `UserAccount`
-  MODIFY `UserAccountId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `UserAccountId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `UserRole`
@@ -4675,6 +4792,12 @@ ALTER TABLE `CmsSection`
 --
 ALTER TABLE `EmailConfirmationToken`
   ADD CONSTRAINT `FK_EmailConfirmationToken_User` FOREIGN KEY (`UserAccountId`) REFERENCES `UserAccount` (`UserAccountId`);
+
+--
+-- Constraints for table `EmailConfirmationTokens`
+--
+ALTER TABLE `EmailConfirmationTokens`
+  ADD CONSTRAINT `fk_email_confirmation_user` FOREIGN KEY (`UserAccountId`) REFERENCES `UserAccount` (`UserAccountId`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `Event`

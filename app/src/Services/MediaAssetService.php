@@ -11,28 +11,13 @@ use App\Repositories\Interfaces\IMediaAssetRepository;
 use App\Services\Interfaces\IMediaAssetService;
 use App\Utils\CmsContentLimits;
 
-/**
- * Manages the full lifecycle of uploaded media assets (images).
- *
- * Handles validation (MIME type, file size, dimensions via CmsContentLimits),
- * physical file storage under /assets/Image/{folder}/, database record creation
- * via IMediaAssetRepository, and cleanup (file + record) on deletion.
- * Also exposes validation limits so the admin frontend can mirror them client-side.
- */
 class MediaAssetService implements IMediaAssetService
 {
     public function __construct(
         private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {}
 
-    /**
-     * Uploads an image file and creates a database record.
-     *
-     * @param array $file The $_FILES array element
-     * @param string $folder Subfolder within Image directory
-     * @return MediaAsset The created MediaAsset record
-     * @throws ValidationException If validation fails
-     */
+    /** @param array $file The $_FILES array element @throws ValidationException */
     public function uploadImage(array $file, string $folder = 'cms'): MediaAsset
     {
         $this->validateFile($file);
@@ -43,13 +28,6 @@ class MediaAssetService implements IMediaAssetService
         return $this->persistMediaRecord($file, $relativePath);
     }
 
-    /**
-     * Ensures the upload directory for the given folder exists and is writable.
-     *
-     * Creates the directory recursively (including any parent directories) if it
-     * doesn't exist yet. Throws a ValidationException if the directory cannot be
-     * created or written to, so the upload fails with a clear message.
-     */
     private function ensureUploadDirectory(string $folder): string
     {
         $targetDir = PathResolver::getUploadPath($folder);
@@ -65,12 +43,7 @@ class MediaAssetService implements IMediaAssetService
         return $targetDir;
     }
 
-    /**
-     * Moves the uploaded temp file to its permanent location and returns the stored relative path.
-     *
-     * The returned path starts with "/assets/" because that is what gets stored in the database
-     * and used directly in HTML <img src="..."> attributes on the frontend.
-     */
+    // Returns path starting with "/assets/" for direct use in <img src="...">.
     private function moveUploadedFile(array $file, string $targetDir, string $folder): string
     {
         $extension = $this->getExtensionFromMime($file['type']);
@@ -84,12 +57,7 @@ class MediaAssetService implements IMediaAssetService
         return '/assets/Image/' . $folder . '/' . $fileName;
     }
 
-    /**
-     * Writes the asset metadata to the database and returns the full record.
-     *
-     * AltText is stored as an empty string on creation so there is never a null in that
-     * column. It can be updated later via updateAltText() once the admin fills it in.
-     */
+    // AltText stored as empty string on creation; can be updated later.
     private function persistMediaRecord(array $file, string $relativePath): MediaAsset
     {
         $mediaAssetId = $this->mediaAssetRepository->create([
@@ -103,13 +71,7 @@ class MediaAssetService implements IMediaAssetService
         return $this->mediaAssetRepository->findById($mediaAssetId);
     }
 
-    /**
-     * Deletes a media asset record and removes the physical file from disk.
-     * Returns false if the asset does not exist.
-     *
-     * Authorization (role check) must be enforced at the controller level before
-     * calling this method — the service only validates the asset exists and the ID is valid.
-     */
+    // Authorization must be enforced at the controller level before calling this.
     public function deleteAsset(int $mediaAssetId): bool
     {
         if ($mediaAssetId <= 0) {
@@ -129,17 +91,11 @@ class MediaAssetService implements IMediaAssetService
         return $this->mediaAssetRepository->delete($mediaAssetId);
     }
 
-    /**
-     * Gets a media asset by ID.
-     */
     public function getAssetById(int $mediaAssetId): ?MediaAsset
     {
         return $this->mediaAssetRepository->findById($mediaAssetId);
     }
 
-    /**
-     * Updates the alt text for a media asset.
-     */
     public function updateAltText(int $mediaAssetId, string $altText): bool
     {
         return $this->mediaAssetRepository->update($mediaAssetId, [
@@ -147,15 +103,7 @@ class MediaAssetService implements IMediaAssetService
         ]);
     }
 
-    /**
-     * Runs all validation checks on an uploaded file before it is stored.
-     *
-     * Checks are run in this order: upload error code, MIME type, file size, image dimensions.
-     * Each check throws a ValidationException immediately on failure so the user gets one
-     * specific error message rather than a generic "upload failed".
-     *
-     * @throws ValidationException If any check fails
-     */
+    /** @throws ValidationException */
     private function validateFile(array $file): void
     {
         $this->checkUploadError($file);
@@ -164,12 +112,6 @@ class MediaAssetService implements IMediaAssetService
         $this->checkImageDimensions($file['tmp_name']);
     }
 
-    /**
-     * Throws a ValidationException when the file has a PHP upload error code.
-     *
-     * UPLOAD_ERR_OK (0) means no error; anything else means the browser or server
-     * interrupted the upload before the file arrived intact.
-     */
     private function checkUploadError(array $file): void
     {
         if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -177,12 +119,6 @@ class MediaAssetService implements IMediaAssetService
         }
     }
 
-    /**
-     * Throws a ValidationException when the MIME type is not in the allowed list.
-     *
-     * Only JPEG, PNG, and WebP are accepted. The allowed list is defined in
-     * CmsContentLimits so the rule lives in one place and is easy to extend.
-     */
     private function checkMimeType(string $mimeType): void
     {
         if (!in_array($mimeType, CmsContentLimits::IMAGE_ALLOWED_MIMES, true)) {
@@ -190,12 +126,6 @@ class MediaAssetService implements IMediaAssetService
         }
     }
 
-    /**
-     * Throws a ValidationException when the file is too large.
-     *
-     * The limit is defined in CmsContentLimits. The error message includes the
-     * formatted size (e.g. "5 MB") so the user knows what the actual limit is.
-     */
     private function checkFileSize(int $size): void
     {
         if ($size > CmsContentLimits::IMAGE_MAX_FILE_SIZE) {
@@ -205,13 +135,7 @@ class MediaAssetService implements IMediaAssetService
         }
     }
 
-    /**
-     * Throws a ValidationException when the image is wider or taller than the allowed maximum.
-     *
-     * If the dimensions cannot be read (corrupted file, non-image temp file) the check is
-     * silently skipped rather than rejecting the upload, because getimagesize failure here
-     * does not necessarily mean the file is invalid — MIME and size were already checked.
-     */
+    // Silently skipped when dimensions can't be read (MIME/size already validated).
     private function checkImageDimensions(string $tmpName): void
     {
         // @ suppresses PHP warnings from getimagesize when the temp file is unreadable — we already handle false.
@@ -235,17 +159,11 @@ class MediaAssetService implements IMediaAssetService
         }
     }
 
-    /**
-     * Generates a unique filename.
-     */
     private function generateFileName(string $extension): string
     {
         return uniqid('img_', true) . '.' . $extension;
     }
 
-    /**
-     * Gets file extension from MIME type.
-     */
     private function getExtensionFromMime(string $mimeType): string
     {
         return match ($mimeType) {
@@ -256,9 +174,6 @@ class MediaAssetService implements IMediaAssetService
         };
     }
 
-    /**
-     * Formats file size in human-readable format.
-     */
     private function formatFileSize(int $bytes): string
     {
         if ($bytes >= 1048576) {  // 1048576 = 1 MB (1024 * 1024)
@@ -267,9 +182,6 @@ class MediaAssetService implements IMediaAssetService
         return round($bytes / 1024, 1) . ' KB';  // 1024 = 1 KB
     }
 
-    /**
-     * Gets a human-readable upload error message.
-     */
     private function getUploadErrorMessage(int $errorCode): string
     {
         return match ($errorCode) {
@@ -284,33 +196,17 @@ class MediaAssetService implements IMediaAssetService
         };
     }
 
-    /**
-     * Links an uploaded media asset to a CMS item.
-     *
-     * @param int $mediaAssetId Media asset ID
-     * @param int $cmsItemId CMS item ID
-     * @return bool Success status
-     */
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
     {
         return $this->mediaAssetRepository->linkToCmsItem($mediaAssetId, $cmsItemId);
     }
 
-    /**
-     * Returns all media assets.
-     *
-     * @return MediaAsset[]
-     */
+    /** @return MediaAsset[] */
     public function getAllAssets(): array
     {
         return $this->mediaAssetRepository->findAll();
     }
 
-    /**
-     * Gets the image validation limits for client-side validation.
-     *
-     * @return array Validation limits
-     */
     public function getImageLimits(): array
     {
         return [

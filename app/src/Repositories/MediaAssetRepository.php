@@ -7,20 +7,8 @@ namespace App\Repositories;
 use App\Models\MediaAsset;
 use App\Repositories\Interfaces\IMediaAssetRepository;
 
-/**
- * CRUD operations for the MediaAsset table, which stores metadata
- * (file path, MIME type, size, alt text) for every uploaded image/file.
- *
- * Also provides a helper to link an asset to a CmsItem record.
- */
 class MediaAssetRepository extends BaseRepository implements IMediaAssetRepository
 {
-    /**
-     * Finds a media asset by ID.
-     *
-     * @param int $mediaAssetId
-     * @return MediaAsset|null
-     */
     public function findById(int $mediaAssetId): ?MediaAsset
     {
         return $this->fetchOne(
@@ -30,12 +18,7 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
         );
     }
 
-    /**
-     * Batch-fetches multiple media assets in a single query, keyed by ID for easy lookup.
-     *
-     * @param int[] $ids
-     * @return array<int, MediaAsset> Keyed by MediaAssetId
-     */
+    /** @return array<int, MediaAsset> keyed by MediaAssetId */
     public function findByIds(array $ids): array
     {
         $ids = array_filter($ids, fn(int $id) => $id > 0);
@@ -58,12 +41,7 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
         return $assets;
     }
 
-    /**
-     * Creates a new media asset record.
-     *
-     * @param array $data Keys: FilePath, OriginalFileName, MimeType, FileSizeBytes, AltText
-     * @return int The new MediaAssetId
-     */
+    // $data keys: FilePath, OriginalFileName, MimeType, FileSizeBytes, AltText
     public function create(array $data): int
     {
         return $this->executeInsert(
@@ -79,14 +57,9 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
         );
     }
 
-    /**
-     * Partially updates a media asset -- only columns present in $data are changed.
-     *
-     * @return bool False if $data contained no recognised columns, true on successful execute.
-     */
+    // Only writes columns present in $data.
     public function update(int $mediaAssetId, array $data): bool
     {
-        // Dynamically build SET clause from whichever fields the caller provided
         $fields = [];
         $params = [':mediaAssetId' => $mediaAssetId];
 
@@ -108,9 +81,6 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
         return true;
     }
 
-    /**
-     * Deletes a media asset record.
-     */
     public function delete(int $mediaAssetId): bool
     {
         $this->execute(
@@ -121,13 +91,6 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
         return true;
     }
 
-    /**
-     * Links a media asset to a CMS item by updating the CmsItem's MediaAssetId.
-     *
-     * @param int $mediaAssetId Media asset ID
-     * @param int $cmsItemId CMS item ID
-     * @return bool Success status
-     */
     public function linkToCmsItem(int $mediaAssetId, int $cmsItemId): bool
     {
         $this->execute(
@@ -138,14 +101,7 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
         return true;
     }
 
-    /**
-     * Returns all image media assets (MIME type starting with "image/") ordered by newest first.
-     *
-     * Ticket PDFs share the same MediaAsset table but must not appear in the CMS image
-     * library or featured-image pickers — they would render as broken image icons.
-     *
-     * @return MediaAsset[]
-     */
+    // Excludes ticket PDFs (MIME not starting with "image/") from the CMS image library.
     public function findAll(): array
     {
         return $this->fetchAll(
@@ -154,5 +110,4 @@ class MediaAssetRepository extends BaseRepository implements IMediaAssetReposito
             fn(array $row) => MediaAsset::fromRow($row),
         );
     }
-
 }

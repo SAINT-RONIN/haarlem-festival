@@ -11,19 +11,10 @@ use App\Services\Interfaces\ISessionService;
 use App\Services\Interfaces\ITicketFulfillmentService;
 
 /**
- * CMS controller for viewing customer orders and triggering ticket resends.
- *
- * Provides a read-only list of orders with optional payment-status filtering
- * for admin review and support purposes. The one write action is resendTickets(),
- * which lets admins force a re-delivery of the ticket email after a failed send.
+ * CMS controller for viewing customer orders, exporting data, and resending ticket emails.
  */
 class CmsOrdersController extends CmsBaseController
 {
-    /**
-     * @param ICmsOrdersService         $ordersService       Read-only order queries and detail loading.
-     * @param ITicketFulfillmentService  $fulfillmentService  Ticket PDF generation and email delivery.
-     * @param ISessionService            $sessionService      Session, CSRF, and flash-message support.
-     */
     public function __construct(
         private readonly ICmsOrdersService $ordersService,
         private readonly ITicketFulfillmentService $fulfillmentService,
@@ -32,10 +23,6 @@ class CmsOrdersController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the orders list with optional payment-status filtering.
-     * GET /cms/orders
-     */
     public function index(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -46,10 +33,6 @@ class CmsOrdersController extends CmsBaseController
         });
     }
 
-    /**
-     * Displays a single order's full detail page.
-     * GET /cms/orders/{id}
-     */
     public function detail(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -59,17 +42,7 @@ class CmsOrdersController extends CmsBaseController
         });
     }
 
-    /**
-     * Re-runs the ticket fulfillment flow and redirects back to the order detail page.
-     *
-     * Clears the prior send state so the email is delivered even if it was already sent
-     * once. Existing ticket rows and PDFs are reused — only the email is re-sent.
-     * Intended for support use when the original delivery failed (e.g. QR library error).
-     *
-     * POST /cms/orders/{id}/resend-tickets
-     *
-     * @param int $id The order ID to resend tickets for.
-     */
+    // Re-sends the ticket email only (reuses existing tickets/PDFs). For support use after failed delivery.
     public function resendTickets(int $id): void
     {
         $this->handleCmsValidationRequest(function () use ($id): void {
@@ -78,10 +51,6 @@ class CmsOrdersController extends CmsBaseController
         }, "/cms/orders/{$id}");
     }
 
-    /**
-     * Streams orders as a CSV download, respecting the current status filter.
-     * GET /cms/orders/export/csv
-     */
     public function exportCsv(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -102,10 +71,6 @@ class CmsOrdersController extends CmsBaseController
         });
     }
 
-    /**
-     * Streams orders as an Excel-compatible HTML table, respecting the current status filter.
-     * GET /cms/orders/export/excel
-     */
     public function exportExcel(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -127,10 +92,6 @@ class CmsOrdersController extends CmsBaseController
         });
     }
 
-    /**
-     * Exports a single order's full detail as a flat CSV.
-     * GET /cms/orders/{id}/export/csv
-     */
     public function exportDetailCsv(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -186,10 +147,6 @@ class CmsOrdersController extends CmsBaseController
         });
     }
 
-    /**
-     * Exports a single order's full detail (items, payments, tickets) as Excel.
-     * GET /cms/orders/{id}/export/excel
-     */
     public function exportDetailExcel(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {

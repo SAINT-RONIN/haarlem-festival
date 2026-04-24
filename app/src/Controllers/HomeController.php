@@ -20,11 +20,6 @@ class HomeController extends BaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the homepage.
-     *
-     * GET /
-     */
     public function index(): void
     {
         $this->handlePageRequest(function (): void {

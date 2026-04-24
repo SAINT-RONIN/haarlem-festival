@@ -9,9 +9,6 @@ use App\DTOs\Domain\OrderHistory\TicketPdfData;
 use App\Repositories\Interfaces\IOrderHistoryRepository;
 use App\Services\Interfaces\IOrderHistoryService;
 
-/**
- * Loads customer order history and groups ticket PDF data for display.
- */
 class OrderHistoryService implements IOrderHistoryService
 {
     public function __construct(

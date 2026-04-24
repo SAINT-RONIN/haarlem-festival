@@ -4,45 +4,43 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\HistoryPageConstants;
-use App\Constants\SharedSectionKeys;
 use App\DTOs\Domain\Pages\HistoryPageData;
+use App\Mappers\GlobalContentMapper;
+use App\Mappers\HistoryContentMapper;
 use App\Repositories\Interfaces\IGlobalContentRepository;
-use App\Repositories\Interfaces\IHistoryContentRepository;
 use App\Services\Interfaces\IHistoryService;
+use App\Repositories\Interfaces\ICmsContentRepository;
 
-/**
- * Composes the CMS-driven domain payload for the History overview page.
- */
 class HistoryService extends BaseContentService implements IHistoryService
 {
+    private ICmsContentRepository $cmsContent;
     public function __construct(
+        ICmsContentRepository $cmsContent,
         IGlobalContentRepository $globalContentRepo,
-        private readonly IHistoryContentRepository $historyContentRepo,
     ) {
         parent::__construct($globalContentRepo);
+        $this->cmsContent = $cmsContent;
     }
 
-    /** Loads every content section needed by the History overview page. */
     public function getHistoryPageData(): HistoryPageData
     {
         return $this->guardPageLoad(
-            fn(): HistoryPageData => $this->buildPageData(HistoryPageConstants::PAGE_SLUG),
+            fn(): HistoryPageData => $this->buildPageData('history'),
             'Failed to load the History page.',
         );
     }
 
-    /** Builds the full History page payload from shared and page-specific content repositories. */
     private function buildPageData(string $pageSlug): HistoryPageData
     {
+        $rawContent = $this->cmsContent->getPageContent($pageSlug);
         return new HistoryPageData(
-            heroSection: $this->globalContentRepo->findHeroContentBySection($pageSlug, SharedSectionKeys::SECTION_HERO),
-            gradientSection: $this->globalContentRepo->findGradientContent($pageSlug, SharedSectionKeys::SECTION_GRADIENT),
-            introSection: $this->globalContentRepo->findIntroContent($pageSlug, SharedSectionKeys::SECTION_INTRO),
-            routeSection: $this->historyContentRepo->findRouteContent($pageSlug, HistoryPageConstants::SECTION_ROUTE),
-            venuesSection: $this->historyContentRepo->findVenuesContent($pageSlug, HistoryPageConstants::SECTION_VENUES),
-            ticketOptionsSection: $this->historyContentRepo->findTicketOptionsContent($pageSlug, HistoryPageConstants::SECTION_TICKET_OPTIONS),
-            tourInfoSection: $this->historyContentRepo->findTourInfoContent($pageSlug, HistoryPageConstants::SECTION_TOUR_INFO),
+            heroSection: GlobalContentMapper::mapHero($rawContent['hero_section']),
+            gradientSection: GlobalContentMapper::mapGradient($rawContent['gradient_section']),
+            introSection: GlobalContentMapper::mapIntro($rawContent['intro_section']),
+            routeSection: HistoryContentMapper::mapRoute($rawContent['route_section']),
+            venuesSection: HistoryContentMapper::mapVenues($rawContent['historical_locations_section']),
+            ticketOptionsSection: HistoryContentMapper::mapTicketOptions($rawContent['ticket_options_section']),
+            tourInfoSection: HistoryContentMapper::mapTourInfo($rawContent['history_important_tour_info_section']),
             globalUiContent: $this->loadGlobalUi(),
         );
     }

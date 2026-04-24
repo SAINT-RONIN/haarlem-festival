@@ -8,12 +8,8 @@ use App\Models\Invoice;
 use App\Models\InvoiceLine;
 use App\Repositories\Interfaces\IInvoiceRepository;
 
-/**
- * PDO-backed repository for Invoice and InvoiceLine persistence.
- */
 class InvoiceRepository extends BaseRepository implements IInvoiceRepository
 {
-    /** Inserts the invoice header row and returns the new invoice id. */
     public function createInvoice(
         int $orderId,
         string $invoiceNumber,
@@ -48,7 +44,6 @@ class InvoiceRepository extends BaseRepository implements IInvoiceRepository
         );
     }
 
-    /** Inserts one invoice line row for a previously created invoice. */
     public function createInvoiceLine(
         int $invoiceId,
         string $lineDescription,
@@ -71,7 +66,6 @@ class InvoiceRepository extends BaseRepository implements IInvoiceRepository
         );
     }
 
-    /** Loads the invoice record that belongs to one order, or null when it does not exist yet. */
     public function findByOrderId(int $orderId): ?Invoice
     {
         return $this->fetchOne(
@@ -81,11 +75,6 @@ class InvoiceRepository extends BaseRepository implements IInvoiceRepository
         );
     }
 
-    /**
-     * Returns every invoice line for one invoice in display order.
-     *
-     * @return InvoiceLine[]
-     */
     public function findLinesByInvoiceId(int $invoiceId): array
     {
         return $this->fetchAll(
@@ -95,7 +84,7 @@ class InvoiceRepository extends BaseRepository implements IInvoiceRepository
         );
     }
 
-    /** Links a stored PDF media asset to the invoice after the PDF is generated. */
+    // Links a stored PDF media asset to the invoice after generation.
     public function updatePdfAssetId(int $invoiceId, int $pdfAssetId): void
     {
         $this->execute(

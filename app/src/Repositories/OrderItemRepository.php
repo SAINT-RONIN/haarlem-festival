@@ -7,18 +7,10 @@ namespace App\Repositories;
 use App\Models\OrderItem;
 use App\Repositories\Interfaces\IOrderItemRepository;
 
-/**
- * Manages the OrderItem table, which stores individual line items within an order.
- * Each item links to exactly one purchasable entity (event session, history tour, or pass)
- * via mutually exclusive nullable foreign keys.
- */
+// Each item links to exactly one purchasable entity via mutually exclusive nullable FKs:
+// EventSessionId, HistoryTourId, or PassPurchaseId. Monetary values are strings for decimal precision.
 class OrderItemRepository extends BaseRepository implements IOrderItemRepository
 {
-    /**
-     * Inserts a line item into an order. Exactly one of eventSessionId, historyTourId,
-     * or passPurchaseId should be non-null to identify the purchased product type.
-     * Monetary values are strings to preserve decimal precision.
-     */
     public function create(
         int $orderId,
         ?int $eventSessionId,
@@ -52,10 +44,7 @@ class OrderItemRepository extends BaseRepository implements IOrderItemRepository
         );
     }
 
-    /**
-     * Checks whether any order item references the given session. Used to prevent
-     * deletion of sessions that already have orders placed against them.
-     */
+    // Prevents deletion of sessions that already have orders.
     public function existsForSession(int $sessionId): bool
     {
         $stmt = $this->execute(
@@ -66,15 +55,8 @@ class OrderItemRepository extends BaseRepository implements IOrderItemRepository
         return $stmt->fetchColumn() !== false;
     }
 
-    /**
-     * Returns all order items belonging to the given order.
-     * Used to restore session capacity when an order is cancelled or expires.
-     *
-     * @return OrderItem[]
-     */
     public function findByOrderId(int $orderId): array
     {
-        // Fetch all line items for a specific order
         return $this->fetchAll(
             'SELECT * FROM OrderItem WHERE OrderId = :orderId',
             [':orderId' => $orderId],

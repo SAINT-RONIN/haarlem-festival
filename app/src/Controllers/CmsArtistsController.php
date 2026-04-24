@@ -10,19 +10,10 @@ use App\Services\Interfaces\ICmsArtistsService;
 use App\Services\Interfaces\ISessionService;
 
 /**
- * CMS controller for managing festival artists.
+ * CMS controller for managing festival artists (biography, gallery, social links).
  *
- * Handles listing, creating, editing, and soft-deleting full artist records
- * (biography, gallery, social links, etc.) through the admin panel.
- *
- * Lightweight Jazz lineup cards (name, style, image, sort order only) are
- * managed by CmsJazzCardsController. Adding or removing an existing artist
- * profile from the Jazz overview is done via addToJazzOverview /
- * removeFromJazzOverview below.
- *
- * All mutations delegate to ICmsArtistsService for validation and persistence;
- * this controller owns only HTTP flow (auth gating, CSRF checks, form
- * re-rendering on validation failure, and flash-message redirects via PRG).
+ * Lightweight Jazz lineup cards are managed by CmsJazzCardsController.
+ * Use addToJazzOverview/removeFromJazzOverview to toggle an artist on the Jazz overview.
  */
 class CmsArtistsController extends CmsBaseController
 {
@@ -33,10 +24,6 @@ class CmsArtistsController extends CmsBaseController
         parent::__construct($sessionService);
     }
 
-    /**
-     * Displays the paginated artist list with optional search filtering.
-     * GET /cms/artists
-     */
     public function index(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -47,10 +34,6 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
-    /**
-     * Renders the blank artist creation form.
-     * GET /cms/artists/create
-     */
     public function create(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -60,10 +43,6 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
-    /**
-     * Validates and persists a new artist from the creation form.
-     * POST /cms/artists
-     */
     public function store(): void
     {
         $this->handleCmsPageRequest(function (): void {
@@ -71,10 +50,6 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
-    /**
-     * Renders the edit form for an existing artist, pre-filled with current data.
-     * GET /cms/artists/{id}/edit
-     */
     public function edit(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -82,10 +57,6 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
-    /**
-     * Validates and applies updates to an existing artist.
-     * POST /cms/artists/{id}/edit
-     */
     public function update(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -93,10 +64,6 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
-    /**
-     * Adds an existing artist profile to the Jazz overview lineup.
-     * POST /cms/artists/{id}/jazz-overview/add
-     */
     public function addToJazzOverview(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -107,10 +74,6 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
-    /**
-     * Removes an artist profile from the Jazz overview lineup.
-     * POST /cms/artists/{id}/jazz-overview/remove
-     */
     public function removeFromJazzOverview(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -121,13 +84,7 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
-    /**
-     * Soft-deletes (deactivates) an artist by ID.
-     * POST /cms/artists/{id}/delete
-     *
-     * Uses a single shared CSRF scope for all delete actions on the list page,
-     * because the token is generated once for the whole list rather than per row.
-     */
+    // Uses a shared CSRF scope because the token is generated once for the whole list, not per row.
     public function delete(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -137,10 +94,6 @@ class CmsArtistsController extends CmsBaseController
         });
     }
 
-    /**
-     * Reactivates a previously deactivated artist.
-     * POST /cms/artists/{id}/activate
-     */
     public function activate(int $id): void
     {
         $this->handleCmsPageRequest(function () use ($id): void {
@@ -206,15 +159,8 @@ class CmsArtistsController extends CmsBaseController
         $this->redirectWithFlash('Artist updated successfully.', 'success', $this->readSafeReturnTo('/cms/artists'));
     }
 
-    /**
-     * Reads and maps all artist form fields from the current POST request.
-     *
-     * Rich-text fields (bioHtml, overviewLead, etc.) are read directly from $_POST because
-     * they contain TinyMCE HTML and must not be filtered by readStringPostParam, which strips
-     * tags. All other fields use the controller helper that trims and length-limits the value.
-     *
-     * @return ArtistUpsertData Typed data object ready for validation by CmsArtistsService.
-     */
+    // Rich-text fields (bioHtml, overviewLead, etc.) are read directly from $_POST
+    // because readStringPostParam strips tags and would destroy TinyMCE content.
     private function extractFormData(): ArtistUpsertData
     {
         return CmsArtistsMapper::fromFormInput([
@@ -263,12 +209,7 @@ class CmsArtistsController extends CmsBaseController
         ]);
     }
 
-    /**
-     * Builds a shared form view-model for both create and edit, switching CSRF scope,
-     * form action URL, and page title based on whether an artist ID is present.
-     *
-     * @param array<string, string> $errors
-     */
+    /** @param array<string, string> $errors */
     private function buildFormViewModel(?int $artistId, ArtistUpsertData $data, array $errors): \App\ViewModels\Cms\CmsArtistFormViewModel
     {
         // null artistId = create mode; non-null = edit mode — drives scope, action, and title
@@ -296,15 +237,8 @@ class CmsArtistsController extends CmsBaseController
         require __DIR__ . '/../Views/pages/cms/artist-edit.php';
     }
 
-    /**
-     * Builds the default form data for the "Create Artist" page.
-     *
-     * When the page is opened via the Jazz Overview card list (query flag ?showOnJazzOverview=true),
-     * the Jazz Overview checkbox is pre-checked and the sort order is pre-filled so the new artist
-     * lands in the right position without manual adjustment.
-     *
-     * @return ArtistUpsertData Blank defaults, optionally pre-configured for the Jazz Overview list.
-     */
+    // When opened via Jazz Overview (?showOnJazzOverview=true), pre-checks the checkbox
+    // and pre-fills sort order so the new artist lands in the right position.
     private function buildCreateDefaults(): ArtistUpsertData
     {
         $data = CmsArtistsMapper::emptyData();

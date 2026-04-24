@@ -10,9 +10,56 @@ use App\Helpers\SlugHelper;
 
 /**
  * Maps sanitized CMS event form input into typed upsert DTOs.
+ *
+ * fromEventPostRequest() and fromSessionPostRequest() read directly from $_POST so
+ * controllers do not need to know which fields exist in each form.
  */
 final class CmsEventsInputMapper
 {
+    /** Reads and sanitizes the event form directly from $_POST. */
+    public static function fromEventPostRequest(): EventUpsertData
+    {
+        return self::fromEventFormInput([
+            'EventTypeId'                => self::postInt('EventTypeId'),
+            'Title'                      => self::postString('Title'),
+            'ShortDescription'           => self::postString('ShortDescription', 1000),
+            'LongDescriptionHtml'        => self::postString('LongDescriptionHtml', 65535),
+            'FeaturedImageAssetId'       => self::postInt('FeaturedImageAssetId'),
+            'VenueId'                    => self::postInt('VenueId'),
+            'ArtistId'                   => self::postInt('ArtistId'),
+            'IsActive'                   => self::postBool('IsActive'),
+            'RestaurantStars'            => self::postInt('RestaurantStars'),
+            'RestaurantCuisine'          => self::postString('RestaurantCuisine'),
+            'RestaurantShortDescription' => self::postString('RestaurantShortDescription'),
+        ]);
+    }
+
+    /** Reads and sanitizes the session form directly from $_POST. */
+    public static function fromSessionPostRequest(?int $eventIdOverride = null): EventSessionUpsertData
+    {
+        return self::fromSessionFormInput([
+            'EventId'                   => self::postInt('EventId'),
+            'StartDateTime'             => self::postString('StartDateTime'),
+            'EndDateTime'               => self::postString('EndDateTime'),
+            'CapacityTotal'             => self::postInt('CapacityTotal'),
+            'CapacitySingleTicketLimit' => self::postInt('CapacitySingleTicketLimit'),
+            'HallName'                  => self::postString('HallName'),
+            'SessionType'               => self::postString('SessionType'),
+            'DurationMinutes'           => self::postInt('DurationMinutes'),
+            'LanguageCode'              => self::postString('LanguageCode'),
+            'MinAge'                    => self::postInt('MinAge'),
+            'MaxAge'                    => self::postInt('MaxAge'),
+            'ReservationRequired'       => self::postBool('ReservationRequired'),
+            'IsFree'                    => self::postBool('IsFree'),
+            'Notes'                     => self::postString('Notes', 2000),
+            'HistoryTicketLabel'        => self::postString('HistoryTicketLabel'),
+            'CtaLabel'                  => self::postString('CtaLabel'),
+            'CtaUrl'                    => self::postString('CtaUrl', 2048),
+            'IsCancelled'               => self::postBool('IsCancelled'),
+            'IsActive'                  => self::postBool('IsActive'),
+        ], $eventIdOverride);
+    }
+
     /**
      * @param array<string, mixed> $input
      */
@@ -86,5 +133,31 @@ final class CmsEventsInputMapper
 
         $trimmed = trim($value);
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private static function postString(string $key, int $maxLength = 255): ?string
+    {
+        $value = trim((string) ($_POST[$key] ?? ''));
+        if ($value === '') {
+            return null;
+        }
+
+        return mb_substr($value, 0, $maxLength);
+    }
+
+    private static function postInt(string $key): ?int
+    {
+        $value = trim((string) ($_POST[$key] ?? ''));
+        if ($value === '' || !is_numeric($value)) {
+            return null;
+        }
+
+        return (int) $value;
+    }
+
+    private static function postBool(string $key): bool
+    {
+        $raw = $_POST[$key] ?? '';
+        return $raw === '1' || $raw === 'on';
     }
 }

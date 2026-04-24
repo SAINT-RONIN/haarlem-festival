@@ -9,9 +9,6 @@ use App\Repositories\Interfaces\IEventSessionRepository;
 use App\Repositories\Interfaces\IOrderItemRepository;
 use App\Services\Interfaces\IOrderCapacityRestorer;
 
-/**
- * Restores reserved session capacity for all event-session items in an order.
- */
 final class OrderCapacityRestorer implements IOrderCapacityRestorer
 {
     public function __construct(
