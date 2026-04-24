@@ -9,8 +9,9 @@ use App\DTOs\Cms\GlobalUiContent;
 use App\DTOs\Cms\GradientSectionContent;
 use App\DTOs\Cms\HeroSectionContent;
 use App\DTOs\Cms\IntroSectionContent;
+use App\Repositories\Interfaces\IGlobalContentRepository;
 
-class GlobalContentRepository extends BaseContentRepository implements Interfaces\IGlobalContentRepository
+class GlobalContentRepository extends BaseContentRepository implements IGlobalContentRepository
 {
     public function findGlobalUiContent(string $pageSlug, string $sectionKey): GlobalUiContent
     {
@@ -21,12 +22,6 @@ class GlobalContentRepository extends BaseContentRepository implements Interface
     public function findHeroContent(string $pageSlug): HeroSectionContent
     {
         $raw = $this->cmsContent->getHeroSectionContent($pageSlug);
-        return GlobalContentMapper::mapHero($raw);
-    }
-
-    public function findHeroContentBySection(string $pageSlug, string $sectionKey): HeroSectionContent
-    {
-        $raw = $this->fetchSectionContent($pageSlug, $sectionKey);
         return GlobalContentMapper::mapHero($raw);
     }
 

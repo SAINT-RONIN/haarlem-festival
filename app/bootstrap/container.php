@@ -11,6 +11,7 @@ use App\Controllers\CmsScheduleDaysController;
 use App\Controllers\CmsVenuesController;
 use App\Controllers\EmployeeScannerController;
 use App\Controllers\OrderHistoryController;
+use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Repositories\OrderHistoryRepository;
 use App\Controllers\CmsAuthController;
 use App\Controllers\CmsDashboardController;
@@ -70,7 +71,6 @@ use App\Repositories\VenueRepository;
 use App\Repositories\CheckoutContentRepository;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\HistoricalLocationContentRepository;
-use App\Repositories\HistoryContentRepository;
 use App\Repositories\JazzContentRepository;
 use App\Repositories\RestaurantContentRepository;
 use App\Repositories\ScheduleContentRepository;
@@ -171,7 +171,6 @@ return static function (string $controllerClass): object {
     $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
     $storyContentRepo      = fn() => $make('storyContentRepo', fn() => new StorytellingContentRepository($cmsContent()));
     $restaurantContentRepo = fn() => $make('restaurantContentRepo', fn() => new RestaurantContentRepository($cmsContent()));
-    $historyContentRepo    = fn() => $make('historyContentRepo', fn() => new HistoryContentRepository($cmsContent()));
     $histLocContentRepo    = fn() => $make('histLocContentRepo', fn() => new HistoricalLocationContentRepository($cmsContent()));
 
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
@@ -429,8 +428,8 @@ return static function (string $controllerClass): object {
         })(),
         HistoryController::class => new HistoryController(
             new HistoryService(
+                $cmsContent(),
                 $globalContentRepo(),
-                $historyContentRepo(),
             ),
             new HistoricalLocationService(
                 $cmsContent(),

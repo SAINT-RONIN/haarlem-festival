@@ -32,6 +32,23 @@ class CmsContentRepository implements ICmsContentRepository
         private IMediaAssetRepository $mediaAssetRepository,
     ) {}
 
+    public function getPageContent(string $pageSlug): array
+    {
+        $pageId = $this->getPageIdBySlug($pageSlug);
+        if ($pageId === null) {
+            return [];
+        }
+
+        $sections = $this->loadPageContent($pageId);
+        $content = [];
+
+        foreach ($sections as $section) {
+            $content[$section->sectionKey] = $this->pageContentCache[$pageId][$section->sectionKey] ?? [];
+        }
+
+        return $content;
+    }
+
     public function getHomePageContent(): array
     {
         $pageId = $this->getPageIdBySlug('home');
