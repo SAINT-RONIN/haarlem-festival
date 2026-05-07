@@ -70,7 +70,6 @@ use App\Repositories\VenueRepository;
 use App\Repositories\CheckoutContentRepository;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\JazzContentRepository;
-use App\Repositories\RestaurantContentRepository;
 use App\Repositories\ScheduleContentRepository;
 use App\Repositories\StorytellingContentRepository;
 use App\Services\CmsArtistsService;
@@ -166,7 +165,6 @@ return static function (string $controllerClass): object {
     $checkoutContentRepo   = fn() => $make('checkoutContentRepo', fn() => new CheckoutContentRepository($cmsContent()));
     $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
     $storyContentRepo      = fn() => $make('storyContentRepo', fn() => new StorytellingContentRepository($cmsContent()));
-    $restaurantContentRepo = fn() => $make('restaurantContentRepo', fn() => new RestaurantContentRepository($cmsContent()));
     $histLocContentRepo    = fn() => $make('histLocContentRepo', fn() => new HistoricalLocationContentRepository($cmsContent()));
 
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
@@ -251,8 +249,8 @@ return static function (string $controllerClass): object {
     ));
     $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService($mediaAssetRepo()));
     $restaurantService = fn() => $make('restaurantService', fn() => new RestaurantService(
+        $cmsContent(),
         $globalContentRepo(),
-        $restaurantContentRepo(),
         $eventRepo(),
         $mediaAssetRepo(),
         $reservationRepo(),

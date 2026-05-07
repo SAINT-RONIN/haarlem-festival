@@ -26,5 +26,9 @@ final readonly class ReservationSectionData
         public string $reservationImage,
         public float $reservationFee,
         public array $validDates,
+        public int $durationMinutes,
+        public string $durationLabel,
+        public int $seatsPerSession,
+        public string $seatsLabel,
     ) {}
 }

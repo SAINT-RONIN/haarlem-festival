@@ -10,6 +10,11 @@ namespace App\Repositories\Interfaces;
 interface ICmsContentRepository
 {
     /**
+     * @return array<string, array<string, ?string>> All sections for a page, keyed by section key then item key
+     */
+    public function getPageContent(string $pageSlug): array;
+
+    /**
      * @return array<string, array<string, ?string>> CMS content keyed by section key, then item key
      */
     public function getHomePageContent(): array;

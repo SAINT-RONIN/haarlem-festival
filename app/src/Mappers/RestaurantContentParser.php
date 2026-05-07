@@ -4,14 +4,34 @@ declare(strict_types=1);
 
 namespace App\Mappers;
 
-/**
- * Extracts and normalises raw content fields for restaurant pages.
- * Called by RestaurantViewMapper during ViewModel construction.
- */
+use App\Constants\RestaurantPageConstants;
+
 final class RestaurantContentParser
 {
-    public const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
+    private const DEFAULT_IMAGE = RestaurantPageConstants::DEFAULT_IMAGE;
     private const VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+
+    public static function parseReservationFee(?string $raw): float
+    {
+        if ($raw !== null && is_numeric($raw)) {
+            return max(0.0, (float) $raw);
+        }
+
+        return RestaurantPageConstants::DEFAULT_RESERVATION_FEE;
+    }
+
+    /** @return string[] */
+    public static function parseValidDates(?string $raw): array
+    {
+        if ($raw !== null && trim($raw) !== '') {
+            $dates = array_values(array_filter(array_map('trim', explode(',', $raw))));
+            if ($dates !== []) {
+                return $dates;
+            }
+        }
+
+        return RestaurantPageConstants::DEFAULT_VALID_DATES;
+    }
 
     /** Strips HTML tags and normalises whitespace from a restaurant description. */
     public static function cleanDescription(string $html): string

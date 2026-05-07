@@ -7,18 +7,13 @@
 
 $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 
-$formErrors = $_SESSION['reservation_errors'] ?? [];
-$oldInput = $_SESSION['reservation_old_input'] ?? [];
-unset($_SESSION['reservation_errors'], $_SESSION['reservation_old_input']);
-
-$success = isset($_GET['success']);
 $reservation = $viewModel->reservationSection;
 $festivalDates = $reservation?->validDates ?? [];
 $reservationFee = $reservation?->reservationFee ?? 0.0;
-$durationMinutes = max(0, (int) ($viewModel->cms['durationMinutes'] ?? 0));
-$seatsPerSession = max(0, (int) ($viewModel->cms['seatsPerSession'] ?? 0));
-$durationLabel = (string) ($viewModel->cms['durationLabel'] ?? 'Duration');
-$seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
+$durationMinutes = $reservation?->durationMinutes ?? 0;
+$seatsPerSession = $reservation?->seatsPerSession ?? 0;
+$durationLabel = $reservation?->durationLabel ?? 'Duration';
+$seatsLabel = $reservation?->seatsLabel ?? 'Seats';
 $priceCards = $reservation?->priceCards ?? [];
 $timeSlots = $reservation?->timeSlots ?? [];
 $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
@@ -38,23 +33,6 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
             <h1 class="text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']"><?= $e($reservation?->title ?? 'Make your Reservation') ?></h1>
             <p class="text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat']"><?= $e($reservation?->description ?? '') ?></p>
         </div>
-
-        <?php if ($success): ?>
-            <div class="p-5 bg-green-100 border border-green-400 rounded-xl text-green-800 text-lg font-['Montserrat']">
-                Your reservation has been submitted! We will confirm your booking shortly.
-            </div>
-        <?php endif; ?>
-
-        <?php if ($formErrors !== []): ?>
-            <div class="p-5 bg-red-100 border border-red-400 rounded-xl text-red-800 font-['Montserrat']">
-                <p class="font-bold mb-2">Please fix the following:</p>
-                <ul class="list-disc list-inside space-y-1">
-                    <?php foreach ($formErrors as $err): ?>
-                        <li><?= $e($err) ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <?php foreach ($priceCards as $priceCard): ?>
@@ -105,9 +83,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                             class="w-48 h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
                         <option value="">Select a day</option>
                         <?php foreach ($festivalDates as $day): ?>
-                            <option value="<?= $e($day) ?>" <?= (($oldInput['dining_date'] ?? '') === $day) ? 'selected' : '' ?>>
-                                <?= $e($day) ?>
-                            </option>
+                            <option value="<?= $e($day) ?>"><?= $e($day) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -123,9 +99,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                             class="w-48 h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
                         <option value="">Select a time</option>
                         <?php foreach ($timeSlots as $slot): ?>
-                            <option value="<?= $e($slot) ?>" <?= (($oldInput['time_slot'] ?? '') === $slot) ? 'selected' : '' ?>>
-                                <?= $e($slot) ?>
-                            </option>
+                            <option value="<?= $e($slot) ?>"><?= $e($slot) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -144,7 +118,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                                 <span class="w-4 h-0.5 bg-stone-100 block"></span>
                             </button>
                             <span id="adults-display" class="text-slate-800 text-lg font-['Montserrat'] w-5 text-center">0</span>
-                            <input type="hidden" name="adults_count" id="adults_count" value="<?= (int) ($oldInput['adults_count'] ?? 0) ?>">
+                            <input type="hidden" name="adults_count" id="adults_count" value="0">
                             <button type="button" data-counter-target="adults_count" data-counter-action="increase"
                                     class="w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center hover:bg-red transition-colors"
                                     aria-label="Increase adults">
@@ -164,7 +138,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                                 <span class="w-4 h-0.5 bg-stone-100 block"></span>
                             </button>
                             <span id="children-display" class="text-slate-800 text-lg font-['Montserrat'] w-5 text-center">0</span>
-                            <input type="hidden" name="children_count" id="children_count" value="<?= (int) ($oldInput['children_count'] ?? 0) ?>">
+                            <input type="hidden" name="children_count" id="children_count" value="0">
                             <button type="button" data-counter-target="children_count" data-counter-action="increase"
                                     class="w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center hover:bg-red transition-colors"
                                     aria-label="Increase children">
@@ -184,7 +158,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                 </label>
                 <textarea id="special_requests" name="special_requests" rows="4"
                           placeholder="Let us know if you have any special requirements"
-                          class="w-full p-3 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] resize-none focus:outline-none focus:ring-2 focus:ring-red"><?= $e($oldInput['special_requests'] ?? '') ?></textarea>
+                          class="w-full p-3 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] resize-none focus:outline-none focus:ring-2 focus:ring-red"></textarea>
             </div>
 
             <div class="flex flex-col gap-4">

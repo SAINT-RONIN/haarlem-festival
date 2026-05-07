@@ -5,20 +5,14 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\DTOs\Cms\RestaurantCardsSectionContent;
-use App\DTOs\Cms\RestaurantDetailSectionContent;
-use App\DTOs\Cms\RestaurantEventCmsData;
 use App\DTOs\Cms\RestaurantInstructionsSectionContent;
 use App\DTOs\Cms\RestaurantIntroSectionContent;
 use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
 use App\DTOs\Domain\Events\RestaurantRow;
 use App\Models\Restaurant;
 
-/**
- * Maps raw CMS arrays into Restaurant page content models.
- */
 final class RestaurantContentMapper
 {
-    /** Maps raw CMS data to a RestaurantCardsSectionContent model. */
     public static function mapCards(array $raw): RestaurantCardsSectionContent
     {
         return new RestaurantCardsSectionContent(
@@ -27,42 +21,6 @@ final class RestaurantContentMapper
         );
     }
 
-    /** Maps raw CMS data to a RestaurantDetailSectionContent model. */
-    public static function mapDetail(array $raw): RestaurantDetailSectionContent
-    {
-        return new RestaurantDetailSectionContent(
-            detailContactTitle: $raw['detail_contact_title'] ?? null,
-            detailLabelAddress: $raw['detail_label_address'] ?? null,
-            detailLabelContact: $raw['detail_label_contact'] ?? null,
-            detailLabelOpenHours: $raw['detail_label_open_hours'] ?? null,
-            detailPracticalTitle: $raw['detail_practical_title'] ?? null,
-            detailLabelPriceFood: $raw['detail_label_price_food'] ?? null,
-            detailLabelRating: $raw['detail_label_rating'] ?? null,
-            detailLabelSpecialRequests: $raw['detail_label_special_requests'] ?? null,
-            detailGalleryTitle: $raw['detail_gallery_title'] ?? null,
-            detailAboutTitlePrefix: $raw['detail_about_title_prefix'] ?? null,
-            detailChefTitle: $raw['detail_chef_title'] ?? null,
-            detailMenuTitle: $raw['detail_menu_title'] ?? null,
-            detailMenuCuisineLabel: $raw['detail_menu_cuisine_label'] ?? null,
-            detailLocationTitle: $raw['detail_location_title'] ?? null,
-            detailLocationAddressLabel: $raw['detail_location_address_label'] ?? null,
-            detailReservationTitle: $raw['detail_reservation_title'] ?? null,
-            detailReservationDescription: $raw['detail_reservation_description'] ?? null,
-            detailReservationSlotsLabel: $raw['detail_reservation_slots_label'] ?? null,
-            detailReservationNote: $raw['detail_reservation_note'] ?? null,
-            detailReservationBtn: $raw['detail_reservation_btn'] ?? null,
-            detailLabelDuration: $raw['detail_label_duration'] ?? null,
-            detailLabelSeats: $raw['detail_label_seats'] ?? null,
-            detailLabelFestivalRated: $raw['detail_label_festival_rated'] ?? null,
-            detailLabelMichelin: $raw['detail_label_michelin'] ?? null,
-            detailMapFallbackText: $raw['detail_map_fallback_text'] ?? null,
-            detailHeroSubtitleTemplate: $raw['detail_hero_subtitle_template'] ?? null,
-            detailHeroBtnPrimary: $raw['detail_hero_btn_primary'] ?? null,
-            detailHeroBtnSecondary: $raw['detail_hero_btn_secondary'] ?? null,
-        );
-    }
-
-    /** Maps raw CMS data to a RestaurantIntroSectionContent model. */
     public static function mapIntro(array $raw): RestaurantIntroSectionContent
     {
         return new RestaurantIntroSectionContent(
@@ -74,7 +32,6 @@ final class RestaurantContentMapper
         );
     }
 
-    /** Maps raw CMS data to a RestaurantIntroSplit2SectionContent model. */
     public static function mapIntroSplit2(array $raw): RestaurantIntroSplit2SectionContent
     {
         return new RestaurantIntroSplit2SectionContent(
@@ -85,7 +42,6 @@ final class RestaurantContentMapper
         );
     }
 
-    /** Maps raw CMS data to a RestaurantInstructionsSectionContent model. */
     public static function mapInstructions(array $raw): RestaurantInstructionsSectionContent
     {
         return new RestaurantInstructionsSectionContent(
@@ -99,15 +55,15 @@ final class RestaurantContentMapper
         );
     }
 
-    /** Maps raw CMS data to per-event restaurant CMS content. */
-    public static function mapEventCmsData(array $raw): RestaurantEventCmsData
+    /**
+     * Maps a RestaurantRow + raw CMS array + resolved image path into a Restaurant model.
+     *
+     * @param array<string, ?string> $cms Raw CMS key-value pairs for this restaurant
+     */
+    public static function mapRestaurant(RestaurantRow $row, array $cms, ?string $imagePath): Restaurant
     {
-        return RestaurantEventCmsData::fromRawArray($raw);
-    }
+        $cuisineType = $cms['cuisine_type'] ?? null;
 
-    /** Maps a RestaurantRow + its CMS data + resolved image path into a Restaurant domain object. */
-    public static function mapRestaurant(RestaurantRow $row, RestaurantEventCmsData $cms, ?string $imagePath): Restaurant
-    {
         return new Restaurant(
             id: $row->eventId,
             slug: $row->slug,
@@ -115,42 +71,38 @@ final class RestaurantContentMapper
             shortDescription: $row->shortDescription,
             longDescriptionHtml: $row->longDescriptionHtml,
             featuredImagePath: $imagePath,
-            addressLine: $cms->addressLine,
-            city: $cms->city,
-            phone: $cms->phone,
-            email: $cms->email,
-            website: $cms->website,
-            aboutText: $cms->aboutText,
-            aboutImage: $cms->aboutImage,
-            chefName: $cms->chefName,
-            chefText: $cms->chefText,
-            chefImage: $cms->chefImage,
-            cuisineType: $cms->cuisineType,
-            cuisineTags: self::parseCuisineTags($cms->cuisineType),
-            menuDescription: $cms->menuDescription,
-            menuImage1: $cms->menuImage1,
-            menuImage2: $cms->menuImage2,
-            locationDescription: $cms->locationDescription,
-            mapEmbedUrl: $cms->mapEmbedUrl,
-            stars: $cms->stars,
-            michelinStars: $cms->michelinStars,
-            seatsPerSession: $cms->seatsPerSession,
-            durationMinutes: $cms->durationMinutes,
-            specialRequestsNote: $cms->specialRequestsNote,
-            priceAdult: $cms->priceAdult,
-            timeSlots: $cms->timeSlots,
-            reservationImage: $cms->reservationImage,
-            galleryImage1: $cms->galleryImage1,
-            galleryImage2: $cms->galleryImage2,
-            galleryImage3: $cms->galleryImage3,
+            addressLine: $cms['address_line'] ?? null,
+            city: $cms['city'] ?? null,
+            phone: $cms['phone'] ?? null,
+            email: $cms['email'] ?? null,
+            website: $cms['website'] ?? null,
+            aboutText: $cms['about_text'] ?? null,
+            aboutImage: $cms['about_image'] ?? null,
+            chefName: $cms['chef_name'] ?? null,
+            chefText: $cms['chef_text'] ?? null,
+            chefImage: $cms['chef_image'] ?? null,
+            cuisineType: $cuisineType,
+            cuisineTags: self::parseCuisineTags($cuisineType),
+            menuDescription: $cms['menu_description'] ?? null,
+            menuImage1: $cms['menu_image_1'] ?? null,
+            menuImage2: $cms['menu_image_2'] ?? null,
+            locationDescription: $cms['location_description'] ?? null,
+            mapEmbedUrl: $cms['map_embed_url'] ?? null,
+            stars: max(0, (int) ($cms['stars'] ?? 0)),
+            michelinStars: max(0, (int) ($cms['michelin_stars'] ?? 0)),
+            seatsPerSession: max(0, (int) ($cms['seats_per_session'] ?? 0)),
+            durationMinutes: max(0, (int) ($cms['duration_minutes'] ?? 0)),
+            specialRequestsNote: $cms['special_requests_note'] ?? null,
+            priceAdult: max(0.0, (float) ($cms['price_adult'] ?? 0)),
+            timeSlots: $cms['time_slots'] ?? null,
+            reservationImage: $cms['reservation_image'] ?? null,
+            galleryImage1: $cms['gallery_image_1'] ?? null,
+            galleryImage2: $cms['gallery_image_2'] ?? null,
+            galleryImage3: $cms['gallery_image_3'] ?? null,
         );
     }
 
-    /**
-     * Parses a comma-separated cuisine string into trimmed, non-empty tags.
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     private static function parseCuisineTags(?string $cuisineType): array
     {
         if ($cuisineType === null || trim($cuisineType) === '') {

@@ -25,8 +25,7 @@ class RestaurantController extends BaseController
     {
         $this->handlePageRequest(function (): void {
             $data = $this->restaurantService->getRestaurantPageData();
-            $cuisines = $this->restaurantService->getActiveCuisines($data->restaurants);
-            $viewModel = RestaurantViewMapper::toPageViewModel($data, $cuisines, $this->isLoggedIn());
+            $viewModel = RestaurantViewMapper::toPageViewModel($data, $this->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         });
     }
@@ -34,8 +33,7 @@ class RestaurantController extends BaseController
     public function detail(string $slug): void
     {
         $this->handlePageRequest(function () use ($slug): void {
-            $restaurant = $this->restaurantService->getRestaurant($slug);
-            $viewModel = RestaurantViewMapper::toDetailViewModel($restaurant, $this->restaurantService, $this->isLoggedIn());
+            $viewModel = $this->buildDetailViewModel($slug);
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant-detail.php', $viewModel);
         });
     }
@@ -43,8 +41,7 @@ class RestaurantController extends BaseController
     public function reservationPage(string $slug): void
     {
         $this->handlePageRequest(function () use ($slug): void {
-            $restaurant = $this->restaurantService->getRestaurant($slug);
-            $viewModel = RestaurantViewMapper::toDetailViewModel($restaurant, $this->restaurantService, $this->isLoggedIn());
+            $viewModel = $this->buildDetailViewModel($slug);
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant-reservation.php', $viewModel);
         });
     }
@@ -64,5 +61,14 @@ class RestaurantController extends BaseController
 
             $this->json(['success' => true, 'redirect' => '/my-program']);
         }, [ValidationException::class]);
+    }
+
+    private function buildDetailViewModel(string $slug): \App\ViewModels\Restaurant\RestaurantDetailViewModel
+    {
+        $restaurant = $this->restaurantService->getRestaurant($slug);
+        $sharedCms = $this->restaurantService->getDetailLabels();
+        $globalUi = $this->restaurantService->getGlobalUi();
+
+        return RestaurantViewMapper::toDetailViewModel($restaurant, $sharedCms, $globalUi, $this->isLoggedIn());
     }
 }

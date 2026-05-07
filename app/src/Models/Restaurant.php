@@ -49,15 +49,15 @@ final readonly class Restaurant
         public ?string $locationDescription,
         public ?string $mapEmbedUrl,
 
-        // ── Practical info ──
-        public ?string $stars,
-        public ?string $michelinStars,
-        public ?string $seatsPerSession,
-        public ?string $durationMinutes,
+        // ── Practical info (typed at the model level) ──
+        public int $stars,
+        public int $michelinStars,
+        public int $seatsPerSession,
+        public int $durationMinutes,
         public ?string $specialRequestsNote,
 
         // ── Reservation ──
-        public ?string $priceAdult,
+        public float $priceAdult,
         public ?string $timeSlots,
         public ?string $reservationImage,
 

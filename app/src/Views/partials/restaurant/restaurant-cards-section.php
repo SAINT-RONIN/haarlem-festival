@@ -16,7 +16,6 @@ $cards        = $restaurantCardsSection->cards;
 $labelFilters = $restaurantCardsSection->labelFilters;
 $labelAbout   = $restaurantCardsSection->labelAboutBtn;
 $labelBook    = $restaurantCardsSection->labelBookBtn;
-$activeFilter = $restaurantCardsSection->activeFilter;
 ?>
 
 <section id="restaurants-grid" class="w-full px-4 py-12 sm:px-8 lg:px-14 lg:py-16 xl:px-20">
@@ -49,7 +48,7 @@ $activeFilter = $restaurantCardsSection->activeFilter;
                     <?php foreach ($filters as $idx => $label): ?>
                         <?php
                             $filterValue = ($idx === 0) ? 'all' : strtolower(trim($label));
-                        $isActive = ($activeFilter === '' && $idx === 0) || ($activeFilter !== '' && $filterValue === $activeFilter);
+                        $isActive = ($idx === 0);
                         ?>
                         <button type="button"
                                 data-filter-value="<?= htmlspecialchars($filterValue) ?>"
