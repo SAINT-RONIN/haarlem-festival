@@ -5067,6 +5067,27 @@ INSERT INTO `CmsItem` (`CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`) VALUE
   (98, 'location_description', 'TEXT', 'Right on the Grote Markt, Grand Cafe Brinkman offers front-row seats to Haarlem''s most iconic square. Watch the city come alive during the festival from one of the best terraces in town.'),
   (99, 'location_description', 'TEXT', 'Located on the charming Oude Groenmarkt, just steps from the Grote Kerk, Toujours sits at the heart of Haarlem''s historic centre. The terrace offers a lovely view of the square, perfect for a relaxed evening during the festival.');
 
+-- Add missing detail labels (remove hardcoded strings from views)
+INSERT INTO `CmsItem` (`CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`) VALUES
+  (74, 'detail_label_duration_unit', 'TEXT', 'hours'),
+  (74, 'detail_label_seats_unit', 'TEXT', 'per session'),
+  (74, 'detail_label_price_adult', 'TEXT', 'Per adult'),
+  (74, 'detail_label_price_child', 'TEXT', 'Under 12'),
+  (74, 'detail_reservation_fee_text', 'TEXT', 'To complete your reservation, you pay a {fee} fee per person. This amount is deducted from your final bill at the restaurant, so you simply pay the remaining amount after your meal.'),
+  (74, 'detail_form_back_to_prefix', 'TEXT', 'Back to'),
+  (74, 'detail_form_label_date', 'TEXT', 'Date'),
+  (74, 'detail_form_placeholder_date', 'TEXT', 'Select a day'),
+  (74, 'detail_form_label_time', 'TEXT', 'Time'),
+  (74, 'detail_form_placeholder_time', 'TEXT', 'Select a time'),
+  (74, 'detail_form_guests_title', 'TEXT', 'Number of Guests'),
+  (74, 'detail_form_label_adult', 'TEXT', 'Adult'),
+  (74, 'detail_form_label_children', 'TEXT', 'Children'),
+  (74, 'detail_form_special_requests_title', 'TEXT', 'Special requests'),
+  (74, 'detail_form_special_requests_subtitle', 'TEXT', 'Diet, allergies, accessibility needs'),
+  (74, 'detail_form_special_requests_placeholder', 'TEXT', 'Let us know if you have any special requirements'),
+  (74, 'detail_form_total_title', 'TEXT', 'Total to be paid'),
+  (74, 'detail_form_back_to_restaurant', 'TEXT', 'Back to Restaurant');
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

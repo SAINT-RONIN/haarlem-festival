@@ -57,7 +57,7 @@ final class RestaurantViewMapper
     ): RestaurantDetailViewModel {
         $globalUi = CmsMapper::toGlobalUiData($globalUiContent, $isLoggedIn);
         $timeSlots = self::parseTimeSlots($restaurant->timeSlots);
-        $priceCards = self::buildPriceCards($restaurant);
+        $priceCards = self::buildPriceCards($restaurant, $labels);
 
         $reservationImage = self::validateImagePath($restaurant->reservationImage ?? '');
         if ($reservationImage === RestaurantPageConstants::DEFAULT_IMAGE && $restaurant->featuredImagePath !== null) {
@@ -114,16 +114,19 @@ final class RestaurantViewMapper
         return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }
 
-    /** @return array{label: string, price: string}[] */
-    private static function buildPriceCards(Restaurant $r): array
+    /**
+     * @param array<string, ?string> $labels
+     * @return array{label: string, price: string}[]
+     */
+    private static function buildPriceCards(Restaurant $r, array $labels): array
     {
         if ($r->priceAdult <= 0) {
             return [];
         }
 
         return [
-            ['label' => 'Per adult', 'price' => 'EUR ' . number_format($r->priceAdult, 2)],
-            ['label' => 'Under 12', 'price' => 'EUR ' . number_format($r->priceAdult / 2, 2)],
+            ['label' => $labels['detail_label_price_adult'] ?? 'Per adult', 'price' => 'EUR ' . number_format($r->priceAdult, 2)],
+            ['label' => $labels['detail_label_price_child'] ?? 'Under 12', 'price' => 'EUR ' . number_format($r->priceAdult / 2, 2)],
         ];
     }
 
@@ -156,7 +159,7 @@ final class RestaurantViewMapper
         return $validated;
     }
 
-    public static function validateImagePath(string $path): string
+    private static function validateImagePath(string $path): string
     {
         if ($path === '' || !str_starts_with($path, '/assets/')) {
             return RestaurantPageConstants::DEFAULT_IMAGE;
