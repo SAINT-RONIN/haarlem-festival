@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\Helpers\AgeLabelFormatter;
-use App\Helpers\FormatHelper;
 use App\Models\EventSession;
 use App\DTOs\Domain\Events\EventEditPageData;
 use App\DTOs\Domain\Events\EventsListPageData;
@@ -73,9 +72,9 @@ final class CmsEventsViewMapper
     /**
      * Builds the full event-edit page ViewModel from the service bundle plus view-layer state.
      *
-     * The bundle carries everything the service assembled (event, sessions, prices, labels,
-     * restaurant CMS fields). The remaining arguments are view-layer concerns that the service
-     * does not own: flash messages, price tier display names, and the venue dropdown list.
+     * The bundle carries everything the service assembled (event, sessions, prices, labels).
+     * The remaining arguments are view-layer concerns: flash messages, price tier display names,
+     * and the venue dropdown list.
      */
     public static function toEventEditViewModel(
         EventEditPageData $bundle,
@@ -84,53 +83,10 @@ final class CmsEventsViewMapper
         array $priceTiers = [],
         array $venues = [],
     ): CmsEventEditViewModel {
-        $sessionViewModels = self::buildSessionViewModels($bundle->sessions, $bundle->event->title, $bundle->event->eventTypeSlug);
+        $event = $bundle->event;
+        $sessionViewModels = self::buildSessionViewModels($bundle->sessions, $event->title, $event->eventTypeSlug);
         $enrichedPrices    = self::enrichPricesWithTierNames($bundle->pricesMap, $priceTiers);
 
-        return self::assembleEditViewModel(
-            $bundle->event,
-            $sessionViewModels,
-            $enrichedPrices,
-            $bundle->labelsMap,
-            $bundle->cmsDetailEditUrl,
-            $successMessage,
-            $errorMessage,
-            $bundle->restaurantStars,
-            $bundle->restaurantCuisine,
-            $bundle->restaurantShortDescription,
-            $venues,
-            $bundle->featuredImagePath,
-        );
-    }
-
-    /**
-     * Converts raw session models into CMS session ViewModels.
-     *
-     * @return CmsEventSessionViewModel[]
-     */
-    private static function buildSessionViewModels(array $sessions, string $eventTitle, string $eventTypeSlug): array
-    {
-        return array_map(
-            static fn(mixed $session): CmsEventSessionViewModel => self::resolveSessionViewModel($session, $eventTitle, $eventTypeSlug),
-            $sessions,
-        );
-    }
-
-    /** Assembles the full event-edit ViewModel from prepared sub-data. */
-    private static function assembleEditViewModel(
-        EventWithDetails $event,
-        array $sessionViewModels,
-        array $enrichedPrices,
-        array $labelsData,
-        ?string $cmsDetailEditUrl,
-        ?string $successMessage,
-        ?string $errorMessage,
-        ?string $restaurantStars = null,
-        ?string $restaurantCuisine = null,
-        ?string $restaurantShortDescription = null,
-        array $venues = [],
-        ?string $featuredImagePath = null,
-    ): CmsEventEditViewModel {
         return new CmsEventEditViewModel(
             eventId: $event->eventId,
             title: $event->title,
@@ -146,15 +102,29 @@ final class CmsEventsViewMapper
             isActive: $event->isActive,
             sessions: $sessionViewModels,
             sessionPrices: $enrichedPrices,
-            sessionLabels: $labelsData,
+            sessionLabels: $bundle->labelsMap,
             venues: $venues,
-            cmsDetailEditUrl: $cmsDetailEditUrl,
+            cmsDetailEditUrl: $bundle->cmsDetailEditUrl,
             successMessage: $successMessage,
             errorMessage: $errorMessage,
-            restaurantStars: $restaurantStars,
-            restaurantCuisine: $restaurantCuisine,
-            restaurantShortDescription: $restaurantShortDescription,
-            featuredImagePath: $featuredImagePath,
+            restaurantStars: $event->stars > 0 ? (string) $event->stars : null,
+            restaurantCuisine: $event->cuisineType,
+            featuredImagePath: $bundle->featuredImagePath,
+        );
+    }
+
+    /**
+     * @return CmsEventSessionViewModel[]
+     */
+    private static function buildSessionViewModels(array $sessions, string $eventTitle, string $eventTypeSlug): array
+    {
+        return array_map(
+            static fn(SessionWithEvent $session): CmsEventSessionViewModel => self::toEventSessionViewModel(
+                self::toEventSession($session),
+                $session->eventTitle ?: $eventTitle,
+                $session->eventTypeSlug ?: $eventTypeSlug,
+            ),
+            $sessions,
         );
     }
 
@@ -340,23 +310,6 @@ final class CmsEventsViewMapper
             );
         }
         return $result;
-    }
-
-    /**
-     * Handles both SessionWithEvent and EventSession inputs, adapting whichever
-     * type the caller supplies into a unified CmsEventSessionViewModel.
-     */
-    private static function resolveSessionViewModel(mixed $session, string $eventTitle, string $eventTypeSlug): CmsEventSessionViewModel
-    {
-        if ($session instanceof SessionWithEvent) {
-            return self::toEventSessionViewModel(
-                self::toEventSession($session),
-                $session->eventTitle ?: $eventTitle,
-                $session->eventTypeSlug ?: $eventTypeSlug,
-            );
-        }
-
-        return self::toEventSessionViewModel($session, $eventTitle, $eventTypeSlug);
     }
 
     /**

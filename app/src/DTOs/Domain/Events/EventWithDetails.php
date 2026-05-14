@@ -30,6 +30,9 @@ final readonly class EventWithDetails
         public int                $sessionCount,
         public int                $totalSoldTickets,
         public int                $totalCapacity,
+        public int                $stars = 0,
+        public int                $michelinStars = 0,
+        public ?string            $cuisineType = null,
     ) {}
 
     public static function fromRow(array $row): self
@@ -52,6 +55,9 @@ final readonly class EventWithDetails
             sessionCount: (int) ($row['SessionCount'] ?? 0),
             totalSoldTickets: (int) ($row['TotalSoldTickets'] ?? 0),
             totalCapacity: (int) ($row['TotalCapacity'] ?? 0),
+            stars: (int) ($row['Stars'] ?? 0),
+            michelinStars: (int) ($row['MichelinStars'] ?? 0),
+            cuisineType: $row['CuisineType'] ?? null,
         );
     }
 }

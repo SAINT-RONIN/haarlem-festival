@@ -7,35 +7,28 @@
 
 $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 
-$reservation = $viewModel->reservationSection;
-$festivalDates = $reservation?->validDates ?? [];
-$reservationFee = $reservation?->reservationFee ?? 0.0;
-$durationMinutes = $reservation?->durationMinutes ?? 0;
-$seatsPerSession = $reservation?->seatsPerSession ?? 0;
-$durationLabel = $reservation?->durationLabel ?? 'Duration';
-$seatsLabel = $reservation?->seatsLabel ?? 'Seats';
-$priceCards = $reservation?->priceCards ?? [];
-$timeSlots = $reservation?->timeSlots ?? [];
-$buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
+$r = $viewModel->restaurant;
+$labels = $viewModel->labels;
+$label = static fn(string $key, string $default = ''): string => $labels[$key] ?? $default;
 ?>
 
 <section id="reservation-form" class="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-10 sm:py-16 bg-white">
     <div class="max-w-5xl mx-auto flex flex-col gap-10">
-        <a href="/restaurant/<?= $e($viewModel->slug) ?>"
+        <a href="/restaurant/<?= $e($r->slug) ?>"
            class="inline-flex items-center gap-2 text-slate-800 hover:text-red font-['Montserrat'] font-medium transition-colors duration-200">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
             </svg>
-            Back to <?= $e($viewModel->name) ?>
+            Back to <?= $e($r->name) ?>
         </a>
 
         <div class="flex flex-col gap-2">
-            <h1 class="text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']"><?= $e($reservation?->title ?? 'Make your Reservation') ?></h1>
-            <p class="text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat']"><?= $e($reservation?->description ?? '') ?></p>
+            <h1 class="text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']"><?= $e($label('detail_reservation_title', 'Make your Reservation')) ?></h1>
+            <p class="text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat']"><?= $e($label('detail_reservation_description', '')) ?></p>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <?php foreach ($priceCards as $priceCard): ?>
+            <?php foreach ($viewModel->priceCards as $priceCard): ?>
                 <div class="px-4 py-5 bg-stone-100 rounded-lg flex flex-col items-center gap-2 text-center">
                     <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
@@ -45,30 +38,30 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                 </div>
             <?php endforeach; ?>
 
-            <?php if ($durationMinutes > 0): ?>
+            <?php if ($r->durationMinutes > 0): ?>
                 <div class="px-4 py-5 bg-stone-100 rounded-lg flex flex-col items-center gap-2 text-center">
                     <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span class="text-slate-800 text-sm font-light font-['Montserrat']"><?= $e($durationLabel) ?></span>
-                    <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= (int) ($durationMinutes / 60) ?> hours</span>
+                    <span class="text-slate-800 text-sm font-light font-['Montserrat']"><?= $e($label('detail_label_duration', 'Duration')) ?></span>
+                    <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= (int) ($r->durationMinutes / 60) ?> hours</span>
                 </div>
             <?php endif; ?>
 
-            <?php if ($seatsPerSession > 0): ?>
+            <?php if ($r->seatsPerSession > 0): ?>
                 <div class="px-4 py-5 bg-stone-100 rounded-lg flex flex-col items-center gap-2 text-center">
                     <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
                     </svg>
-                    <span class="text-slate-800 text-sm font-light font-['Montserrat']"><?= $e($seatsLabel) ?></span>
-                    <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $seatsPerSession ?> per session</span>
+                    <span class="text-slate-800 text-sm font-light font-['Montserrat']"><?= $e($label('detail_label_seats', 'Seats')) ?></span>
+                    <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $r->seatsPerSession ?> per session</span>
                 </div>
             <?php endif; ?>
         </div>
 
         <form id="reservation-form-fields"
               method="POST"
-              action="/restaurant/<?= $e($viewModel->slug) ?>/reservation"
+              action="/restaurant/<?= $e($r->slug) ?>/reservation"
               class="flex flex-col gap-8">
 
             <div class="flex flex-col sm:flex-row gap-6 sm:gap-10">
@@ -82,8 +75,8 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                     <select id="dining_date" name="dining_date"
                             class="w-48 h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
                         <option value="">Select a day</option>
-                        <?php foreach ($festivalDates as $day): ?>
-                            <option value="<?= $e($day) ?>"><?= $e($day) ?></option>
+                        <?php foreach ($viewModel->validDates as $day): ?>
+                            <option value="<?= $e($day) ?>"><?= date('l, j M Y', strtotime($day)) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -98,7 +91,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                     <select id="time_slot" name="time_slot"
                             class="w-48 h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
                         <option value="">Select a time</option>
-                        <?php foreach ($timeSlots as $slot): ?>
+                        <?php foreach ($viewModel->timeSlots as $slot): ?>
                             <option value="<?= $e($slot) ?>"><?= $e($slot) ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -166,7 +159,7 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
                     <p class="text-slate-800 text-xl font-bold font-['Montserrat']">Total to be paid</p>
                     <p class="text-slate-800 text-base font-['Montserrat'] mt-2">
                         To complete your reservation,
-                        <strong>you pay a EUR <?= number_format($reservationFee, 0) ?> fee per person.</strong>
+                        <strong>you pay a EUR <?= number_format($r->priceAdult, 0) ?> fee per person.</strong>
                         This <strong>amount is deducted from your final bill</strong>
                         at the restaurant, so you simply pay the remaining amount after your meal.
                     </p>
@@ -182,12 +175,12 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
             <div class="flex flex-col sm:flex-row gap-4">
                 <button type="submit"
                         class="px-6 py-3.5 bg-red hover:bg-royal-blue rounded-2xl text-white text-xl font-normal font-['Montserrat'] transition-colors duration-200 flex items-center justify-center gap-2">
-                    <?= $e($buttonText) ?>
+                    <?= $e($label('detail_reservation_btn', 'Book Now')) ?>
                     <svg class="w-2 h-4" viewBox="0 0 6 12" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M1 1l4 5-4 5"></path>
                     </svg>
                 </button>
-                <a href="/restaurant/<?= $e($viewModel->slug) ?>"
+                <a href="/restaurant/<?= $e($r->slug) ?>"
                    class="px-6 py-3.5 bg-slate-800 hover:bg-slate-600 rounded-2xl text-white text-xl font-normal font-['Montserrat'] transition-colors duration-200 flex items-center justify-center gap-2">
                     Back to Restaurant
                     <svg class="w-2 h-4" viewBox="0 0 6 12" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -200,6 +193,6 @@ $buttonText = $reservation?->buttonText ?? 'Continue to Reservation';
 </section>
 
 <script>
-window.reservationConfig = { reservationFee: <?= (float) $reservationFee ?> };
+window.reservationConfig = { reservationFee: <?= (float) $r->priceAdult ?> };
 </script>
 <script src="/assets/js/restaurant-reservation-form.js"></script>

@@ -6,15 +6,14 @@ namespace App\Services;
 
 use App\Constants\RestaurantPageConstants;
 use App\Constants\SharedSectionKeys;
-use App\DTOs\Cms\GlobalUiContent;
 use App\DTOs\Domain\Pages\RestaurantPageData;
 use App\DTOs\Domain\Restaurant\ReservationFormData;
+use App\DTOs\Domain\Restaurant\RestaurantDetailPageData;
 use App\DTOs\Domain\Events\RestaurantRow;
 use App\Models\Restaurant;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\Mappers\GlobalContentMapper;
 use App\Mappers\RestaurantContentMapper;
-use App\Mappers\RestaurantContentParser;
 use App\Exceptions\ValidationException;
 use App\Models\Reservation;
 use App\Repositories\Interfaces\ICmsContentRepository;
@@ -53,17 +52,17 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             heroContent: GlobalContentMapper::mapHero($rawContent[SharedSectionKeys::SECTION_HERO] ?? []),
             globalUiContent: $this->loadGlobalUi(),
             gradientSection: GlobalContentMapper::mapGradient($rawContent[SharedSectionKeys::SECTION_GRADIENT] ?? []),
-            introSplitSection: RestaurantContentMapper::mapIntro($rawContent[SharedSectionKeys::SECTION_INTRO_SPLIT] ?? []),
-            introSplit2Section: RestaurantContentMapper::mapIntroSplit2($rawContent[RestaurantPageConstants::SECTION_INTRO_SPLIT2] ?? []),
-            instructionsSection: RestaurantContentMapper::mapInstructions($rawContent[RestaurantPageConstants::SECTION_INSTRUCTIONS] ?? []),
-            cardsSection: RestaurantContentMapper::mapCards($rawContent[RestaurantPageConstants::SECTION_CARDS] ?? []),
+            introSplitContent: $rawContent[SharedSectionKeys::SECTION_INTRO_SPLIT] ?? [],
+            introSplit2Content: $rawContent[RestaurantPageConstants::SECTION_INTRO_SPLIT2] ?? [],
+            instructionsContent: $rawContent[RestaurantPageConstants::SECTION_INSTRUCTIONS] ?? [],
+            cardsContent: $rawContent[RestaurantPageConstants::SECTION_CARDS] ?? [],
             restaurants: $this->loadAllRestaurants(),
         );
     }
 
     // ── Detail page ─────────────────────────────────────────────────────
 
-    public function getRestaurant(string $slug): Restaurant
+    private function getRestaurant(string $slug): Restaurant
     {
         $normalized = $this->normalizeSlug($slug);
         $row = $this->eventRepository->findActiveRestaurantBySlug($normalized);
@@ -75,43 +74,41 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         return $this->buildRestaurant($row);
     }
 
-    /** @return array<string, ?string> Shared detail-page labels from CMS */
-    public function getDetailLabels(): array
+    public function getDetailPageData(string $slug): RestaurantDetailPageData
     {
-        $rawContent = $this->cmsContent->getPageContent(RestaurantPageConstants::DETAIL_PAGE_SLUG);
-        return $rawContent[RestaurantPageConstants::SECTION_DETAIL] ?? [];
+        return new RestaurantDetailPageData(
+            restaurant: $this->getRestaurant($slug),
+            detailLabels: $this->getDetailLabels(),
+            globalUi: $this->loadGlobalUi(),
+            validDates: $this->eventRepository->findRestaurantDates(),
+        );
     }
 
-    public function getGlobalUi(): GlobalUiContent
+    /** @return array<string, ?string> Shared detail-page labels from CMS */
+    private function getDetailLabels(): array
     {
-        return $this->loadGlobalUi();
+        $rawContent = $this->cmsContent->getPageContent(RestaurantPageConstants::PAGE_SLUG);
+        return $rawContent[RestaurantPageConstants::SECTION_DETAIL] ?? [];
     }
 
     // ── Reservation ─────────────────────────────────────────────────────
 
     public function submitReservation(string $slug, ReservationFormData $formData): int
     {
-        $normalized = $this->normalizeSlug($slug);
-        $row = $this->eventRepository->findActiveRestaurantBySlug($normalized);
-
-        if ($row === null) {
-            throw new RestaurantEventNotFoundException($slug);
-        }
-
-        $labels = $this->getDetailLabels();
-        $reservationFee = RestaurantContentParser::parseReservationFee($labels['detail_reservation_fee'] ?? null);
-        $validDates = RestaurantContentParser::parseValidDates($labels['detail_valid_dates'] ?? null);
+        $restaurant = $this->getRestaurant($slug);
+        $validDates = $this->eventRepository->findRestaurantDates();
 
         $this->validateReservation($formData, $validDates);
+        $this->validateSeatAvailability($restaurant, $formData);
 
         $reservation = new Reservation(
-            eventId: $row->eventId,
+            eventId: $restaurant->id,
             diningDate: $formData->diningDate,
             timeSlot: $formData->timeSlot,
             adultsCount: $formData->adultsCount,
             childrenCount: $formData->childrenCount,
             specialRequests: $formData->specialRequests,
-            totalFee: $formData->totalGuests() * $reservationFee,
+            totalFee: $formData->totalGuests() * $restaurant->priceAdult,
         );
 
         return $this->reservationRepository->insert($reservation);
@@ -138,11 +135,11 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             $sectionKey = SharedSectionKeys::eventSectionKey($row->eventId);
             $cms = $allDetailContent[$sectionKey] ?? [];
 
-            $imagePath = isset($imageMap[$row->featuredImageAssetId])
+            $imagePath = $row->featuredImageAssetId !== null && isset($imageMap[$row->featuredImageAssetId])
                 ? $imageMap[$row->featuredImageAssetId]->filePath
                 : null;
 
-            $restaurants[] = RestaurantContentMapper::mapRestaurant($row, $cms, $imagePath);
+            $restaurants[] = RestaurantContentMapper::mapRestaurant($row, $cms, $imagePath, $row->venueAddressLine, $row->venueCity);
         }
 
         return $restaurants;
@@ -158,7 +155,11 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             ? $this->mediaAssetRepository->findById($row->featuredImageAssetId)?->filePath
             : null;
 
-        return RestaurantContentMapper::mapRestaurant($row, $cms, $imagePath);
+        return RestaurantContentMapper::mapRestaurant(
+            $row, $cms, $imagePath,
+            $row->venueAddressLine,
+            $row->venueCity,
+        );
     }
 
     private function normalizeSlug(string $slug): string
@@ -170,6 +171,29 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         }
 
         return trim($normalized, '-');
+    }
+
+    private function validateSeatAvailability(Restaurant $restaurant, ReservationFormData $formData): void
+    {
+        if ($restaurant->seatsPerSession <= 0) {
+            return;
+        }
+
+        $bookedGuests = $this->reservationRepository->countBookedGuests(
+            $restaurant->id,
+            $formData->diningDate,
+            $formData->timeSlot,
+        );
+
+        $seatsRemaining = $restaurant->seatsPerSession - $bookedGuests;
+
+        if ($formData->totalGuests() > $seatsRemaining) {
+            $message = $seatsRemaining <= 0
+                ? 'This time slot is fully booked. Please choose a different time or date.'
+                : "Only {$seatsRemaining} seats remaining for this time slot.";
+
+            throw new ValidationException([$message]);
+        }
     }
 
     private function validateReservation(ReservationFormData $data, array $validDates): void

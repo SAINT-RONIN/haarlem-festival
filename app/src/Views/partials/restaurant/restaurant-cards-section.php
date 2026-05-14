@@ -24,7 +24,7 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
             <h2 class="text-3xl font-bold leading-tight text-slate-900 sm:text-4xl xl:text-[3.35rem]">
                 <?= nl2br(htmlspecialchars($title)) ?>
             </h2>
-            <p class="max-w-[1100px] text-sm leading-7 text-slate-500 sm:text-lg sm:leading-8">
+            <p class="max-w-[1100px] text-base leading-relaxed text-gray-700 sm:text-lg md:text-xl">
                 <?= nl2br(htmlspecialchars($subtitle)) ?>
             </p>
         </div>
@@ -65,14 +65,8 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
         <?php if ($cards !== []): ?>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
                 <?php foreach ($cards as $card): ?>
-                    <?php
-                        $cuisineTags = array_values(array_filter(array_map(
-                            static fn(string $tag): string => mb_strtolower(trim($tag)),
-                            explode(',', $card->cuisine),
-                        ), static fn(string $tag): bool => $tag !== ''));
-                    ?>
                     <article class="flex h-full flex-col overflow-hidden rounded-[24px] border border-slate-400 bg-white shadow-[0_1px_0_rgba(15,23,42,0.08)]"
-                             data-cuisines="<?= htmlspecialchars(implode('|', $cuisineTags)) ?>">
+                             data-cuisines="<?= htmlspecialchars(implode('|', $card->cuisineTags)) ?>">
                         <div class="p-2 pb-0">
                             <?php if ($card->isVegan): ?>
                                 <div class="flex h-[190px] w-full items-start justify-end rounded-[18px] bg-cover bg-center p-3 sm:h-[210px] xl:h-[175px] bg-dynamic"
@@ -125,11 +119,11 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
 
                             <?php if ($card->slug !== null): ?>
                                 <div class="mt-auto flex items-center justify-center gap-2.5 pt-3">
-                                    <a href="/restaurant/<?= $card->slug ?>"
+                                    <a href="/restaurant/<?= htmlspecialchars($card->slug) ?>"
                                        class="inline-flex min-w-[106px] justify-center rounded-[14px] bg-red px-4 py-2.5 text-base font-medium text-white transition-colors duration-200 hover:bg-royal-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                                         <?= htmlspecialchars($labelAbout) ?>
                                     </a>
-                                    <a href="/restaurant/<?= $card->slug ?>/reservation"
+                                    <a href="/restaurant/<?= htmlspecialchars($card->slug) ?>/reservation"
                                        class="inline-flex min-w-[106px] justify-center rounded-[14px] bg-red px-4 py-2.5 text-base font-medium text-white transition-colors duration-200 hover:bg-royal-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2">
                                         <?= htmlspecialchars($labelBook) ?>
                                     </a>

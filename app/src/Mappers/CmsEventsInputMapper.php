@@ -30,7 +30,6 @@ final class CmsEventsInputMapper
             'IsActive'                   => self::postBool('IsActive'),
             'RestaurantStars'            => self::postInt('RestaurantStars'),
             'RestaurantCuisine'          => self::postString('RestaurantCuisine'),
-            'RestaurantShortDescription' => self::postString('RestaurantShortDescription'),
         ]);
     }
 
@@ -79,7 +78,6 @@ final class CmsEventsInputMapper
             slug: SlugHelper::generate($title),
             restaurantStars: isset($input['RestaurantStars']) && $input['RestaurantStars'] !== '' ? (int) $input['RestaurantStars'] : null,
             restaurantCuisine: self::stringOrNull($input['RestaurantCuisine'] ?? null),
-            restaurantShortDescription: self::stringOrNull($input['RestaurantShortDescription'] ?? null),
         );
     }
 

@@ -24,9 +24,6 @@ final readonly class Restaurant
         // ── Contact ──
         public ?string $addressLine,
         public ?string $city,
-        public ?string $phone,
-        public ?string $email,
-        public ?string $website,
 
         // ── About ──
         public ?string $aboutText,

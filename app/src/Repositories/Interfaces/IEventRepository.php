@@ -79,6 +79,9 @@ interface IEventRepository
      */
     public function findActiveRestaurantBySlug(string $slug): ?RestaurantRow;
 
+    /** @return string[] Active festival dates for restaurants */
+    public function findRestaurantDates(): array;
+
     /**
      * Returns all active restaurants.
      *

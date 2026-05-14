@@ -109,16 +109,6 @@
                                placeholder="e.g., Dutch, fish and seafood, European">
                         <p class="text-xs text-amber-600 mt-1">Comma-separated cuisine types</p>
                     </div>
-                    <div class="md:col-span-2">
-                        <label for="RestaurantShortDescription" class="block text-sm font-medium text-gray-700 mb-1">
-                            Short Description
-                        </label>
-                        <input type="text" name="RestaurantShortDescription" id="RestaurantShortDescription"
-                               value="<?= htmlspecialchars($viewModel->restaurantShortDescription ?? '') ?>"
-                               class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 bg-amber-50"
-                               placeholder="e.g., 3-star restaurant experience during Haarlem Festival">
-                        <p class="text-xs text-amber-600 mt-1">Brief description shown on restaurant cards</p>
-                    </div>
                     <?php endif; ?>
 
                     <?php if ($viewModel->eventTypeSlug === 'restaurant'): ?>
