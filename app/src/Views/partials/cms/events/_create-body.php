@@ -176,17 +176,6 @@
                         <p class="mt-1 text-xs text-amber-600">Comma-separated cuisine types</p>
                     </div>
 
-                    <!-- Short Description (shown for Restaurant events only) -->
-                    <div id="restaurantDescField" class="hidden">
-                        <label for="RestaurantShortDescription" class="block text-sm font-medium text-gray-700 mb-1">
-                            Short Description
-                        </label>
-                        <input type="text" name="RestaurantShortDescription" id="RestaurantShortDescription"
-                               class="block w-full rounded-md border-amber-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-amber-50"
-                               placeholder="e.g., 3-star restaurant experience during Haarlem Festival">
-                        <p class="mt-1 text-xs text-amber-600">Brief description shown on restaurant cards</p>
-                    </div>
-
                 </div>
 
                 <!-- Form Actions -->

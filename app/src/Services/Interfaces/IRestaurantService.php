@@ -4,22 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\DTOs\Cms\GlobalUiContent;
 use App\DTOs\Domain\Pages\RestaurantPageData;
 use App\DTOs\Domain\Restaurant\ReservationFormData;
-use App\Models\Restaurant;
-
+use App\DTOs\Domain\Restaurant\RestaurantDetailPageData;
 interface IRestaurantService
 {
     public function getRestaurantPageData(): RestaurantPageData;
 
     /** @throws \App\Exceptions\RestaurantEventNotFoundException */
-    public function getRestaurant(string $slug): Restaurant;
-
-    /** @return array<string, ?string> Shared detail-page labels from CMS */
-    public function getDetailLabels(): array;
-
-    public function getGlobalUi(): GlobalUiContent;
+    public function getDetailPageData(string $slug): RestaurantDetailPageData;
 
     /**
      * @throws \App\Exceptions\RestaurantEventNotFoundException

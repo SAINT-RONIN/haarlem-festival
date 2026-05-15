@@ -26,9 +26,6 @@ final readonly class EventEditPageData
         public array $pricesMap,
         public array $labelsMap,
         public ?string $cmsDetailEditUrl = null,
-        public ?string $restaurantStars = null,
-        public ?string $restaurantCuisine = null,
-        public ?string $restaurantShortDescription = null,
         public ?string $featuredImagePath = null,
     ) {}
 }

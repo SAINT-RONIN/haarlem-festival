@@ -291,10 +291,12 @@ class EventRepository extends BaseRepository implements IEventRepository
         return $this->executeInsert(
             'INSERT INTO Event (
                 EventTypeId, Title, Slug, ShortDescription, LongDescriptionHtml,
-                FeaturedImageAssetId, VenueId, ArtistId, IsActive
+                FeaturedImageAssetId, VenueId, ArtistId, IsActive,
+                Stars, CuisineType
             ) VALUES (
                 :eventTypeId, :title, :slug, :shortDescription, :longDescriptionHtml,
-                :featuredImageAssetId, :venueId, :artistId, :isActive
+                :featuredImageAssetId, :venueId, :artistId, :isActive,
+                :stars, :cuisineType
             )',
             [
                 'eventTypeId' => $data->eventTypeId,
@@ -306,6 +308,8 @@ class EventRepository extends BaseRepository implements IEventRepository
                 'venueId' => $data->venueId,
                 'artistId' => $data->artistId,
                 'isActive' => $data->isActive ? 1 : 0,
+                'stars' => $data->restaurantStars ?? 0,
+                'cuisineType' => $data->restaurantCuisine,
             ],
         );
     }
@@ -321,7 +325,8 @@ class EventRepository extends BaseRepository implements IEventRepository
                 LongDescriptionHtml = :longDescriptionHtml,
                 FeaturedImageAssetId = :featuredImageAssetId,
                 VenueId = :venueId, ArtistId = :artistId,
-                IsActive = :isActive
+                IsActive = :isActive,
+                Stars = :stars, CuisineType = :cuisineType
             WHERE EventId = :eventId',
             [
                 'eventId' => $eventId,
@@ -332,6 +337,8 @@ class EventRepository extends BaseRepository implements IEventRepository
                 'venueId' => $data->venueId,
                 'artistId' => $data->artistId,
                 'isActive' => $data->isActive ? 1 : 0,
+                'stars' => $data->restaurantStars ?? 0,
+                'cuisineType' => $data->restaurantCuisine,
             ],
         );
 
@@ -401,9 +408,19 @@ class EventRepository extends BaseRepository implements IEventRepository
      */
     public function findActiveRestaurantBySlug(string $slug): ?RestaurantRow
     {
-        $row = $this->queryActiveEventBySlug($slug, EventTypeId::Restaurant);
+        $row = $this->fetchOne(
+            'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity
+            FROM Event e
+            LEFT JOIN Venue v ON v.VenueId = e.VenueId
+            WHERE e.EventTypeId = :eventTypeId
+              AND e.IsActive = 1
+              AND e.Slug = :slug
+            LIMIT 1',
+            ['eventTypeId' => EventTypeId::Restaurant->value, 'slug' => $slug],
+            fn(array $row) => RestaurantRow::fromRow($row),
+        );
 
-        return $row !== null ? RestaurantRow::fromRow($row) : null;
+        return $row;
     }
 
     /**
@@ -411,14 +428,27 @@ class EventRepository extends BaseRepository implements IEventRepository
      *
      * @return RestaurantRow[]
      */
+    /** @return string[] Active festival dates for restaurants (e.g. ['2026-07-23', '2026-07-24']) */
+    public function findRestaurantDates(): array
+    {
+        return $this->fetchAll(
+            'SELECT Date FROM ScheduleDay
+            WHERE EventTypeId = :eventTypeId AND IsDeleted = 0
+            ORDER BY Date ASC',
+            ['eventTypeId' => EventTypeId::Restaurant->value],
+            fn(array $row) => $row['Date'],
+        );
+    }
+
     public function findActiveRestaurantEvents(): array
     {
         return $this->fetchAll(
-            'SELECT *
-            FROM Event
-            WHERE EventTypeId = :eventTypeId
-              AND IsActive = 1
-            ORDER BY EventId ASC',
+            'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity
+            FROM Event e
+            LEFT JOIN Venue v ON v.VenueId = e.VenueId
+            WHERE e.EventTypeId = :eventTypeId
+              AND e.IsActive = 1
+            ORDER BY e.EventId ASC',
             ['eventTypeId' => EventTypeId::Restaurant->value],
             fn(array $row) => RestaurantRow::fromRow($row),
         );

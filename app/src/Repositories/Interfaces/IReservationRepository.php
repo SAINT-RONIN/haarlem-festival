@@ -20,4 +20,9 @@ interface IReservationRepository
      * Fetches a reservation by ID with restaurant name/address populated.
      */
     public function findWithRestaurant(int $reservationId): ?Reservation;
+
+    /**
+     * Counts total booked guests (adults + children) for a specific restaurant timeslot.
+     */
+    public function countBookedGuests(int $eventId, string $diningDate, string $timeSlot): int;
 }

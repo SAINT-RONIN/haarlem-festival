@@ -45,10 +45,10 @@ if ($introBodyHtml === '') {
             <div class="w-full flex flex-col gap-4 mt-2">
                 <?php foreach ($introSplitSection->subsections as $subsection) : ?>
                     <div class="flex flex-col gap-1">
-                        <p class="text-gray-700 text-base sm:text-lg leading-relaxed font-bold">
+                        <p class="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed font-bold">
                             <?= htmlspecialchars((string) ($subsection['heading'] ?? '')) ?>
                         </p>
-                        <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
+                        <p class="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed">
                             <?= htmlspecialchars((string) ($subsection['text'] ?? '')) ?>
                         </p>
                     </div>

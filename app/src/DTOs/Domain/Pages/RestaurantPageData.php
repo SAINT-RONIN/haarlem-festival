@@ -7,11 +7,6 @@ namespace App\DTOs\Domain\Pages;
 use App\DTOs\Cms\GlobalUiContent;
 use App\DTOs\Cms\GradientSectionContent;
 use App\DTOs\Cms\HeroSectionContent;
-use App\DTOs\Cms\RestaurantCardsSectionContent;
-use App\DTOs\Cms\RestaurantInstructionsSectionContent;
-use App\DTOs\Cms\RestaurantIntroSectionContent;
-use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
-use App\Models\Restaurant;
 
 /**
  * Carries all CMS sections and domain data needed to render the Restaurant listing page.
@@ -19,16 +14,20 @@ use App\Models\Restaurant;
 final readonly class RestaurantPageData
 {
     /**
-     * @param Restaurant[] $restaurants Active restaurant domain objects
+     * @param array<string, ?string> $introSplitContent   Raw CMS items for the intro section
+     * @param array<string, ?string> $introSplit2Content   Raw CMS items for the second intro section
+     * @param array<string, ?string> $instructionsContent  Raw CMS items for the instructions section
+     * @param array<string, ?string> $cardsContent         Raw CMS items for the cards section
+     * @param \App\Models\Restaurant[] $restaurants        Active restaurant domain objects
      */
     public function __construct(
         public HeroSectionContent $heroContent,
         public GlobalUiContent $globalUiContent,
         public GradientSectionContent $gradientSection,
-        public RestaurantIntroSectionContent $introSplitSection,
-        public RestaurantIntroSplit2SectionContent $introSplit2Section,
-        public RestaurantInstructionsSectionContent $instructionsSection,
-        public RestaurantCardsSectionContent $cardsSection,
+        public array $introSplitContent,
+        public array $introSplit2Content,
+        public array $instructionsContent,
+        public array $cardsContent,
         public array $restaurants,
     ) {}
 }

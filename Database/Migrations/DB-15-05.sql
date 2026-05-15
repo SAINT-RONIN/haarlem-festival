@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Generation Time: Apr 10, 2026 at 02:18 PM
--- Server version: 12.0.2-MariaDB-ubu2404
--- PHP Version: 8.3.27
+-- Tempo de geração: 15/05/2026 às 11:07
+-- Versão do servidor: 12.0.2-MariaDB-ubu2404
+-- Versão do PHP: 8.3.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,20 +18,22 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `haarlem_festival_db`
+-- Banco de dados: `haarlem_festival_db`
 --
+CREATE DATABASE IF NOT EXISTS `haarlem_festival_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci;
+USE `haarlem_festival_db`;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Artist`
+-- Estrutura para tabela `Artist`
 --
 
 CREATE TABLE `Artist` (
   `ArtistId` int(11) NOT NULL,
   `Name` varchar(120) NOT NULL,
   `Style` varchar(120) NOT NULL DEFAULT '',
-  `CardDescription` text NOT NULL DEFAULT '',can
+  `CardDescription` text NOT NULL DEFAULT '',
   `HeroSubtitle` varchar(200) NOT NULL DEFAULT '',
   `HeroImagePath` varchar(500) NOT NULL DEFAULT '',
   `OriginText` varchar(200) NOT NULL DEFAULT '',
@@ -60,7 +62,7 @@ CREATE TABLE `Artist` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Artist`
+-- Despejando dados para a tabela `Artist`
 --
 
 INSERT INTO `Artist` (`ArtistId`, `Name`, `Style`, `CardDescription`, `HeroSubtitle`, `HeroImagePath`, `OriginText`, `FormedText`, `BioHtml`, `OverviewLead`, `OverviewBodySecondary`, `LineupHeading`, `HighlightsHeading`, `PhotoGalleryHeading`, `PhotoGalleryDescription`, `AlbumsHeading`, `AlbumsDescription`, `ListenHeading`, `ListenSubheading`, `ListenDescription`, `LiveCtaHeading`, `LiveCtaDescription`, `PerformancesHeading`, `PerformancesDescription`, `CardSortOrder`, `ShowOnJazzOverview`, `ImageAssetId`, `IsActive`, `CreatedAtUtc`) VALUES
@@ -93,7 +95,7 @@ INSERT INTO `Artist` (`ArtistId`, `Name`, `Style`, `CardDescription`, `HeroSubti
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ArtistAlbum`
+-- Estrutura para tabela `ArtistAlbum`
 --
 
 CREATE TABLE `ArtistAlbum` (
@@ -108,7 +110,7 @@ CREATE TABLE `ArtistAlbum` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `ArtistAlbum`
+-- Despejando dados para a tabela `ArtistAlbum`
 --
 
 INSERT INTO `ArtistAlbum` (`ArtistAlbumId`, `ArtistId`, `Title`, `Description`, `Year`, `Tag`, `ImagePath`, `SortOrder`) VALUES
@@ -122,7 +124,7 @@ INSERT INTO `ArtistAlbum` (`ArtistAlbumId`, `ArtistId`, `Title`, `Description`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ArtistGalleryImage`
+-- Estrutura para tabela `ArtistGalleryImage`
 --
 
 CREATE TABLE `ArtistGalleryImage` (
@@ -133,7 +135,7 @@ CREATE TABLE `ArtistGalleryImage` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `ArtistGalleryImage`
+-- Despejando dados para a tabela `ArtistGalleryImage`
 --
 
 INSERT INTO `ArtistGalleryImage` (`ArtistGalleryImageId`, `ArtistId`, `ImagePath`, `SortOrder`) VALUES
@@ -147,7 +149,7 @@ INSERT INTO `ArtistGalleryImage` (`ArtistGalleryImageId`, `ArtistId`, `ImagePath
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ArtistHighlight`
+-- Estrutura para tabela `ArtistHighlight`
 --
 
 CREATE TABLE `ArtistHighlight` (
@@ -158,7 +160,7 @@ CREATE TABLE `ArtistHighlight` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `ArtistHighlight`
+-- Despejando dados para a tabela `ArtistHighlight`
 --
 
 INSERT INTO `ArtistHighlight` (`ArtistHighlightId`, `ArtistId`, `HighlightText`, `SortOrder`) VALUES
@@ -178,7 +180,7 @@ INSERT INTO `ArtistHighlight` (`ArtistHighlightId`, `ArtistId`, `HighlightText`,
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ArtistLineupMember`
+-- Estrutura para tabela `ArtistLineupMember`
 --
 
 CREATE TABLE `ArtistLineupMember` (
@@ -189,7 +191,7 @@ CREATE TABLE `ArtistLineupMember` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `ArtistLineupMember`
+-- Despejando dados para a tabela `ArtistLineupMember`
 --
 
 INSERT INTO `ArtistLineupMember` (`ArtistLineupMemberId`, `ArtistId`, `MemberText`, `SortOrder`) VALUES
@@ -208,7 +210,7 @@ INSERT INTO `ArtistLineupMember` (`ArtistLineupMemberId`, `ArtistId`, `MemberTex
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ArtistTrack`
+-- Estrutura para tabela `ArtistTrack`
 --
 
 CREATE TABLE `ArtistTrack` (
@@ -224,7 +226,7 @@ CREATE TABLE `ArtistTrack` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `ArtistTrack`
+-- Despejando dados para a tabela `ArtistTrack`
 --
 
 INSERT INTO `ArtistTrack` (`ArtistTrackId`, `ArtistId`, `Title`, `Album`, `Description`, `Duration`, `ImagePath`, `ProgressClass`, `SortOrder`) VALUES
@@ -240,7 +242,7 @@ INSERT INTO `ArtistTrack` (`ArtistTrackId`, `ArtistId`, `Title`, `Album`, `Descr
 -- --------------------------------------------------------
 
 --
--- Table structure for table `CmsItem`
+-- Estrutura para tabela `CmsItem`
 --
 
 CREATE TABLE `CmsItem` (
@@ -255,7 +257,7 @@ CREATE TABLE `CmsItem` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `CmsItem`
+-- Despejando dados para a tabela `CmsItem`
 --
 
 INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
@@ -495,7 +497,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (294, 56, 'gradient_subheading', 'TEXT', 'Food, stories, and shared moments across Haarlem.', NULL, NULL, '2026-02-16 16:31:14'),
 (295, 56, 'gradient_background_image', 'IMAGE_PATH', '/assets/Image/restaurants/chef-preparing-food.png', NULL, NULL, '2026-02-16 16:31:14'),
 (296, 57, 'intro_heading', 'HEADING', 'Yummy! at the Heart of the Festival', NULL, NULL, '2026-02-16 16:31:14'),
-(297, 57, 'intro_body', 'TEXT', 'Welcome to Yummy!, the food experience of the Haarlem Festival.\nFour days where some of the city\'s favorite restaurants open their doors with special menus made just for this event.\n\n## What is Yummy?\nA festival of food where each restaurant offers one unique menu, set time slots, and special prices.\n\n## Who takes part?\nLocal chefs and restaurants from all around Haarlem, prepare with their own style a great variety of dishes, such as: Dutch-French-European-Fish & Seafood-Modern Vegan.\n\n## How does it work?\nChoose a restaurant, pick a time slot, and make a reservation. Seats are limited, so booking ahead is important.\n\nCome enjoy great food, good company, and a warm festival atmosphere.', NULL, NULL, '2026-02-16 16:31:14'),
+(297, 57, 'intro_body', 'TEXT', 'Welcome to Yummy!, the food experience of the Haarlem Festival. Four days where some of the city\'s favorite restaurants open their doors with special menus made just for this event.', NULL, NULL, '2026-05-14 13:47:39'),
 (298, 57, 'intro_image', 'IMAGE_PATH', '/assets/Image/restaurants/table-with-food-and-drink.png', NULL, NULL, '2026-02-16 16:31:14'),
 (299, 57, 'intro_image_alt', 'TEXT', 'Yummy! at the Heart of the Festival', NULL, NULL, '2026-02-16 16:31:14'),
 (300, 58, 'intro2_heading', 'HEADING', 'When Haarlem Becomes a Dining Room', NULL, NULL, '2026-02-16 16:31:14'),
@@ -626,13 +628,13 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (890, 72, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
 (891, 73, 'hero_image', 'IMAGE_PATH', '', NULL, NULL, '2026-03-19 12:34:01'),
 (892, 61, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
-(893, 61, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01');
-INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
+(893, 61, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
 (894, 62, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
 (895, 62, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
 (896, 63, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
 (897, 63, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
-(898, 64, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
+(898, 64, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01');
+INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
 (899, 64, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
 (900, 65, 'back_button_label', 'BUTTON_TEXT', 'Back to storytelling', NULL, NULL, '2026-03-19 12:34:01'),
 (901, 65, 'reserve_button_label', 'BUTTON_TEXT', 'Reserve your spot', NULL, NULL, '2026-03-19 12:34:01'),
@@ -971,35 +973,6 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1347, 76, 'schedule_show_additional_info', 'TEXT', '0', NULL, NULL, '2026-03-30 12:49:17'),
 (1348, 76, 'schedule_year', 'TEXT', '2026', NULL, NULL, '2026-03-30 12:49:17'),
 (1349, 76, 'schedule_pay_what_you_like_text', 'TEXT', 'Pay what you like', NULL, NULL, '2026-03-30 12:49:17'),
-(1360, 93, 'cuisine_type', 'TEXT', 'Dutch, fish and seafood, European', NULL, NULL, '2026-04-01 12:33:53'),
-(1361, 94, 'cuisine_type', 'TEXT', 'French, fish and seafood, European', NULL, NULL, '2026-04-01 12:33:53'),
-(1362, 95, 'cuisine_type', 'TEXT', 'Dutch, fish and seafood, European', NULL, NULL, '2026-04-01 12:33:53'),
-(1363, 96, 'cuisine_type', 'TEXT', 'Dutch, French, European', NULL, NULL, '2026-04-01 12:33:53'),
-(1364, 97, 'cuisine_type', 'TEXT', 'Vegan', NULL, NULL, '2026-04-05 21:27:41'),
-(1365, 98, 'cuisine_type', 'TEXT', 'Dutch, European, Modern', NULL, NULL, '2026-04-01 12:33:53'),
-(1366, 99, 'cuisine_type', 'TEXT', 'Dutch, fish and seafood, European', NULL, NULL, '2026-04-01 12:33:53'),
-(1367, 93, 'address_line', 'TEXT', 'Botermarkt 17, 2011 XL Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1368, 94, 'address_line', 'TEXT', 'Spaarne 96, 2011 CL Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1369, 95, 'address_line', 'TEXT', 'Kleine Houtstraat 70, 2011 DR Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1370, 96, 'address_line', 'TEXT', 'Twijnderslaan 7, 2012 BG Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1371, 97, 'address_line', 'TEXT', 'Koningstraat 5, 2011 TB Haarlem', NULL, NULL, '2026-04-05 21:27:41');
-INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
-(1372, 98, 'address_line', 'TEXT', 'Grote Markt 13, 2011 RC Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1373, 99, 'address_line', 'TEXT', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1374, 93, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1375, 94, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1376, 95, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1377, 96, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1378, 97, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1379, 98, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1380, 99, 'city', 'TEXT', 'Haarlem', NULL, NULL, '2026-04-01 12:33:54'),
-(1381, 93, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-01 12:33:54'),
-(1382, 94, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-01 12:33:54'),
-(1383, 95, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-01 12:33:54'),
-(1384, 96, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-01 12:33:54'),
-(1385, 97, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-05 21:27:41'),
-(1386, 98, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-01 12:33:54'),
-(1387, 99, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-01 12:33:54'),
 (1388, 57, 'intro_sub1_heading', 'TEXT', 'What is Yummy?', NULL, NULL, '2026-04-01 19:35:39'),
 (1389, 57, 'intro_sub1_text', 'TEXT', 'A festival of food where each restaurant offers one unique menu, set time slots, and special prices.', NULL, NULL, '2026-04-01 19:35:39'),
 (1390, 57, 'intro_sub2_heading', 'TEXT', 'Who takes part?', NULL, NULL, '2026-04-01 19:35:39'),
@@ -1007,40 +980,20 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1392, 57, 'intro_sub3_heading', 'TEXT', 'How does it work?', NULL, NULL, '2026-04-01 19:35:39'),
 (1393, 57, 'intro_sub3_text', 'TEXT', 'Choose a restaurant, pick a time slot, and make a reservation. Seats are limited, so booking ahead is important.', NULL, NULL, '2026-04-01 19:35:39'),
 (1394, 57, 'intro_closing', 'TEXT', 'Come enjoy great food, good company, and a warm festival atmosphere.', NULL, NULL, '2026-04-01 19:35:39'),
-(1396, 93, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
-(1397, 93, 'price_adult', 'TEXT', '45.00', NULL, NULL, '2026-04-01 19:35:39'),
-(1398, 93, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
-(1400, 94, 'time_slots', 'TEXT', '17:00, 19:15, 21:30', NULL, NULL, '2026-04-01 19:35:39'),
-(1401, 94, 'price_adult', 'TEXT', '45.00', NULL, NULL, '2026-04-01 19:35:39'),
-(1402, 94, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
-(1404, 95, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
-(1405, 95, 'price_adult', 'TEXT', '45.00', NULL, NULL, '2026-04-01 19:35:39'),
-(1406, 95, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
-(1408, 96, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
-(1409, 96, 'price_adult', 'TEXT', '45.00', NULL, NULL, '2026-04-01 19:35:39'),
-(1410, 96, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
-(1412, 97, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
-(1413, 97, 'price_adult', 'TEXT', '35.00', NULL, NULL, '2026-04-01 19:35:39'),
-(1414, 97, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
-(1416, 98, 'time_slots', 'TEXT', '16:30, 18:30, 20:30', NULL, NULL, '2026-04-01 19:35:39'),
-(1417, 98, 'price_adult', 'TEXT', '35.00', NULL, NULL, '2026-04-01 19:35:39'),
-(1418, 98, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
-(1420, 99, 'time_slots', 'TEXT', '17:30, 19:15, 21:00', NULL, NULL, '2026-04-01 19:35:39'),
-(1421, 99, 'price_adult', 'TEXT', '35.00', NULL, NULL, '2026-04-01 19:35:39'),
-(1422, 99, 'duration_minutes', 'TEXT', '120', NULL, NULL, '2026-04-01 19:35:39'),
 (1452, 35, 'booking_contact_eyebrow', 'TEXT', 'CONTACT US', NULL, NULL, '2026-04-04 19:34:48'),
 (1453, 35, 'booking_contact_title', 'TEXT', 'Get Information', NULL, NULL, '2026-04-04 19:34:48'),
 (1454, 35, 'booking_contact_description', 'TEXT', 'Questions about the festival, venues, or artists? Contact our office during business hours.', NULL, NULL, '2026-04-04 19:34:48'),
 (1455, 35, 'booking_contact_phone_office', 'TEXT', '023 - 517 58 50 (Office)', NULL, NULL, '2026-04-04 19:34:48'),
 (1456, 35, 'booking_contact_phone_cash_desk', 'TEXT', '023 - 517 58 58 (Cash Desk)', NULL, NULL, '2026-04-04 19:34:48'),
-(1457, 35, 'booking_contact_hours', 'TEXT', '10:00 - 17:00', NULL, NULL, '2026-04-04 19:34:48'),
+(1457, 35, 'booking_contact_hours', 'TEXT', '10:00 - 17:00', NULL, NULL, '2026-04-04 19:34:48');
+INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`, `HtmlValue`, `MediaAssetId`, `UpdatedAtUtc`) VALUES
 (1458, 35, 'booking_venue_eyebrow', 'TEXT', 'VENUE DETAILS', NULL, NULL, '2026-04-04 19:34:48'),
 (1459, 35, 'booking_venue_title', 'TEXT', 'Visit Patronaat', NULL, NULL, '2026-04-04 19:34:48'),
 (1460, 35, 'booking_venue_description', 'TEXT', 'Learn more about our main indoor venue, accessibility options, and facilities.', NULL, NULL, '2026-04-04 19:34:48'),
 (1461, 35, 'booking_tickets_eyebrow', 'TEXT', 'TICKETS', NULL, NULL, '2026-04-04 19:34:48'),
 (1462, 35, 'booking_tickets_title', 'TEXT', 'Purchase Tickets', NULL, NULL, '2026-04-04 19:34:48'),
 (1463, 35, 'booking_tickets_description', 'TEXT', 'Individual show tickets, day passes, and 3-day all-access passes available now. Book early for best selection.', NULL, NULL, '2026-04-04 19:34:48'),
-(1467, 97, 'about_text', 'TEXT', '3-star restaurant experience during Haarlem Festival', NULL, NULL, '2026-04-05 21:27:41'),
+(1467, 97, 'about_text', 'TEXT', 'New Vegas brings a fresh perspective to Haarlem\'s dining scene with its fully vegan menu. Creative dishes crafted from locally sourced ingredients prove that plant-based cuisine can be exciting, satisfying, and full of flavour.', NULL, NULL, '2026-05-14 13:47:39'),
 (1472, 106, 'stars', 'TEXT', '4', NULL, NULL, '2026-04-05 21:28:15'),
 (1473, 106, 'cuisine_type', 'TEXT', 'French, Modern', NULL, NULL, '2026-04-05 21:28:15'),
 (1474, 106, 'address_line', 'TEXT', 'Nieuwe Straat 1, 2011 XY Haarlem', NULL, NULL, '2026-04-05 21:28:15'),
@@ -1086,12 +1039,19 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1536, 110, 'address_line', 'TEXT', 'Grote Markt 8', NULL, NULL, '2026-04-10 05:54:26'),
 (1537, 111, 'stars', 'TEXT', '3', NULL, NULL, '2026-04-10 06:39:22'),
 (1538, 111, 'cuisine_type', 'TEXT', 'Brazilian Food', NULL, NULL, '2026-04-10 06:39:22'),
-(1539, 111, 'about_text', 'TEXT', 'This is good food', NULL, NULL, '2026-04-10 06:39:22');
+(1539, 111, 'about_text', 'TEXT', 'This is good food', NULL, NULL, '2026-04-10 06:39:22'),
+(1540, 93, 'location_description', 'TEXT', 'Situated on the lively Botermarkt, Café de Roemer is right in the centre of Haarlem, just a minute\'s walk from the Grote Markt. Its central location makes it an ideal stop before or after exploring the festival.', NULL, NULL, '2026-05-14 13:47:39'),
+(1541, 94, 'location_description', 'TEXT', 'Nestled along the scenic Spaarne river, Ratatouille enjoys one of Haarlem\'s most picturesque settings. The restaurant is a short walk from the Grote Markt and easily accessible by public transport or on foot through the city centre.', NULL, NULL, '2026-05-14 13:47:39'),
+(1542, 95, 'location_description', 'TEXT', 'Found on the bustling Kleine Houtstraat, one of Haarlem\'s favourite shopping streets, Restaurant ML is easy to reach on foot from the station or the Grote Markt.', NULL, NULL, '2026-05-14 13:47:39'),
+(1543, 96, 'location_description', 'TEXT', 'Tucked away on the quiet Twijnderslaan, Restaurant Fris offers a peaceful retreat just a few minutes from the city centre. A perfect escape from the festival buzz while staying close to the action.', NULL, NULL, '2026-05-14 13:47:39'),
+(1544, 97, 'location_description', 'TEXT', 'Located on the Koningstraat near the heart of Haarlem, New Vegas is within walking distance of the main festival areas. Its central spot makes it easy to combine dinner with other festival events.', NULL, NULL, '2026-05-14 13:47:39'),
+(1545, 98, 'location_description', 'TEXT', 'Right on the Grote Markt, Grand Cafe Brinkman offers front-row seats to Haarlem\'s most iconic square. Watch the city come alive during the festival from one of the best terraces in town.', NULL, NULL, '2026-05-14 13:47:39'),
+(1546, 99, 'location_description', 'TEXT', 'Located on the charming Oude Groenmarkt, just steps from the Grote Kerk, Toujours sits at the heart of Haarlem\'s historic centre. The terrace offers a lovely view of the square, perfect for a relaxed evening during the festival.', NULL, NULL, '2026-05-14 13:47:39');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `CmsItemKey`
+-- Estrutura para tabela `CmsItemKey`
 --
 
 CREATE TABLE `CmsItemKey` (
@@ -1100,7 +1060,7 @@ CREATE TABLE `CmsItemKey` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `CmsItemKey`
+-- Despejando dados para a tabela `CmsItemKey`
 --
 
 INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
@@ -1658,7 +1618,7 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `CmsItemType`
+-- Estrutura para tabela `CmsItemType`
 --
 
 CREATE TABLE `CmsItemType` (
@@ -1667,7 +1627,7 @@ CREATE TABLE `CmsItemType` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `CmsItemType`
+-- Despejando dados para a tabela `CmsItemType`
 --
 
 INSERT INTO `CmsItemType` (`ItemType`, `Description`) VALUES
@@ -1682,7 +1642,7 @@ INSERT INTO `CmsItemType` (`ItemType`, `Description`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `CmsPage`
+-- Estrutura para tabela `CmsPage`
 --
 
 CREATE TABLE `CmsPage` (
@@ -1692,7 +1652,7 @@ CREATE TABLE `CmsPage` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `CmsPage`
+-- Despejando dados para a tabela `CmsPage`
 --
 
 INSERT INTO `CmsPage` (`CmsPageId`, `Slug`, `Title`) VALUES
@@ -1712,7 +1672,7 @@ INSERT INTO `CmsPage` (`CmsPageId`, `Slug`, `Title`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `CmsSection`
+-- Estrutura para tabela `CmsSection`
 --
 
 CREATE TABLE `CmsSection` (
@@ -1722,7 +1682,7 @@ CREATE TABLE `CmsSection` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `CmsSection`
+-- Despejando dados para a tabela `CmsSection`
 --
 
 INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
@@ -1815,7 +1775,7 @@ INSERT INTO `CmsSection` (`CmsSectionId`, `CmsPageId`, `SectionKey`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `CuisineType`
+-- Estrutura para tabela `CuisineType`
 --
 
 CREATE TABLE `CuisineType` (
@@ -1824,7 +1784,7 @@ CREATE TABLE `CuisineType` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `CuisineType`
+-- Despejando dados para a tabela `CuisineType`
 --
 
 INSERT INTO `CuisineType` (`CuisineTypeId`, `Name`) VALUES
@@ -1838,7 +1798,7 @@ INSERT INTO `CuisineType` (`CuisineTypeId`, `Name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `EmailConfirmationToken`
+-- Estrutura para tabela `EmailConfirmationToken`
 --
 
 CREATE TABLE `EmailConfirmationToken` (
@@ -1852,7 +1812,7 @@ CREATE TABLE `EmailConfirmationToken` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `EmailConfirmationTokens`
+-- Estrutura para tabela `EmailConfirmationTokens`
 --
 
 CREATE TABLE `EmailConfirmationTokens` (
@@ -1869,7 +1829,7 @@ CREATE TABLE `EmailConfirmationTokens` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Event`
+-- Estrutura para tabela `Event`
 --
 
 CREATE TABLE `Event` (
@@ -1884,91 +1844,98 @@ CREATE TABLE `Event` (
   `VenueId` int(11) DEFAULT NULL,
   `ArtistId` int(11) DEFAULT NULL,
   `IsActive` tinyint(1) NOT NULL DEFAULT 1,
+  `Stars` tinyint(3) UNSIGNED NOT NULL DEFAULT 0,
+  `MichelinStars` tinyint(3) UNSIGNED NOT NULL DEFAULT 0,
+  `CuisineType` varchar(200) DEFAULT NULL,
+  `PriceAdult` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `DurationMinutes` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `SeatsPerSession` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `TimeSlots` varchar(200) DEFAULT NULL,
   `CreatedAtUtc` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Event`
+-- Despejando dados para a tabela `Event`
 --
 
-INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `DisplayOrder`, `ShortDescription`, `LongDescriptionHtml`, `FeaturedImageAssetId`, `VenueId`, `ArtistId`, `IsActive`, `CreatedAtUtc`) VALUES
-(1, 1, 'Gumbo Kings', 'gumbo-kings', NULL, 'Live jazz performance by Gumbo Kings', '<p></p>', NULL, 2, 1, 1, '2026-02-06 15:30:32'),
-(2, 1, 'Evolve', 'evolve', NULL, 'Live jazz performance by Evolve', '<p></p>', NULL, 2, 2, 1, '2026-02-06 15:30:32'),
-(3, 1, 'Ntjam Rosie', 'ntjam-rosie', NULL, '', '<p></p>', NULL, 1, 3, 1, '2026-02-06 15:30:32'),
-(4, 1, 'Wicked Jazz Sounds', 'wicked-jazz-sounds', NULL, 'Live jazz performance by Wicked Jazz Sounds', '<p></p>', NULL, 2, 4, 1, '2026-02-06 15:30:32'),
-(5, 1, 'Wouter Hamel', 'wouter-hamel', NULL, 'Live jazz performance by Wouter Hamel', '<p></p>', NULL, 1, 5, 1, '2026-02-06 15:30:32'),
-(6, 1, 'Jonna Frazer', 'jonna-frazer', NULL, 'Live jazz performance by Jonna Frazer', '<p></p>', NULL, 1, 6, 1, '2026-02-06 15:30:32'),
-(7, 1, 'Karsu', 'karsu', NULL, 'Live jazz performance by Karsu', '<p></p>', NULL, 1, 7, 1, '2026-02-06 15:30:32'),
-(8, 1, 'Uncle Sue', 'uncle-sue', NULL, 'Live jazz performance by Uncle Sue', '<p></p>', NULL, 1, 8, 1, '2026-02-06 15:30:32'),
-(9, 1, 'Chris Allen', 'chris-allen', NULL, 'Live jazz performance by Chris Allen', '<p></p>', NULL, 1, 9, 1, '2026-02-06 15:30:32'),
-(10, 1, 'Myles Sanko', 'myles-sanko', NULL, 'Live jazz performance by Myles Sanko', '<p></p>', NULL, 1, 10, 1, '2026-02-06 15:30:32'),
-(11, 1, 'Ilse Huizinga', 'ilse-huizinga', NULL, 'Live jazz performance by Ilse Huizinga', '<p></p>', NULL, 1, 11, 1, '2026-02-06 15:30:32'),
-(12, 1, 'Eric Vloeimans and Hotspot!', 'eric-vloeimans-and-hotspot', NULL, 'Live jazz performance by Eric Vloeimans and Hotspot!', '<p></p>', NULL, 1, 12, 1, '2026-02-06 15:30:32'),
-(13, 1, 'Gare du Nord', 'gare-du-nord', NULL, 'Live jazz performance by Gare du Nord', '<p></p>', NULL, 2, 13, 1, '2026-02-06 15:30:32'),
-(14, 1, 'Rilan & The Bombadiers', 'rilan-the-bombadiers', NULL, 'Live jazz performance by Rilan & The Bombadiers', '<p></p>', NULL, 1, 14, 1, '2026-02-06 15:30:32'),
-(15, 1, 'Soul Six', 'soul-six', NULL, 'Live jazz performance by Soul Six', '<p></p>', NULL, 1, 15, 1, '2026-02-06 15:30:32'),
-(16, 1, 'Han Bennink', 'han-bennink', NULL, 'Live jazz performance by Han Bennink', '<p></p>', NULL, 1, 16, 1, '2026-02-06 15:30:32'),
-(17, 1, 'The Nordanians', 'the-nordanians', NULL, 'Live jazz performance by The Nordanians', '<p></p>', NULL, 2, 17, 1, '2026-02-06 15:30:32'),
-(18, 1, 'Lilith Merlot', 'lilith-merlot', NULL, 'Live jazz performance by Lilith Merlot', '<p></p>', NULL, 1, 18, 1, '2026-02-06 15:30:32'),
-(19, 1, 'Ruis Soundsystem', 'ruis-soundsystem', NULL, 'Live jazz performance by Ruis Soundsystem', '<p></p>', NULL, 2, 19, 1, '2026-02-06 15:30:32'),
-(20, 2, 'Nicky Romero / Afrojack - Back2Back', 'nicky-romero-afrojack-back2back', NULL, 'Back2Back session featuring Nicky Romero and Afrojack', '<p></p>', NULL, 3, NULL, 1, '2026-02-06 15:30:32'),
-(21, 2, 'Tiësto - Club', 'ti-sto-club', NULL, 'Club session by Tiësto', '<p></p>', NULL, 4, 22, 1, '2026-02-06 15:30:32'),
-(22, 2, 'Hardwell - Club', 'hardwell-club', NULL, 'Club session by Hardwell', '<p></p>', NULL, 5, 23, 1, '2026-02-06 15:30:32'),
-(23, 2, 'Armin van Buuren - Club', 'armin-van-buuren-club', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
-(24, 2, 'Martin Garrix - Club', 'martin-garrix-club', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 7, 24, 1, '2026-02-06 15:30:32'),
-(25, 2, 'Hardwell / Martin Garrix / Armin van Buuren - Back2Back', 'hardwell-martin-garrix-armin-van-buuren-back2back', NULL, 'Back2Back session featuring Hardwell, Martin Garrix and Armin van Buuren', '<p></p>', NULL, 8, NULL, 1, '2026-02-06 15:30:32'),
-(26, 2, 'Afrojack - Club', 'afrojack-club', NULL, 'Club session by Afrojack', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
-(27, 2, 'Tiësto - TiëstoWorld', 'ti-sto-ti-stoworld', NULL, 'TiëstoWorld session by Tiësto', '<p></p>', NULL, 3, 22, 1, '2026-02-06 15:30:32'),
-(28, 2, 'Nicky Romero - Club', 'nicky-romero-club', NULL, 'Club session by Nicky Romero', '<p></p>', NULL, 4, 20, 1, '2026-02-06 15:30:32'),
-(29, 2, 'Afrojack / Tiësto / Nicky Romero - Back2Back', 'afrojack-ti-sto-nicky-romero-back2back', NULL, 'Back2Back session featuring Afrojack, Tiësto and Nicky Romero', '<p></p>', NULL, NULL, NULL, 0, '2026-02-06 15:30:32'),
-(30, 2, 'Armin van Buuren - Club (Sunday)', 'armin-van-buuren-club-sunday', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, 5, 25, 1, '2026-02-06 15:30:32'),
-(31, 2, 'Hardwell - Club (Sunday)', 'hardwell-club-sunday', NULL, 'Club session by Hardwell', '<p></p>', NULL, 6, 23, 1, '2026-02-06 15:30:32'),
-(32, 2, 'Martin Garrix - Club (Sunday)', 'martin-garrix-club-sunday', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 4, 24, 1, '2026-02-06 15:30:32'),
-(33, 3, 'A Stroll Through History', 'a-stroll-through-history', NULL, 'Guided walking tour through historic Haarlem. Due to the nature of this walk, participants must be a minimum of 12 years old and no strollers are allowed.', '<p></p>', NULL, 15, NULL, 1, '2026-02-06 15:30:32'),
-(34, 4, 'Winnie de Poeh (4+)', 'winnie-de-poeh-4', NULL, 'Stories for the whole family', '<p></p>', NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(35, 4, 'Omdenken Podcast', 'omdenken-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
-(36, 4, 'The story of Buurderij Haarlem', 'the-story-of-buurderij-haarlem', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, 1, '2026-02-06 15:30:32'),
-(37, 4, 'Corrie voor kinderen', 'corrie-voor-kinderen', NULL, 'Stories for the whole family', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
-(38, 4, 'Winnaars van verhalenvertel wedstrijd, verhalen voor Haarlem', 'winnaars-van-verhalenvertel-wedstrijd-verhalen-voor-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, '2026-02-06 15:30:32'),
-(39, 4, 'Het verhaal van de Oeserzwammerij', 'het-verhaal-van-de-oeserzwammerij', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, 1, '2026-02-06 15:30:32'),
-(40, 4, 'Flip Thinking Podcast', 'flip-thinking-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
-(42, 4, 'Mister Anansi', 'mister-anansi', NULL, 'Stories for the whole family', '<p></p>', NULL, 14, NULL, 1, '2026-02-06 15:30:32'),
-(43, 4, 'Podcastlast Haarlem Special', 'podcastlast-haarlem-special', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, '2026-02-06 15:30:32'),
-(44, 4, 'De geschiedenis van familie ten Boom', 'de-geschiedenis-van-familie-ten-boom', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
-(45, 4, 'The history of the Ten Boom Family', 'the-history-of-the-ten-boom-family', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
-(46, 4, 'Winners of story telling competition, stories for Haarlem', 'winners-of-story-telling-competition-stories-for-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, '2026-02-06 15:30:32'),
-(47, 5, 'Café de Roemer - Festival Dinner', 'caf-de-roemer-festival-dinner', 3, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 75, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(48, 5, 'Ratatouille - Festival Dinner', 'ratatouille-festival-dinner', 1, 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 76, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(49, 5, 'Restaurant ML - Festival Dinner', 'restaurant-ml-festival-dinner', 7, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 77, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(50, 5, 'Restaurant Fris - Festival Dinner', 'restaurant-fris-festival-dinner', 6, 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 78, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(51, 5, 'New Vegas - Festival Dinner', 'new-vegas-festival-dinner', 5, '', '<p></p>', NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'grand-cafe-brinkman-festival-dinner', 4, 'Dutch, European, Modern cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 80, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'urban-frenchy-bistro-toujours-festival-dinner', 2, 'Dutch, fish and seafood, European cuisine', '<p>3-star restaurant experience during Haarlem Festival</p>', 81, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(57, 3, 'E2E Test History Tour', NULL, NULL, 'Automated test history tour', '<p>A guided walking tour through historic Haarlem.</p>', NULL, 15, NULL, 0, '2026-03-30 17:57:20'),
-(58, 4, 'E2E Test Storytelling Event', NULL, NULL, 'Automated test storytelling session', '<p>An evening of captivating stories.</p>', NULL, NULL, NULL, 0, '2026-03-30 17:57:24'),
-(59, 5, 'E2E Test Restaurant Event', 'e2e-test-restaurant-event', NULL, 'Automated test restaurant dinner', '<p>Fine dining experience for the festival.</p>', NULL, NULL, NULL, 0, '2026-03-30 17:57:29'),
-(66, 4, 'test', NULL, NULL, 'testing just because yest', '<p></p>', NULL, NULL, NULL, 0, '2026-04-02 17:51:22'),
-(67, 4, 'Test Storytelling Event Commit3', 'test-storytelling-event-commit3', NULL, 'Test', '<p>Test</p>', NULL, NULL, NULL, 1, '2026-04-05 19:33:14'),
-(68, 5, 'Test Restaurant Event Commit3', 'test-restaurant-event-commit3', NULL, 'Test', '<p>Test</p>', NULL, NULL, NULL, 0, '2026-04-05 19:33:23'),
-(69, 4, 'this is test 1', 'this-is-test-1', NULL, 'this is test 1', 'this is test 1', NULL, 12, NULL, 1, '2026-04-05 20:09:38'),
-(70, 1, 'this is test 2', 'this-is-test-2', NULL, 'this is test 2', '<p></p>', NULL, 6, 25, 0, '2026-04-05 20:11:55'),
-(71, 3, 'this is test 3', 'this-is-test-3', NULL, 'this is test 3', 'this is test 3', NULL, 15, NULL, 0, '2026-04-05 20:13:29'),
-(72, 5, 'test number 5', 'test-number-5', NULL, 'test number 5', '<p></p>', 119, 8, NULL, 0, '2026-04-05 20:16:11'),
-(73, 5, 'Test CMS Create Restaurant', 'test-cms-create-restaurant', NULL, 'Test desc', '<p>Test</p>', NULL, NULL, NULL, 0, '2026-04-05 21:28:15'),
-(74, 1, 'TESTING with kian', 'testing-with-kian', NULL, 'kian', 'kian', NULL, 2, 15, 0, '2026-04-06 08:26:14'),
-(75, 3, 'test', 'test', NULL, 'test', 'test', NULL, 15, NULL, 0, '2026-04-06 11:44:11'),
-(76, 1, 'Kian The Goat', 'kian-the-goat', NULL, 'Kian The Goat', 'Kian The Goat', NULL, 2, 15, 0, '2026-04-06 12:01:21'),
-(77, 4, 'Leandro The Goat', 'leandro-the-goat', NULL, 'Leandro The Goat', 'Leandro The Goat', NULL, 12, NULL, 0, '2026-04-06 12:02:50'),
-(78, 3, 'Daria The Goat', 'daria-the-goat', NULL, 'Daria The Goat', 'Daria The Goat', NULL, 15, NULL, 0, '2026-04-06 12:03:41'),
-(79, 5, 'Matheus The Goat', 'matheus-the-goat', NULL, 'Matheus The Goat', 'Matheus The Goat', 115, 8, NULL, 0, '2026-04-06 12:04:56'),
-(80, 4, 'Friday Test', 'friday-test', NULL, 'This is just a small test', 'This is just a small test for Friday exam', NULL, 11, NULL, 1, '2026-04-10 03:48:48'),
-(81, 5, 'Test', 'test-2', NULL, 'Test', 'TEst', 116, 6, NULL, 0, '2026-04-10 05:54:26'),
-(82, 5, 'TEST', 'test-3', NULL, 'TEST', 'TEST', 112, 15, NULL, 0, '2026-04-10 06:39:22');
+INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `DisplayOrder`, `ShortDescription`, `LongDescriptionHtml`, `FeaturedImageAssetId`, `VenueId`, `ArtistId`, `IsActive`, `Stars`, `MichelinStars`, `CuisineType`, `PriceAdult`, `DurationMinutes`, `SeatsPerSession`, `TimeSlots`, `CreatedAtUtc`) VALUES
+(1, 1, 'Gumbo Kings', 'gumbo-kings', NULL, 'Live jazz performance by Gumbo Kings', '<p></p>', NULL, 2, 1, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(2, 1, 'Evolve', 'evolve', NULL, 'Live jazz performance by Evolve', '<p></p>', NULL, 2, 2, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(3, 1, 'Ntjam Rosie', 'ntjam-rosie', NULL, '', '<p></p>', NULL, 1, 3, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(4, 1, 'Wicked Jazz Sounds', 'wicked-jazz-sounds', NULL, 'Live jazz performance by Wicked Jazz Sounds', '<p></p>', NULL, 2, 4, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(5, 1, 'Wouter Hamel', 'wouter-hamel', NULL, 'Live jazz performance by Wouter Hamel', '<p></p>', NULL, 1, 5, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(6, 1, 'Jonna Frazer', 'jonna-frazer', NULL, 'Live jazz performance by Jonna Frazer', '<p></p>', NULL, 1, 6, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(7, 1, 'Karsu', 'karsu', NULL, 'Live jazz performance by Karsu', '<p></p>', NULL, 1, 7, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(8, 1, 'Uncle Sue', 'uncle-sue', NULL, 'Live jazz performance by Uncle Sue', '<p></p>', NULL, 1, 8, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(9, 1, 'Chris Allen', 'chris-allen', NULL, 'Live jazz performance by Chris Allen', '<p></p>', NULL, 1, 9, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(10, 1, 'Myles Sanko', 'myles-sanko', NULL, 'Live jazz performance by Myles Sanko', '<p></p>', NULL, 1, 10, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(11, 1, 'Ilse Huizinga', 'ilse-huizinga', NULL, 'Live jazz performance by Ilse Huizinga', '<p></p>', NULL, 1, 11, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(12, 1, 'Eric Vloeimans and Hotspot!', 'eric-vloeimans-and-hotspot', NULL, 'Live jazz performance by Eric Vloeimans and Hotspot!', '<p></p>', NULL, 1, 12, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(13, 1, 'Gare du Nord', 'gare-du-nord', NULL, 'Live jazz performance by Gare du Nord', '<p></p>', NULL, 2, 13, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(14, 1, 'Rilan & The Bombadiers', 'rilan-the-bombadiers', NULL, 'Live jazz performance by Rilan & The Bombadiers', '<p></p>', NULL, 1, 14, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(15, 1, 'Soul Six', 'soul-six', NULL, 'Live jazz performance by Soul Six', '<p></p>', NULL, 1, 15, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(16, 1, 'Han Bennink', 'han-bennink', NULL, 'Live jazz performance by Han Bennink', '<p></p>', NULL, 1, 16, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(17, 1, 'The Nordanians', 'the-nordanians', NULL, 'Live jazz performance by The Nordanians', '<p></p>', NULL, 2, 17, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(18, 1, 'Lilith Merlot', 'lilith-merlot', NULL, 'Live jazz performance by Lilith Merlot', '<p></p>', NULL, 1, 18, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(19, 1, 'Ruis Soundsystem', 'ruis-soundsystem', NULL, 'Live jazz performance by Ruis Soundsystem', '<p></p>', NULL, 2, 19, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(20, 2, 'Nicky Romero / Afrojack - Back2Back', 'nicky-romero-afrojack-back2back', NULL, 'Back2Back session featuring Nicky Romero and Afrojack', '<p></p>', NULL, 3, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(21, 2, 'Tiësto - Club', 'ti-sto-club', NULL, 'Club session by Tiësto', '<p></p>', NULL, 4, 22, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(22, 2, 'Hardwell - Club', 'hardwell-club', NULL, 'Club session by Hardwell', '<p></p>', NULL, 5, 23, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(23, 2, 'Armin van Buuren - Club', 'armin-van-buuren-club', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, NULL, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(24, 2, 'Martin Garrix - Club', 'martin-garrix-club', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 7, 24, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(25, 2, 'Hardwell / Martin Garrix / Armin van Buuren - Back2Back', 'hardwell-martin-garrix-armin-van-buuren-back2back', NULL, 'Back2Back session featuring Hardwell, Martin Garrix and Armin van Buuren', '<p></p>', NULL, 8, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(26, 2, 'Afrojack - Club', 'afrojack-club', NULL, 'Club session by Afrojack', '<p></p>', NULL, NULL, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(27, 2, 'Tiësto - TiëstoWorld', 'ti-sto-ti-stoworld', NULL, 'TiëstoWorld session by Tiësto', '<p></p>', NULL, 3, 22, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(28, 2, 'Nicky Romero - Club', 'nicky-romero-club', NULL, 'Club session by Nicky Romero', '<p></p>', NULL, 4, 20, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(29, 2, 'Afrojack / Tiësto / Nicky Romero - Back2Back', 'afrojack-ti-sto-nicky-romero-back2back', NULL, 'Back2Back session featuring Afrojack, Tiësto and Nicky Romero', '<p></p>', NULL, NULL, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(30, 2, 'Armin van Buuren - Club (Sunday)', 'armin-van-buuren-club-sunday', NULL, 'Club session by Armin van Buuren', '<p></p>', NULL, 5, 25, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(31, 2, 'Hardwell - Club (Sunday)', 'hardwell-club-sunday', NULL, 'Club session by Hardwell', '<p></p>', NULL, 6, 23, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(32, 2, 'Martin Garrix - Club (Sunday)', 'martin-garrix-club-sunday', NULL, 'Club session by Martin Garrix', '<p></p>', NULL, 4, 24, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(33, 3, 'A Stroll Through History', 'a-stroll-through-history', NULL, 'Guided walking tour through historic Haarlem. Due to the nature of this walk, participants must be a minimum of 12 years old and no strollers are allowed.', '<p></p>', NULL, 15, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(34, 4, 'Winnie de Poeh (4+)', 'winnie-de-poeh-4', NULL, 'Stories for the whole family', '<p></p>', NULL, NULL, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(35, 4, 'Omdenken Podcast', 'omdenken-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(36, 4, 'The story of Buurderij Haarlem', 'the-story-of-buurderij-haarlem', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(37, 4, 'Corrie voor kinderen', 'corrie-voor-kinderen', NULL, 'Stories for the whole family', '<p></p>', NULL, 13, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(38, 4, 'Winnaars van verhalenvertel wedstrijd, verhalen voor Haarlem', 'winnaars-van-verhalenvertel-wedstrijd-verhalen-voor-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(39, 4, 'Het verhaal van de Oeserzwammerij', 'het-verhaal-van-de-oeserzwammerij', NULL, 'Stories with impact', '<p></p>', NULL, 12, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(40, 4, 'Flip Thinking Podcast', 'flip-thinking-podcast', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(42, 4, 'Mister Anansi', 'mister-anansi', NULL, 'Stories for the whole family', '<p></p>', NULL, 14, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(43, 4, 'Podcastlast Haarlem Special', 'podcastlast-haarlem-special', NULL, 'Recording podcast with audience', '<p></p>', NULL, 11, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(44, 4, 'De geschiedenis van familie ten Boom', 'de-geschiedenis-van-familie-ten-boom', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(45, 4, 'The history of the Ten Boom Family', 'the-history-of-the-ten-boom-family', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(46, 4, 'Winners of story telling competition, stories for Haarlem', 'winners-of-story-telling-competition-stories-for-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-02-06 15:30:32'),
+(47, 5, 'Café de Roemer - Festival Dinner', 'caf-de-roemer-festival-dinner', 3, 'A cozy spot on the Botermarkt serving the best of Dutch and European cuisine, with a focus on fresh North Sea fish and seasonal seafood.', '<p>4-star restaurant experience during Haarlem Festival</p>', 75, 23, NULL, 1, 4, 0, 'Dutch, fish and seafood, European', 45.00, 120, 35, '16:30, 18:30, 20:30', '2026-02-06 15:30:32'),
+(48, 5, 'Ratatouille - Festival Dinner', 'ratatouille-festival-dinner', 1, 'One of Haarlem\'s finest French restaurants, offering an exquisite blend of classic French technique with locally sourced North Sea seafood and European flavours.', '<p>4-star restaurant experience during Haarlem Festival</p>', 76, 24, NULL, 1, 4, 1, 'French, fish and seafood, European', 45.00, 120, 52, '17:00, 19:15, 21:30', '2026-02-06 15:30:32'),
+(49, 5, 'Restaurant ML - Festival Dinner', 'restaurant-ml-festival-dinner', 7, 'Located on the charming Kleine Houtstraat, Restaurant ML combines traditional Dutch recipes with modern European flair and the freshest seasonal ingredients.', '<p>4-star restaurant experience during Haarlem Festival</p>', 77, 25, NULL, 1, 4, 0, 'Dutch, fish and seafood, European', 45.00, 120, 60, '16:30, 18:30, 20:30', '2026-02-06 15:30:32'),
+(50, 5, 'Restaurant Fris - Festival Dinner', 'restaurant-fris-festival-dinner', 6, 'A stylish restaurant in a quiet Haarlem neighbourhood, blending Dutch and French culinary traditions into refined European dishes with a contemporary twist.', '<p>4-star restaurant experience during Haarlem Festival</p>', 78, 26, NULL, 1, 4, 0, 'Dutch, French, European', 45.00, 120, 45, '16:30, 18:30, 20:30', '2026-02-06 15:30:32'),
+(51, 5, 'New Vegas - Festival Dinner', 'new-vegas-festival-dinner', 5, 'Haarlem\'s go-to destination for creative vegan cuisine, proving that plant-based dining can be bold, flavourful, and satisfying.', '<p></p>', NULL, 27, NULL, 1, 3, 0, 'Vegan', 35.00, 120, 36, '16:30, 18:30, 20:30', '2026-02-06 15:30:32'),
+(52, 5, 'Grand Cafe Brinkman - Festival Dinner', 'grand-cafe-brinkman-festival-dinner', 4, 'A beloved grand café on the Grote Markt, offering hearty Dutch and modern European dishes in a lively atmosphere with views of the historic square.', '<p>3-star restaurant experience during Haarlem Festival</p>', 80, 28, NULL, 1, 3, 0, 'Dutch, European, Modern', 35.00, 120, 100, '16:30, 18:30, 20:30', '2026-02-06 15:30:32'),
+(53, 5, 'Urban Frenchy Bistro Toujours - Festival Dinner', 'urban-frenchy-bistro-toujours-festival-dinner', 2, 'A French-inspired bistro on the Oude Groenmarkt, blending Dutch coastal traditions with bistro culture for fresh fish, seafood, and a warm atmosphere.', '<p>3-star restaurant experience during Haarlem Festival</p>', 81, 29, NULL, 1, 3, 0, 'Dutch, fish and seafood, European', 35.00, 120, 48, '17:30, 19:15, 21:00', '2026-02-06 15:30:32'),
+(57, 3, 'E2E Test History Tour', NULL, NULL, 'Automated test history tour', '<p>A guided walking tour through historic Haarlem.</p>', NULL, 15, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-03-30 17:57:20'),
+(58, 4, 'E2E Test Storytelling Event', NULL, NULL, 'Automated test storytelling session', '<p>An evening of captivating stories.</p>', NULL, NULL, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-03-30 17:57:24'),
+(59, 5, 'E2E Test Restaurant Event', 'e2e-test-restaurant-event', NULL, 'Automated test restaurant dinner', '<p>Fine dining experience for the festival.</p>', NULL, NULL, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-03-30 17:57:29'),
+(66, 4, 'test', NULL, NULL, 'testing just because yest', '<p></p>', NULL, NULL, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-02 17:51:22'),
+(67, 4, 'Test Storytelling Event Commit3', 'test-storytelling-event-commit3', NULL, 'Test', '<p>Test</p>', NULL, NULL, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-05 19:33:14'),
+(68, 5, 'Test Restaurant Event Commit3', 'test-restaurant-event-commit3', NULL, 'Test', '<p>Test</p>', NULL, NULL, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-05 19:33:23'),
+(69, 4, 'this is test 1', 'this-is-test-1', NULL, 'this is test 1', 'this is test 1', NULL, 12, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-05 20:09:38'),
+(70, 1, 'this is test 2', 'this-is-test-2', NULL, 'this is test 2', '<p></p>', NULL, 6, 25, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-05 20:11:55'),
+(71, 3, 'this is test 3', 'this-is-test-3', NULL, 'this is test 3', 'this is test 3', NULL, 15, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-05 20:13:29'),
+(72, 5, 'test number 5', 'test-number-5', NULL, 'test number 5', '<p></p>', 119, 8, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-05 20:16:11'),
+(73, 5, 'Test CMS Create Restaurant', 'test-cms-create-restaurant', NULL, 'Test desc', '<p>Test</p>', NULL, NULL, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-05 21:28:15'),
+(74, 1, 'TESTING with kian', 'testing-with-kian', NULL, 'kian', 'kian', NULL, 2, 15, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-06 08:26:14'),
+(75, 3, 'test', 'test', NULL, 'test', 'test', NULL, 15, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-06 11:44:11'),
+(76, 1, 'Kian The Goat', 'kian-the-goat', NULL, 'Kian The Goat', 'Kian The Goat', NULL, 2, 15, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-06 12:01:21'),
+(77, 4, 'Leandro The Goat', 'leandro-the-goat', NULL, 'Leandro The Goat', 'Leandro The Goat', NULL, 12, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-06 12:02:50'),
+(78, 3, 'Daria The Goat', 'daria-the-goat', NULL, 'Daria The Goat', 'Daria The Goat', NULL, 15, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-06 12:03:41'),
+(79, 5, 'Matheus The Goat', 'matheus-the-goat', NULL, 'Matheus The Goat', 'Matheus The Goat', 115, 8, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-06 12:04:56'),
+(80, 4, 'Friday Test', 'friday-test', NULL, 'This is just a small test', 'This is just a small test for Friday exam', NULL, 11, NULL, 1, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-10 03:48:48'),
+(81, 5, 'Test', 'test-2', NULL, 'Test', 'TEst', 116, 6, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-10 05:54:26'),
+(82, 5, 'TEST', 'test-3', NULL, 'TEST', 'TEST', 112, 15, NULL, 0, 0, 0, NULL, 0.00, 0, 0, NULL, '2026-04-10 06:39:22');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `EventGalleryImage`
+-- Estrutura para tabela `EventGalleryImage`
 --
 
 CREATE TABLE `EventGalleryImage` (
@@ -1980,7 +1947,7 @@ CREATE TABLE `EventGalleryImage` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `EventGalleryImage`
+-- Despejando dados para a tabela `EventGalleryImage`
 --
 
 INSERT INTO `EventGalleryImage` (`EventGalleryImageId`, `EventId`, `ImagePath`, `ImageType`, `SortOrder`) VALUES
@@ -2070,7 +2037,7 @@ INSERT INTO `EventGalleryImage` (`EventGalleryImageId`, `EventId`, `ImagePath`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `EventHighlight`
+-- Estrutura para tabela `EventHighlight`
 --
 
 CREATE TABLE `EventHighlight` (
@@ -2083,7 +2050,7 @@ CREATE TABLE `EventHighlight` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `EventHighlight`
+-- Despejando dados para a tabela `EventHighlight`
 --
 
 INSERT INTO `EventHighlight` (`EventHighlightId`, `EventId`, `Title`, `Description`, `ImagePath`, `SortOrder`) VALUES
@@ -2124,7 +2091,7 @@ INSERT INTO `EventHighlight` (`EventHighlightId`, `EventId`, `Title`, `Descripti
 -- --------------------------------------------------------
 
 --
--- Table structure for table `EventSession`
+-- Estrutura para tabela `EventSession`
 --
 
 CREATE TABLE `EventSession` (
@@ -2156,7 +2123,7 @@ CREATE TABLE `EventSession` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `EventSession`
+-- Despejando dados para a tabela `EventSession`
 --
 
 INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTime`, `EndDateTime`, `CapacityTotal`, `CapacitySingleTicketLimit`, `SeatsAvailable`, `SoldSingleTickets`, `SoldReservedSeats`, `HallName`, `SessionType`, `DurationMinutes`, `LanguageCode`, `MinAge`, `MaxAge`, `ReservationRequired`, `IsFree`, `Notes`, `HistoryTicketLabel`, `CtaLabel`, `CtaUrl`, `IsCancelled`, `CreatedAtUtc`, `IsActive`) VALUES
@@ -2355,7 +2322,7 @@ INSERT INTO `EventSession` (`EventSessionId`, `EventId`, `VenueId`, `StartDateTi
 -- --------------------------------------------------------
 
 --
--- Table structure for table `EventSessionLabel`
+-- Estrutura para tabela `EventSessionLabel`
 --
 
 CREATE TABLE `EventSessionLabel` (
@@ -2365,7 +2332,7 @@ CREATE TABLE `EventSessionLabel` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `EventSessionLabel`
+-- Despejando dados para a tabela `EventSessionLabel`
 --
 
 INSERT INTO `EventSessionLabel` (`EventSessionLabelId`, `EventSessionId`, `LabelText`) VALUES
@@ -2448,7 +2415,7 @@ INSERT INTO `EventSessionLabel` (`EventSessionLabelId`, `EventSessionId`, `Label
 -- --------------------------------------------------------
 
 --
--- Table structure for table `EventSessionPrice`
+-- Estrutura para tabela `EventSessionPrice`
 --
 
 CREATE TABLE `EventSessionPrice` (
@@ -2461,7 +2428,7 @@ CREATE TABLE `EventSessionPrice` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `EventSessionPrice`
+-- Despejando dados para a tabela `EventSessionPrice`
 --
 
 INSERT INTO `EventSessionPrice` (`EventSessionPriceId`, `EventSessionId`, `PriceTierId`, `Price`, `CurrencyCode`, `VatRate`) VALUES
@@ -2784,7 +2751,7 @@ INSERT INTO `EventSessionPrice` (`EventSessionPriceId`, `EventSessionId`, `Price
 -- --------------------------------------------------------
 
 --
--- Table structure for table `EventType`
+-- Estrutura para tabela `EventType`
 --
 
 CREATE TABLE `EventType` (
@@ -2794,7 +2761,7 @@ CREATE TABLE `EventType` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `EventType`
+-- Despejando dados para a tabela `EventType`
 --
 
 INSERT INTO `EventType` (`EventTypeId`, `Name`, `Slug`) VALUES
@@ -2807,7 +2774,7 @@ INSERT INTO `EventType` (`EventTypeId`, `Name`, `Slug`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Guide`
+-- Estrutura para tabela `Guide`
 --
 
 CREATE TABLE `Guide` (
@@ -2817,7 +2784,7 @@ CREATE TABLE `Guide` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Guide`
+-- Despejando dados para a tabela `Guide`
 --
 
 INSERT INTO `Guide` (`GuideId`, `Name`, `IsActive`) VALUES
@@ -2833,7 +2800,7 @@ INSERT INTO `Guide` (`GuideId`, `Name`, `IsActive`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `HistoryTour`
+-- Estrutura para tabela `HistoryTour`
 --
 
 CREATE TABLE `HistoryTour` (
@@ -2845,7 +2812,7 @@ CREATE TABLE `HistoryTour` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `HistoryTour`
+-- Despejando dados para a tabela `HistoryTour`
 --
 
 INSERT INTO `HistoryTour` (`HistoryTourId`, `EventSessionId`, `LanguageCode`, `GuideCount`, `SeatsPerTour`) VALUES
@@ -2882,7 +2849,7 @@ INSERT INTO `HistoryTour` (`HistoryTourId`, `EventSessionId`, `LanguageCode`, `G
 -- --------------------------------------------------------
 
 --
--- Table structure for table `HistoryTourGuide`
+-- Estrutura para tabela `HistoryTourGuide`
 --
 
 CREATE TABLE `HistoryTourGuide` (
@@ -2891,7 +2858,7 @@ CREATE TABLE `HistoryTourGuide` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `HistoryTourGuide`
+-- Despejando dados para a tabela `HistoryTourGuide`
 --
 
 INSERT INTO `HistoryTourGuide` (`HistoryTourId`, `GuideId`) VALUES
@@ -2939,7 +2906,7 @@ INSERT INTO `HistoryTourGuide` (`HistoryTourId`, `GuideId`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Invoice`
+-- Estrutura para tabela `Invoice`
 --
 
 CREATE TABLE `Invoice` (
@@ -2961,7 +2928,7 @@ CREATE TABLE `Invoice` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `InvoiceLine`
+-- Estrutura para tabela `InvoiceLine`
 --
 
 CREATE TABLE `InvoiceLine` (
@@ -2980,7 +2947,7 @@ CREATE TABLE `InvoiceLine` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `MediaAsset`
+-- Estrutura para tabela `MediaAsset`
 --
 
 CREATE TABLE `MediaAsset` (
@@ -2994,7 +2961,7 @@ CREATE TABLE `MediaAsset` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `MediaAsset`
+-- Despejando dados para a tabela `MediaAsset`
 --
 
 INSERT INTO `MediaAsset` (`MediaAssetId`, `FilePath`, `OriginalFileName`, `MimeType`, `FileSizeBytes`, `AltText`, `CreatedAtUtc`) VALUES
@@ -3158,7 +3125,7 @@ INSERT INTO `MediaAsset` (`MediaAssetId`, `FilePath`, `OriginalFileName`, `MimeT
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Order`
+-- Estrutura para tabela `Order`
 --
 
 CREATE TABLE `Order` (
@@ -3180,7 +3147,7 @@ CREATE TABLE `Order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Order`
+-- Despejando dados para a tabela `Order`
 --
 
 INSERT INTO `Order` (`OrderId`, `OrderNumber`, `UserAccountId`, `ProgramId`, `Status`, `CreatedAtUtc`, `PayBeforeUtc`, `Subtotal`, `VatTotal`, `TotalAmount`, `TicketRecipientFirstName`, `TicketRecipientLastName`, `TicketRecipientEmail`, `TicketEmailSentAtUtc`, `TicketEmailLastError`) VALUES
@@ -3216,7 +3183,7 @@ INSERT INTO `Order` (`OrderId`, `OrderNumber`, `UserAccountId`, `ProgramId`, `St
 -- --------------------------------------------------------
 
 --
--- Table structure for table `OrderItem`
+-- Estrutura para tabela `OrderItem`
 --
 
 CREATE TABLE `OrderItem` (
@@ -3233,7 +3200,7 @@ CREATE TABLE `OrderItem` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `OrderItem`
+-- Despejando dados para a tabela `OrderItem`
 --
 
 INSERT INTO `OrderItem` (`OrderItemId`, `OrderId`, `EventSessionId`, `HistoryTourId`, `PassPurchaseId`, `Quantity`, `UnitPrice`, `VatRate`, `DonationAmount`, `SpecialRequest`) VALUES
@@ -3293,7 +3260,7 @@ INSERT INTO `OrderItem` (`OrderItemId`, `OrderId`, `EventSessionId`, `HistoryTou
 -- --------------------------------------------------------
 
 --
--- Table structure for table `OrderStatus`
+-- Estrutura para tabela `OrderStatus`
 --
 
 CREATE TABLE `OrderStatus` (
@@ -3301,7 +3268,7 @@ CREATE TABLE `OrderStatus` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `OrderStatus`
+-- Despejando dados para a tabela `OrderStatus`
 --
 
 INSERT INTO `OrderStatus` (`Status`) VALUES
@@ -3312,7 +3279,7 @@ INSERT INTO `OrderStatus` (`Status`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `PageGalleryImage`
+-- Estrutura para tabela `PageGalleryImage`
 --
 
 CREATE TABLE `PageGalleryImage` (
@@ -3324,7 +3291,7 @@ CREATE TABLE `PageGalleryImage` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `PageGalleryImage`
+-- Despejando dados para a tabela `PageGalleryImage`
 --
 
 INSERT INTO `PageGalleryImage` (`PageGalleryImageId`, `CmsPageId`, `ImagePath`, `ImageType`, `SortOrder`) VALUES
@@ -3344,7 +3311,7 @@ INSERT INTO `PageGalleryImage` (`PageGalleryImageId`, `CmsPageId`, `ImagePath`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `PassPurchase`
+-- Estrutura para tabela `PassPurchase`
 --
 
 CREATE TABLE `PassPurchase` (
@@ -3358,7 +3325,7 @@ CREATE TABLE `PassPurchase` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `PassPurchase`
+-- Despejando dados para a tabela `PassPurchase`
 --
 
 INSERT INTO `PassPurchase` (`PassPurchaseId`, `PassTypeId`, `UserAccountId`, `ValidDate`, `ValidFromDate`, `ValidToDate`, `CreatedAtUtc`) VALUES
@@ -3367,7 +3334,7 @@ INSERT INTO `PassPurchase` (`PassPurchaseId`, `PassTypeId`, `UserAccountId`, `Va
 -- --------------------------------------------------------
 
 --
--- Table structure for table `PassScope`
+-- Estrutura para tabela `PassScope`
 --
 
 CREATE TABLE `PassScope` (
@@ -3375,7 +3342,7 @@ CREATE TABLE `PassScope` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `PassScope`
+-- Despejando dados para a tabela `PassScope`
 --
 
 INSERT INTO `PassScope` (`PassScope`) VALUES
@@ -3385,7 +3352,7 @@ INSERT INTO `PassScope` (`PassScope`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `PassType`
+-- Estrutura para tabela `PassType`
 --
 
 CREATE TABLE `PassType` (
@@ -3400,7 +3367,7 @@ CREATE TABLE `PassType` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `PassType`
+-- Despejando dados para a tabela `PassType`
 --
 
 INSERT INTO `PassType` (`PassTypeId`, `EventTypeId`, `PassName`, `PassScope`, `Price`, `VatRate`, `CurrencyCode`, `IsActive`) VALUES
@@ -3413,7 +3380,7 @@ INSERT INTO `PassType` (`PassTypeId`, `EventTypeId`, `PassName`, `PassScope`, `P
 -- --------------------------------------------------------
 
 --
--- Table structure for table `PasswordResetToken`
+-- Estrutura para tabela `PasswordResetToken`
 --
 
 CREATE TABLE `PasswordResetToken` (
@@ -3425,7 +3392,7 @@ CREATE TABLE `PasswordResetToken` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `PasswordResetToken`
+-- Despejando dados para a tabela `PasswordResetToken`
 --
 
 INSERT INTO `PasswordResetToken` (`PasswordResetTokenId`, `UserAccountId`, `Token`, `ExpiresAtUtc`, `UsedAtUtc`) VALUES
@@ -3444,7 +3411,7 @@ INSERT INTO `PasswordResetToken` (`PasswordResetTokenId`, `UserAccountId`, `Toke
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Payment`
+-- Estrutura para tabela `Payment`
 --
 
 CREATE TABLE `Payment` (
@@ -3460,7 +3427,7 @@ CREATE TABLE `Payment` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Payment`
+-- Despejando dados para a tabela `Payment`
 --
 
 INSERT INTO `Payment` (`PaymentId`, `OrderId`, `Method`, `Status`, `ProviderRef`, `StripeCheckoutSessionId`, `StripePaymentIntentId`, `CreatedAtUtc`, `PaidAtUtc`) VALUES
@@ -3501,7 +3468,7 @@ INSERT INTO `Payment` (`PaymentId`, `OrderId`, `Method`, `Status`, `ProviderRef`
 (47, 40, 'CreditCard', 'Paid', 'cs_test_a1vUqr4ZMn0fy2ilyiIZEMFTuOnotlEuFUbZd5Q9Y8rMaPhdBYy3GQsbkb', 'cs_test_a1vUqr4ZMn0fy2ilyiIZEMFTuOnotlEuFUbZd5Q9Y8rMaPhdBYy3GQsbkb', NULL, '2026-04-10 07:08:27', '2026-04-10 07:08:45');
 
 --
--- Triggers `Payment`
+-- Acionadores `Payment`
 --
 DELIMITER $$
 CREATE TRIGGER `Payment_Check_One_Paid_Before_Insert` BEFORE INSERT ON `Payment` FOR EACH ROW BEGIN
@@ -3529,7 +3496,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `PaymentMethod`
+-- Estrutura para tabela `PaymentMethod`
 --
 
 CREATE TABLE `PaymentMethod` (
@@ -3537,7 +3504,7 @@ CREATE TABLE `PaymentMethod` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `PaymentMethod`
+-- Despejando dados para a tabela `PaymentMethod`
 --
 
 INSERT INTO `PaymentMethod` (`Method`) VALUES
@@ -3547,7 +3514,7 @@ INSERT INTO `PaymentMethod` (`Method`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `PaymentStatus`
+-- Estrutura para tabela `PaymentStatus`
 --
 
 CREATE TABLE `PaymentStatus` (
@@ -3555,7 +3522,7 @@ CREATE TABLE `PaymentStatus` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `PaymentStatus`
+-- Despejando dados para a tabela `PaymentStatus`
 --
 
 INSERT INTO `PaymentStatus` (`Status`) VALUES
@@ -3568,7 +3535,7 @@ INSERT INTO `PaymentStatus` (`Status`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `PriceTier`
+-- Estrutura para tabela `PriceTier`
 --
 
 CREATE TABLE `PriceTier` (
@@ -3577,7 +3544,7 @@ CREATE TABLE `PriceTier` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `PriceTier`
+-- Despejando dados para a tabela `PriceTier`
 --
 
 INSERT INTO `PriceTier` (`PriceTierId`, `Name`) VALUES
@@ -3592,7 +3559,7 @@ INSERT INTO `PriceTier` (`PriceTierId`, `Name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Program`
+-- Estrutura para tabela `Program`
 --
 
 CREATE TABLE `Program` (
@@ -3604,7 +3571,7 @@ CREATE TABLE `Program` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Program`
+-- Despejando dados para a tabela `Program`
 --
 
 INSERT INTO `Program` (`ProgramId`, `UserAccountId`, `SessionKey`, `CreatedAtUtc`, `IsCheckedOut`) VALUES
@@ -3629,7 +3596,7 @@ INSERT INTO `Program` (`ProgramId`, `UserAccountId`, `SessionKey`, `CreatedAtUtc
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ProgramItem`
+-- Estrutura para tabela `ProgramItem`
 --
 
 CREATE TABLE `ProgramItem` (
@@ -3646,7 +3613,7 @@ CREATE TABLE `ProgramItem` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `ProgramItem`
+-- Despejando dados para a tabela `ProgramItem`
 --
 
 INSERT INTO `ProgramItem` (`ProgramItemId`, `ProgramId`, `EventSessionId`, `HistoryTourId`, `ReservationId`, `PassTypeId`, `PassValidDate`, `Quantity`, `PriceTierId`, `DonationAmount`) VALUES
@@ -3693,7 +3660,7 @@ INSERT INTO `ProgramItem` (`ProgramItemId`, `ProgramId`, `EventSessionId`, `Hist
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Reservation`
+-- Estrutura para tabela `Reservation`
 --
 
 CREATE TABLE `Reservation` (
@@ -3709,18 +3676,18 @@ CREATE TABLE `Reservation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Reservation`
+-- Despejando dados para a tabela `Reservation`
 --
 
 INSERT INTO `Reservation` (`ReservationId`, `DiningDate`, `TimeSlot`, `AdultsCount`, `ChildrenCount`, `SpecialRequests`, `TotalFee`, `CreatedAt`, `EventId`) VALUES
-(2, 'Thursday', '17:00', 1, 0, '', 10.00, '2026-04-10 06:43:38', 48),
-(3, 'Thursday', '17:00', 1, 1, '', 20.00, '2026-04-10 07:05:38', 48),
-(4, 'Thursday', '17:00', 1, 1, '', 20.00, '2026-04-10 07:07:33', 48);
+(2, '2026-07-23', '17:00', 1, 0, '', 10.00, '2026-04-10 06:43:38', 48),
+(3, '2026-07-23', '17:00', 1, 1, '', 20.00, '2026-04-10 07:05:38', 48),
+(4, '2026-07-23', '17:00', 1, 1, '', 20.00, '2026-04-10 07:07:33', 48);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ScheduleDay`
+-- Estrutura para tabela `ScheduleDay`
 --
 
 CREATE TABLE `ScheduleDay` (
@@ -3732,7 +3699,7 @@ CREATE TABLE `ScheduleDay` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `ScheduleDay`
+-- Despejando dados para a tabela `ScheduleDay`
 --
 
 INSERT INTO `ScheduleDay` (`ScheduleDayId`, `EventTypeId`, `Date`, `IsDeleted`, `DeletedAtUtc`) VALUES
@@ -3759,7 +3726,7 @@ INSERT INTO `ScheduleDay` (`ScheduleDayId`, `EventTypeId`, `Date`, `IsDeleted`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ScheduleDayConfig`
+-- Estrutura para tabela `ScheduleDayConfig`
 --
 
 CREATE TABLE `ScheduleDayConfig` (
@@ -3771,7 +3738,7 @@ CREATE TABLE `ScheduleDayConfig` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `ScheduleDayConfig`
+-- Despejando dados para a tabela `ScheduleDayConfig`
 --
 
 INSERT INTO `ScheduleDayConfig` (`ScheduleDayConfigId`, `EventTypeId`, `DayOfWeek`, `IsVisible`, `UpdatedAtUtc`) VALUES
@@ -3795,7 +3762,7 @@ INSERT INTO `ScheduleDayConfig` (`ScheduleDayConfigId`, `EventTypeId`, `DayOfWee
 -- --------------------------------------------------------
 
 --
--- Table structure for table `SessionDiscountRule`
+-- Estrutura para tabela `SessionDiscountRule`
 --
 
 CREATE TABLE `SessionDiscountRule` (
@@ -3809,7 +3776,7 @@ CREATE TABLE `SessionDiscountRule` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `SessionType`
+-- Estrutura para tabela `SessionType`
 --
 
 CREATE TABLE `SessionType` (
@@ -3817,7 +3784,7 @@ CREATE TABLE `SessionType` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `SessionType`
+-- Despejando dados para a tabela `SessionType`
 --
 
 INSERT INTO `SessionType` (`SessionType`) VALUES
@@ -3833,7 +3800,7 @@ INSERT INTO `SessionType` (`SessionType`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `StarRating`
+-- Estrutura para tabela `StarRating`
 --
 
 CREATE TABLE `StarRating` (
@@ -3842,7 +3809,7 @@ CREATE TABLE `StarRating` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `StarRating`
+-- Despejando dados para a tabela `StarRating`
 --
 
 INSERT INTO `StarRating` (`Stars`, `Label`) VALUES
@@ -3855,7 +3822,7 @@ INSERT INTO `StarRating` (`Stars`, `Label`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `StripeWebhookEvent`
+-- Estrutura para tabela `StripeWebhookEvent`
 --
 
 CREATE TABLE `StripeWebhookEvent` (
@@ -3866,7 +3833,7 @@ CREATE TABLE `StripeWebhookEvent` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `StripeWebhookEvent`
+-- Despejando dados para a tabela `StripeWebhookEvent`
 --
 
 INSERT INTO `StripeWebhookEvent` (`StripeWebhookEventId`, `StripeEventId`, `EventType`, `ProcessedAtUtc`) VALUES
@@ -3878,7 +3845,7 @@ INSERT INTO `StripeWebhookEvent` (`StripeWebhookEventId`, `StripeEventId`, `Even
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Ticket`
+-- Estrutura para tabela `Ticket`
 --
 
 CREATE TABLE `Ticket` (
@@ -3892,7 +3859,7 @@ CREATE TABLE `Ticket` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Ticket`
+-- Despejando dados para a tabela `Ticket`
 --
 
 INSERT INTO `Ticket` (`TicketId`, `OrderItemId`, `TicketCode`, `IsScanned`, `ScannedAtUtc`, `ScannedByUserId`, `PdfAssetId`) VALUES
@@ -3954,7 +3921,7 @@ INSERT INTO `Ticket` (`TicketId`, `OrderItemId`, `TicketCode`, `IsScanned`, `Sca
 -- --------------------------------------------------------
 
 --
--- Table structure for table `UserAccount`
+-- Estrutura para tabela `UserAccount`
 --
 
 CREATE TABLE `UserAccount` (
@@ -3974,7 +3941,7 @@ CREATE TABLE `UserAccount` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `UserAccount`
+-- Despejando dados para a tabela `UserAccount`
 --
 
 INSERT INTO `UserAccount` (`UserAccountId`, `UserRoleId`, `Username`, `Email`, `PasswordHash`, `PasswordSalt`, `FirstName`, `LastName`, `ProfilePictureAssetId`, `IsEmailConfirmed`, `IsActive`, `RegisteredAtUtc`, `UpdatedAtUtc`) VALUES
@@ -3989,7 +3956,7 @@ INSERT INTO `UserAccount` (`UserAccountId`, `UserRoleId`, `Username`, `Email`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `UserRole`
+-- Estrutura para tabela `UserRole`
 --
 
 CREATE TABLE `UserRole` (
@@ -3998,7 +3965,7 @@ CREATE TABLE `UserRole` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `UserRole`
+-- Despejando dados para a tabela `UserRole`
 --
 
 INSERT INTO `UserRole` (`UserRoleId`, `RoleName`) VALUES
@@ -4009,7 +3976,7 @@ INSERT INTO `UserRole` (`UserRoleId`, `RoleName`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Venue`
+-- Estrutura para tabela `Venue`
 --
 
 CREATE TABLE `Venue` (
@@ -4022,7 +3989,7 @@ CREATE TABLE `Venue` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `Venue`
+-- Despejando dados para a tabela `Venue`
 --
 
 INSERT INTO `Venue` (`VenueId`, `Name`, `AddressLine`, `City`, `CreatedAtUtc`, `IsActive`) VALUES
@@ -4047,14 +4014,21 @@ INSERT INTO `Venue` (`VenueId`, `Name`, `AddressLine`, `City`, `CreatedAtUtc`, `
 (19, 'Test Venue Delete', 'Test Street', 'Haarlem', '2026-04-05 21:38:49', 1),
 (20, 'Test Venue Delete', 'Test Street', 'Haarlem', '2026-04-05 21:38:54', 0),
 (21, 'Test Delete Me', 'Nowhere', 'Haarlem', '2026-04-05 21:39:38', 0),
-(22, 'This Is Just A Test', 'Test 123', 'Haarlem', '2026-04-06 12:07:05', 0);
+(22, 'This Is Just A Test', 'Test 123', 'Haarlem', '2026-04-06 12:07:05', 0),
+(23, 'Café de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem', '2026-05-14 13:47:39', 1),
+(24, 'Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem', '2026-05-14 13:47:39', 1),
+(25, 'Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem', '2026-05-14 13:47:39', 1),
+(26, 'Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem', '2026-05-14 13:47:39', 1),
+(27, 'New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem', '2026-05-14 13:47:39', 1),
+(28, 'Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem', '2026-05-14 13:47:39', 1),
+(29, 'Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem', '2026-05-14 13:47:39', 1);
 
 --
--- Indexes for dumped tables
+-- Índices para tabelas despejadas
 --
 
 --
--- Indexes for table `Artist`
+-- Índices de tabela `Artist`
 --
 ALTER TABLE `Artist`
   ADD PRIMARY KEY (`ArtistId`),
@@ -4062,42 +4036,42 @@ ALTER TABLE `Artist`
   ADD KEY `IX_Artist_JazzOverview` (`ShowOnJazzOverview`,`CardSortOrder`,`Name`);
 
 --
--- Indexes for table `ArtistAlbum`
+-- Índices de tabela `ArtistAlbum`
 --
 ALTER TABLE `ArtistAlbum`
   ADD PRIMARY KEY (`ArtistAlbumId`),
   ADD KEY `IX_ArtistAlbum_Artist` (`ArtistId`,`SortOrder`);
 
 --
--- Indexes for table `ArtistGalleryImage`
+-- Índices de tabela `ArtistGalleryImage`
 --
 ALTER TABLE `ArtistGalleryImage`
   ADD PRIMARY KEY (`ArtistGalleryImageId`),
   ADD KEY `IX_ArtistGalleryImage_Artist` (`ArtistId`,`SortOrder`);
 
 --
--- Indexes for table `ArtistHighlight`
+-- Índices de tabela `ArtistHighlight`
 --
 ALTER TABLE `ArtistHighlight`
   ADD PRIMARY KEY (`ArtistHighlightId`),
   ADD KEY `IX_ArtistHighlight_Artist` (`ArtistId`,`SortOrder`);
 
 --
--- Indexes for table `ArtistLineupMember`
+-- Índices de tabela `ArtistLineupMember`
 --
 ALTER TABLE `ArtistLineupMember`
   ADD PRIMARY KEY (`ArtistLineupMemberId`),
   ADD KEY `IX_ArtistLineupMember_Artist` (`ArtistId`,`SortOrder`);
 
 --
--- Indexes for table `ArtistTrack`
+-- Índices de tabela `ArtistTrack`
 --
 ALTER TABLE `ArtistTrack`
   ADD PRIMARY KEY (`ArtistTrackId`),
   ADD KEY `IX_ArtistTrack_Artist` (`ArtistId`,`SortOrder`);
 
 --
--- Indexes for table `CmsItem`
+-- Índices de tabela `CmsItem`
 --
 ALTER TABLE `CmsItem`
   ADD PRIMARY KEY (`CmsItemId`),
@@ -4108,27 +4082,27 @@ ALTER TABLE `CmsItem`
   ADD KEY `FK_CmsItem_ItemKey` (`ItemKey`);
 
 --
--- Indexes for table `CmsItemKey`
+-- Índices de tabela `CmsItemKey`
 --
 ALTER TABLE `CmsItemKey`
   ADD PRIMARY KEY (`ItemKey`),
   ADD KEY `FK_CmsItemKey_Type` (`ExpectedItemType`);
 
 --
--- Indexes for table `CmsItemType`
+-- Índices de tabela `CmsItemType`
 --
 ALTER TABLE `CmsItemType`
   ADD PRIMARY KEY (`ItemType`);
 
 --
--- Indexes for table `CmsPage`
+-- Índices de tabela `CmsPage`
 --
 ALTER TABLE `CmsPage`
   ADD PRIMARY KEY (`CmsPageId`),
   ADD UNIQUE KEY `Slug` (`Slug`);
 
 --
--- Indexes for table `CmsSection`
+-- Índices de tabela `CmsSection`
 --
 ALTER TABLE `CmsSection`
   ADD PRIMARY KEY (`CmsSectionId`),
@@ -4136,13 +4110,13 @@ ALTER TABLE `CmsSection`
   ADD KEY `IX_CmsSection_Page` (`CmsPageId`);
 
 --
--- Indexes for table `CuisineType`
+-- Índices de tabela `CuisineType`
 --
 ALTER TABLE `CuisineType`
   ADD PRIMARY KEY (`CuisineTypeId`);
 
 --
--- Indexes for table `EmailConfirmationToken`
+-- Índices de tabela `EmailConfirmationToken`
 --
 ALTER TABLE `EmailConfirmationToken`
   ADD PRIMARY KEY (`EmailConfirmationTokenId`),
@@ -4150,7 +4124,7 @@ ALTER TABLE `EmailConfirmationToken`
   ADD KEY `FK_EmailConfirmationToken_User` (`UserAccountId`);
 
 --
--- Indexes for table `EmailConfirmationTokens`
+-- Índices de tabela `EmailConfirmationTokens`
 --
 ALTER TABLE `EmailConfirmationTokens`
   ADD PRIMARY KEY (`TokenId`),
@@ -4160,7 +4134,7 @@ ALTER TABLE `EmailConfirmationTokens`
   ADD KEY `idx_expires_at` (`ExpiresAtUtc`);
 
 --
--- Indexes for table `Event`
+-- Índices de tabela `Event`
 --
 ALTER TABLE `Event`
   ADD PRIMARY KEY (`EventId`),
@@ -4172,21 +4146,21 @@ ALTER TABLE `Event`
   ADD KEY `IX_Event_Active` (`IsActive`,`EventId`);
 
 --
--- Indexes for table `EventGalleryImage`
+-- Índices de tabela `EventGalleryImage`
 --
 ALTER TABLE `EventGalleryImage`
   ADD PRIMARY KEY (`EventGalleryImageId`),
   ADD KEY `IX_EventGalleryImage_Event` (`EventId`,`ImageType`,`SortOrder`);
 
 --
--- Indexes for table `EventHighlight`
+-- Índices de tabela `EventHighlight`
 --
 ALTER TABLE `EventHighlight`
   ADD PRIMARY KEY (`EventHighlightId`),
   ADD KEY `IX_EventHighlight_Event` (`EventId`,`SortOrder`);
 
 --
--- Indexes for table `EventSession`
+-- Índices de tabela `EventSession`
 --
 ALTER TABLE `EventSession`
   ADD PRIMARY KEY (`EventSessionId`),
@@ -4199,14 +4173,14 @@ ALTER TABLE `EventSession`
   ADD KEY `IX_EventSession_Venue` (`VenueId`);
 
 --
--- Indexes for table `EventSessionLabel`
+-- Índices de tabela `EventSessionLabel`
 --
 ALTER TABLE `EventSessionLabel`
   ADD PRIMARY KEY (`EventSessionLabelId`),
   ADD KEY `IX_SessionLabel_Session` (`EventSessionId`);
 
 --
--- Indexes for table `EventSessionPrice`
+-- Índices de tabela `EventSessionPrice`
 --
 ALTER TABLE `EventSessionPrice`
   ADD PRIMARY KEY (`EventSessionPriceId`),
@@ -4215,7 +4189,7 @@ ALTER TABLE `EventSessionPrice`
   ADD KEY `IX_EventSessionPrice_Session` (`EventSessionId`);
 
 --
--- Indexes for table `EventType`
+-- Índices de tabela `EventType`
 --
 ALTER TABLE `EventType`
   ADD PRIMARY KEY (`EventTypeId`),
@@ -4223,14 +4197,14 @@ ALTER TABLE `EventType`
   ADD UNIQUE KEY `Slug` (`Slug`);
 
 --
--- Indexes for table `Guide`
+-- Índices de tabela `Guide`
 --
 ALTER TABLE `Guide`
   ADD PRIMARY KEY (`GuideId`),
   ADD UNIQUE KEY `UQ_Guide_Name` (`Name`);
 
 --
--- Indexes for table `HistoryTour`
+-- Índices de tabela `HistoryTour`
 --
 ALTER TABLE `HistoryTour`
   ADD PRIMARY KEY (`HistoryTourId`),
@@ -4238,14 +4212,14 @@ ALTER TABLE `HistoryTour`
   ADD KEY `IX_HistoryTour_Session` (`EventSessionId`);
 
 --
--- Indexes for table `HistoryTourGuide`
+-- Índices de tabela `HistoryTourGuide`
 --
 ALTER TABLE `HistoryTourGuide`
   ADD PRIMARY KEY (`HistoryTourId`,`GuideId`),
   ADD KEY `IX_HistoryTourGuide_Guide` (`GuideId`);
 
 --
--- Indexes for table `Invoice`
+-- Índices de tabela `Invoice`
 --
 ALTER TABLE `Invoice`
   ADD PRIMARY KEY (`InvoiceId`),
@@ -4254,7 +4228,7 @@ ALTER TABLE `Invoice`
   ADD KEY `FK_Invoice_Pdf` (`PdfAssetId`);
 
 --
--- Indexes for table `InvoiceLine`
+-- Índices de tabela `InvoiceLine`
 --
 ALTER TABLE `InvoiceLine`
   ADD PRIMARY KEY (`InvoiceLineId`),
@@ -4262,13 +4236,13 @@ ALTER TABLE `InvoiceLine`
   ADD KEY `IX_InvoiceLine_Invoice` (`InvoiceId`);
 
 --
--- Indexes for table `MediaAsset`
+-- Índices de tabela `MediaAsset`
 --
 ALTER TABLE `MediaAsset`
   ADD PRIMARY KEY (`MediaAssetId`);
 
 --
--- Indexes for table `Order`
+-- Índices de tabela `Order`
 --
 ALTER TABLE `Order`
   ADD PRIMARY KEY (`OrderId`),
@@ -4279,7 +4253,7 @@ ALTER TABLE `Order`
   ADD KEY `IX_Order_UserDesc` (`UserAccountId`,`CreatedAtUtc` DESC);
 
 --
--- Indexes for table `OrderItem`
+-- Índices de tabela `OrderItem`
 --
 ALTER TABLE `OrderItem`
   ADD PRIMARY KEY (`OrderItemId`),
@@ -4289,20 +4263,20 @@ ALTER TABLE `OrderItem`
   ADD KEY `IX_OrderItem_HistoryTour` (`HistoryTourId`);
 
 --
--- Indexes for table `OrderStatus`
+-- Índices de tabela `OrderStatus`
 --
 ALTER TABLE `OrderStatus`
   ADD PRIMARY KEY (`Status`);
 
 --
--- Indexes for table `PageGalleryImage`
+-- Índices de tabela `PageGalleryImage`
 --
 ALTER TABLE `PageGalleryImage`
   ADD PRIMARY KEY (`PageGalleryImageId`),
   ADD KEY `IX_PageGalleryImage_Page` (`CmsPageId`,`ImageType`,`SortOrder`);
 
 --
--- Indexes for table `PassPurchase`
+-- Índices de tabela `PassPurchase`
 --
 ALTER TABLE `PassPurchase`
   ADD PRIMARY KEY (`PassPurchaseId`),
@@ -4310,13 +4284,13 @@ ALTER TABLE `PassPurchase`
   ADD KEY `FK_PassPurchase_User` (`UserAccountId`);
 
 --
--- Indexes for table `PassScope`
+-- Índices de tabela `PassScope`
 --
 ALTER TABLE `PassScope`
   ADD PRIMARY KEY (`PassScope`);
 
 --
--- Indexes for table `PassType`
+-- Índices de tabela `PassType`
 --
 ALTER TABLE `PassType`
   ADD PRIMARY KEY (`PassTypeId`),
@@ -4324,7 +4298,7 @@ ALTER TABLE `PassType`
   ADD KEY `FK_PassType_Scope` (`PassScope`);
 
 --
--- Indexes for table `PasswordResetToken`
+-- Índices de tabela `PasswordResetToken`
 --
 ALTER TABLE `PasswordResetToken`
   ADD PRIMARY KEY (`PasswordResetTokenId`),
@@ -4332,7 +4306,7 @@ ALTER TABLE `PasswordResetToken`
   ADD KEY `FK_PasswordResetToken_User` (`UserAccountId`);
 
 --
--- Indexes for table `Payment`
+-- Índices de tabela `Payment`
 --
 ALTER TABLE `Payment`
   ADD PRIMARY KEY (`PaymentId`),
@@ -4343,26 +4317,26 @@ ALTER TABLE `Payment`
   ADD KEY `FK_Payment_Method` (`Method`);
 
 --
--- Indexes for table `PaymentMethod`
+-- Índices de tabela `PaymentMethod`
 --
 ALTER TABLE `PaymentMethod`
   ADD PRIMARY KEY (`Method`);
 
 --
--- Indexes for table `PaymentStatus`
+-- Índices de tabela `PaymentStatus`
 --
 ALTER TABLE `PaymentStatus`
   ADD PRIMARY KEY (`Status`);
 
 --
--- Indexes for table `PriceTier`
+-- Índices de tabela `PriceTier`
 --
 ALTER TABLE `PriceTier`
   ADD PRIMARY KEY (`PriceTierId`),
   ADD UNIQUE KEY `Name` (`Name`);
 
 --
--- Indexes for table `Program`
+-- Índices de tabela `Program`
 --
 ALTER TABLE `Program`
   ADD PRIMARY KEY (`ProgramId`),
@@ -4370,7 +4344,7 @@ ALTER TABLE `Program`
   ADD KEY `IX_Program_SessionKey` (`SessionKey`,`IsCheckedOut`);
 
 --
--- Indexes for table `ProgramItem`
+-- Índices de tabela `ProgramItem`
 --
 ALTER TABLE `ProgramItem`
   ADD PRIMARY KEY (`ProgramItemId`),
@@ -4382,14 +4356,14 @@ ALTER TABLE `ProgramItem`
   ADD KEY `FK_ProgramItem_PriceTier` (`PriceTierId`);
 
 --
--- Indexes for table `Reservation`
+-- Índices de tabela `Reservation`
 --
 ALTER TABLE `Reservation`
   ADD PRIMARY KEY (`ReservationId`),
   ADD KEY `FK_Reservation_Event` (`EventId`);
 
 --
--- Indexes for table `ScheduleDay`
+-- Índices de tabela `ScheduleDay`
 --
 ALTER TABLE `ScheduleDay`
   ADD PRIMARY KEY (`ScheduleDayId`),
@@ -4397,14 +4371,14 @@ ALTER TABLE `ScheduleDay`
   ADD KEY `IX_ScheduleDay_Filter` (`EventTypeId`,`Date`,`IsDeleted`);
 
 --
--- Indexes for table `ScheduleDayConfig`
+-- Índices de tabela `ScheduleDayConfig`
 --
 ALTER TABLE `ScheduleDayConfig`
   ADD PRIMARY KEY (`ScheduleDayConfigId`),
   ADD UNIQUE KEY `uk_eventtype_day` (`EventTypeId`,`DayOfWeek`);
 
 --
--- Indexes for table `SessionDiscountRule`
+-- Índices de tabela `SessionDiscountRule`
 --
 ALTER TABLE `SessionDiscountRule`
   ADD PRIMARY KEY (`SessionDiscountRuleId`),
@@ -4412,26 +4386,26 @@ ALTER TABLE `SessionDiscountRule`
   ADD KEY `IX_DiscountRule_Session` (`EventSessionId`);
 
 --
--- Indexes for table `SessionType`
+-- Índices de tabela `SessionType`
 --
 ALTER TABLE `SessionType`
   ADD PRIMARY KEY (`SessionType`);
 
 --
--- Indexes for table `StarRating`
+-- Índices de tabela `StarRating`
 --
 ALTER TABLE `StarRating`
   ADD PRIMARY KEY (`Stars`);
 
 --
--- Indexes for table `StripeWebhookEvent`
+-- Índices de tabela `StripeWebhookEvent`
 --
 ALTER TABLE `StripeWebhookEvent`
   ADD PRIMARY KEY (`StripeWebhookEventId`),
   ADD UNIQUE KEY `UQ_StripeWebhookEvent_StripeEventId` (`StripeEventId`);
 
 --
--- Indexes for table `Ticket`
+-- Índices de tabela `Ticket`
 --
 ALTER TABLE `Ticket`
   ADD PRIMARY KEY (`TicketId`),
@@ -4442,7 +4416,7 @@ ALTER TABLE `Ticket`
   ADD KEY `IX_Ticket_Scan` (`IsScanned`,`TicketCode`);
 
 --
--- Indexes for table `UserAccount`
+-- Índices de tabela `UserAccount`
 --
 ALTER TABLE `UserAccount`
   ADD PRIMARY KEY (`UserAccountId`),
@@ -4452,322 +4426,322 @@ ALTER TABLE `UserAccount`
   ADD KEY `IX_UserAccount_Role` (`UserRoleId`,`IsActive`);
 
 --
--- Indexes for table `UserRole`
+-- Índices de tabela `UserRole`
 --
 ALTER TABLE `UserRole`
   ADD PRIMARY KEY (`UserRoleId`),
   ADD UNIQUE KEY `RoleName` (`RoleName`);
 
 --
--- Indexes for table `Venue`
+-- Índices de tabela `Venue`
 --
 ALTER TABLE `Venue`
   ADD PRIMARY KEY (`VenueId`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT para tabelas despejadas
 --
 
 --
--- AUTO_INCREMENT for table `Artist`
+-- AUTO_INCREMENT de tabela `Artist`
 --
 ALTER TABLE `Artist`
   MODIFY `ArtistId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
--- AUTO_INCREMENT for table `ArtistAlbum`
+-- AUTO_INCREMENT de tabela `ArtistAlbum`
 --
 ALTER TABLE `ArtistAlbum`
   MODIFY `ArtistAlbumId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT for table `ArtistGalleryImage`
+-- AUTO_INCREMENT de tabela `ArtistGalleryImage`
 --
 ALTER TABLE `ArtistGalleryImage`
   MODIFY `ArtistGalleryImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT for table `ArtistHighlight`
+-- AUTO_INCREMENT de tabela `ArtistHighlight`
 --
 ALTER TABLE `ArtistHighlight`
   MODIFY `ArtistHighlightId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT for table `ArtistLineupMember`
+-- AUTO_INCREMENT de tabela `ArtistLineupMember`
 --
 ALTER TABLE `ArtistLineupMember`
   MODIFY `ArtistLineupMemberId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- AUTO_INCREMENT for table `ArtistTrack`
+-- AUTO_INCREMENT de tabela `ArtistTrack`
 --
 ALTER TABLE `ArtistTrack`
   MODIFY `ArtistTrackId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
--- AUTO_INCREMENT for table `CmsItem`
+-- AUTO_INCREMENT de tabela `CmsItem`
 --
 ALTER TABLE `CmsItem`
-  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1540;
+  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1547;
 
 --
--- AUTO_INCREMENT for table `CmsPage`
+-- AUTO_INCREMENT de tabela `CmsPage`
 --
 ALTER TABLE `CmsPage`
   MODIFY `CmsPageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT for table `CmsSection`
+-- AUTO_INCREMENT de tabela `CmsSection`
 --
 ALTER TABLE `CmsSection`
   MODIFY `CmsSectionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
 
 --
--- AUTO_INCREMENT for table `CuisineType`
+-- AUTO_INCREMENT de tabela `CuisineType`
 --
 ALTER TABLE `CuisineType`
   MODIFY `CuisineTypeId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT for table `EmailConfirmationToken`
+-- AUTO_INCREMENT de tabela `EmailConfirmationToken`
 --
 ALTER TABLE `EmailConfirmationToken`
   MODIFY `EmailConfirmationTokenId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `EmailConfirmationTokens`
+-- AUTO_INCREMENT de tabela `EmailConfirmationTokens`
 --
 ALTER TABLE `EmailConfirmationTokens`
   MODIFY `TokenId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `Event`
+-- AUTO_INCREMENT de tabela `Event`
 --
 ALTER TABLE `Event`
   MODIFY `EventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
--- AUTO_INCREMENT for table `EventGalleryImage`
+-- AUTO_INCREMENT de tabela `EventGalleryImage`
 --
 ALTER TABLE `EventGalleryImage`
   MODIFY `EventGalleryImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
 
 --
--- AUTO_INCREMENT for table `EventHighlight`
+-- AUTO_INCREMENT de tabela `EventHighlight`
 --
 ALTER TABLE `EventHighlight`
   MODIFY `EventHighlightId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
--- AUTO_INCREMENT for table `EventSession`
+-- AUTO_INCREMENT de tabela `EventSession`
 --
 ALTER TABLE `EventSession`
   MODIFY `EventSessionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
 
 --
--- AUTO_INCREMENT for table `EventSessionLabel`
+-- AUTO_INCREMENT de tabela `EventSessionLabel`
 --
 ALTER TABLE `EventSessionLabel`
   MODIFY `EventSessionLabelId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
 
 --
--- AUTO_INCREMENT for table `EventSessionPrice`
+-- AUTO_INCREMENT de tabela `EventSessionPrice`
 --
 ALTER TABLE `EventSessionPrice`
   MODIFY `EventSessionPriceId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=467;
 
 --
--- AUTO_INCREMENT for table `EventType`
+-- AUTO_INCREMENT de tabela `EventType`
 --
 ALTER TABLE `EventType`
   MODIFY `EventTypeId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `Guide`
+-- AUTO_INCREMENT de tabela `Guide`
 --
 ALTER TABLE `Guide`
   MODIFY `GuideId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
--- AUTO_INCREMENT for table `HistoryTour`
+-- AUTO_INCREMENT de tabela `HistoryTour`
 --
 ALTER TABLE `HistoryTour`
   MODIFY `HistoryTourId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
--- AUTO_INCREMENT for table `Invoice`
+-- AUTO_INCREMENT de tabela `Invoice`
 --
 ALTER TABLE `Invoice`
   MODIFY `InvoiceId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `InvoiceLine`
+-- AUTO_INCREMENT de tabela `InvoiceLine`
 --
 ALTER TABLE `InvoiceLine`
   MODIFY `InvoiceLineId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `MediaAsset`
+-- AUTO_INCREMENT de tabela `MediaAsset`
 --
 ALTER TABLE `MediaAsset`
   MODIFY `MediaAssetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=162;
 
 --
--- AUTO_INCREMENT for table `Order`
+-- AUTO_INCREMENT de tabela `Order`
 --
 ALTER TABLE `Order`
   MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
--- AUTO_INCREMENT for table `OrderItem`
+-- AUTO_INCREMENT de tabela `OrderItem`
 --
 ALTER TABLE `OrderItem`
   MODIFY `OrderItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
--- AUTO_INCREMENT for table `PageGalleryImage`
+-- AUTO_INCREMENT de tabela `PageGalleryImage`
 --
 ALTER TABLE `PageGalleryImage`
   MODIFY `PageGalleryImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT for table `PassPurchase`
+-- AUTO_INCREMENT de tabela `PassPurchase`
 --
 ALTER TABLE `PassPurchase`
   MODIFY `PassPurchaseId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `PassType`
+-- AUTO_INCREMENT de tabela `PassType`
 --
 ALTER TABLE `PassType`
   MODIFY `PassTypeId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `PasswordResetToken`
+-- AUTO_INCREMENT de tabela `PasswordResetToken`
 --
 ALTER TABLE `PasswordResetToken`
   MODIFY `PasswordResetTokenId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- AUTO_INCREMENT for table `Payment`
+-- AUTO_INCREMENT de tabela `Payment`
 --
 ALTER TABLE `Payment`
   MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
--- AUTO_INCREMENT for table `PriceTier`
+-- AUTO_INCREMENT de tabela `PriceTier`
 --
 ALTER TABLE `PriceTier`
   MODIFY `PriceTierId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `Program`
+-- AUTO_INCREMENT de tabela `Program`
 --
 ALTER TABLE `Program`
   MODIFY `ProgramId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
--- AUTO_INCREMENT for table `ProgramItem`
+-- AUTO_INCREMENT de tabela `ProgramItem`
 --
 ALTER TABLE `ProgramItem`
   MODIFY `ProgramItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
 
 --
--- AUTO_INCREMENT for table `Reservation`
+-- AUTO_INCREMENT de tabela `Reservation`
 --
 ALTER TABLE `Reservation`
   MODIFY `ReservationId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT for table `ScheduleDay`
+-- AUTO_INCREMENT de tabela `ScheduleDay`
 --
 ALTER TABLE `ScheduleDay`
   MODIFY `ScheduleDayId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT for table `ScheduleDayConfig`
+-- AUTO_INCREMENT de tabela `ScheduleDayConfig`
 --
 ALTER TABLE `ScheduleDayConfig`
   MODIFY `ScheduleDayConfigId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
--- AUTO_INCREMENT for table `SessionDiscountRule`
+-- AUTO_INCREMENT de tabela `SessionDiscountRule`
 --
 ALTER TABLE `SessionDiscountRule`
   MODIFY `SessionDiscountRuleId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `StripeWebhookEvent`
+-- AUTO_INCREMENT de tabela `StripeWebhookEvent`
 --
 ALTER TABLE `StripeWebhookEvent`
   MODIFY `StripeWebhookEventId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `Ticket`
+-- AUTO_INCREMENT de tabela `Ticket`
 --
 ALTER TABLE `Ticket`
   MODIFY `TicketId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
--- AUTO_INCREMENT for table `UserAccount`
+-- AUTO_INCREMENT de tabela `UserAccount`
 --
 ALTER TABLE `UserAccount`
   MODIFY `UserAccountId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
--- AUTO_INCREMENT for table `UserRole`
+-- AUTO_INCREMENT de tabela `UserRole`
 --
 ALTER TABLE `UserRole`
   MODIFY `UserRoleId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `Venue`
+-- AUTO_INCREMENT de tabela `Venue`
 --
 ALTER TABLE `Venue`
-  MODIFY `VenueId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `VenueId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
--- Constraints for dumped tables
+-- Restrições para tabelas despejadas
 --
 
 --
--- Constraints for table `Artist`
+-- Restrições para tabelas `Artist`
 --
 ALTER TABLE `Artist`
   ADD CONSTRAINT `FK_Artist_Image` FOREIGN KEY (`ImageAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`);
 
 --
--- Constraints for table `ArtistAlbum`
+-- Restrições para tabelas `ArtistAlbum`
 --
 ALTER TABLE `ArtistAlbum`
   ADD CONSTRAINT `FK_ArtistAlbum_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `ArtistGalleryImage`
+-- Restrições para tabelas `ArtistGalleryImage`
 --
 ALTER TABLE `ArtistGalleryImage`
   ADD CONSTRAINT `FK_ArtistGalleryImage_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `ArtistHighlight`
+-- Restrições para tabelas `ArtistHighlight`
 --
 ALTER TABLE `ArtistHighlight`
   ADD CONSTRAINT `FK_ArtistHighlight_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `ArtistLineupMember`
+-- Restrições para tabelas `ArtistLineupMember`
 --
 ALTER TABLE `ArtistLineupMember`
   ADD CONSTRAINT `FK_ArtistLineupMember_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `ArtistTrack`
+-- Restrições para tabelas `ArtistTrack`
 --
 ALTER TABLE `ArtistTrack`
   ADD CONSTRAINT `FK_ArtistTrack_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `CmsItem`
+-- Restrições para tabelas `CmsItem`
 --
 ALTER TABLE `CmsItem`
   ADD CONSTRAINT `FK_CmsItem_Asset` FOREIGN KEY (`MediaAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
@@ -4776,31 +4750,31 @@ ALTER TABLE `CmsItem`
   ADD CONSTRAINT `FK_CmsItem_Section` FOREIGN KEY (`CmsSectionId`) REFERENCES `CmsSection` (`CmsSectionId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `CmsItemKey`
+-- Restrições para tabelas `CmsItemKey`
 --
 ALTER TABLE `CmsItemKey`
   ADD CONSTRAINT `FK_CmsItemKey_Type` FOREIGN KEY (`ExpectedItemType`) REFERENCES `CmsItemType` (`ItemType`);
 
 --
--- Constraints for table `CmsSection`
+-- Restrições para tabelas `CmsSection`
 --
 ALTER TABLE `CmsSection`
   ADD CONSTRAINT `FK_CmsSection_Page` FOREIGN KEY (`CmsPageId`) REFERENCES `CmsPage` (`CmsPageId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `EmailConfirmationToken`
+-- Restrições para tabelas `EmailConfirmationToken`
 --
 ALTER TABLE `EmailConfirmationToken`
   ADD CONSTRAINT `FK_EmailConfirmationToken_User` FOREIGN KEY (`UserAccountId`) REFERENCES `UserAccount` (`UserAccountId`);
 
 --
--- Constraints for table `EmailConfirmationTokens`
+-- Restrições para tabelas `EmailConfirmationTokens`
 --
 ALTER TABLE `EmailConfirmationTokens`
   ADD CONSTRAINT `fk_email_confirmation_user` FOREIGN KEY (`UserAccountId`) REFERENCES `UserAccount` (`UserAccountId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `Event`
+-- Restrições para tabelas `Event`
 --
 ALTER TABLE `Event`
   ADD CONSTRAINT `FK_Event_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artist` (`ArtistId`),
@@ -4809,19 +4783,19 @@ ALTER TABLE `Event`
   ADD CONSTRAINT `FK_Event_Venue` FOREIGN KEY (`VenueId`) REFERENCES `Venue` (`VenueId`);
 
 --
--- Constraints for table `EventGalleryImage`
+-- Restrições para tabelas `EventGalleryImage`
 --
 ALTER TABLE `EventGalleryImage`
   ADD CONSTRAINT `FK_EventGalleryImage_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `EventHighlight`
+-- Restrições para tabelas `EventHighlight`
 --
 ALTER TABLE `EventHighlight`
   ADD CONSTRAINT `FK_EventHighlight_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `EventSession`
+-- Restrições para tabelas `EventSession`
 --
 ALTER TABLE `EventSession`
   ADD CONSTRAINT `FK_EventSession_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`) ON DELETE CASCADE,
@@ -4829,46 +4803,46 @@ ALTER TABLE `EventSession`
   ADD CONSTRAINT `FK_EventSession_Venue` FOREIGN KEY (`VenueId`) REFERENCES `Venue` (`VenueId`);
 
 --
--- Constraints for table `EventSessionLabel`
+-- Restrições para tabelas `EventSessionLabel`
 --
 ALTER TABLE `EventSessionLabel`
   ADD CONSTRAINT `FK_EventSessionLabel_Session` FOREIGN KEY (`EventSessionId`) REFERENCES `EventSession` (`EventSessionId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `EventSessionPrice`
+-- Restrições para tabelas `EventSessionPrice`
 --
 ALTER TABLE `EventSessionPrice`
   ADD CONSTRAINT `FK_EventSessionPrice_Session` FOREIGN KEY (`EventSessionId`) REFERENCES `EventSession` (`EventSessionId`) ON DELETE CASCADE,
   ADD CONSTRAINT `FK_EventSessionPrice_Tier` FOREIGN KEY (`PriceTierId`) REFERENCES `PriceTier` (`PriceTierId`);
 
 --
--- Constraints for table `HistoryTour`
+-- Restrições para tabelas `HistoryTour`
 --
 ALTER TABLE `HistoryTour`
   ADD CONSTRAINT `FK_HistoryTour_Session` FOREIGN KEY (`EventSessionId`) REFERENCES `EventSession` (`EventSessionId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `HistoryTourGuide`
+-- Restrições para tabelas `HistoryTourGuide`
 --
 ALTER TABLE `HistoryTourGuide`
   ADD CONSTRAINT `FK_HistoryTourGuide_Guide` FOREIGN KEY (`GuideId`) REFERENCES `Guide` (`GuideId`),
   ADD CONSTRAINT `FK_HistoryTourGuide_Tour` FOREIGN KEY (`HistoryTourId`) REFERENCES `HistoryTour` (`HistoryTourId`);
 
 --
--- Constraints for table `Invoice`
+-- Restrições para tabelas `Invoice`
 --
 ALTER TABLE `Invoice`
   ADD CONSTRAINT `FK_Invoice_Order` FOREIGN KEY (`OrderId`) REFERENCES `Order` (`OrderId`),
   ADD CONSTRAINT `FK_Invoice_Pdf` FOREIGN KEY (`PdfAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`);
 
 --
--- Constraints for table `InvoiceLine`
+-- Restrições para tabelas `InvoiceLine`
 --
 ALTER TABLE `InvoiceLine`
   ADD CONSTRAINT `FK_InvoiceLine_Invoice` FOREIGN KEY (`InvoiceId`) REFERENCES `Invoice` (`InvoiceId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `Order`
+-- Restrições para tabelas `Order`
 --
 ALTER TABLE `Order`
   ADD CONSTRAINT `FK_Order_Program` FOREIGN KEY (`ProgramId`) REFERENCES `Program` (`ProgramId`),
@@ -4876,7 +4850,7 @@ ALTER TABLE `Order`
   ADD CONSTRAINT `FK_Order_User` FOREIGN KEY (`UserAccountId`) REFERENCES `UserAccount` (`UserAccountId`);
 
 --
--- Constraints for table `OrderItem`
+-- Restrições para tabelas `OrderItem`
 --
 ALTER TABLE `OrderItem`
   ADD CONSTRAINT `FK_OrderItem_HistoryTour` FOREIGN KEY (`HistoryTourId`) REFERENCES `HistoryTour` (`HistoryTourId`),
@@ -4885,33 +4859,33 @@ ALTER TABLE `OrderItem`
   ADD CONSTRAINT `FK_OrderItem_Session` FOREIGN KEY (`EventSessionId`) REFERENCES `EventSession` (`EventSessionId`);
 
 --
--- Constraints for table `PageGalleryImage`
+-- Restrições para tabelas `PageGalleryImage`
 --
 ALTER TABLE `PageGalleryImage`
   ADD CONSTRAINT `FK_PageGalleryImage_Page` FOREIGN KEY (`CmsPageId`) REFERENCES `CmsPage` (`CmsPageId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `PassPurchase`
+-- Restrições para tabelas `PassPurchase`
 --
 ALTER TABLE `PassPurchase`
   ADD CONSTRAINT `FK_PassPurchase_PassType` FOREIGN KEY (`PassTypeId`) REFERENCES `PassType` (`PassTypeId`),
   ADD CONSTRAINT `FK_PassPurchase_User` FOREIGN KEY (`UserAccountId`) REFERENCES `UserAccount` (`UserAccountId`);
 
 --
--- Constraints for table `PassType`
+-- Restrições para tabelas `PassType`
 --
 ALTER TABLE `PassType`
   ADD CONSTRAINT `FK_PassType_EventType` FOREIGN KEY (`EventTypeId`) REFERENCES `EventType` (`EventTypeId`),
   ADD CONSTRAINT `FK_PassType_Scope` FOREIGN KEY (`PassScope`) REFERENCES `PassScope` (`PassScope`);
 
 --
--- Constraints for table `PasswordResetToken`
+-- Restrições para tabelas `PasswordResetToken`
 --
 ALTER TABLE `PasswordResetToken`
   ADD CONSTRAINT `FK_PasswordResetToken_User` FOREIGN KEY (`UserAccountId`) REFERENCES `UserAccount` (`UserAccountId`);
 
 --
--- Constraints for table `Payment`
+-- Restrições para tabelas `Payment`
 --
 ALTER TABLE `Payment`
   ADD CONSTRAINT `FK_Payment_Method` FOREIGN KEY (`Method`) REFERENCES `PaymentMethod` (`Method`),
@@ -4919,13 +4893,13 @@ ALTER TABLE `Payment`
   ADD CONSTRAINT `FK_Payment_Status` FOREIGN KEY (`Status`) REFERENCES `PaymentStatus` (`Status`);
 
 --
--- Constraints for table `Program`
+-- Restrições para tabelas `Program`
 --
 ALTER TABLE `Program`
   ADD CONSTRAINT `FK_Program_User` FOREIGN KEY (`UserAccountId`) REFERENCES `UserAccount` (`UserAccountId`);
 
 --
--- Constraints for table `ProgramItem`
+-- Restrições para tabelas `ProgramItem`
 --
 ALTER TABLE `ProgramItem`
   ADD CONSTRAINT `FK_ProgramItem_HistoryTour` FOREIGN KEY (`HistoryTourId`) REFERENCES `HistoryTour` (`HistoryTourId`),
@@ -4936,26 +4910,26 @@ ALTER TABLE `ProgramItem`
   ADD CONSTRAINT `FK_ProgramItem_Session` FOREIGN KEY (`EventSessionId`) REFERENCES `EventSession` (`EventSessionId`);
 
 --
--- Constraints for table `Reservation`
+-- Restrições para tabelas `Reservation`
 --
 ALTER TABLE `Reservation`
   ADD CONSTRAINT `FK_Reservation_Event` FOREIGN KEY (`EventId`) REFERENCES `Event` (`EventId`);
 
 --
--- Constraints for table `ScheduleDay`
+-- Restrições para tabelas `ScheduleDay`
 --
 ALTER TABLE `ScheduleDay`
   ADD CONSTRAINT `FK_ScheduleDay_Type` FOREIGN KEY (`EventTypeId`) REFERENCES `EventType` (`EventTypeId`);
 
 --
--- Constraints for table `SessionDiscountRule`
+-- Restrições para tabelas `SessionDiscountRule`
 --
 ALTER TABLE `SessionDiscountRule`
   ADD CONSTRAINT `FK_DiscountRule_Session` FOREIGN KEY (`EventSessionId`) REFERENCES `EventSession` (`EventSessionId`) ON DELETE CASCADE,
   ADD CONSTRAINT `FK_DiscountRule_Tier` FOREIGN KEY (`AppliesToPriceTierId`) REFERENCES `PriceTier` (`PriceTierId`);
 
 --
--- Constraints for table `Ticket`
+-- Restrições para tabelas `Ticket`
 --
 ALTER TABLE `Ticket`
   ADD CONSTRAINT `FK_Ticket_OrderItem` FOREIGN KEY (`OrderItemId`) REFERENCES `OrderItem` (`OrderItemId`),
@@ -4963,131 +4937,11 @@ ALTER TABLE `Ticket`
   ADD CONSTRAINT `FK_Ticket_ScannedBy` FOREIGN KEY (`ScannedByUserId`) REFERENCES `UserAccount` (`UserAccountId`);
 
 --
--- Constraints for table `UserAccount`
+-- Restrições para tabelas `UserAccount`
 --
 ALTER TABLE `UserAccount`
   ADD CONSTRAINT `FK_UserAccount_ProfilePic` FOREIGN KEY (`ProfilePictureAssetId`) REFERENCES `MediaAsset` (`MediaAssetId`),
   ADD CONSTRAINT `FK_UserAccount_Role` FOREIGN KEY (`UserRoleId`) REFERENCES `UserRole` (`UserRoleId`);
-
--- =====================================================================
--- MIGRATION 001: Move restaurant structured data from CMS to Event
--- Date: 2026-05-08
--- =====================================================================
-
--- Add restaurant columns to Event
-ALTER TABLE `Event`
-  ADD COLUMN `Stars` TINYINT UNSIGNED NOT NULL DEFAULT 0 AFTER `IsActive`,
-  ADD COLUMN `MichelinStars` TINYINT UNSIGNED NOT NULL DEFAULT 0 AFTER `Stars`,
-  ADD COLUMN `CuisineType` VARCHAR(200) DEFAULT NULL AFTER `MichelinStars`,
-  ADD COLUMN `PriceAdult` DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER `CuisineType`,
-  ADD COLUMN `DurationMinutes` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `PriceAdult`,
-  ADD COLUMN `SeatsPerSession` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `DurationMinutes`,
-  ADD COLUMN `TimeSlots` VARCHAR(200) DEFAULT NULL AFTER `SeatsPerSession`;
-
--- Create Venue records for restaurants and link via VenueId
-INSERT INTO `Venue` (`Name`, `AddressLine`, `City`) VALUES
-  ('Café de Roemer', 'Botermarkt 17, 2011 XL Haarlem', 'Haarlem'),
-  ('Ratatouille', 'Spaarne 96, 2011 CL Haarlem', 'Haarlem'),
-  ('Restaurant ML', 'Kleine Houtstraat 70, 2011 DR Haarlem', 'Haarlem'),
-  ('Restaurant Fris', 'Twijnderslaan 7, 2012 BG Haarlem', 'Haarlem'),
-  ('New Vegas', 'Koningstraat 5, 2011 TB Haarlem', 'Haarlem'),
-  ('Grand Cafe Brinkman', 'Grote Markt 13, 2011 RC Haarlem', 'Haarlem'),
-  ('Urban Frenchy Bistro Toujours', 'Oude Groenmarkt 10-12, 2011 HL Haarlem', 'Haarlem');
-
-UPDATE `Event` SET `VenueId` = (SELECT `VenueId` FROM `Venue` WHERE `Name` = 'Café de Roemer' LIMIT 1) WHERE `EventId` = 47;
-UPDATE `Event` SET `VenueId` = (SELECT `VenueId` FROM `Venue` WHERE `Name` = 'Ratatouille' LIMIT 1) WHERE `EventId` = 48;
-UPDATE `Event` SET `VenueId` = (SELECT `VenueId` FROM `Venue` WHERE `Name` = 'Restaurant ML' LIMIT 1) WHERE `EventId` = 49;
-UPDATE `Event` SET `VenueId` = (SELECT `VenueId` FROM `Venue` WHERE `Name` = 'Restaurant Fris' LIMIT 1) WHERE `EventId` = 50;
-UPDATE `Event` SET `VenueId` = (SELECT `VenueId` FROM `Venue` WHERE `Name` = 'New Vegas' LIMIT 1) WHERE `EventId` = 51;
-UPDATE `Event` SET `VenueId` = (SELECT `VenueId` FROM `Venue` WHERE `Name` = 'Grand Cafe Brinkman' LIMIT 1) WHERE `EventId` = 52;
-UPDATE `Event` SET `VenueId` = (SELECT `VenueId` FROM `Venue` WHERE `Name` = 'Urban Frenchy Bistro Toujours' LIMIT 1) WHERE `EventId` = 53;
-
--- Migrate CMS data into Event columns
-UPDATE `Event` SET `Stars` = 4, `CuisineType` = 'Dutch, fish and seafood, European', `PriceAdult` = 45.00, `DurationMinutes` = 120, `SeatsPerSession` = 35, `TimeSlots` = '16:30, 18:30, 20:30' WHERE `EventId` = 47;
-UPDATE `Event` SET `Stars` = 4, `MichelinStars` = 1, `CuisineType` = 'French, fish and seafood, European', `PriceAdult` = 45.00, `DurationMinutes` = 120, `SeatsPerSession` = 52, `TimeSlots` = '17:00, 19:15, 21:30' WHERE `EventId` = 48;
-UPDATE `Event` SET `Stars` = 4, `CuisineType` = 'Dutch, fish and seafood, European', `PriceAdult` = 45.00, `DurationMinutes` = 120, `SeatsPerSession` = 60, `TimeSlots` = '16:30, 18:30, 20:30' WHERE `EventId` = 49;
-UPDATE `Event` SET `Stars` = 4, `CuisineType` = 'Dutch, French, European', `PriceAdult` = 45.00, `DurationMinutes` = 120, `SeatsPerSession` = 45, `TimeSlots` = '16:30, 18:30, 20:30' WHERE `EventId` = 50;
-UPDATE `Event` SET `Stars` = 3, `CuisineType` = 'Vegan', `PriceAdult` = 35.00, `DurationMinutes` = 120, `SeatsPerSession` = 36, `TimeSlots` = '16:30, 18:30, 20:30' WHERE `EventId` = 51;
-UPDATE `Event` SET `Stars` = 3, `CuisineType` = 'Dutch, European, Modern', `PriceAdult` = 35.00, `DurationMinutes` = 120, `SeatsPerSession` = 100, `TimeSlots` = '16:30, 18:30, 20:30' WHERE `EventId` = 52;
-UPDATE `Event` SET `Stars` = 3, `CuisineType` = 'Dutch, fish and seafood, European', `PriceAdult` = 35.00, `DurationMinutes` = 120, `SeatsPerSession` = 48, `TimeSlots` = '17:30, 19:15, 21:00' WHERE `EventId` = 53;
-
--- Update existing Reservation DiningDate to real dates (Festival 2026: Thu-Sun = Jul 23-26)
-UPDATE `Reservation` SET `DiningDate` = '2026-07-23' WHERE `DiningDate` = 'Thursday';
-UPDATE `Reservation` SET `DiningDate` = '2026-07-24' WHERE `DiningDate` = 'Friday';
-UPDATE `Reservation` SET `DiningDate` = '2026-07-25' WHERE `DiningDate` = 'Saturday';
-UPDATE `Reservation` SET `DiningDate` = '2026-07-26' WHERE `DiningDate` = 'Sunday';
-
--- Clean up migrated CmsItem rows (now stored on Event/Venue)
-DELETE FROM `CmsItem`
-WHERE `CmsSectionId` IN (93, 94, 95, 96, 97, 98, 99)
-  AND `ItemKey` IN (
-    'stars', 'cuisine_type', 'price_adult', 'duration_minutes',
-    'seats_per_session', 'time_slots', 'michelin_stars',
-    'address_line', 'city', 'phone', 'email', 'website'
-  );
-
--- Fix intro_body CMS content (subsections now read from separate CMS items)
-UPDATE `CmsItem`
-SET `TextValue` = 'Welcome to Yummy!, the food experience of the Haarlem Festival. Four days where some of the city''s favorite restaurants open their doors with special menus made just for this event.'
-WHERE `CmsSectionId` = 57 AND `ItemKey` = 'intro_body';
-
--- Add ShortDescription for all restaurants
-UPDATE `Event` SET `ShortDescription` = 'A cozy spot on the Botermarkt serving the best of Dutch and European cuisine, with a focus on fresh North Sea fish and seasonal seafood.'
-WHERE `EventId` = 47;
-
-UPDATE `Event` SET `ShortDescription` = 'One of Haarlem''s finest French restaurants, offering an exquisite blend of classic French technique with locally sourced North Sea seafood and European flavours.'
-WHERE `EventId` = 48;
-
-UPDATE `Event` SET `ShortDescription` = 'Located on the charming Kleine Houtstraat, Restaurant ML combines traditional Dutch recipes with modern European flair and the freshest seasonal ingredients.'
-WHERE `EventId` = 49;
-
-UPDATE `Event` SET `ShortDescription` = 'A stylish restaurant in a quiet Haarlem neighbourhood, blending Dutch and French culinary traditions into refined European dishes with a contemporary twist.'
-WHERE `EventId` = 50;
-
-UPDATE `Event` SET `ShortDescription` = 'Haarlem''s go-to destination for creative vegan cuisine, proving that plant-based dining can be bold, flavourful, and satisfying.'
-WHERE `EventId` = 51;
-
-UPDATE `Event` SET `ShortDescription` = 'A beloved grand café on the Grote Markt, offering hearty Dutch and modern European dishes in a lively atmosphere with views of the historic square.'
-WHERE `EventId` = 52;
-
-UPDATE `Event` SET `ShortDescription` = 'A French-inspired bistro on the Oude Groenmarkt, blending Dutch coastal traditions with bistro culture for fresh fish, seafood, and a warm atmosphere.'
-WHERE `EventId` = 53;
-
-UPDATE `CmsItem`
-SET `TextValue` = 'New Vegas brings a fresh perspective to Haarlem''s dining scene with its fully vegan menu. Creative dishes crafted from locally sourced ingredients prove that plant-based cuisine can be exciting, satisfying, and full of flavour.'
-WHERE `CmsSectionId` = 97 AND `ItemKey` = 'about_text';
-
--- Add location_description for all restaurants
-INSERT INTO `CmsItem` (`CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`) VALUES
-  (93, 'location_description', 'TEXT', 'Situated on the lively Botermarkt, Café de Roemer is right in the centre of Haarlem, just a minute''s walk from the Grote Markt. Its central location makes it an ideal stop before or after exploring the festival.'),
-  (94, 'location_description', 'TEXT', 'Nestled along the scenic Spaarne river, Ratatouille enjoys one of Haarlem''s most picturesque settings. The restaurant is a short walk from the Grote Markt and easily accessible by public transport or on foot through the city centre.'),
-  (95, 'location_description', 'TEXT', 'Found on the bustling Kleine Houtstraat, one of Haarlem''s favourite shopping streets, Restaurant ML is easy to reach on foot from the station or the Grote Markt.'),
-  (96, 'location_description', 'TEXT', 'Tucked away on the quiet Twijnderslaan, Restaurant Fris offers a peaceful retreat just a few minutes from the city centre. A perfect escape from the festival buzz while staying close to the action.'),
-  (97, 'location_description', 'TEXT', 'Located on the Koningstraat near the heart of Haarlem, New Vegas is within walking distance of the main festival areas. Its central spot makes it easy to combine dinner with other festival events.'),
-  (98, 'location_description', 'TEXT', 'Right on the Grote Markt, Grand Cafe Brinkman offers front-row seats to Haarlem''s most iconic square. Watch the city come alive during the festival from one of the best terraces in town.'),
-  (99, 'location_description', 'TEXT', 'Located on the charming Oude Groenmarkt, just steps from the Grote Kerk, Toujours sits at the heart of Haarlem''s historic centre. The terrace offers a lovely view of the square, perfect for a relaxed evening during the festival.');
-
--- Add missing detail labels (remove hardcoded strings from views)
-INSERT INTO `CmsItem` (`CmsSectionId`, `ItemKey`, `ItemType`, `TextValue`) VALUES
-  (74, 'detail_label_duration_unit', 'TEXT', 'hours'),
-  (74, 'detail_label_seats_unit', 'TEXT', 'per session'),
-  (74, 'detail_label_price_adult', 'TEXT', 'Per adult'),
-  (74, 'detail_label_price_child', 'TEXT', 'Under 12'),
-  (74, 'detail_reservation_fee_text', 'TEXT', 'To complete your reservation, you pay a {fee} fee per person. This amount is deducted from your final bill at the restaurant, so you simply pay the remaining amount after your meal.'),
-  (74, 'detail_form_back_to_prefix', 'TEXT', 'Back to'),
-  (74, 'detail_form_label_date', 'TEXT', 'Date'),
-  (74, 'detail_form_placeholder_date', 'TEXT', 'Select a day'),
-  (74, 'detail_form_label_time', 'TEXT', 'Time'),
-  (74, 'detail_form_placeholder_time', 'TEXT', 'Select a time'),
-  (74, 'detail_form_guests_title', 'TEXT', 'Number of Guests'),
-  (74, 'detail_form_label_adult', 'TEXT', 'Adult'),
-  (74, 'detail_form_label_children', 'TEXT', 'Children'),
-  (74, 'detail_form_special_requests_title', 'TEXT', 'Special requests'),
-  (74, 'detail_form_special_requests_subtitle', 'TEXT', 'Diet, allergies, accessibility needs'),
-  (74, 'detail_form_special_requests_placeholder', 'TEXT', 'Let us know if you have any special requirements'),
-  (74, 'detail_form_total_title', 'TEXT', 'Total to be paid'),
-  (74, 'detail_form_back_to_restaurant', 'TEXT', 'Back to Restaurant');
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

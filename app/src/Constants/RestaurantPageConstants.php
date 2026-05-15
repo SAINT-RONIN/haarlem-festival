@@ -18,9 +18,5 @@ final class RestaurantPageConstants
     public const MAX_SPECIAL_REQUESTS_LENGTH = 1000;
     public const MAX_GUEST_COUNT = 20;
 
-    // Fallback defaults when CMS values are not set
-    public const DEFAULT_RESERVATION_FEE = 10.00;
-    public const DEFAULT_VALID_DATES = ['Thursday', 'Friday', 'Saturday', 'Sunday'];
-
     private function __construct() {}
 }

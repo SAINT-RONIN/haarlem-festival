@@ -65,10 +65,8 @@ class RestaurantController extends BaseController
 
     private function buildDetailViewModel(string $slug): \App\ViewModels\Restaurant\RestaurantDetailViewModel
     {
-        $restaurant = $this->restaurantService->getRestaurant($slug);
-        $sharedCms = $this->restaurantService->getDetailLabels();
-        $globalUi = $this->restaurantService->getGlobalUi();
+        $data = $this->restaurantService->getDetailPageData($slug);
 
-        return RestaurantViewMapper::toDetailViewModel($restaurant, $sharedCms, $globalUi, $this->isLoggedIn());
+        return RestaurantViewMapper::toDetailViewModel($data->restaurant, $data->detailLabels, $data->globalUi, $this->isLoggedIn(), $data->validDates);
     }
 }

@@ -24,15 +24,8 @@ final readonly class EventUpsertData
         public ?string $slug = null,
         public ?int    $restaurantStars = null,
         public ?string $restaurantCuisine = null,
-        public ?string $restaurantShortDescription = null,
     ) {}
 
-    /**
-     * Returns a copy of this DTO with immutable fields sourced from the existing event record.
-     *
-     * On update, EventTypeId and slug are set at creation and never changed, so they are always
-     * taken from the database. ArtistId falls back to the existing value when the form omits it.
-     */
     /**
      * Returns a copy of this DTO with the slug set to the given value.
      *
@@ -53,7 +46,6 @@ final readonly class EventUpsertData
             slug: $slug,
             restaurantStars: $this->restaurantStars,
             restaurantCuisine: $this->restaurantCuisine,
-            restaurantShortDescription: $this->restaurantShortDescription,
         );
     }
 
@@ -75,6 +67,8 @@ final readonly class EventUpsertData
             artistId: $this->artistId ?? $existing->artistId,
             isActive: $this->isActive,
             slug: $existing->slug,
+            restaurantStars: $this->restaurantStars,
+            restaurantCuisine: $this->restaurantCuisine,
         );
     }
 }

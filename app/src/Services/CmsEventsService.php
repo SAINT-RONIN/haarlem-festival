@@ -47,13 +47,13 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         private readonly IEventSessionLabelRepository $labelRepository,
         private readonly IEventSessionPriceRepository $priceRepository,
         private readonly IEventTypeRepository $eventTypeRepository,
-        IVenueRepository $venueRepository,
+        private readonly IVenueRepository $venueRepository,
         private readonly IPriceTierRepository $priceTierRepository,
         private readonly IOrderItemRepository $orderItemRepository,
         ICmsRepository $cmsRepository,
         private readonly IMediaAssetRepository $mediaAssetRepository,
     ) {
-        parent::__construct($eventRepository, $venueRepository, $cmsRepository);
+        parent::__construct($eventRepository, $cmsRepository);
     }
 
     /**
@@ -191,7 +191,6 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
         try {
             $newEventId = $this->eventRepository->create($data);
             $this->autoCreateCmsSection($data->eventTypeId, $newEventId);
-            $this->saveRestaurantCmsItems($data->eventTypeId, $newEventId, $data);
             return $newEventId;
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to create event.', 0, $error);
@@ -208,7 +207,6 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
 
         $sessions                = $this->loadSessionsForEdit($eventId);
         [$pricesMap, $labelsMap] = $this->loadSessionPricesAndLabels($sessions);
-        $restaurantCms           = $this->loadRestaurantCmsItems($event->eventTypeId, $eventId);
 
         $featuredImagePath = $event->featuredImageAssetId !== null
             ? $this->mediaAssetRepository->findById($event->featuredImageAssetId)?->filePath
@@ -220,9 +218,6 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
             pricesMap: $pricesMap,
             labelsMap: $labelsMap,
             cmsDetailEditUrl: $this->resolveCmsDetailEditUrl($event->eventTypeId),
-            restaurantStars: $restaurantCms->stars,
-            restaurantCuisine: $restaurantCms->cuisine,
-            restaurantShortDescription: $restaurantCms->shortDescription,
             featuredImagePath: $featuredImagePath,
         );
     }
@@ -279,7 +274,6 @@ class CmsEventsService extends BaseCmsEventsService implements ICmsEventsService
 
         try {
             $result = $this->eventRepository->update($eventId, $data->forUpdate($existing));
-            $this->saveRestaurantCmsItems($existing->eventTypeId, $eventId, $data);
             return $result;
         } catch (\Throwable $error) {
             throw new CmsOperationException('Failed to update event.', 0, $error);

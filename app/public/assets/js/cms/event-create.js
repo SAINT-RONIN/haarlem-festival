@@ -120,7 +120,6 @@ function initEventTypeVisibility() {
     var artistField         = document.getElementById('artistField');
     var starsField          = document.getElementById('starsField');
     var cuisineField        = document.getElementById('cuisineField');
-    var restaurantDescField = document.getElementById('restaurantDescField');
     var featuredImageField  = document.getElementById('featuredImageField');
 
     var JAZZ_TYPE       = parseInt(form.dataset.jazzTypeId, 10);
@@ -132,7 +131,6 @@ function initEventTypeVisibility() {
         artistField.classList.toggle('hidden', val !== JAZZ_TYPE);
         starsField.classList.toggle('hidden', !isRestaurant);
         cuisineField.classList.toggle('hidden', !isRestaurant);
-        restaurantDescField.classList.toggle('hidden', !isRestaurant);
         featuredImageField.classList.toggle('hidden', !isRestaurant);
     }
 
