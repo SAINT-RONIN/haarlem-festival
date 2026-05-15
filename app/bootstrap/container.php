@@ -70,7 +70,6 @@ use App\Repositories\VenueRepository;
 use App\Repositories\CheckoutContentRepository;
 use App\Repositories\GlobalContentRepository;
 use App\Repositories\JazzContentRepository;
-use App\Repositories\RestaurantContentRepository;
 use App\Repositories\ScheduleContentRepository;
 use App\Repositories\StorytellingContentRepository;
 use App\Services\CmsArtistsService;
@@ -92,8 +91,6 @@ use App\Services\JazzArtistDetailService;
 use App\Services\JazzService;
 use App\Services\MediaAssetService;
 use App\Services\ProgramService;
-use App\Services\RestaurantDetailService;
-use App\Services\RestaurantReservationService;
 use App\Services\RestaurantService;
 use App\Services\ScheduleDayVisibilityResolver;
 use App\Services\ScheduleService;
@@ -168,7 +165,6 @@ return static function (string $controllerClass): object {
     $checkoutContentRepo   = fn() => $make('checkoutContentRepo', fn() => new CheckoutContentRepository($cmsContent()));
     $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
     $storyContentRepo      = fn() => $make('storyContentRepo', fn() => new StorytellingContentRepository($cmsContent()));
-    $restaurantContentRepo = fn() => $make('restaurantContentRepo', fn() => new RestaurantContentRepository($cmsContent()));
     $histLocContentRepo    = fn() => $make('histLocContentRepo', fn() => new HistoricalLocationContentRepository($cmsContent()));
 
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
@@ -253,10 +249,11 @@ return static function (string $controllerClass): object {
     ));
     $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService($mediaAssetRepo()));
     $restaurantService = fn() => $make('restaurantService', fn() => new RestaurantService(
+        $cmsContent(),
         $globalContentRepo(),
-        $restaurantContentRepo(),
         $eventRepo(),
         $mediaAssetRepo(),
+        $reservationRepo(),
     ));
 
     // ── Controller wiring — each arm only creates what it needs ──
@@ -274,16 +271,6 @@ return static function (string $controllerClass): object {
         ),
         RestaurantController::class => new RestaurantController(
             $restaurantService(),
-            new RestaurantDetailService(
-                $restaurantContentRepo(),
-                $eventRepo(),
-                $mediaAssetRepo(),
-                $globalContentRepo(),
-            ),
-            new RestaurantReservationService(
-                $eventRepo(),
-                $reservationRepo(),
-            ),
             $programService(),
             $sessionService,
         ),
