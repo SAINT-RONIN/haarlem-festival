@@ -59,21 +59,21 @@ class AccountService implements IAccountService
     private function validateName(string $firstName, string $lastName): array
     {
         $errors = [];
-        $errors = array_merge($errors, $this->validateNameField($firstName, 'firstName'));
-        $errors = array_merge($errors, $this->validateNameField($lastName, 'lastName'));
+        $errors = array_merge($errors, $this->validateNameField($firstName, 'firstName', 'First name'));
+        $errors = array_merge($errors, $this->validateNameField($lastName, 'lastName', 'Last name'));
         return $errors;
     }
 
-    private function validateNameField(string $name, string $fieldName): array
+    private function validateNameField(string $name, string $fieldName, string $shownField): array
     {
         $errors = [];
 
         if (empty($name)) {
-            $errors[$fieldName] = ucfirst($fieldName) . ' is required.';
-        } elseif (strlen($name) < 2) {
-            $errors[$fieldName] = ucfirst($fieldName) . ' must be at least 2 characters.';
-        } elseif (strlen($name) > 100) {
-            $errors[$fieldName] = ucfirst($fieldName) . ' must not exceed 100 characters.';
+            $errors[$fieldName] = ucfirst($shownField) . ' is required.';
+        } elseif (mb_strlen($name) < 2) {
+            $errors[$fieldName] = ucfirst($shownField) . ' must be at least 2 characters.';
+        } elseif (mb_strlen($name) > 100) {
+            $errors[$fieldName] = ucfirst($shownField) . ' must not exceed 100 characters.';
         }
 
         return $errors;
@@ -87,8 +87,11 @@ class AccountService implements IAccountService
             throw new AccountException('User not found.');
         }
         $nameChanged = trim($data->firstName) !== $user->firstName || trim($data->lastName) !== $user->lastName;
+        $emailChanged = trim($data->email) !== $user->email;
         $profilePictureChanged = $data->profilePictureAssetId !== null && $data->profilePictureAssetId !== $user->profilePictureAssetId;
-        $passwordChanged = !empty($data->newPassword);
+        if (!$nameChanged && !$emailChanged && !$profilePictureChanged) {
+            return;
+        }
         try {
             // Update basic profile info
             $this->userRepository->updateProfileInfo(
@@ -96,7 +99,7 @@ class AccountService implements IAccountService
                 email: trim($data->email),
                 firstName: trim($data->firstName),
                 lastName: trim($data->lastName),
-                profilePictureAssetId: $data->profilePictureAssetId,
+                profilePictureAssetId: $data->profilePictureAssetId ?? $user->profilePictureAssetId,
             );
             // Send account update confirmation for any changes
             $changes = [];
@@ -106,9 +109,7 @@ class AccountService implements IAccountService
             if ($profilePictureChanged) {
                 $changes[] = 'profile picture';
             }
-            if ($passwordChanged) {
-                $changes[] = 'password';
-            }
+
             if (!empty($changes)) {
                 $changeDescription = implode(' and ', $changes);
                 $userName = trim($data->firstName . ' ' . $data->lastName);

@@ -76,7 +76,7 @@ class AccountController extends BaseController
             } catch (ValidationException $e) {
                 $this->redirectWithErrors('/account', $e->getErrors(), $data->toArray() ?? []);
             } catch (AccountException $e) {
-                $this->redirectWithErrors('/account', ['error' => $e->getMessage()], $data->toArray() ?? []);
+                $this->redirectWithErrors('/account', ['error' => $e->getMessage()], $data?->toArray() ?? []);
             }
         });
     }
@@ -123,8 +123,6 @@ class AccountController extends BaseController
             'email' => $this->readStringPostParam('email') ?? '',
             'firstName' => $this->readStringPostParam('firstName') ?? '',
             'lastName' => $this->readStringPostParam('lastName') ?? '',
-            'newPassword' => $_POST['newPassword'] ?? '',
-            'confirmPassword' => $_POST['confirmPassword'] ?? '',
             'profilePictureAssetId' => $profilePictureAssetId,
         ]);
     }
