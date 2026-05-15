@@ -165,7 +165,6 @@ return static function (string $controllerClass): object {
     $checkoutContentRepo   = fn() => $make('checkoutContentRepo', fn() => new CheckoutContentRepository($cmsContent()));
     $jazzContentRepo       = fn() => $make('jazzContentRepo', fn() => new JazzContentRepository($cmsContent()));
     $storyContentRepo      = fn() => $make('storyContentRepo', fn() => new StorytellingContentRepository($cmsContent()));
-    $histLocContentRepo    = fn() => $make('histLocContentRepo', fn() => new HistoricalLocationContentRepository($cmsContent()));
 
     $visibilityResolver = fn() => $make('visibilityResolver', fn() => new ScheduleDayVisibilityResolver($scheduleDayConfig()));
     $orderCapacityRestorer = fn() => $make('orderCapacityRestorer', fn() => new OrderCapacityRestorer($orderItemRepo(), $eventSessionRepo()));
@@ -419,7 +418,6 @@ return static function (string $controllerClass): object {
             new HistoricalLocationService(
                 $cmsContent(),
                 $globalContentRepo(),
-                $histLocContentRepo(),
             ),
             $sessionService,
             $scheduleService(),
