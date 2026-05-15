@@ -16,8 +16,8 @@ use App\Infrastructure\Interfaces\IEmailService;
 class AccountService implements IAccountService
 {
     public function __construct(
-        private readonly IUserAccountRepository $userRepository,
-        private readonly IEmailService $emailService,
+        private IUserAccountRepository $userRepository,
+        private IEmailService $emailService,
     ) {}
 
 
@@ -59,21 +59,21 @@ class AccountService implements IAccountService
     private function validateName(string $firstName, string $lastName): array
     {
         $errors = [];
-        $errors = array_merge($errors, $this->validateNameField($firstName, 'firstName'));
-        $errors = array_merge($errors, $this->validateNameField($lastName, 'lastName'));
+        $errors = array_merge($errors, $this->validateNameField($firstName, 'firstName', 'First name'));
+        $errors = array_merge($errors, $this->validateNameField($lastName, 'lastName', 'Last name'));
         return $errors;
     }
 
-    private function validateNameField(string $name, string $fieldName): array
+    private function validateNameField(string $name, string $fieldName, string $shownField): array
     {
         $errors = [];
 
         if (empty($name)) {
-            $errors[$fieldName] = ucfirst($fieldName) . ' is required.';
-        } elseif (strlen($name) < 2) {
-            $errors[$fieldName] = ucfirst($fieldName) . ' must be at least 2 characters.';
-        } elseif (strlen($name) > 100) {
-            $errors[$fieldName] = ucfirst($fieldName) . ' must not exceed 100 characters.';
+            $errors[$fieldName] = ucfirst($shownField) . ' is required.';
+        } elseif (mb_strlen($name) < 2) {
+            $errors[$fieldName] = ucfirst($shownField) . ' must be at least 2 characters.';
+        } elseif (mb_strlen($name) > 100) {
+            $errors[$fieldName] = ucfirst($shownField) . ' must not exceed 100 characters.';
         }
 
         return $errors;
@@ -86,11 +86,12 @@ class AccountService implements IAccountService
         if ($user === null) {
             throw new AccountException('User not found.');
         }
-
         $nameChanged = trim($data->firstName) !== $user->firstName || trim($data->lastName) !== $user->lastName;
+        $emailChanged = trim($data->email) !== $user->email;
         $profilePictureChanged = $data->profilePictureAssetId !== null && $data->profilePictureAssetId !== $user->profilePictureAssetId;
-        $passwordChanged = !empty($data->newPassword);
-
+        if (!$nameChanged && !$emailChanged && !$profilePictureChanged) {
+            return;
+        }
         try {
             // Update basic profile info
             $this->userRepository->updateProfileInfo(
@@ -98,9 +99,8 @@ class AccountService implements IAccountService
                 email: trim($data->email),
                 firstName: trim($data->firstName),
                 lastName: trim($data->lastName),
-                profilePictureAssetId: $data->profilePictureAssetId,
+                profilePictureAssetId: $data->profilePictureAssetId ?? $user->profilePictureAssetId,
             );
-
             // Send account update confirmation for any changes
             $changes = [];
             if ($nameChanged) {
@@ -108,9 +108,6 @@ class AccountService implements IAccountService
             }
             if ($profilePictureChanged) {
                 $changes[] = 'profile picture';
-            }
-            if ($passwordChanged) {
-                $changes[] = 'password';
             }
 
             if (!empty($changes)) {
@@ -124,60 +121,52 @@ class AccountService implements IAccountService
     }
 
 
-    public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): void
+    public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): array
     {
+        //Validate data
         $user = $this->userRepository->findById($userId);
         if ($user === null) {
-            throw new AccountException('User not found.');
+            return [
+                'success' => false,
+                'errors' => ['general' => 'User not found']
+            ];
+        }
+        $errors = $this->validatePassword($user, $currentPassword, $newPassword, $confirmPassword);
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors' => $errors,
+            ];
         }
 
-        // Validate all password requirements
-        $this->validatePassword($user, $currentPassword, $newPassword, $confirmPassword);
+        // Update password hash in database
+        $passwordHash = PasswordHasher::hash($newPassword);
+        $this->userRepository->updatePasswordHash($userId, $passwordHash);
 
-        try {
-            $passwordHash = PasswordHasher::hash($newPassword);
-            $this->userRepository->updatePasswordHash($userId, $passwordHash);
-
-            // Send account update confirmation email
-            $userName = trim($user->firstName . ' ' . $user->lastName);
-            $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, 'password');
-        } catch (\Throwable $error) {
-            throw new AccountException('Failed to update password: ' . $error->getMessage(), 0, $error);
-        }
+        // Send account update confirmation email
+        $userName = trim($user->firstName . ' ' . $user->lastName);
+        $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, 'password');
+        return [
+            'success' => true,
+            'errors' => [],
+        ];
     }
 
-    /** @throws ValidationException */
-    private function validatePassword(UserAccount $user, string $currentPassword, string $newPassword, string $confirmPassword): void
+    private function validatePassword(UserAccount $user, string $currentPassword, string $newPassword, string $confirmPassword): array
     {
         $errors = [];
 
-        if (empty($currentPassword)) {
-            $errors['currentPassword'] = 'Current password is required.';
-        }
-        if (empty($newPassword)) {
-            $errors['newPassword'] = 'New password is required.';
-        }
-        if (empty($confirmPassword)) {
-            $errors['confirmPassword'] = 'Password confirmation is required.';
-        }
-
-        // If empty field errors exist, throw early
-        if (!empty($errors)) {
-            throw new ValidationException($errors);
-        }
-
         if (!PasswordHasher::verify($currentPassword, $user->passwordHash)) {
-            throw new ValidationException('Current password is incorrect.');
+            $errors['currentPassword'] = 'Current password is incorrect';
         }
-
-        if (strlen($newPassword) < 8) {
-            throw new ValidationException('Password must be at least 8 characters.');
+        if (mb_strlen($newPassword) < 8) {
+            $errors['newPassword'] = 'Password must be at least 8 characters';
         }
-
-        // Validate passwords match
         if ($newPassword !== $confirmPassword) {
-            throw new ValidationException('New passwords do not match.');
+            $errors['confirmPassword'] = 'Passwords do not match';
         }
+
+        return $errors;
     }
 
 }

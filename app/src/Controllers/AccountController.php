@@ -19,8 +19,8 @@ use App\ViewModels\Account\AccountFormViewModel;
 class AccountController extends BaseController
 {
     public function __construct(
-        private readonly IAccountService $accountService,
-        private readonly IMediaAssetService $mediaAssetService,
+        private IAccountService $accountService,
+        private IMediaAssetService $mediaAssetService,
         ISessionService $sessionService,
     ) {
         parent::__construct($sessionService);
@@ -35,7 +35,6 @@ class AccountController extends BaseController
                 $user = $this->accountService->getCurrentUser($userId);
             } catch (AccountException $e) {
                 $this->redirectAndExit('/login');
-                return;
             }
 
             $errors = $this->sessionService->consumeFlash('account_errors') ?? [];
@@ -77,7 +76,7 @@ class AccountController extends BaseController
             } catch (ValidationException $e) {
                 $this->redirectWithErrors('/account', $e->getErrors(), $data->toArray() ?? []);
             } catch (AccountException $e) {
-                $this->redirectWithErrors('/account', ['error' => $e->getMessage()], $data->toArray() ?? []);
+                $this->redirectWithErrors('/account', ['error' => $e->getMessage()], $data?->toArray() ?? []);
             }
         });
     }
@@ -89,27 +88,24 @@ class AccountController extends BaseController
     {
         $this->handlePageRequest(function (): void {
             $userId = $this->requireUserId();
+            $currentPassword = $this->readStringPostParam('currentPassword') ?? '';
+            $newPassword = $this->readStringPostParam('newPassword') ?? '';
+            $confirmPassword = $this->readStringPostParam('confirmPassword') ?? '';
 
-            try {
-                // Extract form data
-                $currentPassword = $this->readStringPostParam('currentPassword') ?? '';
-                $newPassword = $this->readStringPostParam('newPassword') ?? '';
-                $confirmPassword = $this->readStringPostParam('confirmPassword') ?? '';
+            $result = $this->accountService->updatePassword($currentPassword, $newPassword, $confirmPassword, $userId);
 
-                // Process password change
-                $this->accountService->updatePassword($currentPassword, $newPassword, $confirmPassword, $userId);
-
-                $this->sessionService->setFlash('account_success', 'Password updated successfully.');
-                $this->redirectAndExit('/account');
-            } catch (ValidationException $e) {
-                // Map error messages to specific field keys
-                $errors = $this->mapPasswordErrorsFromException($e);
-                $this->redirectWithErrors('/account', $errors);
-            } catch (AccountException $e) {
-                $this->redirectWithErrors('/account', ['error' => $e->getMessage()]);
+            if (!$result['success']) {
+                $this->redirectWithErrors('/account', $result['errors'], [
+                    'currentPassword' => $currentPassword,
+                    'newPassword' => $newPassword,
+                    'confirmPassword' => $confirmPassword,
+                ]);
             }
+            $this->sessionService->setFlash('account_success', 'Password updated successfully.');
+            $this->redirectAndExit('/account');
         });
     }
+
 
     private function handleProfilePictureUpload(): ?int
     {
@@ -127,12 +123,9 @@ class AccountController extends BaseController
             'email' => $this->readStringPostParam('email') ?? '',
             'firstName' => $this->readStringPostParam('firstName') ?? '',
             'lastName' => $this->readStringPostParam('lastName') ?? '',
-            'newPassword' => $_POST['newPassword'] ?? '',
-            'confirmPassword' => $_POST['confirmPassword'] ?? '',
             'profilePictureAssetId' => $profilePictureAssetId,
         ]);
     }
-
 
     private function processProfileUpdate(UpdateProfileFormData $data, int $userId): void
     {
@@ -144,66 +137,14 @@ class AccountController extends BaseController
         $this->accountService->updateProfile($data, $userId);
     }
 
-
-    /**
-     * @return array<string, string>
-     */
-    private function mapPasswordErrorToField(string $errorMessage): array
-    {
-        if (strpos($errorMessage, 'Current password') !== false) {
-            return ['currentPassword' => $errorMessage];
-        } elseif (strpos($errorMessage, 'at least 8 characters') !== false) {
-            return ['newPassword' => $errorMessage];
-        } elseif (strpos($errorMessage, 'do not match') !== false) {
-            return ['confirmPassword' => $errorMessage];
-        } elseif (strpos($errorMessage, 'New password is required') !== false) {
-            return ['newPassword' => $errorMessage];
-        }
-        return ['password' => $errorMessage];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function mapPasswordErrorsFromException(ValidationException $e): array
-    {
-        $errors = $e->getErrors();
-
-        // If no errors, return empty
-        if (!is_array($errors) || empty($errors)) {
-            return ['password' => 'An error occurred'];
-        }
-
-        // Check if errors are already keyed (from validatePasswordInputs)
-        $firstKey = array_key_first($errors);
-        if ($firstKey !== 0) {
-            // Keys are not numeric (0, 1, 2...), so they're already field names
-            return $errors;
-        }
-
-        // Errors are indexed (0, 1, 2...), so we need to map each message to a field
-        $mappedErrors = [];
-        foreach ($errors as $errorMessage) {
-            if (is_string($errorMessage)) {
-                // Map this message to the appropriate field
-                $fieldError = $this->mapPasswordErrorToField($errorMessage);
-                $mappedErrors = array_merge($mappedErrors, $fieldError);
-            }
-        }
-
-        return !empty($mappedErrors) ? $mappedErrors : ['password' => 'Validation failed'];
-    }
-
     private function requireUserId(): int
     {
         $userId = $this->sessionService->getUserId();
         if (!$userId || !$this->sessionService->isLoggedIn()) {
             $this->redirectAndExit('/login');
-            throw new AccountException('Not authenticated');
         }
         return $userId;
     }
-
 
     private function redirectWithErrors(string $url, array $errors, array $input = []): void
     {

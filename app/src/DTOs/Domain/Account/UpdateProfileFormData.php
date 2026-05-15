@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DTOs\Domain\Account;
 
 /**
- * Form data for profile updates (email, name, optional password change).
+ * Form data for profile updates (email, name, profile photo change).
  * Used by AccountController to validate and pass data to the account service.
  */
 final readonly class UpdateProfileFormData
@@ -14,8 +14,6 @@ final readonly class UpdateProfileFormData
         public string $email,
         public string $firstName,
         public string $lastName,
-        public ?string $newPassword = null,
-        public ?string $confirmPassword = null,
         public ?int $profilePictureAssetId = null,
     ) {}
 
@@ -30,8 +28,6 @@ final readonly class UpdateProfileFormData
             email: trim($input['email'] ?? ''),
             firstName: trim($input['firstName'] ?? ''),
             lastName: trim($input['lastName'] ?? ''),
-            newPassword: !empty($input['newPassword']) ? $input['newPassword'] : null,
-            confirmPassword: !empty($input['confirmPassword']) ? $input['confirmPassword'] : null,
             profilePictureAssetId: !empty($input['profilePictureAssetId']) ? (int) $input['profilePictureAssetId'] : null,
         );
     }

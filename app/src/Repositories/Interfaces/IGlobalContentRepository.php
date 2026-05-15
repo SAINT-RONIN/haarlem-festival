@@ -20,9 +20,6 @@ interface IGlobalContentRepository
     /** Fetches the hero section content for a given page. */
     public function findHeroContent(string $pageSlug): HeroSectionContent;
 
-    /** Fetches hero content using a custom section key (not the default hero key). */
-    public function findHeroContentBySection(string $pageSlug, string $sectionKey): HeroSectionContent;
-
     /**
      * Maps an already-fetched raw hero array to a HeroSectionContent model.
      *

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\GlobalUiConstants;
-use App\Constants\RestaurantDetailConstants;
+use App\Constants\RestaurantPageConstants;
 use App\Constants\RouteConstants;
 use App\Constants\StorytellingDetailConstants;
 use App\DTOs\Cms\CmsSectionEditData;
@@ -41,7 +41,7 @@ final class CmsPreviewUrlResolver implements ICmsPreviewUrlResolver
                 : RouteConstants::STORYTELLING;
         }
 
-        if ($slug === RestaurantDetailConstants::PAGE_SLUG) {
+        if ($slug === RestaurantPageConstants::DETAIL_PAGE_SLUG) {
             $eventName = $this->extractFirstEventDisplayName($sections);
             return $eventName !== null
                 ? RouteConstants::RESTAURANT . '/' . $this->toSlug($eventName)

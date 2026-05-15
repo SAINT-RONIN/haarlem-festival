@@ -9,7 +9,6 @@ use App\DTOs\Cms\HistoryRouteSectionContent;
 use App\DTOs\Cms\HistoryTicketOptionsSectionContent;
 use App\DTOs\Cms\HistoryTourInfoSectionContent;
 use App\DTOs\Cms\HistoryVenuesSectionContent;
-use App\Constants\HistoryPageConstants;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoryPageViewModel;
@@ -29,7 +28,7 @@ final class HistoryMapper
         bool $isLoggedIn,
         ?ScheduleSectionViewModel $scheduleSection = null
     ): HistoryPageViewModel {
-        $heroData = CmsMapper::toHeroData($data->heroSection, HistoryPageConstants::CURRENT_PAGE);
+        $heroData = CmsMapper::toHeroData($data->heroSection, 'history');
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
         return self::buildPageViewModel($data, $heroData, $globalUi, $scheduleSection);

@@ -25,6 +25,6 @@ interface IAccountService
      */
     public function validateProfileUpdate(UpdateProfileFormData $data, int $currentUserId): array;
     public function updateProfile(UpdateProfileFormData $data, int $userId): void;
-    public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): void;
+    public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): array;
 }
 

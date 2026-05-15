@@ -9,7 +9,6 @@ use App\DTOs\Cms\HistoricalLocationHeroContent;
 use App\DTOs\Cms\HistoricalLocationIntroContent;
 use App\DTOs\Domain\Pages\HistoricalLocationPageData;
 use App\DTOs\Cms\HistoricalLocationSignificanceContent;
-use App\Constants\HistoryPageConstants;
 use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\HistoricalLocationViewModel;
@@ -24,7 +23,7 @@ final class HistoricalLocationMapper
         HistoricalLocationPageData $data,
         bool $isLoggedIn,
     ): HistoricalLocationViewModel {
-        $heroData = CmsMapper::toHeroData($data->heroSection, HistoryPageConstants::CURRENT_PAGE);
+        $heroData = CmsMapper::toHeroData($data->heroSection, 'history');
         $locationHero = self::toLocationHero($data->locationHeroSection);
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
@@ -55,7 +54,7 @@ final class HistoricalLocationMapper
             buttonText: $content->heroButton ?? '',
             buttonLink: $content->heroButtonLink ?? '',
             backgroundImageUrl: $content->heroBackgroundImage ?? '',
-            currentPage: HistoryPageConstants::CURRENT_PAGE,
+            currentPage: 'history',
             mapImageUrl: $content->heroMapImage ?? '',
         );
     }

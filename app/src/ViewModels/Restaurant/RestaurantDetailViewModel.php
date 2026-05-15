@@ -18,9 +18,6 @@ use App\ViewModels\Restaurant\Detail\ReservationSectionData;
 
 /**
  * ViewModel for the Restaurant Detail page (/restaurant/{slug}).
- *
- * Contains section-based ViewModels for each part of the detail page,
- * plus a flat CMS array for views that need raw label access.
  */
 final readonly class RestaurantDetailViewModel extends BaseViewModel
 {
@@ -29,8 +26,6 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
         GlobalUiData $globalUi,
         public string $slug,
         public string $name,
-        /** @var array<string, ?string> Flat CMS data for views that need raw access */
-        public array $cms = [],
         public ?ContactSectionData $contactSection = null,
         public ?AboutSectionData $aboutSection = null,
         public ?ChefSectionData $chefSection = null,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Constants\HistoryPageConstants;
 use App\Constants\ScheduleConstants;
 use App\Enums\EventTypeId;
 use App\Mappers\HistoricalLocationMapper;
@@ -37,7 +36,7 @@ class HistoryController extends BaseController
     {
         $data = $this->historyService->getHistoryPageData();
         $scheduleData = $this->scheduleService->getScheduleData(
-            HistoryPageConstants::PAGE_SLUG,
+            'history',
             EventTypeId::History->value,
             ScheduleConstants::MAX_DAYS,
             filterParams: $this->readScheduleFilterParams(),

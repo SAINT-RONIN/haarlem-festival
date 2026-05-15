@@ -5,13 +5,7 @@
  * @var \App\ViewModels\Restaurant\RestaurantDetailViewModel $viewModel
  */
 
-$img = static function (string $path): string {
-    return htmlspecialchars($path, ENT_QUOTES, 'UTF-8');
-};
-
-$e = static function (string $text): string {
-    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-};
+$e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 
 $contact = $viewModel->contactSection;
 $about = $viewModel->aboutSection;
@@ -21,10 +15,6 @@ $location = $viewModel->locationSection;
 $practicalInfo = $viewModel->practicalInfoSection;
 $gallery = $viewModel->gallerySection;
 $reservation = $viewModel->reservationSection;
-$durationMinutes = max(0, (int) ($viewModel->cms['durationMinutes'] ?? 0));
-$seatsPerSession = max(0, (int) ($viewModel->cms['seatsPerSession'] ?? 0));
-$durationLabel = (string) ($viewModel->cms['durationLabel'] ?? 'Duration');
-$seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
 ?>
 
 <?php if ($contact !== null || $practicalInfo !== null): ?>
@@ -155,7 +145,7 @@ $seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
         <h2 class="self-stretch text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']"><?= $e($gallery->labelTitle) ?></h2>
         <div class="w-full flex flex-col md:flex-row justify-center items-center gap-8 lg:gap-12">
             <?php foreach ($gallery->images as $index => $galleryImage): ?>
-                <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $img($galleryImage) ?>" alt="<?= $e($viewModel->name) ?> gallery photo <?= $index + 1 ?>"/>
+                <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $e($galleryImage) ?>" alt="<?= $e($viewModel->name) ?> gallery photo <?= $index + 1 ?>"/>
             <?php endforeach; ?>
         </div>
     </div>
@@ -170,7 +160,7 @@ $seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
             <div class="text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] leading-8"><?= nl2br($about->text) ?></div>
         </div>
         <div class="flex-1 flex items-center justify-center">
-            <img class="w-full h-auto max-h-[500px] rounded-2xl object-cover" src="<?= $img($about->image) ?>" alt="About <?= $e($viewModel->name) ?>"/>
+            <img class="w-full h-auto max-h-[500px] rounded-2xl object-cover" src="<?= $e($about->image) ?>" alt="About <?= $e($viewModel->name) ?>"/>
         </div>
     </div>
 </section>
@@ -180,7 +170,7 @@ $seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
 <section class="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-5">
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
         <div class="flex-1 order-2 lg:order-1 flex items-center justify-center">
-            <img class="w-full h-auto max-h-[500px] rounded-2xl object-cover" src="<?= $img($chef->image) ?>" alt="Chef <?= $e($chef->name) ?>"/>
+            <img class="w-full h-auto max-h-[500px] rounded-2xl object-cover" src="<?= $e($chef->image) ?>" alt="Chef <?= $e($chef->name) ?>"/>
         </div>
         <div class="flex-1 flex flex-col gap-5 order-1 lg:order-2">
             <h2 class="text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat'] leading-tight"><?= $e($chef->labelTitle) ?></h2>
@@ -210,7 +200,7 @@ $seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
         <?php if ($menu->images !== []): ?>
         <div class="flex-1 flex items-center justify-center gap-4 sm:gap-6 max-w-[45%]">
             <?php foreach ($menu->images as $index => $menuImage): ?>
-                <img class="flex-1 min-w-0 h-48 sm:h-56 lg:h-64 rounded-2xl object-cover" src="<?= $img($menuImage) ?>" alt="Menu dish <?= $index + 1 ?>"/>
+                <img class="flex-1 min-w-0 h-48 sm:h-56 lg:h-64 rounded-2xl object-cover" src="<?= $e($menuImage) ?>" alt="Menu dish <?= $index + 1 ?>"/>
             <?php endforeach; ?>
         </div>
         <?php endif; ?>
@@ -268,23 +258,23 @@ $seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
                     </div>
                 <?php endforeach; ?>
 
-                <?php if ($durationMinutes > 0): ?>
+                <?php if ($reservation->durationMinutes > 0): ?>
                 <div class="px-4 py-5 bg-white rounded-lg flex flex-col items-center gap-3">
                     <svg class="w-10 h-10 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span class="text-slate-800 text-lg font-medium font-['Montserrat']"><?= $e($durationLabel) ?></span>
-                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= (int) ($durationMinutes / 60) ?> hours</span>
+                    <span class="text-slate-800 text-lg font-medium font-['Montserrat']"><?= $e($reservation->durationLabel) ?></span>
+                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= (int) ($reservation->durationMinutes / 60) ?> hours</span>
                 </div>
                 <?php endif; ?>
 
-                <?php if ($seatsPerSession > 0): ?>
+                <?php if ($reservation->seatsPerSession > 0): ?>
                 <div class="px-4 py-5 bg-white rounded-lg flex flex-col items-center gap-3">
                     <svg class="w-10 h-10 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
                     </svg>
-                    <span class="text-slate-800 text-lg font-medium font-['Montserrat']"><?= $e($seatsLabel) ?></span>
-                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= $seatsPerSession ?> per session</span>
+                    <span class="text-slate-800 text-lg font-medium font-['Montserrat']"><?= $e($reservation->seatsLabel) ?></span>
+                    <span class="text-slate-800 text-xl font-medium font-['Montserrat']"><?= $reservation->seatsPerSession ?> per session</span>
                 </div>
                 <?php endif; ?>
             </div>
@@ -315,7 +305,7 @@ $seatsLabel = (string) ($viewModel->cms['seatsLabel'] ?? 'Seats');
         </div>
 
         <div class="flex-1 flex items-center justify-center">
-            <img class="w-full h-auto max-h-[700px] rounded-2xl object-cover" src="<?= $img($reservation->reservationImage) ?>" alt="<?= $e($viewModel->name) ?> reservation"/>
+            <img class="w-full h-auto max-h-[700px] rounded-2xl object-cover" src="<?= $e($reservation->reservationImage) ?>" alt="<?= $e($viewModel->name) ?> reservation"/>
         </div>
     </div>
 </section>

@@ -11,6 +11,7 @@ use App\DTOs\Cms\RestaurantCardsSectionContent;
 use App\DTOs\Cms\RestaurantInstructionsSectionContent;
 use App\DTOs\Cms\RestaurantIntroSectionContent;
 use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
+use App\Models\Restaurant;
 
 /**
  * Carries all CMS sections and domain data needed to render the Restaurant listing page.
@@ -18,7 +19,7 @@ use App\DTOs\Cms\RestaurantIntroSplit2SectionContent;
 final readonly class RestaurantPageData
 {
     /**
-     * @param RestaurantListingData[] $listings Event-based restaurant listing cards
+     * @param Restaurant[] $restaurants Active restaurant domain objects
      */
     public function __construct(
         public HeroSectionContent $heroContent,
@@ -28,6 +29,6 @@ final readonly class RestaurantPageData
         public RestaurantIntroSplit2SectionContent $introSplit2Section,
         public RestaurantInstructionsSectionContent $instructionsSection,
         public RestaurantCardsSectionContent $cardsSection,
-        public array $listings,
+        public array $restaurants,
     ) {}
 }
