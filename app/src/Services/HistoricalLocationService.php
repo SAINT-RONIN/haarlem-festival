@@ -8,7 +8,7 @@ namespace App\Services;
 use App\Constants\SharedSectionKeys;
 use App\Exceptions\HistoricalLocationNotFoundException;
 use App\DTOs\Domain\Pages\HistoricalLocationPageData;
-use App\Mappers\HistoricalLocationContentMapper;
+use App\Mappers\HistoricalLocationMapper;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IHistoricalLocationService;
@@ -39,10 +39,10 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
         $rawContent = $this->cmsContentRepository->getPageContent($slug);
         return new HistoricalLocationPageData(
             heroSection: $this->globalContentRepo->mapHeroFromRaw($heroRaw),
-            locationHeroSection: HistoricalLocationContentMapper::mapHero($rawContent['hero_section']),
-            introSection: HistoricalLocationContentMapper::mapIntro($rawContent['intro_section']),
-            factsSection: HistoricalLocationContentMapper::mapFacts($rawContent['facts_section']),
-            significanceSection: HistoricalLocationContentMapper::mapSignificance($rawContent['significance_section']),
+            locationHeroSection: HistoricalLocationMapper::mapHero($rawContent['hero_section']),
+            introSection: HistoricalLocationMapper::mapIntro($rawContent['intro_section']),
+            factsSection: HistoricalLocationMapper::mapFacts($rawContent['facts_section']),
+            significanceSection: HistoricalLocationMapper::mapSignificance($rawContent['significance_section']),
             globalUiContent: $this->loadGlobalUi(),
         );
     }
