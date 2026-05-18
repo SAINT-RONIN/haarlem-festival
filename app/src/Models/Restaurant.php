@@ -55,6 +55,7 @@ final readonly class Restaurant
 
         // ── Reservation ──
         public float $priceAdult,
+        public float $reservationFee,
         public ?string $timeSlots,
         public ?string $reservationImage,
 

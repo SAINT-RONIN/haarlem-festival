@@ -1938,7 +1938,10 @@ INSERT INTO `Event` (`EventId`, `EventTypeId`, `Title`, `Slug`, `DisplayOrder`, 
 (45, 4, 'The history of the Ten Boom Family', 'the-history-of-the-ten-boom-family', NULL, 'Stories with impact', '<p></p>', NULL, 13, NULL, 1, '2026-02-06 15:30:32'),
 (46, 4, 'Winners of story telling competition, stories for Haarlem', 'winners-of-story-telling-competition-stories-for-haarlem', NULL, 'Best off - the contest will be organized in June', '<p></p>', NULL, 10, NULL, 1, '2026-02-06 15:30:32'),
 (47, 5, 'Café de Roemer - Festival Dinner', 'caf-de-roemer-festival-dinner', 3, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 75, NULL, NULL, 1, '2026-02-06 15:30:32'),
-(48, 5, 'Ratatouille - Festival Dinner', 'ratatouille-festival-dinner', 1, 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 76, NULL, NULL, 1, '2026-02-06 15:30:32'),
+(48, 5, 'Rata' ||
+        '' ||
+        '' ||
+        'touille - Festival Dinner', 'ratatouille-festival-dinner', 1, 'French, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 76, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (49, 5, 'Restaurant ML - Festival Dinner', 'restaurant-ml-festival-dinner', 7, 'Dutch, fish and seafood, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 77, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (50, 5, 'Restaurant Fris - Festival Dinner', 'restaurant-fris-festival-dinner', 6, 'Dutch, French, European cuisine', '<p>4-star restaurant experience during Haarlem Festival</p>', 78, NULL, NULL, 1, '2026-02-06 15:30:32'),
 (51, 5, 'New Vegas - Festival Dinner', 'new-vegas-festival-dinner', 5, '', '<p></p>', NULL, NULL, NULL, 1, '2026-02-06 15:30:32'),

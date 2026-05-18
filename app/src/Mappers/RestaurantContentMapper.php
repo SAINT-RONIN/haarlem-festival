@@ -47,6 +47,7 @@ final class RestaurantContentMapper
             durationMinutes: $row->durationMinutes,
             specialRequestsNote: $cms['special_requests_note'] ?? null,
             priceAdult: $row->priceAdult,
+            reservationFee: $row->reservationFee,
             timeSlots: $row->timeSlots,
             reservationImage: $cms['reservation_image'] ?? null,
             galleryImage1: $cms['gallery_image_1'] ?? null,

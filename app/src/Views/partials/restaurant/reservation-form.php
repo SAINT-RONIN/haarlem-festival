@@ -158,7 +158,7 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
                 <div>
                     <p class="text-slate-800 text-xl font-bold font-['Montserrat']"><?= $e($label('detail_form_total_title', 'Total to be paid')) ?></p>
                     <p class="text-slate-800 text-base font-['Montserrat'] mt-2">
-                        <?= $e(str_replace('{fee}', 'EUR ' . number_format($r->priceAdult, 0), $label('detail_reservation_fee_text', 'To complete your reservation, you pay a {fee} fee per person. This amount is deducted from your final bill at the restaurant, so you simply pay the remaining amount after your meal.'))) ?>
+                        <?= $e(str_replace('{fee}', 'EUR ' . number_format($r->reservationFee, 0), $label('detail_reservation_fee_text', 'To complete your reservation, you pay a {fee} fee per person. This amount is deducted from your final bill at the restaurant, so you simply pay the remaining amount after your meal.'))) ?>
                     </p>
                 </div>
 
@@ -190,6 +190,6 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
 </section>
 
 <script>
-window.reservationConfig = { reservationFee: <?= (float) $r->priceAdult ?> };
+window.reservationConfig = { reservationFee: <?= (float) $r->reservationFee ?> };
 </script>
 <script src="/assets/js/restaurant-reservation-form.js"></script>

@@ -108,7 +108,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             adultsCount: $formData->adultsCount,
             childrenCount: $formData->childrenCount,
             specialRequests: $formData->specialRequests,
-            totalFee: $formData->totalGuests() * $restaurant->priceAdult,
+            totalFee: $formData->totalGuests() * $restaurant->reservationFee,
         );
 
         return $this->reservationRepository->insert($reservation);
