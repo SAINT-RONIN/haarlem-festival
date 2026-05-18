@@ -9,11 +9,9 @@ use App\Constants\SharedSectionKeys;
 use App\DTOs\Domain\Pages\RestaurantPageData;
 use App\DTOs\Domain\Restaurant\ReservationFormData;
 use App\DTOs\Domain\Restaurant\RestaurantDetailPageData;
-use App\DTOs\Domain\Events\RestaurantRow;
 use App\Models\Restaurant;
 use App\Exceptions\RestaurantEventNotFoundException;
 use App\Mappers\GlobalContentMapper;
-use App\Mappers\RestaurantContentMapper;
 use App\Exceptions\ValidationException;
 use App\Models\Reservation;
 use App\Repositories\Interfaces\ICmsContentRepository;
@@ -122,7 +120,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         $rows = $this->eventRepository->findActiveRestaurantEvents();
 
         $imageAssetIds = array_filter(
-            array_map(fn(RestaurantRow $row) => $row->featuredImageAssetId, $rows),
+            array_map(fn(array $row) => isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null, $rows),
         );
         $imageMap = $imageAssetIds !== []
             ? $this->mediaAssetRepository->findByIds($imageAssetIds)
@@ -132,34 +130,35 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 
         $restaurants = [];
         foreach ($rows as $row) {
-            $sectionKey = SharedSectionKeys::eventSectionKey($row->eventId);
+            $eventId = (int) ($row['EventId'] ?? 0);
+            $sectionKey = SharedSectionKeys::eventSectionKey($eventId);
             $cms = $allDetailContent[$sectionKey] ?? [];
 
-            $imagePath = $row->featuredImageAssetId !== null && isset($imageMap[$row->featuredImageAssetId])
-                ? $imageMap[$row->featuredImageAssetId]->filePath
+            $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
+            $imagePath = $assetId !== null && isset($imageMap[$assetId])
+                ? $imageMap[$assetId]->filePath
                 : null;
 
-            $restaurants[] = RestaurantContentMapper::mapRestaurant($row, $cms, $imagePath, $row->venueAddressLine, $row->venueCity);
+            $restaurants[] = Restaurant::fromDbRow($row, $cms, $imagePath);
         }
 
         return $restaurants;
     }
 
-    private function buildRestaurant(RestaurantRow $row): Restaurant
+    /** @param array<string, mixed> $row */
+    private function buildRestaurant(array $row): Restaurant
     {
         $allDetailContent = $this->cmsContent->getPageContent(RestaurantPageConstants::DETAIL_PAGE_SLUG);
-        $sectionKey = SharedSectionKeys::eventSectionKey($row->eventId);
+        $eventId = (int) ($row['EventId'] ?? 0);
+        $sectionKey = SharedSectionKeys::eventSectionKey($eventId);
         $cms = $allDetailContent[$sectionKey] ?? [];
 
-        $imagePath = $row->featuredImageAssetId !== null
-            ? $this->mediaAssetRepository->findById($row->featuredImageAssetId)?->filePath
+        $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
+        $imagePath = $assetId !== null
+            ? $this->mediaAssetRepository->findById($assetId)?->filePath
             : null;
 
-        return RestaurantContentMapper::mapRestaurant(
-            $row, $cms, $imagePath,
-            $row->venueAddressLine,
-            $row->venueCity,
-        );
+        return Restaurant::fromDbRow($row, $cms, $imagePath);
     }
 
     private function normalizeSlug(string $slug): string

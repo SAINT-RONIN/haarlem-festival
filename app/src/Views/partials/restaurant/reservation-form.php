@@ -91,7 +91,7 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
                     <select id="time_slot" name="time_slot"
                             class="w-48 h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
                         <option value=""><?= $e($label('detail_form_placeholder_time', 'Select a time')) ?></option>
-                        <?php foreach ($viewModel->timeSlots as $slot): ?>
+                        <?php foreach ($r->timeSlots as $slot): ?>
                             <option value="<?= $e($slot) ?>"><?= $e($slot) ?></option>
                         <?php endforeach; ?>
                     </select>

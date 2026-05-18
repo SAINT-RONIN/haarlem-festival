@@ -56,8 +56,6 @@ final class RestaurantViewMapper
         array $validDates,
     ): RestaurantDetailViewModel {
         $globalUi = CmsMapper::toGlobalUiData($globalUiContent, $isLoggedIn);
-        $timeSlots = self::parseTimeSlots($restaurant->timeSlots);
-        $priceCards = self::buildPriceCards($restaurant, $labels);
 
         $reservationImage = self::validateImagePath($restaurant->reservationImage ?? '');
         if ($reservationImage === RestaurantPageConstants::DEFAULT_IMAGE && $restaurant->featuredImagePath !== null) {
@@ -69,12 +67,8 @@ final class RestaurantViewMapper
             globalUi: $globalUi,
             restaurant: $restaurant,
             labels: $labels,
-            timeSlots: $timeSlots,
-            priceCards: $priceCards,
+            priceCards: self::buildPriceCards($restaurant, $labels),
             validDates: $validDates,
-            menuImages: self::collectImages([$restaurant->menuImage1, $restaurant->menuImage2]),
-            galleryImages: self::collectImages([$restaurant->galleryImage1, $restaurant->galleryImage2, $restaurant->galleryImage3]),
-            address: self::formatAddress($restaurant->addressLine, $restaurant->city),
             reservationImage: $reservationImage,
         );
     }
@@ -104,16 +98,6 @@ final class RestaurantViewMapper
 
     // ── Helpers ────────────────────────────────────────────────────────
 
-    /** @return string[] */
-    private static function parseTimeSlots(?string $raw): array
-    {
-        if ($raw === null || $raw === '') {
-            return [];
-        }
-
-        return array_values(array_filter(array_map('trim', explode(',', $raw))));
-    }
-
     /**
      * @param array<string, ?string> $labels
      * @return array{label: string, price: string}[]
@@ -128,35 +112,6 @@ final class RestaurantViewMapper
             ['label' => $labels['detail_label_price_adult'] ?? 'Per adult', 'price' => 'EUR ' . number_format($r->priceAdult, 2)],
             ['label' => $labels['detail_label_price_child'] ?? 'Under 12', 'price' => 'EUR ' . number_format($r->priceAdult / 2, 2)],
         ];
-    }
-
-    private static function formatAddress(?string $addressLine, ?string $city): string
-    {
-        $parts = array_filter(
-            [trim((string) $addressLine), trim((string) $city)],
-            static fn(string $part): bool => $part !== '',
-        );
-
-        return implode(', ', $parts);
-    }
-
-    /**
-     * @param (?string)[] $paths
-     * @return string[]
-     */
-    private static function collectImages(array $paths): array
-    {
-        $validated = [];
-        foreach ($paths as $path) {
-            if ($path !== null && $path !== '') {
-                $img = self::validateImagePath($path);
-                if ($img !== RestaurantPageConstants::DEFAULT_IMAGE) {
-                    $validated[] = $img;
-                }
-            }
-        }
-
-        return $validated;
     }
 
     private static function validateImagePath(string $path): string
@@ -317,7 +272,7 @@ final class RestaurantViewMapper
                 name: $r->name,
                 cuisine: $cuisine,
                 cuisineTags: array_map('mb_strtolower', $r->cuisineTags),
-                address: self::formatAddress($r->addressLine, $r->city),
+                address: $r->fullAddress,
                 description: self::buildCardDescription($r),
                 rating: $r->stars,
                 image: $r->featuredImagePath ?? RestaurantPageConstants::DEFAULT_IMAGE,
