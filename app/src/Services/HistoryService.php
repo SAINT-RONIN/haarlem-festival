@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\DTOs\Domain\Pages\HistoryPageData;
 use App\Mappers\GlobalContentMapper;
-use App\Mappers\HistoryContentMapper;
+use App\Mappers\HistoryMapper;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Services\Interfaces\IHistoryService;
 use App\Repositories\Interfaces\ICmsContentRepository;
@@ -37,10 +37,10 @@ class HistoryService extends BaseContentService implements IHistoryService
             heroSection: GlobalContentMapper::mapHero($rawContent['hero_section']),
             gradientSection: GlobalContentMapper::mapGradient($rawContent['gradient_section']),
             introSection: GlobalContentMapper::mapIntro($rawContent['intro_section']),
-            routeSection: HistoryContentMapper::mapRoute($rawContent['route_section']),
-            venuesSection: HistoryContentMapper::mapVenues($rawContent['historical_locations_section']),
-            ticketOptionsSection: HistoryContentMapper::mapTicketOptions($rawContent['ticket_options_section']),
-            tourInfoSection: HistoryContentMapper::mapTourInfo($rawContent['history_important_tour_info_section']),
+            routeSection: HistoryMapper::mapRoute($rawContent['route_section']),
+            venuesSection: HistoryMapper::mapVenues($rawContent['historical_locations_section']),
+            ticketOptionsSection: HistoryMapper::mapTicketOptions($rawContent['ticket_options_section']),
+            tourInfoSection: HistoryMapper::mapTourInfo($rawContent['history_important_tour_info_section']),
             globalUiContent: $this->loadGlobalUi(),
         );
     }
