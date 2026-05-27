@@ -25,11 +25,10 @@ final class RestaurantViewMapper
 
     // ── Listing page ──────────────────────────────────────────────────
 
-    public static function toPageViewModel(RestaurantPageData $data, bool $isLoggedIn): RestaurantPageViewModel
+    public static function toPageViewModel(RestaurantPageData $data, bool $isLoggedIn, string $activeCuisine = ''): RestaurantPageViewModel
     {
         $heroData = CmsMapper::toHeroData($data->heroContent, 'restaurant');
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
-        $cuisines = self::extractCuisineFilters($data->restaurants);
 
         return new RestaurantPageViewModel(
             heroData: $heroData,
@@ -38,7 +37,7 @@ final class RestaurantViewMapper
             introSplitSection: self::toIntroSplitSection($data->introSplitContent),
             introSplit2Section: self::toIntroSplit2Section($data->introSplit2Content),
             instructionsSection: self::toInstructionsSection($data->instructionsContent),
-            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsContent, $data->restaurants, $cuisines),
+            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsContent, $data->restaurants, $data->allCuisines, $activeCuisine),
         );
     }
 
@@ -141,30 +140,6 @@ final class RestaurantViewMapper
         return trim(preg_replace('/\s+/', ' ', $text) ?? $text);
     }
 
-    // ── Cuisine filters ───────────────────────────────────────────────
-
-    /**
-     * @param Restaurant[] $restaurants
-     * @return string[]
-     */
-    private static function extractCuisineFilters(array $restaurants): array
-    {
-        $unique = [];
-        foreach ($restaurants as $restaurant) {
-            foreach ($restaurant->cuisineTags as $tag) {
-                $key = mb_strtolower($tag);
-                if (!isset($unique[$key])) {
-                    $unique[$key] = mb_convert_case($key, MB_CASE_TITLE, 'UTF-8');
-                }
-            }
-        }
-
-        $labels = array_values($unique);
-        sort($labels, SORT_NATURAL | SORT_FLAG_CASE);
-
-        return ['All', ...$labels];
-    }
-
     // ── Listing page section builders ─────────────────────────────────
 
     private static function toGradientSection(GradientSectionContent $cms): GradientSectionData
@@ -248,13 +223,14 @@ final class RestaurantViewMapper
      * @param Restaurant[] $restaurants
      * @param string[] $cuisines
      */
-    private static function toRestaurantCardsSection(array $cms, array $restaurants, array $cuisines): RestaurantCardsSectionData
+    private static function toRestaurantCardsSection(array $cms, array $restaurants, array $cuisines, string $activeCuisine = ''): RestaurantCardsSectionData
     {
         return new RestaurantCardsSectionData(
             title: $cms['cards_title'] ?? '',
             subtitle: $cms['cards_subtitle'] ?? '',
             filters: $cuisines,
             cards: self::buildCards($restaurants),
+            activeCuisine: $activeCuisine,
         );
     }
 

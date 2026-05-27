@@ -20,6 +20,7 @@ final readonly class RestaurantCardsSectionData
         public string $subtitle,
         public array  $filters,
         public array  $cards,
+        public string $activeCuisine = '',
         public string $labelFilters  = 'Filters',
         public string $labelAboutBtn = 'About it',
         public string $labelBookBtn  = 'Book table',

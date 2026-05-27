@@ -9,7 +9,7 @@ use App\DTOs\Domain\Restaurant\ReservationFormData;
 use App\DTOs\Domain\Restaurant\RestaurantDetailPageData;
 interface IRestaurantService
 {
-    public function getRestaurantPageData(): RestaurantPageData;
+    public function getRestaurantPageData(string $cuisineFilter = ''): RestaurantPageData;
 
     /** @throws \App\Exceptions\RestaurantEventNotFoundException */
     public function getDetailPageData(string $slug): RestaurantDetailPageData;

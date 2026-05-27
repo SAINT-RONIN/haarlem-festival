@@ -1,21 +1,22 @@
 <?php
 /**
  * Restaurant Cards section partial.
- * Displays participating restaurants with filters and card grid.
+ * Displays participating restaurants with cuisine filter links.
  *
- * Expects a \App\ViewModels\Restaurant\RestaurantPageViewModel as $viewModel
- * and uses its restaurantCardsSection property.
+ * Filtering works server-side: clicking a cuisine link reloads
+ * the page with ?cuisine=value and PHP shows only matching cards.
  *
  * @var \App\ViewModels\Restaurant\RestaurantCardsSectionData $restaurantCardsSection
  */
 
-$title        = $restaurantCardsSection->title;
-$subtitle     = $restaurantCardsSection->subtitle;
-$filters      = $restaurantCardsSection->filters;
-$cards        = $restaurantCardsSection->cards;
-$labelFilters = $restaurantCardsSection->labelFilters;
-$labelAbout   = $restaurantCardsSection->labelAboutBtn;
-$labelBook    = $restaurantCardsSection->labelBookBtn;
+$title         = $restaurantCardsSection->title;
+$subtitle      = $restaurantCardsSection->subtitle;
+$filters       = $restaurantCardsSection->filters;
+$cards         = $restaurantCardsSection->cards;
+$activeCuisine = $restaurantCardsSection->activeCuisine;
+$labelFilters  = $restaurantCardsSection->labelFilters;
+$labelAbout    = $restaurantCardsSection->labelAboutBtn;
+$labelBook     = $restaurantCardsSection->labelBookBtn;
 ?>
 
 <section id="restaurants-grid" class="w-full px-4 py-12 sm:px-8 lg:px-14 lg:py-16 xl:px-20">
@@ -29,8 +30,8 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
             </p>
         </div>
 
-        <div class="w-full rounded-[22px] bg-slate-800 px-5 py-4 sm:px-6 lg:px-7 lg:py-5"
-             data-restaurant-filters="restaurant-cards">
+        <!-- Filter links (no JavaScript, just plain <a> tags that reload the page) -->
+        <div class="w-full rounded-[22px] bg-slate-800 px-5 py-4 sm:px-6 lg:px-7 lg:py-5">
             <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-5">
                 <div class="flex items-center gap-3 text-white">
                     <svg class="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -43,20 +44,19 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
                     </span>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2.5"
-                     data-filter-group="cuisine" role="radiogroup" aria-label="Filter by cuisine">
+                <div class="flex flex-wrap items-center gap-2.5">
                     <?php foreach ($filters as $idx => $label): ?>
                         <?php
-                            $filterValue = ($idx === 0) ? 'all' : strtolower(trim($label));
-                        $isActive = ($idx === 0);
+                        // First item is always "All" → links to /restaurant (no query param)
+                        // Other items link to /restaurant?cuisine=value
+                        $filterValue = ($idx === 0) ? '' : strtolower(trim($label));
+                        $isActive = ($activeCuisine === $filterValue);
+                        $href = ($idx === 0) ? '/restaurant' : '/restaurant?cuisine=' . urlencode($filterValue);
                         ?>
-                        <button type="button"
-                                data-filter-value="<?= htmlspecialchars($filterValue) ?>"
-                                role="radio"
-                                aria-checked="<?= $isActive ? 'true' : 'false' ?>"
-                                class="min-h-[44px] rounded-xl border border-white/10 px-4 py-2 text-sm font-medium font-['Montserrat'] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 <?= $isActive ? 'bg-red text-white hover:bg-royal-blue' : 'bg-stone-100 text-slate-800 hover:bg-red hover:text-white' ?>">
+                        <a href="<?= htmlspecialchars($href) ?>"
+                           class="min-h-[44px] rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium font-['Montserrat'] transition-colors duration-200 no-underline <?= $isActive ? 'bg-red text-white' : 'bg-stone-100 text-slate-800 hover:bg-red hover:text-white' ?>">
                             <?= htmlspecialchars($label) ?>
-                        </button>
+                        </a>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -65,8 +65,7 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
         <?php if ($cards !== []): ?>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
                 <?php foreach ($cards as $card): ?>
-                    <article class="flex h-full flex-col overflow-hidden rounded-[24px] border border-slate-400 bg-white shadow-[0_1px_0_rgba(15,23,42,0.08)]"
-                             data-cuisines="<?= htmlspecialchars(implode('|', $card->cuisineTags)) ?>">
+                    <article class="flex h-full flex-col overflow-hidden rounded-[24px] border border-slate-400 bg-white shadow-[0_1px_0_rgba(15,23,42,0.08)]">
                         <div class="p-2 pb-0">
                             <?php if ($card->isVegan): ?>
                                 <div class="flex h-[190px] w-full items-start justify-end rounded-[18px] bg-cover bg-center p-3 sm:h-[210px] xl:h-[175px] bg-dynamic"
@@ -133,7 +132,8 @@ $labelBook    = $restaurantCardsSection->labelBookBtn;
                     </article>
                 <?php endforeach; ?>
             </div>
+        <?php else: ?>
+            <p class="text-lg text-slate-600">No restaurants found for this cuisine.</p>
         <?php endif; ?>
     </div>
 </section>
-<script src="/assets/js/restaurant-filters.js"></script>

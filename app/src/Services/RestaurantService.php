@@ -35,17 +35,33 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 
     // ── Listing page ────────────────────────────────────────────────────
 
-    public function getRestaurantPageData(): RestaurantPageData
+    public function getRestaurantPageData(string $cuisineFilter = ''): RestaurantPageData
     {
         return $this->guardPageLoad(
-            fn(): RestaurantPageData => $this->buildPageData(),
+            fn(): RestaurantPageData => $this->buildPageData($cuisineFilter),
             'Failed to load the Restaurant page.',
         );
     }
 
-    private function buildPageData(): RestaurantPageData
+    private function buildPageData(string $cuisineFilter): RestaurantPageData
     {
         $rawContent = $this->cmsContent->getPageContent(RestaurantPageConstants::PAGE_SLUG);
+        $allRestaurants = $this->loadAllRestaurants();
+        $allCuisines = $this->extractCuisineFilters($allRestaurants);
+
+        if ($cuisineFilter !== '') {
+            $filtered = array_values(array_filter(
+                $allRestaurants,
+                fn(Restaurant $r) => in_array(
+                    mb_strtolower($cuisineFilter),
+                    array_map('mb_strtolower', $r->cuisineTags),
+                    true,
+                ),
+            ));
+        } else {
+            $filtered = $allRestaurants;
+        }
+
         return new RestaurantPageData(
             heroContent: GlobalContentMapper::mapHero($rawContent[SharedSectionKeys::SECTION_HERO] ?? []),
             globalUiContent: $this->loadGlobalUi(),
@@ -54,8 +70,31 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             introSplit2Content: $rawContent[RestaurantPageConstants::SECTION_INTRO_SPLIT2] ?? [],
             instructionsContent: $rawContent[RestaurantPageConstants::SECTION_INSTRUCTIONS] ?? [],
             cardsContent: $rawContent[RestaurantPageConstants::SECTION_CARDS] ?? [],
-            restaurants: $this->loadAllRestaurants(),
+            restaurants: $filtered,
+            allCuisines: $allCuisines,
         );
+    }
+
+    /**
+     * @param Restaurant[] $restaurants
+     * @return string[]
+     */
+    private function extractCuisineFilters(array $restaurants): array
+    {
+        $unique = [];
+        foreach ($restaurants as $restaurant) {
+            foreach ($restaurant->cuisineTags as $tag) {
+                $key = mb_strtolower($tag);
+                if (!isset($unique[$key])) {
+                    $unique[$key] = mb_convert_case($key, MB_CASE_TITLE, 'UTF-8');
+                }
+            }
+        }
+
+        $labels = array_values($unique);
+        sort($labels, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return ['All', ...$labels];
     }
 
     // ── Detail page ─────────────────────────────────────────────────────
