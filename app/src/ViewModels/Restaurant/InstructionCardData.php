@@ -13,6 +13,6 @@ final readonly class InstructionCardData
         public string $number,
         public string $title,
         public string $text,
-        public string $icon,
+        public string $icon, // CMS image path/URL; empty string means no icon
     ) {}
 }

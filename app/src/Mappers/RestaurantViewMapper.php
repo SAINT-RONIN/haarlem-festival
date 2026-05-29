@@ -211,9 +211,9 @@ final class RestaurantViewMapper
         return new InstructionsSectionData(
             title: $cms['instructions_title'],
             cards: [
-                new InstructionCardData('1', $cms['instructions_card_1_title'] ?? '', $cms['instructions_card_1_text'] ?? '', 'search'),
-                new InstructionCardData('2', $cms['instructions_card_2_title'] ?? '', $cms['instructions_card_2_text'] ?? '', 'calendar'),
-                new InstructionCardData('3', $cms['instructions_card_3_title'] ?? '', $cms['instructions_card_3_text'] ?? '', 'check'),
+                new InstructionCardData('1', $cms['instructions_card_1_title'] ?? '', $cms['instructions_card_1_text'] ?? '', $cms['instructions_card_1_icon'] ?? ''),
+                new InstructionCardData('2', $cms['instructions_card_2_title'] ?? '', $cms['instructions_card_2_text'] ?? '', $cms['instructions_card_2_icon'] ?? ''),
+                new InstructionCardData('3', $cms['instructions_card_3_title'] ?? '', $cms['instructions_card_3_text'] ?? '', $cms['instructions_card_3_icon'] ?? ''),
             ],
         );
     }
