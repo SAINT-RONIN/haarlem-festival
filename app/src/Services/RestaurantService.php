@@ -50,14 +50,17 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         $allCuisines = $this->extractCuisineFilters($allRestaurants);
 
         if ($cuisineFilter !== '') {
-            $filtered = array_values(array_filter(
-                $allRestaurants,
-                fn(Restaurant $r) => in_array(
-                    mb_strtolower($cuisineFilter),
-                    array_map('mb_strtolower', $r->cuisineTags),
-                    true,
-                ),
-            ));
+            $filtered = [];                                   // start with an empty result list
+            $lowerCuisine = mb_strtolower($cuisineFilter);    // lowercase the filter once, not per loop
+
+            // Keep only restaurants whose cuisine tags include the selected cuisine.
+            foreach ($allRestaurants as $r) {
+                $lowerRestaurantTags = array_map('mb_strtolower', $r->cuisineTags);
+
+                if (in_array($lowerCuisine, $lowerRestaurantTags, true)) {
+                    $filtered[] = $r;                         // match → add it to the list
+                }
+            }
         } else {
             $filtered = $allRestaurants;
         }
