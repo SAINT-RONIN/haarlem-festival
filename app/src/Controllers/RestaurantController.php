@@ -24,9 +24,8 @@ class RestaurantController extends BaseController
     public function index(): void
     {
         $this->handlePageRequest(function (): void {
-            $activeCuisine = trim($_GET['cuisine'] ?? '');
-            $data = $this->restaurantService->getRestaurantPageData($activeCuisine);
-            $viewModel = RestaurantViewMapper::toPageViewModel($data, $this->isLoggedIn(), $activeCuisine);
+            $data = $this->restaurantService->getRestaurantPageData();
+            $viewModel = RestaurantViewMapper::toPageViewModel($data, $this->isLoggedIn());
             $this->renderPage(__DIR__ . '/../Views/pages/restaurant.php', $viewModel);
         });
     }

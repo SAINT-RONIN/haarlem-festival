@@ -11,6 +11,7 @@ use App\DTOs\Domain\Restaurant\ReservationFormData;
 use App\DTOs\Domain\Restaurant\RestaurantDetailPageData;
 use App\Models\Restaurant;
 use App\Exceptions\RestaurantEventNotFoundException;
+use App\Helpers\SlugHelper;
 use App\Mappers\GlobalContentMapper;
 use App\Exceptions\ValidationException;
 use App\Models\Reservation;
@@ -35,35 +36,19 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 
     // ── Listing page ────────────────────────────────────────────────────
 
-    public function getRestaurantPageData(string $cuisineFilter = ''): RestaurantPageData
+    public function getRestaurantPageData(): RestaurantPageData
     {
         return $this->guardPageLoad(
-            fn(): RestaurantPageData => $this->buildPageData($cuisineFilter),
+            fn(): RestaurantPageData => $this->buildPageData(),
             'Failed to load the Restaurant page.',
         );
     }
 
-    private function buildPageData(string $cuisineFilter): RestaurantPageData
+    private function buildPageData(): RestaurantPageData
     {
         $rawContent = $this->cmsContent->getPageContent(RestaurantPageConstants::PAGE_SLUG);
         $allRestaurants = $this->loadAllRestaurants();
         $allCuisines = $this->extractCuisineFilters($allRestaurants);
-
-        if ($cuisineFilter !== '') {
-            $filtered = [];                                   // start with an empty result list
-            $lowerCuisine = mb_strtolower($cuisineFilter);    // lowercase the filter once, not per loop
-
-            // Keep only restaurants whose cuisine tags include the selected cuisine.
-            foreach ($allRestaurants as $r) {
-                $lowerRestaurantTags = array_map('mb_strtolower', $r->cuisineTags);
-
-                if (in_array($lowerCuisine, $lowerRestaurantTags, true)) {
-                    $filtered[] = $r;                         // match → add it to the list
-                }
-            }
-        } else {
-            $filtered = $allRestaurants;
-        }
 
         return new RestaurantPageData(
             heroContent: GlobalContentMapper::mapHero($rawContent[SharedSectionKeys::SECTION_HERO] ?? []),
@@ -73,7 +58,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             introSplit2Content: $rawContent[RestaurantPageConstants::SECTION_INTRO_SPLIT2] ?? [],
             instructionsContent: $rawContent[RestaurantPageConstants::SECTION_INSTRUCTIONS] ?? [],
             cardsContent: $rawContent[RestaurantPageConstants::SECTION_CARDS] ?? [],
-            restaurants: $filtered,
+            restaurants: $allRestaurants,
             allCuisines: $allCuisines,
         );
     }
@@ -172,16 +157,12 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 
         $restaurants = [];
         foreach ($rows as $row) {
-            $eventId = (int) ($row['EventId'] ?? 0);
-            $sectionKey = SharedSectionKeys::eventSectionKey($eventId);
-            $cms = $allDetailContent[$sectionKey] ?? [];
-
             $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
             $imagePath = $assetId !== null && isset($imageMap[$assetId])
                 ? $imageMap[$assetId]->filePath
                 : null;
 
-            $restaurants[] = Restaurant::fromDbRow($row, $cms, $imagePath);
+            $restaurants[] = $this->assembleRestaurant($row, $allDetailContent, $imagePath);
         }
 
         return $restaurants;
@@ -191,27 +172,34 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     private function buildRestaurant(array $row): Restaurant
     {
         $allDetailContent = $this->cmsContent->getPageContent(RestaurantPageConstants::DETAIL_PAGE_SLUG);
-        $eventId = (int) ($row['EventId'] ?? 0);
-        $sectionKey = SharedSectionKeys::eventSectionKey($eventId);
-        $cms = $allDetailContent[$sectionKey] ?? [];
 
         $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
         $imagePath = $assetId !== null
             ? $this->mediaAssetRepository->findById($assetId)?->filePath
             : null;
 
+        return $this->assembleRestaurant($row, $allDetailContent, $imagePath);
+    }
+
+    /**
+     * Slices the CMS content for this event and builds the Restaurant model.
+     *
+     * @param array<string, mixed>   $row              Raw Event + Venue JOIN row
+     * @param array<string, mixed>   $allDetailContent All restaurant-detail CMS sections, keyed by section
+     */
+    private function assembleRestaurant(array $row, array $allDetailContent, ?string $imagePath): Restaurant
+    {
+        $eventId = (int) ($row['EventId'] ?? 0);
+        $sectionKey = SharedSectionKeys::eventSectionKey($eventId);
+        $cms = $allDetailContent[$sectionKey] ?? [];
+
         return Restaurant::fromDbRow($row, $cms, $imagePath);
     }
 
     private function normalizeSlug(string $slug): string
     {
-        $normalized = trim(strtolower(rawurldecode($slug)));
-
-        if ($normalized === '' || str_contains($normalized, '/')) {
-            throw new RestaurantEventNotFoundException($slug);
-        }
-
-        return trim($normalized, '-');
+        return SlugHelper::normalize($slug)
+            ?? throw new RestaurantEventNotFoundException($slug);
     }
 
     private function validateSeatAvailability(Restaurant $restaurant, ReservationFormData $formData): void

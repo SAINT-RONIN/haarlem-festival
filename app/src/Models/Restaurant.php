@@ -64,7 +64,6 @@ final readonly class Restaurant
         public float   $priceAdult,
         public float   $reservationFee,
         public array   $timeSlots,
-        public ?string $reservationImage,
 
         // ── Gallery (from CMS) ──
         public array   $galleryImages,
@@ -111,7 +110,6 @@ final readonly class Restaurant
             priceAdult: max(0.0, (float) ($row['PriceAdult'] ?? 0)),
             reservationFee: max(0.0, (float) ($row['ReservationFee'] ?? 0)),
             timeSlots: self::parseTimeSlots($row['TimeSlots'] ?? null),
-            reservationImage: $cms['reservation_image'] ?? null,
             galleryImages: self::collectNonEmpty([
                 $cms['gallery_image_1'] ?? null,
                 $cms['gallery_image_2'] ?? null,

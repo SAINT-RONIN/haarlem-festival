@@ -25,7 +25,7 @@ final class RestaurantViewMapper
 
     // ── Listing page ──────────────────────────────────────────────────
 
-    public static function toPageViewModel(RestaurantPageData $data, bool $isLoggedIn, string $activeCuisine = ''): RestaurantPageViewModel
+    public static function toPageViewModel(RestaurantPageData $data, bool $isLoggedIn): RestaurantPageViewModel
     {
         $heroData = CmsMapper::toHeroData($data->heroContent, 'restaurant');
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
@@ -37,7 +37,7 @@ final class RestaurantViewMapper
             introSplitSection: self::toIntroSplitSection($data->introSplitContent),
             introSplit2Section: self::toIntroSplit2Section($data->introSplit2Content),
             instructionsSection: self::toInstructionsSection($data->instructionsContent),
-            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsContent, $data->restaurants, $data->allCuisines, $activeCuisine),
+            restaurantCardsSection: self::toRestaurantCardsSection($data->cardsContent, $data->restaurants, $data->allCuisines),
         );
     }
 
@@ -56,10 +56,8 @@ final class RestaurantViewMapper
     ): RestaurantDetailViewModel {
         $globalUi = CmsMapper::toGlobalUiData($globalUiContent, $isLoggedIn);
 
-        $reservationImage = self::validateImagePath($restaurant->reservationImage ?? '');
-        if ($reservationImage === RestaurantPageConstants::DEFAULT_IMAGE && $restaurant->featuredImagePath !== null) {
-            $reservationImage = self::validateImagePath($restaurant->featuredImagePath);
-        }
+        // Every restaurant's reservation section shares the same image.
+        $reservationImage = RestaurantPageConstants::RESERVATION_IMAGE;
 
         return new RestaurantDetailViewModel(
             heroData: self::toDetailHeroData($restaurant, $labels),
@@ -223,14 +221,13 @@ final class RestaurantViewMapper
      * @param Restaurant[] $restaurants
      * @param string[] $cuisines
      */
-    private static function toRestaurantCardsSection(array $cms, array $restaurants, array $cuisines, string $activeCuisine = ''): RestaurantCardsSectionData
+    private static function toRestaurantCardsSection(array $cms, array $restaurants, array $cuisines): RestaurantCardsSectionData
     {
         return new RestaurantCardsSectionData(
             title: $cms['cards_title'] ?? '',
             subtitle: $cms['cards_subtitle'] ?? '',
             filters: $cuisines,
             cards: self::buildCards($restaurants),
-            activeCuisine: $activeCuisine,
         );
     }
 
