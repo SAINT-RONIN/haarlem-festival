@@ -39,6 +39,15 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
+    public function findActiveById(int $id): ?UserAccount
+    {
+        return $this->fetchOne(
+            'SELECT * FROM UserAccount WHERE UserAccountId = :id AND IsActive = 1',
+            ['id' => $id],
+            fn(array $row) => UserAccount::fromRow($row),
+        );
+    }
+
     public function existsByUsername(string $username): bool
     {
         $stmt = $this->execute(

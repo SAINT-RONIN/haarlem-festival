@@ -7,6 +7,7 @@ namespace App\Services;
 use App\DTOs\Domain\Account\UpdateProfileFormData;
 use App\Exceptions\AccountException;
 use App\Exceptions\ValidationException;
+use App\Exceptions\EmailDeliveryException;
 use App\Utils\PasswordHasher;
 use App\Models\UserAccount;
 use App\Repositories\Interfaces\IUserAccountRepository;
@@ -23,7 +24,7 @@ class AccountService implements IAccountService
 
     public function getCurrentUser(int $userId): UserAccount
     {
-        $user = $this->userRepository->findById($userId);
+        $user = $this->userRepository->findActiveById($userId);
         if ($user === null) {
             throw new AccountException('User account not found.');
         }
@@ -79,15 +80,51 @@ class AccountService implements IAccountService
         return $errors;
     }
 
+    private function getPreviousPdoException(\Throwable $error): ?\PDOException
+    {
+        if ($error instanceof \PDOException) {
+            return $error;
+        }
+
+        $previous = $error->getPrevious();
+
+        return $previous instanceof \PDOException ? $previous : null;
+    }
+
+    private function isDuplicateEmailError(\Throwable $error): bool
+    {
+        $pdoError = $this->getPreviousPdoException($error);
+
+        if ($pdoError === null) {
+            return false;
+        }
+
+        $errorInfo = $pdoError->errorInfo;
+
+        $sqlState = $errorInfo[0] ?? null;
+        $driverCode = $errorInfo[1] ?? null;
+        $message = strtolower($errorInfo[2] ?? $pdoError->getMessage());
+
+        return $sqlState === '23000'
+            && (int) $driverCode === 1062
+            && (
+                str_contains($message, 'uq_useraccount_email')
+                || str_contains($message, 'email')
+            );
+    }
+
 
     public function updateProfile(UpdateProfileFormData $data, int $userId): void
     {
-        $user = $this->userRepository->findById($userId);
+        $user = $this->userRepository->findActiveById($userId);
         if ($user === null) {
             throw new AccountException('User not found.');
         }
         $nameChanged = trim($data->firstName) !== $user->firstName || trim($data->lastName) !== $user->lastName;
+        $oldEmail = $user->email;
+        $newEmail = trim($data->email);
         $emailChanged = trim($data->email) !== $user->email;
+
         $profilePictureChanged = $data->profilePictureAssetId !== null && $data->profilePictureAssetId !== $user->profilePictureAssetId;
         if (!$nameChanged && !$emailChanged && !$profilePictureChanged) {
             return;
@@ -101,55 +138,87 @@ class AccountService implements IAccountService
                 lastName: trim($data->lastName),
                 profilePictureAssetId: $data->profilePictureAssetId ?? $user->profilePictureAssetId,
             );
-            // Send account update confirmation for any changes
-            $changes = [];
-            if ($nameChanged) {
-                $changes[] = 'profile name';
+        } catch (\PDOException $error) {
+            if ($this->isDuplicateEmailError($error)) {
+                throw new ValidationException([
+                    'email' => 'This email is already in use by another account.',
+                ], 0, $error);
             }
-            if ($profilePictureChanged) {
-                $changes[] = 'profile picture';
-            }
+            throw new AccountException('Could not update profile. Please try again later.', 0, $error);
+        } catch (\Throwable $error) {
+            throw new AccountException('Could not update profile. Please try again later.', 0, $error);
+        }
 
-            if (!empty($changes)) {
+        // Send account update confirmation for any changes
+        $changes = [];
+        if ($emailChanged) {
+            $changes[] = 'email address';
+        }
+
+        if ($nameChanged) {
+            $changes[] = 'profile name';
+        }
+
+        if ($profilePictureChanged) {
+            $changes[] = 'profile picture';
+        }
+
+        if (!empty($changes)) {
+            try {
                 $changeDescription = implode(' and ', $changes);
                 $userName = trim($data->firstName . ' ' . $data->lastName);
-                $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, $changeDescription);
+
+                $this->emailService->sendAccountUpdateConfirmationEmail(
+                    $oldEmail,
+                    $userName,
+                    $changeDescription,
+                );
+
+                if ($emailChanged) {
+                    $this->emailService->sendAccountUpdateConfirmationEmail(
+                        $newEmail,
+                        $userName,
+                        $changeDescription,
+                    );
+                }
+            } catch (EmailDeliveryException $error) {
+                // Ideally log this, but do not fail the profile update.
+            } catch (\Throwable $error) {
+                // Ideally log this, but do not fail the profile update.
             }
-        } catch (\Throwable $error) {
-            throw new AccountException('Failed to update profile: ' . $error->getMessage(), 0, $error);
         }
     }
 
 
-    public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): array
+    public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): void
     {
         //Validate data
-        $user = $this->userRepository->findById($userId);
+        $user = $this->userRepository->findActiveById($userId);
         if ($user === null) {
-            return [
-                'success' => false,
-                'errors' => ['general' => 'User not found']
-            ];
+            throw new AccountException('User not found.');
         }
         $errors = $this->validatePassword($user, $currentPassword, $newPassword, $confirmPassword);
         if (!empty($errors)) {
-            return [
-                'success' => false,
-                'errors' => $errors,
-            ];
+            throw new ValidationException($errors);
         }
 
         // Update password hash in database
-        $passwordHash = PasswordHasher::hash($newPassword);
-        $this->userRepository->updatePasswordHash($userId, $passwordHash);
+        try {
+            $passwordHash = PasswordHasher::hash($newPassword);
+            $this->userRepository->updatePasswordHash($userId, $passwordHash);
+        } catch (\Throwable $error) {
+            throw new AccountException('Could not update password. Please try again later.', 0, $error);
+        }
 
         // Send account update confirmation email
-        $userName = trim($user->firstName . ' ' . $user->lastName);
-        $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, 'password');
-        return [
-            'success' => true,
-            'errors' => [],
-        ];
+        try {
+            $userName = trim($user->firstName . ' ' . $user->lastName);
+            $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, 'password');
+        } catch (EmailDeliveryException $error) {
+            // Ideally log this, but do not fail the password update.
+        } catch (\Throwable $error) {
+            // Ideally log this, but do not fail the password update.
+        }
     }
 
     private function validatePassword(UserAccount $user, string $currentPassword, string $newPassword, string $confirmPassword): array
@@ -159,11 +228,20 @@ class AccountService implements IAccountService
         if (!PasswordHasher::verify($currentPassword, $user->passwordHash)) {
             $errors['currentPassword'] = 'Current password is incorrect';
         }
-        if (mb_strlen($newPassword) < 8) {
+        if ($newPassword === '') {
+            $errors['newPassword'] = 'New password is required';
+        } elseif (mb_strlen($newPassword) < 8) {
             $errors['newPassword'] = 'Password must be at least 8 characters';
         }
-        if ($newPassword !== $confirmPassword) {
+
+        if ($confirmPassword === '') {
+            $errors['confirmPassword'] = 'Please confirm your new password';
+        } elseif ($newPassword !== $confirmPassword) {
             $errors['confirmPassword'] = 'Passwords do not match';
+        }
+
+        if ($currentPassword === $newPassword) {
+            $errors['newPassword'] = 'New password must be different from current password';
         }
 
         return $errors;
