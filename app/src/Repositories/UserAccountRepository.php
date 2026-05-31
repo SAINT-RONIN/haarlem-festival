@@ -102,17 +102,10 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    public function updateProfileInfo(
-        int $userId,
-        string $email,
-        string $firstName,
-        string $lastName,
-        ?int $profilePictureAssetId = null,
-    ): void {
+    public function updateProfileInfo(int $userId, string $email, string $firstName, string $lastName, ?int $profilePictureAssetId = null,): void {
         $this->execute(
             'UPDATE UserAccount
-             SET Email = :email, FirstName = :firstName, LastName = :lastName,
-                 ProfilePictureAssetId = :profilePictureAssetId, UpdatedAtUtc = NOW()
+             SET Email = :email, FirstName = :firstName, LastName = :lastName, ProfilePictureAssetId = :profilePictureAssetId, UpdatedAtUtc = NOW()
              WHERE UserAccountId = :id',
             [
                 ':email' => $email,

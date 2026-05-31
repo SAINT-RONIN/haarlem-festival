@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\DTOs\Domain\Account\UpdateProfileFormData;
 use App\Exceptions\AccountException;
+use App\Exceptions\SmtpNotConfiguredException;
 use App\Exceptions\ValidationException;
 use App\Exceptions\EmailDeliveryException;
 use App\Utils\PasswordHasher;
@@ -22,6 +23,7 @@ class AccountService implements IAccountService
     ) {}
 
     /**
+     * @throws ValidationException
      * @throws AccountException
      */
     public function updateProfile(UpdateProfileFormData $data, int $userId): void
@@ -36,11 +38,12 @@ class AccountService implements IAccountService
             return;
         }
 
-        $this->updateProfileInfoOrFail(data: $data, user: $user, userId: $userId, email: $email, firstName: $firstName, lastName: $lastName);
+        $this->updateProfileInfo(data: $data, user: $user, userId: $userId, email: $email, firstName: $firstName, lastName: $lastName);
         $this->sendProfileUpdateConfirmationEmail(userId: $userId, oldEmail: $user->email, newEmail: $email, userName: trim($firstName . ' ' . $lastName), changes: $changes,);
     }
 
     /**
+     * @throws ValidationException
      * @throws AccountException
      */
     public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): void {
@@ -88,7 +91,7 @@ class AccountService implements IAccountService
     /**
      * @throws AccountException
      */
-    private function updateProfileInfoOrFail(UpdateProfileFormData $data, UserAccount $user, int $userId, string $email, string $firstName, string $lastName,): void {
+    private function updateProfileInfo(UpdateProfileFormData $data, UserAccount $user, int $userId, string $email, string $firstName, string $lastName,): void {
         try {
             $this->userRepository->updateProfileInfo(userId: $userId, email: $email, firstName: $firstName, lastName: $lastName, profilePictureAssetId: $data->profilePictureAssetId ?? $user->profilePictureAssetId,);
         } catch (\Throwable $error) {
@@ -114,6 +117,8 @@ class AccountService implements IAccountService
         } catch (EmailDeliveryException $error) {
             $this->logEmailDeliveryFailure('profile update confirmation', $userId, $error,
             );
+        } catch (SmtpNotConfiguredException $error) {
+            $this->logEmailDeliveryFailure('profile update confirmation', $userId, $error);
         } catch (\Throwable $error) {
             $this->logUnexpectedEmailFailure('profile update confirmation', $userId, $error,);
         }
@@ -216,9 +221,12 @@ class AccountService implements IAccountService
     {
         $errors = [];
 
-        if (!PasswordHasher::verify($currentPassword, $user->passwordHash)) {
+        if ($currentPassword === '') {
+            $errors['currentPassword'] = 'Current password is required';
+        } elseif (!PasswordHasher::verify($currentPassword, $user->passwordHash)) {
             $errors['currentPassword'] = 'Current password is incorrect';
         }
+
         if ($newPassword === '') {
             $errors['newPassword'] = 'New password is required';
         } elseif (mb_strlen($newPassword) < 8) {
@@ -255,7 +263,9 @@ class AccountService implements IAccountService
             $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, 'password',);
         } catch (EmailDeliveryException $error) {
             $this->logEmailDeliveryFailure('password update confirmation', $userId, $error,);
-        } catch (\Throwable $error) {
+        } catch (SmtpNotConfiguredException $error) {
+            $this->logEmailDeliveryFailure('password update confirmation', $userId, $error);
+        }catch (\Throwable $error) {
             $this->logUnexpectedEmailFailure('password update confirmation', $userId, $error,);
         }
     }

@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-/**
- * Represents a row in the UserAccount table.
- *
- * Stores authentication credentials and profile data for both public visitors
- * and CMS administrators.
- */
+//Represents a row in the UserAccount table.
+//Stores authentication credentials and profile data for both public visitors and CMS administrators.
 final readonly class UserAccount
 {
-    /*
-     * Purpose: Stores user account data including credentials,
-     * profile info, and account status for authentication.
-     */
-
+    //Purpose: Stores user account data including credentials,profile info, and account status for authentication.
     public function __construct(
         public int                $userAccountId,
         public int                $userRoleId,
@@ -33,10 +25,8 @@ final readonly class UserAccount
         public \DateTimeImmutable $updatedAtUtc,
     ) {}
 
-    /**
-     * Creates a UserAccount instance from a database row array.
-     * Used by repositories after SELECT queries.
-     */
+    //Creates a UserAccount instance from a database row array.
+    //Used by repositories after SELECT queries.
     public static function fromRow(array $row): self
     {
         return new self(
@@ -56,10 +46,9 @@ final readonly class UserAccount
         );
     }
 
+    //Converts the model to an associative array for INSERT/UPDATE queries.
+    //Keys match the database column names.
     /**
-     * Converts the model to an associative array for INSERT/UPDATE queries.
-     * Keys match the database column names.
-     *
      * @return array<string, mixed>
      */
     public function toArray(): array

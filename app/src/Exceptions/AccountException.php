@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-/**
- * Thrown when account management operations fail (profile update, email confirmation, etc.).
- *
- * Wraps underlying errors in a domain-specific exception for clean error handling
- * in the AccountService and AccountController layers.
- */
+//Thrown when account management operations fail (profile update, email confirmation, etc.).
+//Wraps underlying errors in a domain-specific exception for clean error handling in the AccountService and AccountController layers.
+
 final class AccountException extends \Exception
 {
     /**

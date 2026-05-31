@@ -44,45 +44,30 @@ class AccountController extends BaseController
         });
     }
 
-    /**
-     * POST /account/update-profile
-     */
     public function updateProfile(): void
     {
         $this->handlePageRequest(function (): void {
             $userId = $this->requireUserId();
             $data = null;
+            $uploadedProfilePictureAssetId = null;
 
             try {
-                // Extract form data (without picture)
-                $data = $this->extractProfileUpdateData(null);
+                $data = $this->prepareValidatedProfileData($userId);
 
-                // Validate data
-                $errors = $this->accountService->validateProfileUpdate($data, $userId);
-                if (!empty($errors)) {
-                    throw new ValidationException($errors);
-                }
+                $uploadedProfilePictureAssetId = $this->handleProfilePictureUpload();
+                $data = $data->withProfilePictureAssetId($uploadedProfilePictureAssetId);
 
-                // Extract and handle profile picture
-                $profilePictureAssetId = $this->handleProfilePictureUpload();
-
-                // Validate and process
-                $data = new UpdateProfileFormData(email: $data->email, firstName: $data->firstName, lastName: $data->lastName, profilePictureAssetId: $profilePictureAssetId,);
                 $this->accountService->updateProfile($data, $userId);
 
-                $this->sessionService->setFlash('account_success', 'Profile updated successfully.');
-                $this->redirectAndExit('/account');
+                $this->redirectWithSuccess('/account', 'Profile updated successfully.');
             } catch (ValidationException $e) {
-                $this->redirectWithErrors('/account', $e->getErrors(), $data?->toArray() ?? []);
+                $this->handleProfileUpdateFailure(errors: $e->getErrors(), data: $data, uploadedProfilePictureAssetId: $uploadedProfilePictureAssetId,);
             } catch (AccountException $e) {
-                $this->redirectWithErrors('/account', ['general' => $e->getMessage()], $data?->toArray() ?? []);
+                $this->handleProfileUpdateFailure(errors: ['general' => $e->getMessage()], data: $data, uploadedProfilePictureAssetId: $uploadedProfilePictureAssetId,);
             }
         });
     }
 
-    /**
-     * POST /account/update-password
-     */
     public function updatePassword(): void
     {
         $this->handlePageRequest(function (): void {
@@ -112,6 +97,50 @@ class AccountController extends BaseController
         return null;
     }
 
+    /**
+     * @throws ValidationException
+     */
+    private function prepareValidatedProfileData(int $userId): UpdateProfileFormData
+    {
+        $data = $this->extractProfileUpdateData(null);
+
+        $errors = $this->accountService->validateProfileUpdate($data, $userId);
+        if (!empty($errors)) {
+            throw new ValidationException($errors);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array<string, string> $errors
+     */
+    private function handleProfileUpdateFailure(
+        array $errors,
+        ?UpdateProfileFormData $data,
+        ?int $uploadedProfilePictureAssetId,
+    ): void {
+        $this->deleteUploadedProfilePictureIfNeeded($uploadedProfilePictureAssetId);
+
+        $this->redirectWithErrors(
+            '/account',
+            $errors,
+            $data !== null ? $this->profileOldInput($data) : [],
+        );
+    }
+
+    private function deleteUploadedProfilePictureIfNeeded(?int $mediaAssetId): void
+    {
+        if ($mediaAssetId === null) {
+            return;
+        }
+
+        try {
+            $this->mediaAssetService->deleteAsset($mediaAssetId);
+        } catch (\Throwable $error) {
+            error_log('Failed to clean up uploaded profile picture asset ID ' . $mediaAssetId . ': ' . $error->getMessage());
+        }
+    }
 
     private function extractProfileUpdateData(?int $profilePictureAssetId): UpdateProfileFormData
     {
@@ -130,6 +159,21 @@ class AccountController extends BaseController
             $this->redirectAndExit('/login');
         }
         return $userId;
+    }
+
+    private function profileOldInput(UpdateProfileFormData $data): array
+    {
+        return [
+            'email' => $data->email,
+            'firstName' => $data->firstName,
+            'lastName' => $data->lastName,
+        ];
+    }
+
+    private function redirectWithSuccess(string $url, string $message): void
+    {
+        $this->sessionService->setFlash('account_success', $message);
+        $this->redirectAndExit($url);
     }
 
     private function redirectWithErrors(string $url, array $errors, array $input = []): void
