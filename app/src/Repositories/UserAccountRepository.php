@@ -39,6 +39,15 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
+    public function findActiveById(int $id): ?UserAccount
+    {
+        return $this->fetchOne(
+            'SELECT * FROM UserAccount WHERE UserAccountId = :id AND IsActive = 1',
+            ['id' => $id],
+            fn(array $row) => UserAccount::fromRow($row),
+        );
+    }
+
     public function existsByUsername(string $username): bool
     {
         $stmt = $this->execute(
@@ -93,17 +102,10 @@ class UserAccountRepository extends BaseRepository implements IUserAccountReposi
         );
     }
 
-    public function updateProfileInfo(
-        int $userId,
-        string $email,
-        string $firstName,
-        string $lastName,
-        ?int $profilePictureAssetId = null,
-    ): void {
+    public function updateProfileInfo(int $userId, string $email, string $firstName, string $lastName, ?int $profilePictureAssetId = null,): void {
         $this->execute(
             'UPDATE UserAccount
-             SET Email = :email, FirstName = :firstName, LastName = :lastName,
-                 ProfilePictureAssetId = :profilePictureAssetId, UpdatedAtUtc = NOW()
+             SET Email = :email, FirstName = :firstName, LastName = :lastName, ProfilePictureAssetId = :profilePictureAssetId, UpdatedAtUtc = NOW()
              WHERE UserAccountId = :id',
             [
                 ':email' => $email,

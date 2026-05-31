@@ -6,8 +6,7 @@ namespace App\Repositories;
 
 use App\Exceptions\RepositoryException;
 
-// Shared PDO helpers for all repositories. Every query is wrapped in try-catch
-// so callers get RepositoryException instead of raw PDOException.
+// Shared PDO helpers for all repositories. Every query is wrapped in try-catch so callers get RepositoryException instead of raw PDOException.
 abstract class BaseRepository
 {
     public function __construct(
@@ -58,14 +57,20 @@ abstract class BaseRepository
 
     protected function fetchOne(string $sql, array $params, callable $mapper): mixed
     {
-        $statement = $this->execute($sql, $params);
-        $row = $statement->fetch(\PDO::FETCH_ASSOC);
+        try {
+            $statement = $this->execute($sql, $params);
+            $row = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        if ($row === false) {
-            return null;
+            if ($row === false) {
+                return null;
+            }
+
+            return $mapper($row);
+        } catch (\PDOException $error) {
+            throw new RepositoryException('Database fetch failed.', 0, $error);
+        } catch (\Throwable $error) {
+            throw new RepositoryException('Database row mapping failed.', 0, $error);
         }
-
-        return $mapper($row);
     }
 
     // Builds named placeholders and matching param array for an IN (...) clause.
@@ -75,6 +80,10 @@ abstract class BaseRepository
     //   // $in['params']       => [':sessionId0' => 10, ':sessionId1' => 20, ':sessionId2' => 30]
     protected function buildInClause(array $ids, string $prefix = 'id'): array
     {
+        if ($ids === []) {
+            throw new \InvalidArgumentException('Cannot build IN clause for an empty array.');
+        }
+
         $placeholders = [];
         $params = [];
 

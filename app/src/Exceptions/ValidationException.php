@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-/**
- * Exception thrown when validation fails.
- */
+//Exception thrown when validation fails.
 class ValidationException extends AppException
 {
     /** @var array<string> */
@@ -28,9 +26,8 @@ class ValidationException extends AppException
         parent::__construct($message, $code, $previous);
     }
 
+    //Returns all validation error messages.
     /**
-     * Returns all validation error messages.
-     *
      * @return array<string>
      */
     public function getErrors(): array
