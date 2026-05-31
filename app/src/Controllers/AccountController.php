@@ -38,12 +38,7 @@ class AccountController extends BaseController
             $successMessage = $this->sessionService->consumeFlash('account_success') ?? '';
             $oldInput = $this->sessionService->consumeFlash('account_input') ?? [];
 
-            $viewModel = new AccountFormViewModel(
-                user: $user,
-                errors: $errors,
-                successMessage: $successMessage,
-                oldInput: $oldInput,
-            );
+            $viewModel = new AccountFormViewModel(user: $user, errors: $errors, successMessage: $successMessage, oldInput: $oldInput,);
 
             require __DIR__ . '/../Views/pages/account.php';
         });
@@ -72,12 +67,7 @@ class AccountController extends BaseController
                 $profilePictureAssetId = $this->handleProfilePictureUpload();
 
                 // Validate and process
-                $data = new UpdateProfileFormData(
-                    email: $data->email,
-                    firstName: $data->firstName,
-                    lastName: $data->lastName,
-                    profilePictureAssetId: $profilePictureAssetId,
-                );
+                $data = new UpdateProfileFormData(email: $data->email, firstName: $data->firstName, lastName: $data->lastName, profilePictureAssetId: $profilePictureAssetId,);
                 $this->accountService->updateProfile($data, $userId);
 
                 $this->sessionService->setFlash('account_success', 'Profile updated successfully.');
@@ -104,11 +94,9 @@ class AccountController extends BaseController
                 $this->accountService->updatePassword($currentPassword, $newPassword, $confirmPassword, $userId);
                 $this->sessionService->setFlash('account_success', 'Password updated successfully.');
                 $this->redirectAndExit('/account');
-            }
-            catch (ValidationException $e) {
+            } catch (ValidationException $e) {
                 $this->redirectWithErrors('/account', $e->getErrors());
-            }
-            catch (AccountException $e) {
+            } catch (AccountException $e) {
                 $this->redirectWithErrors('/account', ['general' => $e->getMessage()]);
             }
         });

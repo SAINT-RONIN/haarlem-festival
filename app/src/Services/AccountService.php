@@ -21,6 +21,39 @@ class AccountService implements IAccountService
         private IEmailService $emailService,
     ) {}
 
+    /**
+     * @throws AccountException
+     */
+    public function updateProfile(UpdateProfileFormData $data, int $userId): void
+    {
+        $user = $this->getCurrentUser($userId);
+        $email = trim($data->email);
+        $firstName = trim($data->firstName);
+        $lastName = trim($data->lastName);
+        $changes = $this->detectProfileChanges($user, $email, $firstName, $lastName, $data->profilePictureAssetId);
+
+        if (empty($changes)) {
+            return;
+        }
+
+        $this->updateProfileInfoOrFail(data: $data, user: $user, userId: $userId, email: $email, firstName: $firstName, lastName: $lastName);
+        $this->sendProfileUpdateConfirmationEmail(userId: $userId, oldEmail: $user->email, newEmail: $email, userName: trim($firstName . ' ' . $lastName), changes: $changes,);
+    }
+
+    /**
+     * @throws AccountException
+     */
+    public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): void {
+        $user = $this->getCurrentUser($userId);
+        $errors = $this->validatePassword($user, $currentPassword, $newPassword, $confirmPassword);
+
+        if (!empty($errors)) {
+            throw new ValidationException($errors);
+        }
+
+        $this->updatePasswordHashOrFail($userId, $newPassword);
+        $this->sendPasswordUpdateConfirmationEmail($user, $userId);
+    }
 
     public function getCurrentUser(int $userId): UserAccount
     {
@@ -29,6 +62,61 @@ class AccountService implements IAccountService
             throw new AccountException('User account not found.');
         }
         return $user;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function detectProfileChanges(UserAccount $user, string $email, string $firstName, string $lastName, ?int $profilePictureAssetId,): array {
+        $changes = [];
+
+        if ($email !== $user->email) {
+            $changes[] = 'email address';
+        }
+
+        if ($firstName !== $user->firstName || $lastName !== $user->lastName) {
+            $changes[] = 'profile name';
+        }
+
+        if ($profilePictureAssetId !== null && $profilePictureAssetId !== $user->profilePictureAssetId) {
+            $changes[] = 'profile picture';
+        }
+
+        return $changes;
+    }
+
+    /**
+     * @throws AccountException
+     */
+    private function updateProfileInfoOrFail(UpdateProfileFormData $data, UserAccount $user, int $userId, string $email, string $firstName, string $lastName,): void {
+        try {
+            $this->userRepository->updateProfileInfo(userId: $userId, email: $email, firstName: $firstName, lastName: $lastName, profilePictureAssetId: $data->profilePictureAssetId ?? $user->profilePictureAssetId,);
+        } catch (\Throwable $error) {
+            if ($this->isDuplicateEmailError($error)) {
+                throw new ValidationException(['email' => 'This email is already in use by another account.',], 0, $error);
+            }
+            throw new AccountException('Could not update profile. Please try again later.', 0, $error);
+        }
+    }
+
+    /**
+     * @param list<string> $changes
+     */
+    private function sendProfileUpdateConfirmationEmail(int $userId, string $oldEmail, string $newEmail, string $userName, array $changes,): void {
+        try {
+            $changeDescription = implode(' and ', $changes);
+
+            $this->emailService->sendAccountUpdateConfirmationEmail($oldEmail, $userName, $changeDescription,);
+
+            if ($newEmail !== $oldEmail) {
+                $this->emailService->sendAccountUpdateConfirmationEmail($newEmail, $userName, $changeDescription,);
+            }
+        } catch (EmailDeliveryException $error) {
+            $this->logEmailDeliveryFailure('profile update confirmation', $userId, $error,
+            );
+        } catch (\Throwable $error) {
+            $this->logUnexpectedEmailFailure('profile update confirmation', $userId, $error,);
+        }
     }
 
     /** @return array<string, string> */
@@ -114,111 +202,14 @@ class AccountService implements IAccountService
     }
 
 
-    public function updateProfile(UpdateProfileFormData $data, int $userId): void
+    private function logEmailDeliveryFailure(string $emailType, int $userId, \Throwable $error): void
     {
-        $user = $this->userRepository->findActiveById($userId);
-        if ($user === null) {
-            throw new AccountException('User not found.');
-        }
-        $nameChanged = trim($data->firstName) !== $user->firstName || trim($data->lastName) !== $user->lastName;
-        $oldEmail = $user->email;
-        $newEmail = trim($data->email);
-        $emailChanged = trim($data->email) !== $user->email;
-
-        $profilePictureChanged = $data->profilePictureAssetId !== null && $data->profilePictureAssetId !== $user->profilePictureAssetId;
-        if (!$nameChanged && !$emailChanged && !$profilePictureChanged) {
-            return;
-        }
-        try {
-            // Update basic profile info
-            $this->userRepository->updateProfileInfo(
-                userId: $userId,
-                email: trim($data->email),
-                firstName: trim($data->firstName),
-                lastName: trim($data->lastName),
-                profilePictureAssetId: $data->profilePictureAssetId ?? $user->profilePictureAssetId,
-            );
-        } catch (\PDOException $error) {
-            if ($this->isDuplicateEmailError($error)) {
-                throw new ValidationException([
-                    'email' => 'This email is already in use by another account.',
-                ], 0, $error);
-            }
-            throw new AccountException('Could not update profile. Please try again later.', 0, $error);
-        } catch (\Throwable $error) {
-            throw new AccountException('Could not update profile. Please try again later.', 0, $error);
-        }
-
-        // Send account update confirmation for any changes
-        $changes = [];
-        if ($emailChanged) {
-            $changes[] = 'email address';
-        }
-
-        if ($nameChanged) {
-            $changes[] = 'profile name';
-        }
-
-        if ($profilePictureChanged) {
-            $changes[] = 'profile picture';
-        }
-
-        if (!empty($changes)) {
-            try {
-                $changeDescription = implode(' and ', $changes);
-                $userName = trim($data->firstName . ' ' . $data->lastName);
-
-                $this->emailService->sendAccountUpdateConfirmationEmail(
-                    $oldEmail,
-                    $userName,
-                    $changeDescription,
-                );
-
-                if ($emailChanged) {
-                    $this->emailService->sendAccountUpdateConfirmationEmail(
-                        $newEmail,
-                        $userName,
-                        $changeDescription,
-                    );
-                }
-            } catch (EmailDeliveryException $error) {
-                // Ideally log this, but do not fail the profile update.
-            } catch (\Throwable $error) {
-                // Ideally log this, but do not fail the profile update.
-            }
-        }
+        error_log('Failed to send ' . $emailType . ' email for user ID ' . $userId . ': ' . $error->getMessage());
     }
 
-
-    public function updatePassword(string $currentPassword, string $newPassword, string $confirmPassword, int $userId): void
+    private function logUnexpectedEmailFailure(string $emailType, int $userId, \Throwable $error): void
     {
-        //Validate data
-        $user = $this->userRepository->findActiveById($userId);
-        if ($user === null) {
-            throw new AccountException('User not found.');
-        }
-        $errors = $this->validatePassword($user, $currentPassword, $newPassword, $confirmPassword);
-        if (!empty($errors)) {
-            throw new ValidationException($errors);
-        }
-
-        // Update password hash in database
-        try {
-            $passwordHash = PasswordHasher::hash($newPassword);
-            $this->userRepository->updatePasswordHash($userId, $passwordHash);
-        } catch (\Throwable $error) {
-            throw new AccountException('Could not update password. Please try again later.', 0, $error);
-        }
-
-        // Send account update confirmation email
-        try {
-            $userName = trim($user->firstName . ' ' . $user->lastName);
-            $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, 'password');
-        } catch (EmailDeliveryException $error) {
-            // Ideally log this, but do not fail the password update.
-        } catch (\Throwable $error) {
-            // Ideally log this, but do not fail the password update.
-        }
+        error_log('Unexpected error while sending ' . $emailType . ' email for user ID ' . $userId . ': ' . $error->getMessage());
     }
 
     private function validatePassword(UserAccount $user, string $currentPassword, string $newPassword, string $confirmPassword): array
@@ -245,6 +236,28 @@ class AccountService implements IAccountService
         }
 
         return $errors;
+    }
+
+    private function updatePasswordHashOrFail(int $userId, string $newPassword): void
+    {
+        try {
+            $passwordHash = PasswordHasher::hash($newPassword);
+            $this->userRepository->updatePasswordHash($userId, $passwordHash);
+        } catch (\Throwable $error) {
+            throw new AccountException('Could not update password. Please try again later.', 0, $error);
+        }
+    }
+
+    private function sendPasswordUpdateConfirmationEmail(UserAccount $user, int $userId): void
+    {
+        try {
+            $userName = trim($user->firstName . ' ' . $user->lastName);
+            $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, 'password',);
+        } catch (EmailDeliveryException $error) {
+            $this->logEmailDeliveryFailure('password update confirmation', $userId, $error,);
+        } catch (\Throwable $error) {
+            $this->logUnexpectedEmailFailure('password update confirmation', $userId, $error,);
+        }
     }
 
 }
