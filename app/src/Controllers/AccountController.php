@@ -120,6 +120,7 @@ class AccountController extends BaseController
         ?UpdateProfileFormData $data,
         ?int $uploadedProfilePictureAssetId,
     ): void {
+        //move to service layer
         $this->deleteUploadedProfilePictureIfNeeded($uploadedProfilePictureAssetId);
 
         $this->redirectWithErrors(

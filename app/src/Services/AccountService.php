@@ -26,9 +26,12 @@ class AccountService implements IAccountService
      * @throws ValidationException
      * @throws AccountException
      */
+    //use UserAccount model here
     public function updateProfile(UpdateProfileFormData $data, int $userId): void
     {
+
         $user = $this->getCurrentUser($userId);
+        //merge updated data into User object
         $email = trim($data->email);
         $firstName = trim($data->firstName);
         $lastName = trim($data->lastName);
@@ -217,6 +220,7 @@ class AccountService implements IAccountService
         error_log('Unexpected error while sending ' . $emailType . ' email for user ID ' . $userId . ': ' . $error->getMessage());
     }
 
+    //have shared validation method (not only for account mgmt)
     private function validatePassword(UserAccount $user, string $currentPassword, string $newPassword, string $confirmPassword): array
     {
         $errors = [];
