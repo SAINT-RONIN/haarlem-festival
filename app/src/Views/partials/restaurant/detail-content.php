@@ -281,7 +281,7 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
         </div>
 
         <div class="flex-1 flex items-center justify-center">
-            <img class="w-full h-auto max-h-[700px] rounded-2xl object-cover" src="<?= $e($viewModel->reservationImage) ?>" alt="<?= $e($r->name) ?> reservation"/>
+            <img class="w-full h-auto max-h-[700px] rounded-2xl object-cover" src="<?= $e(\App\Constants\RestaurantPageConstants::RESERVATION_IMAGE) ?>" alt="<?= $e($r->name) ?> reservation"/>
         </div>
     </div>
 </section>

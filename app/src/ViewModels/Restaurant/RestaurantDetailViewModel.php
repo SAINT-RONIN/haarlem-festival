@@ -26,7 +26,6 @@ final readonly class RestaurantDetailViewModel extends BaseViewModel
         public array $labels,
         public array $priceCards,
         public array $validDates,
-        public string $reservationImage,
     ) {
         parent::__construct(
             heroData: $heroData,

@@ -56,9 +56,6 @@ final class RestaurantViewMapper
     ): RestaurantDetailViewModel {
         $globalUi = CmsMapper::toGlobalUiData($globalUiContent, $isLoggedIn);
 
-        // Every restaurant's reservation section shares the same image.
-        $reservationImage = RestaurantPageConstants::RESERVATION_IMAGE;
-
         return new RestaurantDetailViewModel(
             heroData: self::toDetailHeroData($restaurant, $labels),
             globalUi: $globalUi,
@@ -66,7 +63,6 @@ final class RestaurantViewMapper
             labels: $labels,
             priceCards: self::buildPriceCards($restaurant, $labels),
             validDates: $validDates,
-            reservationImage: $reservationImage,
         );
     }
 

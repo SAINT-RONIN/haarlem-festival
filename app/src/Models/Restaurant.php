@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Constants\RestaurantPageConstants;
+
 /**
  * Core domain model for a restaurant.
  *
@@ -108,7 +110,7 @@ final readonly class Restaurant
             durationMinutes: max(0, (int) ($row['DurationMinutes'] ?? 0)),
             specialRequestsNote: $cms['special_requests_note'] ?? null,
             priceAdult: max(0.0, (float) ($row['PriceAdult'] ?? 0)),
-            reservationFee: max(0.0, (float) ($row['ReservationFee'] ?? 0)),
+            reservationFee: RestaurantPageConstants::RESERVATION_FEE_PER_GUEST,
             timeSlots: self::parseTimeSlots($row['TimeSlots'] ?? null),
             galleryImages: self::collectNonEmpty([
                 $cms['gallery_image_1'] ?? null,

@@ -153,8 +153,6 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             ? $this->mediaAssetRepository->findByIds($imageAssetIds)
             : [];
 
-        $allDetailContent = $this->cmsContent->getPageContent(RestaurantPageConstants::DETAIL_PAGE_SLUG);
-
         $restaurants = [];
         foreach ($rows as $row) {
             $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
@@ -162,7 +160,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
                 ? $imageMap[$assetId]->filePath
                 : null;
 
-            $restaurants[] = $this->assembleRestaurant($row, $allDetailContent, $imagePath);
+            $restaurants[] = $this->assembleRestaurant($row, [], $imagePath);
         }
 
         return $restaurants;
