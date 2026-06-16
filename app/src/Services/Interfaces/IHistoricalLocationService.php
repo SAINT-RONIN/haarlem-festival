@@ -11,5 +11,9 @@ use App\DTOs\Domain\Pages\HistoricalLocationPageData;
  */
 interface IHistoricalLocationService
 {
-    public function getHistoralLocationPageData(string $name): HistoricalLocationPageData;
+    /**
+     * @param string $pageSlug
+     * @return HistoricalLocationPageData
+     */
+    public function getHistoralLocationPageData(string $pageSlug): HistoricalLocationPageData;
 }

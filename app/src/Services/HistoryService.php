@@ -13,13 +13,13 @@ use App\Repositories\Interfaces\ICmsContentRepository;
 
 class HistoryService extends BaseContentService implements IHistoryService
 {
-    private ICmsContentRepository $cmsContent;
+    private ICmsContentRepository $cmsContentRepository;
     public function __construct(
         ICmsContentRepository $cmsContent,
         IGlobalContentRepository $globalContentRepo,
     ) {
         parent::__construct($globalContentRepo);
-        $this->cmsContent = $cmsContent;
+        $this->cmsContentRepository = $cmsContent;
     }
 
     public function getHistoryPageData(): HistoryPageData
@@ -32,7 +32,7 @@ class HistoryService extends BaseContentService implements IHistoryService
 
     private function buildPageData(string $pageSlug): HistoryPageData
     {
-        $rawContent = $this->cmsContent->getPageContent($pageSlug);
+        $rawContent = $this->cmsContentRepository->getPageContent($pageSlug);
         return new HistoryPageData(
             heroSection: GlobalContentMapper::mapHero($rawContent['hero_section']),
             gradientSection: GlobalContentMapper::mapGradient($rawContent['gradient_section']),
