@@ -69,4 +69,27 @@ final readonly class UserAccount
             'UpdatedAtUtc' => $this->updatedAtUtc->format('Y-m-d H:i:s'),
         ];
     }
+
+    public function withUpdatedProfile(
+        string $email,
+        string $firstName,
+        string $lastName,
+        ?int $profilePictureAssetId,
+    ): self {
+        return new self(
+            userAccountId: $this->userAccountId,
+            userRoleId: $this->userRoleId,
+            username: $this->username,
+            email: $email,
+            passwordHash: $this->passwordHash,
+            passwordSalt: $this->passwordSalt,
+            firstName: $firstName,
+            lastName: $lastName,
+            profilePictureAssetId: $profilePictureAssetId,
+            isEmailConfirmed: $this->isEmailConfirmed,
+            isActive: $this->isActive,
+            registeredAtUtc: $this->registeredAtUtc,
+            updatedAtUtc: new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
+        );
+    }
 }

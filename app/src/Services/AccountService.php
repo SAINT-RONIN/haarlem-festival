@@ -9,6 +9,7 @@ use App\Exceptions\AccountException;
 use App\Exceptions\SmtpNotConfiguredException;
 use App\Exceptions\ValidationException;
 use App\Exceptions\EmailDeliveryException;
+use App\Services\Interfaces\IMediaAssetService;
 use App\Utils\PasswordHasher;
 use App\Models\UserAccount;
 use App\Repositories\Interfaces\IUserAccountRepository;
@@ -20,29 +21,50 @@ class AccountService implements IAccountService
     public function __construct(
         private IUserAccountRepository $userRepository,
         private IEmailService $emailService,
+        private IMediaAssetService $mediaAssetService,
     ) {}
 
     /**
      * @throws ValidationException
      * @throws AccountException
      */
-    //use UserAccount model here
-    public function updateProfile(UpdateProfileFormData $data, int $userId): void
+    public function updateProfile(UpdateProfileFormData $data, UserAccount $user): void
     {
+        // UserAccount is readonly, so "merge" means creating a new model instance with updated profile fields instead of mutating the existing object
+        $updatedUser = $this->mergeProfileDataIntoUser($user, $data);
 
-        $user = $this->getCurrentUser($userId);
-        //merge updated data into User object
-        $email = trim($data->email);
-        $firstName = trim($data->firstName);
-        $lastName = trim($data->lastName);
-        $changes = $this->detectProfileChanges($user, $email, $firstName, $lastName, $data->profilePictureAssetId);
+        // keep the original user for change detection and for sending email to the old address if the email was changed.
+        $changes = $this->detectProfileChanges($user, $updatedUser);
 
         if (empty($changes)) {
             return;
         }
 
-        $this->updateProfileInfo(data: $data, user: $user, userId: $userId, email: $email, firstName: $firstName, lastName: $lastName);
-        $this->sendProfileUpdateConfirmationEmail(userId: $userId, oldEmail: $user->email, newEmail: $email, userName: trim($firstName . ' ' . $lastName), changes: $changes,);
+        try{
+            // persist the already merged user model
+            $this->updateProfileInfo($updatedUser);
+            $this->sendProfileUpdateConfirmationEmail(userId: $user->userAccountId, oldEmail: $user->email, newEmail: $updatedUser->email, userName: trim($updatedUser->firstName . ' ' . $updatedUser->lastName), changes: $changes,);
+        } catch (ValidationException | AccountException $e ){
+            //if a new profile picture was uploaded but the update fails, delete the uploaded picture to avoid orphaned files
+            if ($data->profilePictureAssetId !== null && $data->profilePictureAssetId !== $user->profilePictureAssetId) {
+                try {
+                    $this->mediaAssetService->deleteAsset($data->profilePictureAssetId);
+                } catch (\Throwable $cleanupError) {
+                    error_log('Failed to delete orphaned profile picture asset ID ' . $data->profilePictureAssetId . ': ' . $cleanupError->getMessage());
+                }
+            }
+            throw $e;
+        }
+    }
+
+    private function mergeProfileDataIntoUser(UserAccount $user, UpdateProfileFormData $data): UserAccount
+    {
+        return $user->withUpdatedProfile(
+            email: trim($data->email),
+            firstName: trim($data->firstName),
+            lastName: trim($data->lastName),
+            profilePictureAssetId: $data->profilePictureAssetId ?? $user->profilePictureAssetId,
+        );
     }
 
     /**
@@ -73,18 +95,19 @@ class AccountService implements IAccountService
     /**
      * @return list<string>
      */
-    private function detectProfileChanges(UserAccount $user, string $email, string $firstName, string $lastName, ?int $profilePictureAssetId,): array {
+    private function detectProfileChanges(UserAccount $oldUser, UserAccount $updatedUser): array
+    {
         $changes = [];
 
-        if ($email !== $user->email) {
+        if ($updatedUser->email !== $oldUser->email) {
             $changes[] = 'email address';
         }
 
-        if ($firstName !== $user->firstName || $lastName !== $user->lastName) {
-            $changes[] = 'profile name';
+        if ($updatedUser->firstName !== $oldUser->firstName || $updatedUser->lastName !== $oldUser->lastName) {
+            $changes[] = 'name';
         }
 
-        if ($profilePictureAssetId !== null && $profilePictureAssetId !== $user->profilePictureAssetId) {
+        if ($updatedUser->profilePictureAssetId !== $oldUser->profilePictureAssetId) {
             $changes[] = 'profile picture';
         }
 
@@ -94,11 +117,12 @@ class AccountService implements IAccountService
     /**
      * @throws AccountException
      */
-    private function updateProfileInfo(UpdateProfileFormData $data, UserAccount $user, int $userId, string $email, string $firstName, string $lastName,): void {
+    private function updateProfileInfo(UserAccount $user): void {
         try {
-            $this->userRepository->updateProfileInfo(userId: $userId, email: $email, firstName: $firstName, lastName: $lastName, profilePictureAssetId: $data->profilePictureAssetId ?? $user->profilePictureAssetId,);
+            $this->userRepository->updateProfileInfo(userId: $user->userAccountId, email: $user->email, firstName: $user->firstName, lastName: $user->lastName, profilePictureAssetId: $user->profilePictureAssetId,
+            );
         } catch (\Throwable $error) {
-            if ($this->isDuplicateEmailError($error)) {
+            if ($this->isDuplicateEmailConstraintError($error)) {
                 throw new ValidationException(['email' => 'This email is already in use by another account.',], 0, $error);
             }
             throw new AccountException('Could not update profile. Please try again later.', 0, $error);
@@ -176,37 +200,40 @@ class AccountService implements IAccountService
         return $errors;
     }
 
-    private function getPreviousPdoException(\Throwable $error): ?\PDOException
+    private function findPdoException(\Throwable $error): ?\PDOException
     {
-        if ($error instanceof \PDOException) {
-            return $error;
+        // walk through the exception chain until the original PDOException is found
+        for ($current = $error; $current !== null; $current = $current->getPrevious()) {
+            if ($current instanceof \PDOException) {
+                return $current;
+            }
         }
 
-        $previous = $error->getPrevious();
-
-        return $previous instanceof \PDOException ? $previous : null;
+        return null;
     }
 
-    private function isDuplicateEmailError(\Throwable $error): bool
+    private function isDuplicateEmailConstraintError(\Throwable $error): bool
     {
-        $pdoError = $this->getPreviousPdoException($error);
+        // repository/PDO errors can be wrapped inside another exception
+        // we only need the original PDOException to inspect the SQL error details
+        $pdoError = $this->findPdoException($error);
 
         if ($pdoError === null) {
             return false;
         }
-
         $errorInfo = $pdoError->errorInfo;
 
         $sqlState = $errorInfo[0] ?? null;
-        $driverCode = $errorInfo[1] ?? null;
-        $message = strtolower($errorInfo[2] ?? $pdoError->getMessage());
+        $driverCode = (int) ($errorInfo[1] ?? 0);
+        $message = strtolower((string) ($errorInfo[2] ?? $pdoError->getMessage()));
 
-        return $sqlState === '23000'
-            && (int) $driverCode === 1062
-            && (
-                str_contains($message, 'uq_useraccount_email')
-                || str_contains($message, 'email')
-            );
+        // MySQL duplicate key error: SQLSTATE 23000 = integrity constraint violation, driver code 1062 = duplicate entry
+        $isDuplicateKeyError = $sqlState === '23000' && $driverCode === 1062;
+
+        // make sure this duplicate key error is specifically about the email column/constraint, not about another unique field such as username.
+        $isEmailConstraint = str_contains($message, 'uq_useraccount_email') || str_contains($message, 'email');
+
+        return $isDuplicateKeyError && $isEmailConstraint;
     }
 
 
@@ -220,7 +247,6 @@ class AccountService implements IAccountService
         error_log('Unexpected error while sending ' . $emailType . ' email for user ID ' . $userId . ': ' . $error->getMessage());
     }
 
-    //have shared validation method (not only for account mgmt)
     private function validatePassword(UserAccount $user, string $currentPassword, string $newPassword, string $confirmPassword): array
     {
         $errors = [];

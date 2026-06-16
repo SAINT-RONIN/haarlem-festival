@@ -29,6 +29,7 @@ class AccountController extends BaseController
             $userId = $this->requireUserId();
 
             try {
+                //get user by id
                 $user = $this->accountService->getCurrentUser($userId);
             } catch (AccountException $e) {
                 $this->redirectAndExit('/login');
@@ -48,22 +49,20 @@ class AccountController extends BaseController
     {
         $this->handlePageRequest(function (): void {
             $userId = $this->requireUserId();
-            $data = null;
-            $uploadedProfilePictureAssetId = null;
 
             try {
-                $data = $this->prepareValidatedProfileData($userId);
-
+                $user = $this->accountService->getCurrentUser($userId);
+                $data = $this->prepareValidatedProfileData($user->userAccountId);
                 $uploadedProfilePictureAssetId = $this->handleProfilePictureUpload();
                 $data = $data->withProfilePictureAssetId($uploadedProfilePictureAssetId);
 
-                $this->accountService->updateProfile($data, $userId);
+                $this->accountService->updateProfile($data, $user);
 
                 $this->redirectWithSuccess('/account', 'Profile updated successfully.');
             } catch (ValidationException $e) {
-                $this->handleProfileUpdateFailure(errors: $e->getErrors(), data: $data, uploadedProfilePictureAssetId: $uploadedProfilePictureAssetId,);
+                $this->redirectWithErrors('/account', $e->getErrors());
             } catch (AccountException $e) {
-                $this->handleProfileUpdateFailure(errors: ['general' => $e->getMessage()], data: $data, uploadedProfilePictureAssetId: $uploadedProfilePictureAssetId,);
+                $this->redirectWithErrors('/account', ['general' => $e->getMessage()]);
             }
         });
     }
@@ -112,37 +111,6 @@ class AccountController extends BaseController
         return $data;
     }
 
-    /**
-     * @param array<string, string> $errors
-     */
-    private function handleProfileUpdateFailure(
-        array $errors,
-        ?UpdateProfileFormData $data,
-        ?int $uploadedProfilePictureAssetId,
-    ): void {
-        //move to service layer
-        $this->deleteUploadedProfilePictureIfNeeded($uploadedProfilePictureAssetId);
-
-        $this->redirectWithErrors(
-            '/account',
-            $errors,
-            $data !== null ? $this->profileOldInput($data) : [],
-        );
-    }
-
-    private function deleteUploadedProfilePictureIfNeeded(?int $mediaAssetId): void
-    {
-        if ($mediaAssetId === null) {
-            return;
-        }
-
-        try {
-            $this->mediaAssetService->deleteAsset($mediaAssetId);
-        } catch (\Throwable $error) {
-            error_log('Failed to clean up uploaded profile picture asset ID ' . $mediaAssetId . ': ' . $error->getMessage());
-        }
-    }
-
     private function extractProfileUpdateData(?int $profilePictureAssetId): UpdateProfileFormData
     {
         return UpdateProfileFormData::fromInput([
@@ -160,15 +128,6 @@ class AccountController extends BaseController
             $this->redirectAndExit('/login');
         }
         return $userId;
-    }
-
-    private function profileOldInput(UpdateProfileFormData $data): array
-    {
-        return [
-            'email' => $data->email,
-            'firstName' => $data->firstName,
-            'lastName' => $data->lastName,
-        ];
     }
 
     private function redirectWithSuccess(string $url, string $message): void

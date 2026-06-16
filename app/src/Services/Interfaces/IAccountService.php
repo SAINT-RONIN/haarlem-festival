@@ -8,6 +8,8 @@ use App\DTOs\Domain\Account\UpdateProfileFormData;
 use App\Exceptions\AccountException;
 use App\Exceptions\ValidationException;
 use App\Models\UserAccount;
+use Throwable;
+
 interface IAccountService
 {
     /**
@@ -24,7 +26,7 @@ interface IAccountService
      * @throws ValidationException
      * @throws AccountException
      */
-    public function updateProfile(UpdateProfileFormData $data, int $userId): void;
+    public function updateProfile(UpdateProfileFormData $data, UserAccount $user): void;
 
     /**
      * @throws ValidationException
