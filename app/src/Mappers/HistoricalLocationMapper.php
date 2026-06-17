@@ -19,25 +19,15 @@ use App\ViewModels\History\LocationSignificance;
 
 final class HistoricalLocationMapper
 {
-    public static function toPageViewModel(
-        HistoricalLocationPageData $data,
-        bool $isLoggedIn,
-    ): HistoricalLocationViewModel {
-        $heroData = CmsMapper::toHeroData($data->heroSection, 'history');
+    public static function toPageViewModel(HistoricalLocationPageData $data, bool $isLoggedIn,): HistoricalLocationViewModel {
         $locationHero = self::toLocationHero($data->locationHeroSection);
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
-        return self::buildViewModel($heroData, $globalUi, $locationHero, $data);
+        return self::buildViewModel( $globalUi, $locationHero, $data);
     }
 
-    private static function buildViewModel(
-        HeroData $heroData,
-        GlobalUiData $globalUi,
-        LocationHero $locationHero,
-        HistoricalLocationPageData $data,
-    ): HistoricalLocationViewModel {
+    private static function buildViewModel(GlobalUiData $globalUi, LocationHero $locationHero, HistoricalLocationPageData $data,): HistoricalLocationViewModel {
         return new HistoricalLocationViewModel(
-            heroData: $heroData,
             globalUi: $globalUi,
             locationHero: $locationHero,
             locationIntroduction: self::toLocationIntroduction($data->introSection),
@@ -92,7 +82,7 @@ final class HistoricalLocationMapper
         );
     }
 
-    /** Maps raw CMS data to a HistoricalLocationHeroContent model. */
+    //maps raw CMS data to a HistoricalLocationHeroContent model
     public static function mapHero(array $raw): HistoricalLocationHeroContent
     {
         return new HistoricalLocationHeroContent(
@@ -105,7 +95,7 @@ final class HistoricalLocationMapper
         );
     }
 
-    /** Maps raw CMS data to a HistoricalLocationIntroContent model. */
+    //maps raw CMS data to a HistoricalLocationIntroContent model
     public static function mapIntro(array $raw): HistoricalLocationIntroContent
     {
         return new HistoricalLocationIntroContent(
@@ -116,7 +106,7 @@ final class HistoricalLocationMapper
         );
     }
 
-    /** Maps raw CMS data to a HistoricalLocationFactsContent model. */
+    //maps raw CMS data to a HistoricalLocationFactsContent model
     public static function mapFacts(array $raw): HistoricalLocationFactsContent
     {
         return new HistoricalLocationFactsContent(
@@ -127,7 +117,7 @@ final class HistoricalLocationMapper
         );
     }
 
-    /** Maps raw CMS data to a HistoricalLocationSignificanceContent model. */
+    //maps raw CMS data to a HistoricalLocationSignificanceContent model
     public static function mapSignificance(array $raw): HistoricalLocationSignificanceContent
     {
         return new HistoricalLocationSignificanceContent(

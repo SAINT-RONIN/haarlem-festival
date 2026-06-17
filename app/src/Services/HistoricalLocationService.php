@@ -35,7 +35,6 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
         }
         $rawContent = $this->cmsContentRepository->getPageContent($pageSlug);
         return new HistoricalLocationPageData(
-            heroSection: $this->globalContentRepo->mapHeroFromRaw($heroRaw),
             locationHeroSection: HistoricalLocationMapper::mapHero($rawContent['hero_section']),
             introSection: HistoricalLocationMapper::mapIntro($rawContent['intro_section']),
             factsSection: HistoricalLocationMapper::mapFacts($rawContent['facts_section']),

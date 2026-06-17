@@ -6,9 +6,6 @@ namespace App\Services\Interfaces;
 
 use App\DTOs\Domain\Pages\HistoricalLocationPageData;
 
-/**
- * Interface for historical location page service.
- */
 interface IHistoricalLocationService
 {
     /**

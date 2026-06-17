@@ -11,14 +11,10 @@ use App\DTOs\Cms\HistoricalLocationHeroContent;
 use App\DTOs\Cms\HistoricalLocationIntroContent;
 use App\DTOs\Cms\HistoricalLocationSignificanceContent;
 
-/**
- * Carries all CMS sections needed to render a HistoricalLocation detail page.
- * Returned by HistoricalLocationService and consumed by HistoricalLocationMapper.
- */
+//carries all CMS sections needed to render a HistoricalLocation detail page
 final readonly class HistoricalLocationPageData
 {
     public function __construct(
-        public HeroSectionContent $heroSection,
         public HistoricalLocationHeroContent $locationHeroSection,
         public HistoricalLocationIntroContent $introSection,
         public HistoricalLocationFactsContent $factsSection,
