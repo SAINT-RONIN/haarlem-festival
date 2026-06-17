@@ -9,10 +9,9 @@ use App\Constants\RestaurantPageConstants;
 /**
  * Core domain model for a restaurant.
  *
- * Built from three sources via fromDbRow():
- *   - Event table columns (structured data)
+ * Built from two sources via fromDbRow():
+ *   - Event row columns, incl. Venue + MediaAsset joined in (structured data + featured image)
  *   - CMS key-value pairs (editorial content)
- *   - Resolved MediaAsset file path (featured image)
  */
 final readonly class Restaurant
 {
@@ -72,13 +71,12 @@ final readonly class Restaurant
     ) {}
 
     /**
-     * Builds a Restaurant from a raw DB row, CMS key-value pairs, and a resolved image path.
+     * Builds a Restaurant from a raw DB row (Event + Venue + MediaAsset joined) and CMS key-value pairs.
      *
-     * @param array<string, mixed>   $row       Raw Event + Venue JOIN row
-     * @param array<string, ?string> $cms       CMS key-value pairs for this restaurant
-     * @param ?string                $imagePath Resolved featured image file path
+     * @param array<string, mixed>   $row Raw Event + Venue + MediaAsset JOIN row (incl. FeaturedImageUrl)
+     * @param array<string, ?string> $cms CMS key-value pairs for this restaurant
      */
-    public static function fromDbRow(array $row, array $cms, ?string $imagePath): self
+    public static function fromDbRow(array $row, array $cms): self
     {
         $addressLine = $row['VenueAddressLine'] ?? null;
         $city = $row['VenueCity'] ?? null;
@@ -89,7 +87,7 @@ final readonly class Restaurant
             name: (string) ($row['Title'] ?? ''),
             shortDescription: (string) ($row['ShortDescription'] ?? ''),
             longDescriptionHtml: (string) ($row['LongDescriptionHtml'] ?? ''),
-            featuredImagePath: $imagePath,
+            featuredImagePath: $row['FeaturedImageUrl'] ?? null,
             addressLine: $addressLine,
             city: $city,
             fullAddress: self::buildFullAddress($addressLine, $city),

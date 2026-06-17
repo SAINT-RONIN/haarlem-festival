@@ -405,9 +405,11 @@ class EventRepository extends BaseRepository implements IEventRepository
      * Callers append their own slug filter or ordering clause.
      */
     private const ACTIVE_RESTAURANT_BASE_QUERY =
-        'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity
+        'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity,
+                fi.FilePath AS FeaturedImageUrl
         FROM Event e
         LEFT JOIN Venue v ON v.VenueId = e.VenueId
+        LEFT JOIN MediaAsset fi ON fi.MediaAssetId = e.FeaturedImageAssetId
         WHERE e.EventTypeId = :eventTypeId
           AND e.IsActive = 1';
 
