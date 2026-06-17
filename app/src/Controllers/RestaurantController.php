@@ -11,7 +11,7 @@ use App\Services\Interfaces\IProgramService;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\ISessionService;
 
-class RestaurantController extends BaseController
+class RestaurantController extends BaseController//it's inheriting and both belong to the same class. Can receive all protected
 {
     public function __construct(
         private IRestaurantService $restaurantService,
@@ -21,7 +21,7 @@ class RestaurantController extends BaseController
         parent::__construct($sessionService);
     }
 
-    public function index(): void
+    public function index(): void//hands it's body as a closure, the line $action(); runs a try/catch, one renders 404, other catches everything
     {
         $this->handlePageRequest(function (): void {
             $data = $this->restaurantService->getRestaurantPageData();
