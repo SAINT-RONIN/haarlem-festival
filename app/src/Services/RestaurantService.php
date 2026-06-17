@@ -142,7 +142,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     // ── Shared helpers ──────────────────────────────────────────────────
 
     /** @return Restaurant[] */
-    private function loadAllRestaurants(): array//ASSOCIATIVE ARRAY OF RESTAURANT OBJECTS, EACH OBJECT IS BUILT FROM A DB ROW AND CMS CONTENT
+    private function loadAllRestaurants(): array// Indexed array (list) of Restaurant objects, each built from a DB row + CMS content
     {
         $rows = $this->eventRepository->findActiveRestaurantEvents();
 
