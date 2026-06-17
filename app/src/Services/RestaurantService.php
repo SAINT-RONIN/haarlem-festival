@@ -45,17 +45,9 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     }
 
     private function buildPageData(): RestaurantPageData
-    {        // ⚠️ CRITICAL ASSESSMENT Q&A: THE CMS PERFORMANCE FIX
-        // Q: "Why is there still a CMS call ($this->cmsContent->getPageContent) in buildPageData if you fixed the performance bug?"
-        // A: This call only runs ONCE per page load to grab page structural text (Hero/Banners).
-        // The performance fix was removing the per-restaurant CMS queries inside the loop
-//    that fetched heavy detail descriptions the cards didn't even display.
-
-        //Source A: CMS content for the page(hero text, intro text, instructions, etc.)
+    {
         $rawContent = $this->cmsContent->getPageContent(RestaurantPageConstants::PAGE_SLUG);
-        //Source B: Domain data. All active restaurant events from the database
         $allRestaurants = $this->loadAllRestaurants();
-        //Source C: Not from a DB query.Extract all unique cuisine tags from the restaurant events
         $allCuisines = $this->extractCuisineFilters($allRestaurants);
 
         return new RestaurantPageData(
