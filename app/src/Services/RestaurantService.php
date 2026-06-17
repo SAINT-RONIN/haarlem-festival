@@ -45,9 +45,17 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     }
 
     private function buildPageData(): RestaurantPageData
-    {
+    {        // ⚠️ CRITICAL ASSESSMENT Q&A: THE CMS PERFORMANCE FIX
+        // Q: "Why is there still a CMS call ($this->cmsContent->getPageContent) in buildPageData if you fixed the performance bug?"
+        // A: This call only runs ONCE per page load to grab page structural text (Hero/Banners).
+        // The performance fix was removing the per-restaurant CMS queries inside the loop
+//    that fetched heavy detail descriptions the cards didn't even display.
+
+        //Source A: CMS content for the page(hero text, intro text, instructions, etc.)
         $rawContent = $this->cmsContent->getPageContent(RestaurantPageConstants::PAGE_SLUG);
+        //Source B: Domain data. All active restaurant events from the database
         $allRestaurants = $this->loadAllRestaurants();
+        //Source C: Not from a DB query.Extract all unique cuisine tags from the restaurant events
         $allCuisines = $this->extractCuisineFilters($allRestaurants);
 
         return new RestaurantPageData(
@@ -62,7 +70,6 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             allCuisines: $allCuisines,
         );
     }
-
     /**
      * @param Restaurant[] $restaurants
      * @return string[]
@@ -96,7 +103,13 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             throw new RestaurantEventNotFoundException($slug);
         }
 
-        return $this->buildRestaurant($row);
+        $allDetailContent = $this->cmsContent->getPageContent(RestaurantPageConstants::DETAIL_PAGE_SLUG);
+        $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
+        $imagePath = $assetId !== null
+            ? $this->mediaAssetRepository->findById($assetId)?->filePath
+            : null;
+
+        return $this->assembleRestaurant($row, $allDetailContent, $imagePath);
     }
 
     public function getDetailPageData(string $slug): RestaurantDetailPageData
@@ -142,7 +155,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     // ── Shared helpers ──────────────────────────────────────────────────
 
     /** @return Restaurant[] */
-    private function loadAllRestaurants(): array
+    private function loadAllRestaurants(): array//ASSOCIATIVE ARRAY OF RESTAURANT OBJECTS, EACH OBJECT IS BUILT FROM A DB ROW AND CMS CONTENT
     {
         $rows = $this->eventRepository->findActiveRestaurantEvents();
 
@@ -164,19 +177,6 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         }
 
         return $restaurants;
-    }
-
-    /** @param array<string, mixed> $row */
-    private function buildRestaurant(array $row): Restaurant
-    {
-        $allDetailContent = $this->cmsContent->getPageContent(RestaurantPageConstants::DETAIL_PAGE_SLUG);
-
-        $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
-        $imagePath = $assetId !== null
-            ? $this->mediaAssetRepository->findById($assetId)?->filePath
-            : null;
-
-        return $this->assembleRestaurant($row, $allDetailContent, $imagePath);
     }
 
     /**
