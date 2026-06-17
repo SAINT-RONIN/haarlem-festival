@@ -8,7 +8,7 @@ namespace App\Services;
 use App\Constants\SharedSectionKeys;
 use App\Exceptions\HistoricalLocationNotFoundException;
 use App\DTOs\Domain\Pages\HistoricalLocationPageData;
-use App\Mappers\HistoricalLocationContentMapper;
+use App\Mappers\HistoricalLocationMapper;
 use App\Repositories\Interfaces\IGlobalContentRepository;
 use App\Repositories\Interfaces\ICmsContentRepository;
 use App\Services\Interfaces\IHistoricalLocationService;
@@ -22,28 +22,25 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
         parent::__construct($globalContentRepo);
     }
 
-    public function getHistoralLocationPageData(string $name): HistoricalLocationPageData
+    /**
+     * @param string $pageSlug
+     * @return HistoricalLocationPageData
+     */
+    public function getHistoralLocationPageData(string $pageSlug): HistoricalLocationPageData
     {
-        $heroRaw = $this->cmsContentRepository->getSectionContent($name, SharedSectionKeys::SECTION_HERO);
+        $heroRaw = $this->cmsContentRepository->getSectionContent($pageSlug, SharedSectionKeys::SECTION_HERO);
 
         if (empty($heroRaw)) {
-            throw new HistoricalLocationNotFoundException($name);
+            throw new HistoricalLocationNotFoundException($pageSlug);
         }
-
-        return $this->buildPageData($name, $heroRaw);
-    }
-
-    /** @param array<string, ?string> $heroRaw */
-    private function buildPageData(string $slug, array $heroRaw): HistoricalLocationPageData
-    {
-        $rawContent = $this->cmsContentRepository->getPageContent($slug);
+        $rawContent = $this->cmsContentRepository->getPageContent($pageSlug);
         return new HistoricalLocationPageData(
-            heroSection: $this->globalContentRepo->mapHeroFromRaw($heroRaw),
-            locationHeroSection: HistoricalLocationContentMapper::mapHero($rawContent['hero_section']),
-            introSection: HistoricalLocationContentMapper::mapIntro($rawContent['intro_section']),
-            factsSection: HistoricalLocationContentMapper::mapFacts($rawContent['facts_section']),
-            significanceSection: HistoricalLocationContentMapper::mapSignificance($rawContent['significance_section']),
+            locationHeroSection: HistoricalLocationMapper::mapHero($rawContent['hero_section']),
+            introSection: HistoricalLocationMapper::mapIntro($rawContent['intro_section']),
+            factsSection: HistoricalLocationMapper::mapFacts($rawContent['facts_section']),
+            significanceSection: HistoricalLocationMapper::mapSignificance($rawContent['significance_section']),
             globalUiContent: $this->loadGlobalUi(),
         );
     }
+
 }

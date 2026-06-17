@@ -72,13 +72,18 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
                         </svg>
                         <?= $e($label('detail_form_label_date', 'Date')) ?>
                     </label>
-                    <select id="dining_date" name="dining_date"
-                            class="w-48 h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
-                        <option value=""><?= $e($label('detail_form_placeholder_date', 'Select a day')) ?></option>
-                        <?php foreach ($viewModel->validDates as $day): ?>
-                            <option value="<?= $e($day) ?>"><?= date('l, j M Y', strtotime($day)) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="relative w-48">
+                        <select id="dining_date" name="dining_date"
+                                class="w-full h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
+                            <option value=""><?= $e($label('detail_form_placeholder_date', 'Select a day')) ?></option>
+                            <?php foreach ($viewModel->validDates as $day): ?>
+                                <option value="<?= $e($day) ?>"><?= date('l, j M Y', strtotime($day)) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+                        </svg>
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-2">
@@ -88,13 +93,18 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
                         </svg>
                         <?= $e($label('detail_form_label_time', 'Time')) ?>
                     </label>
-                    <select id="time_slot" name="time_slot"
-                            class="w-48 h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
-                        <option value=""><?= $e($label('detail_form_placeholder_time', 'Select a time')) ?></option>
-                        <?php foreach ($viewModel->timeSlots as $slot): ?>
-                            <option value="<?= $e($slot) ?>"><?= $e($slot) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="relative w-48">
+                        <select id="time_slot" name="time_slot"
+                                class="w-full h-10 pl-3 pr-8 bg-stone-100 rounded border border-slate-800 text-slate-800 text-lg font-['Montserrat'] appearance-none focus:outline-none focus:ring-2 focus:ring-red">
+                            <option value=""><?= $e($label('detail_form_placeholder_time', 'Select a time')) ?></option>
+                            <?php foreach ($r->timeSlots as $slot): ?>
+                                <option value="<?= $e($slot) ?>"><?= $e($slot) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
 

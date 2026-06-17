@@ -9,11 +9,10 @@ use App\Constants\SharedSectionKeys;
 use App\DTOs\Domain\Pages\RestaurantPageData;
 use App\DTOs\Domain\Restaurant\ReservationFormData;
 use App\DTOs\Domain\Restaurant\RestaurantDetailPageData;
-use App\DTOs\Domain\Events\RestaurantRow;
 use App\Models\Restaurant;
 use App\Exceptions\RestaurantEventNotFoundException;
+use App\Helpers\SlugHelper;
 use App\Mappers\GlobalContentMapper;
-use App\Mappers\RestaurantContentMapper;
 use App\Exceptions\ValidationException;
 use App\Models\Reservation;
 use App\Repositories\Interfaces\ICmsContentRepository;
@@ -48,6 +47,9 @@ class RestaurantService extends BaseContentService implements IRestaurantService
     private function buildPageData(): RestaurantPageData
     {
         $rawContent = $this->cmsContent->getPageContent(RestaurantPageConstants::PAGE_SLUG);
+        $allRestaurants = $this->loadAllRestaurants();
+        $allCuisines = $this->extractCuisineFilters($allRestaurants);
+
         return new RestaurantPageData(
             heroContent: GlobalContentMapper::mapHero($rawContent[SharedSectionKeys::SECTION_HERO] ?? []),
             globalUiContent: $this->loadGlobalUi(),
@@ -56,8 +58,31 @@ class RestaurantService extends BaseContentService implements IRestaurantService
             introSplit2Content: $rawContent[RestaurantPageConstants::SECTION_INTRO_SPLIT2] ?? [],
             instructionsContent: $rawContent[RestaurantPageConstants::SECTION_INSTRUCTIONS] ?? [],
             cardsContent: $rawContent[RestaurantPageConstants::SECTION_CARDS] ?? [],
-            restaurants: $this->loadAllRestaurants(),
+            restaurants: $allRestaurants,
+            allCuisines: $allCuisines,
         );
+    }
+
+    /**
+     * @param Restaurant[] $restaurants
+     * @return string[]
+     */
+    private function extractCuisineFilters(array $restaurants): array
+    {
+        $unique = [];
+        foreach ($restaurants as $restaurant) {
+            foreach ($restaurant->cuisineTags as $tag) {
+                $key = mb_strtolower($tag);
+                if (!isset($unique[$key])) {
+                    $unique[$key] = mb_convert_case($key, MB_CASE_TITLE, 'UTF-8');
+                }
+            }
+        }
+
+        $labels = array_values($unique);
+        sort($labels, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return ['All', ...$labels];
     }
 
     // ── Detail page ─────────────────────────────────────────────────────
@@ -122,55 +147,57 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         $rows = $this->eventRepository->findActiveRestaurantEvents();
 
         $imageAssetIds = array_filter(
-            array_map(fn(RestaurantRow $row) => $row->featuredImageAssetId, $rows),
+            array_map(fn(array $row) => isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null, $rows),
         );
         $imageMap = $imageAssetIds !== []
             ? $this->mediaAssetRepository->findByIds($imageAssetIds)
             : [];
 
-        $allDetailContent = $this->cmsContent->getPageContent(RestaurantPageConstants::DETAIL_PAGE_SLUG);
-
         $restaurants = [];
         foreach ($rows as $row) {
-            $sectionKey = SharedSectionKeys::eventSectionKey($row->eventId);
-            $cms = $allDetailContent[$sectionKey] ?? [];
-
-            $imagePath = $row->featuredImageAssetId !== null && isset($imageMap[$row->featuredImageAssetId])
-                ? $imageMap[$row->featuredImageAssetId]->filePath
+            $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
+            $imagePath = $assetId !== null && isset($imageMap[$assetId])
+                ? $imageMap[$assetId]->filePath
                 : null;
 
-            $restaurants[] = RestaurantContentMapper::mapRestaurant($row, $cms, $imagePath, $row->venueAddressLine, $row->venueCity);
+            $restaurants[] = $this->assembleRestaurant($row, [], $imagePath);
         }
 
         return $restaurants;
     }
 
-    private function buildRestaurant(RestaurantRow $row): Restaurant
+    /** @param array<string, mixed> $row */
+    private function buildRestaurant(array $row): Restaurant
     {
         $allDetailContent = $this->cmsContent->getPageContent(RestaurantPageConstants::DETAIL_PAGE_SLUG);
-        $sectionKey = SharedSectionKeys::eventSectionKey($row->eventId);
-        $cms = $allDetailContent[$sectionKey] ?? [];
 
-        $imagePath = $row->featuredImageAssetId !== null
-            ? $this->mediaAssetRepository->findById($row->featuredImageAssetId)?->filePath
+        $assetId = isset($row['FeaturedImageAssetId']) ? (int) $row['FeaturedImageAssetId'] : null;
+        $imagePath = $assetId !== null
+            ? $this->mediaAssetRepository->findById($assetId)?->filePath
             : null;
 
-        return RestaurantContentMapper::mapRestaurant(
-            $row, $cms, $imagePath,
-            $row->venueAddressLine,
-            $row->venueCity,
-        );
+        return $this->assembleRestaurant($row, $allDetailContent, $imagePath);
+    }
+
+    /**
+     * Slices the CMS content for this event and builds the Restaurant model.
+     *
+     * @param array<string, mixed>   $row              Raw Event + Venue JOIN row
+     * @param array<string, mixed>   $allDetailContent All restaurant-detail CMS sections, keyed by section
+     */
+    private function assembleRestaurant(array $row, array $allDetailContent, ?string $imagePath): Restaurant
+    {
+        $eventId = (int) ($row['EventId'] ?? 0);
+        $sectionKey = SharedSectionKeys::eventSectionKey($eventId);
+        $cms = $allDetailContent[$sectionKey] ?? [];
+
+        return Restaurant::fromDbRow($row, $cms, $imagePath);
     }
 
     private function normalizeSlug(string $slug): string
     {
-        $normalized = trim(strtolower(rawurldecode($slug)));
-
-        if ($normalized === '' || str_contains($normalized, '/')) {
-            throw new RestaurantEventNotFoundException($slug);
-        }
-
-        return trim($normalized, '-');
+        return SlugHelper::normalize($slug)
+            ?? throw new RestaurantEventNotFoundException($slug);
     }
 
     private function validateSeatAvailability(Restaurant $restaurant, ReservationFormData $formData): void

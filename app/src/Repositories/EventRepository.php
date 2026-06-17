@@ -11,7 +11,6 @@ use App\DTOs\Domain\Filters\EventFilter;
 use App\DTOs\Domain\Events\EventWithDetails;
 use App\DTOs\Domain\Events\JazzArtistCardRecord;
 use App\DTOs\Domain\Events\JazzArtistDetailEvent;
-use App\DTOs\Domain\Events\RestaurantRow;
 use App\DTOs\Domain\Events\StorytellingDetailEvent;
 use App\Repositories\Interfaces\IEventRepository;
 use PDO;
@@ -404,11 +403,11 @@ class EventRepository extends BaseRepository implements IEventRepository
     /**
      * Finds a single active restaurant event by its URL slug.
      *
-     * @return RestaurantRow|null Null if no matching active restaurant event exists.
+     * @return array<string, mixed>|null Raw row, or null if no match.
      */
-    public function findActiveRestaurantBySlug(string $slug): ?RestaurantRow
+    public function findActiveRestaurantBySlug(string $slug): ?array
     {
-        $row = $this->fetchOne(
+        $stmt = $this->execute(
             'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity
             FROM Event e
             LEFT JOIN Venue v ON v.VenueId = e.VenueId
@@ -417,17 +416,12 @@ class EventRepository extends BaseRepository implements IEventRepository
               AND e.Slug = :slug
             LIMIT 1',
             ['eventTypeId' => EventTypeId::Restaurant->value, 'slug' => $slug],
-            fn(array $row) => RestaurantRow::fromRow($row),
         );
 
-        return $row;
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return is_array($row) ? $row : null;
     }
 
-    /**
-     * Returns all active restaurant-type events, ordered by EventId.
-     *
-     * @return RestaurantRow[]
-     */
     /** @return string[] Active festival dates for restaurants (e.g. ['2026-07-23', '2026-07-24']) */
     public function findRestaurantDates(): array
     {
@@ -440,9 +434,10 @@ class EventRepository extends BaseRepository implements IEventRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> Raw rows for all active restaurants. */
     public function findActiveRestaurantEvents(): array
     {
-        return $this->fetchAll(
+        $stmt = $this->execute(
             'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity
             FROM Event e
             LEFT JOIN Venue v ON v.VenueId = e.VenueId
@@ -450,7 +445,8 @@ class EventRepository extends BaseRepository implements IEventRepository
               AND e.IsActive = 1
             ORDER BY e.EventId ASC',
             ['eventTypeId' => EventTypeId::Restaurant->value],
-            fn(array $row) => RestaurantRow::fromRow($row),
         );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 }

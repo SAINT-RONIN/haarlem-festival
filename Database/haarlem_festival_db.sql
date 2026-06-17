@@ -3974,7 +3974,21 @@ CREATE TABLE `UserAccount` (
   `IsActive` tinyint(1) NOT NULL DEFAULT 1,
   `RegisteredAtUtc` datetime NOT NULL DEFAULT current_timestamp(),
   `UpdatedAtUtc` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+ALTER TABLE UserAccount
+    ADD CONSTRAINT uq_useraccount_email UNIQUE (Email);
+
+ALTER TABLE UserAccount
+    MODIFY Email VARCHAR(200)
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci
+    NOT NULL;
+
+
+ALTER TABLE UserAccount
+    ADD CONSTRAINT uq_useraccount_email UNIQUE (Email);
 
 --
 -- Dumping data for table `UserAccount`

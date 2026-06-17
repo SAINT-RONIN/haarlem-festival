@@ -10,7 +10,7 @@ namespace App\ViewModels;
 abstract readonly class BaseViewModel
 {
     public function __construct(
-        public HeroData $heroData,
+        public ?HeroData $heroData,
         public GlobalUiData $globalUi,
         public string $currentPage,
         public bool $includeNav = false

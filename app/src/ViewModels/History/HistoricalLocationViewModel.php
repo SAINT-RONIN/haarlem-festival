@@ -9,13 +9,11 @@ use App\ViewModels\GlobalUiData;
 use App\ViewModels\HeroData;
 use App\ViewModels\History\LocationHero;
 
-/**
- * ViewModel for a single historical location detail page.
- */
+//ViewModel for a single historical location detail page.
 final readonly class HistoricalLocationViewModel extends BaseViewModel
 {
     public function __construct(
-        HeroData $heroData,
+
         GlobalUiData $globalUi,
         public LocationHero $locationHero,
         public LocationIntroduction $locationIntroduction,
@@ -23,9 +21,9 @@ final readonly class HistoricalLocationViewModel extends BaseViewModel
         public LocationSignificance $locationSignificance,
     ) {
         parent::__construct(
-            heroData: $heroData,
+            null,
             globalUi: $globalUi,
-            currentPage: $heroData->currentPage,
+            currentPage: $locationHero->currentPage,
             includeNav: false,
         );
     }

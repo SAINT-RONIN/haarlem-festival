@@ -15,8 +15,12 @@ final class RestaurantPageConstants
     public const SECTION_DETAIL = 'detail_section';
 
     public const DEFAULT_IMAGE = '/assets/Image/Image (Yummy).png';
+    // Shared "Make your reservation" image used by every restaurant detail page.
+    public const RESERVATION_IMAGE = '/assets/Image/restaurants/ratatouille-reservation.jpg';
     public const MAX_SPECIAL_REQUESTS_LENGTH = 1000;
     public const MAX_GUEST_COUNT = 20;
+    // Reservation fee is a fixed €10 per guest per the spec, not a DB column.
+    public const RESERVATION_FEE_PER_GUEST = 10.0;
 
     private function __construct() {}
 }

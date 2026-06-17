@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Tempo de geração: 15/05/2026 às 11:07
+-- Tempo de geração: 16/06/2026 às 10:47
 -- Versão do servidor: 12.0.2-MariaDB-ubu2404
 -- Versão do PHP: 8.3.27
 
@@ -20,8 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `haarlem_festival_db`
 --
-CREATE DATABASE IF NOT EXISTS `haarlem_festival_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci;
-USE `haarlem_festival_db`;
 
 -- --------------------------------------------------------
 
@@ -511,9 +509,6 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (308, 59, 'instructions_card_2_text', 'TEXT', 'Pick a date and time slot that fits your schedule.', NULL, NULL, '2026-02-16 16:31:14'),
 (309, 59, 'instructions_card_3_title', 'HEADING', 'Reserve', NULL, NULL, '2026-02-16 16:31:14'),
 (310, 59, 'instructions_card_3_text', 'TEXT', 'Complete your booking and receive a confirmation. Done!', NULL, NULL, '2026-02-16 16:31:14'),
-(1547, 59, 'instructions_card_1_icon', 'LINK', '/assets/Icons/Restaurant/browse-icon.svg', NULL, NULL, '2026-02-16 16:31:14'),
-(1548, 59, 'instructions_card_2_icon', 'LINK', '/assets/Icons/Restaurant/choose-icon.svg', NULL, NULL, '2026-02-16 16:31:14'),
-(1549, 59, 'instructions_card_3_icon', 'LINK', '/assets/Icons/Restaurant/reserve-icon.svg', NULL, NULL, '2026-02-16 16:31:14'),
 (311, 60, 'cards_title', 'HEADING', 'Explore the participant restaurants', NULL, NULL, '2026-02-16 16:31:14'),
 (312, 60, 'cards_subtitle', 'TEXT', 'Discover all restaurants participating in Yummy! Each one offers a special festival menu, unique flavors, and limited time slots throughout the weekend.', NULL, NULL, '2026-02-16 16:31:14'),
 (313, 60, 'filter_all', 'BUTTON_TEXT', 'All', NULL, NULL, '2026-02-16 16:31:14'),
@@ -584,24 +579,6 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (659, 74, 'detail_reservation_btn', 'BUTTON_TEXT', 'Continue to Reservation', NULL, NULL, '2026-03-08 12:40:41'),
 (660, 74, 'detail_label_duration', 'TEXT', 'Duration', NULL, NULL, '2026-03-08 12:40:41'),
 (661, 74, 'detail_label_seats', 'TEXT', 'Seats', NULL, NULL, '2026-03-08 12:40:41'),
-(1550, 74, 'detail_label_price_adult', 'TEXT', 'Per adult', NULL, NULL, '2026-03-08 12:40:41'),
-(1551, 74, 'detail_label_price_child', 'TEXT', 'Under 12', NULL, NULL, '2026-03-08 12:40:41'),
-(1552, 74, 'detail_label_duration_unit', 'TEXT', 'hours', NULL, NULL, '2026-03-08 12:40:41'),
-(1553, 74, 'detail_label_seats_unit', 'TEXT', 'per session', NULL, NULL, '2026-03-08 12:40:41'),
-(1554, 74, 'detail_form_back_to_prefix', 'TEXT', 'Back to', NULL, NULL, '2026-03-08 12:40:41'),
-(1555, 74, 'detail_form_back_to_restaurant', 'TEXT', 'Back to Restaurant', NULL, NULL, '2026-03-08 12:40:41'),
-(1556, 74, 'detail_form_guests_title', 'TEXT', 'Number of Guests', NULL, NULL, '2026-03-08 12:40:41'),
-(1557, 74, 'detail_form_label_adult', 'TEXT', 'Adult', NULL, NULL, '2026-03-08 12:40:41'),
-(1558, 74, 'detail_form_label_children', 'TEXT', 'Children', NULL, NULL, '2026-03-08 12:40:41'),
-(1559, 74, 'detail_form_label_date', 'TEXT', 'Date', NULL, NULL, '2026-03-08 12:40:41'),
-(1560, 74, 'detail_form_label_time', 'TEXT', 'Time', NULL, NULL, '2026-03-08 12:40:41'),
-(1561, 74, 'detail_form_placeholder_date', 'TEXT', 'Select a day', NULL, NULL, '2026-03-08 12:40:41'),
-(1562, 74, 'detail_form_placeholder_time', 'TEXT', 'Select a time', NULL, NULL, '2026-03-08 12:40:41'),
-(1563, 74, 'detail_form_special_requests_placeholder', 'TEXT', 'Let us know if you have any special requirements', NULL, NULL, '2026-03-08 12:40:41'),
-(1564, 74, 'detail_form_special_requests_subtitle', 'TEXT', 'Diet, allergies, accessibility needs', NULL, NULL, '2026-03-08 12:40:41'),
-(1565, 74, 'detail_form_special_requests_title', 'TEXT', 'Special requests', NULL, NULL, '2026-03-08 12:40:41'),
-(1566, 74, 'detail_form_total_title', 'TEXT', 'Total to be paid', NULL, NULL, '2026-03-08 12:40:41'),
-(1567, 74, 'detail_reservation_fee_text', 'TEXT', 'To complete your reservation, you pay a {fee} fee per person. This amount is deducted from your final bill at the restaurant, so you simply pay the remaining amount after your meal.', NULL, NULL, '2026-03-08 12:40:41'),
 (662, 74, 'detail_label_festival_rated', 'TEXT', 'Festival-rated', NULL, NULL, '2026-03-08 12:40:41'),
 (663, 74, 'detail_label_michelin', 'TEXT', 'Michelin-star', NULL, NULL, '2026-03-08 12:40:41'),
 (664, 74, 'detail_map_fallback_text', 'TEXT', 'Map coming soon', NULL, NULL, '2026-03-08 12:40:41'),
@@ -1039,6 +1016,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1515, 94, 'menu_description', 'HTML', NULL, '<p>The festival menu at Ratatouille celebrates the finest French and European flavours. Each course highlights fresh North Sea seafood and seasonal produce, presented with the elegant simplicity that defines classical French cuisine.</p>', NULL, '2026-04-09 17:59:44'),
 (1516, 94, 'menu_image_1', 'IMAGE_PATH', '/assets/Image/restaurants/ratatouille-menu-1.png', NULL, NULL, '2026-04-09 17:59:44'),
 (1517, 94, 'menu_image_2', 'IMAGE_PATH', '/assets/Image/restaurants/ratatouille-menu-2.png', NULL, NULL, '2026-04-09 17:59:44'),
+(1518, 94, 'reservation_image', 'IMAGE_PATH', '/assets/Image/restaurants/ratatouille-reservation.jpg', NULL, NULL, '2026-04-09 17:59:44'),
 (1519, 99, 'about_image', 'MEDIA', NULL, NULL, 93, '2026-04-09 17:59:44'),
 (1520, 99, 'about_text', 'HTML', NULL, '<p>Urban Frenchy Bistro Toujours brings a warm and lively atmosphere to Haarlem\'s historic Oude Groenmarkt. Drawing on Dutch coastal traditions and French bistro culture, the kitchen serves fresh fish and seafood with a modern European twist, making every meal a relaxed yet memorable experience.</p>', NULL, '2026-04-09 17:59:44'),
 (1521, 99, 'chef_image', 'IMAGE_PATH', '/assets/Image/restaurants/toujours-chef.jpg', NULL, NULL, '2026-04-09 17:59:44'),
@@ -1049,6 +1027,7 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1526, 99, 'menu_description', 'HTML', NULL, '<p>Toujours presents a festival menu rooted in Dutch and French bistro tradition. Expect hearty portions of seasonal fish, classic seafood preparations, and European-inspired dishes — all crafted to be shared and enjoyed in good company.</p>', NULL, '2026-04-09 17:59:44'),
 (1527, 99, 'menu_image_1', 'IMAGE_PATH', '/assets/Image/restaurants/toujours-menu-1.png', NULL, NULL, '2026-04-09 17:59:44'),
 (1528, 99, 'menu_image_2', 'IMAGE_PATH', '/assets/Image/restaurants/toujours-menu-2.png', NULL, NULL, '2026-04-09 17:59:44'),
+(1529, 99, 'reservation_image', 'IMAGE_PATH', '/assets/Image/restaurants/toujours-reservation.png', NULL, NULL, '2026-04-09 17:59:44'),
 (1530, 94, 'map_embed_url', 'LINK', 'https://maps.google.com/maps?q=52.3786756,4.6376030&z=17&output=embed', NULL, NULL, '2026-04-09 18:15:10'),
 (1531, 99, 'map_embed_url', 'LINK', 'https://maps.google.com/maps?q=52.3806823,4.6370676&z=17&output=embed', NULL, NULL, '2026-04-09 18:15:10'),
 (1532, 109, 'address_line', 'TEXT', 'Lange Begijnestraat 9, 2011 HH Haarlem', NULL, NULL, '2026-04-10 03:48:48'),
@@ -1065,7 +1044,28 @@ INSERT INTO `CmsItem` (`CmsItemId`, `CmsSectionId`, `ItemKey`, `ItemType`, `Text
 (1543, 96, 'location_description', 'TEXT', 'Tucked away on the quiet Twijnderslaan, Restaurant Fris offers a peaceful retreat just a few minutes from the city centre. A perfect escape from the festival buzz while staying close to the action.', NULL, NULL, '2026-05-14 13:47:39'),
 (1544, 97, 'location_description', 'TEXT', 'Located on the Koningstraat near the heart of Haarlem, New Vegas is within walking distance of the main festival areas. Its central spot makes it easy to combine dinner with other festival events.', NULL, NULL, '2026-05-14 13:47:39'),
 (1545, 98, 'location_description', 'TEXT', 'Right on the Grote Markt, Grand Cafe Brinkman offers front-row seats to Haarlem\'s most iconic square. Watch the city come alive during the festival from one of the best terraces in town.', NULL, NULL, '2026-05-14 13:47:39'),
-(1546, 99, 'location_description', 'TEXT', 'Located on the charming Oude Groenmarkt, just steps from the Grote Kerk, Toujours sits at the heart of Haarlem\'s historic centre. The terrace offers a lovely view of the square, perfect for a relaxed evening during the festival.', NULL, NULL, '2026-05-14 13:47:39');
+(1546, 99, 'location_description', 'TEXT', 'Located on the charming Oude Groenmarkt, just steps from the Grote Kerk, Toujours sits at the heart of Haarlem\'s historic centre. The terrace offers a lovely view of the square, perfect for a relaxed evening during the festival.', NULL, NULL, '2026-05-14 13:47:39'),
+(1547, 59, 'instructions_card_1_icon', 'LINK', '/assets/Icons/Restaurant/browse-icon.svg', NULL, NULL, '2026-02-16 16:31:14'),
+(1548, 59, 'instructions_card_2_icon', 'LINK', '/assets/Icons/Restaurant/choose-icon.svg', NULL, NULL, '2026-02-16 16:31:14'),
+(1549, 59, 'instructions_card_3_icon', 'LINK', '/assets/Icons/Restaurant/reserve-icon.svg', NULL, NULL, '2026-02-16 16:31:14'),
+(1550, 74, 'detail_label_price_adult', 'TEXT', 'Per adult', NULL, NULL, '2026-03-08 12:40:41'),
+(1551, 74, 'detail_label_price_child', 'TEXT', 'Under 12', NULL, NULL, '2026-03-08 12:40:41'),
+(1552, 74, 'detail_label_duration_unit', 'TEXT', 'hours', NULL, NULL, '2026-03-08 12:40:41'),
+(1553, 74, 'detail_label_seats_unit', 'TEXT', 'per session', NULL, NULL, '2026-03-08 12:40:41'),
+(1554, 74, 'detail_form_back_to_prefix', 'TEXT', 'Back to', NULL, NULL, '2026-03-08 12:40:41'),
+(1555, 74, 'detail_form_back_to_restaurant', 'TEXT', 'Back to Restaurant', NULL, NULL, '2026-03-08 12:40:41'),
+(1556, 74, 'detail_form_guests_title', 'TEXT', 'Number of Guests', NULL, NULL, '2026-03-08 12:40:41'),
+(1557, 74, 'detail_form_label_adult', 'TEXT', 'Adult', NULL, NULL, '2026-03-08 12:40:41'),
+(1558, 74, 'detail_form_label_children', 'TEXT', 'Children', NULL, NULL, '2026-03-08 12:40:41'),
+(1559, 74, 'detail_form_label_date', 'TEXT', 'Date', NULL, NULL, '2026-03-08 12:40:41'),
+(1560, 74, 'detail_form_label_time', 'TEXT', 'Time', NULL, NULL, '2026-03-08 12:40:41'),
+(1561, 74, 'detail_form_placeholder_date', 'TEXT', 'Select a day', NULL, NULL, '2026-03-08 12:40:41'),
+(1562, 74, 'detail_form_placeholder_time', 'TEXT', 'Select a time', NULL, NULL, '2026-03-08 12:40:41'),
+(1563, 74, 'detail_form_special_requests_placeholder', 'TEXT', 'Let us know if you have any special requirements', NULL, NULL, '2026-03-08 12:40:41'),
+(1564, 74, 'detail_form_special_requests_subtitle', 'TEXT', 'Diet, allergies, accessibility needs', NULL, NULL, '2026-03-08 12:40:41'),
+(1565, 74, 'detail_form_special_requests_title', 'TEXT', 'Special requests', NULL, NULL, '2026-03-08 12:40:41'),
+(1566, 74, 'detail_form_total_title', 'TEXT', 'Total to be paid', NULL, NULL, '2026-03-08 12:40:41'),
+(1567, 74, 'detail_reservation_fee_text', 'TEXT', 'To complete your reservation, you pay a {fee} fee per person. This amount is deducted from your final bill at the restaurant, so you simply pay the remaining amount after your meal.', NULL, NULL, '2026-03-08 12:40:41');
 
 -- --------------------------------------------------------
 
@@ -1217,6 +1217,7 @@ INSERT INTO `CmsItemKey` (`ItemKey`, `ExpectedItemType`) VALUES
 ('masonry_image_12', 'IMAGE_PATH'),
 ('menu_image_1', 'IMAGE_PATH'),
 ('menu_image_2', 'IMAGE_PATH'),
+('reservation_image', 'IMAGE_PATH'),
 ('restaurant_1_image', 'IMAGE_PATH'),
 ('restaurant_5_image', 'IMAGE_PATH'),
 ('restaurant_6_image', 'IMAGE_PATH'),
@@ -4522,7 +4523,7 @@ ALTER TABLE `ArtistTrack`
 -- AUTO_INCREMENT de tabela `CmsItem`
 --
 ALTER TABLE `CmsItem`
-  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1547;
+  MODIFY `CmsItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1568;
 
 --
 -- AUTO_INCREMENT de tabela `CmsPage`

@@ -216,7 +216,9 @@ class EmailService implements IEmailService
         }
 
         if ($this->isLocalEnvironment() && !$this->forceSend) {
-            throw new SmtpNotConfiguredException("Cannot send mail to local email address '{$to}'.");
+            throw new SmtpNotConfiguredException(
+                "Email sending is disabled in local environment. Email to {$to} was not sent."
+            );
         }
 
         return $this->sendViaSmtp($to, $subject, $body, $attachments);

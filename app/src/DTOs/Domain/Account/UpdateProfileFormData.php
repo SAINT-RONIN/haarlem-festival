@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTOs\Domain\Account;
 
-/**
- * Form data for profile updates (email, name, profile photo change).
- * Used by AccountController to validate and pass data to the account service.
- */
+//Form data for profile updates (email, name, profile photo change)
 final readonly class UpdateProfileFormData
 {
     public function __construct(
@@ -18,8 +15,6 @@ final readonly class UpdateProfileFormData
     ) {}
 
     /**
-     * Converts form input to this DTO.
-     *
      * @param array<string, mixed> $input
      */
     public static function fromInput(array $input): self
@@ -33,8 +28,6 @@ final readonly class UpdateProfileFormData
     }
 
     /**
-     * Converts to array for flash storage.
-     *
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -45,6 +38,16 @@ final readonly class UpdateProfileFormData
             'lastName' => $this->lastName,
             'profilePictureAssetId' => $this->profilePictureAssetId,
         ];
+    }
+
+    public function withProfilePictureAssetId(?int $profilePictureAssetId): self
+    {
+        return new self(
+            email: $this->email,
+            firstName: $this->firstName,
+            lastName: $this->lastName,
+            profilePictureAssetId: $profilePictureAssetId,
+        );
     }
 }
 

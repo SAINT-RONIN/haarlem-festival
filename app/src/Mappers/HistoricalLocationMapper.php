@@ -19,25 +19,15 @@ use App\ViewModels\History\LocationSignificance;
 
 final class HistoricalLocationMapper
 {
-    public static function toPageViewModel(
-        HistoricalLocationPageData $data,
-        bool $isLoggedIn,
-    ): HistoricalLocationViewModel {
-        $heroData = CmsMapper::toHeroData($data->heroSection, 'history');
+    public static function toPageViewModel(HistoricalLocationPageData $data, bool $isLoggedIn,): HistoricalLocationViewModel {
         $locationHero = self::toLocationHero($data->locationHeroSection);
         $globalUi = CmsMapper::toGlobalUiData($data->globalUiContent, $isLoggedIn);
 
-        return self::buildViewModel($heroData, $globalUi, $locationHero, $data);
+        return self::buildViewModel( $globalUi, $locationHero, $data);
     }
 
-    private static function buildViewModel(
-        HeroData $heroData,
-        GlobalUiData $globalUi,
-        LocationHero $locationHero,
-        HistoricalLocationPageData $data,
-    ): HistoricalLocationViewModel {
+    private static function buildViewModel(GlobalUiData $globalUi, LocationHero $locationHero, HistoricalLocationPageData $data,): HistoricalLocationViewModel {
         return new HistoricalLocationViewModel(
-            heroData: $heroData,
             globalUi: $globalUi,
             locationHero: $locationHero,
             locationIntroduction: self::toLocationIntroduction($data->introSection),
@@ -89,6 +79,53 @@ final class HistoricalLocationMapper
             historicalSignificanceHeadingText: $content->historicalSignificanceHeading ?? '',
             historicalSignificanceText: $content->historicalSignificanceText ?? '',
             locationImagePath: $content->significanceImage ?? '',
+        );
+    }
+
+    //maps raw CMS data to a HistoricalLocationHeroContent model
+    public static function mapHero(array $raw): HistoricalLocationHeroContent
+    {
+        return new HistoricalLocationHeroContent(
+            heroMainTitle: $raw['hero_main_title'] ?? null,
+            heroSubtitle: $raw['hero_subtitle'] ?? null,
+            heroButton: $raw['hero_button'] ?? null,
+            heroButtonLink: $raw['hero_button_link'] ?? null,
+            heroBackgroundImage: $raw['hero_background_image'] ?? null,
+            heroMapImage: $raw['hero_map_image'] ?? null,
+        );
+    }
+
+    //maps raw CMS data to a HistoricalLocationIntroContent model
+    public static function mapIntro(array $raw): HistoricalLocationIntroContent
+    {
+        return new HistoricalLocationIntroContent(
+            introHeading: $raw['intro_heading'] ?? null,
+            introText: $raw['intro_text'] ?? null,
+            introFact: $raw['intro_fact'] ?? null,
+            introImage: $raw['intro_image'] ?? null,
+        );
+    }
+
+    //maps raw CMS data to a HistoricalLocationFactsContent model
+    public static function mapFacts(array $raw): HistoricalLocationFactsContent
+    {
+        return new HistoricalLocationFactsContent(
+            factsHeading: $raw['facts_heading'] ?? null,
+            fact1: $raw['fact1'] ?? null,
+            fact2: $raw['fact2'] ?? null,
+            fact3: $raw['fact3'] ?? null,
+        );
+    }
+
+    //maps raw CMS data to a HistoricalLocationSignificanceContent model
+    public static function mapSignificance(array $raw): HistoricalLocationSignificanceContent
+    {
+        return new HistoricalLocationSignificanceContent(
+            architecturalSignificanceHeading: $raw['architectural_significance_heading'] ?? null,
+            architecturalSignificanceText: $raw['architectural_significance_text'] ?? null,
+            historicalSignificanceHeading: $raw['historical_significance_heading'] ?? null,
+            historicalSignificanceText: $raw['historical_significance_text'] ?? null,
+            significanceImage: $raw['significance_image'] ?? null,
         );
     }
 }

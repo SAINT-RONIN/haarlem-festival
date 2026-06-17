@@ -30,11 +30,11 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
                 </div>
                 <div class="flex flex-col gap-1">
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $e($label('detail_label_address', 'Address')) ?></span>
-                    <span class="text-slate-800 text-lg font-normal font-['Montserrat']"><?= $e($viewModel->address) ?></span>
+                    <span class="text-slate-800 text-lg font-normal font-['Montserrat']"><?= $e($r->fullAddress) ?></span>
                 </div>
             </div>
 
-            <?php if ($viewModel->timeSlots !== []): ?>
+            <?php if ($r->timeSlots !== []): ?>
             <div class="px-5 py-4 flex items-start gap-4">
                 <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
                     <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
@@ -43,7 +43,7 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
                 </div>
                 <div class="flex flex-col gap-1">
                     <span class="text-slate-800 text-lg font-bold font-['Montserrat']"><?= $e($label('detail_label_open_hours', 'Opening Hours')) ?></span>
-                    <span class="text-slate-800 text-lg font-normal font-['Montserrat']"><?= $e(implode(' | ', $viewModel->timeSlots)) ?></span>
+                    <span class="text-slate-800 text-lg font-normal font-['Montserrat']"><?= $e(implode(' | ', $r->timeSlots)) ?></span>
                 </div>
             </div>
             <?php endif; ?>
@@ -116,12 +116,12 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
 </section>
 <?php endif; ?>
 
-<?php if ($viewModel->galleryImages !== []): ?>
+<?php if ($r->galleryImages !== []): ?>
 <section class="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-5">
     <div class="max-w-7xl mx-auto flex flex-col items-center gap-6">
         <h2 class="self-stretch text-slate-800 text-4xl sm:text-5xl lg:text-6xl font-bold font-['Montserrat']"><?= $e($label('detail_gallery_title', 'Gallery')) ?></h2>
         <div class="w-full flex flex-col md:flex-row justify-center items-center gap-8 lg:gap-12">
-            <?php foreach ($viewModel->galleryImages as $index => $galleryImage): ?>
+            <?php foreach ($r->galleryImages as $index => $galleryImage): ?>
                 <img class="flex-1 min-w-0 h-64 sm:h-80 md:h-96 lg:h-[450px] rounded-2xl shadow-lg object-cover" src="<?= $e($galleryImage) ?>" alt="<?= $e($r->name) ?> gallery photo <?= $index + 1 ?>"/>
             <?php endforeach; ?>
         </div>
@@ -157,7 +157,7 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
 </section>
 <?php endif; ?>
 
-<?php if (($r->menuDescription ?? '') !== '' || $r->cuisineTags !== [] || $viewModel->menuImages !== []): ?>
+<?php if (($r->menuDescription ?? '') !== '' || $r->cuisineTags !== [] || $r->menuImages !== []): ?>
 <section class="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-5">
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
         <div class="flex-1 flex flex-col gap-5">
@@ -174,9 +174,9 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
                 <p class="text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] leading-8"><?= $e($r->menuDescription) ?></p>
             <?php endif; ?>
         </div>
-        <?php if ($viewModel->menuImages !== []): ?>
+        <?php if ($r->menuImages !== []): ?>
         <div class="flex-1 flex items-center justify-center gap-4 sm:gap-6 max-w-[45%]">
-            <?php foreach ($viewModel->menuImages as $index => $menuImage): ?>
+            <?php foreach ($r->menuImages as $index => $menuImage): ?>
                 <img class="flex-1 min-w-0 h-48 sm:h-56 lg:h-64 rounded-2xl object-cover" src="<?= $e($menuImage) ?>" alt="Menu dish <?= $index + 1 ?>"/>
             <?php endforeach; ?>
         </div>
@@ -185,7 +185,7 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
 </section>
 <?php endif; ?>
 
-<?php if (($r->locationDescription ?? '') !== '' || $viewModel->address !== '' || ($r->mapEmbedUrl ?? '') !== ''): ?>
+<?php if (($r->locationDescription ?? '') !== '' || $r->fullAddress !== '' || ($r->mapEmbedUrl ?? '') !== ''): ?>
 <section class="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-5">
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
         <div class="flex-1 flex flex-col gap-6">
@@ -193,7 +193,7 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
             <div class="text-slate-800 text-lg sm:text-xl font-normal font-['Montserrat'] leading-8">
                 <?= nl2br($e($r->locationDescription ?? '')) ?>
                 <br/><br/>
-                <span class="font-bold"><?= $e($label('detail_location_address_label', 'Address')) ?></span>: <?= $e($viewModel->address) ?>
+                <span class="font-bold"><?= $e($label('detail_location_address_label', 'Address')) ?></span>: <?= $e($r->fullAddress) ?>
             </div>
         </div>
         <div class="flex-1 flex flex-col gap-4">
@@ -255,11 +255,11 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
                 <?php endif; ?>
             </div>
 
-            <?php if ($viewModel->timeSlots !== []): ?>
+            <?php if ($r->timeSlots !== []): ?>
             <div class="flex flex-col gap-4">
                 <h3 class="text-slate-800 text-lg font-medium font-['Montserrat']"><?= $e($label('detail_reservation_slots_label', 'Available Time Slots')) ?></h3>
                 <div class="grid grid-cols-3 gap-4 sm:gap-6 lg:gap-12">
-                    <?php foreach ($viewModel->timeSlots as $slot): ?>
+                    <?php foreach ($r->timeSlots as $slot): ?>
                         <div class="p-4 sm:p-6 bg-white rounded-lg border-2 sm:border-[3px] border-slate-800 flex justify-center items-center hover:bg-slate-100 transition-colors cursor-pointer">
                             <span class="text-slate-800 text-lg sm:text-xl font-medium font-['Montserrat']"><?= $e($slot) ?></span>
                         </div>
@@ -281,7 +281,7 @@ $label = static fn(string $key, string $default = ''): string => $labels[$key] ?
         </div>
 
         <div class="flex-1 flex items-center justify-center">
-            <img class="w-full h-auto max-h-[700px] rounded-2xl object-cover" src="<?= $e($viewModel->reservationImage) ?>" alt="<?= $e($r->name) ?> reservation"/>
+            <img class="w-full h-auto max-h-[700px] rounded-2xl object-cover" src="<?= $e(\App\Constants\RestaurantPageConstants::RESERVATION_IMAGE) ?>" alt="<?= $e($r->name) ?> reservation"/>
         </div>
     </div>
 </section>

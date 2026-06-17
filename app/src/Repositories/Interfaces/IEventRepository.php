@@ -10,7 +10,6 @@ use App\DTOs\Domain\Filters\EventFilter;
 use App\DTOs\Domain\Events\EventWithDetails;
 use App\DTOs\Domain\Events\JazzArtistCardRecord;
 use App\DTOs\Domain\Events\JazzArtistDetailEvent;
-use App\DTOs\Domain\Events\RestaurantRow;
 use App\DTOs\Domain\Events\StorytellingDetailEvent;
 
 /**
@@ -76,17 +75,15 @@ interface IEventRepository
 
     /**
      * Finds an active restaurant by its URL slug.
+     *
+     * @return array<string, mixed>|null Raw row, or null if no match.
      */
-    public function findActiveRestaurantBySlug(string $slug): ?RestaurantRow;
+    public function findActiveRestaurantBySlug(string $slug): ?array;
 
     /** @return string[] Active festival dates for restaurants */
     public function findRestaurantDates(): array;
 
-    /**
-     * Returns all active restaurants.
-     *
-     * @return RestaurantRow[]
-     */
+    /** @return array<int, array<string, mixed>> Raw rows for all active restaurants. */
     public function findActiveRestaurantEvents(): array;
 
     /**

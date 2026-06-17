@@ -18,7 +18,8 @@ final readonly class RestaurantPageData
      * @param array<string, ?string> $introSplit2Content   Raw CMS items for the second intro section
      * @param array<string, ?string> $instructionsContent  Raw CMS items for the instructions section
      * @param array<string, ?string> $cardsContent         Raw CMS items for the cards section
-     * @param \App\Models\Restaurant[] $restaurants        Active restaurant domain objects
+     * @param \App\Models\Restaurant[] $restaurants        Filtered restaurant domain objects to display
+     * @param string[] $allCuisines                        All available cuisine filter labels (always starts with "All")
      */
     public function __construct(
         public HeroSectionContent $heroContent,
@@ -29,5 +30,6 @@ final readonly class RestaurantPageData
         public array $instructionsContent,
         public array $cardsContent,
         public array $restaurants,
+        public array $allCuisines,
     ) {}
 }

@@ -7,15 +7,12 @@ namespace App\Controllers;
 use App\DTOs\Domain\Account\UpdateProfileFormData;
 use App\Exceptions\AccountException;
 use App\Exceptions\ValidationException;
-use App\Mappers\AccountMapper;
 use App\Services\Interfaces\IAccountService;
 use App\Services\Interfaces\IMediaAssetService;
 use App\Services\Interfaces\ISessionService;
 use App\ViewModels\Account\AccountFormViewModel;
 
-/**
- * Manages authenticated user profile editing and password changes
- */
+
 class AccountController extends BaseController
 {
     public function __construct(
@@ -32,6 +29,7 @@ class AccountController extends BaseController
             $userId = $this->requireUserId();
 
             try {
+                //get user by id
                 $user = $this->accountService->getCurrentUser($userId);
             } catch (AccountException $e) {
                 $this->redirectAndExit('/login');
@@ -41,49 +39,34 @@ class AccountController extends BaseController
             $successMessage = $this->sessionService->consumeFlash('account_success') ?? '';
             $oldInput = $this->sessionService->consumeFlash('account_input') ?? [];
 
-            $viewModel = new AccountFormViewModel(
-                user: $user,
-                errors: $errors,
-                successMessage: $successMessage,
-                oldInput: $oldInput,
-            );
+            $viewModel = new AccountFormViewModel(user: $user, errors: $errors, successMessage: $successMessage, oldInput: $oldInput,);
 
             require __DIR__ . '/../Views/pages/account.php';
         });
     }
 
-    /**
-     * POST /account/update-profile
-     */
     public function updateProfile(): void
     {
         $this->handlePageRequest(function (): void {
             $userId = $this->requireUserId();
-            $data = null;
 
             try {
-                // Extract and handle profile picture
-                $profilePictureAssetId = $this->handleProfilePictureUpload();
+                $user = $this->accountService->getCurrentUser($userId);
+                $data = $this->prepareValidatedProfileData($user->userAccountId);
+                $uploadedProfilePictureAssetId = $this->handleProfilePictureUpload();
+                $data = $data->withProfilePictureAssetId($uploadedProfilePictureAssetId);
 
-                // Extract form data
-                $data = $this->extractProfileUpdateData($profilePictureAssetId);
+                $this->accountService->updateProfile($data, $user);
 
-                // Validate and process
-                $this->processProfileUpdate($data, $userId);
-
-                $this->sessionService->setFlash('account_success', 'Profile updated successfully.');
-                $this->redirectAndExit('/account');
+                $this->redirectWithSuccess('/account', 'Profile updated successfully.');
             } catch (ValidationException $e) {
-                $this->redirectWithErrors('/account', $e->getErrors(), $data->toArray() ?? []);
+                $this->redirectWithErrors('/account', $e->getErrors());
             } catch (AccountException $e) {
-                $this->redirectWithErrors('/account', ['error' => $e->getMessage()], $data?->toArray() ?? []);
+                $this->redirectWithErrors('/account', ['general' => $e->getMessage()]);
             }
         });
     }
 
-    /**
-     * POST /account/update-password
-     */
     public function updatePassword(): void
     {
         $this->handlePageRequest(function (): void {
@@ -91,18 +74,15 @@ class AccountController extends BaseController
             $currentPassword = $this->readStringPostParam('currentPassword') ?? '';
             $newPassword = $this->readStringPostParam('newPassword') ?? '';
             $confirmPassword = $this->readStringPostParam('confirmPassword') ?? '';
-
-            $result = $this->accountService->updatePassword($currentPassword, $newPassword, $confirmPassword, $userId);
-
-            if (!$result['success']) {
-                $this->redirectWithErrors('/account', $result['errors'], [
-                    'currentPassword' => $currentPassword,
-                    'newPassword' => $newPassword,
-                    'confirmPassword' => $confirmPassword,
-                ]);
+            try {
+                $this->accountService->updatePassword($currentPassword, $newPassword, $confirmPassword, $userId);
+                $this->sessionService->setFlash('account_success', 'Password updated successfully.');
+                $this->redirectAndExit('/account');
+            } catch (ValidationException $e) {
+                $this->redirectWithErrors('/account', $e->getErrors());
+            } catch (AccountException $e) {
+                $this->redirectWithErrors('/account', ['general' => $e->getMessage()]);
             }
-            $this->sessionService->setFlash('account_success', 'Password updated successfully.');
-            $this->redirectAndExit('/account');
         });
     }
 
@@ -116,25 +96,29 @@ class AccountController extends BaseController
         return null;
     }
 
-
-    private function extractProfileUpdateData(?int $profilePictureAssetId): UpdateProfileFormData
+    /**
+     * @throws ValidationException
+     */
+    private function prepareValidatedProfileData(int $userId): UpdateProfileFormData
     {
-        return AccountMapper::fromProfileUpdateInput([
-            'email' => $this->readStringPostParam('email') ?? '',
-            'firstName' => $this->readStringPostParam('firstName') ?? '',
-            'lastName' => $this->readStringPostParam('lastName') ?? '',
-            'profilePictureAssetId' => $profilePictureAssetId,
-        ]);
-    }
+        $data = $this->extractProfileUpdateData(null);
 
-    private function processProfileUpdate(UpdateProfileFormData $data, int $userId): void
-    {
         $errors = $this->accountService->validateProfileUpdate($data, $userId);
         if (!empty($errors)) {
             throw new ValidationException($errors);
         }
 
-        $this->accountService->updateProfile($data, $userId);
+        return $data;
+    }
+
+    private function extractProfileUpdateData(?int $profilePictureAssetId): UpdateProfileFormData
+    {
+        return UpdateProfileFormData::fromInput([
+            'email' => $this->readStringPostParam('email') ?? '',
+            'firstName' => $this->readStringPostParam('firstName') ?? '',
+            'lastName' => $this->readStringPostParam('lastName') ?? '',
+            'profilePictureAssetId' => $profilePictureAssetId,
+        ]);
     }
 
     private function requireUserId(): int
@@ -144,6 +128,12 @@ class AccountController extends BaseController
             $this->redirectAndExit('/login');
         }
         return $userId;
+    }
+
+    private function redirectWithSuccess(string $url, string $message): void
+    {
+        $this->sessionService->setFlash('account_success', $message);
+        $this->redirectAndExit($url);
     }
 
     private function redirectWithErrors(string $url, array $errors, array $input = []): void

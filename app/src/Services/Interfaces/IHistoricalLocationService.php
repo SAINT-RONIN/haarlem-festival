@@ -6,10 +6,11 @@ namespace App\Services\Interfaces;
 
 use App\DTOs\Domain\Pages\HistoricalLocationPageData;
 
-/**
- * Interface for historical location page service.
- */
 interface IHistoricalLocationService
 {
-    public function getHistoralLocationPageData(string $name): HistoricalLocationPageData;
+    /**
+     * @param string $pageSlug
+     * @return HistoricalLocationPageData
+     */
+    public function getHistoralLocationPageData(string $pageSlug): HistoricalLocationPageData;
 }
