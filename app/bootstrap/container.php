@@ -224,10 +224,14 @@ return static function (string $controllerClass): object {
         $emailService(),
     ));
 
+    $mediaAssetService = fn() => $make('mediaAssetService', fn() => new MediaAssetService(
+        $mediaAssetRepo(),
+    ));
+
     $accountService = fn() => $make('accountService', fn() => new AccountService(
         $userAccountRepo(),
         $emailService(),
-        $pdo(),
+        $mediaAssetService(),
     ));
 
     // ── Lazy service singletons shared across multiple controllers ──

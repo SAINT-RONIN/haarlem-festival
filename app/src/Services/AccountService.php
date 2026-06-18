@@ -15,6 +15,7 @@ use App\Models\UserAccount;
 use App\Repositories\Interfaces\IUserAccountRepository;
 use App\Services\Interfaces\IAccountService;
 use App\Infrastructure\Interfaces\IEmailService;
+use App\Helpers\UserValidationHelper;
 
 class AccountService implements IAccountService
 {
@@ -156,7 +157,7 @@ class AccountService implements IAccountService
     {
         $errors = [];
         $errors = array_merge($errors, $this->validateEmail($data->email, $currentUserId));
-        $errors = array_merge($errors, $this->validateName($data->firstName, $data->lastName));
+        $errors = array_merge($errors, UserValidationHelper::checkNames($data->firstName, $data->lastName));
         return $errors;
     }
 
@@ -164,12 +165,15 @@ class AccountService implements IAccountService
     private function validateEmail(string $email, int $excludeUserId): array
     {
         $errors = [];
+        $email = trim($email);
+        $formatError = UserValidationHelper::checkEmail($email);
 
-        if (empty($email)) {
-            $errors['email'] = 'Email is required.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address.';
-        } elseif ($this->userRepository->emailExistsForOtherUser($email, $excludeUserId)) {
+        if ($formatError !== null) {
+            $errors['email'] = $formatError;
+            return $errors;
+        }
+
+        if ($this->userRepository->emailExistsForOtherUser($email, $excludeUserId)) {
             $errors['email'] = 'This email is already in use by another account.';
         }
 
@@ -179,25 +183,7 @@ class AccountService implements IAccountService
     /** @return array<string, string> */
     private function validateName(string $firstName, string $lastName): array
     {
-        $errors = [];
-        $errors = array_merge($errors, $this->validateNameField($firstName, 'firstName', 'First name'));
-        $errors = array_merge($errors, $this->validateNameField($lastName, 'lastName', 'Last name'));
-        return $errors;
-    }
-
-    private function validateNameField(string $name, string $fieldName, string $shownField): array
-    {
-        $errors = [];
-
-        if (empty($name)) {
-            $errors[$fieldName] = ucfirst($shownField) . ' is required.';
-        } elseif (mb_strlen($name) < 2) {
-            $errors[$fieldName] = ucfirst($shownField) . ' must be at least 2 characters.';
-        } elseif (mb_strlen($name) > 100) {
-            $errors[$fieldName] = ucfirst($shownField) . ' must not exceed 100 characters.';
-        }
-
-        return $errors;
+        return UserValidationHelper::checkNames($firstName, $lastName);
     }
 
     private function findPdoException(\Throwable $error): ?\PDOException
@@ -257,20 +243,18 @@ class AccountService implements IAccountService
             $errors['currentPassword'] = 'Current password is incorrect';
         }
 
-        if ($newPassword === '') {
-            $errors['newPassword'] = 'New password is required';
-        } elseif (mb_strlen($newPassword) < 8) {
-            $errors['newPassword'] = 'Password must be at least 8 characters';
+        $newPasswordError = UserValidationHelper::checkPasswordLength($newPassword);
+        if ($newPasswordError !== null) {
+            $errors['newPassword'] = $newPasswordError;
         }
 
-        if ($confirmPassword === '') {
-            $errors['confirmPassword'] = 'Please confirm your new password';
-        } elseif ($newPassword !== $confirmPassword) {
-            $errors['confirmPassword'] = 'Passwords do not match';
+        $confirmPasswordError = UserValidationHelper::checkPasswordConfirmation(password: $newPassword, confirmPassword: $confirmPassword);
+        if ($confirmPasswordError !== null) {
+            $errors['confirmPassword'] = $confirmPasswordError;
         }
 
-        if ($currentPassword === $newPassword) {
-            $errors['newPassword'] = 'New password must be different from current password';
+        if (!isset($errors['newPassword']) && PasswordHasher::verify($newPassword, $user->passwordHash)) {
+            $errors['newPassword'] = 'New password must be different from current password.';
         }
 
         return $errors;

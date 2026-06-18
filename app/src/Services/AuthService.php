@@ -113,8 +113,9 @@ class AuthService implements IAuthService
             return $errors;
         }
 
-        if ($password !== $confirm) {
-            $errors['confirmPassword'] = 'Passwords do not match.';
+        $confirmError = UserValidationHelper::checkPasswordConfirmation(password: $password, confirmPassword: $confirm);
+        if ($confirmError !== null) {
+            $errors['confirmPassword'] = $confirmError;
         }
 
         return $errors;
@@ -183,13 +184,19 @@ class AuthService implements IAuthService
     {
         $token = $this->validateResetToken($rawToken);
 
+        $errors = [];
         $passwordError = UserValidationHelper::checkPasswordLength($newPassword);
         if ($passwordError !== null) {
-            throw new ValidationException($passwordError);
+            $errors['password'] = $passwordError;
         }
 
-        if ($newPassword !== $confirmPassword) {
-            throw new ValidationException('Passwords do not match.');
+        $confirmError = UserValidationHelper::checkPasswordConfirmation(password: $newPassword, confirmPassword: $confirmPassword);
+        if ($confirmError !== null) {
+            $errors['confirmPassword'] = $confirmError;
+        }
+
+        if (!empty($errors)) {
+            throw new ValidationException($errors);
         }
 
         // Wrap both writes in a transaction — password update + token invalidation must both succeed
