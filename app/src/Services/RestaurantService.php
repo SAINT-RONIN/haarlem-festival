@@ -66,21 +66,22 @@ class RestaurantService extends BaseContentService implements IRestaurantService
      */
     private function extractCuisineFilters(array $restaurants): array
     {
-        $unique = [];
+        // Collect each cuisine only once, ignoring case, but keep a tidy Title-Case label.
+        $uniqueCuisines = [];
         foreach ($restaurants as $restaurant) {
             foreach ($restaurant->cuisineTags as $tag) {
                 $key = mb_strtolower($tag);
-                if (!isset($unique[$key])) {
-                    $unique[$key] = mb_convert_case($key, MB_CASE_TITLE, 'UTF-8');
+                if (!isset($uniqueCuisines[$key])) {
+                    $uniqueCuisines[$key] = mb_convert_case($key, MB_CASE_TITLE, 'UTF-8');
                 }
             }
-
         }
 
-        $labels = array_values($unique);
-        sort($labels, SORT_NATURAL | SORT_FLAG_CASE);
+        // Sort the labels alphabetically, then put "All" first as the default filter option.
+        $cuisineLabels = array_values($uniqueCuisines);
+        sort($cuisineLabels, SORT_NATURAL | SORT_FLAG_CASE);
 
-        return ['All', ...$labels];
+        return ['All', ...$cuisineLabels];
     }
 
     // ── Detail page ─────────────────────────────────────────────────────
@@ -123,7 +124,7 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         $restaurant = $this->getRestaurant($slug);
         $validDates = $this->eventRepository->findRestaurantDates();
 
-        $this->validateReservation($formData, $validDates);
+        $this->validateReservation($formData, $validDates, $restaurant->timeSlots);
         $this->validateSeatAvailability($restaurant, $formData);
 
         $reservation = new Reservation(
@@ -171,8 +172,12 @@ class RestaurantService extends BaseContentService implements IRestaurantService
 
     private function normalizeSlug(string $slug): string
     {
-        return SlugHelper::normalize($slug)
-            ?? throw new RestaurantEventNotFoundException($slug);
+        $normalized = SlugHelper::normalize($slug);
+        if ($normalized === null) {
+            throw new RestaurantEventNotFoundException($slug);
+        }
+
+        return $normalized;
     }
 
     private function validateSeatAvailability(Restaurant $restaurant, ReservationFormData $formData): void
@@ -190,23 +195,25 @@ class RestaurantService extends BaseContentService implements IRestaurantService
         $seatsRemaining = $restaurant->seatsPerSession - $bookedGuests;
 
         if ($formData->totalGuests() > $seatsRemaining) {
-            $message = $seatsRemaining <= 0
-                ? 'This time slot is fully booked. Please choose a different time or date.'
-                : "Only {$seatsRemaining} seats remaining for this time slot.";
+            if ($seatsRemaining <= 0) {
+                $message = 'This time slot is fully booked. Please choose a different time or date.';
+            } else {
+                $message = 'Only ' . $seatsRemaining . ' seats remaining for this time slot.';
+            }
 
             throw new ValidationException([$message]);
         }
     }
 
-    private function validateReservation(ReservationFormData $data, array $validDates): void
+    private function validateReservation(ReservationFormData $data, array $validDates, array $validTimeSlots): void
     {
         $errors = [];
 
         if (!in_array($data->diningDate, $validDates, true)) {
             $errors[] = 'Please select a valid dining date.';
         }
-        if ($data->timeSlot === '') {
-            $errors[] = 'Please select a time slot.';
+        if (!in_array($data->timeSlot, $validTimeSlots, true)) {
+            $errors[] = 'Please select a valid time slot.';
         }
         if ($data->totalGuests() < 1) {
             $errors[] = 'Please add at least one guest.';
