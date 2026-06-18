@@ -43,16 +43,31 @@
                     <h2 class="text-lg font-semibold text-gray-900">All Orders</h2>
                     <p class="text-sm text-gray-500"><?= count($viewModel->orders) ?> order(s) found</p>
                 </div>
-                <a href="/cms/orders/export/csv<?= $viewModel->selectedStatus ? '?status=' . urlencode($viewModel->selectedStatus) : '' ?>"
-                   class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors">
-                    <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
-                    Export CSV
-                </a>
-                <a href="/cms/orders/export/excel<?= $viewModel->selectedStatus ? '?status=' . urlencode($viewModel->selectedStatus) : '' ?>"
-                   class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-                    <i data-lucide="table" class="w-4 h-4" aria-hidden="true"></i>
-                    Export Excel
-                </a>
+                <form method="GET" class="flex flex-wrap items-center justify-end gap-3">
+                    <input type="hidden" name="status" value="<?= htmlspecialchars($viewModel->selectedStatus) ?>">
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 max-w-2xl">
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Columns:</span>
+                        <?php foreach (\App\Export\OrderExportColumns::catalog() as $columnKey => $column): ?>
+                            <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                                <input type="checkbox" name="columns[]" value="<?= htmlspecialchars($columnKey) ?>" checked
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <?= htmlspecialchars($column['label']) ?>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="submit" formaction="/cms/orders/export/csv"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors">
+                            <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
+                            Export CSV
+                        </button>
+                        <button type="submit" formaction="/cms/orders/export/excel"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                            <i data-lucide="table" class="w-4 h-4" aria-hidden="true"></i>
+                            Export Excel
+                        </button>
+                    </div>
+                </form>
             </div>
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
