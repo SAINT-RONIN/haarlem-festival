@@ -4,22 +4,17 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
-/**
- * Shared validation rules for user accounts.
- *
- * Used by both AuthService (registration) and CmsUsersService (admin user management)
- * to ensure consistent username, email, password, and name validation.
- */
+//Shared validation rules for user accounts.
+//Used by both AuthService (registration) and CmsUsersService (admin user management) to ensure consistent username, email, password, and name validation.
 final class UserValidationHelper
 {
     public const USERNAME_MIN_LENGTH = 3;
     public const USERNAME_MAX_LENGTH = 60;
     public const PASSWORD_MIN_LENGTH = 8;
+    public const NAME_MIN_LENGTH = 2;
+    public const NAME_MAX_LENGTH = 100;
 
-    /**
-     * Checks username format requirements (length, allowed characters).
-     * Returns an error message string or null if valid.
-     */
+
     public static function checkUsernameFormat(string $username): ?string
     {
         if ($username === '' || empty(trim($username))) {
@@ -38,10 +33,7 @@ final class UserValidationHelper
         return null;
     }
 
-    /**
-     * Checks email format. Returns an error message or null if valid.
-     * Does NOT check uniqueness (that requires a repository).
-     */
+    //Does NOT check uniqueness (that requires a repository).
     public static function checkEmail(string $email): ?string
     {
         if (empty($email)) {
@@ -54,12 +46,9 @@ final class UserValidationHelper
         return null;
     }
 
-    /**
-     * Checks password meets minimum length. Returns an error message or null if valid.
-     */
     public static function checkPasswordLength(string $password): ?string
     {
-        if (empty($password)) {
+        if ($password === '') {
             return 'Password is required.';
         }
         if (strlen($password) < self::PASSWORD_MIN_LENGTH) {
@@ -69,10 +58,36 @@ final class UserValidationHelper
         return null;
     }
 
+    public static function checkPasswordConfirmation(string $password, string $confirmPassword): ?string {
+        if ($confirmPassword === '') {
+            return 'Please confirm your password.';
+        }
+        if ($password !== $confirmPassword) {
+            return 'Passwords do not match.';
+        }
+
+        return null;
+    }
+
+    public static function checkNameField(string $name, string $shownField): ?string{
+        $name = trim($name);
+
+        if ($name === '') {
+            return $shownField . ' is required.';
+        }
+
+        if (mb_strlen($name) < self::NAME_MIN_LENGTH) {
+            return $shownField . ' must be at least ' . self::NAME_MIN_LENGTH . ' characters.';
+        }
+
+        if (mb_strlen($name) > self::NAME_MAX_LENGTH) {
+            return $shownField . ' must not exceed ' . self::NAME_MAX_LENGTH . ' characters.';
+        }
+
+        return null;
+    }
+
     /**
-     * Checks first and last name are non-empty.
-     * Returns an array of field => error message, or empty array if valid.
-     *
      * @return array<string, string>
      */
     public static function checkNames(string $firstName, string $lastName): array
