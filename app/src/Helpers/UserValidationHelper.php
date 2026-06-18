@@ -11,9 +11,6 @@ final class UserValidationHelper
     public const USERNAME_MIN_LENGTH = 3;
     public const USERNAME_MAX_LENGTH = 60;
     public const PASSWORD_MIN_LENGTH = 8;
-    public const NAME_MIN_LENGTH = 2;
-    public const NAME_MAX_LENGTH = 100;
-
 
     public static function checkUsernameFormat(string $username): ?string
     {
@@ -64,24 +61,6 @@ final class UserValidationHelper
         }
         if ($password !== $confirmPassword) {
             return 'Passwords do not match.';
-        }
-
-        return null;
-    }
-
-    public static function checkNameField(string $name, string $shownField): ?string{
-        $name = trim($name);
-
-        if ($name === '') {
-            return $shownField . ' is required.';
-        }
-
-        if (mb_strlen($name) < self::NAME_MIN_LENGTH) {
-            return $shownField . ' must be at least ' . self::NAME_MIN_LENGTH . ' characters.';
-        }
-
-        if (mb_strlen($name) > self::NAME_MAX_LENGTH) {
-            return $shownField . ' must not exceed ' . self::NAME_MAX_LENGTH . ' characters.';
         }
 
         return null;

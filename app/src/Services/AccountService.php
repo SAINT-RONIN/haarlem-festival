@@ -180,12 +180,6 @@ class AccountService implements IAccountService
         return $errors;
     }
 
-    /** @return array<string, string> */
-    private function validateName(string $firstName, string $lastName): array
-    {
-        return UserValidationHelper::checkNames($firstName, $lastName);
-    }
-
     private function findPdoException(\Throwable $error): ?\PDOException
     {
         // walk through the exception chain until the original PDOException is found
