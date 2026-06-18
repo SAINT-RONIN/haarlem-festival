@@ -419,10 +419,6 @@ class EventRepository extends BaseRepository implements IEventRepository
      * @return array<string, mixed>|null Raw row, or null if no match.
      */
 
-    // 💡 STUDY NOTE: WHAT IS AN ASSOCIATIVE ARRAY?
-// It is a key-value pair array where the keys are strings instead of numbers.
-// PDO::FETCH_ASSOC automatically turns database columns (e.g., 'EventId', 'Name')
-// into string keys so we can access them by name ($row['Name']) in the Model layer.
     public function findActiveRestaurantBySlug(string $slug): ?array
     {
         $stmt = $this->execute(
