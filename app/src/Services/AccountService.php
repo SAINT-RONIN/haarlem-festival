@@ -80,7 +80,13 @@ class AccountService implements IAccountService
             throw new ValidationException($errors);
         }
 
-        $this->updatePasswordHashOrFail($userId, $newPassword);
+        try {
+            $passwordHash = PasswordHasher::hash($newPassword);
+            $this->userRepository->updatePasswordHash($userId, $passwordHash);
+        } catch (\Throwable $error) {
+            throw new AccountException('Could not update password. Please try again later.', 0, $error);
+        }
+
         $this->sendPasswordUpdateConfirmationEmail($user, $userId);
     }
 
@@ -254,26 +260,14 @@ class AccountService implements IAccountService
         return $errors;
     }
 
-    private function updatePasswordHashOrFail(int $userId, string $newPassword): void
-    {
-        try {
-            $passwordHash = PasswordHasher::hash($newPassword);
-            $this->userRepository->updatePasswordHash($userId, $passwordHash);
-        } catch (\Throwable $error) {
-            throw new AccountException('Could not update password. Please try again later.', 0, $error);
-        }
-    }
-
     private function sendPasswordUpdateConfirmationEmail(UserAccount $user, int $userId): void
     {
         try {
             $userName = trim($user->firstName . ' ' . $user->lastName);
             $this->emailService->sendAccountUpdateConfirmationEmail($user->email, $userName, 'password',);
-        } catch (EmailDeliveryException $error) {
+        } catch (EmailDeliveryException | SmtpNotConfiguredException $error) {
             $this->logEmailDeliveryFailure('password update confirmation', $userId, $error,);
-        } catch (SmtpNotConfiguredException $error) {
-            $this->logEmailDeliveryFailure('password update confirmation', $userId, $error);
-        }catch (\Throwable $error) {
+        } catch (\Throwable $error) {
             $this->logUnexpectedEmailFailure('password update confirmation', $userId, $error,);
         }
     }
