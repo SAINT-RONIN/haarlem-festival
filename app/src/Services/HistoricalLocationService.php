@@ -28,12 +28,8 @@ class HistoricalLocationService extends BaseContentService implements IHistorica
      */
     public function getHistoralLocationPageData(string $pageSlug): HistoricalLocationPageData
     {
-        $heroRaw = $this->cmsContentRepository->getSectionContent($pageSlug, SharedSectionKeys::SECTION_HERO);
-
-        if (empty($heroRaw)) {
-            throw new HistoricalLocationNotFoundException($pageSlug);
-        }
         $rawContent = $this->cmsContentRepository->getPageContent($pageSlug);
+
         return new HistoricalLocationPageData(
             locationHeroSection: HistoricalLocationMapper::mapHero($rawContent['hero_section']),
             introSection: HistoricalLocationMapper::mapIntro($rawContent['intro_section']),
