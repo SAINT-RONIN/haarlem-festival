@@ -401,20 +401,32 @@ class EventRepository extends BaseRepository implements IEventRepository
     }
 
     /**
+     * Shared SELECT + JOIN + base filter for active restaurant events.
+     * Callers append their own slug filter or ordering clause.
+     */
+    private const ACTIVE_RESTAURANT_BASE_QUERY =
+        'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity,
+                fi.FilePath AS FeaturedImageUrl
+        FROM Event e
+        LEFT JOIN Venue v ON v.VenueId = e.VenueId
+        LEFT JOIN MediaAsset fi ON fi.MediaAssetId = e.FeaturedImageAssetId
+        WHERE e.EventTypeId = :eventTypeId
+          AND e.IsActive = 1';
+
+    /**
      * Finds a single active restaurant event by its URL slug.
      *
      * @return array<string, mixed>|null Raw row, or null if no match.
      */
+
+    // 💡 STUDY NOTE: WHAT IS AN ASSOCIATIVE ARRAY?
+// It is a key-value pair array where the keys are strings instead of numbers.
+// PDO::FETCH_ASSOC automatically turns database columns (e.g., 'EventId', 'Name')
+// into string keys so we can access them by name ($row['Name']) in the Model layer.
     public function findActiveRestaurantBySlug(string $slug): ?array
     {
         $stmt = $this->execute(
-            'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity
-            FROM Event e
-            LEFT JOIN Venue v ON v.VenueId = e.VenueId
-            WHERE e.EventTypeId = :eventTypeId
-              AND e.IsActive = 1
-              AND e.Slug = :slug
-            LIMIT 1',
+            self::ACTIVE_RESTAURANT_BASE_QUERY . ' AND e.Slug = :slug LIMIT 1',
             ['eventTypeId' => EventTypeId::Restaurant->value, 'slug' => $slug],
         );
 
@@ -438,12 +450,7 @@ class EventRepository extends BaseRepository implements IEventRepository
     public function findActiveRestaurantEvents(): array
     {
         $stmt = $this->execute(
-            'SELECT e.*, v.AddressLine AS VenueAddressLine, v.City AS VenueCity
-            FROM Event e
-            LEFT JOIN Venue v ON v.VenueId = e.VenueId
-            WHERE e.EventTypeId = :eventTypeId
-              AND e.IsActive = 1
-            ORDER BY e.EventId ASC',
+            self::ACTIVE_RESTAURANT_BASE_QUERY . ' ORDER BY e.EventId ASC',
             ['eventTypeId' => EventTypeId::Restaurant->value],
         );
 

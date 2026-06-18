@@ -251,7 +251,6 @@ return static function (string $controllerClass): object {
         $cmsContent(),
         $globalContentRepo(),
         $eventRepo(),
-        $mediaAssetRepo(),
         $reservationRepo(),
     ));
 

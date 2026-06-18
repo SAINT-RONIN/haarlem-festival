@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Exceptions\NotFoundException;
+use App\Export\OrderExportColumns;
 use App\Mappers\CmsOrdersMapper;
 use App\Services\Interfaces\ICmsOrdersService;
 use App\Services\Interfaces\ISessionService;
@@ -55,15 +56,16 @@ class CmsOrdersController extends CmsBaseController
     {
         $this->handleCmsPageRequest(function (): void {
             $orders = $this->ordersService->getOrdersWithDetails($this->readStringQueryParam('status'));
+            $keys = OrderExportColumns::resolveKeys($this->readColumnsParam());
 
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename=orders.csv');
 
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Order #', 'User ID', 'Email', 'Items', 'Amount', 'Order Status', 'Payment Status', 'Date'], ',', '"', '');
+            fputcsv($out, OrderExportColumns::labels($keys), ',', '"', '');
 
             foreach ($orders as $o) {
-                fputcsv($out, [$o->orderNumber, $o->userAccountId, $o->email, $o->itemsSummary, $o->totalAmount, $o->status, $o->paymentStatus ?? 'No payment', $o->createdAtUtc], ',', '"', '');
+                fputcsv($out, OrderExportColumns::row($o, $keys), ',', '"', '');
             }
 
             fclose($out);
@@ -75,16 +77,25 @@ class CmsOrdersController extends CmsBaseController
     {
         $this->handleCmsPageRequest(function (): void {
             $orders = $this->ordersService->getOrdersWithDetails($this->readStringQueryParam('status'));
+            $keys = OrderExportColumns::resolveKeys($this->readColumnsParam());
 
             header('Content-Type: application/vnd.ms-excel; charset=utf-8');
             header('Content-Disposition: attachment; filename=orders.xls');
 
             $esc = fn(string $v) => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 
-            echo "<table border='1'><thead><tr><th>Order #</th><th>User ID</th><th>Email</th><th>Items</th><th>Amount</th><th>Order Status</th><th>Payment Status</th><th>Date</th></tr></thead><tbody>";
+            echo "<table border='1'><thead><tr>";
+            foreach (OrderExportColumns::labels($keys) as $label) {
+                echo '<th>' . $esc($label) . '</th>';
+            }
+            echo '</tr></thead><tbody>';
 
             foreach ($orders as $o) {
-                echo '<tr><td>' . $esc($o->orderNumber) . '</td><td>' . $o->userAccountId . '</td><td>' . $esc($o->email) . '</td><td>' . $esc($o->itemsSummary ?? '') . '</td><td>' . $esc($o->totalAmount) . '</td><td>' . $esc($o->status) . '</td><td>' . $esc($o->paymentStatus ?? 'No payment') . '</td><td>' . $esc($o->createdAtUtc) . '</td></tr>';
+                echo '<tr>';
+                foreach (OrderExportColumns::row($o, $keys) as $cell) {
+                    echo '<td>' . $esc($cell) . '</td>';
+                }
+                echo '</tr>';
             }
 
             echo '</tbody></table>';
@@ -182,6 +193,22 @@ class CmsOrdersController extends CmsBaseController
             echo '</table>';
             exit;
         });
+    }
+
+    /**
+     * Reads the requested export columns from the query string ($_GET['columns']).
+     * Returns only string values; the whitelist does the actual key validation.
+     *
+     * @return string[]
+     */
+    private function readColumnsParam(): array
+    {
+        $columns = $_GET['columns'] ?? [];
+        if (!is_array($columns)) {
+            return [];
+        }
+
+        return array_values(array_filter($columns, 'is_string'));
     }
 
     /** Fetches orders from the service and maps them to the list view model. */
