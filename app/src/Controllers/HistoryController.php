@@ -17,10 +17,10 @@ use App\Services\Interfaces\ISessionService;
 class HistoryController extends BaseController
 {
     public function __construct(
-        private readonly IHistoryService $historyService,
-        private readonly IHistoricalLocationService $historicalLocationService,
+        private IHistoryService $historyService,
+        private IHistoricalLocationService $historicalLocationService,
         ISessionService $sessionService,
-        private readonly IScheduleService $scheduleService,
+        private IScheduleService $scheduleService,
     ) {
         parent::__construct($sessionService);
     }
