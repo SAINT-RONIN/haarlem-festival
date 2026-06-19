@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\Cms\CmsOrderDetailPageData;
+use App\DTOs\Cms\CmsOrdersFilter;
 use App\DTOs\Domain\Checkout\OrderWithDetails;
 use App\Models\Invoice;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
@@ -22,9 +23,14 @@ class CmsOrdersService implements ICmsOrdersService
     ) {}
 
     /** @return OrderWithDetails[] */
-    public function getOrdersWithDetails(?string $statusFilter = null): array
+    public function getOrders(CmsOrdersFilter $filter, ?int $limit = null, ?int $offset = null): array
     {
-        return $this->ordersRepository->findOrdersWithDetails($statusFilter);
+        return $this->ordersRepository->findOrders($filter, $limit, $offset);
+    }
+
+    public function countOrders(CmsOrdersFilter $filter): int
+    {
+        return $this->ordersRepository->countOrders($filter);
     }
 
     private function resolveInvoicePdfPath(?Invoice $invoice): ?string

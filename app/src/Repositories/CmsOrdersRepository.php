@@ -9,22 +9,17 @@ use App\DTOs\Cms\CmsOrderDetailData;
 use App\DTOs\Cms\CmsOrderItemData;
 use App\DTOs\Cms\CmsOrderPaymentData;
 use App\DTOs\Cms\CmsOrderTicketData;
+use App\DTOs\Cms\CmsOrdersFilter;
 use App\Repositories\Interfaces\ICmsOrdersRepository;
 
 // CMS orders list/detail queries with joined user email, item summary, and payment status.
 class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
 {
-    public function findOrdersWithDetails(?string $statusFilter = null): array
+    public function findOrders(CmsOrdersFilter $filter, ?int $limit = null, ?int $offset = null): array
     {
-        $sql    = $this->buildQuery($statusFilter !== null);
-        $params = $statusFilter !== null ? [':status' => $statusFilter] : [];
+        [$whereClause, $params] = $this->buildFilterClause($filter);
 
-        return $this->fetchAll($sql, $params, fn(array $row) => OrderWithDetails::fromRow($row));
-    }
-
-    private function buildQuery(bool $withStatusFilter): string
-    {
-        return "
+        $sql = "
             SELECT
                 o.OrderId,
                 o.OrderNumber,
@@ -37,14 +32,60 @@ class CmsOrdersRepository extends BaseRepository implements ICmsOrdersRepository
                 {$this->buildPaymentStatusSelect()} AS PaymentStatus
             FROM `Order` o
             LEFT JOIN UserAccount ua ON o.UserAccountId = ua.UserAccountId
-            WHERE 1 = 1{$this->buildStatusClause($withStatusFilter)}
-            ORDER BY o.CreatedAtUtc DESC
+            WHERE {$whereClause}
+            ORDER BY o.CreatedAtUtc DESC{$this->buildPaginationClause($limit, $offset)}
         ";
+
+        return $this->fetchAll($sql, $params, fn(array $row) => OrderWithDetails::fromRow($row));
     }
 
-    private function buildStatusClause(bool $withStatusFilter): string
+    public function countOrders(CmsOrdersFilter $filter): int
     {
-        return $withStatusFilter ? ' AND o.Status = :status' : '';
+        [$whereClause, $params] = $this->buildFilterClause($filter);
+
+        $sql = "SELECT COUNT(*) AS Total FROM `Order` o WHERE {$whereClause}";
+
+        return $this->fetchOne($sql, $params, fn(array $row) => (int) $row['Total']) ?? 0;
+    }
+
+    /**
+     * Builds the shared WHERE clause and bound params for the orders filter.
+     * The date range is matched against the order's creation date; the upper
+     * bound is exclusive of the day after $toDate so the whole end day is included.
+     *
+     * @return array{0: string, 1: array<string, string>}
+     */
+    private function buildFilterClause(CmsOrdersFilter $filter): array
+    {
+        $conditions = ['o.CreatedAtUtc >= :fromUtc', 'o.CreatedAtUtc < :toUtcExclusive'];
+        $params = [
+            ':fromUtc'        => $filter->fromDate . ' 00:00:00',
+            ':toUtcExclusive' => (new \DateTimeImmutable($filter->toDate))->modify('+1 day')->format('Y-m-d 00:00:00'),
+        ];
+
+        if ($filter->status !== null) {
+            $conditions[] = 'o.Status = :status';
+            $params[':status'] = $filter->status;
+        }
+
+        return [implode(' AND ', $conditions), $params];
+    }
+
+    /**
+     * Builds a LIMIT/OFFSET suffix when paginating. Returns an empty string when
+     * $limit is null (export path: every matching row). $limit and $offset are
+     * cast to non-negative ints and inlined, so they are injection-safe.
+     */
+    private function buildPaginationClause(?int $limit, ?int $offset): string
+    {
+        if ($limit === null) {
+            return '';
+        }
+
+        $safeLimit = max(0, $limit);
+        $safeOffset = max(0, $offset ?? 0);
+
+        return " LIMIT {$safeLimit} OFFSET {$safeOffset}";
     }
 
     // Correlated subquery: concatenates line items (event title, tour, or pass)

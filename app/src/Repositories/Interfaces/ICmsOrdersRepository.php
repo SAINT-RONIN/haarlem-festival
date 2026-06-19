@@ -9,6 +9,7 @@ use App\DTOs\Cms\CmsOrderDetailData;
 use App\DTOs\Cms\CmsOrderItemData;
 use App\DTOs\Cms\CmsOrderPaymentData;
 use App\DTOs\Cms\CmsOrderTicketData;
+use App\DTOs\Cms\CmsOrdersFilter;
 
 /**
  * Defines read-only queries for retrieving orders with joined details for CMS display.
@@ -16,11 +17,17 @@ use App\DTOs\Cms\CmsOrderTicketData;
 interface ICmsOrdersRepository
 {
     /**
-     * Returns all orders with joined details, optionally filtered by status.
+     * Returns orders with joined details matching the filter, newest first.
+     *
+     * When $limit is null every matching row is returned (used by the export);
+     * when set, only that page slice is returned (used by the list view).
      *
      * @return OrderWithDetails[]
      */
-    public function findOrdersWithDetails(?string $statusFilter = null): array;
+    public function findOrders(CmsOrdersFilter $filter, ?int $limit = null, ?int $offset = null): array;
+
+    /** Returns the total number of orders matching the filter (for pagination). */
+    public function countOrders(CmsOrdersFilter $filter): int;
 
     /**
      * Returns a single order with user/recipient details, or null if not found.

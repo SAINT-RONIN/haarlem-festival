@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\DTOs\Cms\CmsOrdersFilter;
 use App\Exceptions\NotFoundException;
 use App\Export\OrderExportColumns;
 use App\Mappers\CmsOrdersMapper;
 use App\Services\Interfaces\ICmsOrdersService;
 use App\Services\Interfaces\ISessionService;
 use App\Services\Interfaces\ITicketFulfillmentService;
+use App\ViewModels\Cms\CmsOrderDetailViewModel;
+use App\ViewModels\Cms\CmsOrdersListViewModel;
 
 /**
  * CMS controller for viewing customer orders, exporting data, and resending ticket emails.
  */
 class CmsOrdersController extends CmsBaseController
 {
+    private const PAGE_SIZE = 15;
+
     public function __construct(
         private readonly ICmsOrdersService $ordersService,
         private readonly ITicketFulfillmentService $fulfillmentService,
@@ -28,8 +33,7 @@ class CmsOrdersController extends CmsBaseController
     {
         $this->handleCmsPageRequest(function (): void {
             $currentView = 'orders';
-            $statusFilter = $this->readStringQueryParam('status');
-            $viewModel = $this->buildOrdersViewModel($statusFilter);
+            $viewModel = $this->buildOrdersViewModel($this->resolveFilter());
             require __DIR__ . '/../Views/pages/cms/orders.php';
         });
     }
@@ -55,7 +59,7 @@ class CmsOrdersController extends CmsBaseController
     public function exportCsv(): void
     {
         $this->handleCmsPageRequest(function (): void {
-            $orders = $this->ordersService->getOrdersWithDetails($this->readStringQueryParam('status'));
+            $orders = $this->ordersService->getOrders($this->resolveFilter());
             $keys = OrderExportColumns::resolveKeys($this->readColumnsParam());
 
             header('Content-Type: text/csv; charset=utf-8');
@@ -76,7 +80,7 @@ class CmsOrdersController extends CmsBaseController
     public function exportExcel(): void
     {
         $this->handleCmsPageRequest(function (): void {
-            $orders = $this->ordersService->getOrdersWithDetails($this->readStringQueryParam('status'));
+            $orders = $this->ordersService->getOrders($this->resolveFilter());
             $keys = OrderExportColumns::resolveKeys($this->readColumnsParam());
 
             header('Content-Type: application/vnd.ms-excel; charset=utf-8');
@@ -211,21 +215,93 @@ class CmsOrdersController extends CmsBaseController
         return array_values(array_filter($columns, 'is_string'));
     }
 
-    /** Fetches orders from the service and maps them to the list view model. */
-    private function buildOrdersViewModel(?string $statusFilter): \App\ViewModels\Cms\CmsOrdersListViewModel
+    /** Fetches the requested page of orders for the filter and maps them to the list view model. */
+    private function buildOrdersViewModel(CmsOrdersFilter $filter): CmsOrdersListViewModel
     {
-        $ordersData = $this->ordersService->getOrdersWithDetails($statusFilter);
+        $totalCount = $this->ordersService->countOrders($filter);
+        $totalPages = max(1, (int) ceil($totalCount / self::PAGE_SIZE));
+
+        // Clamp the requested page into range so an out-of-bounds ?page never shows a blank list.
+        $currentPage = min($this->readPositiveIntQueryParam('page') ?? 1, $totalPages);
+        $offset = ($currentPage - 1) * self::PAGE_SIZE;
+
+        $ordersData = $this->ordersService->getOrders($filter, self::PAGE_SIZE, $offset);
 
         return CmsOrdersMapper::toListViewModel(
             $ordersData,
-            $statusFilter ?? '',
+            $filter,
+            $currentPage,
+            $totalPages,
+            $totalCount,
             $this->sessionService->consumeFlash('success'),
             $this->sessionService->consumeFlash('error'),
         );
     }
 
+    /**
+     * Builds the orders filter from the query string. The status is optional; the
+     * date range defaults to the current week (Mon–Sun) when not supplied or invalid.
+     * Shared by the list view and both list exports so they always stay in sync.
+     */
+    private function resolveFilter(): CmsOrdersFilter
+    {
+        [$fromDate, $toDate] = $this->resolveDateRange();
+
+        return new CmsOrdersFilter(
+            status: $this->readStringQueryParam('status'),
+            fromDate: $fromDate,
+            toDate: $toDate,
+        );
+    }
+
+    /**
+     * Resolves the [from, to] date range ('Y-m-d') from the query string, falling
+     * back to the current week for missing/invalid values and swapping a reversed
+     * range so 'from' is never after 'to'.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function resolveDateRange(): array
+    {
+        $fromDate = $this->normalizeDate($this->readStringQueryParam('from')) ?? self::currentWeekStart();
+        $toDate = $this->normalizeDate($this->readStringQueryParam('to')) ?? self::currentWeekEnd();
+
+        if ($fromDate > $toDate) {
+            return [$toDate, $fromDate];
+        }
+
+        return [$fromDate, $toDate];
+    }
+
+    /** Validates a 'Y-m-d' date string, returning the normalized value or null if invalid. */
+    private function normalizeDate(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        if ($date === false || $date->format('Y-m-d') !== $value) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    /** Monday of the week containing today ('Y-m-d'). */
+    private static function currentWeekStart(): string
+    {
+        return (new \DateTimeImmutable('monday this week'))->format('Y-m-d');
+    }
+
+    /** Sunday of the week containing today ('Y-m-d'). */
+    private static function currentWeekEnd(): string
+    {
+        return (new \DateTimeImmutable('sunday this week'))->format('Y-m-d');
+    }
+
     /** Fetches a single order's detail data and maps it to the detail view model. */
-    private function buildOrderDetailViewModel(int $orderId): \App\ViewModels\Cms\CmsOrderDetailViewModel
+    private function buildOrderDetailViewModel(int $orderId): CmsOrderDetailViewModel
     {
         $data = $this->ordersService->getOrderDetail($orderId);
         if ($data === null) {

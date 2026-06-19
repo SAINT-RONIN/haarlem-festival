@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\DTOs\Cms\CmsOrderDetailPageData;
+use App\DTOs\Cms\CmsOrdersFilter;
 use App\DTOs\Domain\Checkout\OrderWithDetails;
 use App\Enums\OrderStatus;
 use App\Helpers\CmsOrderViewHelper;
@@ -20,18 +21,29 @@ use App\ViewModels\Cms\CmsOrdersListViewModel;
 final class CmsOrdersMapper
 {
     /**
-     * Builds the full CMS orders-list page ViewModel from an array of OrderWithDetails models.
+     * Builds the full CMS orders-list page ViewModel from a single page of
+     * OrderWithDetails models plus the active filter and pagination state.
+     *
+     * @param OrderWithDetails[] $orders Orders on the current page only
      */
     public static function toListViewModel(
         array $orders,
-        string $selectedStatus,
+        CmsOrdersFilter $filter,
+        int $currentPage,
+        int $totalPages,
+        int $totalCount,
         ?string $successMessage,
         ?string $errorMessage
     ): CmsOrdersListViewModel {
         return new CmsOrdersListViewModel(
             orders: array_map([self::class, 'toListItem'], $orders),
             statusOptions: array_map(fn(OrderStatus $s) => $s->value, OrderStatus::cases()),
-            selectedStatus: $selectedStatus,
+            selectedStatus: $filter->status ?? '',
+            fromDate: $filter->fromDate,
+            toDate: $filter->toDate,
+            currentPage: $currentPage,
+            totalPages: $totalPages,
+            totalCount: $totalCount,
             successMessage: $successMessage,
             errorMessage: $errorMessage,
         );
